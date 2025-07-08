@@ -704,19 +704,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         acres = []
         for item in planning_areas["results"]:
             acres.append(item["area_acres"])
-        expected_acres = [
-            56338.09165393878,
-            56338.09165393878,
-            29674594.93297612,
-            29674594.93297612,
-            213997881.85468292,
-            213997881.85468292,
-            213997881.85468292,
-            213997881.85468292,
-            525377875.28772503,
-            525377875.28772503,
-        ]
-        self.assertListEqual(acres, expected_acres)
+        self.assertListEqual(acres, sorted(acres))
 
 
 class CreatePlanningAreaTest(APITransactionTestCase):

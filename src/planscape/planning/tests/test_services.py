@@ -2,6 +2,7 @@ import shutil
 from datetime import date, datetime
 
 import fiona
+import json
 import shapely
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
@@ -22,6 +23,7 @@ from planning.services import (
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
+    get_acreage,
 )
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
@@ -52,7 +54,8 @@ class MaxTreatableAreaTest(TestCase):
 
 class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
     def setUp(self) -> None:
-        # Note: Test Polygon is 12163249.414195888 acres
+        # Test Polygon is 12165389.42118729 spherical acres
+
         self.test_poly = GEOSGeometry("POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))", srid=4269)
         self.test_area = PlanningArea.objects.create(
             region_name="sierra-nevada",
@@ -71,10 +74,10 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
             "stand_size": StandSizeChoices.LARGE,
         }
 
-    # 20% of acreage should be 2432649.882839178
+    # 20% of spherical acreage is 2433077.8
     def test_validate_acres_just_above_20pct(self):
         conf_just_above_20 = self.get_basic_conf()
-        conf_just_above_20["max_treatment_area_ratio"] = 2432650
+        conf_just_above_20["max_treatment_area_ratio"] = 2433078
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_just_above_20
         )
@@ -90,10 +93,10 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
         self.assertFalse(result)
         self.assertIn("at least", reason)
 
-    # 80% of area is 9730599.531356712
+    # 80% of spherical acreage is 9732311.536949832
     def test_validate_acres_just_below_80pct(self):
         conf_just_below_80 = self.get_basic_conf()
-        conf_just_below_80["max_treatment_area_ratio"] = 9730590
+        conf_just_below_80["max_treatment_area_ratio"] = 9732311
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_just_below_80
         )
@@ -102,7 +105,7 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
 
     def test_validate_acres_just_above_80pct(self):
         conf_acres_above_80 = self.get_basic_conf()
-        conf_acres_above_80["max_treatment_area_ratio"] = 9730600
+        conf_acres_above_80["max_treatment_area_ratio"] = 9732312
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_acres_above_80
         )
@@ -110,8 +113,8 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
         self.assertIn("less than", reason)
         self.assertIn("80%", reason)
 
-    # 20% of acreage should be 2432649.882839178
-    #  so, with cost of 2470/acre, this requires $ 6,008,645,200.61
+    # 20% of spherical acreage is 2433077.8
+    #   at 2470/acre, this would require: $6,009,702,166
     def test_validate_budget_below_20pct(self):
         conf_budget_below_20pct = self.get_basic_conf()
         conf_budget_below_20pct["max_budget"] = 6008641030
@@ -123,18 +126,18 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
 
     def test_validate_budget_above_20pct(self):
         conf_budget_above_20pct = self.get_basic_conf()
-        conf_budget_above_20pct["max_budget"] = 6008645211
+        conf_budget_above_20pct["max_budget"] = 6009802166
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_budget_above_20pct
         )
         self.assertTrue(result)
         self.assertEqual("Treatment ratio is valid.", reason)
 
-    # 99% of acreage should be 12041616.9200539311
-    #  so, at cost of 2470/acre, this requires $ 29,742,793,792.53
+    # 99% of acreage is 12043735.526975417*
+    #  so, at cost of 2470/acre, this requires $ 29748026751.63
     def test_validate_budget_above_99pct(self):
         conf_budget_above_99 = self.get_basic_conf()
-        conf_budget_above_99["max_budget"] = 29742793793
+        conf_budget_above_99["max_budget"] = 29749026751
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_budget_above_99
         )
@@ -295,4 +298,77 @@ class TestPlanningAreaCovers(TestCase):
                 self.covers_de9im,
                 stand_size=StandSizeChoices.LARGE,
             )
+        )
+
+
+# compare with known turf.js results
+class TestAcreageCalculation(TestCase):
+    def setUp(self):
+        self.ohare = """{ "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "MultiPolygon",
+                            "coordinates": [[[[-87.935169366,41.961504895],
+                                                [-87.92028533,41.951378337],
+                                                [-87.907934746,41.948080971],
+                                                [-87.890200575,41.949494149],
+                                                [-87.877216628,41.967156227],
+                                                [-87.873416449,41.988108876],
+                                                [-87.885450351,42.006936833],
+                                                [-87.909834836,42.015172313],
+                                                [-87.926302281,42.009289936],
+                                                [-87.939602909,41.994934654],
+                                                [-87.938336183,41.973513377],
+                                                [-87.935169366,41.961504895]]]]}}"""
+
+        self.shasta = """{"type": "Feature",
+                            "properties": {},
+                            "geometry": {
+                                "type": "MultiPolygon",
+                                "coordinates": [[[[-122.506372297,41.455991654],
+                                                [-123.066191627,41.632675159],
+                                                [-123.592286901,41.560377431],
+                                                [-123.844093185,41.140131886],
+                                                [-123.738424477,40.454235364],
+                                                [-122.994246974,40.281226116],
+                                                [-122.025242431,40.553386397],
+                                                [-121.645284734,40.880564151],
+                                                [-121.944304697,41.250096143],
+                                                [-122.506372297,41.455991654]]]]}}"""
+
+        self.ca_shape = """ {"type": "Feature",
+                            "properties": {},
+                            "geometry": {
+                                "type": "MultiPolygon",
+                                "coordinates": [[[[-119.274539018,36.303191789],
+                                                [-120.345934319,35.860912955],
+                                                [-118.973931704,35.359597814],
+                                                [-118.133772799,36.09793504],
+                                                [-119.274539018,36.303191789]]]]}}"""
+
+    def test_get_acreage_ohare(self):
+        expected_ohare_acres = 7722.191460915323
+        geom_dict = json.loads(self.ohare)["geometry"]
+        ohare_geometry = GEOSGeometry(json.dumps(geom_dict))
+        tolerance_delta = abs(expected_ohare_acres * 0.001)
+        self.assertAlmostEqual(
+            get_acreage(ohare_geometry), expected_ohare_acres, delta=tolerance_delta
+        )
+
+    def test_get_acreage_shasta(self):
+        expected_shasta_acres = 4820350.111878374
+        geom_dict = json.loads(self.shasta)["geometry"]
+        shasta_geom = GEOSGeometry(json.dumps(geom_dict))
+        tolerance_delta = abs(expected_shasta_acres * 0.001)
+        self.assertAlmostEqual(
+            get_acreage(shasta_geom), expected_shasta_acres, delta=tolerance_delta
+        )
+
+    def test_ca_shape(self):
+        expected_ca_acres = 2669323.5845463574
+        geom_dict = json.loads(self.ca_shape)["geometry"]
+        ca_geom = GEOSGeometry(json.dumps(geom_dict))
+        tolerance_delta = abs(expected_ca_acres * 0.001)
+        self.assertAlmostEqual(
+            get_acreage(ca_geom), expected_ca_acres, delta=tolerance_delta
         )
