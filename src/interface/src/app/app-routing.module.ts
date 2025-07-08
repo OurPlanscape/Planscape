@@ -163,7 +163,8 @@ const routes: Routes = [
         canActivate: [RedirectGuard],
         component: RedirectGuard,
         data: {
-          externalUrl: 'https://share.hsforms.com/1xXehW6VrR0WskbHhqxsrrw3atqe',
+          externalUrl:
+            'https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw',
         },
       },
       {
