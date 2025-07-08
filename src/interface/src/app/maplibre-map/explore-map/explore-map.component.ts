@@ -83,7 +83,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     switchMap((id) => {
       if (id) {
         return this.planState.planningAreaGeometry$.pipe(
-          map((geometry) => getBoundsFromGeometry(geometry))
+          map((geometry) => {
+            return getBoundsFromGeometry(geometry);
+          })
         );
       }
       return this.mapConfigState.mapExtent$;
