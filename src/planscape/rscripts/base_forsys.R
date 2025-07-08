@@ -290,7 +290,10 @@ to_properties <- function(
     text_geometry,
     new_column_for_postprocessing = FALSE) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
-  attainment <- forsys_project_outputs %>% filter(proj_id == project_id) %>% select(contains("attain_"))
+  attainment <- forsys_project_outputs %>% 
+    filter(proj_id == project_id) %>% 
+    select(contains("attain_")) %>% 
+    rename_with(~ str_replace(.x, "attain_", ""))
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
     select(-contains("Pr_1")) %>%
