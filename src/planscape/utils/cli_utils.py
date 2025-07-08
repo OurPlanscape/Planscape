@@ -3,12 +3,14 @@ import subprocess
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional
 
+import requests
 import toml
+from core.flags import feature_enabled
 from django.conf import settings
 from gis.core import with_vsi_prefix
-import requests
-from requests.exceptions import RequestException, HTTPError, Timeout
-from planscape.exceptions import ForsysTimeoutException, ForsysException
+from requests.exceptions import HTTPError, RequestException, Timeout
+
+from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 
 def ogr2ogr_cli(
@@ -220,6 +222,6 @@ def _call_forsys_via_api(
 
 
 def call_forsys(scenario_id, env=None, check=True, timeout=None):
-    if settings.FORSYS_VIA_API:
+    if feature_enabled("FORSYS_VIA_API"):
         return _call_forsys_via_api(scenario_id, timeout)
     return _call_forsys_via_command_line(scenario_id, env, check, timeout)

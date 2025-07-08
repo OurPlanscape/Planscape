@@ -290,16 +290,21 @@ to_properties <- function(
     text_geometry,
     new_column_for_postprocessing = FALSE) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
+  attainment <- forsys_project_outputs %>% 
+    filter(proj_id == project_id) %>% 
+    select(contains("attain_")) %>% 
+    rename_with(~ str_replace(.x, "attain_", ""))
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
     select(-contains("Pr_1")) %>%
+    select(-contains("attain_")) %>%
     mutate(stand_count = project_stand_count) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
+    mutate(attainment = attainment) %>%
     mutate(text_geometry = text_geometry) %>%
     rename_with(.fn = rename_col)
-
   # post process
   print("Postprocessing results.")
   if (FORSYS_V2) {
@@ -821,7 +826,7 @@ call_forsys <- function(
     patchmax_sample_seed = configuration$seed,
   )
   summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
-  print(summarized_metrics)
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by="proj_id")
   return(out)
 }
 
@@ -844,6 +849,8 @@ upsert_project_area <- function(
     scenario,
     project) {
   area_name <- glue("Project Area {area_number}", area_number = project$properties$proj_id)
+  geometry <- project$properties$text_geometry
+  properties <- project$properties[names(project$properties) != "text_geometry"]
   query <- glue_sql("INSERT INTO planning_projectarea (
       uuid,
       created_at,
@@ -879,8 +886,8 @@ upsert_project_area <- function(
     created_by_id = scenario$created_by_id,
     scenario_id = scenario$id,
     name = area_name,
-    data = toJSON(project$properties),
-    geometry = project$properties$text_geometry,
+    data = toJSON(properties),
+    geometry = geometry,
     .con = connection
   )
   dbExecute(connection, query, immediate = TRUE)

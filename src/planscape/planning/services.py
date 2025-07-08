@@ -7,11 +7,13 @@ from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
-
 import fiona
+from pyproj import Geod
+from shapely import wkt
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -21,7 +23,6 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from stands.models import Stand, StandSizeChoices, area_from_size
 from utils.geometry import to_multi
-
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -152,7 +153,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    if settings.USE_SCENARIO_V2:
+    if feature_enabled("USE_SCENARIO_V2"):
         datalayers = treatment_goal.get_raster_datalayers()
         tasks = [
             async_calculate_stand_metrics_v2.si(
@@ -375,11 +376,14 @@ def get_max_treatable_stand_count(
 
 def get_acreage(geometry: GEOSGeometry) -> float:
     try:
-        epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
-        acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
+        shapely_geom = wkt.loads(geometry.wkt)
+        geod = Geod(ellps="WGS84")
+        area_sq_meters, *_ = geod.geometry_area_perimeter(shapely_geom)
+        area_sq_meters = abs(area_sq_meters)
+        acres = area_sq_meters / settings.CONVERSION_SQM_ACRES
         return acres
     except Exception:
-        raise InvalidGeometry("Could not reproject geometry")
+        raise InvalidGeometry("Could not calculate area")
 
 
 def validate_scenario_treatment_ratio(

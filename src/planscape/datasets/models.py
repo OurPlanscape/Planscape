@@ -4,9 +4,12 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 from cacheops import cached
+from core.flags import feature_enabled
+from core.gcs import create_download_url as create_gcs_download_url
+from core.gcs import is_gcs_file
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
-from core.s3 import create_download_url as create_s3_download_url, is_s3_file
-from core.gcs import create_download_url as create_gcs_download_url, is_gcs_file
+from core.s3 import create_download_url as create_s3_download_url
+from core.s3 import is_s3_file
 from core.schemes import SUPPORTED_SCHEMES
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -358,7 +361,7 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         if is_s3_file(self.url):
             object_name = self.url.replace(f"s3://{settings.S3_BUCKET}/", "")
             download_url = create_s3_download_url(settings.S3_BUCKET, object_name)
-            if settings.FEATURE_FLAG_S3_PROXY:
+            if feature_enabled("FEATURE_FLAG_S3_PROXY"):
                 parsed = urlparse(download_url)
 
                 new_url = parsed._replace(

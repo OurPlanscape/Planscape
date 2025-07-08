@@ -1,18 +1,18 @@
 import json
-
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.contrib.gis.db.models import Union
-from django.test import TestCase, override_settings
 from unittest import mock
 
-from datasets.tests.factories import DataLayerFactory
 from datasets.models import DataLayerType
-from planning.tests.factories import ScenarioFactory
-from planning.tasks import async_calculate_stand_metrics, async_forsys_run
-from planning.models import ScenarioResultStatus
-from stands.models import StandSizeChoices, StandMetric, Stand
+from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.db.models import Union
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.test import TestCase, override_settings
+from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
-from planscape.exceptions import ForsysTimeoutException, ForsysException
+
+from planning.models import ScenarioResultStatus
+from planning.tasks import async_calculate_stand_metrics, async_forsys_run
+from planning.tests.factories import ScenarioFactory
+from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 
 class AsyncCalculateStandMetricsTest(TestCase):
@@ -116,7 +116,7 @@ class AsyncCallForsysCommandLine(TestCase):
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
 
 
-@override_settings(FORSYS_VIA_API=True)
+@override_settings(FEATURE_FLAGS="FORSYS_VIA_API")
 class AsyncCallForsysViaAPI(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()

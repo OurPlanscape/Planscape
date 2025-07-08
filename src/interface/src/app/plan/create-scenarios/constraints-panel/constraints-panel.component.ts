@@ -21,7 +21,6 @@ import {
 } from '../../../validators/scenarios';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 import { firstValueFrom, tap } from 'rxjs';
-import { FeatureService } from 'src/app/features/feature.service';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
@@ -52,8 +51,7 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private scenarioState: ScenarioState,
-    private featureService: FeatureService
+    private scenarioState: ScenarioState
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -208,30 +206,14 @@ export class ConstraintsPanelComponent implements OnChanges {
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.valid &&
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.value
       ) {
-        if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
-          scenarioConfig.excluded_areas?.push(Number(area.id));
-        } else {
-          scenarioConfig.excluded_areas?.push(area.key as any);
-        }
+        scenarioConfig.excluded_areas?.push(Number(area.id));
       }
     });
     if (estimatedCost?.valid)
-      if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
-        scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
-      } else {
-        // We should use any until we remove the FF.
-        (scenarioConfig as any).est_cost = parseFloat(estimatedCost.value);
-      }
+      scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
     if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
-        scenarioConfig.max_area = parseFloat(maxArea.value);
-      } else {
-        // We should use any until we remove the FF.
-        (scenarioConfig as any).max_treatment_area_ratio = parseFloat(
-          maxArea.value
-        );
-      }
+      scenarioConfig.max_area = parseFloat(maxArea.value);
     }
     if (minDistanceFromRoad?.valid) {
       scenarioConfig.min_distance_from_road = parseFloat(
@@ -245,13 +227,9 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   setFormData(config: ScenarioConfig) {
     this.excludedAreas.forEach((area) => {
-      const isAreaSelected = this.featureService.isFeatureEnabled(
-        'STATEWIDE_SCENARIOS'
-      )
-        ? config.excluded_areas &&
-          config.excluded_areas.indexOf(Number(area.key)) > -1
-        : config.excluded_areas &&
-          config.excluded_areas.includes(area.key.toString() as any);
+      const isAreaSelected =
+        config.excluded_areas &&
+        config.excluded_areas.indexOf(Number(area.key)) > -1;
 
       if (isAreaSelected) {
         this.constraintsForm
@@ -264,22 +242,20 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
 
-    // TODO: remove est_cost when 'STATEWIDE_SCENARIOS' be approved
-    if (config.estimated_cost || (config as any).est_cost) {
+    if (config.estimated_cost) {
       this.constraintsForm
         .get('budgetForm.estimatedCost')
-        ?.setValue(config.estimated_cost || (config as any).est_cost);
+        ?.setValue(config.estimated_cost);
     }
     if (config.max_budget) {
       this.constraintsForm
         .get('budgetForm.maxCost')
         ?.setValue(config.max_budget);
     }
-    // TODO: remove max_treatment_area_ratio when 'STATEWIDE_SCENARIOS' be approved
-    if (config.max_area || (config as any).max_treatment_area_ratio) {
+    if (config.max_area) {
       this.constraintsForm
         .get('physicalConstraintForm.maxArea')
-        ?.setValue(config.max_area || (config as any).max_treatment_area_ratio);
+        ?.setValue(config.max_area);
     }
     if (config.min_distance_from_road) {
       this.constraintsForm

@@ -1,6 +1,6 @@
 import logging
 
-from django.conf import settings
+from core.flags import feature_enabled
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
@@ -188,7 +188,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     ]
 
     def get_serializer(self, *args, **kwargs):
-        if settings.USE_SCENARIO_V2:
+        if feature_enabled("USE_SCENARIO_V2"):
             # need to inform context because this is not created through
             # the original get_serializer method.
             kwargs.setdefault("context", self.get_serializer_context())
@@ -217,7 +217,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         scenario = create_scenario(
             **serializer.validated_data,
         )
-        if settings.USE_SCENARIO_V2:
+        if feature_enabled("USE_SCENARIO_V2"):
             out_serializer = ScenarioV2Serializer(instance=scenario)
         else:
             out_serializer = ScenarioSerializer(instance=scenario)

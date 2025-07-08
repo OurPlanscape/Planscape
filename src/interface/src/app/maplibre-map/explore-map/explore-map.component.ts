@@ -27,7 +27,7 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { map, switchMap } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
 import { DefaultSelectConfig, DrawService } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
@@ -40,6 +40,7 @@ import { MapBoundaryLayerComponent } from '../map-boundary-layer/map-boundary-la
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
+import { MultiMapsStorageService } from '@services/local-storage.service';
 
 @UntilDestroy()
 @Component({
@@ -125,11 +126,17 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     map((mapId) => mapId && this.mapNumber === mapId)
   );
 
-  selectedLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  selectedLayer$ = this.dataLayersStateService.selectedDataLayer$.pipe(
+    tap((layer) => {
+      // If the selected layer was updated we want to update the storage
+      this.saveSelectedLayerOnStorage(layer);
+    })
+  );
 
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
+    private multimapStorage: MultiMapsStorageService,
     private authService: AuthService,
     private drawService: DrawService,
     private dataLayersStateService: DataLayersStateService,
@@ -151,6 +158,13 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.registry.set(this.mapNumber, this.dataLayersStateService);
+    // Loading layer from the storage if exists
+    const multimapStorage = this.multimapStorage.getItem();
+    const selectedLayer = multimapStorage?.dataLayers?.[this.mapNumber] || null;
+    if (selectedLayer) {
+      this.dataLayersStateService.selectDataLayer(selectedLayer);
+      this.dataLayersStateService.goToSelectedLayer(selectedLayer);
+    }
   }
 
   ngOnDestroy() {
@@ -228,4 +242,19 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  saveSelectedLayerOnStorage(layer: DataLayer | null) {
+    const existingStorage = this.multimapStorage.getItem();
+    if (existingStorage?.dataLayers) {
+      existingStorage.dataLayers[this.mapNumber] = layer;
+      this.multimapStorage.setItem(existingStorage);
+    } else {
+      this.multimapStorage.setItem({
+        ...existingStorage,
+        dataLayers: {
+          [this.mapNumber]: layer,
+        },
+      });
+    }
+  }
 }

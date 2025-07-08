@@ -20,7 +20,7 @@ import {
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { LegacyPlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -29,15 +29,14 @@ import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MatTabGroup } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 
 enum ScenarioTabs {
   CONFIG,
   RESULTS,
-  TREATMENTS,
   DATA_LAYERS,
+  TREATMENTS,
 }
 
 @UntilDestroy()
@@ -50,9 +49,11 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
-  scenarioId: string | null = null;
+  scenarioId: number | undefined = undefined;
   scenarioName: string | null = null;
   planId?: number | null;
+
+  planIdFromRoute: number = this.route.parent!.snapshot.data['planId'];
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
@@ -88,8 +89,8 @@ export class CreateScenariosComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
     private scenarioStateService: ScenarioState,
-    private featureService: FeatureService,
-    private dataLayersStateService: DataLayersStateService
+    private dataLayersStateService: DataLayersStateService,
+    private route: ActivatedRoute
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -126,7 +127,7 @@ export class CreateScenariosComponent implements OnInit {
       .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioId = planState.currentScenarioId;
+        this.scenarioId = planState.currentScenarioId!;
         this.planId = planState.currentPlanId;
         if (this.plan$.getValue()?.region_name) {
           this.LegacyPlanStateService.setPlanRegion(
@@ -248,7 +249,7 @@ export class CreateScenariosComponent implements OnInit {
   private formValueToScenario(): Scenario {
     const prioritiesData = this.prioritiesComponent.getFormData();
     return {
-      id: '',
+      id: undefined,
       name: this.scenarioNameFormField?.value,
       planning_area: this.planId!,
       status: 'ACTIVE',
@@ -256,11 +257,7 @@ export class CreateScenariosComponent implements OnInit {
         ...this.constraintsPanelComponent.getFormData(),
         ...prioritiesData,
       },
-      treatment_goal: this.featureService.isFeatureEnabled(
-        'STATEWIDE_SCENARIOS'
-      )
-        ? prioritiesData.treatment_question
-        : (prioritiesData.treatment_question as any).id,
+      treatment_goal: prioritiesData.treatment_question as any,
     };
   }
 
@@ -274,48 +271,26 @@ export class CreateScenariosComponent implements OnInit {
     this.generatingScenario = true;
     this.goalOverlayService.close();
 
-    if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
-      this.scenarioService
-        .createScenario(this.formValueToScenario())
-        .pipe(
-          catchError((error) => {
-            this.generatingScenario = false;
-            this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
-            return NEVER;
-          })
-        )
-        .subscribe((newScenario) => {
-          // Setting the new scenario id
-          this.scenarioId = newScenario.id;
-          this.scenarioName = newScenario.name;
-          this.matSnackBar.dismiss();
-          this.scenarioState = 'PENDING';
-          this.disableForms();
-          this.selectedTab = ScenarioTabs.RESULTS;
-          this.pollForChanges();
-          this.goToScenario();
-        });
-    } else {
-      this.LegacyPlanStateService.createScenario(this.formValueToScenario())
-        .pipe(
-          catchError((error) => {
-            this.generatingScenario = false;
-            this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
-            return NEVER;
-          })
-        )
-        .subscribe((newScenario) => {
-          // Setting the new scenario id
-          this.scenarioId = newScenario.id;
-          this.scenarioName = newScenario.name;
-          this.matSnackBar.dismiss();
-          this.scenarioState = 'PENDING';
-          this.disableForms();
-          this.selectedTab = ScenarioTabs.RESULTS;
-          this.pollForChanges();
-          this.goToScenario();
-        });
-    }
+    this.scenarioService
+      .createScenario(this.formValueToScenario())
+      .pipe(
+        catchError((error) => {
+          this.generatingScenario = false;
+          this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
+          return NEVER;
+        })
+      )
+      .subscribe((newScenario) => {
+        // Setting the new scenario id
+        this.scenarioId = newScenario.id;
+        this.scenarioName = newScenario.name;
+        this.matSnackBar.dismiss();
+        this.scenarioState = 'PENDING';
+        this.disableForms();
+        this.selectedTab = ScenarioTabs.RESULTS;
+        this.pollForChanges();
+        this.goToScenario();
+      });
   }
 
   disableForms() {

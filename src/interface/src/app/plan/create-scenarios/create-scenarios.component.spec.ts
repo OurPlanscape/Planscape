@@ -35,6 +35,7 @@ import { MOCK_PLAN } from '@services/mocks';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
+import { ActivatedRoute } from '@angular/router';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -57,7 +58,7 @@ describe('CreateScenariosComponent', () => {
     weights: [0],
   };
   let fakeScenario: Scenario = {
-    id: '1',
+    id: 1,
     name: 'name',
     planning_area: 1,
     configuration: {
@@ -102,7 +103,7 @@ describe('CreateScenariosComponent', () => {
     fakeGetScenario = new BehaviorSubject(fakeScenario);
 
     const demoScenario: Scenario = {
-        id: '1',
+        id: 1,
         name: 'name',
         planning_area: 1,
         configuration: {
@@ -163,6 +164,18 @@ describe('CreateScenariosComponent', () => {
       providers: [
         CurrencyPipe,
         {
+          provide: ActivatedRoute,
+          useValue: {
+            parent: {
+              snapshot: {
+                data: {
+                  planId: 123,
+                },
+              },
+            },
+          },
+        },
+        {
           provide: LegacyPlanStateService,
           useValue: fakeLegacyPlanStateService,
         },
@@ -186,7 +199,7 @@ describe('CreateScenariosComponent', () => {
   });
 
   it('should load existing scenario', async () => {
-    const scenarioId = 'fakeScenarioId';
+    const scenarioId = 3001;
     fakePlanState$.next({
       ...fakePlanState$.value,
       ...{ currentScenarioId: scenarioId },
@@ -568,7 +581,7 @@ describe('CreateScenariosComponent', () => {
   ) {
     fakePlanState$.next({
       ...fakePlanState$.value,
-      currentScenarioId: 'fakeScenarioId',
+      currentScenarioId: 3001,
     });
 
     fakeGetScenario.next({
@@ -579,6 +592,6 @@ describe('CreateScenariosComponent', () => {
       },
     });
 
-    component.scenarioId = 'fakeScenarioId';
+    component.scenarioId = 3001;
   }
 });

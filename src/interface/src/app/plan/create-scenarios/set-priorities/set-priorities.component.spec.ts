@@ -1,8 +1,5 @@
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyRadioGroupHarness as MatRadioGroupHarness } from '@angular/material/legacy-radio/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
@@ -11,6 +8,7 @@ import {
   ColormapConfig,
   ConditionsConfig,
   Scenario,
+  ScenarioGoal,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '@types';
@@ -31,7 +29,6 @@ class ScenarioTooltipMockComponent {}
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
   let fixture: ComponentFixture<SetPrioritiesComponent>;
-  let loader: HarnessLoader;
   let treatmentGoals$: BehaviorSubject<TreatmentGoalConfig[] | null>;
   let fakeMapService: MapService;
 
@@ -118,7 +115,7 @@ describe('SetPrioritiesComponent', () => {
           treatmentGoalsConfig$: treatmentGoals$,
         }),
         MockProvider(TreatmentGoalsService, {
-          getTreatmentGoals: () => of([]),
+          getTreatmentGoals: () => treatmentGoals$ as any,
         }),
         MockProvider(ScenarioState, {
           currentScenario$: of({} as Scenario),
@@ -128,7 +125,6 @@ describe('SetPrioritiesComponent', () => {
 
     fixture = TestBed.createComponent(SetPrioritiesComponent);
     component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
     component.goalsForm = fb.group({
@@ -171,76 +167,69 @@ describe('SetPrioritiesComponent', () => {
     expect(component.datasource.data).toEqual([pillar, element, metric]);
   });
 
-  it('selecting a priority should update the form value', async () => {
-    const radioButtonGroup = await loader.getHarness(
-      MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
-    );
-    let checked = await radioButtonGroup.getCheckedValue();
-    expect(checked).toBe(null);
-    // Act: select the test treatment question
-    await radioButtonGroup.checkRadioButton({
-      label: testQuestion['short_question_text'],
-    });
+  it('should call goalOverlayService.setStateWideGoal if form is enabled', () => {
+    const goal = { id: 1 } as ScenarioGoal;
+    const spy = spyOn(component['goalOverlayService'], 'setStateWideGoal');
 
-    expect(component.goalsForm?.get('selectedQuestion')?.value).toEqual(
-      testQuestion
-    );
-    checked = await radioButtonGroup.getCheckedValue();
-    expect(checked).toBe(testQuestion.toString());
+    component.goalsForm.enable();
+    component.selectStatewideGoal(goal);
+
+    expect(spy).toHaveBeenCalledWith(goal);
+  });
+
+  it('should NOT call goalOverlayService.setStateWideGoal if form is disabled', () => {
+    const goal = { id: 1 } as ScenarioGoal;
+    const spy = spyOn(component['goalOverlayService'], 'setStateWideGoal');
+
+    component.goalsForm.disable();
+    component.selectStatewideGoal(goal);
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('should set _treatmentGoals and call setFormData if form has a selected value', () => {
+    const mockGoal = { id: 1 } as TreatmentQuestionConfig;
+    const mockTreatmentGoals = [
+      { category_name: 'test category', questions: [mockGoal] },
+    ];
+    component.goalsForm.get('selectedQuestion')?.setValue(mockGoal);
+    const spy = spyOn(component, 'setFormData');
+    component.treatmentGoals$.subscribe();
+    (
+      TestBed.inject(LegacyPlanStateService)
+        .treatmentGoalsConfig$ as BehaviorSubject<any>
+    ).next(mockTreatmentGoals);
+
+    expect(component['_treatmentGoals']).toEqual(mockTreatmentGoals);
+    expect(spy).toHaveBeenCalledWith(mockGoal);
   });
 
   describe('setting values', () => {
     it('should set the value of the form with setFormData', async () => {
-      const radioButtonGroup = await loader.getHarness(
-        MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
-      );
-      component.setFormData(testQuestion);
-      // Act: select the test treatment question
-      await radioButtonGroup.checkRadioButton({
-        label: testQuestion['short_question_text'],
-      });
+      component['_treatmentGoals'] = [
+        { category_name: 'test category', questions: [testQuestion] },
+      ];
 
-      expect(component.goalsForm?.get('selectedQuestion')?.value).toEqual(
+      component.setFormData(testQuestion);
+
+      expect(component.goalsForm.get('selectedQuestion')?.value).toEqual(
         testQuestion
       );
-      let checked = await radioButtonGroup.getCheckedValue();
-      expect(checked).toBe(testQuestion.toString());
+      expect(component.goalsForm.disabled).toBeTrue();
     });
 
-    it('should set the value of the form again if treatment goals emits a change', async () => {
-      const radioButtonGroup = await loader.getHarness(
-        MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
-      );
-      component.setFormData(testQuestion);
-      // Act: select the test treatment question
-      await radioButtonGroup.checkRadioButton({
-        label: testQuestion['short_question_text'],
-      });
-      // form should be checked.
-      let checked = await radioButtonGroup.getCheckedValue();
-      expect(checked).toBe(testQuestion.toString());
+    it('should set the value of the form again if treatment goals emits a change', () => {
+      const setFormDataSpy = spyOn(component, 'setFormData').and.callThrough();
 
-      const question: TreatmentQuestionConfig = {
-        ...{ ...testQuestion, ...{ id: 2 } },
-        ...{ short_question_text: 'asdas' },
-      };
-      // different treatment goals
+      component.goalsForm.get('selectedQuestion')?.setValue(testQuestion);
+
+      component.treatmentGoals$.subscribe();
+
       treatmentGoals$.next([
-        { category_name: 'test category', questions: [question] },
+        { category_name: 'test category', questions: [testQuestion] },
       ]);
 
-      // form should NOT be checked - treatment goals are different
-      checked = await radioButtonGroup.getCheckedValue();
-      expect(checked).toBe(null);
-
-      // same as original but a shallow copy
-      treatmentGoals$.next([
-        { category_name: 'test category', questions: [{ ...testQuestion }] },
-      ]);
-
-      // form should be checked - treatment goals are now the same
-      checked = await radioButtonGroup.getCheckedValue();
-      expect(checked).toBe(testQuestion.toString());
+      expect(setFormDataSpy).toHaveBeenCalledWith(testQuestion);
     });
   });
 });
