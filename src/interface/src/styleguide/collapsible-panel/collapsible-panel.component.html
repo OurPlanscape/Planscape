@@ -1,27 +1,23 @@
-<div
-  class="title-row"
-  [ngClass]="{ collapsible: isCollapsible }"
-  (click)="togglePanel($event)">
-  <mat-icon class="material-symbols-outlined" *ngIf="isCollapsible">
-    {{ isOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
-  </mat-icon>
-  <div class="title-txt">{{ title }}</div>
-
-  <button
-    (click)="stopPropagation($event)"
-    class="tooltip-btn"
-    sg-button
-    variant="icon-only"
-    [outlined]="true"
-    icon="info"
-    [matMenuTriggerFor]="tooltipMenu">
-    <mat-menu #tooltipMenu="matMenu">
-      <div class="tooltip">
-        {{ tooltipContent }}
-      </div>
-    </mat-menu>
-  </button>
-</div>
-<div class="panel" *ngIf="isOpen">
+<mat-expansion-panel
+  togglePosition="before"
+  expanded="true"
+  [disabled]="!isCollapsible">
+  <mat-expansion-panel-header>
+    <div class="title-txt">{{ title }}</div>
+    <button
+      (click)="stopPropagation($event)"
+      class="tooltip-btn"
+      sg-button
+      variant="icon-only"
+      [outlined]="true"
+      icon="info"
+      [matMenuTriggerFor]="tooltipMenu">
+      <mat-menu #tooltipMenu="matMenu">
+        <div class="tooltip">
+          {{ tooltipContent }}
+        </div>
+      </mat-menu>
+    </button>
+  </mat-expansion-panel-header>
   <ng-content></ng-content>
-</div>
+</mat-expansion-panel>
