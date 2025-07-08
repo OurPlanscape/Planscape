@@ -1,5 +1,5 @@
 import re
-from typing import Any, Collection, Dict
+from typing import Any, Collection, Dict, Optional
 
 from core.loaders import get_python_object
 from datasets.models import (
@@ -487,14 +487,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
     path = serializers.SerializerMethodField()
-    public_url = serializers.CharField(
-        source="get_public_url",
-        read_only=True,
-    )
-    map_url = serializers.CharField(
-        source="get_map_url",
-        read_only=True,
-    )
+    map_url = serializers.SerializerMethodField()
     styles = serializers.SerializerMethodField()
 
     def _default_raster_style(self, instance):
@@ -526,6 +519,11 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
         return []
 
+    def get_map_url(self, instance) -> Optional[str]:
+        if instance.type == DataLayerType.RASTER:
+            return None
+        return instance.get_map_url()
+
     class Meta:
         model = DataLayer
         fields = (
@@ -533,7 +531,6 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "organization",
             "dataset",
             "path",
-            "public_url",
             "map_url",
             "name",
             "type",
@@ -573,13 +570,6 @@ class FindAnythingSerializer(serializers.Serializer):
     limit = serializers.IntegerField(required=False, min_value=1)
 
     offset = serializers.IntegerField(required=False, min_value=1)
-
-
-class SearchResultsSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-    type = serializers.CharField()
-    data = serializers.JSONField()  # type: ignore
 
 
 class SearchResultsSerializer(serializers.Serializer):
