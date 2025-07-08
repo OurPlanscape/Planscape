@@ -27,7 +27,7 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { map, switchMap, combineLatest } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
 import { DefaultSelectConfig, DrawService } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
@@ -79,8 +79,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    */
   mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
 
-  bounds$ = combineLatest([this.planId$, this.mapConfigState.mapExtent$]).pipe(
-    switchMap(([id, _]) => {
+  bounds$ = this.planId$.pipe(
+    switchMap((id) => {
       if (id) {
         return this.planState.planningAreaGeometry$.pipe(
           map((geometry) => getBoundsFromGeometry(geometry))
