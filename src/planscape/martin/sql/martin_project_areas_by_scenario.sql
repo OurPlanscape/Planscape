@@ -20,7 +20,7 @@ BEGIN
     WHERE sc.id = p_scenario_id;
 
   IF p_scenario_result_status != 'SUCCESS' THEN
-    RAISE EXCEPTION 'Scenario result status must be either SUCCESS';
+    RAISE EXCEPTION 'Scenario result status must be SUCCESS';
   END IF;
 
   WITH base AS (
