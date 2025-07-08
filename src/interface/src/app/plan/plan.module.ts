@@ -22,7 +22,6 @@ import { ResourceUnavailableComponent } from './resource-unavailable/resource-un
 import { RouterModule } from '@angular/router';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.component';
-import { ScenarioNotStartedComponent } from './scenario-not-started/scenario-not-started.component';
 import { ScenarioPendingComponent } from './scenario-pending/scenario-pending.component';
 import { ScenarioResultsComponent } from './scenario-results/scenario-results.component';
 import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-tooltip.component';
@@ -72,7 +71,6 @@ import { CollapsiblePanelComponent } from '../../styleguide/collapsible-panel/co
     ResourceUnavailableComponent,
     SavedScenariosComponent,
     ScenarioFailureComponent,
-    ScenarioNotStartedComponent,
     ScenarioPendingComponent,
     ScenarioResultsComponent,
     ScenarioRoutePlaceholderComponent,
