@@ -150,7 +150,6 @@ describe('QueryParamsService', () => {
     });
 
     it('should remove parameters if we provide undefined', () => {
-      const region = 'sierra-nevada';
       const pageOptions = {
         page: '2',
         name: 'test',
@@ -158,7 +157,6 @@ describe('QueryParamsService', () => {
       const newOptions = {
         page: undefined,
         name: undefined,
-        region: region,
       };
       const url = '/?' + new URLSearchParams(pageOptions).toString();
 
@@ -177,7 +175,7 @@ describe('QueryParamsService', () => {
       const locationGoSpy = spyOn(location, 'go');
 
       service.updateUrl(newOptions);
-      expect(urlTree.queryParams['region']).toBe(region);
+
       expect(urlTree.queryParams['page']).toBe(undefined);
       expect(urlTree.queryParams['name']).toBe(undefined);
       expect(locationGoSpy).toHaveBeenCalledWith(urlTree.toString());

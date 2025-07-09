@@ -111,6 +111,7 @@ describe('CreateScenariosComponent', () => {
       },
       {
         planState$: fakePlanState$,
+        setPlanRegion: () => {},
         treatmentGoalsConfig$: new BehaviorSubject<
           TreatmentGoalConfig[] | null
         >([
