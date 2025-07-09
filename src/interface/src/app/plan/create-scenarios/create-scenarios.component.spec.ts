@@ -8,7 +8,7 @@ import {
 } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { Region, Scenario, ScenarioResultStatus } from '@types';
+import { Scenario, ScenarioResultStatus } from '@types';
 
 import { PlanModule } from '../plan.module';
 import {
@@ -27,7 +27,7 @@ import { PlanState } from '../plan.state';
 import { BehaviorSubject } from 'rxjs';
 import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
-import { LegacyPlanStateService, ScenarioService } from '@services';
+import { ScenarioService } from '@services';
 import { FormControl, FormGroup } from '@angular/forms';
 
 describe('CreateScenariosComponent', () => {
@@ -85,9 +85,6 @@ describe('CreateScenariosComponent', () => {
           getScenario: () => mockScenario$,
           getExcludedAreas: () => new BehaviorSubject([]),
         }),
-        MockProvider(LegacyPlanStateService, {
-          updateStateWithShapes: () => {},
-        }),
       ],
     }).compileComponents();
 
@@ -103,7 +100,6 @@ describe('CreateScenariosComponent', () => {
 
   it('should initialize scenario  correctly', async () => {
     spyOn(component, 'createForms').and.returnValue(Promise.resolve());
-    spyOn(component, 'setPlanRegion');
     spyOn(component, 'setExistingNameValidator');
     spyOn(component, 'setScenarioMode');
     spyOn(component, 'listenForProjectAreasChanges');
@@ -113,7 +109,6 @@ describe('CreateScenariosComponent', () => {
 
     // We should call all the methods we need
     expect(component.createForms).toHaveBeenCalled();
-    expect(component.setPlanRegion).toHaveBeenCalled();
     expect(component.setExistingNameValidator).toHaveBeenCalled();
     expect(component.setScenarioMode).toHaveBeenCalled();
     expect(component.listenForProjectAreasChanges).toHaveBeenCalled();
@@ -147,46 +142,6 @@ describe('CreateScenariosComponent', () => {
     expect(component.forms.contains('priorities')).toBeTrue();
     expect(component.forms.contains('constrains')).toBeTrue();
     expect(component.forms.contains('projectAreas')).toBeTrue();
-  });
-
-  it('should set plan region if region_name exists', async () => {
-    mockPlan$.next({
-      ...mockPlan$.value,
-      region_name: Region.SIERRA_NEVADA,
-    });
-
-    // Mock LegacyPlanStateService
-    (component as any).LegacyPlanStateService = {
-      setPlanRegion: jasmine.createSpy(),
-      updateStateWithShapes: jasmine.createSpy(),
-    } as any;
-
-    await component.setPlanRegion();
-
-    // Verify the legacy state was called with the correct region
-    expect(
-      (component as any).LegacyPlanStateService.setPlanRegion
-    ).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
-  });
-
-  it('should not set plan region if region_name does not exist', async () => {
-    mockPlan$.next({
-      ...mockPlan$.value,
-      region_name: null as any,
-    });
-
-    // Mock LegacyPlanStateService
-    (component as any).LegacyPlanStateService = {
-      setPlanRegion: jasmine.createSpy(),
-      updateStateWithShapes: jasmine.createSpy(),
-    } as any;
-
-    await component.setPlanRegion();
-
-    // Verify legacyPlanStateService was not called
-    expect(
-      (component as any).LegacyPlanStateService.setPlanRegion
-    ).not.toHaveBeenCalled();
   });
 
   it('should add validator with existing scenario names', async () => {

@@ -1,7 +1,6 @@
 export * from './data.types';
 export * from './invite.types';
 export * from './plan.types';
-export * from './region.types';
 export * from './scenario.types';
 export * from './user.types';
 export * from './treatment.types';
