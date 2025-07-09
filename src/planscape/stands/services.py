@@ -2,13 +2,14 @@ import json
 import logging
 from typing import Any, Collection, Dict
 
+import rasterio
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
+from gis.info import get_gdal_env
+from rasterstats import zonal_stats
 from rasterstats.io import Raster
 from shapely import total_bounds
 from shapely.geometry import shape
-from rasterstats import zonal_stats
-
 from stands.models import Stand, StandMetric
 
 log = logging.getLogger(__name__)
@@ -97,18 +98,18 @@ def calculate_stand_zonal_stats(
     stand_geojson = list(map(to_geojson, missing_stands))
     bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-
-    with Raster(datalayer.url) as main_raster:
-        subset = main_raster.read(bounds=list(bounds))
-        stats = zonal_stats(
-            raster=subset.array,
-            affine=subset.affine,
-            vectors=stand_geojson,
-            stats=aggregations,
-            nodata=nodata,
-            geojson_out=True,
-            band=1,
-        )
+    with rasterio.Env(**get_gdal_env()):
+        with Raster(datalayer.url) as main_raster:
+            subset = main_raster.read(bounds=list(bounds))
+            stats = zonal_stats(
+                raster=subset.array,
+                affine=subset.affine,
+                vectors=stand_geojson,
+                stats=aggregations,
+                nodata=nodata,
+                geojson_out=True,
+                band=1,
+            )
 
     results = list(
         map(
