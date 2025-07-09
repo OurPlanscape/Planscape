@@ -1,4 +1,3 @@
-import { Region } from './region.types';
 import { Geometry } from 'geojson';
 
 export interface Plan {
@@ -12,7 +11,6 @@ export interface Plan {
   name: string;
   notes?: string;
   permissions: string[];
-  region_name: Region;
   role: string;
   scenario_count: number;
   user: number;

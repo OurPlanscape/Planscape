@@ -23,7 +23,7 @@ import {
 } from '@angular/common';
 
 import { PlanService } from '@services';
-import { Creator, PreviewPlan, RegionsWithString } from '@types';
+import { Creator, PreviewPlan } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -126,8 +126,6 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   selectedCreators$ = this.dataSource.selectedCreators$;
 
   creators$ = this.dataSource.creators$;
-
-  readonly regions = RegionsWithString;
 
   ngOnInit() {
     this.dataSource.loadData();

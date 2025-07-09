@@ -24,7 +24,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { LegacyPlanStateService, ScenarioService } from '@services';
+import { ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
@@ -149,9 +149,6 @@ export class CreateScenariosComponent implements OnInit {
     // Creating the forms
     await this.createForms();
 
-    // Setting plan region if we have a valid regiion
-    this.setPlanRegion();
-
     // Setting the scenario name validator
     this.setExistingNameValidator();
 
@@ -188,14 +185,6 @@ export class CreateScenariosComponent implements OnInit {
         (control: AbstractControl) =>
           scenarioNameMustBeNew(control, existingScenarioNames),
       ]);
-  }
-
-  async setPlanRegion() {
-    const plan = await firstValueFrom(this.plan$);
-    if (plan.region_name) {
-      0.0;
-      this.LegacyPlanStateService.setPlanRegion(plan.region_name!);
-    }
   }
 
   listenForProjectAreasChanges() {
