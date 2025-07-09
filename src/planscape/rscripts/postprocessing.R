@@ -1,7 +1,8 @@
 summarize_metrics <- function(forsys_output, stand_data, datalayers) {
-  fields <- paste0("sum_datalayer_", datalayers[["id"]])
-  output_fields <- datalayers[["name"]]
-  lookup <- setNames(fields, output_fields)
+  fields <- paste0("datalayer_", datalayers[["id"]])
+  sum_fields <- paste0("sum_", fields)
+  output_fields <- paste0("attain_", datalayers[["name"]])
+  lookup <- setNames(sum_fields, output_fields)
 
   stand_output <- forsys_output$stand_output |> 
     select(stand_id, proj_id, DoTreat, weightedPriority) |>

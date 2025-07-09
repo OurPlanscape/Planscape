@@ -5,6 +5,8 @@ import { Extent, FrontendConstants } from '@types';
 import { filter } from 'rxjs/operators';
 import { BaseMapType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
 
+export type MapInteractionMode = 'draw' | 'view' | 'upload';
+
 @Injectable()
 export class MapConfigState {
   protected _baseMap$ = new BehaviorSubject<BaseMapType>(DEFAULT_BASE_MAP);
@@ -52,8 +54,10 @@ export class MapConfigState {
   private defaultZoomLevel = 7;
   public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
 
-  private _drawingModeEnabled$ = new BehaviorSubject(false);
-  public drawingModeEnabled$ = this._drawingModeEnabled$.asObservable();
+  private _mapInteractionMode$ = new BehaviorSubject<MapInteractionMode>(
+    'view'
+  );
+  public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
 
   updateBaseMap(layer: BaseMapType) {
     this._baseMap$.next(layer);
@@ -101,11 +105,15 @@ export class MapConfigState {
   }
 
   enterDrawingMode() {
-    this._drawingModeEnabled$.next(true);
+    this._mapInteractionMode$.next('draw');
   }
 
-  exitDrawingMode() {
-    this._drawingModeEnabled$.next(false);
+  enterUploadMode() {
+    this._mapInteractionMode$.next('upload');
+  }
+
+  enterViewMode() {
+    this._mapInteractionMode$.next('view');
   }
 
   updateDataLayersOpacity(opacity: number) {

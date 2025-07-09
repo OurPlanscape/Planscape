@@ -75,6 +75,11 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   planId$ = this.planState.currentPlanId$;
 
+  /**
+   * Observable that indicates whether the user is in 'draw', 'upload', or 'view' modes
+   */
+  mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
+
   bounds$ = this.planId$.pipe(
     switchMap((id) => {
       if (id) {
@@ -101,7 +106,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
-  drawingModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
+
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
@@ -138,11 +143,13 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     private registry: DataLayersRegistryService,
     private planState: PlanState
   ) {
-    this.mapConfigState.drawingModeEnabled$
+    this.mapConfigState.mapInteractionMode$
       .pipe(untilDestroyed(this))
-      .subscribe((drawingModeStatus) => {
-        if (drawingModeStatus) {
+      .subscribe((mode) => {
+        if (mode === 'draw') {
           this.enablePolygonDrawingMode();
+        } else if (mode === 'upload') {
+          this.drawService.setMode('select');
         } else {
           this.cancelDrawingMode();
         }

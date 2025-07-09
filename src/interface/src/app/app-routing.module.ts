@@ -15,7 +15,10 @@ import {
   redirectResolver,
 } from '@services';
 import { numberResolver } from './resolvers/number.resolver';
-import { planLoaderResolver } from './resolvers/plan-loader.resolver';
+import {
+  planLoaderResolver,
+  planResetResolver,
+} from './resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
 import { MapComponent } from './map/map.component';
 import { createFeatureGuard } from './features/feature.guard';
@@ -119,7 +122,7 @@ const routes: Routes = [
           }),
         ],
         resolve: {
-          planInit: planLoaderResolver,
+          planInit: planResetResolver,
         },
       },
       {
@@ -163,7 +166,8 @@ const routes: Routes = [
         canActivate: [RedirectGuard],
         component: RedirectGuard,
         data: {
-          externalUrl: 'https://share.hsforms.com/1xXehW6VrR0WskbHhqxsrrw3atqe',
+          externalUrl:
+            'https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw',
         },
       },
       {

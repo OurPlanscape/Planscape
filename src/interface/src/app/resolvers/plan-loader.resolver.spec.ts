@@ -20,7 +20,7 @@ function createParamMap(params: Record<string, string>): ParamMap {
   } as ParamMap;
 }
 
-describe('planResolver', () => {
+describe('planLoaderResolver', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
@@ -29,19 +29,6 @@ describe('planResolver', () => {
         MockProvider(PlanService),
       ],
     });
-  });
-
-  it('should return true always', () => {
-    // Provide a minimal paramMap ({}) so route.paramMap is never undefined:
-    const route = {
-      paramMap: createParamMap({}),
-    } as unknown as ActivatedRouteSnapshot;
-
-    const result = TestBed.runInInjectionContext(() =>
-      planLoaderResolver(route, {} as RouterStateSnapshot)
-    );
-
-    expect(result).toBeTrue(); // confirms the resolver always returns true
   });
 
   it('should call setPlanId if "id" param is present', () => {
@@ -56,7 +43,7 @@ describe('planResolver', () => {
       planLoaderResolver(route, {} as RouterStateSnapshot)
     );
 
-    expect(result).toBeTrue();
+    expect(result).toBe(123);
     expect(spy).toHaveBeenCalledOnceWith(123);
   });
 
@@ -72,7 +59,7 @@ describe('planResolver', () => {
       planLoaderResolver(route, {} as RouterStateSnapshot)
     );
 
-    expect(result).toBeTrue();
+    expect(result).toBe(987);
     expect(spy).toHaveBeenCalledOnceWith(987);
   });
 
@@ -89,7 +76,7 @@ describe('planResolver', () => {
       planLoaderResolver(route, {} as RouterStateSnapshot)
     );
 
-    expect(result).toBeTrue();
+    expect(result).toBeFalsy();
     expect(spy).not.toHaveBeenCalled();
   });
 });

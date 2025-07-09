@@ -35,6 +35,7 @@ import { MOCK_PLAN } from '@services/mocks';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
+import { ActivatedRoute } from '@angular/router';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -162,6 +163,18 @@ describe('CreateScenariosComponent', () => {
       ],
       providers: [
         CurrencyPipe,
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            parent: {
+              snapshot: {
+                data: {
+                  planId: 123,
+                },
+              },
+            },
+          },
+        },
         {
           provide: LegacyPlanStateService,
           useValue: fakeLegacyPlanStateService,
