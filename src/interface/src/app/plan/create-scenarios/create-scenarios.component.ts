@@ -232,12 +232,7 @@ export class CreateScenariosComponent implements OnInit {
         if (scenario.name) {
           this.scenarioNameFormField?.setValue(scenario.name);
         }
-        // setting treatment question
-        if (scenario.configuration.treatment_question) {
-          this.prioritiesComponent.setFormData(
-            scenario.configuration.treatment_question
-          );
-        }
+
         // setting constraints
         this.constraintsPanelComponent.setFormData(scenario.configuration);
 
