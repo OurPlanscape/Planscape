@@ -1,4 +1,25 @@
-<app-project-areas [areas]="areas"></app-project-areas>
+<sg-collapsible-panel
+  [isCollapsible]="isScenarioImprovementsEnabled()"
+  title="Project Areas"
+  tooltipContent="Project areas are the land areas defined by your treatment goals and
+          constraints. You can have up to 10 project areas per scenario, and
+          Planscape will rank those project areas according to how well they
+          match your treatment goals. Each project area will show the number of
+          acres in that area, the percent of planning acreage that project
+          defines, the estimated cost of that project, and the ranking of that
+          project area effectiveness relative to other projects, based on the
+          treatment goals.">
+  <app-project-areas [areas]="areas"></app-project-areas>
+</sg-collapsible-panel>
+
+<sg-collapsible-panel
+  title="Scenario Analytics"
+  tooltipContent="This section helps you interpret how well projects perform in your selected scenario based on priority metrics and co-benefits.
+Treatment Opportunity x Project Areas compares each project's potential to deliver treatment benefits.
+Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects."
+  *ngIf="isScenarioImprovementsEnabled()">
+  Scenario Analytics goes here.
+</sg-collapsible-panel>
 
 <div class="actions">
   <button

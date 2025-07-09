@@ -53,6 +53,7 @@ export class CreateScenariosComponent implements OnInit {
   scenarioName: string | null = null;
   planId?: number | null;
 
+  scenarioIdFromRoute: number | null = this.route.snapshot.data['scenarioId'];
   planIdFromRoute: number = this.route.parent!.snapshot.data['planId'];
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
@@ -66,6 +67,8 @@ export class CreateScenariosComponent implements OnInit {
     on: '500ms',
     off: '0ms',
   };
+
+  scenarioVersion: string | undefined = undefined;
 
   tabAnimation = this.tabAnimationOptions.off;
 
@@ -232,6 +235,10 @@ export class CreateScenariosComponent implements OnInit {
 
         // setting constraints
         this.constraintsPanelComponent.setFormData(scenario.configuration);
+
+        // setting version
+        this.scenarioVersion = scenario.version;
+
         this.isLoading$.next(false);
       },
       error: () => {

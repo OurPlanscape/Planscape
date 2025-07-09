@@ -75,7 +75,7 @@ describe('ProjectAreasComponent', () => {
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="percentTotal"]')
     ).nativeElement;
-    expect(queryElement.innerHTML).toBe('22.34%');
+    expect(queryElement.innerHTML.trim()).toBe('22.34%');
   }));
 
   it('should show `estimatedCost` in K with 2 decimals', fakeAsync(() => {
@@ -84,7 +84,7 @@ describe('ProjectAreasComponent', () => {
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="estimatedCost"]')
     ).nativeElement;
-    expect(queryElement.innerHTML).toBe('$1.23K');
+    expect(queryElement.innerHTML.trim()).toBe('$1.23K');
   }));
 
   it('should show `score` as number with two decimals', fakeAsync(() => {
@@ -93,7 +93,7 @@ describe('ProjectAreasComponent', () => {
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="score"]')
     ).nativeElement;
-    expect(queryElement.innerHTML).toBe('2.12');
+    expect(queryElement.innerHTML.trim()).toBe('2.12');
   }));
 
   it('should calculate totals based on provided areas', fakeAsync(() => {
