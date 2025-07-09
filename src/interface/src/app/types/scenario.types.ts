@@ -20,6 +20,7 @@ export interface Scenario {
     id: string;
     name: string;
   };
+  version?: string;
 }
 
 /**

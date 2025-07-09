@@ -68,6 +68,8 @@ export class CreateScenariosComponent implements OnInit {
     off: '0ms',
   };
 
+  scenarioVersion: string | undefined = undefined;
+
   tabAnimation = this.tabAnimationOptions.off;
 
   scenarioNotFound = false;
@@ -238,6 +240,10 @@ export class CreateScenariosComponent implements OnInit {
         }
         // setting constraints
         this.constraintsPanelComponent.setFormData(scenario.configuration);
+
+        // setting version
+        this.scenarioVersion = scenario.version;
+
         this.isLoading$.next(false);
       },
       error: () => {

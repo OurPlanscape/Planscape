@@ -1,0 +1,23 @@
+<mat-expansion-panel
+  togglePosition="before"
+  expanded="true"
+  [disabled]="!isCollapsible">
+  <mat-expansion-panel-header class="panel-header">
+    <div class="title-txt">{{ title }}</div>
+    <button
+      (click)="stopPropagation($event)"
+      class="tooltip-btn"
+      sg-button
+      variant="icon-only"
+      [outlined]="true"
+      icon="info"
+      [matMenuTriggerFor]="tooltipMenu">
+      <mat-menu #tooltipMenu="matMenu">
+        <div class="tooltip">
+          {{ tooltipContent }}
+        </div>
+      </mat-menu>
+    </button>
+  </mat-expansion-panel-header>
+  <ng-content></ng-content>
+</mat-expansion-panel>
