@@ -34,7 +34,7 @@ const routes: Routes = [
           showProjectAreas: false,
         },
         resolve: {
-          scenarioInit: scenarioLoaderResolver,
+          scenarioId: scenarioLoaderResolver,
           dataLayerInit: resetDatalayerResolver,
         },
       },
@@ -43,7 +43,7 @@ const routes: Routes = [
         title: 'Scenario Configuration',
         component: ScenarioRoutePlaceholderComponent,
         resolve: {
-          scenarioInit: scenarioLoaderResolver,
+          scenarioId: scenarioLoaderResolver,
           dataLayerInit: resetDatalayerResolver,
         },
         data: {

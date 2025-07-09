@@ -53,6 +53,7 @@ export class CreateScenariosComponent implements OnInit {
   scenarioName: string | null = null;
   planId?: number | null;
 
+  scenarioIdFromRoute: number | null = this.route.snapshot.data['scenarioId'];
   planIdFromRoute: number = this.route.parent!.snapshot.data['planId'];
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
