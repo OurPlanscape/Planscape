@@ -132,11 +132,6 @@ export class CreateScenariosComponent implements OnInit {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId!;
         this.planId = planState.currentPlanId;
-        if (this.plan$.getValue()?.region_name) {
-          this.LegacyPlanStateService.setPlanRegion(
-            this.plan$.getValue()?.region_name!
-          );
-        }
       });
 
     if (this.scenarioId) {
