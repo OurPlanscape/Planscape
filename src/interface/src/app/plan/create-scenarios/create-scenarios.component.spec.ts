@@ -102,7 +102,6 @@ describe('CreateScenariosComponent', () => {
     spyOn(component, 'createForms').and.returnValue(Promise.resolve());
     spyOn(component, 'setExistingNameValidator');
     spyOn(component, 'setScenarioMode');
-    spyOn(component, 'listenForProjectAreasChanges');
 
     // Calling init scenario
     await component.initScenario();
@@ -111,7 +110,6 @@ describe('CreateScenariosComponent', () => {
     expect(component.createForms).toHaveBeenCalled();
     expect(component.setExistingNameValidator).toHaveBeenCalled();
     expect(component.setScenarioMode).toHaveBeenCalled();
-    expect(component.listenForProjectAreasChanges).toHaveBeenCalled();
   });
 
   it('should create forms correctly', async () => {

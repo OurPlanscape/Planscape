@@ -21,7 +21,6 @@ export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;
 export interface CreatePlanPayload {
   geometry: Geometry;
   name: string;
-  region_name?: string;
 }
 
 export interface BackendProjectArea {

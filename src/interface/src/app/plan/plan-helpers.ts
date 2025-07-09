@@ -1,8 +1,4 @@
-import {
-  ScenarioResult,
-  TreatmentGoalConfig,
-  TreatmentQuestionConfig,
-} from '@types';
+import { ScenarioResult } from '@types';
 import {
   ProjectAreaReport,
   ProjectTotalReport,
@@ -62,20 +58,6 @@ export function getColorForProjectPosition(rank: number) {
     return DEFAULT_AREA_COLOR;
   }
   return PROJECT_AREA_COLORS[(rank - 1) % PROJECT_AREA_COLORS.length];
-}
-
-export function findQuestionOnTreatmentGoalsConfig(
-  treatmentGoalConfigs: TreatmentGoalConfig[],
-  treatmentQuestion: TreatmentQuestionConfig
-) {
-  let selectedQuestion: TreatmentQuestionConfig | undefined;
-  treatmentGoalConfigs.some((goal) => {
-    selectedQuestion = goal.questions.find(
-      (question) => question.id === treatmentQuestion?.id
-    );
-    return !!selectedQuestion;
-  });
-  return selectedQuestion;
 }
 
 export function getPlanPath(planId: number) {
