@@ -24,7 +24,6 @@ import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-sc
 import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.component';
 import { ScenarioPendingComponent } from './scenario-pending/scenario-pending.component';
 import { ScenarioResultsComponent } from './scenario-results/scenario-results.component';
-import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-tooltip.component';
 import { ScenariosTableListComponent } from './plan-summary/scenarios-table-list/scenarios-table-list.component';
 import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
 import { SharedModule } from '@shared';
@@ -74,7 +73,6 @@ import { CollapsiblePanelComponent } from '../../styleguide/collapsible-panel/co
     ScenarioPendingComponent,
     ScenarioResultsComponent,
     ScenarioRoutePlaceholderComponent,
-    ScenarioTooltipComponent,
     ScenariosTableListComponent,
     SetPrioritiesComponent,
     TreatmentsTabComponent,
