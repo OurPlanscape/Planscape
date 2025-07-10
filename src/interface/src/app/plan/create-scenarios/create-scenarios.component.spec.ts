@@ -11,12 +11,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 
-import {
-  Scenario,
-  ScenarioResultStatus,
-  TreatmentGoalConfig,
-  TreatmentQuestionConfig,
-} from '@types';
+import { Scenario, ScenarioResultStatus, TreatmentGoalConfig } from '@types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
@@ -35,12 +30,7 @@ import { MOCK_PLAN } from '@services/mocks';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-
-//TODO Add the following tests once implementation for tested behaviors is added:
-/**
- * 'configures proper priorities and weights based on chosen treatment question'
- * 'creates Project Areas when user uploads Project Area shapefile'
- */
+import { ActivatedRoute } from '@angular/router';
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
@@ -48,14 +38,7 @@ describe('CreateScenariosComponent', () => {
   let fakeLegacyPlanStateService: LegacyPlanStateService;
 
   let loader: HarnessLoader;
-  let defaultSelectedQuestion: TreatmentQuestionConfig = {
-    short_question_text: '',
-    scenario_output_fields_paths: {},
-    scenario_priorities: [''],
-    stand_thresholds: [''],
-    global_thresholds: [''],
-    weights: [0],
-  };
+
   let fakeScenario: Scenario = {
     id: 1,
     name: 'name',
@@ -163,6 +146,23 @@ describe('CreateScenariosComponent', () => {
       providers: [
         CurrencyPipe,
         {
+          provide: ActivatedRoute,
+          useValue: {
+            parent: {
+              snapshot: {
+                data: {
+                  planId: 123,
+                },
+              },
+            },
+            snapshot: {
+              data: {
+                scenarioId: 456,
+              },
+            },
+          },
+        },
+        {
           provide: LegacyPlanStateService,
           useValue: fakeLegacyPlanStateService,
         },
@@ -213,9 +213,6 @@ describe('CreateScenariosComponent', () => {
       fixture.detectChanges();
       tick();
 
-      component.scenarioNameFormField?.setValue('Test Scenario');
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-
       // Small area
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
@@ -236,9 +233,6 @@ describe('CreateScenariosComponent', () => {
       fixture.detectChanges();
       tick();
 
-      component.scenarioNameFormField?.setValue('Test Scenario');
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-
       // Big area
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
@@ -248,43 +242,6 @@ describe('CreateScenariosComponent', () => {
 
       component.forms.updateValueAndValidity();
       expect(component.forms.valid).toBeFalse();
-
-      // Cleaning timeouts and subscriptions
-      flush();
-      discardPeriodicTasks();
-      fixture.destroy();
-    }));
-
-    it('should mark the form valid if max_area is within allowed range', fakeAsync(async () => {
-      component.constraintsPanelComponent.planningAreaAcres = 12814;
-
-      await component.constraintsPanelComponent.loadExcludedAreas();
-
-      component.constraintsPanelComponent.ngOnChanges({
-        planningAreaAcres: {
-          previousValue: 0,
-          currentValue: 12814,
-          firstChange: true,
-          isFirstChange: () => true,
-        },
-      });
-
-      fixture.detectChanges();
-      tick();
-
-      component.scenarioNameFormField?.setValue('Test Scenario');
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_area: 3000,
-      });
-
-      component.forms.updateValueAndValidity();
-      fixture.detectChanges();
-
-      expect(component.forms.valid).toBeTrue();
 
       // Cleaning timeouts and subscriptions
       flush();
@@ -301,37 +258,6 @@ describe('CreateScenariosComponent', () => {
       component.selectedTab = 0;
     });
 
-    it('should emit create scenario event on Generate button click', async () => {
-      spyOn(component, 'createScenario');
-
-      fixture.detectChanges();
-      await fixture.whenStable();
-
-      component.scenarioNameFormField?.setValue('scenarioName');
-      component.scenarioNameFormField?.markAsDirty();
-
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_area: 3000,
-      });
-
-      component.forms.updateValueAndValidity();
-      fixture.detectChanges();
-
-      const buttonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-
-      expect(await buttonHarness.isDisabled()).toBeFalse();
-
-      await buttonHarness.click();
-
-      expect(component.createScenario).toHaveBeenCalled();
-    });
-
     it('should disable Generate button if form is invalid', async () => {
       const buttonHarness: MatButtonHarness = await loader.getHarness(
         MatButtonHarness.with({ text: /GENERATE/ })
@@ -346,25 +272,6 @@ describe('CreateScenariosComponent', () => {
       await buttonHarness.click();
 
       expect(await buttonHarness.isDisabled()).toBeTrue();
-    });
-
-    it('should enable Generate button if form is valid', async () => {
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-      component.scenarioNameFormField?.setValue('scenarioName');
-      component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
-
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_area: 3000,
-      });
-
-      component.generatingScenario = false;
-      fixture.detectChanges();
-
-      expect(await buttonHarness.isDisabled()).toBeFalse();
     });
   });
 

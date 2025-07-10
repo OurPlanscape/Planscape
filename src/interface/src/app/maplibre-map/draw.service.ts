@@ -41,11 +41,11 @@ export const DefaultSelectConfig = {
 @Injectable()
 export class DrawService {
   private _terraDraw: TerraDraw | null = null;
-  private _currentDrawingMode = new BehaviorSubject<string>('');
+  private _currentDrawingMode$ = new BehaviorSubject<string>('');
 
   // Observable that components can subscribe to
   currentDrawingMode$: Observable<string> =
-    this._currentDrawingMode.asObservable();
+    this._currentDrawingMode$.asObservable();
 
   private _selectedFeatureId$ = new BehaviorSubject<FeatureId | null>(null);
   selectedFeatureId$: Observable<FeatureId | null> =
@@ -106,7 +106,7 @@ export class DrawService {
       return;
     }
     this._terraDraw.setMode(mode);
-    this._currentDrawingMode.next(this._terraDraw.getMode());
+    this._currentDrawingMode$.next(this._terraDraw.getMode());
   }
 
   deleteSelectedFeature() {
@@ -158,6 +158,10 @@ export class DrawService {
     } else {
       return null;
     }
+  }
+
+  getBboxFromDrawingContext() {
+    return bbox(this.getDrawingGeoJSON());
   }
 
   selectFeature(featureId: FeatureId) {
@@ -242,5 +246,35 @@ export class DrawService {
 
   getCurrentAcreageValue() {
     return this._totalAcres$.value;
+  }
+
+  addGeoJSONFeature(shape: any) {
+    const featuresArray = shape.features.map((feature: any) => ({
+      type: 'Feature',
+      geometry: {
+        type: feature.geometry.type,
+        coordinates: roundCoordinates(feature.geometry.coordinates, 6),
+      },
+      properties: {
+        ...feature.properties,
+        mode: 'polygon',
+      },
+    }));
+    this._terraDraw?.addFeatures(featuresArray);
+    this.updateTotalAcreage();
+    this._terraDraw?.setMode('select'); // should be in select mode to add
+  }
+}
+
+// terra-draw only accepts up to 6 decimal places of precision, so this rounds that
+// Note that 6 decimal places translates to about ~11 cm (4.3 inches)
+function roundCoordinates(coords: any, precision = 6) {
+  if (typeof coords[0] === 'number') {
+    return coords.map(
+      (coord: any) =>
+        Math.round(coord * Math.pow(10, precision)) / Math.pow(10, precision)
+    );
+  } else {
+    return coords.map((coord: any) => roundCoordinates(coord, precision));
   }
 }

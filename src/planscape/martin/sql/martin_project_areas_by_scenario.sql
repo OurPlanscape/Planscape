@@ -2,7 +2,26 @@ CREATE OR REPLACE FUNCTION martin_project_areas_by_scenario(z integer, x integer
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
+  p_scenario_id integer;
+  p_scenario_result_status varchar;
 BEGIN
+
+  SELECT INTO 
+    p_scenario_id
+    (query_params->>'scenario_id')::int;
+
+  IF p_scenario_id IS NULL THEN
+    RAISE EXCEPTION 'Scenario ID is required';
+  END IF;
+
+  SELECT INTO 
+    p_scenario_result_status
+    result_status FROM planning_scenario sc
+    WHERE sc.id = p_scenario_id;
+
+  IF p_scenario_result_status != 'SUCCESS' THEN
+    RAISE EXCEPTION 'Scenario result status must be SUCCESS';
+  END IF;
 
   WITH base AS (
     SELECT

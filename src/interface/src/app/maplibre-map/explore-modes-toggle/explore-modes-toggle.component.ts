@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
+import { UploadPlanningAreaBoxComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
 import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
 import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/explore-plan-create-dialog.component';
 @Component({
@@ -22,6 +23,7 @@ import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/
     MatTooltipModule,
     NgClass,
     NgIf,
+    UploadPlanningAreaBoxComponent,
   ],
   templateUrl: './explore-modes-toggle.component.html',
   styleUrl: './explore-modes-toggle.component.scss',
@@ -29,7 +31,7 @@ import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/
 export class ExploreModesToggleComponent {
   @Output() scenarioUpload = new EventEmitter<void>();
 
-  drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
+  mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
 
   constructor(
     private mapConfigState: MapConfigState,
@@ -39,19 +41,43 @@ export class ExploreModesToggleComponent {
     private router: Router
   ) {}
 
+  showUploadForm = false;
+
   handleDrawingButton() {
     // first, ensure we're only on single map view
+    this.showUploadForm = false;
     this.multiMapConfigState.setLayoutMode(1);
     this.mapConfigState.enterDrawingMode();
   }
 
+  handleUploadButton() {
+    this.showUploadForm = true;
+    this.drawService.start();
+    this.multiMapConfigState.setLayoutMode(1);
+    this.mapConfigState.enterUploadMode();
+    this.drawService.setMode('select');
+  }
+
+  uploadedShape() {
+    this.showUploadForm = false;
+    this.drawService.setMode('select');
+    const bbox = this.drawService.getBboxFromDrawingContext();
+    this.mapConfigState.updateMapCenter(bbox);
+  }
+
   handleCancelButton() {
-    //if there are features on the map... we show a confirm dialog
-    // otherwise just exit
-    if (this.drawService.hasPolygonFeatures()) {
-      this.openConfirmExitDialog();
+    // this is contextual, so if we are in the upload mode, this will just cancel our upload.
+    if (this.showUploadForm === true) {
+      this.showUploadForm = false;
+      this.mapConfigState.enterViewMode();
     } else {
-      this.mapConfigState.exitDrawingMode();
+      //if there are features on the map... we show a confirm dialog
+      // otherwise just exit
+      if (this.drawService.hasPolygonFeatures()) {
+        this.openConfirmExitDialog();
+      } else {
+        this.mapConfigState.enterViewMode();
+      }
     }
   }
 
@@ -76,10 +102,6 @@ export class ExploreModesToggleComponent {
     }
   }
 
-  clickedUpload() {
-    this.scenarioUpload.emit();
-  }
-
   private openPlanCreateDialog() {
     return this.dialog.open(ExplorePlanCreateDialogComponent, {
       maxWidth: '560px',
@@ -95,7 +117,7 @@ export class ExploreModesToggleComponent {
       .afterClosed()
       .subscribe((modalResponse: any) => {
         if (modalResponse === true) {
-          this.mapConfigState.exitDrawingMode();
+          this.mapConfigState.enterViewMode();
         }
       });
   }

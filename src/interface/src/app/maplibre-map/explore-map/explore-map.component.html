@@ -55,12 +55,12 @@
     </div>
   </mgl-control>
 
-  <app-map-boundary-layer *ngIf="(drawingModeEnabled$ | async) === true">
+  <app-map-boundary-layer *ngIf="(mapInteractionMode$ | async) !== 'view'">
   </app-map-boundary-layer>
 
   <app-map-tooltip
     *ngIf="
-      (drawingModeEnabled$ | async) === true &&
+      (mapInteractionMode$ | async) === 'draw' &&
       (currentDrawingMode$ | async) !== 'none' &&
       mouseLngLat &&
       drawModeTooltipContent
@@ -70,7 +70,7 @@
   >
 
   <app-map-drawing-toolbox
-    *ngIf="(drawingModeEnabled$ | async) === true"></app-map-drawing-toolbox>
+    *ngIf="(mapInteractionMode$ | async) !== 'view'"></app-map-drawing-toolbox>
   <mgl-control position="top-left">
     <app-map-layer-color-legend
       [size]="
