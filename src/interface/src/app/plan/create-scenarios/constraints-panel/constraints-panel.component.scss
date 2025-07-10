@@ -29,18 +29,6 @@
   width: auto;
 }
 
-.constraints-content {
-  overflow-y: auto;
-  margin-top: 10px;
-  border: 1px #a4aae0 solid;
-  border-radius: 10px;
-  display: inline-block;
-  height: auto;
-  width: auto;
-  box-shadow: 0 3px 0 0 #aeb0b8;
-  background-color: white;
-  padding-left: 10px;
-}
 
 .constraints-form {
   display: flex;
@@ -127,34 +115,6 @@
   width: fit-content;
 }
 
-.mat-hint {
-  align-items: center;
-  display: flex;
-  font-size: 12px;
-  line-height: 16px;
-
-  .mat-icon {
-    font-size: 16px;
-    height: 16px;
-    margin-right: 8px;
-    width: 16px;
-  }
-}
-
-.optional {
-  color: grey;
-  margin-top: 5px;
-  font-size: 10px;
-}
-
-
-.button-wrapper {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 20px;
-  align-items: center;
-  justify-content: center;
-}
 
 .mat-button-toggle {
   align-items: center;
@@ -163,20 +123,6 @@
   font-weight: 400;
 }
 
-.mat-button-toggle-checked {
-  background-color: #e6e9f4;
-}
-
-.mat-button-toggle-group {
-  width: fit-content;
-  margin-right: 60px;
-}
-
-.mat-button-toggle-group-appearance-standard {
-  border-radius: 16px;
-  height: 30px;
-  border: #cccfd8 solid 2px;
-}
 
 :host {
   ::ng-deep
@@ -193,9 +139,6 @@
   }
 }
 
-.mat-grid-tile-content {
-  width: fit-content;
-}
 
 .suffix {
   margin-left: 5px;
@@ -203,4 +146,8 @@
 
 .excluded-areas-warn {
   margin-right: 10px;
+}
+
+sg-collapsible-panel {
+  margin-top: 16px;
 }

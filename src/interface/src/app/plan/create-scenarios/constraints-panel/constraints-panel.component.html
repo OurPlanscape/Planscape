@@ -1,169 +1,171 @@
-<div class="constraints-panel">
-  <!-- Form -->
-  <form
-    class="constraints-form"
-    *ngIf="constraintsForm"
-    [formGroup]="constraintsForm!">
-    <div class="constraints-content">
-      <app-scenario-tooltip
-        area="CONSTRAINTS"
-        title="CONSTRAINTS"></app-scenario-tooltip>
-      <div class="flex-row space-evenly">
-        <div formGroupName="physicalConstraintForm">
-          <div>
-            <mat-form-field
-              class="input-field"
-              appearance="outline"
-              floatLabel="always">
-              <mat-label>Max acres to be treated</mat-label>
-              <input
-                class="right-align"
-                formControlName="maxArea"
-                type="text"
-                mask="separator"
-                thousandSeparator=","
-                (focus)="focusedSelection = 'maxAcres'"
-                matInput
-                (input)="togglMaxAreaAndMaxCost()" />
-            </mat-form-field>
-          </div>
-          <div
-            class="help-text"
-            *ngIf="focusedSelection === 'maxAcres'"
-            [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
-            Max acres needs to be between
-            {{ minMaxAreaValue | number: '1.0-0' }} and
-            {{ maxMaxAreaValue | number: '1.0-0' }}
-          </div>
-        </div>
-        or
-        <div formGroupName="budgetForm">
-          <div>
-            <mat-form-field
-              class="input-field"
-              appearance="outline"
-              floatLabel="always">
-              <mat-label>Max Budget</mat-label>
-              <input
-                id="maxCost"
-                class="right-align"
-                formControlName="maxCost"
-                matInput
-                type="text"
-                mask="separator"
-                thousandSeparator=","
-                [errorStateMatcher]="budgetStateMatcher"
-                (focus)="focusedSelection = 'maxCost'"
-                (input)="togglMaxAreaAndMaxCost()" />
-              <span matPrefix>$&nbsp;</span>
-            </mat-form-field>
-          </div>
-          <div
-            class="help-text"
-            *ngIf="focusedSelection === 'maxCost'"
-            [ngClass]="{
-              error:
-                constraintsForm.hasError('notEnoughBudget') && maxCost?.touched,
-            }">
-            Budget needs to be at least
-            {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
-          </div>
-        </div>
-      </div>
-      <div class="flex-row">
-        <div formGroupName="physicalConstraintForm">
-          <div>
-            <mat-form-field
-              class="input-field"
-              appearance="outline"
-              floatLabel="always">
-              <mat-label>Max slope</mat-label>
-              <input
-                class="right-align"
-                formControlName="maxSlope"
-                matInput
-                type="number"
-                [value]="37" />
-              <span matSuffix class="suffix">%</span>
-            </mat-form-field>
-          </div>
-        </div>
-        <div formGroupName="budgetForm">
-          <div>
-            <mat-form-field
-              class="input-field"
-              appearance="outline"
-              floatLabel="always">
-              <mat-label>Treatment cost</mat-label>
-              <input
-                id="estimatedCost"
-                class="right-align"
-                formControlName="estimatedCost"
-                matInput
-                type="text"
-                mask="separator"
-                thousandSeparator="," />
-              <span matSuffix class="suffix">/acre</span>
-            </mat-form-field>
-          </div>
-        </div>
-      </div>
-      <div formGroupName="physicalConstraintForm" class="flex-row">
+<form
+  class="constraints-form"
+  *ngIf="constraintsForm"
+  [formGroup]="constraintsForm!">
+  <sg-collapsible-panel
+    [isCollapsible]="false"
+    title="Constraints"
+    tooltipContent="Constraints are variables that you can apply to your planning
+          scenario. You can choose either the maximum area to be treated OR cost
+          per acre. You can also put in your maximum total cost/budget. The
+          default cost/acre is $2470 per RRK data.">
+    <div class="flex-row space-evenly">
+      <div formGroupName="physicalConstraintForm">
         <div>
           <mat-form-field
             class="input-field"
             appearance="outline"
             floatLabel="always">
-            <mat-label>Distance from roads</mat-label>
+            <mat-label>Max acres to be treated</mat-label>
             <input
               class="right-align"
-              formControlName="minDistanceFromRoad"
+              formControlName="maxArea"
+              type="text"
+              mask="separator"
+              thousandSeparator=","
+              (focus)="focusedSelection = 'maxAcres'"
+              matInput
+              (input)="togglMaxAreaAndMaxCost()" />
+          </mat-form-field>
+        </div>
+        <div
+          class="help-text"
+          *ngIf="focusedSelection === 'maxAcres'"
+          [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
+          Max acres needs to be between
+          {{ minMaxAreaValue | number: '1.0-0' }} and
+          {{ maxMaxAreaValue | number: '1.0-0' }}
+        </div>
+      </div>
+      or
+      <div formGroupName="budgetForm">
+        <div>
+          <mat-form-field
+            class="input-field"
+            appearance="outline"
+            floatLabel="always">
+            <mat-label>Max Budget</mat-label>
+            <input
+              id="maxCost"
+              class="right-align"
+              formControlName="maxCost"
               matInput
               type="text"
               mask="separator"
               thousandSeparator=","
-              [value]="" />
-            <span matSuffix class="suffix">yds</span>
+              [errorStateMatcher]="budgetStateMatcher"
+              (focus)="focusedSelection = 'maxCost'"
+              (input)="togglMaxAreaAndMaxCost()" />
+            <span matPrefix>$&nbsp;</span>
           </mat-form-field>
         </div>
+        <div
+          class="help-text"
+          *ngIf="focusedSelection === 'maxCost'"
+          [ngClass]="{
+            error:
+              constraintsForm.hasError('notEnoughBudget') && maxCost?.touched,
+          }">
+          Budget needs to be at least
+          {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
+        </div>
+      </div>
+    </div>
+    <div class="flex-row">
+      <div formGroupName="physicalConstraintForm">
         <div>
-          <mat-form-field class="input-field" appearance="outline">
-            <mat-label>Stand size</mat-label>
-            <mat-select formControlName="standSize" required>
-              <mat-option
-                *ngFor="let size of standSizeOptions"
-                [value]="size"
-                [disabled]="standSizeDisabled(size)">
-                {{ size }}
-              </mat-option>
-            </mat-select>
+          <mat-form-field
+            class="input-field"
+            appearance="outline"
+            floatLabel="always">
+            <mat-label>Max slope</mat-label>
+            <input
+              class="right-align"
+              formControlName="maxSlope"
+              matInput
+              type="number"
+              [value]="37" />
+            <span matSuffix class="suffix">%</span>
+          </mat-form-field>
+        </div>
+      </div>
+      <div formGroupName="budgetForm">
+        <div>
+          <mat-form-field
+            class="input-field"
+            appearance="outline"
+            floatLabel="always">
+            <mat-label>Treatment cost</mat-label>
+            <input
+              id="estimatedCost"
+              class="right-align"
+              formControlName="estimatedCost"
+              matInput
+              type="text"
+              mask="separator"
+              thousandSeparator="," />
+            <span matSuffix class="suffix">/acre</span>
           </mat-form-field>
         </div>
       </div>
     </div>
-    <div class="constraints-content">
-      <div formGroupName="excludedAreasForm" class="flex-column">
-        <app-scenario-tooltip
-          area="EXCLUDE_AREAS"
-          title="EXCLUDE AREAS"></app-scenario-tooltip>
-
-        <app-form-message class="excluded-areas-warn" *ngIf="showWarning"
-          >Adding exclusion areas reduces the available scenario acreage, and
-          may cause the scenario to fail. If your scenario is failing, please
-          try again with no exclusion areas.
-        </app-form-message>
-        <section class="area-selection">
-          <div class="checkbox-column">
-            <mat-checkbox
-              [color]="'primary'"
-              *ngFor="let item of excludedAreas$ | async"
-              [formControlName]="item.key"
-              [value]="item.key.toString()">
-              {{ item.label }}
-            </mat-checkbox>
-          </div>
-        </section>
+    <div formGroupName="physicalConstraintForm" class="flex-row">
+      <div>
+        <mat-form-field
+          class="input-field"
+          appearance="outline"
+          floatLabel="always">
+          <mat-label>Distance from roads</mat-label>
+          <input
+            class="right-align"
+            formControlName="minDistanceFromRoad"
+            matInput
+            type="text"
+            mask="separator"
+            thousandSeparator=","
+            [value]="" />
+          <span matSuffix class="suffix">yds</span>
+        </mat-form-field>
+      </div>
+      <div>
+        <mat-form-field class="input-field" appearance="outline">
+          <mat-label>Stand size</mat-label>
+          <mat-select formControlName="standSize" required>
+            <mat-option
+              *ngFor="let size of standSizeOptions"
+              [value]="size"
+              [disabled]="standSizeDisabled(size)">
+              {{ size }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
     </div>
-  </form>
-</div>
+  </sg-collapsible-panel>
+
+  <sg-collapsible-panel
+    [isCollapsible]="false"
+    title="Excluded Areas"
+    tooltipContent="Exclude areas are types of land that you can choose to exclude from
+          your planning scenarios. If you choose to exclude these areas, project
+          areas will not be assigned on these lands.">
+    <div formGroupName="excludedAreasForm" class="flex-column">
+      <app-form-message class="excluded-areas-warn" *ngIf="showWarning"
+        >Adding exclusion areas reduces the available scenario acreage, and may
+        cause the scenario to fail. If your scenario is failing, please try
+        again with no exclusion areas.
+      </app-form-message>
+      <section class="area-selection">
+        <div class="checkbox-column">
+          <mat-checkbox
+            [color]="'primary'"
+            *ngFor="let item of excludedAreas$ | async"
+            [formControlName]="item.key"
+            [value]="item.key.toString()">
+            {{ item.label }}
+          </mat-checkbox>
+        </div>
+      </section>
+    </div>
+  </sg-collapsible-panel>
+</form>
