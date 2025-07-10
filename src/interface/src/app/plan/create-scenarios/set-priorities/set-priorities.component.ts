@@ -132,8 +132,8 @@ export class SetPrioritiesComponent implements OnInit {
     }
   }
 
-  get isNotNewScenario() {
-    return this.scenarioStatus != 'NOT_STARTED';
+  get isNewScenario() {
+    return this.scenarioStatus === 'NOT_STARTED';
   }
 
   reverseAlpha(a: KeyValue<string, any>, b: KeyValue<string, any>): number {

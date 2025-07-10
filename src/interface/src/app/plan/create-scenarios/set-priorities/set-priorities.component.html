@@ -17,10 +17,10 @@
       color="primary"
       formControlName="selectedQuestion">
       <!-- If scenario is not pending show the goal-->
-      <div *ngIf="isNotNewScenario" class="scenario-goal">
+      <div *ngIf="!isNewScenario" class="scenario-goal">
         {{ scenarioGoal$ | async }}
       </div>
-      <div *ngIf="!isNotNewScenario">
+      <div *ngIf="isNewScenario">
         <div
           class="goal-loader"
           *ngIf="(categorizedStatewideGoals$ | async) === null">
