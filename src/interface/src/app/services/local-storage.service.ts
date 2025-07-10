@@ -98,6 +98,7 @@ export class MultiMapsStorageService extends BaseLocalStorageService<{
   extent?: Extent;
   baseLayers?: BaseLayer[] | null;
   dataLayers?: Record<number, DataLayer | null>;
+  selectedMapId?: number | null;
 }> {
   constructor() {
     super('multiMapsOptions');

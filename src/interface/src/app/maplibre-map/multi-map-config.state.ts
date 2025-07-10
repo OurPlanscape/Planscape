@@ -49,6 +49,7 @@ export class MultiMapConfigState extends MapConfigState {
           baseMap: this._baseMap$.value,
           extent: extent,
           baseLayers: baseLayers,
+          selectedMapId: this._selectedMapId$.value,
         });
       });
   }
@@ -67,9 +68,18 @@ export class MultiMapConfigState extends MapConfigState {
     if (options?.baseLayers) {
       this.baseLayersStateService.setBaseLayers(options.baseLayers);
     }
+    if (options?.selectedMapId !== undefined) {
+      this._selectedMapId$.next(options.selectedMapId);
+    }
   }
 
   setSelectedMap(id: number | null) {
     this._selectedMapId$.next(id);
+  }
+
+  resetToFirstMap() {
+    if (this._selectedMapId$.value === null) {
+      this._selectedMapId$.next(1);
+    }
   }
 }

@@ -38,11 +38,12 @@
   <mgl-control
     position="bottom-left"
     class="map-label-control custom-bottom-left-control"
-    *ngIf="showMapNumber">
+    *ngIf="showMapNumber || (selectedLayer$ | async)">
     <div class="label" [class.selected-map]="(isSelected$ | async) === true">
-      <span class="map-number"> Map {{ mapNumber }}</span
-      ><span class="map-layer" *ngIf="selectedLayer$ | async as selectedLayer"
-        >:
+      <span class="map-number" *ngIf="showMapNumber"> Map {{ mapNumber }}</span>
+
+      <span class="map-layer" *ngIf="selectedLayer$ | async as selectedLayer">
+        <span *ngIf="showMapNumber">: </span>
         <a
           sg-button
           variant="link"

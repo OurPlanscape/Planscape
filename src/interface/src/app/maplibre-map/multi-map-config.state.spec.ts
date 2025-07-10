@@ -74,6 +74,7 @@ describe('MultiMapConfigState', () => {
       baseMap: baseMap,
       extent: extent,
       baseLayers: baseLayers,
+      selectedMapId: 1,
     });
   });
 
