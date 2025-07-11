@@ -58,7 +58,6 @@ export class DataLayerTooltipComponent implements OnInit {
     const extension = getFileExtensionFromFile(originalFilename ?? '');
     // Sanitize the name: lowercase, replace spaces with underscores, remove non-word characters
     const safeName = getSafeFileName(this.layer.name);
-    // save it so we dont re-run regex again
     return `${safeName}${extension}`;
   }
 }
