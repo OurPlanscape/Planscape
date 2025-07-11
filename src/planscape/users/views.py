@@ -10,13 +10,13 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonR
 from django.utils.encoding import force_str
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from users.serializers import MartinResourceSerializer, UserSerializer
 
-from planscape.permissions import PlanscapePermission
+from users.serializers import MartinResourceSerializer, UserSerializer
 
 # Configure global logging.
 logger = logging.getLogger(__name__)
@@ -201,7 +201,7 @@ PRIVATE_LAYERS = (
 
 
 @api_view(["GET"])
-@permission_classes([PlanscapePermission])
+@permission_classes([AllowAny])
 def validate_martin_request(request: Request) -> Response:
     original_uri = request.headers.get("X-Original-URI")
     if not original_uri:
