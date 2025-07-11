@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '../../shared/files';
 import { DataLayersService } from '../../services/data-layers.service';
-import { Observable, take, map } from 'rxjs';
+import { Observable, shareReplay, take, map } from 'rxjs';
 
 @Component({
   selector: 'app-data-layer-tooltip',
@@ -16,18 +16,19 @@ import { Observable, take, map } from 'rxjs';
 export class DataLayerTooltipComponent implements OnInit {
   @Input() layer!: DataLayer;
 
-  constructor(private dataLayersService: DataLayersService) { }
+  constructor(private dataLayersService: DataLayersService) {}
 
   downloadLink$: Observable<string> | null = null;
   filename$: Observable<string> | null = null;
 
   ngOnInit() {
-    this.downloadLink$ = this.dataLayersService.getPublicUrl(this.layer.id).pipe(take(1));
+    this.downloadLink$ = this.dataLayersService
+      .getPublicUrl(this.layer.id)
+      .pipe(take(1), shareReplay(1));
     this.filename$ = this.downloadLink$.pipe(
-      map(filename => this.transformFilename(filename))
+      map((filename) => this.transformFilename(filename))
     );
   }
-
 
   hasMinMax(): boolean {
     return (
@@ -50,7 +51,6 @@ export class DataLayerTooltipComponent implements OnInit {
     }
     return units.join(', ');
   }
-
 
   transformFilename(downloadPath: string) {
     const urlPath = downloadPath.split('?')[0]; // remove query string
