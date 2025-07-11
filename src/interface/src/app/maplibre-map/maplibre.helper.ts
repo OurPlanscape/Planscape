@@ -9,7 +9,7 @@ import {
   transformMapboxUrl,
 } from 'maplibregl-mapbox-request-transformer';
 import { environment } from '../../environments/environment';
-import { Feature, Geometry, Polygon, MultiPolygon } from 'geojson';
+import { Feature, Geometry, MultiPolygon, Polygon } from 'geojson';
 import bbox from '@turf/bbox';
 import { Extent } from '@types';
 import { BASE_LAYERS_DEFAULT } from '@shared';
@@ -37,7 +37,7 @@ export function addAuthHeaders(
     return {
       url: url, // Keep the URL unchanged
       headers: {
-        Authorization: 'Bearer ' + cookie,
+        Authorization: cookie ? 'Bearer ' + cookie : '',
       },
     };
   }
@@ -52,7 +52,6 @@ export function addRequestHeaders(
   if (isMapboxURL(url) && resourceType) {
     return transformMapboxUrl(url, resourceType, environment.mapbox_key);
   }
-
   return addAuthHeaders(url, resourceType, cookie);
 }
 
