@@ -3,6 +3,7 @@ import logging
 from urllib.parse import urlparse
 
 from allauth.account.utils import has_verified_email
+from dj_rest_auth.jwt_auth import JWTCookieAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
@@ -223,12 +224,15 @@ def validate_martin_request(request: Request) -> Response:
     if original_uri.find("?") == -1:
         return Response({"valid": True})
 
+    authentication = JWTCookieAuthentication()
+    user, _auth = authentication.authenticate(request)
+
     original_query_params_str = original_uri.split("?")[1]
     original_query_params = dict(
         param.split("=") for param in original_query_params_str.split("&")
     )
     serializer = MartinResourceSerializer(
-        data=original_query_params, context={"user": request.user}
+        data=original_query_params, context={"user": user}
     )
 
     if not serializer.is_valid():
