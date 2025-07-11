@@ -232,4 +232,3 @@ def validate_martin_request(request: Request) -> Response:
         )
 
     return Response({"valid": True})
-    return Response({"valid": True})
