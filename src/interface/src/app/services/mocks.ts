@@ -1,4 +1,4 @@
-import { Plan, Region } from '@types';
+import { Plan, Region, Scenario } from '@types';
 import { GeoJSON } from 'geojson';
 
 export const MOCK_PLAN: Plan = {
@@ -42,4 +42,22 @@ export const MOCK_FEATURE_COLLECTION: GeoJSON = {
       },
     },
   ],
+};
+
+export const MOCK_SCENARIO: Scenario = {
+  id: 1,
+  name: 'name',
+  planning_area: 1,
+  configuration: {
+    max_budget: 100,
+  },
+  status: 'ACTIVE',
+  scenario_result: {
+    status: 'PENDING',
+    completed_at: '0',
+    result: {
+      features: [],
+      type: 'test',
+    },
+  },
 };

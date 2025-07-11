@@ -101,5 +101,7 @@
   </mat-tab-group>
   <app-plan-tabs-footer
     [scenarioId]="scenarioId || undefined"
-    *ngIf="showTreatmentFooter()"></app-plan-tabs-footer>
+    *ngIf="
+      selectedTab === SCENARIO_TABS.TREATMENTS && (showTreatmentFooter$ | async)
+    "></app-plan-tabs-footer>
 </div>
