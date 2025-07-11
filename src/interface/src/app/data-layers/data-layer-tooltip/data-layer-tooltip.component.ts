@@ -1,23 +1,33 @@
-import { Component, Input } from '@angular/core';
-import { DecimalPipe, NgIf } from '@angular/common';
+import { Component, Input, OnInit } from '@angular/core';
+import { DecimalPipe, NgIf, AsyncPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '../../shared/files';
+import { DataLayersService } from '../../services/data-layers.service';
+import { Observable, take, map } from 'rxjs';
 
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
-  imports: [NgIf, MatButtonModule, DecimalPipe],
+  imports: [AsyncPipe, NgIf, MatButtonModule, DecimalPipe],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
-export class DataLayerTooltipComponent {
+export class DataLayerTooltipComponent implements OnInit {
   @Input() layer!: DataLayer;
-  private fileName = '';
 
-  hasDownloadLink(): boolean {
-    return !!this.layer.public_url;
+  constructor(private dataLayersService: DataLayersService) { }
+
+  downloadLink$: Observable<string> | null = null;
+  filename$: Observable<string> | null = null;
+
+  ngOnInit() {
+    this.downloadLink$ = this.dataLayersService.getPublicUrl(this.layer.id).pipe(take(1));
+    this.filename$ = this.downloadLink$.pipe(
+      map(filename => this.transformFilename(filename))
+    );
   }
+
 
   hasMinMax(): boolean {
     return (
@@ -41,19 +51,14 @@ export class DataLayerTooltipComponent {
     return units.join(', ');
   }
 
-  getFileName() {
-    if (this.fileName) {
-      return this.fileName;
-    }
-    const urlPath = this.layer.public_url.split('?')[0]; // remove query string
-    const originalFilename = urlPath.substring(urlPath.lastIndexOf('/') + 1); // get last segment
 
-    const extension = getFileExtensionFromFile(originalFilename);
-
+  transformFilename(downloadPath: string) {
+    const urlPath = downloadPath.split('?')[0]; // remove query string
+    const originalFilename = urlPath?.substring(urlPath.lastIndexOf('/') + 1); // get last segment
+    const extension = getFileExtensionFromFile(originalFilename ?? '');
     // Sanitize the name: lowercase, replace spaces with underscores, remove non-word characters
     const safeName = getSafeFileName(this.layer.name);
     // save it so we dont re-run regex again
-    this.fileName = `${safeName}${extension}`;
-    return this.fileName;
+    return `${safeName}${extension}`;
   }
 }

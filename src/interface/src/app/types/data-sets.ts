@@ -107,7 +107,7 @@ export interface DataLayer {
   metadata: Metadata | null;
   styles: Styles[];
   geometry: Geometry;
-  public_url: string;
+  public_url?: string;
 
   map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
