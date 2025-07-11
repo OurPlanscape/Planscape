@@ -14,7 +14,7 @@ import { map } from 'rxjs';
   providedIn: 'root',
 })
 export class DataLayersService {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   listDataSets(limit: number, offset?: number) {
     return this.http.get<Pagination<DataSet>>(
