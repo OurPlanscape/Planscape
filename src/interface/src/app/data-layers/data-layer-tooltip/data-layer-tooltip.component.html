@@ -33,8 +33,8 @@
   </dl>
 </div>
 
-<div class="footer" *ngIf="hasDownloadLink()">
-  <a [href]="layer.public_url" [download]="getFileName()">
+<div class="footer" *ngIf="downloadLink$ | async as downloadLink">
+  <a [href]="downloadLink" [download]="filename$ | async">
     <i class="material-symbols-outlined">download</i> Download Dataset
   </a>
 </div>
