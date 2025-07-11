@@ -225,8 +225,13 @@ def validate_martin_request(request: Request) -> Response:
         return Response({"valid": True})
 
     authentication = JWTCookieAuthentication()
-    user, _auth = authentication.authenticate(request)
-
+    result = authentication.authenticate(request)
+    if result is None:
+        return Response(
+            {"valid": False, "error": "Authentication failed"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    user, _auth = result
     original_query_params_str = original_uri.split("?")[1]
     original_query_params = dict(
         param.split("=") for param in original_query_params_str.split("&")

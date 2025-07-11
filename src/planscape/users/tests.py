@@ -1,5 +1,6 @@
 import json
 import re
+from unittest import mock
 
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
@@ -375,168 +376,226 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_user_has_permission__no_queryparams(self):
         some_user = UserFactory.create()
-        self.client.force_authenticate(some_user)
-        response = self.client.get(
-            self.url, headers={"X_ORIGINAL_URI": "/tiles/planning_area_by_id/10/1/2"}
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (some_user, None)
+            self.client.force_authenticate(some_user)
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": "/tiles/planning_area_by_id/10/1/2"},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_owner_has_permission__scenario(self):
         self.client.force_authenticate(self.owner)
-        martins_path = (
-            f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
-        )
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.owner, None)
+            martins_path = (
+                f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
+            )
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_owner_has_permission__project_area(self):
-        self.client.force_authenticate(self.owner)
-        martins_path = (
-            f"/tiles/planning_area_by_id/martin?project_area_id={self.project_area.pk}"
-        )
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.owner, None)
+            self.client.force_authenticate(self.owner)
+            martins_path = f"/tiles/planning_area_by_id/martin?project_area_id={self.project_area.pk}"
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_owner_has_permission__tx_plan(self):
-        self.client.force_authenticate(self.owner)
-        martins_path = f"/tiles/planning_area_by_id/martin?treatment_plan_id={self.treatment_plan.pk}"
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.owner, None)
+            self.client.force_authenticate(self.owner)
+            martins_path = f"/tiles/planning_area_by_id/martin?treatment_plan_id={self.treatment_plan.pk}"
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_collaborator_has_permission__scenario(self):
-        self.client.force_authenticate(self.collaborator)
-        martins_path = (
-            f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
-        )
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.collaborator, None)
+            self.client.force_authenticate(self.collaborator)
+            martins_path = (
+                f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
+            )
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_collaborator_has_permission__project_area(self):
-        self.client.force_authenticate(self.collaborator)
-        martins_path = (
-            f"/tiles/planning_area_by_id/martin?project_area_id={self.project_area.pk}"
-        )
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.collaborator, None)
+            self.client.force_authenticate(self.collaborator)
+            martins_path = f"/tiles/planning_area_by_id/martin?project_area_id={self.project_area.pk}"
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_collaborator_has_permission__tx_plan(self):
-        self.client.force_authenticate(self.collaborator)
-        martins_path = f"/tiles/planning_area_by_id/martin?treatment_plan_id={self.treatment_plan.pk}"
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.collaborator, None)
+            self.client.force_authenticate(self.collaborator)
+            martins_path = f"/tiles/planning_area_by_id/martin?treatment_plan_id={self.treatment_plan.pk}"
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_viewer_has_permission__scenario(self):
-        self.client.force_authenticate(self.viewer)
-        martins_path = (
-            f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
-        )
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.viewer, None)
+            self.client.force_authenticate(self.viewer)
+            martins_path = (
+                f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
+            )
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_viewer_has_permission__project_area(self):
-        self.client.force_authenticate(self.viewer)
-        martins_path = f"/tiles/project_area_aggregate/martin?project_area_id={self.project_area.pk}"
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.viewer, None)
+            self.client.force_authenticate(self.viewer)
+            martins_path = f"/tiles/project_area_aggregate/martin?project_area_id={self.project_area.pk}"
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_viewer_has_permission__tx_plan(self):
-        self.client.force_authenticate(self.viewer)
-        martins_path = f"/tiles/project_area_aggregate/martin?treatment_plan_id={self.treatment_plan.pk}"
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.viewer, None)
+            self.client.force_authenticate(self.viewer)
+            martins_path = f"/tiles/project_area_aggregate/martin?treatment_plan_id={self.treatment_plan.pk}"
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"valid": True})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"valid": True})
 
     def test_user_has_no_permission__scenario(self):
         another_user = UserFactory.create()
-        self.client.force_authenticate(another_user)
-        martins_path = (
-            f"/tiles/project_areas_by_scenario?scenario_id={self.scenario.pk}"
-        )
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (another_user, None)
+            self.client.force_authenticate(another_user)
+            martins_path = (
+                f"/tiles/project_areas_by_scenario?scenario_id={self.scenario.pk}"
+            )
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 403)
 
     def test_user_has_no_permission__project_area(self):
         another_user = UserFactory.create()
-        self.client.force_authenticate(another_user)
-        martins_path = (
-            f"/tiles/project_areas_by_scenario?project_area_id={self.project_area.pk}"
-        )
-        response = self.client.get(
-            self.url,
-            headers={"X_ORIGINAL_URI": martins_path},
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (another_user, None)
+            self.client.force_authenticate(another_user)
+            martins_path = f"/tiles/project_areas_by_scenario?project_area_id={self.project_area.pk}"
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
 
-        self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 403)
 
     def test_user_has_no_permission__tx_plan(self):
         another_user = UserFactory.create()
-        self.client.force_authenticate(another_user)
-        martins_path = (
-            f"/tiles/stands_by_tx_plan?treatment_plan_id={self.treatment_plan.pk}"
-        )
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (another_user, None)
+            self.client.force_authenticate(another_user)
+            martins_path = (
+                f"/tiles/stands_by_tx_plan?treatment_plan_id={self.treatment_plan.pk}"
+            )
+            response = self.client.get(
+                self.url,
+                headers={"X_ORIGINAL_URI": martins_path},
+            )
+
+            self.assertEqual(response.status_code, 403)
+
+    def test_unauthenticated_user(self):
+        martins_path = "/tiles/planning_area_by_id/martin?foo=bar"
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
         )
 
-        self.assertEqual(response.status_code, 403)
-
-    def test_unauthenticated_user(self):
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_missing_headers(self):
-        self.client.force_authenticate(self.owner)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {"error": "X-Original-URI header not found"})
+        with mock.patch(
+            "users.views.JWTCookieAuthentication.authenticate"
+        ) as mock_auth:
+            mock_auth.return_value = (self.owner, None)
+            self.client.force_authenticate(self.owner)
+            response = self.client.get(self.url)
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(
+                response.json(), {"error": "X-Original-URI header not found"}
+            )
