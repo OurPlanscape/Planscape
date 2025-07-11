@@ -20,11 +20,12 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
 import { PlanState } from '../../plan/plan.state';
 import { ScenarioState } from '../scenario.state';
 import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
-import { FrontendConstants } from '@types';
+
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
 import { MapConfigService } from '../map-config.service';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
+import { FrontendConstants } from '../../map/map.constants';
 
 @Component({
   selector: 'app-scenario-map',

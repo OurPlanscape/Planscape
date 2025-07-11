@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  Region,
-  regionToString,
-  ScenarioGoal,
-  TreatmentGoalConfig,
-} from '@types';
+import { ScenarioGoal } from '@types';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { of, tap } from 'rxjs';
@@ -16,14 +11,6 @@ export class TreatmentGoalsService {
   constructor(private http: HttpClient) {}
 
   private _cachedStatewideGoals: ScenarioGoal[] | null = null;
-
-  getLegacyTreatmentGoalsForArea(region: Region) {
-    return this.http.get<TreatmentGoalConfig[]>(
-      environment.backend_endpoint +
-        '/planning/treatment_goals_config/?region_name=' +
-        `${regionToString(region)}`
-    );
-  }
 
   getTreatmentGoals() {
     if (this._cachedStatewideGoals) {

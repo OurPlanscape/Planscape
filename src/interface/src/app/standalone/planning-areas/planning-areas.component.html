@@ -43,7 +43,7 @@
     variant="primary"
     icon="explore"
     [outlined]="true"
-    routerLink="/map">
+    routerLink="/explore">
     Explore
   </a>
 </div>
@@ -56,15 +56,6 @@
     displayField="full_name"
     [selectedItems]="(selectedCreators$ | async) || []"
     [menuItems]="(creators$ | async) || []"></sg-filter-dropdown>
-
-  <sg-filter-dropdown
-    *appFeatureFlag="'MAPLIBRE_ON_EXPLORE'; hide: true"
-    menuLabel="Region"
-    [hasSearch]="false"
-    (confirmedSelection)="selectRegion($event)"
-    [selectedItems]="selectedRegions"
-    displayField="name"
-    [menuItems]="regions"></sg-filter-dropdown>
 </div>
 <!--Initial load spinner-->
 <mat-spinner

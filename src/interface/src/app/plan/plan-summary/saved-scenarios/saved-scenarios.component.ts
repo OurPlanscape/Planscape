@@ -1,11 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  AuthService,
-  LegacyPlanStateService,
-  ScenarioService,
-} from '@services';
+import { AuthService, ScenarioService } from '@services';
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -56,7 +52,6 @@ export class SavedScenariosComponent implements OnInit {
     private snackbar: MatSnackBar,
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
-    private LegacyPlanStateService: LegacyPlanStateService,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService
   ) {}
@@ -126,10 +121,6 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    this.LegacyPlanStateService.updateStateWithScenario(
-      clickedScenario.id,
-      clickedScenario.name
-    );
     this.breadcrumbService.updateBreadCrumb({
       label: 'Scenario: ' + clickedScenario.name,
       backUrl: getPlanPath(clickedScenario.planning_area),

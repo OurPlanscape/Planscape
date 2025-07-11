@@ -17,5 +17,5 @@ export const testPass: string =
 export const urls = {
   LOGIN: baseURL + '/login',
   SIGNUP: baseURL + '/signup',
-  MAP: baseURL + '/map',
+  MAP: baseURL + '/explore',
 };

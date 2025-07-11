@@ -1,8 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Scenario } from '@types';
-import { LegacyPlanStateService } from '@services';
-import { map, take } from 'rxjs';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { map } from 'rxjs';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import { PlanState } from '../plan.state';
 import { canAddTreatmentPlan } from '../permissions';
 
@@ -12,11 +11,8 @@ import { canAddTreatmentPlan } from '../permissions';
   templateUrl: './uploaded-scenario-view.component.html',
   styleUrl: './uploaded-scenario-view.component.scss',
 })
-export class UploadedScenarioViewComponent implements OnInit {
-  constructor(
-    private LegacyPlanStateService: LegacyPlanStateService,
-    private planState: PlanState
-  ) {}
+export class UploadedScenarioViewComponent {
+  constructor(private planState: PlanState) {}
 
   @Input() scenario?: Scenario;
 
@@ -25,18 +21,4 @@ export class UploadedScenarioViewComponent implements OnInit {
   showTreatmentFooter$ = this.plan$.pipe(
     map((plan) => canAddTreatmentPlan(plan))
   );
-
-  ngOnInit() {
-    if (this.scenario) {
-      this.plan$.pipe(untilDestroyed(this), take(1)).subscribe((planState) => {
-        this.LegacyPlanStateService.updateStateWithScenario(
-          this.scenario?.id ?? undefined,
-          this.scenario?.name ?? null
-        );
-        this.LegacyPlanStateService.updateStateWithShapes(
-          this.scenario?.scenario_result?.result.features
-        );
-      });
-    }
-  }
 }

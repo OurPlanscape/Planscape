@@ -1,11 +1,10 @@
-import { Plan, Region } from '@types';
+import { Plan } from '@types';
 import { GeoJSON } from 'geojson';
 
 export const MOCK_PLAN: Plan = {
   id: 1,
   name: 'mock plan',
   user: 2,
-  region_name: Region.SIERRA_NEVADA,
   geometry: {
     type: 'FeatureCollection',
     features: [],

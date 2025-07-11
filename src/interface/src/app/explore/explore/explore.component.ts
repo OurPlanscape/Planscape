@@ -19,8 +19,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
 import { getPlanPath } from '../../plan/plan-helpers';
-import { FrontendConstants } from '@types';
+
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { FrontendConstants } from '../../map/map.constants';
 
 @UntilDestroy()
 @Component({
