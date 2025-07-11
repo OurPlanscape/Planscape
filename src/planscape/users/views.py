@@ -212,6 +212,7 @@ def validate_martin_request(request: Request) -> Response:
 
     parse_uri = urlparse(original_uri)
     layer_name = parse_uri.path.split("/")[2]
+    logger.info(f"Target Layer in Martin: {layer_name}")
     if layer_name not in PRIVATE_LAYERS:
         return Response({"valid": True})
     if original_uri.find("?") == -1:
