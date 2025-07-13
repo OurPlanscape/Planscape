@@ -51,6 +51,7 @@ import { DataLayersComponent } from '../data-layers/data-layers/data-layers.comp
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
 import { CollapsiblePanelComponent } from '../../styleguide/collapsible-panel/collapsible-panel.component';
+import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -115,6 +116,7 @@ import { CollapsiblePanelComponent } from '../../styleguide/collapsible-panel/co
     PlanTabsFooterComponent,
     DataLayersComponent,
     CollapsiblePanelComponent,
+    ScenarioMetricsLegendComponent,
   ],
 })
 export class PlanModule {}
