@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { NgChartsModule } from 'ng2-charts';
+import { ScenarioResult } from '@types';
+import { processCumulativeAttainment } from '../plan-helpers';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
@@ -8,7 +10,9 @@ import { NgChartsModule } from 'ng2-charts';
   templateUrl: './cumulative-attainment-chart.component.html',
   styleUrl: './cumulative-attainment-chart.component.scss',
 })
-export class CumulativeAttainmentChartComponent {
+export class CumulativeAttainmentChartComponent implements OnInit {
+  @Input() scenarioResult!: ScenarioResult;
+
   options = {
     responsive: true,
     scales: {
@@ -27,41 +31,38 @@ export class CumulativeAttainmentChartComponent {
     },
   };
 
-  data = {
-    labels: [1, 2, 3, 4, 5],
-    datasets: [
-      {
-        label: 'Treatment 1',
-        data: [1, 2, 3, 4, 5],
-        backgroundColor: 'red',
-        borderColor: 'red',
-        pointBackgroundColor: 'red', // fill of the points
-        pointBorderColor: 'red',
-      },
-      {
-        label: 'Treatment 2',
-        data: [8, 2, 5, 6, 1],
-        backgroundColor: 'green',
-        borderColor: 'green',
-        pointBackgroundColor: 'green', // fill of the points
-        pointBorderColor: 'green',
-      },
-      {
-        label: 'Dataset 3',
-        data: [7, 5, 6, 8, 3],
-        backgroundColor: 'blue',
-        borderColor: 'blue',
-        pointBackgroundColor: 'blue', // fill of the points
-        pointBorderColor: 'blue',
-      },
-      {
-        label: 'Dataset 4',
-        data: [1, 2, 2, 3, 5],
-        backgroundColor: 'yellow',
-        borderColor: 'yellow',
-        pointBackgroundColor: 'yellow', // fill of the points
-        pointBorderColor: 'yellow',
-      },
-    ],
-  };
+  data: any = {};
+
+  ngOnInit(): void {
+    const d = processCumulativeAttainment(this.scenarioResult.result.features);
+    console.log(d);
+    this.data.labels = d.area.map((data) => Math.round(data));
+    this.data.datasets = d.datasets.map((data, index) => {
+      return {
+        ...data,
+        ...this.colorForIndex(index),
+      };
+    });
+  }
+
+  colorForIndex(i: number) {
+    const CHART_COLORS = [
+      '#483D78',
+      '#A59CCD',
+      '#BBE3B6',
+      '#85B167',
+      '#FFDB69',
+      '#F18226',
+      '#483D78',
+      '#483D78',
+      '#CC4678',
+    ];
+
+    return {
+      backgroundColor: CHART_COLORS[i - 1],
+      borderColor: CHART_COLORS[i - 1],
+      pointBackgroundColor: CHART_COLORS[i - 1],
+      pointBorderColor: CHART_COLORS[i - 1],
+    };
+  }
 }
