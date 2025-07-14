@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate, moduleMetadata } from '@storybook/angular';
-import { CollapsiblePanelComponent } from './collapsible-panel.component';
+import { SectionComponent } from './section.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatExpansionModule } from '@angular/material/expansion';
 
-const meta: Meta<CollapsiblePanelComponent> = {
-  title: 'Components/Collapsible Panel',
-  component: CollapsiblePanelComponent,
+const meta: Meta<SectionComponent> = {
+  title: 'Components/Section',
+  component: SectionComponent,
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
@@ -15,19 +15,19 @@ const meta: Meta<CollapsiblePanelComponent> = {
   ],
   render: (args) => ({
     props: args,
-    template: `<sg-collapsible-panel ${argsToTemplate(args)}>
+    template: `<sg-section ${argsToTemplate(args)}>
 Lorem ipsum dolor sit amet, consectetur adipiscing elit,
 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
  Ut enim ad minim veniam, quis nostrud exercitation ullamco
  laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
  reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
   Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-</sg-collapsible-panel>`,
+</sg-section>`,
   }),
 };
 
 export default meta;
-type Story = StoryObj<CollapsiblePanelComponent>;
+type Story = StoryObj<SectionComponent>;
 
 export const Default: Story = {
   args: {
@@ -37,28 +37,15 @@ export const Default: Story = {
   },
 };
 
-export const WithMoreContent: Story = {
+export const NoTooltip: Story = {
   args: {
     title: 'Project Areas',
-    tooltipContent:
-      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
   },
-  render: (args) => ({
-    props: args,
-    template: `<sg-collapsible-panel ${argsToTemplate(args)}>
-<mat-expansion-panel expanded='true' [togglePosition]="'before'">
-                <mat-expansion-panel-header class='goal-panel-header'>
-                  Some title
-                </mat-expansion-panel-header>
-                Some content
-              </mat-expansion-panel>
-</sg-collapsible-panel>`,
-  }),
 };
 
-export const NotCollapsible: Story = {
+export const Collapsible: Story = {
   args: {
-    isCollapsible: false,
+    isCollapsible: true,
     title: 'Project Areas',
     tooltipContent:
       'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CollapsiblePanelComponent } from './collapsible-panel.component';
+import { SectionComponent } from './section.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('CollapsiblePanelComponent', () => {
-  let component: CollapsiblePanelComponent;
-  let fixture: ComponentFixture<CollapsiblePanelComponent>;
+  let component: SectionComponent;
+  let fixture: ComponentFixture<SectionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CollapsiblePanelComponent, NoopAnimationsModule],
+      imports: [SectionComponent, NoopAnimationsModule],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CollapsiblePanelComponent);
+    fixture = TestBed.createComponent(SectionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
