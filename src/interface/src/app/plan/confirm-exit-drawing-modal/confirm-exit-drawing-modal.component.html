@@ -1,15 +1,14 @@
 <sg-modal
-  title="Leave Draw Planning Area Mode?"
+  title="Discard Polygon(s)?"
   [shortHeader]="false"
   [showBorders]="false"
+  [showClose]="false"
   [centerFooter]="false"
-  primaryButtonText="Discard & Exit"
+  primaryButtonText="Discard"
   (clickedClose)="closeModal()"
   (clickedPrimary)="confirm()"
   (clickedSecondary)="closeModal()">
   <div modalBodyContent class="padded">
-    You’ve drawn one or more planning areas on the map. If you exit now, your
-    work will be lost. Are you sure you want to cancel and discard the drawn
-    area(s)?
+    Your polygon(s) have not been saved, are you sure you want to discard?
   </div>
 </sg-modal>
