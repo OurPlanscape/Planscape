@@ -1,4 +1,4 @@
-<sg-collapsible-panel
+<sg-section
   [isCollapsible]="isScenarioImprovementsEnabled()"
   title="Project Areas"
   tooltipContent="Project areas are the land areas defined by your treatment goals and
@@ -10,16 +10,17 @@
           project area effectiveness relative to other projects, based on the
           treatment goals.">
   <app-project-areas [areas]="areas"></app-project-areas>
-</sg-collapsible-panel>
+</sg-section>
 
-<sg-collapsible-panel
+<sg-section
+  [isCollapsible]="true"
   title="Scenario Analytics"
   tooltipContent="This section helps you interpret how well projects perform in your selected scenario based on priority metrics and co-benefits.
 Treatment Opportunity x Project Areas compares each project's potential to deliver treatment benefits.
 Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects."
   *ngIf="isScenarioImprovementsEnabled()">
   Scenario Analytics goes here.
-</sg-collapsible-panel>
+</sg-section>
 
 <div class="actions">
   <button

@@ -2,8 +2,7 @@
   class="constraints-form"
   *ngIf="constraintsForm"
   [formGroup]="constraintsForm!">
-  <sg-collapsible-panel
-    [isCollapsible]="false"
+  <sg-section
     title="Constraints"
     tooltipContent="Constraints are variables that you can apply to your planning
           scenario. You can choose either the maximum area to be treated OR cost
@@ -141,10 +140,9 @@
         </mat-form-field>
       </div>
     </div>
-  </sg-collapsible-panel>
+  </sg-section>
 
-  <sg-collapsible-panel
-    [isCollapsible]="false"
+  <sg-section
     title="Excluded Areas"
     tooltipContent="Exclude areas are types of land that you can choose to exclude from
           your planning scenarios. If you choose to exclude these areas, project
@@ -167,5 +165,5 @@
         </div>
       </section>
     </div>
-  </sg-collapsible-panel>
+  </sg-section>
 </form>
