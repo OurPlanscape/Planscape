@@ -1,4 +1,6 @@
-import { ChartConfiguration } from 'chart.js';
+import { CHART_COLORS } from '@shared';
+import { FeatureCollection } from '@types';
+import { ChartConfiguration, ChartDataset } from 'chart.js';
 
 // Base font configuration
 const baseFont = {
@@ -19,6 +21,11 @@ export const getChartPaddingConfiguration = (): any => ({
   bottom: 0,
 });
 
+// Define the dash pattern (4px dash, 4px gap)
+export const getChartBorderDash = (): any => {
+  return [5, 5];
+};
+
 export const getSharedGridConfig = (yAxis = true): any =>
   yAxis
     ? {
@@ -26,7 +33,7 @@ export const getSharedGridConfig = (yAxis = true): any =>
         drawTicks: false,
         lineWidth: 1, // Set line width for dotted lines
         color: '#979797', // Dotted line color
-        borderDash: [5, 5], // Define the dash pattern (4px dash, 4px gap)
+        borderDash: getChartBorderDash(),
       }
     : {
         display: false, // Disable grid lines for the x-axis
@@ -130,3 +137,52 @@ export const getBasicChartOptions =
       },
     },
   });
+
+// Adding extra info to set the key and use that on the tooltip
+export interface CustomChartDataset extends ChartDataset<'bar', number[]> {
+  extraInfo?: string;
+}
+
+export function getChartDatasetsFromFeatures(
+  features: FeatureCollection[]
+): CustomChartDataset[] {
+  const result: CustomChartDataset[] = [];
+
+  const groupedAttainment: { [key: string]: number[] } = {};
+
+  features.forEach((feature) => {
+    const attainment = feature.properties.attainment;
+    for (const [key, value] of Object.entries(attainment)) {
+      if (!groupedAttainment[key]) {
+        groupedAttainment[key] = [];
+      }
+      groupedAttainment[key].push(convertTo2DecimalsNumbers(value as number));
+    }
+  });
+
+  Object.keys(groupedAttainment).forEach((key, index) => {
+    result.push({
+      data: groupedAttainment[key],
+      backgroundColor: CHART_COLORS[index - 1],
+      extraInfo: key, // this will be used on the tooltip to set the title
+      stack: 'Stack 0',
+    });
+  });
+
+  return result;
+}
+
+export function convertTo2DecimalsNumbers(value: number): number {
+  return Number((value as number).toFixed(2));
+}
+
+export function getProjectAreaLabelsFromFeatures(
+  features: FeatureCollection[]
+): string[] {
+  const result = [];
+  for (let i = 0; i < features.length; i++) {
+    result.push(String(i + 1));
+  }
+  // By default we want to display 5 project areas
+  return result.length < 5 ? ['1', '2', '3', '4', '5'] : result;
+}
