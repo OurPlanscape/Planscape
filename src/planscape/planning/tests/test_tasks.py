@@ -128,7 +128,7 @@ class AsyncCallForsysViaAPI(TestCase):
     def test_async_call_forsys_via_api(self, mock):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.SUCCESS)
+        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
 
     @mock.patch(
         "utils.cli_utils._call_forsys_via_api",
