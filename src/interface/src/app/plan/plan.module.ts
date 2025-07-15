@@ -50,8 +50,8 @@ import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.com
 import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
-import { CollapsiblePanelComponent } from '../../styleguide/collapsible-panel/collapsible-panel.component';
 import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
+import { SectionComponent } from '../../styleguide/collapsible-panel/section.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -115,8 +115,8 @@ import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metr
     ScenarioMapComponent,
     PlanTabsFooterComponent,
     DataLayersComponent,
-    CollapsiblePanelComponent,
     ScenarioMetricsLegendComponent,
+    SectionComponent,
   ],
 })
 export class PlanModule {}
