@@ -1,26 +1,7 @@
 library("logger")
 library(plumber)
-library("DBI")
-library("dplyr")
-library("forsys")
-library("friendlyeval")
-library("glue")
-library("import")
-library("optparse")
-library("purrr")
-library("rjson")
-library("RPostgreSQL")
-library("sf")
-library("stringi")
-library("tidyr")
-library("uuid")
 
 readRenviron("../../.env")
-import::from("../planscape/rscripts/io_processing.R", .all = TRUE)
-import::from("../planscape/rscripts/queries.R", .all = TRUE)
-import::from("../planscape/rscripts/constants.R", .all = TRUE)
-import::from("../planscape/rscripts/base_forsys.R", .all = TRUE)
-import::from("../planscape/rscripts/postprocessing.R", .all = TRUE)
 
 # server.R
 
@@ -47,13 +28,12 @@ function(res, req, scenario_id=NULL) {
     return(list(error = "Scenario ID must be an integer."))
   })
   tryCatch({
-    FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
-    if (FORSYS_V2) {
-      main_v2(scenario_id)
-    } else {
-      main(scenario_id)
-    }
-    return(list("Forsys run completed."))
+    FORSYS_PATCHMAX_WD <- Sys.getenv("FORSYS_PATCHMAX_WD", "/usr/src/app/src/planscape/")
+    setwd(FORSYS_PATCHMAX_WD)
+    system("Rscript rscripts/forsys.R --scenario " %>% 
+           glue::glue(scenario_id), intern = FALSE, wait = FALSE)
+    res$status <- 202
+    return(list("Forsys run triggered."))
   }, error = function(e) {
     res$status <- 500
     log_error("Forsys run failed: {e}")
