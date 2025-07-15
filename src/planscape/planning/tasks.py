@@ -2,6 +2,7 @@ import logging
 
 import rasterio
 from gis.core import get_storage_session
+from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
 from stands.models import Stand
 from stands.services import calculate_stand_zonal_stats
@@ -28,7 +29,8 @@ def async_forsys_run(scenario_id: int) -> None:
 
         call_forsys(scenario.pk)
 
-        scenario.result_status = ScenarioResultStatus.SUCCESS
+        if not feature_enabled("FORSYS_VIA_API"):
+            scenario.result_status = ScenarioResultStatus.SUCCESS
         scenario.save()
     except ForsysTimeoutException:
         # this case should not happen as is, as the default parameter
