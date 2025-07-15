@@ -1,11 +1,11 @@
 import json
-import subprocess
+import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from decouple import Config, RepositoryEnv
 
 config = Config(RepositoryEnv("../../.env"))
 
-FORSYS_PATCHMAX_SCRIPT = config("FORSYS_PATCHMAX_SCRIPT", cast=str, default=None)
+FORSYS_PATCHMAX_SCRIPT = config("FORSYS_PATCHMAX_SCRIPT", default=None)
 
 if not FORSYS_PATCHMAX_SCRIPT:
     raise ValueError("FORSYS_PATCHMAX_SCRIPT must be set in .env file")
@@ -40,23 +40,28 @@ class Handler(BaseHTTPRequestHandler):
 
     def _run_forsys(self, scenario_id):
         forsys_cmd = [
-            "nohup",
             "Rscript",
             str(FORSYS_PATCHMAX_SCRIPT),
             "--scenario",
             str(scenario_id),
-            "&"
         ]
         try:
             self.log_message("command: %s", self.path)
-            subprocess.run(
-                forsys_cmd,
-                shell=True,
-                check=True,
+            os.spawnlp(
+                os.P_NOWAIT,
+                "Rscript",
+                *forsys_cmd,
             )
+            
+            self.send_response(202, "Accepted")
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            
         except Exception as e:
             self.send_error(500, f"Error running Forsys: {str(e)}")
 
 
 if __name__ == "__main__":
-    HTTPServer(("127.0.0.1", 4242), Handler).serve_forever()
+    print("Starting Forsys server on port 8000...")
+    HTTPServer(("127.0.0.1", 8000), Handler).serve_forever()
+    print("Forsys server stopped.")

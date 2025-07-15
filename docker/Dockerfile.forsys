@@ -1,4 +1,4 @@
-FROM rstudio/plumber:v1.2.0
+FROM rstudio/r-base:4.5-noble as builder
 
 RUN apt-get update && \
     apt-get -y install \
@@ -18,8 +18,22 @@ WORKDIR /usr/src/app
 COPY install.R /usr/src/app/
 RUN Rscript install.R
 
+FROM python:3.10-slim-bullseye
+
+RUN apt-get update && apt-get -y install python3-pip
+
+RUN pip install python-decouple
+
+COPY --from=builder /usr/src/app /usr/src/app
+
+WORKDIR /usr/src/app
+
 COPY .env /usr/src/app/
-COPY src/forsys/server.R /usr/src/app/
+COPY src/forsys/* /usr/src/app/
 COPY src/planscape/rscripts/* /usr/src/app/
 
+
+WORKDIR /usr/src/app/src/forsys
 EXPOSE 8000
+
+CMD ["python3", "server.py"]
