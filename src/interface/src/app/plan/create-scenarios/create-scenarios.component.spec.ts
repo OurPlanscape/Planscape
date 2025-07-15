@@ -8,7 +8,7 @@ import {
 } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { Scenario, ScenarioResultStatus } from '@types';
+import { ScenarioResultStatus } from '@types';
 
 import { PlanModule } from '../plan.module';
 import {
@@ -225,54 +225,6 @@ describe('CreateScenariosComponent', () => {
 
     expect(component.tabAnimation).toBe('on');
     expect(component.isLoading$.next).toHaveBeenCalledWith(false);
-  });
-
-  describe('loadConfig', () => {
-    it('should do nothing if scenario state is the same', () => {
-      (component as any).LegacyPlanStateService = {
-        updateStateWithScenario: jasmine.createSpy(),
-        updateStateWithShapes: jasmine.createSpy(),
-      } as any;
-
-      component.scenarioState = 'RUNNING';
-
-      mockScenario$.next({
-        ...MOCK_SCENARIO,
-        scenario_result: {
-          ...MOCK_SCENARIO.scenario_result,
-          status: 'RUNNING',
-        },
-      } as Scenario);
-
-      component.loadConfig();
-
-      expect(
-        (component as any).LegacyPlanStateService.updateStateWithScenario
-      ).not.toHaveBeenCalled();
-    });
-
-    it('should update State with scenario if status is different', () => {
-      (component as any).LegacyPlanStateService = {
-        updateStateWithScenario: jasmine.createSpy(),
-        updateStateWithShapes: jasmine.createSpy(),
-      } as any;
-
-      component.scenarioState = 'RUNNING';
-
-      mockScenario$.next({
-        ...MOCK_SCENARIO,
-        scenario_result: {
-          ...MOCK_SCENARIO.scenario_result,
-          status: 'FAILURE',
-        },
-      } as Scenario);
-
-      component.loadConfig();
-
-      expect(
-        (component as any).LegacyPlanStateService.updateStateWithScenario
-      ).toHaveBeenCalledWith(MOCK_SCENARIO.id, MOCK_SCENARIO.name);
-    });
   });
 
   describe('polling', () => {
