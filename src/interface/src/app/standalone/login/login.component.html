@@ -1,5 +1,5 @@
 <div class="signin-card-container">
-  <div class="signin-subcontainer">
+  <div class="signin-subcontainer" [class.mb-90]="loginError !== ''">
     <div class="signin-card-logo">
       <div class="planscape-white-logo">
         <img src="assets/svg/planscape-white-logo.svg" alt="planscape logo" />
@@ -48,13 +48,23 @@
         <app-field-alert
           *ngIf="passwordError"
           message="{{ passwordError }}"
+          class="mb-10"
           title="password error"></app-field-alert>
 
         <app-form-message
           [messageType]="FormMessageType.ERROR"
           *ngIf="loginError ? true : false"
           title="Credentials error"
+          class="d-block mb-10"
           message="{{ loginError }}">
+          <p class="mt-10">
+            Planscape has recently implemented a system-wide security upgrade
+            that requires all users to reset their passwords.
+          </p>
+          <p>
+            Please click the “Forgot your password?” link below to reset your
+            password.
+          </p>
           <div *ngIf="offerReverify">
             <a [routerLink]="[]" (click)="resendVerification()"
               >Click here to re-send your verification email.</a
