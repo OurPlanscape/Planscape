@@ -30,8 +30,8 @@ import { FeaturesModule } from '../../features/features.module';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
-import { FrontendConstants } from '@types';
 import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
+import { FrontendConstants } from '../../map/map.constants';
 
 @UntilDestroy()
 @Component({

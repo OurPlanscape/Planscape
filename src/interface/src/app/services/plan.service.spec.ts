@@ -5,7 +5,6 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { Plan } from '@types';
 import { PlanService } from './plan.service';
-import { MapService } from './map.service';
 import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from './mocks';
 import { environment } from '../../environments/environment';
 
@@ -18,7 +17,7 @@ describe('PlanService', () => {
     mockPlan = MOCK_PLAN;
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [PlanService, MapService],
+      providers: [PlanService],
     });
     service = TestBed.inject(PlanService);
     httpTestingController = TestBed.inject(HttpTestingController);

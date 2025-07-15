@@ -20,9 +20,6 @@ import {
   planResetResolver,
 } from './resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
-import { MapComponent } from './map/map.component';
-import { createFeatureGuard } from './features/feature.guard';
-import { ExploreLegacyComponent } from './plan/explore/explore/explore-legacy.component';
 
 const routes: Routes = [
   {
@@ -94,20 +91,7 @@ const routes: Routes = [
             './standalone/account-validation/account-validation.component'
           ).then((m) => m.AccountValidationComponent),
       },
-      // old map
-      {
-        path: 'map',
-        title: 'Explore',
-        component: MapComponent,
-        canActivate: [
-          createFeatureGuard({
-            featureName: 'MAPLIBRE_ON_EXPLORE',
-            fallback: '/explore',
-            inverted: true,
-          }),
-        ],
-      },
-      // new map
+
       {
         path: 'explore',
         title: 'Explore',
@@ -115,12 +99,6 @@ const routes: Routes = [
           import('./explore/explore/explore.component').then(
             (m) => m.ExploreComponent
           ),
-        canActivate: [
-          createFeatureGuard({
-            featureName: 'MAPLIBRE_ON_EXPLORE',
-            fallback: '/map',
-          }),
-        ],
         resolve: {
           planInit: planResetResolver,
         },
@@ -136,29 +114,7 @@ const routes: Routes = [
         resolve: {
           planInit: planLoaderResolver,
         },
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({
-            featureName: 'MAPLIBRE_ON_EXPLORE',
-            fallback: '/explore-plan/:id',
-          }),
-        ],
-      },
-      {
-        path: 'explore-plan/:id',
-        title: 'Explore',
-        component: ExploreLegacyComponent,
-        resolve: {
-          planInit: planLoaderResolver,
-        },
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({
-            featureName: 'MAPLIBRE_ON_EXPLORE',
-            fallback: '/plan/:id',
-            inverted: true,
-          }),
-        ],
+        canActivate: [AuthGuard],
       },
 
       {

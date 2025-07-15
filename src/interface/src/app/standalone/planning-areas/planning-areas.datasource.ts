@@ -24,8 +24,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public pageOptions = this.queryParamsService.getInitialPageParams();
   public searchTerm = this.queryParamsService.getInitialFilterParam();
   public pages$ = this._pages$.asObservable();
-  public selectedRegions: { name: string; value: string }[] =
-    this.queryParamsService.getInitialRegionParam();
 
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
@@ -107,14 +105,11 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getPageOptions(),
       ...this.getSortOptions(),
       ...this.searchOptions(),
-      ...this.getRegionFilters(),
       ...this.getCreatorFilters(),
     };
     // update filter status when loading data
     this._hasFilters$.next(
-      !!this.searchTerm ||
-        this.selectedRegions.length > 0 ||
-        this.selectedCreatorsIds.value.length > 0
+      !!this.searchTerm || this.selectedCreatorsIds.value.length > 0
     );
 
     this._loading.next(true);
@@ -135,18 +130,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   changePageSize(size: number) {
     this.pageOptions.limit = size;
     this.resetPageAndUpdateUrl({ limit: size });
-    this.loadData();
-  }
-
-  filterRegion(regions: { name: string; value: string }[]) {
-    this._initialLoad$.next(true);
-
-    this.selectedRegions = regions;
-    const regionNames = this.selectedRegions.map((r) => r.value).join(',');
-
-    this.queryParamsService.updateUrl({
-      region: regionNames || undefined,
-    });
     this.loadData();
   }
 
@@ -208,15 +191,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
         this.sortOptions.direction === 'desc'
           ? '-' + this.sortOptions.active
           : this.sortOptions.active,
-    };
-  }
-
-  private getRegionFilters() {
-    if (this.selectedRegions.length === 0) {
-      return;
-    }
-    return {
-      region_name: this.selectedRegions.map((r) => r.value),
     };
   }
 

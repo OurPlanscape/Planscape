@@ -35,7 +35,7 @@ describe('LoginComponent', () => {
         BrowserAnimationsModule,
         RouterTestingModule.withRoutes([
           { path: 'home', component: DummyComponent },
-          { path: 'map', component: DummyComponent },
+          { path: 'explore', component: DummyComponent },
           { path: 'signup', component: DummyComponent },
         ]),
       ],
@@ -95,7 +95,7 @@ describe('LoginComponent', () => {
   });
 
   describe('explore', () => {
-    it('navigates to map', async () => {
+    it('navigates to explore', async () => {
       fixture.detectChanges();
       const button = fixture.debugElement.query(By.css('[data-id="explore"]'));
       await button.nativeElement.click();
@@ -103,7 +103,7 @@ describe('LoginComponent', () => {
       // check current URL
       const location = TestBed.inject(Location);
       fixture.detectChanges();
-      expect(location.path()).toEqual('/map');
+      expect(location.path()).toEqual('/explore');
     });
   });
   describe('create account', () => {

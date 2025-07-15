@@ -75,11 +75,6 @@ body.no-scroll-bounce {
   }
 }
 
-// Leaflet attribution box
-.leaflet-control-attribution {
-  max-width: calc(100% - 200px);
-}
-
 // Removes the box when a boundary is clicked. https://github.com/OurPlanscape/Planscape/issues/357
 * {
   outline: none;
@@ -94,6 +89,4 @@ body.no-scroll-bounce {
   height: 5px !important;
 }
 
-// Must manually import leaflet draw css. https://github.com/Leaflet/Leaflet.draw/issues/617
-@import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 @import "styles/index";

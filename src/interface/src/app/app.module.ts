@@ -5,7 +5,7 @@ import {
   HttpClientModule,
   HttpClientXsrfModule,
 } from '@angular/common/http';
-import { NgModule, ErrorHandler } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -22,7 +22,6 @@ import { ChipInputComponent } from './home/chip-input/chip-input.component';
 import { FeaturesModule } from './features/features.module';
 import { HomeComponent } from './home/home.component';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
-import { MapModule } from './map/map.module';
 
 import { LegacyMaterialModule } from './material/legacy-material.module';
 
@@ -67,7 +66,6 @@ import * as Sentry from '@sentry/angular';
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,
-    MapModule,
     NgxMaskModule.forRoot(),
     ButtonComponent,
     DeleteDialogComponent,
