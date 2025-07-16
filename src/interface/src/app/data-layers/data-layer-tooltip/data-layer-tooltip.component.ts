@@ -4,30 +4,44 @@ import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '../../shared/files';
 import { DataLayersService } from '../../services/data-layers.service';
-import { Observable, shareReplay, take, map } from 'rxjs';
+import { Observable, shareReplay, take } from 'rxjs';
+import { ButtonComponent } from '@styleguide';
+import { AccountRoutingModule } from 'src/app/account/account-routing.module';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
-  imports: [AsyncPipe, NgIf, MatButtonModule, DecimalPipe],
+  imports: [
+    AsyncPipe,
+    ButtonComponent,
+    DecimalPipe,
+    MatButtonModule,
+    NgIf,
+    AccountRoutingModule,
+  ],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
 export class DataLayerTooltipComponent implements OnInit {
   @Input() layer!: DataLayer;
 
+  downloadLink$: Observable<string> | null = null;
+  loadingLink = false;
+  filename: string | null = null;
   constructor(private dataLayersService: DataLayersService) {}
 
-  downloadLink$: Observable<string> | null = null;
-  filename$: Observable<string> | null = null;
-
   ngOnInit() {
+    this.loadingLink = true;
     this.downloadLink$ = this.dataLayersService
       .getPublicUrl(this.layer.id)
       .pipe(take(1), shareReplay(1));
-    this.filename$ = this.downloadLink$.pipe(
-      map((filename) => this.transformFilename(filename))
-    );
+
+    this.downloadLink$.pipe(untilDestroyed(this)).subscribe((link) => {
+      this.loadingLink = false;
+      this.filename = this.transformFilename(link);
+    });
   }
 
   hasMinMax(): boolean {
