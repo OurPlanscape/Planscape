@@ -24,7 +24,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
   styleUrl: './section.component.scss',
 })
 export class SectionComponent {
-  @Input() title = '';
+  @Input() headline = '';
   @Input() tooltipContent = '';
 
   @Input() isCollapsible = false;

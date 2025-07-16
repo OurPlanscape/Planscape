@@ -31,7 +31,7 @@ type Story = StoryObj<SectionComponent>;
 
 export const Default: Story = {
   args: {
-    title: 'Project Areas',
+    headline: 'Project Areas',
     tooltipContent:
       'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
   },
@@ -39,14 +39,14 @@ export const Default: Story = {
 
 export const NoTooltip: Story = {
   args: {
-    title: 'Project Areas',
+    headline: 'Project Areas',
   },
 };
 
 export const Collapsible: Story = {
   args: {
     isCollapsible: true,
-    title: 'Project Areas',
+    headline: 'Project Areas',
     tooltipContent:
       'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
   },
