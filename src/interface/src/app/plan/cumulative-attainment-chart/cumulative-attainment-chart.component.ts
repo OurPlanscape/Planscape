@@ -56,7 +56,6 @@ export class CumulativeAttainmentChartComponent implements OnInit {
 
   ngOnInit(): void {
     const d = processCumulativeAttainment(this.scenarioResult.result.features);
-    console.log(d);
     this.data.labels = d.area.map((data) => Math.round(data));
     this.data.datasets = d.datasets.map((data, index) => {
       return {
