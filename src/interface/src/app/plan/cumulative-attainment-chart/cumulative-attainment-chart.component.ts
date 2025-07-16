@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { NgChartsModule } from 'ng2-charts';
 import { ScenarioResult } from '@types';
 import { processCumulativeAttainment } from '../plan-helpers';
+import { ChartOptions, InteractionMode, TooltipItem } from 'chart.js';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
@@ -13,19 +14,39 @@ import { processCumulativeAttainment } from '../plan-helpers';
 export class CumulativeAttainmentChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
 
-  options = {
+  options: ChartOptions<'line'> = {
     responsive: true,
     scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Cumulative Area treated (Acres)',
+        },
+        ticks: {
+          maxTicksLimit: 5,
+        },
+      },
       y: {
         title: {
           display: true,
           text: 'Cumulative Attainment (%)',
         },
+        ticks: {
+          maxTicksLimit: 4,
+        },
       },
-      x: {
-        title: {
-          display: true,
-          text: 'Cumulative Area treated (Acres)',
+    },
+    interaction: {
+      mode: 'nearest' as InteractionMode,
+      intersect: false,
+    },
+    plugins: {
+      tooltip: {
+        enabled: true,
+        displayColors: false, // ⛔ remove color box
+        callbacks: {
+          title: () => '', // ⛔ remove title
+          label: (context: TooltipItem<'line'>) => context.dataset.label ?? '',
         },
       },
     },
@@ -41,6 +62,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
       return {
         ...data,
         ...this.colorForIndex(index),
+        pointRadius: 0, // Hides the circles
       };
     });
   }
