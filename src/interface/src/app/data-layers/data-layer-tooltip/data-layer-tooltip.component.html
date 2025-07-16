@@ -49,7 +49,11 @@
     <i class="material-symbols-outlined">download</i>
     Download Dataset
   </a>
-  <button class="download-link" sg-button [disabled]="true">
+  <button
+    *ngIf="!loadingLink && (downloadLink$ | async) === null"
+    class="download-link"
+    sg-button
+    [disabled]="true">
     <i class="material-symbols-outlined">download</i>
     Dataset Unavailable
   </button>
