@@ -26,7 +26,7 @@ import { standIsForested } from '../stands';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
+import { getBasicChartOptions, updateYAxisRange } from '../../chart-helper';
 
 @UntilDestroy()
 @Component({

@@ -124,3 +124,15 @@ export const BASE_LAYERS_DEFAULT = {
  * that's accepted by Angular is rejected by the backend.
  */
 export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
+
+export const CHART_COLORS = [
+  '#483D78',
+  '#A59CCD',
+  '#BBE3B6',
+  '#85B167',
+  '#FFDB69',
+  '#F18226',
+  '#483D78',
+  '#483D78',
+  '#CC4678',
+];
