@@ -50,6 +50,7 @@ import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.com
 import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
+import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import { SectionComponent } from '../../styleguide/collapsible-panel/section.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
 
@@ -115,6 +116,7 @@ import { TreatmentOpportunityChartComponent } from './treatment-opportunity-char
     ScenarioMapComponent,
     PlanTabsFooterComponent,
     DataLayersComponent,
+    ScenarioMetricsLegendComponent,
     SectionComponent,
     TreatmentOpportunityChartComponent,
   ],

@@ -9,11 +9,12 @@ import {
   getChartFontConfig,
   getProjectAreaLabelsFromFeatures,
 } from 'src/app/chart-helper';
+import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [NgChartsModule],
+  imports: [NgChartsModule, ScenarioMetricsLegendComponent],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
