@@ -46,12 +46,13 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
 import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
-import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.component';
+import { NewTreatmentFooterComponent } from './new-treatment-footer/new-treatment-footer.component';
 import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
 import { SectionComponent } from '../../styleguide/collapsible-panel/section.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
+import { ScenarioDownloadFooterComponent } from "./scenario-download-footer/scenario-download-footer.component";
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -113,10 +114,11 @@ import { TreatmentOpportunityChartComponent } from './treatment-opportunity-char
     OpacitySliderComponent,
     MatTabsModule,
     ScenarioMapComponent,
-    PlanTabsFooterComponent,
+    NewTreatmentFooterComponent,
     DataLayersComponent,
     SectionComponent,
     TreatmentOpportunityChartComponent,
+    ScenarioDownloadFooterComponent
   ],
 })
-export class PlanModule {}
+export class PlanModule { }

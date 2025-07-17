@@ -1,0 +1,10 @@
+<mat-spinner diameter="24" *ngIf="downloadingScenario"></mat-spinner>
+<button
+  sg-button
+  variant="primary"
+  icon="add"
+  class="new-treatment"
+  [disabled]="downloadingScenario"
+  (click)="handleDownload()">
+  Download
+</button>
