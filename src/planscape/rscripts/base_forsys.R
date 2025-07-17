@@ -938,6 +938,20 @@ upsert_scenario_result <- function(
   dbExecute(connection, query, immediate = TRUE)
 }
 
+upsert_result_status <- function(
+    connection,
+    scenario_id,
+    result_status) {
+  query <- glue_sql("UPDATE planning_scenario
+    SET result_status = {result_status}
+    WHERE id = {scenario_id}",
+    result_status = result_status,
+    scenario_id = scenario_id,
+    .con = connection
+  )
+  dbExecute(connection, query, immediate = TRUE)
+}
+
 main_v2 <- function(scenario_id) {
   now <- now_utc()
   connection <- get_connection()
@@ -990,6 +1004,12 @@ main_v2 <- function(scenario_id) {
         result
       )
 
+      upsert_result_status(
+        connection,
+        scenario_id,
+        "SUCCESS"
+      )
+
       delete_project_areas(connection, scenario)
 
       project_areas <- lapply(result$features, function(project) {
@@ -1008,6 +1028,11 @@ main_v2 <- function(scenario_id) {
         scenario_id,
         "FAILURE",
         list(type = "FeatureCollection", features = list())
+      )
+      upsert_result_status(
+        connection,
+        scenario_id,
+        "FAILURE"
       )
       stop(e)
     },
@@ -1072,6 +1097,11 @@ main <- function(scenario_id) {
         "SUCCESS",
         result
       )
+      upsert_result_status(
+        connection,
+        scenario_id,
+        "SUCCESS"
+      )
       delete_project_areas(connection, scenario)
       project_areas <- lapply(result$features, function(project) {
         return(upsert_project_area(connection, now, scenario, project))
@@ -1087,6 +1117,11 @@ main <- function(scenario_id) {
         scenario_id,
         "FAILURE",
         list(type = "FeatureCollection", features = list())
+      )
+      upsert_result_status(
+        connection,
+        scenario_id,
+        "FAILURE"
       )
       stop(e)
     },

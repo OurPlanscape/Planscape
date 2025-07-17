@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
-import { AsyncPipe, NgClass, NgIf, CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule, NgClass, NgIf } from '@angular/common';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { SharedModule } from '@shared';
@@ -8,7 +8,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { firstValueFrom, map, of, switchMap, take, skip } from 'rxjs';
+import { firstValueFrom, map, of, skip, switchMap, take } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -108,7 +108,13 @@ export class ExploreComponent implements OnDestroy {
     // (when the user clicks on the data layer name on the map)
     this.multiMapConfigState.selectedMapId$
       .pipe(untilDestroyed(this), skip(1))
-      .subscribe((id) => (this.panelExpanded = true));
+      .subscribe((id) => {
+        this.panelExpanded = true;
+        // if I have a selected map, go to data layer tab
+        if (id) {
+          this.tabIndex = 0;
+        }
+      });
 
     this.mapConfigService.initialize();
   }
@@ -142,7 +148,6 @@ export class ExploreComponent implements OnDestroy {
       this.multiMapConfigState.updateDataLayersOpacity(
         options.opacity || FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY
       );
-      this.onTabIndexChange(this.tabIndex);
     }
   }
 
@@ -150,7 +155,7 @@ export class ExploreComponent implements OnDestroy {
     if (index !== 0) {
       this.multiMapConfigState.setSelectedMap(null);
     } else {
-      this.multiMapConfigState.setSelectedMap(1); // Default map
+      this.multiMapConfigState.resetToFirstMap();
     }
   }
 }

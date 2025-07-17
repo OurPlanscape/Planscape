@@ -4,7 +4,6 @@
 
 :host {
   display: flex;
-  height: 100%;
 
   ::ng-deep .mat-form-field-outline {
     background-color: $color-light-gray;
@@ -171,4 +170,21 @@ mat-form-field {
   .planscape-white-logo {
     display: none;
   }
+}
+
+.d-block {
+  display: block;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+// When we have a login error the credits where overlapping some buttons on small screens
+.mb-90 {
+  margin-bottom: 90px;
 }

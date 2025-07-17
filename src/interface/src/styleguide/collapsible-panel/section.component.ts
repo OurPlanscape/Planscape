@@ -5,8 +5,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { MatExpansionModule } from '@angular/material/expansion';
 
+/**
+ * SectionComponent displays a panel with a title and optional tooltip.
+ * Content passed into `<app-section></app-section>` is rendered inside,
+ * and setting `collapsible` to true makes the panel expandable/collapsible.
+ */
 @Component({
-  selector: 'sg-collapsible-panel',
+  selector: 'sg-section',
   standalone: true,
   imports: [
     NgIf,
@@ -15,14 +20,14 @@ import { MatExpansionModule } from '@angular/material/expansion';
     ButtonComponent,
     MatExpansionModule,
   ],
-  templateUrl: './collapsible-panel.component.html',
-  styleUrl: './collapsible-panel.component.scss',
+  templateUrl: './section.component.html',
+  styleUrl: './section.component.scss',
 })
-export class CollapsiblePanelComponent {
-  @Input() title = '';
+export class SectionComponent {
+  @Input() headline = '';
   @Input() tooltipContent = '';
 
-  @Input() isCollapsible = true;
+  @Input() isCollapsible = false;
 
   stopPropagation(e: Event) {
     e.stopPropagation();

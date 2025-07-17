@@ -1,5 +1,6 @@
 import json
 import logging
+from urllib.parse import urlparse
 
 from allauth.account.utils import has_verified_email
 from django.conf import settings
@@ -8,14 +9,18 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from planscape.permissions import PlanscapePermission
-from users.serializers import UserSerializer, MartinResourceSerializer
+from users.serializers import MartinResourceSerializer, UserSerializer
 
 # Configure global logging.
 logger = logging.getLogger(__name__)
@@ -190,8 +195,18 @@ def verify_password_reset_token(
     return JsonResponse({"valid": True})
 
 
+PRIVATE_LAYERS = (
+    "planning_area_by_id",
+    "project_area_aggregate",
+    "project_areas_by_scenario",
+    "stands_by_tx_plan",
+    "stands_by_tx_result",
+)
+
+
 @api_view(["GET"])
-@permission_classes([PlanscapePermission])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def validate_martin_request(request: Request) -> Response:
     original_uri = request.headers.get("X-Original-URI")
     if not original_uri:
@@ -200,6 +215,11 @@ def validate_martin_request(request: Request) -> Response:
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    parse_uri = urlparse(original_uri)
+    layer_name = parse_uri.path.split("/")[2]
+    logger.info(f"Target Layer in Martin: {layer_name}")
+    if layer_name not in PRIVATE_LAYERS:
+        return Response({"valid": True})
     if original_uri.find("?") == -1:
         return Response({"valid": True})
 

@@ -2,20 +2,20 @@ import json
 import re
 
 from allauth.account.models import EmailAddress
+from collaboration.models import Permissions, Role
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TransactionTestCase, override_settings
 from django.urls import reverse
+from impacts.tests.factories import TreatmentPlanFactory
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
 from rest_framework.test import APITransactionTestCase
 
-from collaboration.models import Permissions, Role
 from planscape.tests.factories import UserFactory
-from planning.tests.factories import (
-    ScenarioFactory,
-    ProjectAreaFactory,
-    PlanningAreaFactory,
-)
-from impacts.tests.factories import TreatmentPlanFactory
 
 
 class CreateUserTest(APITransactionTestCase):
@@ -377,7 +377,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
         some_user = UserFactory.create()
         self.client.force_authenticate(some_user)
         response = self.client.get(
-            self.url, headers={"X_ORIGINAL_URI": "/path/to/martin"}
+            self.url, headers={"X_ORIGINAL_URI": "/tiles/planning_area_by_id/10/1/2"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -385,7 +385,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_owner_has_permission__scenario(self):
         self.client.force_authenticate(self.owner)
-        martins_path = f"/path/to/martin?scenario_id={self.scenario.pk}"
+        martins_path = (
+            f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -396,7 +398,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_owner_has_permission__project_area(self):
         self.client.force_authenticate(self.owner)
-        martins_path = f"/path/to/martin?project_area_id={self.project_area.pk}"
+        martins_path = (
+            f"/tiles/planning_area_by_id/martin?project_area_id={self.project_area.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -407,7 +411,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_owner_has_permission__tx_plan(self):
         self.client.force_authenticate(self.owner)
-        martins_path = f"/path/to/martin?treatment_plan_id={self.treatment_plan.pk}"
+        martins_path = f"/tiles/planning_area_by_id/martin?treatment_plan_id={self.treatment_plan.pk}"
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -418,7 +422,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_collaborator_has_permission__scenario(self):
         self.client.force_authenticate(self.collaborator)
-        martins_path = f"/path/to/martin?scenario_id={self.scenario.pk}"
+        martins_path = (
+            f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -429,7 +435,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_collaborator_has_permission__project_area(self):
         self.client.force_authenticate(self.collaborator)
-        martins_path = f"/path/to/martin?project_area_id={self.project_area.pk}"
+        martins_path = (
+            f"/tiles/planning_area_by_id/martin?project_area_id={self.project_area.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -440,7 +448,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_collaborator_has_permission__tx_plan(self):
         self.client.force_authenticate(self.collaborator)
-        martins_path = f"/path/to/martin?treatment_plan_id={self.treatment_plan.pk}"
+        martins_path = f"/tiles/planning_area_by_id/martin?treatment_plan_id={self.treatment_plan.pk}"
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -451,7 +459,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_viewer_has_permission__scenario(self):
         self.client.force_authenticate(self.viewer)
-        martins_path = f"/path/to/martin?scenario_id={self.scenario.pk}"
+        martins_path = (
+            f"/tiles/planning_area_by_id/martin?scenario_id={self.scenario.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -462,7 +472,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_viewer_has_permission__project_area(self):
         self.client.force_authenticate(self.viewer)
-        martins_path = f"/path/to/martin?project_area_id={self.project_area.pk}"
+        martins_path = f"/tiles/project_area_aggregate/martin?project_area_id={self.project_area.pk}"
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -473,7 +483,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_viewer_has_permission__tx_plan(self):
         self.client.force_authenticate(self.viewer)
-        martins_path = f"/path/to/martin?treatment_plan_id={self.treatment_plan.pk}"
+        martins_path = f"/tiles/project_area_aggregate/martin?treatment_plan_id={self.treatment_plan.pk}"
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -485,7 +495,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
     def test_user_has_no_permission__scenario(self):
         another_user = UserFactory.create()
         self.client.force_authenticate(another_user)
-        martins_path = f"/path/to/martin?scenario_id={self.scenario.pk}"
+        martins_path = (
+            f"/tiles/project_areas_by_scenario?scenario_id={self.scenario.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -496,7 +508,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
     def test_user_has_no_permission__project_area(self):
         another_user = UserFactory.create()
         self.client.force_authenticate(another_user)
-        martins_path = f"/path/to/martin?project_area_id={self.project_area.pk}"
+        martins_path = (
+            f"/tiles/project_areas_by_scenario?project_area_id={self.project_area.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -507,7 +521,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
     def test_user_has_no_permission__tx_plan(self):
         another_user = UserFactory.create()
         self.client.force_authenticate(another_user)
-        martins_path = f"/path/to/martin?treatment_plan_id={self.treatment_plan.pk}"
+        martins_path = (
+            f"/tiles/stands_by_tx_plan?treatment_plan_id={self.treatment_plan.pk}"
+        )
         response = self.client.get(
             self.url,
             headers={"X_ORIGINAL_URI": martins_path},
@@ -517,7 +533,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
     def test_unauthenticated_user(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 400)
 
     def test_missing_headers(self):
         self.client.force_authenticate(self.owner)
