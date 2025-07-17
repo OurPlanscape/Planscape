@@ -21,8 +21,8 @@ import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-met
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
 
-  labelData: any[] = [];
-  chartDatasets: any[] = [];
+  labelData: string[] = [];
+  chartDatasets: CustomChartDataset[] = [];
 
   public barChartType: 'bar' = 'bar';
 
