@@ -8,6 +8,7 @@ import {
   getChartDatasetsFromFeatures,
   getChartFontConfig,
   getProjectAreaLabelsFromFeatures,
+  whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
 
 @Component({
@@ -28,7 +29,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
     responsive: true,
     plugins: {
       tooltip: {
-        enabled: true,
+        ...whiteTooltipBaseConfig(),
         callbacks: {
           title: (items) => {
             const dataset = items[0]?.dataset as CustomChartDataset;
@@ -39,21 +40,6 @@ export class TreatmentOpportunityChartComponent implements OnInit {
             return `${value} %`;
           },
         },
-        backgroundColor: '#FFF',
-        titleColor: '#000',
-        bodyColor: '#000',
-        borderColor: '#E1E1E1',
-        borderWidth: 1,
-        titleFont: {
-          ...getChartFontConfig(),
-          weight: 'bold',
-        },
-        bodyFont: {
-          ...getChartFontConfig(),
-          weight: '500',
-        },
-        padding: 8,
-        displayColors: false,
       },
       legend: {
         display: false,

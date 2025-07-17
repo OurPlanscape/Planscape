@@ -3,6 +3,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { ScenarioResult } from '@types';
 import { processCumulativeAttainment } from '../plan-helpers';
 import { ChartOptions, InteractionMode, TooltipItem } from 'chart.js';
+import { getChartFontConfig, whiteTooltipBaseConfig } from '../../chart-helper';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
@@ -21,6 +22,10 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         title: {
           display: true,
           text: 'Cumulative Area treated (Acres)',
+          font: {
+            ...getChartFontConfig(),
+            color: '#767575',
+          },
         },
         ticks: {
           maxTicksLimit: 5,
@@ -30,6 +35,10 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         title: {
           display: true,
           text: 'Cumulative Attainment (%)',
+          font: {
+            ...getChartFontConfig(),
+            color: '#767575',
+          },
         },
         ticks: {
           maxTicksLimit: 4,
@@ -42,12 +51,20 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     },
     plugins: {
       tooltip: {
-        enabled: true,
-        displayColors: false, // ⛔ remove color box
+        ...whiteTooltipBaseConfig(),
         callbacks: {
           title: () => '', // ⛔ remove title
           label: (context: TooltipItem<'line'>) => context.dataset.label ?? '',
         },
+      },
+      datalabels: {
+        font: {
+          ...getChartFontConfig(),
+          size: 10,
+        },
+      },
+      legend: {
+        display: false,
       },
     },
   };
