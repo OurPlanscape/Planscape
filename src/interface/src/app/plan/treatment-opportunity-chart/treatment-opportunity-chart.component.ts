@@ -43,9 +43,6 @@ export class TreatmentOpportunityChartComponent implements OnInit {
           },
         },
       },
-      legend: {
-        display: false,
-      },
       datalabels: {
         font: {
           ...getChartFontConfig(),
@@ -62,6 +59,11 @@ export class TreatmentOpportunityChartComponent implements OnInit {
         ticks: {
           padding: 0,
           color: '#4A4A4A',
+        },
+        grid: {
+          drawOnChartArea: false, // ✅ disables full grid lines
+          drawTicks: true,
+          tickColor: 'black',
         },
       },
       y: {

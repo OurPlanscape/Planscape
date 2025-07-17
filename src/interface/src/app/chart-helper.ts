@@ -205,5 +205,8 @@ export function whiteTooltipBaseConfig() {
     },
     padding: 8,
     displayColors: false,
+    animation: {
+      duration: 0,
+    },
   };
 }

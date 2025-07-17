@@ -3,7 +3,11 @@ import { NgChartsModule } from 'ng2-charts';
 import { ScenarioResult } from '@types';
 import { processCumulativeAttainment } from '../plan-helpers';
 import { ChartOptions, InteractionMode, TooltipItem } from 'chart.js';
-import { getChartFontConfig, whiteTooltipBaseConfig } from '../../chart-helper';
+import {
+  getChartBorderDash,
+  getChartFontConfig,
+  whiteTooltipBaseConfig,
+} from '../../chart-helper';
 import { ChartComponent } from '../../../styleguide/chart/chart.component';
 
 @Component({
@@ -27,10 +31,17 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         ticks: {
           maxTicksLimit: 5,
         },
+        grid: {
+          color: '#FFFFFFFF',
+          tickColor: 'black',
+        },
       },
       y: {
         title: {
           display: false,
+        },
+        grid: {
+          borderDash: getChartBorderDash(),
         },
         ticks: {
           maxTicksLimit: 4,
