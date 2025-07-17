@@ -1,22 +1,47 @@
-import { Component, Input } from '@angular/core';
-import { DecimalPipe, NgIf } from '@angular/common';
+import { Component, Input, OnInit } from '@angular/core';
+import { DecimalPipe, NgIf, AsyncPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '../../shared/files';
+import { DataLayersService } from '../../services/data-layers.service';
+import { Observable, shareReplay, take } from 'rxjs';
+import { ButtonComponent } from '@styleguide';
+import { AccountRoutingModule } from 'src/app/account/account-routing.module';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
-  imports: [NgIf, MatButtonModule, DecimalPipe],
+  imports: [
+    AsyncPipe,
+    ButtonComponent,
+    DecimalPipe,
+    MatButtonModule,
+    NgIf,
+    AccountRoutingModule,
+  ],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
-export class DataLayerTooltipComponent {
+export class DataLayerTooltipComponent implements OnInit {
   @Input() layer!: DataLayer;
-  private fileName = '';
 
-  hasDownloadLink(): boolean {
-    return !!this.layer.public_url;
+  downloadLink$: Observable<string> | null = null;
+  loadingLink = false;
+  filename: string | null = null;
+  constructor(private dataLayersService: DataLayersService) {}
+
+  ngOnInit() {
+    this.loadingLink = true;
+    this.downloadLink$ = this.dataLayersService
+      .getPublicUrl(this.layer.id)
+      .pipe(take(1), shareReplay(1));
+
+    this.downloadLink$.pipe(untilDestroyed(this)).subscribe((link) => {
+      this.loadingLink = false;
+      this.filename = this.transformFilename(link);
+    });
   }
 
   hasMinMax(): boolean {
@@ -41,19 +66,12 @@ export class DataLayerTooltipComponent {
     return units.join(', ');
   }
 
-  getFileName() {
-    if (this.fileName) {
-      return this.fileName;
-    }
-    const urlPath = this.layer.public_url.split('?')[0]; // remove query string
-    const originalFilename = urlPath.substring(urlPath.lastIndexOf('/') + 1); // get last segment
-
-    const extension = getFileExtensionFromFile(originalFilename);
-
+  transformFilename(downloadPath: string) {
+    const urlPath = downloadPath.split('?')[0]; // remove query string
+    const originalFilename = urlPath?.substring(urlPath.lastIndexOf('/') + 1); // get last segment
+    const extension = getFileExtensionFromFile(originalFilename ?? '');
     // Sanitize the name: lowercase, replace spaces with underscores, remove non-word characters
     const safeName = getSafeFileName(this.layer.name);
-    // save it so we dont re-run regex again
-    this.fileName = `${safeName}${extension}`;
-    return this.fileName;
+    return `${safeName}${extension}`;
   }
 }

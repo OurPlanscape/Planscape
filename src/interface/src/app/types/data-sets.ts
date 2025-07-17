@@ -107,12 +107,10 @@ export interface DataLayer {
   metadata: Metadata | null;
   styles: Styles[];
   geometry: Geometry;
-  public_url: string;
-
   map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
 
-export interface BaseLayer extends Omit<DataLayer, 'public_url' | 'styles'> {
+export interface BaseLayer extends Omit<DataLayer, 'styles'> {
   // base layers have only one path/category.
   path: [string];
   map_url: string;
