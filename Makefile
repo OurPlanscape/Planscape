@@ -125,6 +125,12 @@ stop-martin:
 start-martin:
 	${SYS_CTL} start martin.service
 
+stop-forsys-server:
+	${SYS_CTL} stop forsys-server.service
+
+start-forsys-server:
+	${SYS_CTL} start forsys-server.service
+
 start:
 	${SYS_CTL} start ${SERVICE}
 
@@ -137,7 +143,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop stop-celery start start-celery stop-martin start-martin
+restart: reload stop stop-celery stop-forsys-server start start-celery stop-martin start-martin start-forsys-server
 
 nginx-restart:
 	sudo service nginx restart
