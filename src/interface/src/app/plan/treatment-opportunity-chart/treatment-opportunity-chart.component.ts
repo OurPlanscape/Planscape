@@ -9,16 +9,20 @@ import {
   getChartFontConfig,
   getProjectAreaLabelsFromFeatures,
 } from 'src/app/chart-helper';
+import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [NgChartsModule],
+  imports: [NgChartsModule, ScenarioMetricsLegendComponent],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
+
+  labelData: any[] = [];
+  chartDatasets: any[] = [];
 
   public barChartType: 'bar' = 'bar';
 
@@ -95,13 +99,16 @@ export class TreatmentOpportunityChartComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    this.labelData = getProjectAreaLabelsFromFeatures(
+      this.scenarioResult.result.features
+    );
+    this.chartDatasets = getChartDatasetsFromFeatures(
+      this.scenarioResult.result.features
+    );
+
     this.barChartData = {
-      labels: getProjectAreaLabelsFromFeatures(
-        this.scenarioResult.result.features
-      ),
-      datasets: getChartDatasetsFromFeatures(
-        this.scenarioResult.result.features
-      ),
+      labels: this.labelData,
+      datasets: this.chartDatasets,
     };
   }
 }

@@ -1,7 +1,7 @@
 <div class="title">Legend:</div>
 <div class="legend-box">
   <div class="legend-line" *ngFor="let metric of metrics">
-    <div class="legend-name">{{ metric }}</div>
-    <div class="legend-color" [style.backgroundColor]="colorMap[metric]"></div>
+    <div class="legend-name">{{ metric.extraInfo }}</div>
+    <div class="legend-color" [style.backgroundColor]="metric.backgroundColor"></div>
   </div>
 </div>
