@@ -29,34 +29,34 @@ export const getChartBorderDash = (): any => {
 export const getSharedGridConfig = (yAxis = true): any =>
   yAxis
     ? {
-        drawBorder: false, // Remove the border along the y-axis
-        drawTicks: false,
-        lineWidth: 1, // Set line width for dotted lines
-        color: '#979797', // Dotted line color
-        borderDash: getChartBorderDash(),
-      }
+      drawBorder: false, // Remove the border along the y-axis
+      drawTicks: false,
+      lineWidth: 1, // Set line width for dotted lines
+      color: '#979797', // Dotted line color
+      borderDash: getChartBorderDash(),
+    }
     : {
-        display: false, // Disable grid lines for the x-axis
-        drawBorder: false, // Remove the bottom border (x-axis line)
-        drawTicks: false, // Remove the tick marks on the x-axis
-      };
+      display: false, // Disable grid lines for the x-axis
+      drawBorder: false, // Remove the bottom border (x-axis line)
+      drawTicks: false, // Remove the tick marks on the x-axis
+    };
 
 export const getSharedTicksConfig = (yAxis = true): any =>
   yAxis
     ? {
-        color: '#4A4A4A',
-        font: baseFont as any,
-        padding: 24,
-        stepSize: 50,
-        callback: (value: any) => `${value}%`,
-      }
+      color: '#4A4A4A',
+      font: baseFont as any,
+      padding: 24,
+      stepSize: 50,
+      callback: (value: any) => `${value}%`,
+    }
     : {
-        autoSkip: false,
-        maxRotation: 0,
-        minRotation: 0,
-        font: baseFont,
-        padding: 24,
-      };
+      autoSkip: false,
+      maxRotation: 0,
+      minRotation: 0,
+      font: baseFont,
+      padding: 24,
+    };
 
 export const getSharedDataLabelsConfig = (): any => ({
   color: '#000',
@@ -81,15 +81,15 @@ export const getSharedDataLabelsConfig = (): any => ({
 export const getSharedTitleConfig = (yAxis = true): any => {
   return yAxis
     ? {
-        display: false,
-      }
+      display: false,
+    }
     : {
-        display: true,
-        text: '(Immediately post-treatment)',
-        align: 'start',
-        color: '#898989', // Text color
-        font: { ...baseFont, ...{ style: 'italic' } },
-      };
+      display: true,
+      text: '(Immediately post-treatment)',
+      align: 'start',
+      color: '#898989', // Text color
+      font: { ...baseFont, ...{ style: 'italic' } },
+    };
 };
 
 export const updateYAxisRange = (
@@ -163,7 +163,7 @@ export function getChartDatasetsFromFeatures(
   Object.keys(groupedAttainment).forEach((key, index) => {
     result.push({
       data: groupedAttainment[key],
-      backgroundColor: CHART_COLORS[index - 1],
+      backgroundColor: CHART_COLORS[index],
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });

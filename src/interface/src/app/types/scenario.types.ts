@@ -129,14 +129,3 @@ export interface ScenarioGoal {
 export interface CategorizedScenarioGoals {
   [key: string]: ScenarioGoal[];
 }
-
-// TODO: just a placeholder
-export type SecondaryMetricColorMap = Record<string, string>;
-
-export const SecondaryMetricColors: SecondaryMetricColorMap = {
-  'Probability of Fire Severity - High': '#ff9988',
-  'Probability of Fire Severity - Low': '#ffaaaa',
-  'Total Aboveground Carbon': '#aaffaa',
-  'Damage Potential': '#aaeeee',
-  'Structure Exposure Score': '#ffffaa',
-};

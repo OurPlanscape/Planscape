@@ -1,9 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NgFor } from '@angular/common';
-import { SecondaryMetricColors } from '@types';
-import {
-  CustomChartDataset
-} from 'src/app/chart-helper';
+import { CustomChartDataset } from 'src/app/chart-helper';
 
 @Component({
   selector: 'app-scenario-metrics-legend',
@@ -14,5 +11,4 @@ import {
 })
 export class ScenarioMetricsLegendComponent {
   @Input() metrics: CustomChartDataset[] = [];
-  colorMap = SecondaryMetricColors;
 }
