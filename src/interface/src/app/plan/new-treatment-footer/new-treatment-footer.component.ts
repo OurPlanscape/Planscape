@@ -74,12 +74,4 @@ export class NewTreatmentFooterComponent {
         },
       });
   }
-
-  handleDownload() {
-    console.log('do a download...');
-  }
-
-
-
-
 }

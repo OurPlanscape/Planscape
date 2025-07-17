@@ -34,16 +34,21 @@ export class ScenarioDownloadFooterComponent {
 
     if (this.scenarioId) {
       const filename = getSafeFileName(testScenarioName) + '_shp.zip';
-      this.scenarioService.downloadShapeFiles(this.scenarioId).subscribe((data) => {
-        const blob = new Blob([data], {
-          type: 'application/zip',
-        });
-        this.fileServerService.saveAs(blob, filename);
-      });
+      this.scenarioService.downloadShapeFiles(this.scenarioId).subscribe(
+        {
+          next: (data) => {
+            this.downloadingScenario = false;
+            const blob = new Blob([data], {
+              type: 'application/zip',
+            });
+            this.fileServerService.saveAs(blob, filename);
+          },
+          error: (e) => {
+            // TODO: show a toast...
+            this.downloadingScenario = false;
+            console.error('Error downloading: ', e);
+          },
+        })
     }
   }
-
-
-
-
 }
