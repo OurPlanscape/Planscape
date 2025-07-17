@@ -21,9 +21,6 @@ import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-met
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
 
-  labelData: string[] = [];
-  chartDatasets: CustomChartDataset[] = [];
-
   public barChartType: 'bar' = 'bar';
 
   public barChartData!: ChartData<'bar', number[], string>;
@@ -99,16 +96,13 @@ export class TreatmentOpportunityChartComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.labelData = getProjectAreaLabelsFromFeatures(
-      this.scenarioResult.result.features
-    );
-    this.chartDatasets = getChartDatasetsFromFeatures(
-      this.scenarioResult.result.features
-    );
-
     this.barChartData = {
-      labels: this.labelData,
-      datasets: this.chartDatasets,
+      labels: getProjectAreaLabelsFromFeatures(
+        this.scenarioResult.result.features
+      ),
+      datasets: getChartDatasetsFromFeatures(
+        this.scenarioResult.result.features
+      ),
     };
   }
 }
