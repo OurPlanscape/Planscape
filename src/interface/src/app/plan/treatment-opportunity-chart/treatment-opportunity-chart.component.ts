@@ -10,11 +10,12 @@ import {
   getProjectAreaLabelsFromFeatures,
   whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
+import { ChartComponent } from '../../../styleguide/chart/chart.component';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [NgChartsModule],
+  imports: [NgChartsModule, ChartComponent],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
@@ -27,6 +28,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
 
   public barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       tooltip: {
         ...whiteTooltipBaseConfig(),

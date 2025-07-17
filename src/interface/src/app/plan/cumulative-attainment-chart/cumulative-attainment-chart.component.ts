@@ -4,11 +4,12 @@ import { ScenarioResult } from '@types';
 import { processCumulativeAttainment } from '../plan-helpers';
 import { ChartOptions, InteractionMode, TooltipItem } from 'chart.js';
 import { getChartFontConfig, whiteTooltipBaseConfig } from '../../chart-helper';
+import { ChartComponent } from '../../../styleguide/chart/chart.component';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
   standalone: true,
-  imports: [NgChartsModule],
+  imports: [NgChartsModule, ChartComponent],
   templateUrl: './cumulative-attainment-chart.component.html',
   styleUrl: './cumulative-attainment-chart.component.scss',
 })
@@ -17,15 +18,11 @@ export class CumulativeAttainmentChartComponent implements OnInit {
 
   options: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: {
         title: {
-          display: true,
-          text: 'Cumulative Area treated (Acres)',
-          font: {
-            ...getChartFontConfig(),
-            color: '#767575',
-          },
+          display: false,
         },
         ticks: {
           maxTicksLimit: 5,
@@ -33,12 +30,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
       },
       y: {
         title: {
-          display: true,
-          text: 'Cumulative Attainment (%)',
-          font: {
-            ...getChartFontConfig(),
-            color: '#767575',
-          },
+          display: false,
         },
         ticks: {
           maxTicksLimit: 4,
@@ -53,7 +45,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
       tooltip: {
         ...whiteTooltipBaseConfig(),
         callbacks: {
-          title: () => '', // ⛔ remove title
+          title: () => '',
           label: (context: TooltipItem<'line'>) => context.dataset.label ?? '',
         },
       },
