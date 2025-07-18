@@ -1,4 +1,4 @@
-import { CHART_COLORS } from '@shared';
+import { ChartColors } from '@shared';
 import { FeatureCollection } from '@types';
 import { ChartConfiguration, ChartDataset } from 'chart.js';
 
@@ -143,11 +143,7 @@ export interface CustomChartDataset extends ChartDataset<'bar', number[]> {
   extraInfo?: string;
 }
 
-export function getChartDatasetsFromFeatures(
-  features: FeatureCollection[]
-): CustomChartDataset[] {
-  const result: CustomChartDataset[] = [];
-
+export function getGroupedAttainment(features: FeatureCollection[]) {
   const groupedAttainment: { [key: string]: number[] } = {};
 
   features.forEach((feature) => {
@@ -159,11 +155,20 @@ export function getChartDatasetsFromFeatures(
       groupedAttainment[key].push(convertTo2DecimalsNumbers(value as number));
     }
   });
+  return groupedAttainment;
+}
 
-  Object.keys(groupedAttainment).forEach((key, index) => {
+export function getChartDatasetsFromFeatures(
+  features: FeatureCollection[]
+): CustomChartDataset[] {
+  const result: CustomChartDataset[] = [];
+
+  const groupedAttainment = getGroupedAttainment(features);
+
+  Object.keys(groupedAttainment).forEach((key, _) => {
     result.push({
       data: groupedAttainment[key],
-      backgroundColor: CHART_COLORS[index - 1],
+      backgroundColor: ChartColors[key],
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });

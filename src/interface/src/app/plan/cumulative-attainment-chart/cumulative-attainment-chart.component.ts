@@ -8,6 +8,7 @@ import {
   getChartFontConfig,
   whiteTooltipBaseConfig,
 } from '../../chart-helper';
+import { ChartColors } from '@shared';
 import { ChartComponent } from '../../../styleguide/chart/chart.component';
 
 @Component({
@@ -80,30 +81,18 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     this.data.datasets = d.datasets.map((data, index) => {
       return {
         ...data,
-        ...this.colorForIndex(index),
+        ...this.colorForLabel(data.label),
         pointRadius: 0, // Hides the circles
       };
     });
   }
 
-  colorForIndex(i: number) {
-    const CHART_COLORS = [
-      '#483D78',
-      '#A59CCD',
-      '#BBE3B6',
-      '#85B167',
-      '#FFDB69',
-      '#F18226',
-      '#483D78',
-      '#483D78',
-      '#CC4678',
-    ];
-
+  colorForLabel(label: string) {
     return {
-      backgroundColor: CHART_COLORS[i - 1],
-      borderColor: CHART_COLORS[i - 1],
-      pointBackgroundColor: CHART_COLORS[i - 1],
-      pointBorderColor: CHART_COLORS[i - 1],
+      backgroundColor: ChartColors[label],
+      borderColor: ChartColors[label],
+      pointBackgroundColor: ChartColors[label],
+      pointBorderColor: ChartColors[label],
     };
   }
 }

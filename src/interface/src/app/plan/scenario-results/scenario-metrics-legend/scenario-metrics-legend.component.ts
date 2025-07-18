@@ -1,9 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgFor } from '@angular/common';
-import {
-  CustomChartDataset,
-  getChartDatasetsFromFeatures,
-} from 'src/app/chart-helper';
+import { ChartColors } from '@shared';
+import { getGroupedAttainment } from 'src/app/chart-helper';
 import { ScenarioResult } from '@types';
 
 @Component({
@@ -14,15 +12,13 @@ import { ScenarioResult } from '@types';
   styleUrl: './scenario-metrics-legend.component.scss',
 })
 export class ScenarioMetricsLegendComponent implements OnInit {
-  @Input() scenarioResult!: ScenarioResult | null;
-
-  metrics: CustomChartDataset[] = [];
+  @Input() scenarioResult!: ScenarioResult;
+  chartColors = ChartColors;
+  metrics: string[] = [];
 
   ngOnInit() {
-    if (this.scenarioResult) {
-      this.metrics = getChartDatasetsFromFeatures(
-        this.scenarioResult.result.features
-      );
-    }
+    this.metrics = Object.keys(
+      getGroupedAttainment(this.scenarioResult.result.features)
+    );
   }
 }
