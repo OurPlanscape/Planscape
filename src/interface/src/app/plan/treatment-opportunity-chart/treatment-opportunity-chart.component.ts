@@ -10,13 +10,12 @@ import {
   getProjectAreaLabelsFromFeatures,
   whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
-import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import { ChartComponent } from '../../../styleguide/chart/chart.component';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
+  imports: [NgChartsModule, ChartComponent],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
