@@ -19,9 +19,6 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   metrics: CustomChartDataset[] = [];
 
   ngOnInit() {
-    // TODO: this is a data placeholder.
-    // we'll update this to just grab a collection of scenario attainments
-    // then match these to a map of colors
     if (this.scenarioResult) {
       this.metrics = getChartDatasetsFromFeatures(
         this.scenarioResult.result.features
