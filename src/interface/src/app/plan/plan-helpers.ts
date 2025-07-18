@@ -138,3 +138,55 @@ export function getPlanPath(planId: number) {
 export function isValidTotalArea(area: number) {
   return area >= 100;
 }
+
+interface Series {
+  label: string;
+  data: number[]; // cumulative sum of raw attainment values
+}
+
+export function processCumulativeAttainment(features: any[]): {
+  area: number[];
+  datasets: Series[];
+} {
+  let cumArea = 0;
+  const area: number[] = [];
+
+  // for each metric we track a running sum + the per-step data
+  const seriesMap: Record<
+    string,
+    {
+      sum: number;
+      data: number[];
+    }
+  > = {};
+
+  for (const f of features) {
+    const a = Number(f.properties?.area_acres) || 0;
+    cumArea += a;
+    area.push(cumArea);
+
+    const att = f.properties?.attainment;
+    if (att && typeof att === 'object') {
+      for (const [metric, raw] of Object.entries(att)) {
+        const v = Number(raw);
+        if (Number.isNaN(v)) continue;
+
+        if (!seriesMap[metric]) {
+          seriesMap[metric] = { sum: 0, data: [] };
+        }
+
+        // just add the raw attainment to the running sum
+        seriesMap[metric].sum += v;
+        seriesMap[metric].data.push(seriesMap[metric].sum);
+      }
+    }
+  }
+
+  return {
+    area,
+    datasets: Object.entries(seriesMap).map(([label, { data }]) => ({
+      label,
+      data,
+    })),
+  };
+}

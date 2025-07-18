@@ -52,7 +52,8 @@ import { DataLayersStateService } from '../data-layers/data-layers.state.service
 import { MapConfigService } from '../maplibre-map/map-config.service';
 import { SectionComponent } from '../../styleguide/collapsible-panel/section.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
-import { ScenarioDownloadFooterComponent } from "./scenario-download-footer/scenario-download-footer.component";
+import { ScenarioDownloadFooterComponent } from './scenario-download-footer/scenario-download-footer.component';
+import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -118,7 +119,8 @@ import { ScenarioDownloadFooterComponent } from "./scenario-download-footer/scen
     DataLayersComponent,
     SectionComponent,
     TreatmentOpportunityChartComponent,
-    ScenarioDownloadFooterComponent
+    ScenarioDownloadFooterComponent,
+    CumulativeAttainmentChartComponent,
   ],
 })
-export class PlanModule { }
+export class PlanModule {}

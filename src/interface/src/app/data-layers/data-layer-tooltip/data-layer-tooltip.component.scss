@@ -47,11 +47,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    ::ng-deep .mat-mdc-progress-spinner {
+    --mdc-circular-progress-active-indicator-color: gray;
+    }
 
     a {
       display: flex;
       align-items: center;
       text-decoration: none;
+      padding: 13px;
+      color: $color-standard-blue;
+    }
+    .download-link {
+      width: 180px;
+      background:none;
+      border: none;
     }
   }
 }

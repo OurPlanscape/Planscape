@@ -20,6 +20,12 @@ Treatment Opportunity x Project Areas compares each project's potential to deliv
 Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects."
   *ngIf="isScenarioImprovementsEnabled()">
   <app-treatment-opportunity-chart
+    class="chart"
     *ngIf="results"
     [scenarioResult]="results"></app-treatment-opportunity-chart>
+
+  <app-cumulative-attainment-chart
+    class="chart"
+    *ngIf="results"
+    [scenarioResult]="results"></app-cumulative-attainment-chart>
 </sg-section>
