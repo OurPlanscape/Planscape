@@ -1,0 +1,45 @@
+@import "mixins";
+@import "colors";
+
+:host {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    align-items: flex-start;
+    gap: 24px;
+    align-self: stretch;
+    border: 1px solid $color-soft-gray;
+    background: $color-light-gray;
+}
+
+.title {
+    @include public-sans();
+    color: $color-md-gray;
+    font-weight: 700;
+    line-height: 14px;
+    text-transform: uppercase;
+}
+
+.legend-box {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    flex-direction: column;
+}
+
+.legend-line {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.legend-name {
+    color: $color-black;
+    @include standard-label();
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}

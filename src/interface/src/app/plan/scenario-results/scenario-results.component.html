@@ -28,6 +28,11 @@ Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up
     class="chart"
     *ngIf="results"
     [scenarioResult]="results"></app-cumulative-attainment-chart>
+
+  <app-scenario-metrics-legend
+    class="chart"
+    *ngIf="results"
+    [scenarioResult]="results"></app-scenario-metrics-legend>
 </sg-section>
 
 <div class="actions">

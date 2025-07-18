@@ -125,14 +125,16 @@ export const BASE_LAYERS_DEFAULT = {
  */
 export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
 
-export const CHART_COLORS = [
-  '#483D78',
-  '#A59CCD',
-  '#BBE3B6',
-  '#85B167',
-  '#FFDB69',
-  '#F18226',
-  '#483D78',
-  '#483D78',
-  '#CC4678',
-];
+interface ChartColorMap {
+  [key: string]: string; // This allows any string key to map to a string value (the color code)
+}
+//TODO: revise these with finished list?
+export const ChartColors: ChartColorMap = {
+  'Probability of Fire Severity - High': '#483D78',
+  'Probability of Fire Severity - Low': '#ffaaaa',
+  'Total Aboveground Carbon': '#BBE3B6',
+  'Damage Potential': '#85B167',
+  'Structure Exposure Score': '#FFDB69',
+  'SNV Standing Dead and Ladder Fuels': '#F18226',
+  'Forest Canopy Cover': '#A59CCD',
+};
