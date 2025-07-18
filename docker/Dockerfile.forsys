@@ -27,4 +27,4 @@ WORKDIR /usr/src/app/src/forsys
 
 EXPOSE 8001
 
-CMD [ "bash", "run_forsys_server.sh", "8001" ]
+CMD [ "Rscript", "--vanilla", "-e", "library(plumber); pr('server.R') %>% pr_run(port=8001)" ]
