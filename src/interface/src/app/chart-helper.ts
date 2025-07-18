@@ -163,7 +163,7 @@ export function getChartDatasetsFromFeatures(
   Object.keys(groupedAttainment).forEach((key, index) => {
     result.push({
       data: groupedAttainment[key],
-      backgroundColor: CHART_COLORS[index],
+      backgroundColor: CHART_COLORS[index - 1],
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });
