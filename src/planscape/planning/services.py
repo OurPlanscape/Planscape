@@ -21,6 +21,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
+from gis.info import get_gdal_env
 from stands.models import Stand, StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from planning.geometry import coerce_geojson, coerce_geometry
@@ -474,19 +475,19 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     shapefile_path = shapefile_folder / shapefile_file
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
-    crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
-    with fiona.open(
-        str(shapefile_path),
-        "w",
-        crs=crs,
-        driver="ESRI Shapefile",
-        schema=schema,
-    ) as c:
-        for feature in geojson.get("features", []):
-            geometry = to_multi(feature.get("geometry"))
-            feature = {**feature, "geometry": geometry}
-            c.write(feature)
-
+    with fiona.Env(**get_gdal_env(allowed_extensions=".shp")):
+        crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+        with fiona.open(
+            str(shapefile_path),
+            "w",
+            crs=crs,
+            driver="ESRI Shapefile",
+            schema=schema,
+        ) as c:
+            for feature in geojson.get("features", []):
+                geometry = to_multi(feature.get("geometry"))
+                feature = {**feature, "geometry": geometry}
+                c.write(feature)
     return shapefile_folder
 
 
