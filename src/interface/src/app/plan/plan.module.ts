@@ -53,6 +53,7 @@ import { MapConfigService } from '../maplibre-map/map-config.service';
 import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import { SectionComponent } from '../../styleguide/collapsible-panel/section.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
+import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -119,6 +120,7 @@ import { TreatmentOpportunityChartComponent } from './treatment-opportunity-char
     ScenarioMetricsLegendComponent,
     SectionComponent,
     TreatmentOpportunityChartComponent,
+    CumulativeAttainmentChartComponent,
   ],
 })
 export class PlanModule {}

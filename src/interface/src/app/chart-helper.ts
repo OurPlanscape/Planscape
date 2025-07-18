@@ -186,3 +186,27 @@ export function getProjectAreaLabelsFromFeatures(
   // By default we want to display 5 project areas
   return result.length < 5 ? ['1', '2', '3', '4', '5'] : result;
 }
+
+export function whiteTooltipBaseConfig() {
+  return {
+    enabled: true,
+    backgroundColor: '#FFF',
+    titleColor: '#000',
+    bodyColor: '#000',
+    borderColor: '#E1E1E1',
+    borderWidth: 1,
+    titleFont: {
+      ...getChartFontConfig(),
+      weight: 'bold',
+    },
+    bodyFont: {
+      ...getChartFontConfig(),
+      weight: '500',
+    },
+    padding: 8,
+    displayColors: false,
+    animation: {
+      duration: 0,
+    },
+  };
+}

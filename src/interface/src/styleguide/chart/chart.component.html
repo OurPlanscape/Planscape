@@ -1,0 +1,13 @@
+<div class="chart-container">
+  <p class="y-axis-label">{{ yAxisLabel }}</p>
+  <div class="canvas-wrapper">
+    <canvas
+      baseChart
+      [data]="data"
+      [options]="options"
+      [type]="type"
+      [legend]="false"></canvas>
+  </div>
+</div>
+
+<p class="x-axis-label">{{ xAxisLabel }}</p>

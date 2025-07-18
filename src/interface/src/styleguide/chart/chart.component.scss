@@ -1,0 +1,44 @@
+@import 'mixins';
+@import 'colors';
+
+$chart-height: 253px;
+
+:host {
+  display: block;
+  box-sizing: border-box;
+}
+
+.chart-container {
+  position: relative;
+}
+
+.y-axis-label {
+  position: absolute;
+  @include xs-label();
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin: 0;
+  padding: 0 0 0 12px;
+  color: $color-md-gray;
+  user-select: none;
+  height: 100%;
+  text-align: center;
+}
+
+.canvas-wrapper {
+  width: 100%;
+  height: $chart-height;
+}
+
+canvas {
+  margin-left: 24px;
+}
+
+.x-axis-label {
+  @include xs-label();
+  text-align: center;
+  margin: 0;
+  padding: 12px 0 0 0;
+  color: $color-md-gray;
+  user-select: none;
+}

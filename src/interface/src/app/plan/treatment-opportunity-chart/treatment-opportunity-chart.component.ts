@@ -8,13 +8,15 @@ import {
   getChartDatasetsFromFeatures,
   getChartFontConfig,
   getProjectAreaLabelsFromFeatures,
+  whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
 import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
+import { ChartComponent } from '../../../styleguide/chart/chart.component';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [NgChartsModule, ScenarioMetricsLegendComponent],
+  imports: [NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
@@ -27,9 +29,10 @@ export class TreatmentOpportunityChartComponent implements OnInit {
 
   public barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       tooltip: {
-        enabled: true,
+        ...whiteTooltipBaseConfig(),
         callbacks: {
           title: (items) => {
             const dataset = items[0]?.dataset as CustomChartDataset;
@@ -40,24 +43,6 @@ export class TreatmentOpportunityChartComponent implements OnInit {
             return `${value} %`;
           },
         },
-        backgroundColor: '#FFF',
-        titleColor: '#000',
-        bodyColor: '#000',
-        borderColor: '#E1E1E1',
-        borderWidth: 1,
-        titleFont: {
-          ...getChartFontConfig(),
-          weight: 'bold',
-        },
-        bodyFont: {
-          ...getChartFontConfig(),
-          weight: '500',
-        },
-        padding: 8,
-        displayColors: false,
-      },
-      legend: {
-        display: false,
       },
       datalabels: {
         font: {
@@ -75,6 +60,11 @@ export class TreatmentOpportunityChartComponent implements OnInit {
         ticks: {
           padding: 0,
           color: '#4A4A4A',
+        },
+        grid: {
+          drawOnChartArea: false, // ✅ disables full grid lines
+          drawTicks: true,
+          tickColor: 'black',
         },
       },
       y: {
