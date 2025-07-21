@@ -7,6 +7,7 @@ import {
   getChartBorderDash,
   getChartDatasetsFromFeatures,
   getChartFontConfig,
+  getDarkGridConfig,
   getProjectAreaLabelsFromFeatures,
   whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
@@ -64,6 +65,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
           drawOnChartArea: false, // ✅ disables full grid lines
           drawTicks: true,
           tickColor: 'black',
+          borderColor: 'black',
         },
       },
       y: {
@@ -74,6 +76,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
         // min: 0,  // TODO: Min should be 0 once we fix negative numbers
         grid: {
           borderDash: getChartBorderDash(),
+          ...getDarkGridConfig(),
         },
         ticks: {
           padding: 5,
