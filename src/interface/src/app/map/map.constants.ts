@@ -73,7 +73,7 @@ export const MAP_CA_BOUNDS: Extent = [
 export const MAP_WEST_CONUS_BOUNDS: Extent =
   [-126.0,  // West Lng
     31.0, // Southern Lat
-  -110.0, // East Lng
+  -100.0, // East Lng
     47.0, // Northernmost Lat
   ];
 
@@ -94,3 +94,4 @@ export const FrontendConstants = {
     padding: { top: 80, bottom: 60, left: 20, right: 20 },
   },
 } as const;
+
