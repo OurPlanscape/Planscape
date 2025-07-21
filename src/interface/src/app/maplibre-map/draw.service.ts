@@ -56,7 +56,7 @@ export class DrawService {
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -220,7 +220,7 @@ export class DrawService {
     if (this._boundaryShape$.value !== null) {
       return this._boundaryShape$.asObservable();
     }
-    const boundaryPath = 'assets/geojson/ca_state.geojson';
+    const boundaryPath = 'assets/geojson/conus-census.geojson';
     return this.http.get<GeoJSON>(boundaryPath).pipe(
       catchError((error) => {
         console.error('Failed to load shape:', error);
