@@ -6,6 +6,7 @@ import { ChartOptions, InteractionMode, TooltipItem } from 'chart.js';
 import {
   getChartBorderDash,
   getChartFontConfig,
+  getDarkGridConfig,
   whiteTooltipBaseConfig,
 } from '../../chart-helper';
 import { ChartColors } from '@shared';
@@ -35,6 +36,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         grid: {
           color: '#FFFFFFFF',
           tickColor: 'black',
+          borderColor: 'black',
         },
       },
       y: {
@@ -43,6 +45,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         },
         grid: {
           borderDash: getChartBorderDash(),
+          ...getDarkGridConfig(),
         },
         ticks: {
           maxTicksLimit: 4,

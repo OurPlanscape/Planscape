@@ -192,6 +192,14 @@ export function getProjectAreaLabelsFromFeatures(
   return result.length < 5 ? ['1', '2', '3', '4', '5'] : result;
 }
 
+export function getDarkGridConfig() {
+  return {
+    borderColor: 'black',
+    tickColor: 'black',
+    color: '#898989',
+  };
+}
+
 export function whiteTooltipBaseConfig() {
   return {
     enabled: true,
