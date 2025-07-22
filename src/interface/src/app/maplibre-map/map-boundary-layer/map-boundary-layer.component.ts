@@ -15,7 +15,7 @@ import { DrawService } from '../draw.service';
   styleUrl: './map-boundary-layer.component.scss',
 })
 export class MapBoundaryLayerComponent {
-  boundaryShape$ = this.drawService.getCaliforniaStateBoundary();
+  boundaryShape$ = this.drawService.loadDrawingBoundary();
 
-  constructor(private drawService: DrawService) {}
+  constructor(private drawService: DrawService) { }
 }
