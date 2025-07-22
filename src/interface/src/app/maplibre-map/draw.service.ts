@@ -17,6 +17,7 @@ import {
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
+import { FeatureService } from '../features/feature.service';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -56,7 +57,10 @@ export class DrawService {
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private featureService: FeatureService
+  ) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -191,8 +195,9 @@ export class DrawService {
     const polygons = this.getPolygonsSnapshot();
     const shape = this._boundaryShape$.value;
     if (polygons && shape?.type === 'FeatureCollection' && shape.features) {
+      // all polygons must be within at least one of the shape features
       const result = polygons.every((p) => {
-        return booleanWithin(p.geometry, shape.features[0]);
+        return shape.features.some((f) => booleanWithin(p.geometry, f));
       });
       return result;
     }
@@ -216,11 +221,14 @@ export class DrawService {
     }
   }
 
-  getCaliforniaStateBoundary(): Observable<GeoJSON | null> {
+  loadDrawingBoundary(): Observable<GeoJSON | null> {
     if (this._boundaryShape$.value !== null) {
       return this._boundaryShape$.asObservable();
     }
-    const boundaryPath = 'assets/geojson/ca_state.geojson';
+    let boundaryPath = 'assets/geojson/ca_state.geojson';
+    if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
+      boundaryPath = 'assets/geojson/conus-census.geojson';
+    }
     return this.http.get<GeoJSON>(boundaryPath).pipe(
       catchError((error) => {
         console.error('Failed to load shape:', error);
