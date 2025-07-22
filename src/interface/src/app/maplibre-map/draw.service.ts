@@ -60,7 +60,7 @@ export class DrawService {
   constructor(
     private http: HttpClient,
     private featureService: FeatureService
-  ) {}
+  ) { }
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
