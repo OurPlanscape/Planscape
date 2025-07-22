@@ -504,6 +504,32 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     return shapefile_folder
 
 
+def export_geopackage(scenario: Scenario) -> str:
+    geojson = scenario.get_geojson_result()
+    schema = get_schema(geojson)
+    shapefile_folder = scenario.get_shapefile_folder()
+    geopackage_file = f"{scenario.name}.gpkg"
+    geopackage_path = shapefile_folder / geopackage_file
+    Path(geopackage_path).unlink(missing_ok=True)
+    if not shapefile_folder.exists():
+        shapefile_folder.mkdir(parents=True)
+    crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+    with fiona.open(
+        geopackage_path,
+        "w",
+        layer=f"scenario_{scenario.pk}",
+        crs=crs,
+        driver="GPKG",
+        schema=schema,
+        allow_unsupported_drivers=True,
+    ) as out:
+        for feature in geojson.get("features", []):
+            geometry = to_multi(feature.get("geometry"))
+            feature = {**feature, "geometry": geometry}
+            out.write(feature)
+    return str(geopackage_path)
+
+
 @transaction.atomic()
 def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
     new_status = (
