@@ -463,6 +463,27 @@ def get_schema(
     return schema
 
 
+def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
+    """
+    Get the geojson result of a scenario.
+    This function modifies the properties of the geojson features
+    to flatten nested dictionaries by appending the keys.
+    """
+    geojson = scenario.get_geojson_result()
+    features = geojson.get("features", [])
+    for feature in features:
+        properties = feature.get("properties", {})
+        new_properties = {}
+        for prop, value in properties.items():
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    new_properties[f"{prop}_{k}"] = v
+            else:
+                new_properties[prop] = value
+        feature["properties"] = new_properties
+    return geojson
+
+
 def export_to_shapefile(scenario: Scenario) -> Path:
     """Given a scenario, export it to shapefile
     and return the path of the folder containing all files.
@@ -470,7 +491,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
     if scenario.results.status != ScenarioResultStatus.SUCCESS:
         raise ValueError("Cannot export a scenario if it's result failed.")
-    geojson = scenario.get_geojson_result()
+    geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     shapefile_folder = scenario.get_shapefile_folder()
     shapefile_file = f"{scenario.name}.shp"
