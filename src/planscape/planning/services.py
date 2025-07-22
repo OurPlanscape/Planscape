@@ -426,7 +426,7 @@ def map_property(key_value_pair):
     type = ""
     match value:
         case int() as v:
-            type = "int"
+            type = "int64"
         case str() as v:
             type = "str:128"
         case float() as v:
@@ -437,6 +437,8 @@ def map_property(key_value_pair):
             type = "date"
         case time() as v:
             type = "time"
+        case dict() as v:
+            type = "json"
     return (key, type)
 
 
