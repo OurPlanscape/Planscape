@@ -61,7 +61,9 @@ describe('PlanComponent', () => {
         params: { id: 'scenario-99' },
         data: { showOverview: true },
         url: [{ path: 'config' }],
-        paramMap: convertToParamMap({ id: 'scenario-99' }),
+        paramMap: convertToParamMap({
+          scenarioId: 'scenario-99',
+        }),
       },
       data: of({ showOverview: true }),
       firstChild: null,
@@ -69,7 +71,7 @@ describe('PlanComponent', () => {
 
     const fakeRoute = {
       snapshot: {
-        paramMap: convertToParamMap({ id: '24' }),
+        paramMap: convertToParamMap({ planId: '24' }),
         url: [],
       },
       firstChild: mockChildRoute,
