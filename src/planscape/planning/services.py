@@ -477,19 +477,24 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     shapefile_path = shapefile_folder / shapefile_file
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
-    with fiona.Env(**get_gdal_env(allowed_extensions=".shp")):
-        crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
-        with fiona.open(
-            str(shapefile_path),
-            "w",
-            crs=crs,
-            driver="ESRI Shapefile",
-            schema=schema,
-        ) as c:
-            for feature in geojson.get("features", []):
-                geometry = to_multi(feature.get("geometry"))
-                feature = {**feature, "geometry": geometry}
-                c.write(feature)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".shp")):
+            crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+            with fiona.open(
+                str(shapefile_path),
+                "w",
+                crs=crs,
+                driver="ESRI Shapefile",
+                schema=schema,
+            ) as c:
+                for feature in geojson.get("features", []):
+                    geometry = to_multi(feature.get("geometry"))
+                    feature = {**feature, "geometry": geometry}
+                    c.write(feature)
+    except Exception as e:
+        logger.exception("Error exporting scenario %s to shapefile: %s", scenario.pk, e)
+        shapefile_folder.rmdir()  # Clean up the folder if export fails
+        raise e
     return shapefile_folder
 
 
