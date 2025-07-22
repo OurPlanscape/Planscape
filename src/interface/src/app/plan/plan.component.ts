@@ -1,11 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  ActivatedRouteSnapshot,
+  NavigationEnd,
+  Router,
+} from '@angular/router';
 import {
   combineLatest,
   concatMap,
   filter,
   map,
   Observable,
+  of,
   startWith,
   switchMap,
   take,
@@ -63,33 +69,38 @@ export class PlanComponent implements OnInit {
 
     combineLatest([
       this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-      this.scenarioState.currentScenario$.pipe(startWith(null)),
+      this.scenario$,
       this.router.events.pipe(
         filter((event) => event instanceof NavigationEnd)
       ),
     ])
       .pipe(untilDestroyed(this))
       .subscribe(([plan, scenario]) => {
-        const routeChild = this.route.snapshot.firstChild;
-        const path = routeChild?.url[0].path;
-        const id = routeChild?.paramMap.get('id') ?? null;
+        const deepestRoute = this.getDeepestChild(this.route);
+        const path = deepestRoute?.routeConfig?.path ?? null;
+        const scenarioId =
+          this.getDeepestChildFromSnapshot(this.route.snapshot).paramMap.get(
+            'scenarioId'
+          ) ?? null;
 
-        if (!path) {
-          // on plan
+        if (!path && deepestRoute.snapshot.data['scenarioId'] === undefined) {
+          // On plan overview
           this.breadcrumbService.updateBreadCrumb({
             label: 'Planning Area: ' + plan.name,
             backUrl: '/home',
           });
-        } else if (id) {
-          // on a specific scenario. Need to have scenario name to populate breadcrumbs.
-          if (scenario && scenario.id === Number(id)) {
-            this.breadcrumbService.updateBreadCrumb({
-              label: 'Scenario: ' + scenario.name,
-              backUrl: getPlanPath(plan.id),
-            });
-          }
+        } else if (
+          scenarioId &&
+          scenario &&
+          scenario.id === Number(scenarioId)
+        ) {
+          // On specific scenario
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Scenario: ' + scenario.name,
+            backUrl: getPlanPath(plan.id),
+          });
         } else {
-          // creating new scenario
+          // Creating new scenario
           this.breadcrumbService.updateBreadCrumb({
             label: 'Scenario: New Scenario',
             backUrl: getPlanPath(plan.id),
@@ -98,10 +109,17 @@ export class PlanComponent implements OnInit {
       });
   }
 
+  scenario$ = this.scenarioState.currentScenarioId$.pipe(
+    untilDestroyed(this),
+    switchMap((id) => {
+      return !id ? of(null) : this.scenarioState.currentScenario$;
+    })
+  );
+
   currentPlan$ = this.planState.currentPlan$;
   planOwner$ = new Observable<User | null>();
 
-  planId = this.route.snapshot.paramMap.get('id');
+  planId = this.route.snapshot.paramMap.get('planId');
   planNotFound: boolean = !this.planId;
 
   sidebarNotes: Note[] = [];
@@ -190,6 +208,15 @@ export class PlanComponent implements OnInit {
   }
 
   private getDeepestChild(route: ActivatedRoute): ActivatedRoute {
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route;
+  }
+
+  private getDeepestChildFromSnapshot(
+    route: ActivatedRouteSnapshot
+  ): ActivatedRouteSnapshot {
     while (route.firstChild) {
       route = route.firstChild;
     }
