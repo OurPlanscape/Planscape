@@ -9,10 +9,7 @@ describe('DrawService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [DrawService,
-        MockProvider(FeatureService),
-
-      ],
+      providers: [DrawService, MockProvider(FeatureService)],
       imports: [HttpClientTestingModule],
     });
     service = TestBed.inject(DrawService);

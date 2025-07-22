@@ -17,5 +17,5 @@ import { DrawService } from '../draw.service';
 export class MapBoundaryLayerComponent {
   boundaryShape$ = this.drawService.loadDrawingBoundary();
 
-  constructor(private drawService: DrawService) { }
+  constructor(private drawService: DrawService) {}
 }
