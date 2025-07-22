@@ -195,8 +195,9 @@ export class DrawService {
     const polygons = this.getPolygonsSnapshot();
     const shape = this._boundaryShape$.value;
     if (polygons && shape?.type === 'FeatureCollection' && shape.features) {
+      // all polygons must be within at least one of the shape features
       const result = polygons.every((p) => {
-        return booleanWithin(p.geometry, shape.features[0]);
+        return shape.features.some(f => booleanWithin(p.geometry, f));
       });
       return result;
     }
