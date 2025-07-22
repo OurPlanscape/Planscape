@@ -60,7 +60,7 @@ export class DrawService {
   constructor(
     private http: HttpClient,
     private featureService: FeatureService
-  ) { }
+  ) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -197,7 +197,7 @@ export class DrawService {
     if (polygons && shape?.type === 'FeatureCollection' && shape.features) {
       // all polygons must be within at least one of the shape features
       const result = polygons.every((p) => {
-        return shape.features.some(f => booleanWithin(p.geometry, f));
+        return shape.features.some((f) => booleanWithin(p.geometry, f));
       });
       return result;
     }
