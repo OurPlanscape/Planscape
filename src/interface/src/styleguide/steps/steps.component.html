@@ -1,12 +1,19 @@
-<mat-stepper orientation="horizontal" linear>
-  <ng-container *ngFor="let step of steps">
-    <mat-step [label]="step.label">
-      <ng-container *ngTemplateOutlet="step.template"></ng-container>
-    </mat-step>
-  </ng-container>
-</mat-stepper>
+<div class="step">
+  <ng-container
+    *ngIf="selected"
+    [ngTemplateOutlet]="selected.content"></ng-container>
+</div>
+
 <div class="actions">
-  Step {{ currentStep }} of {{ steps.length }}
-  <button sg-button (click)="goBack()">Back</button>
-  <button sg-button (click)="goNext()">Next</button>
+  <button sg-button [disabled]="selectedIndex === 0" (click)="goBack()">
+    {{ backLabel }}
+  </button>
+  <button
+    sg-button
+    (click)="goNext()"
+    variant="primary"
+    [disabled]="savingStep"
+    [loading]="savingStep">
+    {{ selectedIndex === steps.length - 1 ? finishLabel : continueLabel }}
+  </button>
 </div>

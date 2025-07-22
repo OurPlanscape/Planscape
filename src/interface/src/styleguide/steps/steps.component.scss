@@ -1,12 +1,21 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-  ::ng-deep .mat-step-header {
-    display: none;
-  }
+.step {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
 }
 
 .actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  background-color: white;
+  border-top: 1px solid #e1e1e1;
+  padding: 16px;
+  align-items: center;
+  justify-content: flex-end;
 }
