@@ -1,0 +1,12 @@
+:host {
+  display: block;
+
+  ::ng-deep .mat-step-header {
+    display: none;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
