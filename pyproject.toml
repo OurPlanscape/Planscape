@@ -133,7 +133,6 @@ python_version = "3.10"
 warn_return_any = true
 exclude = [
     'base',
-    'boundary',
     'conditions',
     'config',
     'existing_projects',
