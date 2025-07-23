@@ -1,6 +1,5 @@
 from typing import Union
 
-from conditions.models import Condition
 from core.models import CreatedAtMixin
 from datasets.models import DataLayer
 from django.contrib.gis.db import models
@@ -114,12 +113,12 @@ class StandMetric(CreatedAtMixin, models.Model):
     stand_id: int
     stand = models.ForeignKey(Stand, related_name="metrics", on_delete=models.CASCADE)
 
-    condition = models.ForeignKey(
-        Condition,
-        related_name="metrics",
-        on_delete=models.CASCADE,
-        null=True,
-    )
+    # condition = models.ForeignKey(
+    #     Condition,
+    #     related_name="metrics",
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    # )
 
     datalayer = models.ForeignKey(
         DataLayer,
