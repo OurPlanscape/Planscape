@@ -505,7 +505,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
 
 def export_geopackage(scenario: Scenario) -> str:
-    geojson = scenario.get_geojson_result()
+    geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     shapefile_folder = scenario.get_shapefile_folder()
     geopackage_file = f"{scenario.name}.gpkg"
@@ -514,19 +514,27 @@ def export_geopackage(scenario: Scenario) -> str:
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
     crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
-    with fiona.open(
-        geopackage_path,
-        "w",
-        layer=f"scenario_{scenario.pk}",
-        crs=crs,
-        driver="GPKG",
-        schema=schema,
-        allow_unsupported_drivers=True,
-    ) as out:
-        for feature in geojson.get("features", []):
-            geometry = to_multi(feature.get("geometry"))
-            feature = {**feature, "geometry": geometry}
-            out.write(feature)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer=f"scenario_{scenario.pk}",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in geojson.get("features", []):
+                    geometry = to_multi(feature.get("geometry"))
+                    feature = {**feature, "geometry": geometry}
+                    out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+        )
+        shapefile_folder.rmdir()  # Clean up the folder if export fails
+        raise e
     return str(geopackage_path)
 
 
