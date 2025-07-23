@@ -41,7 +41,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
-    export_geopackage,
+    export_to_geopackage,
 )
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -258,7 +258,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         """
         scenario = self.get_object()
 
-        output_path = export_geopackage(scenario=scenario)
+        output_path = export_to_geopackage(scenario=scenario)
         return FileResponse(
             open(output_path, "rb"),
             as_attachment=True,
