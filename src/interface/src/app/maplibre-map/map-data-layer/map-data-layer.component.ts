@@ -148,7 +148,13 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
 
   private onStyleDataListener = () => {
     // if the style change caused the other layers to be removed, then we need to re-add them.
+
     // TODO: conversely, maybe we can't rely on this angular wrapper to properly change the style?
+    //   ie. we create the config for known URLs, then dynamically switch between known base layers
+    // SO...instead of implicitly calling the setStyle function,
+    //   we can call .setLayout() directly, like so:
+    //    map.setLayoutProperty('some-base-layer', 'visibility', 'none'); 
+
     console.log('We called the style data listener');
     const layersIds = this.mapLibreMap.getLayersOrder();
     this.replaceAllTDLayers();
