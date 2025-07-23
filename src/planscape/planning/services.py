@@ -7,13 +7,11 @@ from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
+
 import fiona
-from pyproj import Geod
-from shapely import wkt
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from core.flags import feature_enabled
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -22,8 +20,11 @@ from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
+from pyproj import Geod
+from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
 from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -35,11 +36,7 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import (
-    async_calculate_stand_metrics,
-    async_calculate_stand_metrics_v2,
-    async_forsys_run,
-)
+from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -137,7 +134,6 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         treatment_goal = get_treatment_goal_from_configuration(
             kwargs.get("configuration", {})
         )
-
     data = {
         "user": user,
         "origin": ScenarioOrigin.SYSTEM,
@@ -154,24 +150,12 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    if feature_enabled("USE_SCENARIO_V2"):
-        datalayers = treatment_goal.get_raster_datalayers()
-        tasks = [
-            async_calculate_stand_metrics_v2.si(
-                scenario_id=scenario.pk, datalayer_id=d.pk
-            )
-            for d in datalayers
-        ]
-    else:
-        datalayer_names = scenario.configuration.get(
-            "scenario_priorities", []
-        ) + scenario.configuration.get("scenario_output_fields", [])
-        tasks = [
-            async_calculate_stand_metrics.si(
-                scenario_id=scenario.pk, datalayer_name=datalayer_name
-            )
-            for datalayer_name in datalayer_names
-        ]
+    datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+    tasks = [
+        async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
+        for d in datalayers
+    ]
+
     track_openpanel(
         name="planning.scenario.created",
         properties={
@@ -498,6 +482,8 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     shapefile_path = shapefile_folder / shapefile_file
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
+    if shapefile_path.exists():
+        shapefile_path.unlink()
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".shp")):
             crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
@@ -514,7 +500,6 @@ def export_to_shapefile(scenario: Scenario) -> Path:
                     c.write(feature)
     except Exception as e:
         logger.exception("Error exporting scenario %s to shapefile: %s", scenario.pk, e)
-        shapefile_folder.rmdir()  # Clean up the folder if export fails
         raise e
     return shapefile_folder
 

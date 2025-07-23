@@ -3,7 +3,6 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
@@ -39,25 +38,6 @@ class CreateScenarioTest(APITransactionTestCase):
             "scenario_output_fields": ["out1"],
             "max_treatment_area_ratio": 40000,
         }
-
-    @mock.patch("planning.services.chord", autospec=True)
-    def test_create_without_explicit_treatment_goal(self, chord_mock):
-        self.client.force_authenticate(self.user)
-        data = {
-            "planning_area": self.planning_area.pk,
-            "name": "Hello Scenario!",
-            "origin": "SYSTEM",
-            "configuration": self.configuration,
-        }
-        response = self.client.post(
-            reverse("api:planning:scenarios-list"), data, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIsNotNone(response.json().get("id"))
-        self.assertEqual(chord_mock.call_count, 1)
-        self.assertEqual(1, Scenario.objects.count())
-        scenario = Scenario.objects.get()
-        self.assertEqual(scenario.treatment_goal, self.treatment_goal)
 
     @mock.patch("planning.services.chord", autospec=True)
     def test_create_with_explicit_treatment_goal(self, chord_mock):
@@ -128,7 +108,7 @@ class CreateScenarioTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            b'{"global":["Invalid treatment goal id"]}',
+            b'{"treatment_goal":["This field is required."]}',
             response.content,
         )
 
@@ -151,7 +131,7 @@ class CreateScenarioTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            b'{"global":["You must provide either a treatment goal or a question ID."]}',
+            b'{"treatment_goal":["This field is required."]}',
             response.content,
         )
 
@@ -168,7 +148,6 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @override_settings(FEATURE_FLAGS="USE_SCENARIO_V2")
     def test_create_v2_serializer(self):
         excluded_areas = DataLayerFactory.create_batch(
             2, type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
@@ -203,7 +182,6 @@ class CreateScenarioTest(APITransactionTestCase):
             response_data.get("configuration").get("excluded_areas"), excluded_areas
         )
 
-    @override_settings(USE_SCENARIO_V2=True)
     def test_create_v2_serializer__invalid_excluded_area(self):
         invalid_excluded_areas = DataLayerFactory.create_batch(
             2, type=DataLayerType.RASTER, geometry_type=GeometryType.RASTER

@@ -597,7 +597,6 @@ def create_scenario(request: Request) -> Response:
                 content_type="application/json",
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         # Create the scenario, passing in updated configuration
         scenario = create_scenario_service(
             user=request.user,
