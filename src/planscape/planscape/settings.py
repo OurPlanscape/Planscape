@@ -39,7 +39,6 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 # Application definition
 PLANSCAPE_APPS = [
     "admin.apps.PlanscapeAdmin",
-    "boundary",
     "collaboration",
     "conditions",
     "core",
