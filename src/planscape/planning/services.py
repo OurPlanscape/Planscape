@@ -134,7 +134,6 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         treatment_goal = get_treatment_goal_from_configuration(
             kwargs.get("configuration", {})
         )
-
     data = {
         "user": user,
         "origin": ScenarioOrigin.SYSTEM,

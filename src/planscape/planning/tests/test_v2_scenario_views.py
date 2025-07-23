@@ -40,25 +40,6 @@ class CreateScenarioTest(APITransactionTestCase):
         }
 
     @mock.patch("planning.services.chord", autospec=True)
-    def test_create_without_explicit_treatment_goal(self, chord_mock):
-        self.client.force_authenticate(self.user)
-        data = {
-            "planning_area": self.planning_area.pk,
-            "name": "Hello Scenario!",
-            "origin": "SYSTEM",
-            "configuration": self.configuration,
-        }
-        response = self.client.post(
-            reverse("api:planning:scenarios-list"), data, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIsNotNone(response.json().get("id"))
-        self.assertEqual(chord_mock.call_count, 1)
-        self.assertEqual(1, Scenario.objects.count())
-        scenario = Scenario.objects.get()
-        self.assertEqual(scenario.treatment_goal, self.treatment_goal)
-
-    @mock.patch("planning.services.chord", autospec=True)
     def test_create_with_explicit_treatment_goal(self, chord_mock):
         configuration = self.configuration.copy()
         configuration.pop("question_id")
@@ -127,7 +108,7 @@ class CreateScenarioTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            b'{"global":["Invalid treatment goal id"]}',
+            b'{"treatment_goal":["This field is required."]}',
             response.content,
         )
 
@@ -150,7 +131,7 @@ class CreateScenarioTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            b'{"global":["You must provide either a treatment goal or a question ID."]}',
+            b'{"treatment_goal":["This field is required."]}',
             response.content,
         )
 
