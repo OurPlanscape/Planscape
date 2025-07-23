@@ -29,7 +29,6 @@ import::from("rscripts/constants.R", .all = TRUE)
 import::from("rscripts/base_forsys.R", .all = TRUE)
 import::from("rscripts/postprocessing.R", .all = TRUE)
 
-FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
 options <- list(
   make_option(
     c("-s", "--scenario",
@@ -46,8 +45,4 @@ if (is.null(scenario_id)) {
   stop("You need to specify one scenario id.")
 }
 
-if (FORSYS_V2) {
-  main_v2(scenario_id)
-} else {
-  main(scenario_id)
-}
+main_v2(scenario_id)
