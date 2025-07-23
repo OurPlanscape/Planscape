@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import * as shp from 'shpjs';
+import GJV from 'geojson-validation';
 import {
   FormBuilder,
   FormGroup,
@@ -12,6 +13,8 @@ import {
 import { DrawService } from 'src/app/maplibre-map/draw.service';
 import { FileUploadFieldComponent } from 'src/styleguide/file-upload-field/file-upload-field.component';
 import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.component';
+import booleanValid from '@turf/boolean-valid';
+import kinks from '@turf/kinks';
 
 @Component({
   selector: 'app-upload-planning-area-box',
@@ -59,6 +62,26 @@ export class UploadPlanningAreaBoxComponent {
     }
   }
 
+  validateGeoJSONFeatures(geoJSON: GeoJSON.GeoJSON): boolean {
+    if (geoJSON.type === 'FeatureCollection') {
+      return geoJSON.features.every((f) => {
+        if (
+          f.geometry.type === 'Polygon' ||
+          f.geometry.type === 'MultiPolygon'
+        ) {
+          const ks = kinks(f.geometry);
+          if (ks.features.length > 0) {
+            throw new Error('Self-intersection detected.');
+          }
+          return true;
+        }
+        return booleanValid(f);
+      });
+    }
+    //TODO: handle non featurecollections
+    return true;
+  }
+
   async convertToGeoJson(file: File) {
     const reader = new FileReader();
     const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
@@ -71,7 +94,12 @@ export class UploadPlanningAreaBoxComponent {
       const geojson = (await shp.parseZip(
         fileAsArrayBuffer
       )) as GeoJSON.GeoJSON;
-      if (geojson.type == 'FeatureCollection') {
+      const isValid = this.validateGeoJSONFeatures(geojson);
+      if (
+        geojson.type == 'FeatureCollection' &&
+        GJV.valid(geojson) &&
+        isValid
+      ) {
         this.geometries = geojson;
         this.drawService.addGeoJSONFeature(this.geometries);
         this.uploadElementStatus = 'uploaded';
@@ -86,6 +114,7 @@ export class UploadPlanningAreaBoxComponent {
         this.uploadFormError = 'The file cannot be converted to GeoJSON.';
       }
     } catch (e) {
+      console.log('Got an error:', e);
       this.uploadElementStatus = 'failed';
       this.uploadFormError =
         'The zip file does not appear to contain a valid shapefile.';
