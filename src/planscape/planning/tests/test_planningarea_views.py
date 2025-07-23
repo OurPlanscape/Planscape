@@ -1,26 +1,21 @@
 import json
-from unittest import mock
-from django.db import connection
+
 from django.contrib.gis.geos import GEOSGeometry
+from django.db import connection
 from django.urls import reverse
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.test import APITransactionTestCase, APITestCase
 from impacts.permissions import (
-    VIEWER_PERMISSIONS,
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
+    VIEWER_PERMISSIONS,
 )
+from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from planning.geometry import coerce_geojson
-from planning.models import (
-    PlanningArea,
-    RegionChoices,
-    Scenario,
-    ScenarioResult,
-    PlanningAreaNote,
-)
+from planning.models import PlanningArea, PlanningAreaNote, RegionChoices
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
-from planscape.tests.factories import UserFactory
 from planning.tests.test_geometry import read_shapefile, to_geometry
+from planscape.tests.factories import UserFactory
 
 
 class CreatePlanningAreaTest(APITransactionTestCase):
@@ -1487,151 +1482,3 @@ class DeletePlanningAreaNotes(APITestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-
-
-# EndtoEnd test that lists, creates a planning_area, creates a scenario,
-# tests what was stored, and then deletes everything.
-# This covers the basic happiest of cases and should not be a substitute
-# for the main unit tests.
-class EndtoEndPlanningAreaAndScenarioTest(APITransactionTestCase):
-    def setUp(self):
-        self.user = UserFactory.create(username="testuser")
-        self.internal_geometry = {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [
-                    [[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]],
-                ],
-            ],
-        }
-        self.geometry = {"features": [{"geometry": self.internal_geometry}]}
-        self.scenario_configuration = {
-            "question_id": 1,
-            "weights": [],
-            "est_cost": 2000,
-            "max_budget": None,
-            "max_slope": None,
-            "min_distance_from_road": None,
-            "stand_size": "LARGE",
-            "excluded_areas": [],
-            "stand_thresholds": [],
-            "global_thresholds": [],
-            "scenario_priorities": ["prio1"],
-            "scenario_output_fields": ["out1"],
-            "max_treatment_area_ratio": 40000,
-        }
-
-    @mock.patch(
-        "planning.views.validate_scenario_treatment_ratio",
-        return_value=(True, "all good"),
-    )
-    @mock.patch("planning.services.chord", autospec=True)
-    def test_end_to_end(self, validation, chord_mock):
-        self.client.force_authenticate(self.user)
-
-        # List - returns 0
-        response = self.client.get(
-            reverse("planning:list_planning_areas"), {}, content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 0)
-
-        # insert one
-        payload = json.dumps(
-            {
-                "name": "test plan",
-                "region_name": "Sierra Nevada",
-                "geometry": self.geometry,
-            }
-        )
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
-            payload,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(PlanningArea.objects.count(), 1)
-
-        # is it there?
-        response = self.client.get(
-            reverse("planning:list_planning_areas"), {}, content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
-        planning_areas = response.json()
-        listed_planning_area = planning_areas[0]
-        self.assertEqual(listed_planning_area["scenario_count"], 0)
-
-        # get plan details
-        response = self.client.get(
-            reverse("planning:get_planning_area_by_id"),
-            {"id": listed_planning_area["id"]},
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        planning_area = response.json()
-        self.assertEqual(planning_area["name"], "test plan")
-        self.assertEqual(planning_area["region_name"], "Sierra Nevada")
-        self.assertEqual(planning_area["id"], listed_planning_area["id"])
-        self.assertEqual(planning_area["geometry"], self.internal_geometry)
-
-        # create a scenario
-        payload_create_scenario = json.dumps(
-            {
-                "planning_area": listed_planning_area["id"],
-                "configuration": self.scenario_configuration,
-                "name": "test scenario",
-                "notes": "test notes",
-            }
-        )
-        response = self.client.post(
-            reverse("planning:create_scenario"),
-            payload_create_scenario,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        output = response.json()
-        scenario_id = output["id"]
-        self.assertEqual(Scenario.objects.count(), 1)
-        scenario = Scenario.objects.get(pk=scenario_id)
-        self.assertEqual(scenario.planning_area.pk, listed_planning_area["id"])
-        self.assertEqual(
-            scenario.configuration.keys(), self.scenario_configuration.keys()
-        )
-        self.assertEqual(scenario.name, "test scenario")
-        self.assertEqual(scenario.notes, "test notes")
-
-        # check that scenario metadata shows up in the plan details.
-        response = self.client.get(
-            reverse("planning:get_planning_area_by_id"),
-            {"id": listed_planning_area["id"]},
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        planning_area = response.json()
-        self.assertEqual(planning_area["name"], "test plan")
-        self.assertEqual(planning_area["region_name"], "Sierra Nevada")
-        self.assertEqual(planning_area["id"], listed_planning_area["id"])
-        self.assertEqual(planning_area["geometry"], self.internal_geometry)
-        self.assertEqual(planning_area["scenario_count"], 1)
-        self.assertIsNotNone(planning_area["latest_updated"])
-
-        # remove it
-        response = self.client.post(
-            reverse("planning:delete_planning_area"),
-            json.dumps({"id": planning_area["id"]}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-
-        # there should be no more planning areas
-        response = self.client.get(
-            reverse("planning:list_planning_areas"), {}, content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 0)
-
-        # checking for a blank database
-        self.assertEqual(PlanningArea.objects.count(), 0)
-        self.assertEqual(Scenario.objects.count(), 0)
-        self.assertEqual(ScenarioResult.objects.count(), 0)

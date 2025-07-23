@@ -1,5 +1,3 @@
-FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
-
 get_sdw <- function() {
   return(as.numeric(Sys.getenv("FORSYS_SDW", "0.5")))
 }
@@ -164,27 +162,22 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
 
   if (length(restrictions) > 0) {
     print("Restrictions found!")
-    if (FORSYS_V2) {
-      for (i in seq_along(restrictions)) {
-        datalayer_id <- restrictions[i]
-        restriction <- get_datalayer_by_id(connection, datalayer_id)
-        if (!(restriction$geometry_type %in% ALLOWED_RESTRICTION_TYPES)) {
-          print(
-            glue(
-              "Restriction",
-              restriction$id,
-              "with name",
-              restriction$name,
-              "cannot be used because its not a polygon."
-            )
+    for (i in seq_along(restrictions)) {
+      datalayer_id <- restrictions[i]
+      restriction <- get_datalayer_by_id(connection, datalayer_id)
+      if (!(restriction$geometry_type %in% ALLOWED_RESTRICTION_TYPES)) {
+        print(
+          glue(
+            "Restriction",
+            restriction$id,
+            "with name",
+            restriction$name,
+            "cannot be used because its not a polygon."
           )
-          next
-        }
-        restriction_data <- get_restriction_v2(connection, scenario_id, restriction$table)
-        stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
+        )
+        next
       }
-    } else {
-      restriction_data <- get_restrictions(connection, scenario_id, restrictions)
+      restriction_data <- get_restriction_v2(connection, scenario_id, restriction$table)
       stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
     }
   }
@@ -266,11 +259,7 @@ rename_col <- function(name) {
 }
 
 get_cost_per_acre <- function(scenario) {
-  if (FORSYS_V2) {
-    cost_field <- "estimated_cost"
-  } else {
-    cost_field <- "est_cost"
-  }
+  cost_field <- "estimated_cost"
   configuration <- get_configuration(scenario)
   user_defined_cost <- configuration[[cost_field]]
   if (is.null(user_defined_cost)) {
@@ -305,27 +294,7 @@ to_properties <- function(
     mutate(attainment = attainment) %>%
     mutate(text_geometry = text_geometry) %>%
     rename_with(.fn = rename_col)
-  # post process
-  print("Postprocessing results.")
-  if (FORSYS_V2) {
-    print("No postprocessing for v2")
-  } else {
-    for (column in names(project_data)) {
-      if (column %in% names(POSTPROCESSING_FUNCTIONS)) {
-        postprocess_fn <- POSTPROCESSING_FUNCTIONS[[column]]
-        if (new_column_for_postprocessing) {
-          new_column <- glue("p_{column}")
-        } else {
-          new_column <- column
-        }
-        print("Post processing {column} to {new_column}.")
-        project_data <- project_data %>%
-          mutate(
-            !!treat_string_as_col(new_column) := postprocess_fn(!!treat_string_as_col(column), project_stand_count, stand_size, column)
-          )
-      }
-    }
-  }
+  
 
   return(as.list(project_data))
 }
@@ -517,11 +486,7 @@ get_weights <- function(priorities, configuration) {
   # no v2 changes
   weight_count <- length(configuration$weights)
 
-  if (FORSYS_V2) {
-    target_count <- nrow(remove_duplicates_v2(priorities))
-  } else {
-    target_count <- length(priorities$condition_name)
-  }
+  target_count <- nrow(remove_duplicates_v2(priorities))
 
   if (weight_count == 0) {
     print("generating weights")
@@ -544,11 +509,8 @@ get_weights <- function(priorities, configuration) {
 }
 
 get_number_of_projects <- function(scenario) {
-  if (FORSYS_V2) {
-    configuration <- get_configuration(scenario)
-    return(configuration$max_project_count)
-  }
-  return(10)
+  configuration <- get_configuration(scenario)
+  return(configuration$max_project_count)
 }
 
 get_min_project_area <- function(scenario) {
@@ -586,11 +548,7 @@ get_max_treatment_area <- function(scenario) {
     max_acres <- budget / cost_per_acre
     return(max_acres)
   }
-  if (FORSYS_V2) {
-    max_area_field <- "max_area"
-  } else {
-    max_area_field <- "max_treatment_area_ratio"
-  }
+  max_area_field <- "max_area"
 
   if (!is.null(configuration[[max_area_field]])) {
     print("Budget is null, using max acres with area {configuration$max_treatment_area_ratio}")
@@ -605,20 +563,12 @@ get_max_treatment_area <- function(scenario) {
 get_distance_to_roads <- function(configuration, datalayer) {
   # converts specified distance to roads in yards to meters
   distance_in_meters <- configuration$min_distance_from_road / 1.094
-  if (FORSYS_V2) {
-    glue("datalayer_{datalayer$id} <= {distance_in_meters}")
-  } else {
-    glue("distance_to_roads <= {distance_in_meters}")
-  }
+  glue("datalayer_{datalayer$id} <= {distance_in_meters}")
 }
 
 get_max_slope <- function(configuration, datalayer) {
   max_slope <- configuration$max_slope
-  if (FORSYS_V2) {
-    glue("datalayer_{datalayer$id} <= {max_slope}")
-  } else {
-    glue("slope <= {max_slope}")
-  }
+  glue("datalayer_{datalayer$id} <= {max_slope}")
 }
 
 get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
@@ -711,63 +661,29 @@ call_forsys <- function(
     list(priorities, outputs, restrictions)
   )
   data_inputs <- data.table::rbindlist(list(priorities, outputs))
-  # we use this to drop priorities, that are repeated in here - we need those
-  # so front-end can show data from priorities as well
-  if (FORSYS_V2) {
-    forsys_inputs <- remove_duplicates_v2(forsys_inputs)
-  } else {
-    forsys_inputs <- remove_duplicates(forsys_inputs)
-  }
-  if (FORSYS_V2) {
-    stand_data <- get_stand_data_v2(
-      connection,
-      scenario,
-      configuration,
-      forsys_inputs
-    )
-  } else {
-    stand_data <- get_stand_data(
-      connection,
-      scenario,
-      configuration,
-      forsys_inputs
-    )
-  }
+  forsys_inputs <- remove_duplicates_v2(forsys_inputs)
+  stand_data <- get_stand_data_v2(
+    connection,
+    scenario,
+    configuration,
+    forsys_inputs
+  )
 
-  if (FORSYS_V2) {
-    # new code will calculate spm and pcp for all inputs, excludind thresholds
-    # this is needed because we have layers that can be inputs, but are not part
-    # of solving our equations - such as slope and distance from roads
-    weights <- get_weights(priorities, configuration)
-    fields <- paste0("datalayer_", priorities[["id"]])
-    spm_fields <- paste0(fields, "_SPM")
-    stand_data <- stand_data %>%
-      forsys::calculate_spm(fields=fields) %>% 
-      forsys::calculate_pcp(fields=fields) %>% 
-      forsys::combine_priorities(
-        fields=spm_fields,
-        weights=weights,
-        new_field="priority"
-      )
-      scenario_priorities <- c("priority")
-  } else {
-    if (length(priorities$condition_name) > 1) {
-      weights <- get_weights(priorities, configuration)
-      print("combining priorities")
-      stand_data <- stand_data %>%
-        forsys::calculate_spm(fields = priorities$condition_name) %>%
-        forsys::calculate_pcp(fields = priorities$condition_name) %>%
-        forsys::combine_priorities(
-          fields = paste0(priorities$condition_name, "_SPM"),
-          weights = weights,
-          new_field = "priority"
-        )
-      scenario_priorities <- c("priority")
-    } else {
-      print("running with single priority")
-      scenario_priorities <- first(priorities$condition_name)
-    }
-  }
+  # new code will calculate spm and pcp for all inputs, excludind thresholds
+  # this is needed because we have layers that can be inputs, but are not part
+  # of solving our equations - such as slope and distance from roads
+  weights <- get_weights(priorities, configuration)
+  fields <- paste0("datalayer_", priorities[["id"]])
+  spm_fields <- paste0(fields, "_SPM")
+  stand_data <- stand_data %>%
+    forsys::calculate_spm(fields=fields) %>% 
+    forsys::calculate_pcp(fields=fields) %>% 
+    forsys::combine_priorities(
+      fields=spm_fields,
+      weights=weights,
+      new_field="priority"
+    )
+  scenario_priorities <- c("priority")
 
   # this might be configurable in the future. if it's the case, it will come in
   # the configuration variable. This also might change due the course of the
@@ -785,17 +701,12 @@ call_forsys <- function(
   
   max_area_project <- max_treatment_area / number_of_projects
   
-  if (FORSYS_V2) {
-    stand_thresholds <- get_stand_thresholds_v2(connection, scenario, restrictions)
-    output_tmp <- forsys_inputs %>%
-      remove_duplicates_v2() %>%
-      select(id)
-    output_tmp <- paste0("datalayer_", output_tmp$id)
-    output_fields <- c(output_tmp, "area_acres")
-  } else {
-    stand_thresholds <- get_stand_thresholds(scenario)
-    output_fields <- c(outputs$condition_name, "area_acres")
-  }
+  stand_thresholds <- get_stand_thresholds_v2(connection, scenario, restrictions)
+  output_tmp <- forsys_inputs %>%
+    remove_duplicates_v2() %>%
+    select(id)
+  output_tmp <- paste0("datalayer_", output_tmp$id)
+  output_fields <- c(output_tmp, "area_acres")
 
   export_input(scenario, stand_data)
 
@@ -1038,95 +949,6 @@ main_v2 <- function(scenario_id) {
     },
     finally = {
       print("[DONE]")
-    }
-  )
-}
-
-main <- function(scenario_id) {
-  now <- now_utc()
-  connection <- get_connection()
-  scenario <- get_scenario_by_id(connection, scenario_id)
-  configuration <- get_configuration(scenario)
-  if (!is.null(configuration$seed)) {
-    set.seed(configuration$seed)
-  }
-  priorities <- get_priorities(
-    connection,
-    scenario,
-    configuration$scenario_priorities
-  )
-
-  outputs <- get_priorities(
-    connection,
-    scenario,
-    configuration$scenario_output_fields
-  )
-
-  restrictions <- get_priorities(
-    connection,
-    scenario,
-    c("slope", "distance_to_roads")
-  )
-  new_column_for_postprocessing <- Sys.getenv(
-    "NEW_COLUMN_FOR_POSTPROCESSING",
-    FALSE
-  )
-  tryCatch(
-    expr = {
-      forsys_output <- call_forsys(
-        connection,
-        scenario,
-        configuration,
-        priorities,
-        outputs,
-        restrictions
-      )
-      completed_at <- now_utc()
-      result <- to_projects(
-        connection,
-        scenario,
-        forsys_output,
-        new_column_for_postprocessing = new_column_for_postprocessing
-      )
-      upsert_scenario_result(
-        connection,
-        now,
-        started_at = now,
-        completed_at = completed_at,
-        scenario_id,
-        "SUCCESS",
-        result
-      )
-      upsert_result_status(
-        connection,
-        scenario_id,
-        "SUCCESS"
-      )
-      delete_project_areas(connection, scenario)
-      project_areas <- lapply(result$features, function(project) {
-        return(upsert_project_area(connection, now, scenario, project))
-      })
-    },
-    error = function(e) {
-      completed_at <- now_utc()
-      upsert_scenario_result(
-        connection,
-        now,
-        started_at = now,
-        completed_at = completed_at,
-        scenario_id,
-        "FAILURE",
-        list(type = "FeatureCollection", features = list())
-      )
-      upsert_result_status(
-        connection,
-        scenario_id,
-        "FAILURE"
-      )
-      stop(e)
-    },
-    finally = {
-      print(paste("[DONE] Forsys execution finished."))
     }
   )
 }
