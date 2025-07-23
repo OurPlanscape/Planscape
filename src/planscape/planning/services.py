@@ -498,6 +498,8 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     shapefile_path = shapefile_folder / shapefile_file
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
+    if shapefile_path.exists():
+        shapefile_path.unlink()
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".shp")):
             crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
@@ -514,7 +516,6 @@ def export_to_shapefile(scenario: Scenario) -> Path:
                     c.write(feature)
     except Exception as e:
         logger.exception("Error exporting scenario %s to shapefile: %s", scenario.pk, e)
-        shapefile_folder.rmdir()  # Clean up the folder if export fails
         raise e
     return shapefile_folder
 
