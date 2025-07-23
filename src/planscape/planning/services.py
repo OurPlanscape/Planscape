@@ -504,7 +504,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     return shapefile_folder
 
 
-def export_geopackage(scenario: Scenario) -> str:
+def export_to_geopackage(scenario: Scenario) -> str:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     shapefile_folder = scenario.get_shapefile_folder()
@@ -513,6 +513,8 @@ def export_geopackage(scenario: Scenario) -> str:
     Path(geopackage_path).unlink(missing_ok=True)
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
+    if geopackage_path.exists():
+        geopackage_path.unlink()
     crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
@@ -533,7 +535,6 @@ def export_geopackage(scenario: Scenario) -> str:
         logger.exception(
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
-        shapefile_folder.rmdir()  # Clean up the folder if export fails
         raise e
     return str(geopackage_path)
 
