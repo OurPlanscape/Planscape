@@ -3,7 +3,6 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
@@ -168,7 +167,6 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @override_settings(FEATURE_FLAGS="USE_SCENARIO_V2")
     def test_create_v2_serializer(self):
         excluded_areas = DataLayerFactory.create_batch(
             2, type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
@@ -203,7 +201,6 @@ class CreateScenarioTest(APITransactionTestCase):
             response_data.get("configuration").get("excluded_areas"), excluded_areas
         )
 
-    @override_settings(USE_SCENARIO_V2=True)
     def test_create_v2_serializer__invalid_excluded_area(self):
         invalid_excluded_areas = DataLayerFactory.create_batch(
             2, type=DataLayerType.RASTER, geometry_type=GeometryType.RASTER
