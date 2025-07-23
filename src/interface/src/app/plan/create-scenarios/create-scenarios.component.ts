@@ -24,7 +24,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { LegacyPlanStateService, ScenarioService } from '@services';
+import { ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
@@ -107,7 +107,6 @@ export class CreateScenariosComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private LegacyPlanStateService: LegacyPlanStateService,
     private scenarioService: ScenarioService,
     private router: Router,
     private matSnackBar: MatSnackBar,
@@ -149,17 +148,11 @@ export class CreateScenariosComponent implements OnInit {
     // Creating the forms
     await this.createForms();
 
-    // Setting plan region if we have a valid regiion
-    this.setPlanRegion();
-
     // Setting the scenario name validator
     this.setExistingNameValidator();
 
     // initialize scenario component - if we are creating or viewing a scenario
     this.setScenarioMode();
-
-    // Listening for project area changes
-    this.listenForProjectAreasChanges();
   }
 
   setScenarioMode() {
@@ -190,30 +183,6 @@ export class CreateScenariosComponent implements OnInit {
       ]);
   }
 
-  async setPlanRegion() {
-    const plan = await firstValueFrom(this.plan$);
-    if (plan.region_name) {
-      0.0;
-      this.LegacyPlanStateService.setPlanRegion(plan.region_name!);
-    }
-  }
-
-  listenForProjectAreasChanges() {
-    // When an area is uploaded, issue an event to draw it on the map.
-    // If the "generate areas" option is selected, remove any drawn areas.
-    this.projectAreasForm?.valueChanges.subscribe((_) => {
-      const generateAreas = this.forms
-        .get('projectAreas')
-        ?.get('generateAreas');
-      const uploadedArea = this.projectAreasForm?.get('uploadedArea');
-      if (generateAreas?.value) {
-        this.drawShapes(null);
-      } else {
-        this.drawShapes(uploadedArea?.value);
-      }
-    });
-  }
-
   pollForChanges() {
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
@@ -238,10 +207,6 @@ export class CreateScenariosComponent implements OnInit {
 
         // Updating breadcrumbs
         this.scenarioId = scenario.id;
-        this.LegacyPlanStateService.updateStateWithScenario(
-          this.scenarioId,
-          scenario.name
-        );
 
         this.disableForms();
         if (scenario.scenario_result) {
@@ -253,7 +218,6 @@ export class CreateScenariosComponent implements OnInit {
 
           this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
-            this.processScenarioResults(scenario);
             this.scenarioStateService.reloadScenario();
           }
           // enable animation
@@ -335,17 +299,6 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   /**
-   * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
-   */
-  processScenarioResults(scenario: Scenario) {
-    if (scenario && this.scenarioResults && this.planId) {
-      this.LegacyPlanStateService.updateStateWithShapes(
-        this.scenarioResults?.result.features
-      );
-    }
-  }
-
-  /**
    * Converts each feature found in a GeoJSON into individual GeoJSONs, else
    * returns the original GeoJSON, which may result in an error upon project area creation.
    * Only polygon or multipolygon feature types are expected in the uploaded shapefile.
@@ -365,10 +318,6 @@ export class CreateScenariosComponent implements OnInit {
       geometries.push(original);
     }
     return geometries;
-  }
-
-  private drawShapes(shapes: any | null): void {
-    this.LegacyPlanStateService.updateStateWithShapes(shapes);
   }
 
   goToConfig() {
@@ -396,14 +345,6 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   async goToScenario() {
-    const scenario = await firstValueFrom(this.scenario$);
-    if (scenario) {
-      // Updating breadcrums so when we navigate we can see it
-      this.LegacyPlanStateService.updateStateWithScenario(
-        scenario.id,
-        scenario.name
-      );
-    }
     this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
   }
 

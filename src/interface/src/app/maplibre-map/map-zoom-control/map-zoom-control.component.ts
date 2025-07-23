@@ -2,9 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
-import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
+import { ControlPosition, Map as MapLibreMap } from 'maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { FrontendConstants } from '@types';
+import { FrontendConstants } from '../../map/map.constants';
 
 @Component({
   selector: 'app-map-zoom-control',

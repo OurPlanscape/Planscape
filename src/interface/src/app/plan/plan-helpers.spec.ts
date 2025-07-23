@@ -1,12 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import {
-  findQuestionOnTreatmentGoalsConfig,
   getColorForProjectPosition,
   isValidTotalArea,
   processCumulativeAttainment,
 } from './plan-helpers';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
-import { TreatmentGoalConfig, TreatmentQuestionConfig } from '@types';
 
 interface Feature {
   properties: {
@@ -14,28 +12,6 @@ interface Feature {
     attainment: Record<string, number>;
   };
 }
-
-const questions = [
-  {
-    id: 1,
-    short_question_text: 'test_question',
-    scenario_output_fields_paths: {},
-    scenario_priorities: [''],
-    stand_thresholds: [''],
-    global_thresholds: [''],
-    weights: [1],
-  },
-];
-
-const defaultQuestion: TreatmentQuestionConfig = {
-  id: 2,
-  short_question_text: 'this is the question',
-  scenario_output_fields_paths: {},
-  scenario_priorities: [''],
-  stand_thresholds: [''],
-  global_thresholds: [''],
-  weights: [0],
-};
 
 describe('Plan Helpers', () => {
   beforeEach(() => {
@@ -55,37 +31,6 @@ describe('Plan Helpers', () => {
       expect(getColorForProjectPosition(0)).toBe(DEFAULT_AREA_COLOR);
 
       expect(getColorForProjectPosition(-32)).toBe(DEFAULT_AREA_COLOR);
-    });
-  });
-
-  describe('findQuestionOnTreatmentGoalsConfig', () => {
-    it('should find the treatmentQuestion on treatmentGoalConfigs', () => {
-      const tr: TreatmentGoalConfig[] = [
-        {
-          category_name: 'test_category',
-          questions: [...questions, defaultQuestion],
-        },
-      ];
-      expect(findQuestionOnTreatmentGoalsConfig(tr, defaultQuestion)).toBe(
-        defaultQuestion
-      );
-    });
-
-    it('should return the question **from** treatmentQuestion', () => {
-      const tr: TreatmentGoalConfig[] = [
-        {
-          category_name: 'test_category',
-          questions: [...questions, defaultQuestion],
-        },
-      ];
-      const almostDefaultQuestion = { ...defaultQuestion };
-      expect(
-        findQuestionOnTreatmentGoalsConfig(tr, almostDefaultQuestion)
-      ).toBe(defaultQuestion);
-
-      expect(
-        findQuestionOnTreatmentGoalsConfig(tr, almostDefaultQuestion)
-      ).not.toBe(almostDefaultQuestion);
     });
   });
 
