@@ -33,9 +33,10 @@ export class BaseLayersComponent {
   );
   categorizedBaseLayers$ = this.baseLayersStateService.categorizedBaseLayers$;
 
-  constructor(private baseLayersStateService: BaseLayersStateService) {}
+  constructor(private baseLayersStateService: BaseLayersStateService) { }
 
   updateSelectedLayer(data: { layer: BaseLayer; isMulti: boolean }) {
+    console.log('we are calling updateSelected Layer?');
     this.baseLayersStateService.updateBaseLayers(data.layer, data.isMulti);
   }
 

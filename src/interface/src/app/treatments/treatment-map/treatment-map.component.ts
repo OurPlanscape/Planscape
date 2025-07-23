@@ -215,6 +215,7 @@ export class TreatmentMapComponent {
       });
 
     this.mapConfigState.baseMap$.pipe(untilDestroyed(this)).subscribe(() => {
+      console.log('we are piping this change to basemaps?');
       this.selectedStandsState.backUpAndClearSelectedStands();
     });
   }

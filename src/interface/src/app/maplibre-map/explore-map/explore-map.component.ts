@@ -177,6 +177,14 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.initDrawingModes();
   }
 
+  logSourcesForLayers(layerNames: string[]) {
+    layerNames.forEach(layerName => {
+      console.log('layer name:', layerName);
+      const layer = this.mapLibreMap.getLayer(layerName);
+      console.log('source is:', layer?.source);
+    })
+  }
+
   initDrawingModes() {
     const polygonMode = new TerraDrawPolygonMode({
       styles: {
@@ -196,6 +204,19 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       polygonMode,
       selectMode,
     ]);
+    const layersIds = this.mapLibreMap.getLayersOrder();
+    console.log('here are the layersIds after initing Drawing Mode:', layersIds);
+    const terraDrawLayers = layersIds.filter(f => { return f.startsWith('td-'); });
+    console.log('terradraw layers:', terraDrawLayers);
+    this.logSourcesForLayers(terraDrawLayers);
+
+    /*
+      the layers all start with `td-`
+      "td-polygon-outline"
+      "td-polygon"​
+      "td-linestring"
+      "td-point"
+    */
   }
 
   onMapMouseMove(event: MapMouseEvent): void {

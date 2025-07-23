@@ -30,9 +30,12 @@ export class MapBaseDropdownComponent {
   selectedBaseMap$ = this.mapConfigState.baseMap$;
   baseMaps = Object.keys(baseMapStyles) as BaseMapType[];
 
-  constructor(private mapConfigState: MapConfigState) {}
+  constructor(private mapConfigState: MapConfigState) { }
 
   updateBaseMap(baseLayer: BaseMapType) {
+    console.log('updating base map:', baseLayer);
+    /// TODO: we need to preserve the terradraw sources and layers -- identified by 'td-' prefix
+    //  then restore them after we update the base map...and/or not rely on the angular wrapper to update these 
     this.mapConfigState.updateBaseMap(baseLayer);
     this.closeOverlay();
   }

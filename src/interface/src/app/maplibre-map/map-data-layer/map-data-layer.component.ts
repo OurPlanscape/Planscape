@@ -111,6 +111,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     }
   }
 
+
   removeRasterLayer(): void {
     if (this.mapLibreMap) {
       if (this.mapLibreMap.getLayer('image-layer')) {
@@ -129,8 +130,29 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.off('error', this.onErrorListener);
   }
 
+  //TODO: we should get these dynamically, but doing this by static list as a test
+  private replaceAllTDLayers() {
+    const polygonSource = this.mapLibreMap.getSource('td-polygon');
+    console.log('do we still have a polygon Source?', polygonSource);
+
+    // this.mapLibreMap.addLayer({id: 'td-polygon-outline'});
+    // layer name: td-polygon-outline explore-map.component.ts:182:15
+    // source is: td-polygon explore-map.component.ts:184:15
+    // layer name: td-polygon explore-map.component.ts:182:15
+    // source is: td-polygon explore-map.component.ts:184:15
+    // layer name: td-linestring explore-map.component.ts:182:15
+    // source is: td-linestring explore-map.component.ts:184:15
+    // layer name: td-point explore-map.component.ts:182:15
+    // source is: td-point
+  }
+
   private onStyleDataListener = () => {
     // if the style change caused the other layers to be removed, then we need to re-add them.
+    // TODO: conversely, maybe we can't rely on this angular wrapper to properly change the style?
+    console.log('We called the style data listener');
+    const layersIds = this.mapLibreMap.getLayersOrder();
+    this.replaceAllTDLayers();
+    console.log('here are the layersIds:', layersIds);
     if (!this.mapLibreMap.getSource('rasterImage')) {
       this.addRasterLayer();
     }

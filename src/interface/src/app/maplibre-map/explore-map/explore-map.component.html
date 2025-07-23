@@ -59,6 +59,12 @@
   <app-map-boundary-layer *ngIf="(mapInteractionMode$ | async) !== 'view'">
   </app-map-boundary-layer>
 
+  <mgl-layer
+    type="background"
+    id="top-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
   <app-map-tooltip
     *ngIf="
       (mapInteractionMode$ | async) === 'draw' &&

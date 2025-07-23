@@ -60,6 +60,7 @@ export class MapConfigState {
   public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
 
   updateBaseMap(layer: BaseMapType) {
+    console.log('updating baseMap to:', layer);
     this._baseMap$.next(layer);
   }
 

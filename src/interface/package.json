@@ -73,8 +73,8 @@
     "ngx-mask": "^14.3.2",
     "rxjs": "~7.8.1",
     "shpjs": "^4.0.4",
-    "terra-draw": "^1.6.3",
-    "terra-draw-maplibre-gl-adapter": "^1.1.0",
+    "terra-draw": "^1.10.0",
+    "terra-draw-maplibre-gl-adapter": "^1.1.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.4"
   },

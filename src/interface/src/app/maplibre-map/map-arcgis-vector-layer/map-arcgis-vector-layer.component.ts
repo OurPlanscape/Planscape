@@ -38,7 +38,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   constructor(
     private zone: NgZone,
     private baseLayersStateService: BaseLayersStateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.addArcgisLayers();
@@ -242,6 +242,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   }
 
   private onStyleDataListener = () => {
+    console.log('we are calling *this* data listener?');
     if (this.mapLibreMap && !this.mapLibreMap.getSource(this.sourceId)) {
       this.addArcgisLayers();
     }
