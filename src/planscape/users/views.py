@@ -3,6 +3,7 @@ import logging
 from urllib.parse import urlparse
 
 from allauth.account.utils import has_verified_email
+from dj_rest_auth.jwt_auth import JWTCookieAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
@@ -224,10 +225,13 @@ def validate_martin_request(request: Request) -> Response:
         return Response({"valid": True})
 
     # If the request is for a private layer, we need to validate the user
-    if not request.headers.get("Authorization"):
-        logger.warning("Authorization header not found.")
+    # Forcing the user to be authenticated via JWT cookie
+    user = request.user
+    if not user or not user.is_authenticated:
+        auth_backend = JWTCookieAuthentication()
+        user, _ = auth_backend.authenticate(request)
 
-    if not request.user:
+    if not user:
         logger.warning("User not identified.")
         return Response(
             {"error": "User token Required"},
