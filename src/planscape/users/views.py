@@ -234,6 +234,15 @@ def validate_martin_request(request: Request) -> Response:
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
+    if not request.user.is_authenticated:
+        logger.warning(
+            f"User not authenticated. Anonymous: {str(request.user.is_anonymous)}."
+        )
+        return Response(
+            {"error": "User not authenticated"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     original_query_params_str = original_uri.split("?")[1]
     original_query_params = dict(
         param.split("=") for param in original_query_params_str.split("&")
