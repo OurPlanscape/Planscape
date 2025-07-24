@@ -223,6 +223,13 @@ def validate_martin_request(request: Request) -> Response:
     if original_uri.find("?") == -1:
         return Response({"valid": True})
 
+    if not request.user or not request.user.is_authenticated:
+        logger.warning("Unauthenticated request to validate Martin parameters.")
+        return Response(
+            {"error": "Authentication Required"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     original_query_params_str = original_uri.split("?")[1]
     original_query_params = dict(
         param.split("=") for param in original_query_params_str.split("&")
