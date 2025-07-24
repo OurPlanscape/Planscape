@@ -223,10 +223,10 @@ def validate_martin_request(request: Request) -> Response:
     if original_uri.find("?") == -1:
         return Response({"valid": True})
 
-    if not request.user or not request.user.is_authenticated:
-        logger.warning("Unauthenticated request to validate Martin parameters.")
+    if not request.user:
+        logger.warning("User not identified.")
         return Response(
-            {"error": "Authentication Required"},
+            {"error": "User token Required"},
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
