@@ -239,9 +239,7 @@ def validate_martin_request(request: Request) -> Response:
         )
 
     if not user.is_authenticated:
-        logger.warning(
-            f"User not authenticated. Anonymous: {str(user.is_anonymous)}."
-        )
+        logger.warning(f"User not authenticated. Anonymous: {str(user.is_anonymous)}.")
         return Response(
             {"error": "User not authenticated"},
             status=status.HTTP_401_UNAUTHORIZED,
