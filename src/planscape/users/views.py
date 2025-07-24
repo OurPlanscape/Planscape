@@ -12,7 +12,6 @@ from django.utils.encoding import force_str
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
-    authentication_classes,
     permission_classes,
 )
 from rest_framework.permissions import AllowAny
@@ -206,7 +205,6 @@ PRIVATE_LAYERS = (
 
 
 @api_view(["GET"])
-@authentication_classes([])
 @permission_classes([AllowAny])
 def validate_martin_request(request: Request) -> Response:
     original_uri = request.headers.get("X-Original-URI")
