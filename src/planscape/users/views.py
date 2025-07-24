@@ -232,6 +232,7 @@ def validate_martin_request(request: Request) -> Response:
     )
 
     if not serializer.is_valid():
+        logger.warning("Invalid Martin request parameters: %s", serializer.errors)
         return Response(
             serializer.errors,
             status=status.HTTP_403_FORBIDDEN,
