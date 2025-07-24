@@ -226,10 +226,6 @@ def validate_martin_request(request: Request) -> Response:
     # If the request is for a private layer, we need to validate the user
     if not request.headers.get("Authorization"):
         logger.warning("Authorization header not found.")
-        return Response(
-            {"error": "Authorization header required"},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
 
     if not request.user:
         logger.warning("User not identified.")
