@@ -40,7 +40,6 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 PLANSCAPE_APPS = [
     "admin.apps.PlanscapeAdmin",
     "collaboration",
-    "conditions",
     "core",
     "datasets",
     "e2e",
