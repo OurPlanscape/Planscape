@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
@@ -37,11 +37,9 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() backLabel = 'Back';
   @Input() continueLabel = 'Save & Continue';
   @Input() finishLabel = 'finish';
-  @Output() saveData = new EventEmitter<Partial<T>>();
+  @Input() genericErrorMsg = 'Unknown error';
 
   savingStep = false;
-  // not sure if we need this, added just to demo
-  data!: Partial<T>;
 
   // I don't love this...
   // alt would be to use a service but how do I provide the right
@@ -59,23 +57,22 @@ export class StepsComponent<T> extends CdkStepper {
     }
 
     if (control.valid) {
-      // either save the data here...
-      this.data = { ...this.data, ...control.value };
-      // what if saving needs to be async?
+      // async
       if (this.save) {
         this.savingStep = true;
-        this.save(control.value).subscribe((result) => {
-          if (result) {
+        this.save(control.value).subscribe({
+          next: () => {
             this.next();
             this.savingStep = false;
-          } else {
-            // TODO - provide errors back to the step itself
-            // control.setErrors({name...:result...})
-          }
+          },
+          error: (err) => {
+            control.setErrors({
+              invalid: err?.message || this.genericErrorMsg,
+            });
+            this.savingStep = false;
+          },
         });
       } else {
-        // or just push it on an output ?
-        this.saveData.emit(control.value);
         this.next();
       }
     } else {

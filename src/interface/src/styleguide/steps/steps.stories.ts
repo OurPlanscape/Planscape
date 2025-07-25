@@ -16,7 +16,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
-import { delay, of } from 'rxjs';
+import { mergeMap, of, throwError, timer } from 'rxjs';
 
 // interface just for testing
 interface Person {
@@ -29,8 +29,12 @@ interface Person {
   selector: 'sg-step-demo-1',
   template: `
     <form [formGroup]="form">
+      <div>Enter "fail" for validation to fail</div>
       Name : <input type="text" id="name" formControlName="name" />
       <div *ngIf="!form.valid && form.dirty">not valid</div>
+      <div *ngIf="form.hasError('invalid') && form.dirty">
+        {{ form.getError('invalid') }}
+      </div>
     </form>
   `,
 })
@@ -89,13 +93,19 @@ const meta: Meta<StepsComponent<Person>> = {
       ...args,
       index: 0,
       saveData: (data: Partial<Person>) => {
-        return of(true).pipe(delay(1000)); // simulate a successful save
+        return timer(1000).pipe(
+          mergeMap(() => {
+            return data.name === 'fail'
+              ? throwError(() => new Error('Oh no, some errors while saving!'))
+              : of(true);
+          })
+        );
       },
     },
     template: `
 <section style='height: 200px; background-color: #d0d0d0'>
   <div>Index is {{index || 0}}</div>
-  <sg-steps ${argsToTemplate(args)} linear (selectedIndexChange)='index = $event'>
+  <sg-steps ${argsToTemplate(args)} linear (selectedIndexChange)='index = $event' [save]='saveData'>
     <cdk-step>
       <div style='line-height: 40px;'>
         Some <br> long <br>  step <br>  that <br>  does <br>  not <br>  have a  <br> form
