@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, take } from 'rxjs';
 import { MapConfigState } from './map-config.state';
 import { MultiMapsStorageService } from '@services/local-storage.service';
+import { FrontendConstants, MAP_WEST_CONUS_BOUNDS } from '../map/map.constants';
 import { Extent } from '@types';
 import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
-import { FrontendConstants } from '../map/map.constants';
+import { FeatureService } from '../features/feature.service';
 
 export type LayoutOption = 1 | 2 | 4;
 
@@ -19,10 +20,15 @@ export class MultiMapConfigState extends MapConfigState {
 
   constructor(
     private multiMapsStorageService: MultiMapsStorageService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private featureService: FeatureService
   ) {
     super();
-    this._mapExtent$.next(FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS);
+    if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
+      this._mapExtent$.next(MAP_WEST_CONUS_BOUNDS);
+    } else {
+      this._mapExtent$.next(FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS);
+    }
   }
 
   setLayoutMode(views: LayoutOption) {
