@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import math
@@ -504,6 +505,61 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     return shapefile_folder
 
 
+def export_scenario_inputs_to_geopackage(scenario: Scenario) -> str:
+    forsys_folder = scenario.get_forsys_folder()
+    inputs_file = forsys_folder / "inputs.csv"
+    scenario_inputs = []
+    with open(inputs_file, "r") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            for key, value in row.items():
+                if key == "stand_id":
+                    row[key] = int(value)
+                elif key != "WKT":
+                    row[key] = float(value)
+            scenario_inputs.append(row)
+
+    feature = scenario_inputs[0].copy()  # Copy the first feature to modify
+    feature.pop("WKT", None)  # Remove WKT if present
+    field_type_pairs = list(map(map_property, feature.items()))
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": field_type_pairs,
+    }
+
+    shapefile_folder = scenario.get_shapefile_folder()
+    geopackage_file = f"{scenario.name}.gpkg"
+    geopackage_path = shapefile_folder / geopackage_file
+    crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+            with fiona.open(
+                geopackage_path,
+                "a",
+                layer=f"scenario_{scenario.pk}_inputs",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in scenario_inputs:
+                    geometry = MultiPolygon.from_ewkt(feature.pop("WKT", None))
+                    geometry = {
+                        "type": "MultiPolygon",
+                        "coordinates": str(geometry.coords),
+                    }
+                    feature = {"properties": feature, "geometry": geometry}
+                    out.write(feature)
+
+    except Exception as e:
+        logger.exception(
+            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+        )
+        raise e
+
+    return str(geopackage_file)
+
+
 def export_to_geopackage(scenario: Scenario) -> str:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
@@ -536,6 +592,7 @@ def export_to_geopackage(scenario: Scenario) -> str:
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
         raise e
+
     return str(geopackage_path)
 
 
