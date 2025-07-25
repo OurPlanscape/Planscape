@@ -11,7 +11,6 @@ register_converter(ContentTypeURLConverter, "ctype")
 
 urlpatterns = [
     path(f"planscape-backend/{settings.ADMIN_URL_PREFIX}/", admin.site.urls),
-    path("planscape-backend/conditions/", include("conditions.urls")),
     path("planscape-backend/planning/", include("planning.urls")),
     path(
         "planscape-backend/invites/",
