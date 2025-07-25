@@ -31,22 +31,6 @@ describe('planLoaderResolver', () => {
     });
   });
 
-  it('should call setPlanId if "id" param is present', () => {
-    const planState = TestBed.inject(PlanState);
-    const spy = spyOn(planState, 'setPlanId');
-
-    const route = {
-      paramMap: createParamMap({ id: '123' }),
-    } as unknown as ActivatedRouteSnapshot;
-
-    const result = TestBed.runInInjectionContext(() =>
-      planLoaderResolver(route, {} as RouterStateSnapshot)
-    );
-
-    expect(result).toBe(123);
-    expect(spy).toHaveBeenCalledOnceWith(123);
-  });
-
   it('should call setPlanId if "planId" param is present', () => {
     const planState = TestBed.inject(PlanState);
     const spy = spyOn(planState, 'setPlanId');
@@ -63,11 +47,11 @@ describe('planLoaderResolver', () => {
     expect(spy).toHaveBeenCalledOnceWith(987);
   });
 
-  it('should NOT call setPlanId if neither param is present', () => {
+  it('should NOT call setPlanId if planId is NOT present', () => {
     const planState = TestBed.inject(PlanState);
     const spy = spyOn(planState, 'setPlanId');
 
-    // paramMap is empty object -> no "id" or "planId"
+    // paramMap is empty object -> no "planId"
     const route = {
       paramMap: createParamMap({}),
     } as unknown as ActivatedRouteSnapshot;
