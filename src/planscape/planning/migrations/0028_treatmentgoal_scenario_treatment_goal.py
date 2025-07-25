@@ -1,62 +1,10 @@
-import json
 import django.core.serializers.json
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 def copy_treatment_goals_from_configuration(apps, schema_editor):
-    with open(
-        "config/treatment_goals.json", "r"
-    ) as treatment_goals_file:
-        regions = json.loads(treatment_goals_file.read())
-        regions = regions.get("regions")
-        treatment_goals = {}
-        for region in regions:
-            tg = region.get("treatment_goals")
-            for goal in tg:
-                questions = goal.get("questions")
-                for question in questions:
-                    treatment_goals = {
-                        **treatment_goals,
-                        question.get("id"): {
-                            "short_question_text": question.get("short_question_text"),
-                            "scenario_priorities": question.get("scenario_priorities"),
-                            "stand_thresholds": question.get("stand_thresholds"),
-                            "long_question_text": question.get("long_question_text"),
-                            "description": question.get("description"),
-                        }
-                    }
-            
-
-    Scenario = apps.get_model("planning", "Scenario")
-    TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
-    for scenario in Scenario.objects.filter(treatment_goal__isnull=True):
-        if scenario.configuration:
-            configuration = scenario.configuration
-            question_id = configuration.get("question_id")
-            tg_question = treatment_goals.get(question_id)
-            if not tg_question:
-                continue
-
-            name = tg_question.get("short_question_text")
-            long_question_text = tg_question.get("long_question_text")
-            description = f"{long_question_text}"
-            descriptions = tg_question.get("description")
-            for text in descriptions:
-                description += f"\n{text}"
-
-            priorities = tg_question.get("scenario_priorities")
-            stand_thresholds = tg_question.get("stand_thresholds")
-
-            treatment_goal, _ = TreatmentGoal.objects.get_or_create(
-                id=question_id,
-                name=name,
-                description=description,
-                priorities=priorities,
-                stand_thresholds=stand_thresholds,
-            )
-            scenario.treatment_goal = treatment_goal
-            scenario.save()
+    pass
 
 
 class Migration(migrations.Migration):

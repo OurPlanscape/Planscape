@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 from base.region_name import display_name_to_region
 from collaboration.permissions import (
@@ -8,11 +7,10 @@ from collaboration.permissions import (
     PlanningAreaPermission,
     ScenarioPermission,
 )
-from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse, QueryDict
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -893,27 +891,6 @@ def delete_scenario(request: Request) -> Response:
     except Exception as e:
         logger.error("Error deleting scenario: %s", e)
         raise
-
-
-def get_treatment_goals_config_for_region(params: QueryDict):
-    # Get region name
-    assert isinstance(params["region_name"], str)
-    region_name = params["region_name"]
-
-    # Read from treatment_goals config
-    config_path = os.path.join(settings.BASE_DIR, "config/treatment_goals.json")
-    treatment_goals_config = json.load(open(config_path, "r"))
-    for region in treatment_goals_config["regions"]:
-        if region_name == region["region_name"]:
-            return region["treatment_goals"]
-
-    return None
-
-
-@api_view(["GET"])
-def treatment_goals_config(request: Request) -> Response:
-    treatment_goals = get_treatment_goals_config_for_region(request.GET)
-    return Response(treatment_goals, content_type="application/json")
 
 
 #### SHARED LINK Handlers ####
