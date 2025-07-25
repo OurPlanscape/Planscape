@@ -1,7 +1,6 @@
 import json
 import logging
 
-from base.region_name import display_name_to_region
 from collaboration.permissions import (
     PlanningAreaNotePermission,
     PlanningAreaPermission,
