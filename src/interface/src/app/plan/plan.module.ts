@@ -2,12 +2,10 @@ import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
-import { ExploreLegacyComponent } from './explore/explore/explore-legacy.component';
 import { FeaturesModule } from '../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientXsrfModule } from '@angular/common/http';
 import { IdentifyProjectAreasComponent } from './create-scenarios/identify-project-areas/identify-project-areas.component';
-import { MapModule } from '../map/map.module';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
 import { NgChartsModule } from 'ng2-charts';
@@ -62,7 +60,6 @@ import { CumulativeAttainmentChartComponent } from './cumulative-attainment-char
     ConstraintsPanelComponent,
     CreateScenariosComponent,
     DeleteNoteDialogComponent,
-    ExploreLegacyComponent,
     GoalOverlayComponent,
     IdentifyProjectAreasComponent,
     PlanComponent,
@@ -95,7 +92,6 @@ import { CumulativeAttainmentChartComponent } from './cumulative-attainment-char
       cookieName: 'csrftoken',
       headerName: 'X-CSRFToken',
     }),
-    MapModule,
     MatButtonToggleModule,
     LegacyMaterialModule,
     NgChartsModule,

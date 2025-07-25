@@ -1,13 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { MultiMapConfigState } from './multi-map-config.state';
 import { MultiMapsStorageService } from '@services/local-storage.service';
-import { FrontendConstants } from '../map/map.constants';
+
 import { BaseMapType } from '../types/maplibre.map.types';
 import { BaseLayer, Extent } from '@types';
 import { MockProvider } from 'ng-mocks';
 import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
 import { BehaviorSubject } from 'rxjs';
 import { FeatureService } from '../features/feature.service';
+import { FrontendConstants } from '../map/map.constants';
 
 describe('MultiMapConfigState', () => {
   let service: MultiMapConfigState;

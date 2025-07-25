@@ -11,12 +11,7 @@ import {
   take,
 } from 'rxjs';
 import { Plan, User } from '@types';
-import {
-  AuthService,
-  LegacyPlanStateService,
-  Note,
-  PlanningAreaNotesService,
-} from '@services';
+import { AuthService, Note, PlanningAreaNotesService } from '@services';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
@@ -41,7 +36,6 @@ export class PlanComponent implements OnInit {
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
-    private LegacyPlanStateService: LegacyPlanStateService,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
@@ -53,12 +47,10 @@ export class PlanComponent implements OnInit {
       this.planNotFound = true;
       return;
     }
-    const plan$ = this.LegacyPlanStateService.getPlan(this.planId).pipe(
-      take(1)
-    );
+    const plan$ = this.planState.currentPlan$.pipe(take(1));
 
     plan$.subscribe({
-      error: (error) => {
+      error: () => {
         this.planNotFound = true;
       },
     });
@@ -103,20 +95,6 @@ export class PlanComponent implements OnInit {
             backUrl: getPlanPath(plan.id),
           });
         }
-
-        // this is required still to maintain LegacyPlanStateService usage on create-scenarios.
-        // We can remove this after refactor.
-        if (path === 'config') {
-          this.LegacyPlanStateService.updateStateWithScenario(
-            Number(id),
-            scenario?.name || ''
-          );
-          this.LegacyPlanStateService.updateStateWithShapes(null);
-        } else {
-          this.LegacyPlanStateService.updateStateWithScenario(undefined, null);
-          this.LegacyPlanStateService.updateStateWithShapes(null);
-        }
-        this.LegacyPlanStateService.updateStateWithPlan(plan.id);
       });
   }
 

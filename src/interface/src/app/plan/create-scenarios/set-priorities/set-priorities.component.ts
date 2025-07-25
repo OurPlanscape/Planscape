@@ -2,12 +2,14 @@ import { Component, Input } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { map, shareReplay } from 'rxjs';
 import { TreatmentGoalsService } from '@services';
+
 import {
   CategorizedScenarioGoals,
   ScenarioConfig,
   ScenarioGoal,
   TreatmentQuestionConfig,
 } from '@types';
+
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
 import { ScenarioState } from '../../../maplibre-map/scenario.state';
 import { KeyValue } from '@angular/common';
