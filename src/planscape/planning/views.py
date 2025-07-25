@@ -100,15 +100,7 @@ def create_planning_area(request: Request) -> Response:
             )
         # Get the region name; it should be in the human-readable display name format.
         region_name_input = body.get("region_name")
-        if region_name_input is None:
-            region_name = None
-        else:
-            region_name = display_name_to_region(region_name_input)
-            if region_name is None:
-                return Response(
-                    {"message": f"Unknown region_name: {region_name_input}"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+
         # Get the geometry of the planning area.
         geometry = body.get("geometry")
         if geometry is None:
@@ -120,7 +112,7 @@ def create_planning_area(request: Request) -> Response:
         planning_area = create_planning_area_service(
             user=user,
             name=name,
-            region_name=region_name,
+            region_name=region_name_input,
             geometry=geometry,
             notes=notes,
         )

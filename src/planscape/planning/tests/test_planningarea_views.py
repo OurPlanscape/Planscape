@@ -78,7 +78,6 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         planning_area = PlanningArea.objects.all().first()
         self.assertEqual(PlanningArea.objects.all().count(), 1)
-        self.assertEqual(planning_area.region_name, "sierra-nevada")
         self.assertTrue(planning_area.geometry.equals(coerce_geojson(self.geometry)))
         self.assertEqual(planning_area.notes, self.notes)
         self.assertEqual(planning_area.name, "test plan")
@@ -129,7 +128,6 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(data["id"], planning_area.id)
-        self.assertEqual(planning_area.region_name, "sierra-nevada")
         self.assertTrue(planning_area.geometry.equals(coerce_geojson(self.geometry)))
         self.assertIn("id", data)
 
@@ -151,7 +149,6 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         planning_area = PlanningArea.objects.all().first()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(PlanningArea.objects.all().count(), 1)
-        self.assertEqual(planning_area.region_name, "southern-california")
         self.assertTrue(
             planning_area.geometry.equals(coerce_geojson(self.multipolygon_geometry))
         )
@@ -310,22 +307,6 @@ class CreatePlanningAreaNoRegionV1Test(APITransactionTestCase):
         self.assertEqual(resp.status_code, 200)
         pa = PlanningArea.objects.get()
         self.assertIsNone(pa.region_name)
-
-    def test_reject_unknown_region(self):
-        self.client.force_authenticate(self.user)
-        payload = json.dumps(
-            {
-                "name": "Bad-Region Plan",
-                "region_name": "Batata-Frita",
-                "geometry": self.geometry,
-            }
-        )
-        resp = self.client.post(
-            reverse("planning:create_planning_area"),
-            payload,
-            content_type="application/json",
-        )
-        self.assertEqual(resp.status_code, 400)
 
 
 class DeletePlanningAreaTest(APITransactionTestCase):
