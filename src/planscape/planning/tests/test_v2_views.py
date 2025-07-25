@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
@@ -17,12 +18,15 @@ from planning.models import (
     RegionChoices,
     ScenarioResult,
     TreatmentGoalCategory,
+    ScenarioResultStatus,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
     UserFactory,
     TreatmentGoalFactory,
+    ProjectAreaFactory,
+    ScenarioResultFactory,
 )
 from planning.tests.helpers import _load_geojson_fixture
 
@@ -1074,3 +1078,49 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class DownloadGeopackageTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create(username="testuser")
+        self.client.force_authenticate(self.user)
+        self.unit_poly = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+        )
+        self.planning = PlanningAreaFactory.create(
+            name="foo",
+            region_name="sierra-nevada",
+            geometry=self.unit_poly,
+            user=self.user,
+        )
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning, name="s1", user=self.user
+        )
+        data = {
+            "foo": "abc",
+            "bar": 1,
+            "baz": 1.2,
+            "now": str(datetime.now()),
+            "today": date.today(),
+        }
+        ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=self.unit_poly,
+            data=data,
+            created_by=self.user,
+            name="foo",
+        )
+        ScenarioResultFactory.create(
+            scenario=self.scenario, status=ScenarioResultStatus.SUCCESS
+        )
+
+    def test_download_geopackage(self):
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-download-geopackage", args=[self.scenario.pk]
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "application/geopackage+sqlite3")
+        self.assertTrue(response.has_header("Content-Disposition"))

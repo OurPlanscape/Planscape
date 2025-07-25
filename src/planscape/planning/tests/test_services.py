@@ -18,6 +18,7 @@ from planning.models import (
 )
 from planning.services import (
     export_to_shapefile,
+    export_to_geopackage,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
@@ -25,7 +26,12 @@ from planning.services import (
     validate_scenario_treatment_ratio,
     get_acreage,
 )
-from planning.tests.factories import PlanningAreaFactory
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ScenarioFactory,
+    ProjectAreaFactory,
+    ScenarioResultFactory,
+)
 from planscape.tests.factories import UserFactory
 
 
@@ -256,6 +262,45 @@ class ExportToShapefileTest(TransactionTestCase):
             self.assertEqual(1, len(source))
             self.assertEqual(to_string(source.crs), "EPSG:4269")
             shutil.rmtree(str(output))
+
+
+class TestExportToGeopackage(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.unit_poly = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+        )
+        self.planning = PlanningAreaFactory.create(
+            name="foo",
+            region_name="sierra-nevada",
+            geometry=self.unit_poly,
+            user=self.user,
+        )
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning, name="s1", user=self.user
+        )
+        data = {
+            "foo": "abc",
+            "bar": 1,
+            "baz": 1.2,
+            "now": str(datetime.now()),
+            "today": date.today(),
+        }
+        ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=self.unit_poly,
+            data=data,
+            created_by=self.user,
+            name="foo",
+        )
+        ScenarioResultFactory.create(
+            scenario=self.scenario, status=ScenarioResultStatus.SUCCESS
+        )
+
+    def test_export_geopackage(self):
+        output = export_to_geopackage(self.scenario)
+        self.assertIsNotNone(output)
+        self.assertTrue(output.endswith(".gpkg"))
 
 
 class TestPlanningAreaCovers(TestCase):
