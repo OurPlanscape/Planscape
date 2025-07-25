@@ -367,14 +367,6 @@ if SENTRY_DSN is not None:
         traces_sample_rate=0.05,
     )
 
-DEFAULT_CONDITIONS_FILE = config(
-    "DEFAULT_CONDITIONS_FILE", BASE_DIR / "config" / "conditions.json"
-)
-DEFAULT_TREATMENTS_FILE = config(
-    "DEFAULT_TREATMENTS_FILE", BASE_DIR / "config" / "treatment_goals.json"
-)
-RASTER_ROOT = config("RASTER_ROOT", "/mnt/gis/planscape")
-RASTER_TILE = config("RASTER_TILE", "32x32")
 GDAL_NUM_THREADS = config(
     "GDAL_NUM_THREADS", default=multiprocessing.cpu_count(), cast=int
 )

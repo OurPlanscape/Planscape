@@ -1,18 +1,15 @@
 import json
 import logging
-import os
 
-from base.region_name import display_name_to_region
 from collaboration.permissions import (
     PlanningAreaNotePermission,
     PlanningAreaPermission,
     ScenarioPermission,
 )
-from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse, QueryDict
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -103,15 +100,7 @@ def create_planning_area(request: Request) -> Response:
             )
         # Get the region name; it should be in the human-readable display name format.
         region_name_input = body.get("region_name")
-        if region_name_input is None:
-            region_name = None
-        else:
-            region_name = display_name_to_region(region_name_input)
-            if region_name is None:
-                return Response(
-                    {"message": f"Unknown region_name: {region_name_input}"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+
         # Get the geometry of the planning area.
         geometry = body.get("geometry")
         if geometry is None:
@@ -123,7 +112,7 @@ def create_planning_area(request: Request) -> Response:
         planning_area = create_planning_area_service(
             user=user,
             name=name,
-            region_name=region_name,
+            region_name=region_name_input,
             geometry=geometry,
             notes=notes,
         )
@@ -893,27 +882,6 @@ def delete_scenario(request: Request) -> Response:
     except Exception as e:
         logger.error("Error deleting scenario: %s", e)
         raise
-
-
-def get_treatment_goals_config_for_region(params: QueryDict):
-    # Get region name
-    assert isinstance(params["region_name"], str)
-    region_name = params["region_name"]
-
-    # Read from treatment_goals config
-    config_path = os.path.join(settings.BASE_DIR, "config/treatment_goals.json")
-    treatment_goals_config = json.load(open(config_path, "r"))
-    for region in treatment_goals_config["regions"]:
-        if region_name == region["region_name"]:
-            return region["treatment_goals"]
-
-    return None
-
-
-@api_view(["GET"])
-def treatment_goals_config(request: Request) -> Response:
-    treatment_goals = get_treatment_goals_config_for_region(request.GET)
-    return Response(treatment_goals, content_type="application/json")
 
 
 #### SHARED LINK Handlers ####
