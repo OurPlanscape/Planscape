@@ -38,7 +38,7 @@ interface Person {
     </form>
   `,
 })
-export class MyStep1Component implements Step {
+class MyStep1Component implements Step {
   form: FormGroup = new FormGroup({
     name: new FormControl('', Validators.required),
   });
@@ -53,7 +53,7 @@ export class MyStep1Component implements Step {
     </form>
   `,
 })
-export class MyStep2Component implements Step {
+class MyStep2Component implements Step {
   form: FormGroup = new FormGroup({
     age: new FormControl('', Validators.required),
   });
@@ -69,7 +69,7 @@ export class MyStep2Component implements Step {
     </form>
   `,
 })
-export class MyStep3Component implements Step {
+class MyStep3Component implements Step {
   form: FormGroup = new FormGroup({
     email: new FormControl('', Validators.email),
   });
