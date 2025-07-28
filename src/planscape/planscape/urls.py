@@ -11,7 +11,7 @@ from planscape.views import health
 register_converter(ContentTypeURLConverter, "ctype")
 
 urlpatterns = [
-    path("/health", health),
+    path("planscape-backend/health", health),
     path(f"planscape-backend/{settings.ADMIN_URL_PREFIX}/", admin.site.urls),
     path("planscape-backend/planning/", include("planning.urls")),
     path(
