@@ -1,1 +1,17 @@
-<p>scenario-creation works!</p>
+<div>Name goes here</div>
+<mat-tab-group
+  mat-stretch-tabs="false"
+  mat-align-tabs="start"
+  class="scenario-tabs">
+  <mat-tab label="Configurations">
+    <sg-steps linear>
+      <cdk-step>Step 1</cdk-step>
+      <cdk-step>Step 2</cdk-step>
+      <cdk-step>Step 3</cdk-step>
+      <cdk-step>Step 4</cdk-step>
+    </sg-steps>
+  </mat-tab>
+  <mat-tab label="Data Layers">
+    <app-data-layers class="white-background"></app-data-layers>
+  </mat-tab>
+</mat-tab-group>
