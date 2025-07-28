@@ -18,12 +18,13 @@ export interface Step {
  * You can make steps optional by setting your own form validity.
  *
  * ```
- * <sg-steps>
+ * <sg-steps [save]='saveData'>
  *   <cdk-step>Simple step, no form</cdk-step>
  *   <cdk-step [stepControl]='step1.form'><step-1 #step1></step-1></cdk-step>
  *   <cdk-step [stepControl]='step2.form'><step-2 #step2></step-1></cdk-step>
  * </sg-steps>
  *```
+ *
  */
 @Component({
   selector: 'sg-steps',
@@ -38,19 +39,18 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() continueLabel = 'Save & Continue';
   @Input() finishLabel = 'finish';
   @Input() genericErrorMsg = 'Unknown error';
-
-  savingStep = false;
-
-  // I don't love this...
-  // alt would be to use a service but how do I provide the right
-  // dependencies on the constructor to extend CdkStepper?
+  @Input() errorKey = 'invalid';
+  // save callback
   @Input() save?: (data: Partial<T>) => Observable<boolean>;
 
+  // flag to show loader
+  savingStep = false;
+
   goNext(): void {
-    // this would be the key to interact - use the forms
+    // grab the control (formControl) from the selected step
     const control = this.selected?.stepControl;
 
-    // if no control go ahead
+    // if no control go ahead to the next step
     if (!control) {
       this.next();
       return;
@@ -67,7 +67,7 @@ export class StepsComponent<T> extends CdkStepper {
           },
           error: (err) => {
             control.setErrors({
-              invalid: err?.message || this.genericErrorMsg,
+              [this.errorKey]: err?.message || this.genericErrorMsg,
             });
             this.savingStep = false;
           },

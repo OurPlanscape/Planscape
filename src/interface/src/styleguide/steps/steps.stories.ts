@@ -112,7 +112,7 @@ const meta: Meta<StepsComponent<Person>> = {
       </div>
     </cdk-step>
     <cdk-step [stepControl]='step1.form'><sg-step-demo-1 #step1></sg-step-demo-1></cdk-step>
-    <cdk-step [stepControl]='step3.form' > <sg-step-demo-3 #step3></sg-step-demo-3></cdk-step>
+    <cdk-step [stepControl]='step3.form'><sg-step-demo-3 #step3></sg-step-demo-3></cdk-step>
     <cdk-step [stepControl]='step2.form'><sg-step-demo-2 #step2></sg-step-demo-2></cdk-step>
     <cdk-step>Bye</cdk-step>
   </sg-steps>
