@@ -1,6 +1,6 @@
 import logging
 
-from core.flags import feature_enabled
+from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
@@ -21,7 +21,6 @@ from planning.models import PlanningArea, ProjectArea, Scenario, TreatmentGoal
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
-    CreateScenarioSerializer,
     CreateScenarioV2Serializer,
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
@@ -164,7 +163,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         },
     ),
 )
-class ScenarioViewSet(viewsets.ModelViewSet):
+class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     queryset = Scenario.objects.none()
     permission_classes = [ScenarioViewPermission]
     ordering_fields = [
@@ -179,24 +178,14 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
-        "create": CreateScenarioSerializer,
+        "create": CreateScenarioV2Serializer,
+        "retrieve": ScenarioV2Serializer,
     }
     filterset_class = ScenarioFilter
     filter_backends = [
         DjangoFilterBackend,
         ScenarioOrderingFilter,
     ]
-
-    def get_serializer(self, *args, **kwargs):
-        if feature_enabled("USE_SCENARIO_V2"):
-            # need to inform context because this is not created through
-            # the original get_serializer method.
-            kwargs.setdefault("context", self.get_serializer_context())
-            if self.action == "create":
-                return CreateScenarioV2Serializer(*args, **kwargs)
-            if self.action == "retrieve":
-                return ScenarioV2Serializer(*args, **kwargs)
-        return super().get_serializer(*args, **kwargs)
 
     def get_queryset(self):
         user = self.request.user
@@ -217,10 +206,8 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         scenario = create_scenario(
             **serializer.validated_data,
         )
-        if feature_enabled("USE_SCENARIO_V2"):
-            out_serializer = ScenarioV2Serializer(instance=scenario)
-        else:
-            out_serializer = ScenarioSerializer(instance=scenario)
+        out_serializer = ScenarioV2Serializer(instance=scenario)
+
         headers = self.get_success_headers(out_serializer.data)
         return Response(
             out_serializer.data,

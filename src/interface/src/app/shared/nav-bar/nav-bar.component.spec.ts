@@ -6,7 +6,6 @@ import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { FeaturesModule } from '../../features/features.module';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
@@ -19,12 +18,7 @@ describe('NavBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        LegacyMaterialModule,
-        RouterTestingModule,
-        FeaturesModule,
-        ButtonComponent,
-      ],
+      imports: [LegacyMaterialModule, RouterTestingModule, ButtonComponent],
       declarations: [NavBarComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -53,6 +47,7 @@ describe('NavBarComponent', () => {
 
     component = fixture.componentInstance;
 
+    component.area = 'SCENARIO';
     fixture.detectChanges();
   });
 

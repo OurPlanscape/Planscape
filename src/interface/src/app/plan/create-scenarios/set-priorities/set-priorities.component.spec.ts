@@ -10,7 +10,6 @@ import {
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '@types';
-
 import { TreatmentGoalsService } from '@services';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
