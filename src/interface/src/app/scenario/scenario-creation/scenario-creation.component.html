@@ -1,10 +1,11 @@
 <div>Name goes here</div>
 <mat-tab-group
+  #tabGroup
   mat-stretch-tabs="false"
   mat-align-tabs="start"
   class="scenario-tabs">
   <mat-tab label="Configurations">
-    <sg-steps linear>
+    <sg-steps linear finishLabel="Save & Run Scenario">
       <cdk-step>Step 1</cdk-step>
       <cdk-step>Step 2</cdk-step>
       <cdk-step>Step 3</cdk-step>
