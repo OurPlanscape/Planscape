@@ -10,16 +10,12 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework import status
-from rest_framework.decorators import (
-    api_view,
-    permission_classes,
-)
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from users.serializers import MartinResourceSerializer, UserSerializer
 
 # Configure global logging.
@@ -227,7 +223,8 @@ def validate_martin_request(request: Request) -> Response:
     user = request.user
     if not user or not user.is_authenticated:
         auth_backend = JWTCookieAuthentication()
-        user, _ = auth_backend.authenticate(request)
+        auth = auth_backend.authenticate(request)
+        user, _ = auth if auth else None, None
 
     if not user:
         logger.warning("User not identified.")
