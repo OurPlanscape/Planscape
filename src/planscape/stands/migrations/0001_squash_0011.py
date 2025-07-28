@@ -23,8 +23,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        # ("conditions", "0004_get_condition_pixels"),
-        # ("conditions", "0009_auto_20231222_0900"),
         ("datasets", "0006_alter_datalayer_options"),
     ]
 
