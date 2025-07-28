@@ -503,5 +503,6 @@ if not TESTING_MODE and not OPENPANEL_URL:
         client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
         api_url=OPENPANEL_URL,  # type: ignore
     )
+    OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
 else:
     OPENPANEL_CLIENT = None

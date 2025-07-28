@@ -11,8 +11,10 @@ def get_openpanel(user_id: Optional[str] = None) -> Optional[OpenPanel]:
         return None
     if not settings.OPENPANEL_URL:
         return None
+    if not settings.OPENPANEL_CLIENT:
+        return None
     op = settings.OPENPANEL_CLIENT
-    op.set_global_properties({"environment": settings.ENV})
+
     if user_id is not None:
         op.profile_id = user_id
     return op
