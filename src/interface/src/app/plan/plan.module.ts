@@ -52,6 +52,7 @@ import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metr
 import { SectionComponent } from '../../styleguide/collapsible-panel/section.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
 import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
+import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenario-creation.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -117,6 +118,7 @@ import { CumulativeAttainmentChartComponent } from './cumulative-attainment-char
     SectionComponent,
     TreatmentOpportunityChartComponent,
     CumulativeAttainmentChartComponent,
+    ScenarioCreationComponent,
   ],
 })
 export class PlanModule {}

@@ -17,8 +17,7 @@ export const planLoaderResolver: ResolveFn<number> = (
 ) => {
   const planState = inject(PlanState);
   const router = inject(Router);
-  const planIdParam =
-    route.paramMap.get('id') || route.paramMap.get('planId') || '';
+  const planIdParam = route.paramMap.get('planId') || '';
   const planId = parseInt(planIdParam, 10);
 
   if (planId) {

@@ -11,6 +11,7 @@ import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from './mocks';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
+import { FeatureService } from '../features/feature.service';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -33,7 +34,12 @@ describe('TreatmentsState', () => {
         { provide: ActivatedRoute, useValue: fakeRoute },
 
         TreatmentsState,
-        MockProviders(MapConfigState, TreatedStandsState, TreatmentsService),
+        MockProviders(
+          MapConfigState,
+          TreatedStandsState,
+          TreatmentsService,
+          FeatureService
+        ),
         MockProvider(DirectImpactsStateService, {
           selectedProjectArea$: of('All' as any),
         }),
