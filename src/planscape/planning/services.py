@@ -543,14 +543,14 @@ def export_scenario_inputs_to_geopackage(scenario: Scenario) -> str:
                 allow_unsupported_drivers=True,
             ) as out:
                 for feature in scenario_inputs:
-                    geometry = MultiPolygon.from_ewkt(feature.pop("WKT", None))
+                    coords = MultiPolygon.from_ewkt(feature.pop("WKT", None))
                     geometry = {
                         "type": "MultiPolygon",
-                        "coordinates": str(geometry.coords),
+                        "coordinates": str(coords.coords),
                     }
                     feature = {"properties": feature, "geometry": geometry}
                     out.write(feature)
-
+                
     except Exception as e:
         logger.exception(
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
@@ -592,7 +592,7 @@ def export_to_geopackage(scenario: Scenario) -> str:
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
         raise e
-
+    
     return str(geopackage_path)
 
 
