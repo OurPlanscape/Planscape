@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.urls import path, register_converter
+from django.contrib import admin
+from django.urls import include, path, register_converter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from planscape.url_converters import ContentTypeURLConverter
