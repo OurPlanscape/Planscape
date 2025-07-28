@@ -1,20 +1,17 @@
 from typing import Any, Dict, Optional, Union
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from openpanel import OpenPanel
 
 
 def get_openpanel(user_id: Optional[str] = None) -> Optional[OpenPanel]:
+    from django.conf import settings
+
     if settings.TESTING_MODE:
         return None
     if not settings.OPENPANEL_URL:
         return None
-    op = OpenPanel(
-        client_id=settings.OPENPANEL_CLIENT_ID,
-        client_secret=settings.OPENPANEL_CLIENT_SECRET,
-        api_url=settings.OPENPANEL_URL,
-    )
+    op = settings.OPENPANEL_CLIENT
     op.set_global_properties({"environment": settings.ENV})
     if user_id is not None:
         op.profile_id = user_id
