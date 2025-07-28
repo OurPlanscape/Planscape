@@ -28,6 +28,7 @@ import { TreatmentRoutingData } from './treatments-routing-data';
 import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
+import { FeatureService } from '../features/feature.service';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -40,7 +41,8 @@ export class TreatmentsState {
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
-    private directImpactsState: DirectImpactsStateService
+    private directImpactsState: DirectImpactsStateService,
+    private featureService: FeatureService
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -102,10 +104,16 @@ export class TreatmentsState {
         return null;
       }
 
+      const scenarioPath = this.featureService.isFeatureEnabled(
+        'SCENARIO_CONFIGURATION_STEPS'
+      )
+        ? 'scenario'
+        : 'config';
+
       if (projectArea) {
         // if we are currently viewing a Project Area
         navStateObject.label = `Project Area:  ${projectArea.project_area_name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/${scenarioPath}/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
       } else if (
         !!treatmentPlan &&
         !!treatmentPlan.name &&
@@ -113,7 +121,7 @@ export class TreatmentsState {
       ) {
         // if we are currently viewing Treatment Impacts
         navStateObject.label = `Direct Treatment Impacts: ${treatmentPlan.name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/${scenarioPath}/${summary.scenario_id}`;
       } else if (
         // if we are currently viewing a Treatment Plan
         !!treatmentPlan &&
@@ -121,7 +129,7 @@ export class TreatmentsState {
         treatmentPlan.status !== 'SUCCESS'
       ) {
         navStateObject.label = `Treatment Plan:  ${treatmentPlan.name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/${scenarioPath}/${summary.scenario_id}`;
       }
       return navStateObject;
     })

@@ -124,7 +124,7 @@ describe('SavedScenariosComponent', () => {
       By.css('[data-id="new-scenario"]')
     );
     button.nativeElement.click();
-    expect(router.navigate).toHaveBeenCalledOnceWith(['config', ''], {
+    expect(router.navigate).toHaveBeenCalledOnceWith(['config'], {
       relativeTo: route,
     });
     flush();
