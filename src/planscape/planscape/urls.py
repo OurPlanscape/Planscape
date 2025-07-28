@@ -1,15 +1,14 @@
-from dj_rest_auth.registration.views import VerifyEmailView
 from django.conf import settings
-from django.contrib import admin
-from django.urls import include, path, register_converter
+from django.urls import path, register_converter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from users import views as user_views
 
 from planscape.url_converters import ContentTypeURLConverter
+from planscape.views import health
 
 register_converter(ContentTypeURLConverter, "ctype")
 
 urlpatterns = [
+    path("/health", health),
     path(f"planscape-backend/{settings.ADMIN_URL_PREFIX}/", admin.site.urls),
     path("planscape-backend/planning/", include("planning.urls")),
     path(
