@@ -531,6 +531,8 @@ def export_scenario_outputs_to_geopackage(
         reader = csv.DictReader(csvfile)
         for row in reader:
             stand_id = int(row.get("stand_id"))  # type: ignore
+            if stand_id not in scenario_outputs:
+                continue
             wkt = row.get("WKT")
             try:
                 geom = GEOSGeometry(wkt, srid=settings.AREA_SRID)
