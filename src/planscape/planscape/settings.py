@@ -304,6 +304,8 @@ CRS_9822_PROJ4 = (
 )
 CRS_9822_SCALE = (300, -300)  # a raster transform has origin, scale, and skew.
 
+CRC_GEOPACKAGE_EXPORT = 4326
+
 # The area of a raster pixel (in km-squared).
 RASTER_PIXEL_AREA = 0.300 * 0.300
 
