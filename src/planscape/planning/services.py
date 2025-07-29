@@ -535,7 +535,7 @@ def export_scenario_outputs_to_geopackage(
             try:
                 geom = GEOSGeometry(wkt, srid=settings.AREA_SRID)
                 geom_json = geom.transform(
-                    settings.CRS_INTERNAL_REPRESENTATION, clone=True
+                    settings.CRS_GEOPACKAGE_EXPORT, clone=True
                 ).json()
                 scenario_outputs[stand_id]["geometry"] = to_multi(geom_json)
             except Exception as e:
@@ -559,7 +559,7 @@ def export_scenario_outputs_to_geopackage(
         "properties": field_type_pairs,
     }
 
-    crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
             with fiona.open(
@@ -597,7 +597,7 @@ def export_scenario_inputs_to_geopackage(
                         try:
                             geom = GEOSGeometry(value, srid=settings.AREA_SRID)
                             geom_json = geom.transform(
-                                settings.CRS_INTERNAL_REPRESENTATION, clone=True
+                                settings.CRS_GEOPACKAGE_EXPORT, clone=True
                             ).json()
                             row[key] = to_multi(geom_json)
                         except Exception as e:
@@ -616,7 +616,7 @@ def export_scenario_inputs_to_geopackage(
         "geometry": "MultiPolygon",
         "properties": field_type_pairs,
     }
-    crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
             with fiona.open(
@@ -643,7 +643,7 @@ def export_scenario_inputs_to_geopackage(
 def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
-    crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
             with fiona.open(
