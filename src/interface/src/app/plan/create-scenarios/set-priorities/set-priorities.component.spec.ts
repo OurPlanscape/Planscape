@@ -15,6 +15,7 @@ import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
 import { ScenarioState } from '../../../maplibre-map/scenario.state';
+import { SectionComponent } from '../../../../styleguide/collapsible-panel/section.component';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -54,6 +55,7 @@ describe('SetPrioritiesComponent', () => {
         LegacyMaterialModule,
         ReactiveFormsModule,
         SharedModule,
+        SectionComponent,
       ],
       declarations: [SetPrioritiesComponent, ScenarioTooltipMockComponent],
       providers: [
