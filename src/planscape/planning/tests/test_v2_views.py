@@ -1,6 +1,7 @@
 import json
 from datetime import date, datetime
 
+from unittest import mock
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
@@ -1114,7 +1115,15 @@ class DownloadGeopackageTest(APITransactionTestCase):
             scenario=self.scenario, status=ScenarioResultStatus.SUCCESS
         )
 
-    def test_download_geopackage(self):
+    @mock.patch(
+        "planning.services.export_scenario_inputs_to_geopackage",
+        return_value=None,
+    )
+    @mock.patch(
+        "planning.services.export_scenario_outputs_to_geopackage",
+        return_value=None,
+    )
+    def test_download_geopackage(self, mock1, mock2):
         response = self.client.get(
             reverse(
                 "api:planning:scenarios-download-geopackage", args=[self.scenario.pk]
