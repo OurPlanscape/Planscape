@@ -505,7 +505,9 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     return shapefile_folder
 
 
-def export_scenario_inputs_to_geopackage(scenario: Scenario) -> str:
+def export_scenario_inputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
     scenario_inputs = []
@@ -513,10 +515,23 @@ def export_scenario_inputs_to_geopackage(scenario: Scenario) -> str:
         reader = csv.DictReader(csvfile)
         for row in reader:
             for key, value in row.items():
-                if key == "stand_id":
-                    row[key] = int(value)
-                elif key != "WKT":
-                    row[key] = float(value)
+                match key:
+                    case "stand_id":
+                        row[key] = int(value)
+                    case "WKT":
+                        try:
+                            geom = GEOSGeometry(value, srid=settings.AREA_SRID)
+                            geom_json = geom.transform(
+                                settings.CRS_INTERNAL_REPRESENTATION, clone=True
+                            ).json()
+                            row[key] = to_multi(geom_json)
+                        except Exception as e:
+                            logger.error(
+                                "Invalid WKT for scenario %s: %s", scenario.pk, e
+                            )
+                            raise InvalidGeometry(f"Invalid WKT: {value}")
+                    case _:
+                        row[key] = float(value)
             scenario_inputs.append(row)
 
     feature = scenario_inputs[0].copy()  # Copy the first feature to modify
@@ -526,10 +541,6 @@ def export_scenario_inputs_to_geopackage(scenario: Scenario) -> str:
         "geometry": "MultiPolygon",
         "properties": field_type_pairs,
     }
-
-    shapefile_folder = scenario.get_shapefile_folder()
-    geopackage_file = f"{scenario.name}.gpkg"
-    geopackage_path = shapefile_folder / geopackage_file
     crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
@@ -543,34 +554,20 @@ def export_scenario_inputs_to_geopackage(scenario: Scenario) -> str:
                 allow_unsupported_drivers=True,
             ) as out:
                 for feature in scenario_inputs:
-                    coords = MultiPolygon.from_ewkt(feature.pop("WKT", None))
-                    geometry = {
-                        "type": "MultiPolygon",
-                        "coordinates": str(coords.coords),
-                    }
+                    geometry = feature.pop("WKT", None)
                     feature = {"properties": feature, "geometry": geometry}
                     out.write(feature)
-                
+
     except Exception as e:
         logger.exception(
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
         raise e
 
-    return str(geopackage_file)
 
-
-def export_to_geopackage(scenario: Scenario) -> str:
+def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
-    shapefile_folder = scenario.get_shapefile_folder()
-    geopackage_file = f"{scenario.name}.gpkg"
-    geopackage_path = shapefile_folder / geopackage_file
-    Path(geopackage_path).unlink(missing_ok=True)
-    if not shapefile_folder.exists():
-        shapefile_folder.mkdir(parents=True)
-    if geopackage_path.exists():
-        geopackage_path.unlink()
     crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
@@ -592,7 +589,21 @@ def export_to_geopackage(scenario: Scenario) -> str:
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
         raise e
-    
+
+
+def export_to_geopackage(scenario: Scenario) -> str:
+    shapefile_folder = scenario.get_shapefile_folder()
+    geopackage_file = f"{scenario.name}.gpkg"
+    geopackage_path = shapefile_folder / geopackage_file
+    Path(geopackage_path).unlink(missing_ok=True)
+    if not shapefile_folder.exists():
+        shapefile_folder.mkdir(parents=True)
+    if geopackage_path.exists():
+        geopackage_path.unlink()
+
+    export_scenario_to_geopackage(scenario, geopackage_path)
+    export_scenario_inputs_to_geopackage(scenario, geopackage_path)
+
     return str(geopackage_path)
 
 
