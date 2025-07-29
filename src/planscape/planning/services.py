@@ -517,11 +517,11 @@ def export_scenario_outputs_to_geopackage(
             for key, value in row.items():
                 match key:
                     case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        row[key] = int(value)
+                        row[key] = int(value.strip())
                     case "DoTreat", "selected":
-                        row[key] = bool(int(value))
+                        row[key] = bool(int(value.strip()))
                     case _:
-                        row[key] = float(value)
+                        row[key] = float(value.strip())
             stand_id = row.get("stand_id")
             scenario_outputs[stand_id] = row
 
@@ -530,13 +530,14 @@ def export_scenario_outputs_to_geopackage(
     with open(inputs_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            stand_id = row.get("stand_id")
+            stand_id = int(row.get("stand_id"))  # type: ignore
             wkt = row.get("WKT")
             try:
                 geom = GEOSGeometry(wkt, srid=settings.AREA_SRID)
                 geom_json = geom.transform(
                     settings.CRS_GEOPACKAGE_EXPORT, clone=True
-                ).json()
+                ).json
+                geom_json = json.loads(geom_json)
                 scenario_outputs[stand_id]["geometry"] = to_multi(geom_json)
             except Exception as e:
                 logger.error("Invalid WKT for scenario %s: %s", scenario.pk, e)
@@ -598,7 +599,8 @@ def export_scenario_inputs_to_geopackage(
                             geom = GEOSGeometry(value, srid=settings.AREA_SRID)
                             geom_json = geom.transform(
                                 settings.CRS_GEOPACKAGE_EXPORT, clone=True
-                            ).json()
+                            ).json
+                            geom_json = json.loads(geom_json)
                             row[key] = to_multi(geom_json)
                         except Exception as e:
                             logger.error(

@@ -1,6 +1,7 @@
 import shutil
 from datetime import date, datetime
 
+import csv
 import fiona
 import json
 import shapely
@@ -33,6 +34,7 @@ from planning.tests.factories import (
     ScenarioResultFactory,
 )
 from planscape.tests.factories import UserFactory
+from stands.tests.factories import StandFactory
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -270,6 +272,7 @@ class TestExportToGeopackage(TestCase):
         self.unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
+        self.stand = StandFactory.create()
         self.planning = PlanningAreaFactory.create(
             name="foo",
             region_name="sierra-nevada",
@@ -296,6 +299,80 @@ class TestExportToGeopackage(TestCase):
         ScenarioResultFactory.create(
             scenario=self.scenario, status=ScenarioResultStatus.SUCCESS
         )
+
+        forsys_folder = self.scenario.get_forsys_folder()
+        if not forsys_folder.exists():
+            forsys_folder.mkdir(parents=True, exist_ok=True)
+        self.inputs_file = forsys_folder / "inputs.csv"
+
+        inputs_data_rows = [
+            [
+                "WKT",
+                "stand_id",
+                "area_acres",
+                "datalayer_1",
+                "datalayer_2",
+                "datalayer_3",
+                "datalayer_4",
+                "datalayer_5",
+                "datalayer_6_SPM",
+                "datalayer_7_PCP",
+                "priority",
+            ],
+            [
+                "POLYGON ((-2226358.53928425 1950498.20568641,-2225919.84794646 1949738.37000051,-2225042.46527088 1949738.37000052,-2224603.77393309 1950498.20568641,-2225042.46527088 1951258.0413723,-2225919.84794646 1951258.0413723,-2226358.53928425 1950498.20568641))",
+                self.stand.pk,
+                494.193231034226,
+                73,
+                0,
+                38.9199636198272,
+                0,
+                0,
+                0,
+                -0,
+                0,
+            ],
+        ]
+        with open(self.inputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(inputs_data_rows)
+
+        stnd_data_rows = [
+            [
+                "stand_id",
+                "proj_id",
+                "DoTreat",
+                "selected",
+                "ETrt_YR",
+                "area_acres",
+                "datalayer_1",
+                "datalayer_2",
+                "datalayer_3",
+                "datalayer_4",
+                "weightedPriority",
+                "Pr_1_priority",
+            ],
+            [
+                self.stand.pk,
+                1,
+                1,
+                1,
+                1,
+                494.193231036229,
+                0.136334928019663,
+                10.27318640955,
+                7882.24269662921,
+                0,
+                16.6071320953935,
+                1,
+            ],
+        ]
+
+        forsys_folder = self.scenario.get_forsys_folder()
+        self.outputs_file = forsys_folder / f"stnd_{self.scenario.uuid}.csv"
+        with open(self.outputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(stnd_data_rows)
 
     def test_export_geopackage(self):
         output = export_to_geopackage(self.scenario)
