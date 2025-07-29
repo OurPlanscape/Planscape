@@ -49,12 +49,14 @@ describe('CumulativeAttainmentChartComponent', () => {
     expect(component.data.datasets.length).toBe(2);
   });
 
-  it('should apply correct colors from colorForIndex()', () => {
-    const color = component.colorForIndex(1);
+  it('should apply correct colors from colorForLabel()', () => {
+    // assuming 'Total Aboveground Carbon' has color '#BBE3B6',
+
+    const color = component.colorForLabel('Total Aboveground Carbon');
     expect(color).toEqual(
       jasmine.objectContaining({
-        backgroundColor: '#483D78',
-        borderColor: '#483D78',
+        backgroundColor: '#BBE3B6',
+        borderColor: '#BBE3B6',
       })
     );
   });

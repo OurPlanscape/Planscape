@@ -3,23 +3,19 @@ import logging
 from urllib.parse import urlparse
 
 from allauth.account.utils import has_verified_email
+from dj_rest_auth.jwt_auth import JWTCookieAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework import status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-)
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from users.serializers import MartinResourceSerializer, UserSerializer
 
 # Configure global logging.
@@ -205,7 +201,6 @@ PRIVATE_LAYERS = (
 
 
 @api_view(["GET"])
-@authentication_classes([])
 @permission_classes([AllowAny])
 def validate_martin_request(request: Request) -> Response:
     original_uri = request.headers.get("X-Original-URI")
@@ -223,6 +218,28 @@ def validate_martin_request(request: Request) -> Response:
     if original_uri.find("?") == -1:
         return Response({"valid": True})
 
+    # If the request is for a private layer, we need to validate the user
+    # Forcing the user to be authenticated via JWT cookie
+    user = request.user
+    if not user or not user.is_authenticated:
+        auth_backend = JWTCookieAuthentication()
+        auth = auth_backend.authenticate(request)
+        user, _ = auth if auth else None, None
+
+    if not user:
+        logger.warning("User not identified.")
+        return Response(
+            {"error": "User token Required"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    if not user.is_authenticated:
+        logger.warning(f"User not authenticated. Anonymous: {str(user.is_anonymous)}.")
+        return Response(
+            {"error": "User not authenticated"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     original_query_params_str = original_uri.split("?")[1]
     original_query_params = dict(
         param.split("=") for param in original_query_params_str.split("&")
@@ -232,6 +249,7 @@ def validate_martin_request(request: Request) -> Response:
     )
 
     if not serializer.is_valid():
+        logger.warning("Invalid Martin request parameters: %s", serializer.errors)
         return Response(
             serializer.errors,
             status=status.HTTP_403_FORBIDDEN,

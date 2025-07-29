@@ -32,64 +32,68 @@ export const SNACK_DEBUG_CONFIG: MatSnackBarConfig<any> = {
 };
 
 const blue = [
-  '#D1E0EF',
-  '#ADCCE6',
-  '#88B9DB',
-  '#62A5CD',
-  '#3D92C0',
-  '#327CAC',
-  '#2C678E',
-  '#285577',
-  '#234560',
   '#1F3449',
+  '#234560',
+  '#285577',
+  '#2C678E',
+  '#327CAC',
+  '#3D92C0',
+  '#62A5CD',
+  '#88B9DB',
+  '#ADCCE6',
+  '#D1E0EF',
 ];
+
 const red = [
-  '#FDE2E2',
-  '#F9C7C7',
-  '#F5ADAD',
-  '#F19393',
-  '#ED7878',
-  '#E95E5E',
-  '#E54444',
-  '#C73232',
-  '#A02020',
   '#7B1414',
+  '#A02020',
+  '#C73232',
+  '#E54444',
+  '#E95E5E',
+  '#ED7878',
+  '#F19393',
+  '#F5ADAD',
+  '#F9C7C7',
+  '#FDE2E2',
 ];
+
 const green = [
-  '#E6F4E6',
-  '#CDEBCF',
-  '#B4E1B8',
-  '#9BD8A1',
-  '#82CF8A',
-  '#6AC674',
-  '#52BD5D',
-  '#3AB346',
-  '#249A32',
   '#0E801E',
+  '#249A32',
+  '#3AB346',
+  '#52BD5D',
+  '#6AC674',
+  '#82CF8A',
+  '#9BD8A1',
+  '#B4E1B8',
+  '#CDEBCF',
+  '#E6F4E6',
 ];
+
 const orange = [
-  '#FFF1E6',
-  '#FFE0C4',
-  '#FFD0A3',
-  '#FFBF82',
-  '#FFAF61',
-  '#FF9F40',
-  '#FF8F1F',
-  '#E07812',
-  '#BF640F',
   '#8C480B',
+  '#BF640F',
+  '#E07812',
+  '#FF8F1F',
+  '#FF9F40',
+  '#FFAF61',
+  '#FFBF82',
+  '#FFD0A3',
+  '#FFE0C4',
+  '#FFF1E6',
 ];
+
 const purple = [
-  '#F0E6F9',
-  '#E3CFEF',
-  '#D6B8E5',
-  '#C8A0DB',
-  '#BB89D1',
-  '#AE71C7',
-  '#9147B3',
-  '#78349C',
-  '#5F2185',
   '#46106E',
+  '#5F2185',
+  '#78349C',
+  '#9147B3',
+  '#AE71C7',
+  '#BB89D1',
+  '#C8A0DB',
+  '#D6B8E5',
+  '#E3CFEF',
+  '#F0E6F9',
 ];
 
 export const PROJECT_AREA_COLORS = [
@@ -101,15 +105,6 @@ export const PROJECT_AREA_COLORS = [
 ];
 
 export const DEFAULT_AREA_COLOR = '#4965c7';
-
-export const EXCLUDED_AREAS = [
-  { label: 'National Forests', key: 'NATIONAL_FORESTS', id: 1 },
-  { label: 'National Parks', key: 'NATIONAL_PARKS', id: 2 },
-  { label: 'Private Land', key: 'PRIVATE_LANDS', id: 3 },
-  { label: 'State Parks', key: 'STATE_PARKS', id: 4 },
-  { label: 'Tribal Lands', key: 'TRIBAL_LANDS', id: 5 },
-  { label: 'Wilderness Area', key: 'WILDERNESS_AREA', id: 6 },
-];
 
 export const BASE_LAYERS_DEFAULT = {
   COLOR: '#789',
@@ -125,14 +120,16 @@ export const BASE_LAYERS_DEFAULT = {
  */
 export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
 
-export const CHART_COLORS = [
-  '#483D78',
-  '#A59CCD',
-  '#BBE3B6',
-  '#85B167',
-  '#FFDB69',
-  '#F18226',
-  '#483D78',
-  '#483D78',
-  '#CC4678',
-];
+interface ChartColorMap {
+  [key: string]: string; // This allows any string key to map to a string value (the color code)
+}
+//TODO: revise these with finished list?
+export const ChartColors: ChartColorMap = {
+  'Probability of Fire Severity - High': '#483D78',
+  'Probability of Fire Severity - Low': '#ffaaaa',
+  'Total Aboveground Carbon': '#BBE3B6',
+  'Damage Potential': '#85B167',
+  'Structure Exposure Score': '#FFDB69',
+  'SNV Standing Dead and Ladder Fuels': '#F18226',
+  'Forest Canopy Cover': '#A59CCD',
+};

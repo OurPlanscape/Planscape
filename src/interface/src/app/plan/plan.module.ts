@@ -2,12 +2,10 @@ import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
-import { ExploreLegacyComponent } from './explore/explore/explore-legacy.component';
 import { FeaturesModule } from '../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientXsrfModule } from '@angular/common/http';
 import { IdentifyProjectAreasComponent } from './create-scenarios/identify-project-areas/identify-project-areas.component';
-import { MapModule } from '../map/map.module';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
 import { NgChartsModule } from 'ng2-charts';
@@ -50,10 +48,12 @@ import { NewTreatmentFooterComponent } from './new-treatment-footer/new-treatmen
 import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
+import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import { SectionComponent } from '../../styleguide/collapsible-panel/section.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
 import { ScenarioDownloadFooterComponent } from './scenario-download-footer/scenario-download-footer.component';
 import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
+import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenario-creation.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -62,7 +62,6 @@ import { CumulativeAttainmentChartComponent } from './cumulative-attainment-char
     ConstraintsPanelComponent,
     CreateScenariosComponent,
     DeleteNoteDialogComponent,
-    ExploreLegacyComponent,
     GoalOverlayComponent,
     IdentifyProjectAreasComponent,
     PlanComponent,
@@ -95,7 +94,6 @@ import { CumulativeAttainmentChartComponent } from './cumulative-attainment-char
       cookieName: 'csrftoken',
       headerName: 'X-CSRFToken',
     }),
-    MapModule,
     MatButtonToggleModule,
     LegacyMaterialModule,
     NgChartsModule,
@@ -117,10 +115,12 @@ import { CumulativeAttainmentChartComponent } from './cumulative-attainment-char
     ScenarioMapComponent,
     NewTreatmentFooterComponent,
     DataLayersComponent,
+    ScenarioMetricsLegendComponent,
     SectionComponent,
     TreatmentOpportunityChartComponent,
     ScenarioDownloadFooterComponent,
     CumulativeAttainmentChartComponent,
+    ScenarioCreationComponent,
   ],
 })
 export class PlanModule {}

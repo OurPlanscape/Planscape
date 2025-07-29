@@ -15,11 +15,7 @@ import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
-import {
-  CurrencyInKPipe,
-  SectionLoaderComponent,
-  TypeSafeMatCellDef,
-} from '@shared';
+import { SectionLoaderComponent, TypeSafeMatCellDef } from '@shared';
 import { CurrencyPipe } from '@angular/common';
 import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -31,6 +27,8 @@ import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
 import { ButtonComponent } from '@styleguide';
 import { MatTabsModule } from '@angular/material/tabs';
+import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-card-list.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -79,13 +77,14 @@ describe('SavedScenariosComponent', () => {
         FeaturesModule,
         ButtonComponent,
         MatTabsModule,
+        RouterTestingModule,
       ],
       declarations: [
         SavedScenariosComponent,
-        CurrencyInKPipe,
         TypeSafeMatCellDef,
         MockComponent(SectionLoaderComponent),
         MockComponent(ScenariosTableListComponent),
+        MockComponent(ScenariosCardListComponent),
       ],
       providers: [
         CurrencyPipe,
@@ -125,7 +124,7 @@ describe('SavedScenariosComponent', () => {
       By.css('[data-id="new-scenario"]')
     );
     button.nativeElement.click();
-    expect(router.navigate).toHaveBeenCalledOnceWith(['config', ''], {
+    expect(router.navigate).toHaveBeenCalledOnceWith(['config'], {
       relativeTo: route,
     });
     flush();

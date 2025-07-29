@@ -11,6 +11,8 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
-`MAPLIBRE_ON_EXPLORE` : Shows explore page with maplibre (also called explore v2)
+`SCENARIO_IMPROVEMENTS` : Shows Scenario Analytics and other improvements
 
-`SCENARIO_IMPROVEMENTS` :  Shows Scenario Analytics and other improvements
+`CONUS_WIDE_SCENARIOS` : Enable CONUS wide scenarios
+
+`SCENARIO_CONFIGURATION_STEPS` : Shows the new scenario configuration steps

@@ -10,6 +10,7 @@ import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEnv
+from openpanel import OpenPanel
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
@@ -39,9 +40,7 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 # Application definition
 PLANSCAPE_APPS = [
     "admin.apps.PlanscapeAdmin",
-    "boundary",
     "collaboration",
-    "conditions",
     "core",
     "datasets",
     "e2e",
@@ -305,6 +304,8 @@ CRS_9822_PROJ4 = (
 )
 CRS_9822_SCALE = (300, -300)  # a raster transform has origin, scale, and skew.
 
+CRS_GEOPACKAGE_EXPORT = 4326
+
 # The area of a raster pixel (in km-squared).
 RASTER_PIXEL_AREA = 0.300 * 0.300
 
@@ -369,14 +370,6 @@ if SENTRY_DSN is not None:
         traces_sample_rate=0.05,
     )
 
-DEFAULT_CONDITIONS_FILE = config(
-    "DEFAULT_CONDITIONS_FILE", BASE_DIR / "config" / "conditions.json"
-)
-DEFAULT_TREATMENTS_FILE = config(
-    "DEFAULT_TREATMENTS_FILE", BASE_DIR / "config" / "treatment_goals.json"
-)
-RASTER_ROOT = config("RASTER_ROOT", "/mnt/gis/planscape")
-RASTER_TILE = config("RASTER_TILE", "32x32")
 GDAL_NUM_THREADS = config(
     "GDAL_NUM_THREADS", default=multiprocessing.cpu_count(), cast=int
 )
@@ -502,7 +495,16 @@ DEFAULT_ADMIN_EMAIL = "admin@planscape.org"
 DEFAULT_BASELAYERS_DATASET_ID = 999
 
 
-USE_SCENARIO_V2 = config("USE_SCENARIO_V2", default=False, cast=bool)
 FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
+
+if not TESTING_MODE and not OPENPANEL_URL:
+    OPENPANEL_CLIENT = OpenPanel(
+        client_id=OPENPANEL_CLIENT_ID,  # type: ignore
+        client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
+        api_url=OPENPANEL_URL,  # type: ignore
+    )
+    OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
+else:
+    OPENPANEL_CLIENT = None

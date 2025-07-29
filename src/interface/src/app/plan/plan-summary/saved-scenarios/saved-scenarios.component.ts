@@ -1,11 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  AuthService,
-  LegacyPlanStateService,
-  ScenarioService,
-} from '@services';
+import { AuthService, ScenarioService } from '@services';
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -23,6 +19,7 @@ import { UploadProjectAreasModalComponent } from '../../upload-project-areas-mod
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { FeatureService } from 'src/app/features/feature.service';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -48,6 +45,11 @@ export class SavedScenariosComponent implements OnInit {
   selectedTabIndex = 0;
   totalScenarios = 0;
   sortSelection = '-created_at';
+  scenarioPath = this.featureService.isFeatureEnabled(
+    'SCENARIO_CONFIGURATION_STEPS'
+  )
+    ? 'scenario'
+    : 'config';
 
   constructor(
     private route: ActivatedRoute,
@@ -56,9 +58,9 @@ export class SavedScenariosComponent implements OnInit {
     private snackbar: MatSnackBar,
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
-    private LegacyPlanStateService: LegacyPlanStateService,
     private treatmentsService: TreatmentsService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -117,25 +119,23 @@ export class SavedScenariosComponent implements OnInit {
 
   openConfig(configId?: number): void {
     if (!configId) {
-      this.router.navigate(['config', ''], {
+      this.router.navigate([this.scenarioPath], {
         relativeTo: this.route,
       });
     } else {
-      this.router.navigate(['config', configId], { relativeTo: this.route });
+      this.router.navigate([this.scenarioPath, configId], {
+        relativeTo: this.route,
+      });
     }
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    this.LegacyPlanStateService.updateStateWithScenario(
-      clickedScenario.id,
-      clickedScenario.name
-    );
     this.breadcrumbService.updateBreadCrumb({
       label: 'Scenario: ' + clickedScenario.name,
       backUrl: getPlanPath(clickedScenario.planning_area),
     });
 
-    this.router.navigate(['config', clickedScenario.id], {
+    this.router.navigate([this.scenarioPath, clickedScenario.id], {
       relativeTo: this.route,
     });
   }
@@ -171,9 +171,12 @@ export class SavedScenariosComponent implements OnInit {
       .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
       .subscribe({
         next: (result) => {
-          this.router.navigate(['config', scenarioId, 'treatment', result.id], {
-            relativeTo: this.route,
-          });
+          this.router.navigate(
+            [this.scenarioPath, scenarioId, 'treatment', result.id],
+            {
+              relativeTo: this.route,
+            }
+          );
         },
         error: () => {
           this.snackbar.open(
