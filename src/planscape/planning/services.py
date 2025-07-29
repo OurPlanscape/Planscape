@@ -522,7 +522,7 @@ def export_scenario_outputs_to_geopackage(
                         row[key] = bool(int(value.strip()))
                     case _:
                         row[key] = float(value.strip())
-            stand_id = int(row.get("stand_id")) # type: ignore
+            stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_outputs[stand_id] = row
 
     # injecting geometry from inputs.csv
