@@ -104,9 +104,11 @@
     *ngIf="
       selectedTab === SCENARIO_TABS.TREATMENTS && (showTreatmentFooter$ | async)
     "></app-new-treatment-footer>
-    <app-scenario-download-footer
+
+  <app-scenario-download-footer
     [scenarioId]="scenarioId || undefined"
     *ngIf="
-      selectedTab !== SCENARIO_TABS.TREATMENTS
+      selectedTab !== SCENARIO_TABS.TREATMENTS &&
+      scenarioResults?.status === 'SUCCESS'
     "></app-scenario-download-footer>
 </div>
