@@ -4,8 +4,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '@styleguide';
 import { ScenarioService } from '@services';
 import { FileSaverService } from '@services';
-// import { map } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { getSafeFileName } from '../../shared/files';
+import { SNACK_ERROR_CONFIG } from '@shared';
 
 @Component({
   selector: 'app-scenario-download-footer',
@@ -17,19 +18,19 @@ import { getSafeFileName } from '../../shared/files';
 export class ScenarioDownloadFooterComponent {
   constructor(
     private scenarioService: ScenarioService,
-    private fileServerService: FileSaverService
-  ) {}
+    private fileServerService: FileSaverService,
+    private snackbar: MatSnackBar,
+  ) { }
 
   @Input() scenarioId!: number | undefined;
+  @Input() scenarioName!: string;
   downloadingScenario = false;
 
   handleDownload() {
     this.downloadingScenario = true;
-    //TODo: remove this
-    const testScenarioName = 'what';
 
-    if (this.scenarioId) {
-      const filename = getSafeFileName(testScenarioName) + '_shp.zip';
+    if (this.scenarioId && this.scenarioName) {
+      const filename = getSafeFileName(this.scenarioName) + '.gpkg';
       this.scenarioService.downloadGeopackage(this.scenarioId).subscribe({
         next: (data) => {
           this.downloadingScenario = false;
@@ -39,9 +40,14 @@ export class ScenarioDownloadFooterComponent {
           this.fileServerService.saveAs(blob, filename);
         },
         error: (e) => {
-          // TODO: show a toast...
+
           this.downloadingScenario = false;
           console.error('Error downloading: ', e);
+          this.snackbar.open(
+            `Error: Could not generate a GeoPackage.`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
         },
       });
     }
