@@ -1,13 +1,13 @@
   <sg-section
-    headline="Excluded Areas (OPTIONAL)"
+    headline="Exclude Areas (OPTIONAL)"
     tooltipContent="Exclude areas are types of land that you can choose to exclude from
           your planning scenarios. If you choose to exclude these areas, project
           areas will not be assigned on these lands.">
-    <!-- <div formGroupName="excludedAreasForm" class="flex-column"> -->
-    
+  <form [formGroup]="excludedAreasForm">
       <section class="area-selection">
         <div class="checkbox-column">
           <mat-checkbox
+          class="exclude-checkbox"
             [color]="'primary'"
             *ngFor="let item of excludedAreas$ | async"
             [formControlName]="item.key"
@@ -16,5 +16,5 @@
           </mat-checkbox>
         </div>
       </section>
-    <!-- </div> -->
-  </sg-section>
+      </form>
+    </sg-section>
