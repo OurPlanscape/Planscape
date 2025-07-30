@@ -119,3 +119,9 @@ export function processCumulativeAttainment(features: any[]): {
     })),
   };
 }
+
+export function hasAnalytics(results: ScenarioResult): boolean {
+  return results.result.features.some(
+    (feature) => feature.properties['attainment']
+  );
+}
