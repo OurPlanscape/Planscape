@@ -40,6 +40,7 @@ from planning.models import (
 from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
+from impacts.calculator import truncate_result
 
 logger = logging.getLogger(__name__)
 
@@ -463,11 +464,11 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
             if isinstance(value, dict):
                 for k, v in value.items():
                     if isinstance(v, float):
-                        v = round(v, settings.EXPORT_FLOAT_PRECISION)
+                        v = truncate_result(v, quantize=".001")
                     new_properties[f"{prop}_{k}"] = v
             else:
                 if isinstance(value, float):
-                    value = round(value, settings.EXPORT_FLOAT_PRECISION)
+                    value = truncate_result(value, quantize=".001")
                 new_properties[prop] = value
         feature["properties"] = new_properties
     return geojson
@@ -526,7 +527,7 @@ def export_scenario_outputs_to_geopackage(
                         row[key] = bool(int(value))
                     case _:
                         f = float(value)
-                        row[key] = round(f, settings.EXPORT_FLOAT_PRECISION)
+                        row[key] = truncate_result(f, quantize=".001")
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_outputs[stand_id] = row
 
@@ -616,7 +617,7 @@ def export_scenario_inputs_to_geopackage(
                             raise InvalidGeometry(f"Invalid WKT: {value}")
                     case _:
                         f = float(value)
-                        row[key] = round(f, settings.EXPORT_FLOAT_PRECISION)
+                        row[key] = truncate_result(f, quantize=".001")
             scenario_inputs.append(row)
 
     feature = scenario_inputs[0].copy()  # Copy the first feature to modify
