@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import math
@@ -502,6 +503,188 @@ def export_to_shapefile(scenario: Scenario) -> Path:
         logger.exception("Error exporting scenario %s to shapefile: %s", scenario.pk, e)
         raise e
     return shapefile_folder
+
+
+def export_scenario_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
+    forsys_folder = scenario.get_forsys_folder()
+    stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
+    scenario_outputs = {}
+    with open(stnd_file, "r") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            for key, value in row.items():
+                match key:
+                    case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
+                        row[key] = int(value.strip())
+                    case "DoTreat", "selected":
+                        row[key] = bool(int(value.strip()))
+                    case _:
+                        row[key] = float(value.strip())
+            stand_id = int(row.get("stand_id"))  # type: ignore
+            scenario_outputs[stand_id] = row
+
+    # injecting geometry from inputs.csv
+    inputs_file = forsys_folder / "inputs.csv"
+    with open(inputs_file, "r") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            stand_id = int(row.get("stand_id"))  # type: ignore
+            if stand_id not in scenario_outputs:
+                continue
+            wkt = row.get("WKT")
+            try:
+                geom = GEOSGeometry(wkt, srid=settings.AREA_SRID)
+                geom_json = geom.transform(
+                    settings.CRS_GEOPACKAGE_EXPORT, clone=True
+                ).json
+                geom_json = json.loads(geom_json)
+                scenario_outputs[stand_id]["geometry"] = to_multi(geom_json)
+            except Exception as e:
+                logger.error("Invalid WKT for scenario %s: %s", scenario.pk, e)
+                raise InvalidGeometry(f"Invalid WKT: {wkt}")
+
+    features = []
+    for stand_id, properties in scenario_outputs.items():
+        geometry = properties.pop("geometry", None)
+        if geometry:
+            feature = {
+                "geometry": geometry,
+                "properties": properties,
+            }
+            features.append(feature)
+
+    properties = features[0].get("properties", {})
+    field_type_pairs = list(map(map_property, properties.items()))
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": field_type_pairs,
+    }
+
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer=f"scenario_{scenario.pk}_outputs",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in features:
+                    out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting scenario %s outputs to geopackage: %s", scenario.pk, e
+        )
+        raise e
+
+
+def export_scenario_inputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
+    forsys_folder = scenario.get_forsys_folder()
+    inputs_file = forsys_folder / "inputs.csv"
+    scenario_inputs = []
+    with open(inputs_file, "r") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            for key, value in row.items():
+                match key:
+                    case "stand_id":
+                        row[key] = int(value)
+                    case "WKT":
+                        try:
+                            geom = GEOSGeometry(value, srid=settings.AREA_SRID)
+                            geom_json = geom.transform(
+                                settings.CRS_GEOPACKAGE_EXPORT, clone=True
+                            ).json
+                            geom_json = json.loads(geom_json)
+                            row[key] = to_multi(geom_json)
+                        except Exception as e:
+                            logger.error(
+                                "Invalid WKT for scenario %s: %s", scenario.pk, e
+                            )
+                            raise InvalidGeometry(f"Invalid WKT: {value}")
+                    case _:
+                        row[key] = float(value)
+            scenario_inputs.append(row)
+
+    feature = scenario_inputs[0].copy()  # Copy the first feature to modify
+    feature.pop("WKT", None)  # Remove WKT if present
+    field_type_pairs = list(map(map_property, feature.items()))
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": field_type_pairs,
+    }
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer=f"scenario_{scenario.pk}_inputs",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in scenario_inputs:
+                    geometry = feature.pop("WKT", None)
+                    feature = {"properties": feature, "geometry": geometry}
+                    out.write(feature)
+
+    except Exception as e:
+        logger.exception(
+            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+        )
+        raise e
+
+
+def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
+    geojson = get_flatten_geojson(scenario)
+    schema = get_schema(geojson)
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer=f"scenario_{scenario.pk}",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in geojson.get("features", []):
+                    geometry = to_multi(feature.get("geometry"))
+                    feature = {**feature, "geometry": geometry}
+                    out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+        )
+        raise e
+
+
+def export_to_geopackage(scenario: Scenario) -> str:
+    shapefile_folder = scenario.get_shapefile_folder()
+    geopackage_file = f"{scenario.name}.gpkg"
+    geopackage_path = shapefile_folder / geopackage_file
+    Path(geopackage_path).unlink(missing_ok=True)
+    if not shapefile_folder.exists():
+        shapefile_folder.mkdir(parents=True)
+    if geopackage_path.exists():
+        geopackage_path.unlink()
+
+    export_scenario_to_geopackage(scenario, geopackage_path)
+    export_scenario_inputs_to_geopackage(scenario, geopackage_path)
+    export_scenario_outputs_to_geopackage(scenario, geopackage_path)
+
+    return str(geopackage_path)
 
 
 @transaction.atomic()

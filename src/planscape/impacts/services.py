@@ -8,6 +8,7 @@ from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 import fiona
 import rasterio
 from actstream import action as actstream_action
+from fiona.crs import from_epsg
 from gis.core import get_storage_session
 from datasets.models import DataLayer
 from django.conf import settings
@@ -960,11 +961,12 @@ def export_geopackage(treatment_plan: TreatmentPlan) -> str:
     Path(fiona_path).unlink(missing_ok=True)
     if not bare_export_path.parent.exists():
         bare_export_path.parent.mkdir(parents=True)
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     with fiona.open(
         fiona_path,
         "w",
         layer=f"treatment_plan_{treatment_plan.pk}",
-        crs="EPSG:4326",
+        crs=crs,
         driver="GPKG",
         schema=treatment_result_schema,
         allow_unsupported_drivers=True,
