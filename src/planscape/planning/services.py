@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import os
+import sys
 import zipfile
 from datetime import date, datetime, time
 from functools import partial
@@ -407,24 +408,46 @@ def validate_scenario_treatment_ratio(
     return (True, "Treatment ratio is valid.")
 
 
+def transform_big_int(value: int) -> int:
+    """
+    Transform big integers to sys.maxsize or -sys.maxsize
+    to avoid issues with shapfile and geopackage export.
+    """
+
+    if value > sys.maxsize:
+        logger.warning(
+            f"Value {value} exceeds sys.maxsize, transforming to sys.maxsize."
+        )
+        return sys.maxsize
+    elif value < -sys.maxsize:
+        logger.warning(
+            f"Value {value} is less than -sys.maxsize, transforming to -sys.maxsize."
+        )
+        return -sys.maxsize
+    return value
+
+
 def map_property(key_value_pair):
     key, value = key_value_pair
     type = ""
-    match value:
-        case int() as v:
-            type = "int64"
-        case str() as v:
-            type = "str:128"
-        case float() as v:
-            type = "float"
-        case datetime() as v:
-            type = "str:64"
-        case date() as v:
-            type = "date"
-        case time() as v:
-            type = "time"
-        case dict() as v:
-            type = "json"
+    if key.startswith("datalayer_"):
+        type = "float"
+    else:
+        match value:
+            case int() as v:
+                type = "int64"
+            case str() as v:
+                type = "str:128"
+            case float() as v:
+                type = "float"
+            case datetime() as v:
+                type = "str:64"
+            case date() as v:
+                type = "date"
+            case time() as v:
+                type = "time"
+            case dict() as v:
+                type = "json"
     return (key, type)
 
 
@@ -465,10 +488,14 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
                 for k, v in value.items():
                     if isinstance(v, float):
                         v = truncate_result(v, quantize=".001")
+                    if isinstance(v, int):
+                        v = transform_big_int(v)
                     new_properties[f"{prop}_{k}"] = v
             else:
                 if isinstance(value, float):
                     value = truncate_result(value, quantize=".001")
+                if isinstance(value, int):
+                    value = transform_big_int(value)
                 new_properties[prop] = value
         feature["properties"] = new_properties
     return geojson
@@ -522,7 +549,7 @@ def export_scenario_outputs_to_geopackage(
             for key, value in row.items():
                 match key:
                     case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        row[key] = int(value)
+                        row[key] = transform_big_int(int(value))
                     case "DoTreat", "selected":
                         row[key] = bool(int(value))
                     case _:
@@ -601,7 +628,7 @@ def export_scenario_inputs_to_geopackage(
             for key, value in row.items():
                 match key:
                     case "stand_id":
-                        row[key] = int(value)
+                        row[key] = transform_big_int(int(value))
                     case "WKT":
                         try:
                             geom = GEOSGeometry(value, srid=settings.AREA_SRID)
