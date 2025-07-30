@@ -34,6 +34,7 @@ import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 import { MatTabGroup } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { PlanState } from '../plan.state';
+import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 
 export enum ScenarioTabs {
   CONFIG,
@@ -179,7 +180,7 @@ export class CreateScenariosComponent implements OnInit {
       .get('scenarioName')
       ?.addValidators([
         (control: AbstractControl) =>
-          scenarioNameMustBeNew(control, existingScenarioNames),
+          nameMustBeNew(control, existingScenarioNames),
       ]);
   }
 
@@ -351,16 +352,4 @@ export class CreateScenariosComponent implements OnInit {
   goToPlan() {
     this.router.navigate(['/plan', this.planId]);
   }
-}
-
-function scenarioNameMustBeNew(
-  nameControl: AbstractControl,
-  existingNames: string[]
-): {
-  [key: string]: any;
-} | null {
-  if (existingNames.includes(nameControl.value?.trim())) {
-    return { duplicate: true };
-  }
-  return null;
 }
