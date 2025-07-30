@@ -6,7 +6,13 @@
   class="scenario-tabs">
   <mat-tab label="Configurations">
     <sg-steps linear finishLabel="Save & Run Scenario">
-      <cdk-step>Step 1</cdk-step>
+      <cdk-step [stepControl]="step1.form">
+        <!-- Treatment goals selector -->
+        <app-treatment-goals #step1></app-treatment-goals>
+
+        <!-- Stand size configuration -->
+        <app-stand-size></app-stand-size>
+      </cdk-step>
       <cdk-step>Step 2</cdk-step>
       <cdk-step>Step 3</cdk-step>
       <cdk-step>Step 4</cdk-step>

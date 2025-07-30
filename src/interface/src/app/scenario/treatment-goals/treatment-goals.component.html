@@ -1,0 +1,58 @@
+<sg-section
+  headline="Treatment Goals"
+  tooltipContent="Treatment goals allow you to select one goal that will generate a
+          scenario based on your landscape. Each of the goals uses a different
+          set of input variables, thresholds and primary metrics to generate
+          your result. You can only select one goal per run, however you can do
+          as many scenario runs as you choose by selecting different treatment
+          goal questions and parameters each time. Click on the options below
+          for full question details.">
+  <form [formGroup]="form">
+    <span
+      class="error-message"
+      *ngIf="form.dirty && form.get('selectedQuestion')?.hasError('required')">
+      Treatment goal is required
+    </span>
+    <mat-radio-group
+      name="treatmentGoalSelect"
+      aria-label="Select an option"
+      class="layer-radio-group"
+      color="primary"
+      [formControlName]="'selectedQuestion'">
+      <div>
+        <div
+          class="goal-loader"
+          *ngIf="(categorizedStatewideGoals$ | async) === null">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+
+        <ng-container
+          *ngIf="
+            categorizedStatewideGoals$ | async as categorizedScenarioGoals
+          ">
+          <div
+            *ngFor="
+              let goalCategory of categorizedScenarioGoals
+                | keyvalue: reverseAlpha
+            "
+            class="goal-control-container">
+            <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+              <mat-expansion-panel-header class="goal-panel-header">
+                {{ goalCategory.key }}
+              </mat-expansion-panel-header>
+              <div
+                *ngFor="let goal of goalCategory.value"
+                class="layer-control-container">
+                <mat-radio-button
+                  [value]="goal.id"
+                  (click)="selectStatewideGoal(goal)">
+                  {{ goal.name }}
+                </mat-radio-button>
+              </div>
+            </mat-expansion-panel>
+          </div>
+        </ng-container>
+      </div>
+    </mat-radio-group>
+  </form>
+</sg-section>

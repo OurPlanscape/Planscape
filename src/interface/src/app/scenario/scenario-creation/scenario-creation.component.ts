@@ -8,6 +8,8 @@ import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
+import { StandSizeComponent } from '../stand-size/stand-size.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -26,6 +28,8 @@ enum ScenarioTabs {
     DataLayersComponent,
     StepsComponent,
     CdkStepperModule,
+    TreatmentGoalsComponent,
+    StandSizeComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',

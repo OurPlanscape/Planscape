@@ -6,6 +6,8 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { of } from 'rxjs';
+import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
+import { StandSizeComponent } from '../stand-size/stand-size.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -19,7 +21,11 @@ describe('ScenarioCreationComponent', () => {
           paths$: of([]),
         }),
       ],
-      declarations: [MockDeclarations(DataLayersComponent)],
+      declarations: [
+        MockDeclarations(DataLayersComponent),
+        MockDeclarations(TreatmentGoalsComponent),
+        MockDeclarations(StandSizeComponent),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioCreationComponent);
