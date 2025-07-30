@@ -40,6 +40,7 @@ from planning.models import (
 from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
+from impacts.calculator import truncate_result
 
 logger = logging.getLogger(__name__)
 
@@ -462,8 +463,12 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
         for prop, value in properties.items():
             if isinstance(value, dict):
                 for k, v in value.items():
+                    if isinstance(v, float):
+                        v = truncate_result(v, quantize=".001")
                     new_properties[f"{prop}_{k}"] = v
             else:
+                if isinstance(value, float):
+                    value = truncate_result(value, quantize=".001")
                 new_properties[prop] = value
         feature["properties"] = new_properties
     return geojson
@@ -517,11 +522,12 @@ def export_scenario_outputs_to_geopackage(
             for key, value in row.items():
                 match key:
                     case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        row[key] = int(value.strip())
+                        row[key] = int(value)
                     case "DoTreat", "selected":
-                        row[key] = bool(int(value.strip()))
+                        row[key] = bool(int(value))
                     case _:
-                        row[key] = float(value.strip())
+                        f = float(value)
+                        row[key] = truncate_result(f, quantize=".001")
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_outputs[stand_id] = row
 
@@ -610,7 +616,8 @@ def export_scenario_inputs_to_geopackage(
                             )
                             raise InvalidGeometry(f"Invalid WKT: {value}")
                     case _:
-                        row[key] = float(value)
+                        f = float(value)
+                        row[key] = truncate_result(f, quantize=".001")
             scenario_inputs.append(row)
 
     feature = scenario_inputs[0].copy()  # Copy the first feature to modify
