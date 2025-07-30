@@ -309,6 +309,9 @@ CRS_GEOPACKAGE_EXPORT = 4326
 # The area of a raster pixel (in km-squared).
 RASTER_PIXEL_AREA = 0.300 * 0.300
 
+# Export files varliables
+EXPORT_FLOAT_PRECISION = 10  # Number of decimal places for float values in exports
+
 # This is the default CRS used when a geometry is missing one.
 
 # Caching; this improves loading times especially for the boundary app.
