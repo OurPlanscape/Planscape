@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
 import { Observable } from 'rxjs';
 import { FormGroup } from '@angular/forms';
+import { Directionality } from '@angular/cdk/bidi';
 
 export interface Step {
   form: FormGroup;
@@ -45,6 +46,10 @@ export class StepsComponent<T> extends CdkStepper {
 
   // flag to show loader
   savingStep = false;
+
+  constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef) {
+    super(dir, cdr, el);
+  }
 
   goNext(): void {
     // grab the control (formControl) from the selected step
