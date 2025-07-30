@@ -462,8 +462,12 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
         for prop, value in properties.items():
             if isinstance(value, dict):
                 for k, v in value.items():
+                    if isinstance(v, float):
+                        v = round(v, settings.EXPORT_FLOAT_PRECISION)
                     new_properties[f"{prop}_{k}"] = v
             else:
+                if isinstance(value, float):
+                    value = round(value, settings.EXPORT_FLOAT_PRECISION)
                 new_properties[prop] = value
         feature["properties"] = new_properties
     return geojson
@@ -517,11 +521,12 @@ def export_scenario_outputs_to_geopackage(
             for key, value in row.items():
                 match key:
                     case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        row[key] = int(value.strip())
+                        row[key] = int(value)
                     case "DoTreat", "selected":
-                        row[key] = bool(int(value.strip()))
+                        row[key] = bool(int(value))
                     case _:
-                        row[key] = float(value.strip())
+                        f = float(value)
+                        row[key] = round(f, settings.EXPORT_FLOAT_PRECISION)
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_outputs[stand_id] = row
 
@@ -610,7 +615,8 @@ def export_scenario_inputs_to_geopackage(
                             )
                             raise InvalidGeometry(f"Invalid WKT: {value}")
                     case _:
-                        row[key] = float(value)
+                        f = float(value)
+                        row[key] = round(f, settings.EXPORT_FLOAT_PRECISION)
             scenario_inputs.append(row)
 
     feature = scenario_inputs[0].copy()  # Copy the first feature to modify
