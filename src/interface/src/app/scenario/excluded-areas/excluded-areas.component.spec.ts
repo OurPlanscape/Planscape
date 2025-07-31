@@ -8,9 +8,8 @@ describe('ExclusionAreasComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExclusionAreasComponent]
-    })
-      .compileComponents();
+      imports: [ExclusionAreasComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ExclusionAreasComponent);
     component = fixture.componentInstance;

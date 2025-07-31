@@ -13,7 +13,7 @@ import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 import { MOCK_SCENARIO } from '@services/mocks';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
-class ScenarioTooltipMockComponent { }
+class ScenarioTooltipMockComponent {}
 
 describe('TreatmentGoalsComponent', () => {
   let component: TreatmentGoalsComponent;

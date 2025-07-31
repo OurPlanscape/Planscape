@@ -65,7 +65,7 @@ export class TreatmentGoalsComponent {
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
     private scenarioState: ScenarioState
-  ) { }
+  ) {}
 
   selectStatewideGoal(goal: ScenarioGoal) {
     if (this.form.get('selectedQuestion')?.enabled) {

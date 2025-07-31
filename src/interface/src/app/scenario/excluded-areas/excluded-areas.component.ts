@@ -14,21 +14,21 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'app-excluded-areas',
   standalone: true,
-  imports: [CommonModule, MatCheckboxModule, SectionComponent, ReactiveFormsModule,
+  imports: [
+    CommonModule,
+    MatCheckboxModule,
+    SectionComponent,
+    ReactiveFormsModule,
   ],
   templateUrl: './excluded-areas.component.html',
-  styleUrl: './excluded-areas.component.scss'
+  styleUrl: './excluded-areas.component.scss',
 })
 export class ExcludedAreasComponent {
-
-  constructor(
-    private scenarioState: ScenarioState
-  ) { }
+  constructor(private scenarioState: ScenarioState) {}
   excludedAreas$ = this.scenarioState.excludedAreas$.pipe(
     tap((areas) => (this.excludedAreas = areas))
   );
   excludedAreas: { key: number; label: string; id: number }[] = [];
-
 
   excludedAreasForm: FormGroup = new FormGroup({
     // TODO: use types for this form

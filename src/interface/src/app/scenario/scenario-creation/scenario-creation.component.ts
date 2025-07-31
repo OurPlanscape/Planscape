@@ -8,7 +8,7 @@ import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { map, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { ExcludedAreasComponent } from "../excluded-areas/excluded-areas.component";
+import { ExcludedAreasComponent } from '../excluded-areas/excluded-areas.component';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -42,7 +42,7 @@ enum ScenarioTabs {
     CdkStepperModule,
     TreatmentGoalsComponent,
     StandSizeComponent,
-    ExcludedAreasComponent
+    ExcludedAreasComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
