@@ -6,6 +6,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TreatmentGoalsService } from '@services';
 import {
   CategorizedScenarioGoals,
@@ -14,7 +17,6 @@ import {
 } from '@types';
 import { map, shareReplay } from 'rxjs';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
-import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { SectionComponent } from 'src/styleguide/collapsible-panel/section.component';
 
@@ -24,8 +26,10 @@ import { SectionComponent } from 'src/styleguide/collapsible-panel/section.compo
   imports: [
     CommonModule,
     SectionComponent,
-    LegacyMaterialModule,
     ReactiveFormsModule,
+    MatProgressSpinnerModule,
+    MatExpansionModule,
+    MatLegacyRadioModule,
   ],
   templateUrl: './treatment-goals.component.html',
   styleUrl: './treatment-goals.component.scss',
@@ -61,7 +65,7 @@ export class TreatmentGoalsComponent {
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
     private scenarioState: ScenarioState
-  ) {}
+  ) { }
 
   selectStatewideGoal(goal: ScenarioGoal) {
     if (this.form.get('selectedQuestion')?.enabled) {

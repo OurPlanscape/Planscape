@@ -83,7 +83,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
     notes = models.TextField(null=True, help_text="Notes of the Planning Area.")
 
     geometry = models.MultiPolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        srid=settings.DEFAULT_CRS,
         null=True,
         help_text="Geometry of the Planning Area represented by polygons.",
     )
@@ -188,6 +188,17 @@ class TreatmentGoalCategory(models.TextChoices):
     CARBON_BIOMASS = "CARBON_BIOMASS", "Carbon/Biomass"
 
 
+class TreatmentGoalGroup(models.TextChoices):
+    WILDFIRE_RISK_TO_COMMUTIES = (
+        "WILDFIRE_RISK_TO_COMMUTIES",
+        "Wildfire Risk to Communities",
+    )
+    CALIFORNIA_PLANNING_METRICS = (
+        "CALIFORNIA_PLANNING_METRICS",
+        "California Planning Metrics",
+    )
+
+
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
@@ -209,6 +220,12 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         help_text="Treatment Goal category.",
         null=True,
     )
+    group = models.CharField(
+        max_length=64,
+        choices=TreatmentGoalGroup.choices,
+        help_text="Treatment Goal group.",
+        null=True,
+    )
     created_by_id: int
     created_by = models.ForeignKey(
         User,
@@ -226,6 +243,12 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
             "treatment_goal",
             "datalayer",
         ),
+    )
+
+    geometry = models.PolygonField(
+        srid=settings.DEFAULT_CRS,
+        null=True,
+        help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
@@ -505,7 +528,7 @@ class ProjectArea(
     )
 
     geometry = models.MultiPolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        srid=settings.DEFAULT_CRS,
         help_text="Geometry of the Project Area.",
     )
 

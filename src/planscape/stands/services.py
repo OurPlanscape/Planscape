@@ -96,20 +96,16 @@ def calculate_stand_zonal_stats(
         )
 
     stand_geojson = list(map(to_geojson, missing_stands))
-    bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
     with rasterio.Env(**get_gdal_env()):
-        with Raster(datalayer.url) as main_raster:
-            subset = main_raster.read(bounds=list(bounds))
-            stats = zonal_stats(
-                raster=subset.array,
-                affine=subset.affine,
-                vectors=stand_geojson,
-                stats=aggregations,
-                nodata=nodata,
-                geojson_out=True,
-                band=1,
-            )
+        stats = zonal_stats(
+            raster=datalayer.url,
+            vectors=stand_geojson,
+            stats=aggregations,
+            nodata=nodata,
+            geojson_out=True,
+            band=1,
+        )
 
     results = list(
         map(

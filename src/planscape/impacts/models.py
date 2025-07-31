@@ -285,7 +285,7 @@ class TreatmentPrescription(
     )
 
     geometry = models.PolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        srid=settings.DEFAULT_CRS,
         help_text="Geometry of the Treatment Prescription.",
     )
 
