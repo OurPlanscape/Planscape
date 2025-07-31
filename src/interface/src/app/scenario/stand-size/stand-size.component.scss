@@ -1,0 +1,15 @@
+@import 'colors';
+
+.input-field {
+  padding-top: 4px;
+  width: 100%;
+  border: black;
+
+  &.disabled {
+    opacity: 0.6;
+  }
+}
+
+.error {
+  color: $color-error;
+}
