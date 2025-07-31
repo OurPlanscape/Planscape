@@ -217,15 +217,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
-        models.ManyToManyField(
-            to=DataLayer,
-            through="TreatmentGoalUsesDataLayer",
-            through_fields=(
-                "treatment_goal",
-                "datalayer",
-            ),
-        )
+    datalayers: models.ManyToManyField[
+        DataLayer, models.Model
+    ] = models.ManyToManyField(
+        to=DataLayer,
+        through="TreatmentGoalUsesDataLayer",
+        through_fields=(
+            "treatment_goal",
+            "datalayer",
+        ),
     )
 
     geometry = models.PolygonField(
