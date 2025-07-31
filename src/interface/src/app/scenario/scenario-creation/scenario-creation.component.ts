@@ -22,6 +22,7 @@ import { ActivatedRoute } from '@angular/router';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
 import { StandSizeComponent } from '../stand-size/stand-size.component';
+import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 
 enum ScenarioTabs {
   CONFIG,
@@ -35,6 +36,7 @@ enum ScenarioTabs {
   imports: [
     MatTabsModule,
     ReactiveFormsModule,
+    LegacyMaterialModule,
     MatLegacyButtonModule,
     NgIf,
     DataLayersComponent,

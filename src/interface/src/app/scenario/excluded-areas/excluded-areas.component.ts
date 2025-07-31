@@ -30,7 +30,7 @@ export class ExcludedAreasComponent {
   );
   excludedAreas: { key: number; label: string; id: number }[] = [];
 
-  excludedAreasForm: FormGroup = new FormGroup({
+  form: FormGroup = new FormGroup({
     // TODO: use types for this form
     selectedQuestion: new FormControl<string[] | null>(null, [
       Validators.required,
