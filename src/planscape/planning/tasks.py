@@ -9,6 +9,7 @@ from stands.services import calculate_stand_zonal_stats
 from utils.cli_utils import call_forsys
 
 from planning.models import Scenario, ScenarioResultStatus
+from planning.services import export_to_geopackage
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -32,6 +33,7 @@ def async_forsys_run(scenario_id: int) -> None:
         if not feature_enabled("FORSYS_VIA_API"):
             scenario.result_status = ScenarioResultStatus.SUCCESS
         scenario.save()
+        async_generate_scenario_geopackage.apply_async(scenario_id, countdown=120)
     except ForsysTimeoutException:
         # this case should not happen as is, as the default parameter
         # for call_forsys timeout is None.
@@ -94,3 +96,23 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with name {datalayer_name} does not exist.")
         return
+
+
+@app.task(max_retries=10, retry_backoff=True, default_retry_delay=120)
+def async_generate_scenario_geopackage(scenario_id: int) -> None:
+    """
+    This function is a placeholder for the actual implementation of generating
+    a scenario geopackage. It should be implemented in the future.
+    """
+    log.info(f"Generating geopackage for scenario {scenario_id}")
+    # Placeholder for future implementation
+    scenario = Scenario.objects.get(id=scenario_id)
+    if scenario.result_status != ScenarioResultStatus.SUCCESS:
+        log.warning(
+            f"Scenario {scenario_id} is not in a successful state. Current status: {scenario.result_status}"
+        )
+        raise ValueError(
+            f"Scenario {scenario_id} is not ready for geopackage generation."
+        )
+    geopackage_path = export_to_geopackage(scenario)
+    log.info(f"Geopackage generated at {geopackage_path}")
