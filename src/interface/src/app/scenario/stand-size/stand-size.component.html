@@ -1,0 +1,22 @@
+<sg-section headline="Stand Size">
+  <p style="margin: 0">
+    Choose the stand size ForSys will use to evaluate your planning area. Stands
+    are standarized hexagonal units that represent potential treatment areas.
+  </p>
+
+  <form [formGroup]="form">
+    <mat-form-field class="input-field" appearance="outline">
+      <mat-label>Stand size</mat-label>
+      <mat-select formControlName="standSize" required>
+        <mat-option *ngFor="let size of standSizeOptions" [value]="size">
+          {{ size }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <p
+      class="error"
+      *ngIf="form.dirty && form.get('standSize')?.hasError('required')">
+      Stand size is required.
+    </p>
+  </form>
+</sg-section>
