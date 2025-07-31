@@ -1,4 +1,27 @@
-<div>Name goes here</div>
+<div class="scenario-name">
+  <!-- Scenario name input -->
+  <form *ngIf="form.get('scenarioName')" [formGroup]="form!">
+    <mat-form-field class="scenario-name-input">
+      <input
+        formControlName="scenarioName"
+        matInput
+        placeholder="Scenario Name:" />
+    </mat-form-field>
+  </form>
+  <!-- Scenario name errors -->
+  <div
+    *ngIf="
+      form.get('scenarioName')?.invalid &&
+      form.get('scenarioName')?.touched &&
+      form.get('scenarioName')?.errors?.['required']
+    "
+    class="error">
+    Please enter scenario name above
+  </div>
+  <div *ngIf="form.get('scenarioName')?.errors?.['duplicate']" class="error">
+    This name is already used by another scenario.
+  </div>
+</div>
 <mat-tab-group
   #tabGroup
   mat-stretch-tabs="false"
