@@ -22,6 +22,8 @@ import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
 import { StandSizeComponent } from '../stand-size/stand-size.component';
+import { ScenarioConfig } from '@types';
+import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -50,6 +52,8 @@ enum ScenarioTabs {
 export class ScenarioCreationComponent {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
+  config: Partial<ScenarioConfig> = {};
+
   planId = this.route.snapshot.data['planId'];
 
   form = new FormGroup({
@@ -63,7 +67,8 @@ export class ScenarioCreationComponent {
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private goalOverlayService: GoalOverlayService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -93,5 +98,21 @@ export class ScenarioCreationComponent {
         })
       );
     };
+  }
+
+  saveStep(data: Partial<ScenarioConfig>) {
+    this.config = { ...this.config, ...data };
+    return of(true);
+  }
+
+  // dummy flag to test/debug
+  finished = false;
+
+  onFinish() {
+    this.finished = true;
+  }
+
+  stepChanged() {
+    this.goalOverlayService.close();
   }
 }

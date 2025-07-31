@@ -1,8 +1,15 @@
-import { ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
 
@@ -44,6 +51,8 @@ export class StepsComponent<T> extends CdkStepper {
   // save callback
   @Input() save?: (data: Partial<T>) => Observable<boolean>;
 
+  @Output() finished = new EventEmitter();
+
   // flag to show loader
   savingStep = false;
 
@@ -57,7 +66,7 @@ export class StepsComponent<T> extends CdkStepper {
 
     // if no control go ahead to the next step
     if (!control) {
-      this.next();
+      this.moveNextOrFinish();
       return;
     }
 
@@ -65,27 +74,41 @@ export class StepsComponent<T> extends CdkStepper {
       // async
       if (this.save) {
         this.savingStep = true;
-        this.save(control.value).subscribe({
-          next: () => {
-            this.next();
-            this.savingStep = false;
-          },
-          error: (err) => {
-            control.setErrors({
-              [this.errorKey]: err?.message || this.genericErrorMsg,
-            });
-            this.savingStep = false;
-          },
-        });
+        this.save(control.value)
+          .pipe(take(1))
+          .subscribe({
+            next: () => {
+              this.moveNextOrFinish();
+              this.savingStep = false;
+            },
+            error: (err) => {
+              control.setErrors({
+                [this.errorKey]: err?.message || this.genericErrorMsg,
+              });
+              this.savingStep = false;
+            },
+          });
       } else {
-        this.next();
+        this.moveNextOrFinish();
       }
     } else {
       this.selected?.stepControl.markAsDirty();
     }
   }
 
+  private moveNextOrFinish() {
+    if (this.isLastStep) {
+      this.finished.emit();
+    } else {
+      this.next();
+    }
+  }
+
   goBack(): void {
     this.previous();
+  }
+
+  get isLastStep() {
+    return this.selectedIndex === this.steps.length - 1;
   }
 }
