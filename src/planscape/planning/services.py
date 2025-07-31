@@ -21,6 +21,7 @@ from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
+from impacts.calculator import truncate_result
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -40,7 +41,6 @@ from planning.models import (
 from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
-from impacts.calculator import truncate_result
 
 logger = logging.getLogger(__name__)
 
@@ -492,7 +492,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
         shapefile_path.unlink()
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".shp")):
-            crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
+            crs = from_epsg(settings.DEFAULT_CRS)
             with fiona.open(
                 str(shapefile_path),
                 "w",

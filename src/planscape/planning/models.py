@@ -83,7 +83,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
     notes = models.TextField(null=True, help_text="Notes of the Planning Area.")
 
     geometry = models.MultiPolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        srid=settings.DEFAULT_CRS,
         null=True,
         help_text="Geometry of the Planning Area represented by polygons.",
     )
@@ -217,15 +217,21 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[
-        DataLayer, models.Model
-    ] = models.ManyToManyField(
-        to=DataLayer,
-        through="TreatmentGoalUsesDataLayer",
-        through_fields=(
-            "treatment_goal",
-            "datalayer",
-        ),
+    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
+        models.ManyToManyField(
+            to=DataLayer,
+            through="TreatmentGoalUsesDataLayer",
+            through_fields=(
+                "treatment_goal",
+                "datalayer",
+            ),
+        )
+    )
+
+    geometry = models.PolygonField(
+        srid=settings.DEFAULT_CRS,
+        null=True,
+        help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
@@ -505,7 +511,7 @@ class ProjectArea(
     )
 
     geometry = models.MultiPolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        srid=settings.DEFAULT_CRS,
         help_text="Geometry of the Project Area.",
     )
 
