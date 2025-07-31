@@ -76,6 +76,7 @@ export class CreateScenariosComponent implements OnInit {
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
+  geoPackageURL: string = '';
   priorities: string[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
@@ -190,7 +191,8 @@ export class CreateScenariosComponent implements OnInit {
         // only poll when scenario is pending or running
         if (
           this.scenarioState === 'PENDING' ||
-          this.scenarioState === 'RUNNING'
+          this.scenarioState === 'RUNNING' ||
+          this.geoPackageURL === '' // keep polling until the geopackage is available
         ) {
           this.loadConfig();
         }
@@ -212,6 +214,7 @@ export class CreateScenariosComponent implements OnInit {
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
+          this.geoPackageURL = scenario.geopackage_url ?? '';
           this.priorities =
             scenario.configuration.treatment_question?.scenario_priorities ||
             [];
