@@ -1,6 +1,7 @@
 import json
 import uuid
 from pathlib import Path
+from cacheops import cache
 from typing import Collection, Optional
 
 from collaboration.models import UserObjectRole
@@ -11,6 +12,7 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
+from core.gcs import create_download_url as create_gcs_download_url
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -421,6 +423,19 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return Stand.objects.within_polygon(
             project_areas_geometry, self.get_stand_size()
         )
+
+    def get_geopackage_path(self) -> str:
+        geopackage_file = f"{self.uuid}.gpkg"
+        return f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{geopackage_file}"
+
+    def get_geopackage_url(self) -> Optional[str]:
+        is_exporting = cache.get(f"exporting_scenario_package:{self.pk}")
+        if is_exporting:
+            return None
+        geopackage_url = create_gcs_download_url(self.get_geopackage_path())
+        if geopackage_url is None:
+            create_gcs_download_url.invalidate(geopackage_url)
+        return geopackage_url
 
     objects = ScenarioManager()
 
