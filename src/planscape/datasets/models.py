@@ -172,7 +172,6 @@ class DataLayerQuerySet(models.QuerySet):
                 next_geometry = geometries[i + 1]
             except IndexError:
                 break
-            breakpoint()
             comparison = temp_geometry if temp_geometry else geometry
             if not comparison.intersects(next_geometry):
                 raise ValueError(
