@@ -3,7 +3,7 @@
   sg-button
   variant="primary"
   class="new-treatment"
-  [disabled]="downloadingScenario"
+  [disabled]="downloadingScenario || geoPackageURL == ''"
   (click)="handleDownload()">
-  Download GeoPackage
+  {{ geoPackageURL == '' ? 'Generating GeoPackage' : 'Download GeoPackage' }}
 </button>

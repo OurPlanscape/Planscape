@@ -24,6 +24,7 @@ export class ScenarioDownloadFooterComponent {
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
+  @Input() geoPackageURL!: string;
   downloadingScenario = false;
 
   handleDownload() {

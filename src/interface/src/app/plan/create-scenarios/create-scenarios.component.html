@@ -108,6 +108,7 @@
   <app-scenario-download-footer
     [scenarioId]="scenarioId || undefined"
     [scenarioName]="scenarioNameFormField?.value"
+    [geoPackageURL]="geoPackageURL"
     *ngIf="
       selectedTab !== SCENARIO_TABS.TREATMENTS &&
       scenarioResults?.status === 'SUCCESS'
