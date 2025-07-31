@@ -18,11 +18,11 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
     Admin interface for TreatmentGoal model.
     """
 
-    list_display = ("id", "name", "category", "active")
+    list_display = ("id", "name", "category", "group", "active")
     list_display_links = ("id", "name")
     form = TreatmentGoalAdminForm
     search_fields = ["name"]
-    list_filter = ["active", "category"]
+    list_filter = ["active", "category", "group"]
     ordering = ["name"]
     raw_id_fields = ["created_by"]
     inlines = [
