@@ -26,7 +26,7 @@ export class NewTreatmentFooterComponent {
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog,
     private analyticsService: AnalyticsService
-  ) { }
+  ) {}
 
   @Input() scenarioId!: number | undefined;
 

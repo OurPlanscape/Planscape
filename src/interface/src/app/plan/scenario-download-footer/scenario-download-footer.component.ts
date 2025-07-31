@@ -19,8 +19,8 @@ export class ScenarioDownloadFooterComponent {
   constructor(
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
-    private snackbar: MatSnackBar,
-  ) { }
+    private snackbar: MatSnackBar
+  ) {}
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
@@ -41,7 +41,6 @@ export class ScenarioDownloadFooterComponent {
           this.fileServerService.saveAs(blob, filename);
         },
         error: (e) => {
-
           this.downloadingScenario = false;
           console.error('Error downloading: ', e);
           this.snackbar.open(

@@ -29,6 +29,7 @@ import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 import { ScenarioService } from '@services';
 import { FormControl, FormGroup } from '@angular/forms';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
@@ -41,6 +42,7 @@ describe('CreateScenariosComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        MatSnackBarModule,
         BrowserAnimationsModule,
         HttpClientTestingModule,
         PlanModule,
@@ -235,6 +237,7 @@ describe('CreateScenariosComponent', () => {
         id: 1001,
       });
       mockScenarioId$.next(1001);
+      component.geoPackageURL = 'http://localhost/someurl';
     });
 
     it('should poll for changes if status is pending', fakeAsync(() => {
@@ -255,11 +258,11 @@ describe('CreateScenariosComponent', () => {
 
     it('should not poll for changes if status is not pending', fakeAsync(() => {
       setupPollingScenario(component, 'SUCCESS');
-
       fixture.detectChanges();
       tick();
 
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
+      component.geoPackageURL = 'http://localhost/someurl';
 
       tick(POLLING_INTERVAL);
       fixture.detectChanges();

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ScenarioDownloadFooterComponent } from './scenario-download-footer.component';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('ScenarioDownloadFooterComponent', () => {
   let component: ScenarioDownloadFooterComponent;
@@ -8,10 +9,13 @@ describe('ScenarioDownloadFooterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ScenarioDownloadFooterComponent]
-    })
-    .compileComponents();
-    
+      imports: [
+        MatSnackBarModule,
+        HttpClientTestingModule,
+        ScenarioDownloadFooterComponent,
+      ],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ScenarioDownloadFooterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -20,4 +24,6 @@ describe('ScenarioDownloadFooterComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // TODO: add some download tests here...
 });

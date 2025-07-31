@@ -188,11 +188,11 @@ export class CreateScenariosComponent implements OnInit {
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        // only poll when scenario is pending or running
+        // only poll when scenario is pending or running, OR if the geopackage is not ready
         if (
           this.scenarioState === 'PENDING' ||
           this.scenarioState === 'RUNNING' ||
-          this.geoPackageURL === '' // keep polling until the geopackage is available
+          this.geoPackageURL === ''
         ) {
           this.loadConfig();
         }
