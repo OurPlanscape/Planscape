@@ -137,8 +137,8 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
                 else:
                     raise
 
-        if geom.srid != settings.CRS_INTERNAL_REPRESENTATION:
-            geom = geom.transform(settings.CRS_INTERNAL_REPRESENTATION, clone=True)
+        if geom.srid != settings.DEFAULT_CRS:
+            geom = geom.transform(settings.DEFAULT_CRS, clone=True)
 
         try:
             return coerce_geometry(geom)
@@ -193,10 +193,8 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
         if not geometry.valid:
             raise serializers.ValidationError(str(geometry.valid_reason))
 
-        if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
-            geometry = geometry.transform(
-                settings.CRS_INTERNAL_REPRESENTATION, clone=True
-            )
+        if geometry.srid != settings.DEFAULT_CRS:
+            geometry = geometry.transform(settings.DEFAULT_CRS, clone=True)
 
         return geometry
 
