@@ -20,6 +20,8 @@ import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
+import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
+import { StandSizeComponent } from '../stand-size/stand-size.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -39,6 +41,8 @@ enum ScenarioTabs {
     StepsComponent,
     CdkStepperModule,
     LegacyMaterialModule,
+    TreatmentGoalsComponent,
+    StandSizeComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
