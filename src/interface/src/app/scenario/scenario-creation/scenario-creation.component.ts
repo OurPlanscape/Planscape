@@ -105,7 +105,7 @@ export class ScenarioCreationComponent {
     return of(true);
   }
 
-  // dummy flag to test/debug
+  // dummy flag to test/debug. Remove once we implement running/saving the scenario
   finished = false;
 
   onFinish() {

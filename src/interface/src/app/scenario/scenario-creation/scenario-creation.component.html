@@ -33,7 +33,8 @@
       finishLabel="Save & Run Scenario"
       [save]="saveStep"
       (selectedIndexChange)="stepChanged()"
-      (finished)="onFinish()">
+      (finished)="onFinish()"
+      [outerForm]="form">
       <cdk-step [stepControl]="step1.form">
         <!-- Treatment goals selector -->
         <app-treatment-goals #step1></app-treatment-goals>

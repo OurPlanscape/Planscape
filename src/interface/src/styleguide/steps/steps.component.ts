@@ -50,7 +50,9 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() errorKey = 'invalid';
   // save callback
   @Input() save?: (data: Partial<T>) => Observable<boolean>;
-
+  // outer form, optional, that should check validity / mark as touched when saving
+  @Input() outerForm?: FormGroup;
+  // event that emits after saving the last step
   @Output() finished = new EventEmitter();
 
   // flag to show loader
@@ -68,6 +70,9 @@ export class StepsComponent<T> extends CdkStepper {
     if (!control) {
       this.moveNextOrFinish();
       return;
+    }
+    if (this.outerForm && this.outerForm.invalid) {
+      this.outerForm.markAllAsTouched();
     }
 
     if (control.valid) {
@@ -97,6 +102,11 @@ export class StepsComponent<T> extends CdkStepper {
   }
 
   private moveNextOrFinish() {
+    if (this.outerForm && this.outerForm.invalid) {
+      this.outerForm.markAllAsTouched();
+      return;
+    }
+
     if (this.isLastStep) {
       this.finished.emit();
     } else {
