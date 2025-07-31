@@ -26,6 +26,7 @@ import { ButtonComponent } from '../button/button.component';
 export class SectionComponent {
   @Input() headline = '';
   @Input() tooltipContent = '';
+  @Input() required = false;
 
   @Input() isCollapsible = false;
 

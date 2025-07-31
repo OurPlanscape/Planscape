@@ -20,10 +20,13 @@ import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
-import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
-import { StandSizeComponent } from '../stand-size/stand-size.component';
-import { ScenarioConfig } from '@types';
+import {
+  ScenarioCreation,
+  ScenarioConfigPayload,
+  ScenarioCreationPayload,
+} from '@types';
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
+import { Step1Component } from '../step1/step1.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -43,8 +46,7 @@ enum ScenarioTabs {
     StepsComponent,
     CdkStepperModule,
     LegacyMaterialModule,
-    TreatmentGoalsComponent,
-    StandSizeComponent,
+    Step1Component,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -52,7 +54,7 @@ enum ScenarioTabs {
 export class ScenarioCreationComponent {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
-  config: Partial<ScenarioConfig> = {};
+  config: Partial<ScenarioCreation> = {};
 
   planId = this.route.snapshot.data['planId'];
 
@@ -100,7 +102,7 @@ export class ScenarioCreationComponent {
     };
   }
 
-  saveStep(data: Partial<ScenarioConfig>) {
+  saveStep(data: Partial<ScenarioCreation>) {
     this.config = { ...this.config, ...data };
     return of(true);
   }
@@ -109,10 +111,26 @@ export class ScenarioCreationComponent {
   finished = false;
 
   onFinish() {
+    // TODO: Onfinish convert the config to scenarioPayload using the following line and send to backend:
+    // const body = this.getScenarioPayloadFromConfiguration(this.config)
     this.finished = true;
   }
 
   stepChanged() {
     this.goalOverlayService.close();
+  }
+
+  getScenarioPayloadFromConfiguration(scenario: ScenarioCreation) {
+    // TODO: Remove Partial<> once we implemented all steps
+    const result: Partial<ScenarioCreationPayload> = {
+      configuration: {
+        stand_size: scenario.configuration.stand_size,
+      } as ScenarioConfigPayload,
+      name: this.form.get('name')?.value,
+      treatment_goal: scenario.treatment_goal,
+      status: 'NOT_STARTED',
+      planning_area: this.planId,
+    };
+    return result;
   }
 }

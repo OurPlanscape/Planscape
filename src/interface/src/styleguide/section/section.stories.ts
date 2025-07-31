@@ -43,6 +43,13 @@ export const NoTooltip: Story = {
   },
 };
 
+export const Required: Story = {
+  args: {
+    headline: 'Project Areas',
+    required: true,
+  },
+};
+
 export const Collapsible: Story = {
   args: {
     isCollapsible: true,

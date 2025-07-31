@@ -20,6 +20,25 @@ export const STAND_SIZES_LABELS: Record<string, string> = {
   LARGE: 'Large',
 };
 
+export type STAND_SIZE = 'SMALL' | 'MEDIUM' | 'LARGE';
+
+export const STAND_OPTIONS: Record<
+  STAND_SIZE,
+  { label: string; description: string | null; acres: number }
+> = {
+  SMALL: { label: 'Small', description: null, acres: 10 },
+  MEDIUM: {
+    label: 'Medium',
+    description: null,
+    acres: 100,
+  },
+  LARGE: {
+    label: 'Large',
+    description: 'Recommended for Larger Planning Areas',
+    acres: 500,
+  },
+};
+
 export function parseResultsToProjectAreas(
   results: ScenarioResult
 ): ProjectAreaReport[] {

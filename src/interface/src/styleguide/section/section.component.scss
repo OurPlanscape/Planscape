@@ -1,6 +1,5 @@
-@import "colors";
-@import "mixins";
-
+@import 'colors';
+@import 'mixins';
 
 :host {
   display: block;
@@ -26,7 +25,7 @@
   .panel-header {
     padding: 0 10px 0 22px;
 
-    &[aria-disabled=true] {
+    &[aria-disabled='true'] {
       padding-left: 16px;
     }
 
@@ -51,11 +50,9 @@
   color: $color-standard-blue;
 }
 
-
 .tooltip {
   padding: 20px;
 }
-
 
 .title-txt {
   @include public-sans();
@@ -65,4 +62,8 @@
   line-height: 14px;
   text-transform: uppercase;
   user-select: none;
+}
+
+.required {
+  color: $color-error;
 }

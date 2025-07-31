@@ -1,4 +1,4 @@
-import { CommonModule, KeyValue } from '@angular/common';
+import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import {
   FormControl,
@@ -7,21 +7,20 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
-import {
-  CategorizedScenarioGoals,
-  ScenarioGoal,
-  TreatmentQuestionConfig,
-} from '@types';
+import { CategorizedScenarioGoals, ScenarioGoal } from '@types';
 import { map, shareReplay } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { SectionComponent } from '@styleguide';
+import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
 
 @Component({
-  selector: 'app-treatment-goals',
+  selector: 'app-step1',
   standalone: true,
   imports: [
     CommonModule,
@@ -30,16 +29,24 @@ import { SectionComponent } from '@styleguide';
     MatProgressSpinnerModule,
     MatExpansionModule,
     MatLegacyRadioModule,
+    SectionComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    ReactiveFormsModule,
+    KeyValuePipe,
   ],
-  templateUrl: './treatment-goals.component.html',
-  styleUrl: './treatment-goals.component.scss',
+  templateUrl: './step1.component.html',
+  styleUrl: './step1.component.scss',
 })
-export class TreatmentGoalsComponent {
-  form: FormGroup = new FormGroup({
-    selectedQuestion: new FormControl<TreatmentQuestionConfig | null>(null, [
-      Validators.required,
-    ]),
+export class Step1Component {
+  form = new FormGroup({
+    configuration: new FormGroup({
+      stand_size: new FormControl(null, [Validators.required]),
+    }),
+    treatment_goal: new FormControl(null, [Validators.required]),
   });
+
+  readonly standSizeOptions = STAND_OPTIONS;
 
   categorizedStatewideGoals$ = this.treatmentGoalsService
     .getTreatmentGoals()
@@ -68,7 +75,7 @@ export class TreatmentGoalsComponent {
   ) {}
 
   selectStatewideGoal(goal: ScenarioGoal) {
-    if (this.form.get('selectedQuestion')?.enabled) {
+    if (this.form.get('treatment_goal')?.enabled) {
       this.goalOverlayService.setStateWideGoal(goal);
     }
   }
