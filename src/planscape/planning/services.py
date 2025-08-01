@@ -15,7 +15,7 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
 from actstream import action
 from celery import chord
-from core.gcs import upload_file_via_api, create_upload_url
+from core.gcs import upload_file_via_cli
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -715,7 +715,10 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
     with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
         zipf.write(temp_file, arcname=temp_file.name)
 
-    upload_file_to_cloud_storage(zip_file, geopackage_path)
+    upload_file_via_cli(
+        object_name=geopackage_path.replace(f"gs://{settings.GCS_BUCKET}/", ""),
+        input_file=str(zip_file),
+    )
 
     temp_file.unlink(missing_ok=True)
     scenario.geopackage_url = geopackage_path
@@ -724,18 +727,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
     redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
     return str(geopackage_path)
-
-
-def upload_file_to_cloud_storage(input_file, geopackage_path):
-    upload_url = create_upload_url(geopackage_path)
-    if not upload_url:
-        raise ValueError(f"Failed to create upload URL for {geopackage_path}")
-    upload_url = upload_url.get("url")
-    upload_file_via_api(
-        object_name=geopackage_path,
-        input_file=str(input_file),
-        url=upload_url,  # type: ignore
-    )
 
 
 @transaction.atomic()
