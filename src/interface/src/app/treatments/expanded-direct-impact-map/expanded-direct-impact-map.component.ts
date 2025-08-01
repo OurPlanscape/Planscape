@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { ModalComponent } from '@styleguide';
+import { ExpandedPanelComponent, ModalComponent } from '@styleguide';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { MatDialogRef } from '@angular/material/dialog';
-
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
-import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';

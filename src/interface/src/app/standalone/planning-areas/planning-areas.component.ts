@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import {
   ButtonComponent,
   FilterDropdownComponent,
+  OverlayLoaderComponent,
   PaginatorComponent,
 } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
@@ -36,7 +37,6 @@ import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-m
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
-import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeaturesModule } from 'src/app/features/features.module';
 

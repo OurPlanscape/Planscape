@@ -18,16 +18,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 
-import { ModalComponent } from 'src/styleguide/modal/modal.component';
-import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.component';
-
 import {
   ButtonComponent,
+  FileUploadFieldComponent,
   InputDirective,
   InputFieldComponent,
+  ModalComponent,
+  ModalInfoComponent,
 } from '@styleguide';
-import { FileUploadFieldComponent } from '../../../styleguide/file-upload-field/file-upload-field.component';
-import { SharedModule } from '../../shared/shared.module';
+import { SharedModule } from '@shared';
 import { FormMessageType } from '@types';
 import { PlanService } from '@services';
 import { take } from 'rxjs';

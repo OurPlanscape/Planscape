@@ -1,5 +1,10 @@
 import { Component } from '@angular/core';
-import { ModalComponent } from '@styleguide';
+import {
+  DialogData,
+  ErrorDialogComponent,
+  ModalComponent,
+  PendingDialogComponent,
+} from '@styleguide';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { TreatmentsState } from '../treatments.state';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -7,10 +12,6 @@ import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { TreatmentSummary } from '@types';
-
-import { DialogData } from '../../../styleguide/dialogs/dialogs';
-import { ErrorDialogComponent } from '../../../styleguide/dialogs/error-dialog/error-dialog.component';
-import { PendingDialogComponent } from '../../../styleguide/dialogs/pending-dialog/pending-dialog.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({

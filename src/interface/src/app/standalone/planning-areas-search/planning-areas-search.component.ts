@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
+import { SearchBarComponent } from '@styleguide';
 
 @Component({
   selector: 'app-planning-areas-search',

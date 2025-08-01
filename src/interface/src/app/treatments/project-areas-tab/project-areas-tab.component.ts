@@ -4,10 +4,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
 import { Prescription, TreatmentSummary } from '@types';
 import { MatIconModule } from '@angular/material/icon';
-import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
-import { NoResultsComponent, SearchBarComponent } from '@styleguide';
+import {
+  NoResultsComponent,
+  ProjectAreaExpanderComponent,
+  SearchBarComponent,
+  SearchResultCardComponent,
+} from '@styleguide';
 import { map } from 'rxjs';
-import { SearchResultCardComponent } from '../../../styleguide/search-result-card/search-result-card.component';
+
 import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,

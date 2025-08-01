@@ -5,7 +5,7 @@ import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, ExpandedPanelComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +17,6 @@ import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-o
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Scenario, TreatmentProjectArea } from '@types';
-import { ExpandedPanelComponent } from 'src/styleguide/expanded-panel/expanded-panel.component';
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 
 @Component({

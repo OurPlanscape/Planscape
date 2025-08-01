@@ -1,15 +1,13 @@
 import {
   Component,
   EventEmitter,
-  Input,
   Inject,
   inject,
+  Input,
   Output,
 } from '@angular/core';
-import { ModalConfirmationDialogComponent } from '../../../styleguide/modal-dialog-section/modal-confirmation-dialog.component';
-import { ModalComponent } from '../../../styleguide/modal/modal.component';
-import { MatDialogRef } from '@angular/material/dialog';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ModalComponent, ModalConfirmationDialogComponent } from '@styleguide';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-scenario-create-confirmation',
