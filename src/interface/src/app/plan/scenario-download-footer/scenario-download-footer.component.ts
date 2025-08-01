@@ -20,7 +20,7 @@ export class ScenarioDownloadFooterComponent {
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
     private snackbar: MatSnackBar
-  ) { }
+  ) {}
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
