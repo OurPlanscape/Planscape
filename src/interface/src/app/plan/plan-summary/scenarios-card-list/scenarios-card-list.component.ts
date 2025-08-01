@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { ScenarioRow } from '../saved-scenarios/saved-scenarios.component';
-import { ScenarioCardComponent } from '../../../../styleguide/scenario-card/scenario-card.component';
+import { OverlayLoaderComponent, ScenarioCardComponent } from '@styleguide';
 import {
   SharedModule,
   SNACK_BOTTOM_NOTICE_CONFIG,
@@ -16,7 +16,7 @@ import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OverlayLoaderComponent } from '../../../../styleguide/overlay-loader/overlay-loader.component';
+
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { CreateTreatmentDialogComponent } from '../../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
 import { take } from 'rxjs';

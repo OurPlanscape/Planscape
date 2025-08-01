@@ -13,7 +13,7 @@ import {
 } from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
-import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { NotesSidebarState } from '@styleguide';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';

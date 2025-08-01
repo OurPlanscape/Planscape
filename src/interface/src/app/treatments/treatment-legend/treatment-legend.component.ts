@@ -2,9 +2,11 @@ import { Component, Input } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
-import { SequenceIconComponent } from '../../../styleguide/sequence-icon/sequence-icon.component';
-import { ModalComponent } from '../../../styleguide/modal/modal.component';
+import {
+  ModalComponent,
+  SequenceIconComponent,
+  TreatmentTypeIconComponent,
+} from '@styleguide';
 import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
 import { MatDividerModule } from '@angular/material/divider';
 import { MapConfigState } from '../../maplibre-map/map-config.state';

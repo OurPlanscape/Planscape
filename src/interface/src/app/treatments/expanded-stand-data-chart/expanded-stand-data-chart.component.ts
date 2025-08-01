@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ModalComponent } from '@styleguide';
+import { ExpandedPanelComponent, ModalComponent } from '@styleguide';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { standIsForested } from '../stands';
 

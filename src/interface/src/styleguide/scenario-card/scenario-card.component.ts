@@ -12,16 +12,17 @@ import {
   NgIf,
   NgSwitch,
 } from '@angular/common';
-import {
-  ButtonComponent,
-  StatusChipComponent,
-  StatusChipStatus,
-} from '@styleguide';
+
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { ScenarioResultStatus } from '@types';
 import { MatLegacyProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import {
+  StatusChipComponent,
+  StatusChipStatus,
+} from '../status-chip/status-chip.component';
+import { ButtonComponent } from '../button/button.component';
 
 export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
 

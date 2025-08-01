@@ -10,8 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ButtonComponent } from '@styleguide';
 import { MatButtonModule } from '@angular/material/button';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'sg-expanded-panel',

@@ -11,9 +11,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AfterDuplicateTreatmentDialogComponent } from '../after-duplicate-treatment-dialog/after-duplicate-treatment-dialog.component';
 import { TreatmentPlan } from '@types';
-import { ErrorDialogComponent } from '../../../styleguide/dialogs/error-dialog/error-dialog.component';
-import { DialogData } from '../../../styleguide/dialogs/dialogs';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, DialogData, ErrorDialogComponent } from '@styleguide';
 
 @Component({
   selector: 'app-treatment-navbar-menu',

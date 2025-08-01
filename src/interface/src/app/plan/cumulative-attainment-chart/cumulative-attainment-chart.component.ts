@@ -10,7 +10,7 @@ import {
   whiteTooltipBaseConfig,
 } from '../../chart-helper';
 import { ChartColors } from '@shared';
-import { ChartComponent } from '../../../styleguide/chart/chart.component';
+import { ChartComponent } from '@styleguide';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',

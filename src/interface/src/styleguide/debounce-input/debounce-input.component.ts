@@ -1,19 +1,20 @@
 import {
   Component,
-  Input,
-  Output,
   EventEmitter,
+  Input,
   OnDestroy,
   OnInit,
+  Output,
 } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { InputFieldComponent, ButtonComponent } from '@styleguide';
+import { ButtonComponent } from '../button/button.component';
+import { InputFieldComponent } from '../input/input-field.component';
 import {
+  BehaviorSubject,
   debounceTime,
   distinctUntilChanged,
   Subject,
-  BehaviorSubject,
 } from 'rxjs';
 import { InputDirective } from '../input/input.directive';
 import { MatIconModule } from '@angular/material/icon';
