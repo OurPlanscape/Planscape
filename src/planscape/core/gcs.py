@@ -131,7 +131,7 @@ def upload_file_via_cli(object_name: str, input_file: str):
     bucket = storage_client.bucket(settings.GCS_BUCKET)
 
     blob = bucket.blob(object_name)
-    
+
     blob.upload_from_filename(input_file)
     logger.info(f"Uploaded file {object_name} via CLI done.")
 
