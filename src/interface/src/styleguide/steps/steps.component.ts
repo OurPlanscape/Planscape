@@ -97,7 +97,7 @@ export class StepsComponent<T> extends CdkStepper {
         this.moveNextOrFinish();
       }
     } else {
-      this.selected?.stepControl.markAsDirty();
+      this.selected?.stepControl.markAllAsTouched();
     }
   }
 

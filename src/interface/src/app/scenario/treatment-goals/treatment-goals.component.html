@@ -10,7 +10,10 @@
   <form [formGroup]="form">
     <span
       class="error-message"
-      *ngIf="form.dirty && form.get('selectedQuestion')?.hasError('required')">
+      *ngIf="
+        form.get('selectedQuestion')?.touched &&
+        form.get('selectedQuestion')?.hasError('required')
+      ">
       Treatment goal is required
     </span>
     <mat-radio-group
