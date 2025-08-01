@@ -100,6 +100,7 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
 @app.task(max_retries=10, retry_backoff=True, default_retry_delay=120)
 def async_generate_scenario_geopackage(scenario_id: int) -> None:
     from planning.services import export_to_geopackage
+
     """
     This function is a placeholder for the actual implementation of generating
     a scenario geopackage. It should be implemented in the future.
