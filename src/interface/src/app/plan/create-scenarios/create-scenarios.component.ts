@@ -192,7 +192,7 @@ export class CreateScenariosComponent implements OnInit {
         if (
           this.scenarioState === 'PENDING' ||
           this.scenarioState === 'RUNNING' ||
-          this.geoPackageURL === null
+          !this.geoPackageURL
         ) {
           this.loadConfig();
         }
@@ -203,7 +203,10 @@ export class CreateScenariosComponent implements OnInit {
     this.scenarioService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
-        if (this.scenarioState === scenario.scenario_result?.status) {
+        if (
+          this.scenarioState === scenario.scenario_result?.status &&
+          this.geoPackageURL
+        ) {
           return;
         }
 

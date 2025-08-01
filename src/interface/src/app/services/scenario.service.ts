@@ -77,15 +77,10 @@ export class ScenarioService {
     );
   }
 
-  downloadGeopackage(scenarioId: number): Observable<any> {
-    return this.http.get(
-      environment.backend_endpoint +
-        `/v2/scenarios/${scenarioId}/download_geopackage/`,
-      {
-        withCredentials: true,
-        responseType: 'arraybuffer',
-      }
-    );
+  downloadGeopackage(geoPackageUrl: string): Observable<any> {
+    return this.http.get(geoPackageUrl, {
+      responseType: 'arraybuffer',
+    });
   }
 
   downloadShapeFiles(scenarioId: number): Observable<any> {

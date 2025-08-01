@@ -30,9 +30,9 @@ export class ScenarioDownloadFooterComponent {
   handleDownload() {
     this.downloadingScenario = true;
 
-    if (this.scenarioId && this.scenarioName) {
+    if (this.geoPackageURL && this.scenarioName) {
       const filename = getSafeFileName(this.scenarioName) + '.gpkg';
-      this.scenarioService.downloadGeopackage(this.scenarioId).subscribe({
+      this.scenarioService.downloadGeopackage(this.geoPackageURL).subscribe({
         next: (data) => {
           this.downloadingScenario = false;
           const blob = new Blob([data], {
