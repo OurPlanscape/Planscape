@@ -376,23 +376,34 @@ class TestExportToGeopackage(TestCase):
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
-    @mock.patch("planning.services.fiona.open", autospec=True)
-    def test_export_geopackage(self, fiona_mock):
+    @mock.patch(
+        "planning.services.create_upload_url",
+        return_value={"url": "http://example.com/upload"},
+    )
+    @mock.patch("planning.services.upload_file_via_api", autospec=True)
+    def test_export_geopackage(self, upload_mock, create_url_mock):
         invalidate_all()
         output = export_to_geopackage(self.scenario)
         self.assertIsNotNone(output)
-        self.assertTrue(output.endswith(".gpkg"))
+        self.assertTrue(output.endswith(".gpkg.zip"))
+        self.assertTrue(create_url_mock.called)
+        self.assertTrue(upload_mock.called)
 
-    @mock.patch("planning.services.fiona.open", autospec=True)
-    def test_export_geopackage_already_existing(self, fiona_mock):
+    @mock.patch(
+        "planning.services.create_upload_url",
+        return_value={"url": "http://example.com/upload"},
+    )
+    @mock.patch("planning.services.upload_file_via_api", autospec=True)
+    def test_export_geopackage_already_existing(self, upload_mock, create_url_mock):
         invalidate_all()
-        self.scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg"
+        self.scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg.zip"
         self.scenario.save(update_fields=["geopackage_url"])
 
         output = export_to_geopackage(self.scenario)
         self.assertIsNotNone(output)
         self.assertEqual(self.scenario.geopackage_url, output)
-        self.assertFalse(fiona_mock.called)
+        self.assertFalse(create_url_mock.called)
+        self.assertFalse(upload_mock.called)
 
 
 class TestPlanningAreaCovers(TestCase):
