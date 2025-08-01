@@ -3,6 +3,8 @@ from datetime import date, datetime
 
 import csv
 import fiona
+import json
+import shapely
 from unittest import mock
 from cacheops import invalidate_all
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
