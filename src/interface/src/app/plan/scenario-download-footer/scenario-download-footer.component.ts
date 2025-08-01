@@ -20,7 +20,7 @@ export class ScenarioDownloadFooterComponent {
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
     private snackbar: MatSnackBar
-  ) {}
+  ) { }
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
@@ -31,7 +31,7 @@ export class ScenarioDownloadFooterComponent {
     this.downloadingScenario = true;
 
     if (this.geoPackageURL && this.scenarioName) {
-      const filename = getSafeFileName(this.scenarioName) + '.gpkg';
+      const filename = getSafeFileName(this.scenarioName) + '.zip';
       this.scenarioService.downloadGeopackage(this.geoPackageURL).subscribe({
         next: (data) => {
           this.downloadingScenario = false;
