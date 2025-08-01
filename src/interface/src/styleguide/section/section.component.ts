@@ -2,8 +2,8 @@ import { Component, Input } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-import { ButtonComponent } from '@styleguide';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { ButtonComponent } from '../button/button.component';
 
 /**
  * SectionComponent displays a panel with a title and optional tooltip.
