@@ -9,7 +9,6 @@ from stands.services import calculate_stand_zonal_stats
 from utils.cli_utils import call_forsys
 
 from planning.models import Scenario, ScenarioResultStatus
-from planning.services import export_to_geopackage
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -94,18 +93,18 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
             )
             calculate_stand_zonal_stats(stands, datalayer)
     except DataLayer.DoesNotExist:
-        log.warning(f"DataLayer with name {datalayer_name} does not exist.")
+        log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
 
 
 @app.task(max_retries=10, retry_backoff=True, default_retry_delay=120)
 def async_generate_scenario_geopackage(scenario_id: int) -> None:
+    from planning.services import export_to_geopackage
     """
     This function is a placeholder for the actual implementation of generating
     a scenario geopackage. It should be implemented in the future.
     """
     log.info(f"Generating geopackage for scenario {scenario_id}")
-    # Placeholder for future implementation
     scenario = Scenario.objects.get(id=scenario_id)
     if scenario.result_status != ScenarioResultStatus.SUCCESS:
         log.warning(
