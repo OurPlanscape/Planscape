@@ -573,7 +573,7 @@ def export_scenario_outputs_to_geopackage(
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -632,7 +632,7 @@ def export_scenario_inputs_to_geopackage(
     }
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -659,7 +659,7 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: str) -> N
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
