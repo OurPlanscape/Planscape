@@ -7,11 +7,12 @@ import {
   Output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '@styleguide';
+
 import { CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
 import { Observable, take } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
+import { ButtonComponent } from '../button/button.component';
 
 export interface Step {
   form: FormGroup;
