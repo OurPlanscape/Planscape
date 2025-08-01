@@ -16,7 +16,7 @@ import {
   TreatmentQuestionConfig,
 } from '@types';
 import { map, shareReplay } from 'rxjs';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { SectionComponent } from 'src/styleguide/collapsible-panel/section.component';
 

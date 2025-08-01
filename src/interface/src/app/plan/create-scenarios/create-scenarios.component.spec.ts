@@ -26,7 +26,7 @@ import { SetPrioritiesComponent } from './set-priorities/set-priorities.componen
 import { PlanState } from '../plan.state';
 import { BehaviorSubject } from 'rxjs';
 import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { ScenarioService } from '@services';
 import { FormControl, FormGroup } from '@angular/forms';
 

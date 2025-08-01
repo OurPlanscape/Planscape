@@ -11,7 +11,7 @@ import {
 } from '@types';
 
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
-import { ScenarioState } from '../../../maplibre-map/scenario.state';
+import { ScenarioState } from '../../../scenario/scenario.state';
 import { KeyValue } from '@angular/common';
 
 @Component({
