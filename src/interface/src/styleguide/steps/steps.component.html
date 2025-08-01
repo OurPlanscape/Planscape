@@ -14,6 +14,6 @@
     variant="primary"
     [disabled]="savingStep"
     [loading]="savingStep">
-    {{ selectedIndex === steps.length - 1 ? finishLabel : continueLabel }}
+    {{ isLastStep ? finishLabel : continueLabel }}
   </button>
 </div>

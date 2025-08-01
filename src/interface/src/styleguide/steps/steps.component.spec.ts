@@ -110,12 +110,12 @@ describe('StepsComponent', () => {
       stepControl.updateValueAndValidity();
 
       expect(stepControl.valid).toBeFalse();
-      expect(stepControl.dirty).toBeFalse();
+      expect(stepControl.touched).toBeFalse();
 
       host.stepsComponent.goNext();
       tick();
 
-      expect(stepControl.dirty).toBeTrue();
+      expect(stepControl.touched).toBeTrue();
       expect(host.stepsComponent.selectedIndex).toBe(1);
     } else {
       fail('Expected stepControl to be a FormGroup');
