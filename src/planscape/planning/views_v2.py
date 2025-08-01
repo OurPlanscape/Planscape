@@ -251,19 +251,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @action(methods=["GET"], detail=True)
-    def download_geopackage(self, request, pk=None):
-        """
-        Download a geopackage of all scenarios.
-        """
-        scenario = self.get_object()
-
-        output_path = export_to_geopackage(scenario=scenario)
-        return FileResponse(
-            open(output_path, "rb"),
-            as_attachment=True,
-        )
-
 
 # TODO: migrate this to an action inside the planning area viewset
 @extend_schema_view(
