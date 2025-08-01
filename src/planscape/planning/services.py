@@ -5,7 +5,8 @@ import math
 import os
 import zipfile
 
-from cacheops import cache
+from cacheops import redis_client
+
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
@@ -680,20 +681,25 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: str) -> N
 
 
 def export_to_geopackage(scenario: Scenario) -> str:
-    is_exporting = cache.get(f"exporting_scenario_package:{scenario.pk}")
+    is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
     if is_exporting:
         raise ValueError(
             f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
         )
 
-    cache.set(f"exporting_scenario_package:{scenario.pk}", True, timeout=60 * 5)
-    geopackage_path = scenario.get_geopackage_path()
+    redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
+    geopackage_path = (
+        f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg"
+    )
 
     export_scenario_to_geopackage(scenario, geopackage_path)
     export_scenario_inputs_to_geopackage(scenario, geopackage_path)
     export_scenario_outputs_to_geopackage(scenario, geopackage_path)
 
-    cache.delete(f"exporting_scenario_package:{scenario.pk}")
+    redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
+
+    scenario.geopackage_url = geopackage_path
+    scenario.save(update_fields=["geopackage_url", "updated_at"])
 
     return str(geopackage_path)
 

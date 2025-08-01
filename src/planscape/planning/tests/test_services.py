@@ -3,8 +3,8 @@ from datetime import date, datetime
 
 import csv
 import fiona
-import json
-import shapely
+from unittest import mock
+from cacheops import invalidate_all
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
@@ -374,7 +374,9 @@ class TestExportToGeopackage(TestCase):
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
-    def test_export_geopackage(self):
+    @mock.patch("planning.services.fiona.open", autospec=True)
+    def test_export_geopackage(self, fiona_mock):
+        invalidate_all()
         output = export_to_geopackage(self.scenario)
         self.assertIsNotNone(output)
         self.assertTrue(output.endswith(".gpkg"))
