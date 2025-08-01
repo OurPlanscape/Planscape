@@ -23,6 +23,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
+from gis.core import with_vsi_prefix
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from pyproj import Geod
@@ -573,7 +574,7 @@ def export_scenario_outputs_to_geopackage(
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal,.zip")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -632,7 +633,7 @@ def export_scenario_inputs_to_geopackage(
     }
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal,.zip")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -659,7 +660,7 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: str) -> N
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal,.zip")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -696,13 +697,12 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         return scenario.geopackage_url
 
     redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
-    geopackage_path = (
-        f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg"
-    )
+    geopackage_path = f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
+    vsi_url = with_vsi_prefix(geopackage_path)
 
-    export_scenario_to_geopackage(scenario, geopackage_path)
-    export_scenario_inputs_to_geopackage(scenario, geopackage_path)
-    export_scenario_outputs_to_geopackage(scenario, geopackage_path)
+    export_scenario_to_geopackage(scenario, vsi_url)
+    export_scenario_inputs_to_geopackage(scenario, vsi_url)
+    export_scenario_outputs_to_geopackage(scenario, vsi_url)
 
     redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
