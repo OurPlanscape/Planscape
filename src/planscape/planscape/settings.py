@@ -445,6 +445,9 @@ AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
 GEOPACKAGES_FOLDER = "geopackages"
+TEMP_GEOPACKAGE_FOLDER = config(
+    "TEMP_GEOPACKAGE_FOLDER", default="/tmp/planscape/geopackages"
+)
 GCS_BUCKET = config("GCS_BUCKET", "planscape-datastore-dev")
 GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None

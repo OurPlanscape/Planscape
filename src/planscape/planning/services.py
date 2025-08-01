@@ -15,6 +15,7 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
 from actstream import action
 from celery import chord
+from core.gcs import upload_file_via_api, create_upload_url
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -514,7 +515,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
 
 def export_scenario_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: str
+    scenario: Scenario, geopackage_path: Path
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
@@ -573,7 +574,7 @@ def export_scenario_outputs_to_geopackage(
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -593,7 +594,7 @@ def export_scenario_outputs_to_geopackage(
 
 
 def export_scenario_inputs_to_geopackage(
-    scenario: Scenario, geopackage_path: str
+    scenario: Scenario, geopackage_path: Path
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
@@ -632,7 +633,7 @@ def export_scenario_inputs_to_geopackage(
     }
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -654,12 +655,12 @@ def export_scenario_inputs_to_geopackage(
         raise e
 
 
-def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: str) -> None:
+def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -696,20 +697,45 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         return scenario.geopackage_url
 
     redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
-    geopackage_path = (
-        f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg"
-    )
+    temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+    if not temp_folder.exists():
+        temp_folder.mkdir(parents=True)
+    temp_file = temp_folder / f"{scenario.uuid}.gpkg"
+    if temp_file.exists():
+        temp_file.unlink()
 
-    export_scenario_to_geopackage(scenario, geopackage_path)
-    export_scenario_inputs_to_geopackage(scenario, geopackage_path)
-    export_scenario_outputs_to_geopackage(scenario, geopackage_path)
+    export_scenario_to_geopackage(scenario, temp_file)
+    export_scenario_inputs_to_geopackage(scenario, temp_file)
+    export_scenario_outputs_to_geopackage(scenario, temp_file)
 
-    redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
+    geopackage_path = f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
+    zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
+    if zip_file.exists():
+        zip_file.unlink()
+    with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(temp_file, arcname=temp_file.name)
 
+    upload_file_to_cloud_storage(scenario, zip_file, geopackage_path)
+
+    temp_file.unlink(missing_ok=True)
     scenario.geopackage_url = geopackage_path
     scenario.save(update_fields=["geopackage_url", "updated_at"])
 
+    redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
+
     return str(geopackage_path)
+
+
+def upload_file_to_cloud_storage(scenario, temp_file, geopackage_path):
+    upload_url = create_upload_url(geopackage_path)
+    if not upload_url:
+        raise ValueError(f"Failed to create upload URL for {geopackage_path}")
+    upload_url = upload_url.get("url")
+    upload_file_via_api(
+        object_name=f"{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip",
+        input_file=str(temp_file),
+        url=upload_url,  # type: ignore
+    )
 
 
 @transaction.atomic()
