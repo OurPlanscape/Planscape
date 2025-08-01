@@ -383,6 +383,17 @@ class TestExportToGeopackage(TestCase):
         self.assertIsNotNone(output)
         self.assertTrue(output.endswith(".gpkg"))
 
+    @mock.patch("planning.services.fiona.open", autospec=True)
+    def test_export_geopackage_already_existing(self, fiona_mock):
+        invalidate_all()
+        self.scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg"
+        self.scenario.save(update_fields=["geopackage_url"])
+
+        output = export_to_geopackage(self.scenario)
+        self.assertIsNotNone(output)
+        self.assertEqual(self.scenario.geopackage_url, output)
+        self.assertFalse(fiona_mock.called)
+
 
 class TestPlanningAreaCovers(TestCase):
     def setUp(self):

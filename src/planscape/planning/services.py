@@ -680,12 +680,20 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: str) -> N
         raise e
 
 
-def export_to_geopackage(scenario: Scenario) -> str:
+def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
     is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
     if is_exporting:
         raise ValueError(
             f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
         )
+
+    if not regenerate and scenario.geopackage_url:
+        logger.info(
+            "Scenario %s already has a geopackage URL: %s",
+            scenario.pk,
+            scenario.geopackage_url,
+        )
+        return scenario.geopackage_url
 
     redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
     geopackage_path = (
