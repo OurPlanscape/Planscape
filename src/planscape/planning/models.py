@@ -433,7 +433,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             return None
         signed_url = create_download_url(self.geopackage_url)
         if signed_url is None:
-            create_download_url.invalidate(signed_url)  # type: ignore
+            create_download_url.invalidate(self.geopackage_url)  # type: ignore
         return signed_url
 
     objects = ScenarioManager()
