@@ -540,6 +540,16 @@ class ListScenarioSerializer(serializers.ModelSerializer):
 
 class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV2Serializer()
+    geopackage_url = serializers.SerializerMethodField(
+        help_text="URL to download the scenario's geopackage file.",
+    )
+
+    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+        """
+        Returns the URL to download the scenario's geopackage file.
+        If the scenario is currently being exported, returns None.
+        """
+        return scenario.get_geopackage_url()
 
     class Meta:
         fields = (
@@ -557,6 +567,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "creator",
             "status",
             "version",
+            "geopackage_url",
         )
         model = Scenario
 
@@ -629,6 +640,9 @@ class ScenarioSerializer(
     serializers.ModelSerializer,
 ):
     configuration = serializers.SerializerMethodField()
+    geopackage_url = serializers.SerializerMethodField(
+        help_text="URL to download the scenario's geopackage file.",
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -653,6 +667,13 @@ class ScenarioSerializer(
         validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
+    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+        """
+        Returns the URL to download the scenario's geopackage file.
+        If the scenario is currently being exported, returns None.
+        """
+        return scenario.get_geopackage_url()
+
     class Meta:
         fields = (
             "id",
@@ -669,6 +690,7 @@ class ScenarioSerializer(
             "creator",
             "status",
             "version",
+            "geopackage_url",
         )
         model = Scenario
 

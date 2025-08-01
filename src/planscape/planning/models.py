@@ -11,6 +11,7 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
+from core.gcs import create_download_url
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -383,6 +384,11 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Treatment Goal of the Scenario.",
     )
 
+    geopackage_url = models.URLField(
+        null=True,
+        help_text="Geopackage URL of the Scenario.",
+    )
+
     @cached_property
     def version(self):
         if self.configuration and self.configuration.get("question_id") is not None:
@@ -421,6 +427,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return Stand.objects.within_polygon(
             project_areas_geometry, self.get_stand_size()
         )
+
+    def get_geopackage_url(self) -> Optional[str]:
+        if not self.geopackage_url:
+            return None
+        signed_url = create_download_url(self.geopackage_url)
+        if signed_url is None:
+            create_download_url.invalidate(signed_url)  # type: ignore
+        return signed_url
 
     objects = ScenarioManager()
 

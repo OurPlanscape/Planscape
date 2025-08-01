@@ -4,6 +4,9 @@ import logging
 import math
 import os
 import zipfile
+
+from cacheops import redis_client
+
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
@@ -511,7 +514,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
 
 def export_scenario_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+    scenario: Scenario, geopackage_path: str
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
@@ -590,7 +593,7 @@ def export_scenario_outputs_to_geopackage(
 
 
 def export_scenario_inputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+    scenario: Scenario, geopackage_path: str
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
@@ -651,7 +654,7 @@ def export_scenario_inputs_to_geopackage(
         raise e
 
 
-def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
+def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: str) -> None:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
@@ -677,19 +680,34 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
         raise e
 
 
-def export_to_geopackage(scenario: Scenario) -> str:
-    shapefile_folder = scenario.get_shapefile_folder()
-    geopackage_file = f"{scenario.name}.gpkg"
-    geopackage_path = shapefile_folder / geopackage_file
-    Path(geopackage_path).unlink(missing_ok=True)
-    if not shapefile_folder.exists():
-        shapefile_folder.mkdir(parents=True)
-    if geopackage_path.exists():
-        geopackage_path.unlink()
+def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
+    is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
+    if is_exporting:
+        raise ValueError(
+            f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
+        )
+
+    if not regenerate and scenario.geopackage_url:
+        logger.info(
+            "Scenario %s already has a geopackage URL: %s",
+            scenario.pk,
+            scenario.geopackage_url,
+        )
+        return scenario.geopackage_url
+
+    redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
+    geopackage_path = (
+        f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg"
+    )
 
     export_scenario_to_geopackage(scenario, geopackage_path)
     export_scenario_inputs_to_geopackage(scenario, geopackage_path)
     export_scenario_outputs_to_geopackage(scenario, geopackage_path)
+
+    redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
+
+    scenario.geopackage_url = geopackage_path
+    scenario.save(update_fields=["geopackage_url", "updated_at"])
 
     return str(geopackage_path)
 

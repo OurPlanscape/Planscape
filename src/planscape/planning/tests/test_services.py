@@ -5,6 +5,8 @@ import csv
 import fiona
 import json
 import shapely
+from unittest import mock
+from cacheops import invalidate_all
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
@@ -374,10 +376,23 @@ class TestExportToGeopackage(TestCase):
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
-    def test_export_geopackage(self):
+    @mock.patch("planning.services.fiona.open", autospec=True)
+    def test_export_geopackage(self, fiona_mock):
+        invalidate_all()
         output = export_to_geopackage(self.scenario)
         self.assertIsNotNone(output)
         self.assertTrue(output.endswith(".gpkg"))
+
+    @mock.patch("planning.services.fiona.open", autospec=True)
+    def test_export_geopackage_already_existing(self, fiona_mock):
+        invalidate_all()
+        self.scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg"
+        self.scenario.save(update_fields=["geopackage_url"])
+
+        output = export_to_geopackage(self.scenario)
+        self.assertIsNotNone(output)
+        self.assertEqual(self.scenario.geopackage_url, output)
+        self.assertFalse(fiona_mock.called)
 
 
 class TestPlanningAreaCovers(TestCase):
