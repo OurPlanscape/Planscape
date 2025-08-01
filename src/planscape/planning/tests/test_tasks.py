@@ -81,7 +81,7 @@ class AsyncCalculateStandMetricsTest(TestCase):
         self.assertEqual(StandMetric.objects.count(), 0)
 
 
-@override_settings(FORSYS_VIA_API=False)
+@override_settings(FEATURE_FLAGS="")
 class AsyncCallForsysCommandLine(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()
@@ -90,10 +90,14 @@ class AsyncCallForsysCommandLine(TestCase):
         "utils.cli_utils._call_forsys_via_command_line",
         return_value=True,
     )
-    def test_async_call_forsys_command_line(self, mock):
+    @mock.patch(
+        "planning.tasks.async_generate_scenario_geopackage.apply_async",
+    )
+    def test_async_call_forsys_command_line(self, mock_geopackage, mock_cmd_line):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.SUCCESS)
+        self.assertTrue(mock_geopackage.called)
 
     @mock.patch(
         "utils.cli_utils._call_forsys_via_command_line",
@@ -101,19 +105,29 @@ class AsyncCallForsysCommandLine(TestCase):
             "Forsys command line call timed out after 60000 seconds."
         ),
     )
-    def test_async_call_forsys_command_line_timeout(self, mock):
+    @mock.patch(
+        "planning.tasks.async_generate_scenario_geopackage.apply_async",
+    )
+    def test_async_call_forsys_command_line_timeout(
+        self, mock_geopackage, mock_cmd_line
+    ):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.TIMED_OUT)
+        self.assertFalse(mock_geopackage.called)
 
     @mock.patch(
         "utils.cli_utils._call_forsys_via_command_line",
         side_effect=ForsysException("Forsys command line call failed"),
     )
-    def test_async_call_forsys_command_line_panic(self, mock):
+    @mock.patch(
+        "planning.tasks.async_generate_scenario_geopackage.apply_async",
+    )
+    def test_async_call_forsys_command_line_panic(self, mock_geopackage, mock_cmd_line):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
+        self.assertFalse(mock_geopackage.called)
 
 
 @override_settings(FEATURE_FLAGS="FORSYS_VIA_API")
@@ -125,10 +139,14 @@ class AsyncCallForsysViaAPI(TestCase):
         "utils.cli_utils._call_forsys_via_api",
         return_value=True,
     )
-    def test_async_call_forsys_via_api(self, mock):
+    @mock.patch(
+        "planning.tasks.async_generate_scenario_geopackage.apply_async",
+    )
+    def test_async_call_forsys_via_api(self, mock_geopackage, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        self.assertTrue(mock_geopackage.called)
 
     @mock.patch(
         "utils.cli_utils._call_forsys_via_api",
@@ -136,16 +154,24 @@ class AsyncCallForsysViaAPI(TestCase):
             "Forsys API call timed out after 60000 seconds."
         ),
     )
-    def test_async_call_forsys_via_api_timeout(self, mock):
+    @mock.patch(
+        "planning.tasks.async_generate_scenario_geopackage.apply_async",
+    )
+    def test_async_call_forsys_via_api_timeout(self, mock_geopackage, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.TIMED_OUT)
+        self.assertFalse(mock_geopackage.called)
 
     @mock.patch(
         "utils.cli_utils._call_forsys_via_api",
         side_effect=ForsysException("Forsys API call failed"),
     )
-    def test_async_call_forsys_via_api_panic(self, mock):
+    @mock.patch(
+        "planning.tasks.async_generate_scenario_geopackage.apply_async",
+    )
+    def test_async_call_forsys_via_api_panic(self, mock_geopackage, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
+        self.assertFalse(mock_geopackage.called)

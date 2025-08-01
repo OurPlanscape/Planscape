@@ -1,7 +1,6 @@
 import json
 import uuid
 from pathlib import Path
-from cacheops import cache
 from typing import Collection, Optional
 
 from collaboration.models import UserObjectRole
@@ -12,7 +11,7 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
-from core.gcs import create_download_url as create_gcs_download_url
+from core.gcs import create_download_url
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -385,6 +384,11 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Treatment Goal of the Scenario.",
     )
 
+    geopackage_url = models.URLField(
+        null=True,
+        help_text="Geopackage URL of the Scenario.",
+    )
+
     @cached_property
     def version(self):
         if self.configuration and self.configuration.get("question_id") is not None:
@@ -424,18 +428,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             project_areas_geometry, self.get_stand_size()
         )
 
-    def get_geopackage_path(self) -> str:
-        geopackage_file = f"{self.uuid}.gpkg"
-        return f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{geopackage_file}"
-
     def get_geopackage_url(self) -> Optional[str]:
-        is_exporting = cache.get(f"exporting_scenario_package:{self.pk}")
-        if is_exporting:
+        if not self.geopackage_url:
             return None
-        geopackage_url = create_gcs_download_url(self.get_geopackage_path())
-        if geopackage_url is None:
-            create_gcs_download_url.invalidate(geopackage_url)
-        return geopackage_url
+        signed_url = create_download_url(self.geopackage_url)
+        if signed_url is None:
+            create_download_url.invalidate(signed_url)  # type: ignore
+        return signed_url
 
     objects = ScenarioManager()
 
