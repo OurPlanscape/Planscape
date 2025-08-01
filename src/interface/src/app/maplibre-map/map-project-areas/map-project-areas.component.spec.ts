@@ -10,7 +10,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { MapConfigState } from '../map-config.state';
 import { BehaviorSubject, of } from 'rxjs';
 import { TreatmentsState } from 'src/app/treatments/treatments.state';
-import { ScenarioState } from '../scenario.state';
+import { ScenarioState } from '../../scenario/scenario.state';
 
 describe('MapProjectAreasComponent', () => {
   let component: MapProjectAreasComponent;

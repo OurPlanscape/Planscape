@@ -9,7 +9,7 @@ import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
 import { TreatmentGoalsComponent } from './treatment-goals.component';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { MOCK_SCENARIO } from '@services/mocks';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })

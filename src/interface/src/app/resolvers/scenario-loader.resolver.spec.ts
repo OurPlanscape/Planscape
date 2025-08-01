@@ -5,7 +5,7 @@ import {
   convertToParamMap,
   RouterStateSnapshot,
 } from '@angular/router';
-import { ScenarioState } from '../maplibre-map/scenario.state';
+import { ScenarioState } from '../scenario/scenario.state';
 import { scenarioLoaderResolver } from './scenario-loader.resolver';
 
 describe('scenarioLoaderResolver', () => {

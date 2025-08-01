@@ -54,7 +54,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 

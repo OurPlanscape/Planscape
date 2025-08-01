@@ -19,7 +19,7 @@ import {
   calculateMinBudget,
   hasEnoughBudget,
 } from '../../../validators/scenarios';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { firstValueFrom, tap } from 'rxjs';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =

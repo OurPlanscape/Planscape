@@ -18,7 +18,7 @@ import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
-import { ScenarioState } from '../scenario.state';
+import { ScenarioState } from '../../scenario/scenario.state';
 import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
 
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
