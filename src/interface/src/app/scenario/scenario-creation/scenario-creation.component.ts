@@ -8,6 +8,7 @@ import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { map, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { ExcludedAreasComponent } from '../excluded-areas/excluded-areas.component';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -18,10 +19,10 @@ import {
 } from '@angular/forms';
 import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
-import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
 import { StandSizeComponent } from '../stand-size/stand-size.component';
+import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 
 enum ScenarioTabs {
   CONFIG,
@@ -35,14 +36,15 @@ enum ScenarioTabs {
   imports: [
     MatTabsModule,
     ReactiveFormsModule,
+    LegacyMaterialModule,
     MatLegacyButtonModule,
     NgIf,
     DataLayersComponent,
     StepsComponent,
     CdkStepperModule,
-    LegacyMaterialModule,
     TreatmentGoalsComponent,
     StandSizeComponent,
+    ExcludedAreasComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
