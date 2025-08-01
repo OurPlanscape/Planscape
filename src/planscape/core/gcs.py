@@ -116,6 +116,26 @@ def create_download_url(
     return url
 
 
+def upload_file_via_cli(object_name: str, input_file: str):
+    """
+    Uploads a file to a specified URL using the command line.
+
+    Args:
+        object_name (str): The name of the object in GCS.
+        input_file (str): The path to the local file to upload.
+        url (str): The URL to upload the file to.
+        chunk_size (int): The size of each chunk to upload.
+    """
+    logger.info(f"Uploading file {object_name} via CLI.")
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(settings.GCS_BUCKET)
+
+    blob = bucket.blob(object_name)
+    
+    blob.upload_from_filename(input_file)
+    logger.info(f"Uploaded file {object_name} via CLI done.")
+
+
 def upload_file_via_api(
     object_name: str,
     input_file: str,
