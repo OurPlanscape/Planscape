@@ -3,7 +3,7 @@ import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { NgIf } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { StepsComponent } from '../../../styleguide/steps/steps.component';
+import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { map, of, skip } from 'rxjs';

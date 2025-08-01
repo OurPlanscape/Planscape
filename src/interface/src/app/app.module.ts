@@ -16,7 +16,7 @@ import {
 } from 'ngx-google-analytics';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
 
 import { FeaturesModule } from './features/features.module';
@@ -35,7 +35,6 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
 
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { OverlayLoaderComponent } from '../styleguide/overlay-loader/overlay-loader.component';
 import * as Sentry from '@sentry/angular';
 
 @NgModule({
