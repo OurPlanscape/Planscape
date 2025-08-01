@@ -715,7 +715,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
     with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
         zipf.write(temp_file, arcname=temp_file.name)
 
-    upload_file_to_cloud_storage(scenario, zip_file, geopackage_path)
+    upload_file_to_cloud_storage(zip_file, geopackage_path)
 
     temp_file.unlink(missing_ok=True)
     scenario.geopackage_url = geopackage_path
@@ -726,14 +726,14 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
     return str(geopackage_path)
 
 
-def upload_file_to_cloud_storage(scenario, temp_file, geopackage_path):
+def upload_file_to_cloud_storage(input_file, geopackage_path):
     upload_url = create_upload_url(geopackage_path)
     if not upload_url:
         raise ValueError(f"Failed to create upload URL for {geopackage_path}")
     upload_url = upload_url.get("url")
     upload_file_via_api(
-        object_name=f"{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip",
-        input_file=str(temp_file),
+        object_name=geopackage_path,
+        input_file=str(input_file),
         url=upload_url,  # type: ignore
     )
 
