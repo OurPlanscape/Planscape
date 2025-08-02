@@ -214,10 +214,9 @@ export class CreateScenariosComponent implements OnInit {
         this.scenarioId = scenario.id;
 
         this.disableForms();
-        if (scenario.scenario_result) {
+        if (scenario.scenario_result && scenario.scenario_result !== this.scenarioResults) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
-          this.geoPackageURL = scenario.geopackage_url ?? null;
           this.priorities =
             scenario.configuration.treatment_question?.scenario_priorities ||
             [];
@@ -228,6 +227,10 @@ export class CreateScenariosComponent implements OnInit {
           }
           // enable animation
           this.tabAnimation = this.tabAnimationOptions.on;
+        }
+
+        if (scenario.geopackage_url) {
+          this.geoPackageURL = scenario.geopackage_url ?? null;
         }
 
         //setting name
