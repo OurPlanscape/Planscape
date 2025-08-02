@@ -77,6 +77,7 @@ export class CreateScenariosComponent implements OnInit {
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
+  geoPackageURL: string | null = null;
   priorities: string[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
@@ -188,10 +189,11 @@ export class CreateScenariosComponent implements OnInit {
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        // only poll when scenario is pending or running
+        // only poll when scenario is pending or running, OR if the geopackage is not ready
         if (
           this.scenarioState === 'PENDING' ||
-          this.scenarioState === 'RUNNING'
+          this.scenarioState === 'RUNNING' ||
+          !this.geoPackageURL
         ) {
           this.loadConfig();
         }
@@ -202,7 +204,10 @@ export class CreateScenariosComponent implements OnInit {
     this.scenarioService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
-        if (this.scenarioState === scenario.scenario_result?.status) {
+        if (
+          this.scenarioState === scenario.scenario_result?.status &&
+          this.geoPackageURL
+        ) {
           return;
         }
 
@@ -210,7 +215,10 @@ export class CreateScenariosComponent implements OnInit {
         this.scenarioId = scenario.id;
 
         this.disableForms();
-        if (scenario.scenario_result) {
+        if (
+          scenario.scenario_result &&
+          scenario.scenario_result !== this.scenarioResults
+        ) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
           this.priorities =
@@ -223,6 +231,10 @@ export class CreateScenariosComponent implements OnInit {
           }
           // enable animation
           this.tabAnimation = this.tabAnimationOptions.on;
+        }
+
+        if (scenario.geopackage_url) {
+          this.geoPackageURL = scenario.geopackage_url ?? null;
         }
 
         //setting name

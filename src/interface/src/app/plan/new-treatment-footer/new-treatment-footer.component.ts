@@ -12,13 +12,13 @@ import { AnalyticsService } from '@services/analytics.service';
 import { NgIf } from '@angular/common';
 
 @Component({
-  selector: 'app-plan-tabs-footer',
+  selector: 'app-new-treatment-footer',
   standalone: true,
   imports: [MatProgressSpinnerModule, ButtonComponent, NgIf],
-  templateUrl: './plan-tabs-footer.component.html',
-  styleUrl: './plan-tabs-footer.component.scss',
+  templateUrl: './new-treatment-footer.component.html',
+  styleUrl: './new-treatment-footer.component.scss',
 })
-export class PlanTabsFooterComponent {
+export class NewTreatmentFooterComponent {
   constructor(
     private router: Router,
     private route: ActivatedRoute,

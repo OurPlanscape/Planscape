@@ -21,6 +21,7 @@ export interface Scenario {
     name: string;
   };
   version?: string;
+  geopackage_url?: string; // optional: older scenarios may not have this
 }
 
 /**

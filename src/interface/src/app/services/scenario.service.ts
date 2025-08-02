@@ -77,6 +77,12 @@ export class ScenarioService {
     );
   }
 
+  downloadGeopackage(geoPackageUrl: string): Observable<any> {
+    return this.http.get(geoPackageUrl, {
+      responseType: 'arraybuffer',
+    });
+  }
+
   downloadShapeFiles(scenarioId: number): Observable<any> {
     return this.http.get(
       environment.backend_endpoint +

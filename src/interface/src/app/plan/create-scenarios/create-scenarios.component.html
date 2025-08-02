@@ -99,9 +99,18 @@
         [planningArea]="plan$ | async"></app-treatments-tab>
     </mat-tab>
   </mat-tab-group>
-  <app-plan-tabs-footer
+  <app-new-treatment-footer
     [scenarioId]="scenarioId || undefined"
     *ngIf="
       selectedTab === SCENARIO_TABS.TREATMENTS && (showTreatmentFooter$ | async)
-    "></app-plan-tabs-footer>
+    "></app-new-treatment-footer>
+
+  <app-scenario-download-footer
+    [scenarioId]="scenarioId || undefined"
+    [scenarioName]="scenarioNameFormField?.value"
+    [geoPackageURL]="geoPackageURL"
+    *ngIf="
+      selectedTab !== SCENARIO_TABS.TREATMENTS &&
+      scenarioResults?.status === 'SUCCESS'
+    "></app-scenario-download-footer>
 </div>
