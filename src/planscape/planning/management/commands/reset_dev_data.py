@@ -11,7 +11,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         if not settings.DEBUG:
-            raise CommandError("This command should only be run in development (DEBUG=True)")
+            raise CommandError(
+                "This command should only be run in development (DEBUG=True)"
+            )
 
         TreatmentGoalUsesDataLayer.objects.all().delete()
         TreatmentGoal.objects.all().delete()
