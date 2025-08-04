@@ -11,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
 import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
 import { StandSizeComponent } from '../stand-size/stand-size.component';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from '../scenario.state';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;

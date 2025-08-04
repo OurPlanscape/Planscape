@@ -19,10 +19,10 @@ import {
 } from '@angular/forms';
 import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
+import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
 import { StandSizeComponent } from '../stand-size/stand-size.component';
-import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { ScenarioConfig } from '@types';
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 
@@ -38,12 +38,12 @@ enum ScenarioTabs {
   imports: [
     MatTabsModule,
     ReactiveFormsModule,
-    LegacyMaterialModule,
     MatLegacyButtonModule,
     NgIf,
     DataLayersComponent,
     StepsComponent,
     CdkStepperModule,
+    LegacyMaterialModule,
     TreatmentGoalsComponent,
     StandSizeComponent,
     ExcludedAreasComponent,

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { SectionComponent } from 'src/styleguide/collapsible-panel/section.component';
+import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
   FormControl,
@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from '../../scenario/scenario.state';
 import { tap } from 'rxjs';
 
 interface ExcludedArea {
@@ -35,7 +35,7 @@ export class ExcludedAreasComponent implements OnInit {
   excludedAreas: ExcludedArea[] = [];
 
   excludedAreas$ = this.scenarioState.excludedAreas$.pipe(
-    tap((areas) => (this.excludedAreas = areas))
+    tap((areas: ExcludedArea[]) => (this.excludedAreas = areas))
   );
 
   form: FormGroup = new FormGroup({
@@ -45,7 +45,7 @@ export class ExcludedAreasComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.scenarioState.excludedAreas$.subscribe((areas) => {
+    this.scenarioState.excludedAreas$.subscribe((areas: ExcludedArea[]) => {
       this.excludedAreas = areas;
       this.createForm();
     });
