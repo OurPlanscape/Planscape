@@ -3,7 +3,7 @@ import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { NgIf } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { StepsComponent } from '../../../styleguide/steps/steps.component';
+import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { map, of, skip } from 'rxjs';
@@ -23,6 +23,8 @@ import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
 import { StandSizeComponent } from '../stand-size/stand-size.component';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
+import { ScenarioConfig } from '@types';
+import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -52,6 +54,8 @@ enum ScenarioTabs {
 export class ScenarioCreationComponent {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
+  config: Partial<ScenarioConfig> = {};
+
   planId = this.route.snapshot.data['planId'];
 
   form = new FormGroup({
@@ -65,7 +69,8 @@ export class ScenarioCreationComponent {
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private goalOverlayService: GoalOverlayService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -95,5 +100,21 @@ export class ScenarioCreationComponent {
         })
       );
     };
+  }
+
+  saveStep(data: Partial<ScenarioConfig>) {
+    this.config = { ...this.config, ...data };
+    return of(true);
+  }
+
+  // dummy flag to test/debug. Remove once we implement running/saving the scenario
+  finished = false;
+
+  onFinish() {
+    this.finished = true;
+  }
+
+  stepChanged() {
+    this.goalOverlayService.close();
   }
 }

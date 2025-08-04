@@ -4,6 +4,9 @@ import logging
 import math
 import os
 import zipfile
+
+from cacheops import redis_client
+
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
@@ -12,6 +15,7 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
 from actstream import action
 from celery import chord
+from core.gcs import upload_file_via_cli
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -570,7 +574,7 @@ def export_scenario_outputs_to_geopackage(
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -629,7 +633,7 @@ def export_scenario_inputs_to_geopackage(
     }
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -656,7 +660,7 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg")):
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
                 geopackage_path,
                 "w",
@@ -677,19 +681,50 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
         raise e
 
 
-def export_to_geopackage(scenario: Scenario) -> str:
-    shapefile_folder = scenario.get_shapefile_folder()
-    geopackage_file = f"{scenario.name}.gpkg"
-    geopackage_path = shapefile_folder / geopackage_file
-    Path(geopackage_path).unlink(missing_ok=True)
-    if not shapefile_folder.exists():
-        shapefile_folder.mkdir(parents=True)
-    if geopackage_path.exists():
-        geopackage_path.unlink()
+def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
+    is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
+    if is_exporting:
+        raise ValueError(
+            f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
+        )
 
-    export_scenario_to_geopackage(scenario, geopackage_path)
-    export_scenario_inputs_to_geopackage(scenario, geopackage_path)
-    export_scenario_outputs_to_geopackage(scenario, geopackage_path)
+    if not regenerate and scenario.geopackage_url:
+        logger.info(
+            "Scenario %s already has a geopackage URL: %s",
+            scenario.pk,
+            scenario.geopackage_url,
+        )
+        return scenario.geopackage_url
+
+    redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
+    temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+    if not temp_folder.exists():
+        temp_folder.mkdir(parents=True)
+    temp_file = temp_folder / f"{scenario.uuid}.gpkg"
+    if temp_file.exists():
+        temp_file.unlink()
+
+    export_scenario_to_geopackage(scenario, temp_file)
+    export_scenario_inputs_to_geopackage(scenario, temp_file)
+    export_scenario_outputs_to_geopackage(scenario, temp_file)
+
+    geopackage_path = f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
+    zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
+    if zip_file.exists():
+        zip_file.unlink()
+    with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(temp_file, arcname=temp_file.name)
+
+    upload_file_via_cli(
+        object_name=geopackage_path.replace(f"gs://{settings.GCS_BUCKET}/", ""),
+        input_file=str(zip_file),
+    )
+
+    temp_file.unlink(missing_ok=True)
+    scenario.geopackage_url = geopackage_path
+    scenario.save(update_fields=["geopackage_url", "updated_at"])
+
+    redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
     return str(geopackage_path)
 

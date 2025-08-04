@@ -20,7 +20,7 @@ import { filter, map, Subject } from 'rxjs';
 import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { ScenarioState } from '../scenario.state';
+import { ScenarioState } from '../../scenario/scenario.state';
 
 type MapLayerData = {
   readonly name: string;
