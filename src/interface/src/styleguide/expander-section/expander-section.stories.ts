@@ -4,7 +4,7 @@ import {
   argsToTemplate,
   moduleMetadata,
 } from '@storybook/angular';
-import { ExpanderSectionComponent } from '@styleguide';
+import { ExpanderSectionComponent } from '../expander-section/expander-section.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { ExpanderItemComponent } from '../expander-item/expander-item.component';
 

@@ -8,7 +8,7 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { ModalComponent } from '@styleguide';
+import { ModalComponent } from './../modal/modal.component';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 import { PendingDialogComponent } from './pending-dialog/pending-dialog.component';
 import { DialogData } from './dialogs';
