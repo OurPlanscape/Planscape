@@ -5,3 +5,4 @@ export * from './scenario.types';
 export * from './user.types';
 export * from './treatment.types';
 export * from './data-sets';
+export * from './form';

@@ -6,7 +6,7 @@ import {
 } from '@storybook/angular';
 
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { Step, StepsComponent } from './steps.component';
+import { StepsComponent } from './steps.component';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
@@ -38,7 +38,7 @@ interface Person {
     </form>
   `,
 })
-class MyStep1Component implements Step {
+class MyStep1Component {
   form: FormGroup = new FormGroup({
     name: new FormControl('', Validators.required),
   });
@@ -53,7 +53,7 @@ class MyStep1Component implements Step {
     </form>
   `,
 })
-class MyStep2Component implements Step {
+class MyStep2Component {
   form: FormGroup = new FormGroup({
     age: new FormControl('', Validators.required),
   });
@@ -69,7 +69,7 @@ class MyStep2Component implements Step {
     </form>
   `,
 })
-class MyStep3Component implements Step {
+class MyStep3Component {
   form: FormGroup = new FormGroup({
     email: new FormControl('', Validators.email),
   });

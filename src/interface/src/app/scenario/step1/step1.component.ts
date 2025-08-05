@@ -12,12 +12,17 @@ import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
-import { CategorizedScenarioGoals, ScenarioGoal } from '@types';
+import {
+  CategorizedScenarioGoals,
+  ControlsOf,
+  ScenarioCreation,
+  ScenarioGoal,
+} from '@types';
 import { map, shareReplay } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { SectionComponent } from '@styleguide';
-import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
+import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 
 @Component({
   selector: 'app-step1',
@@ -39,9 +44,11 @@ import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
   styleUrl: './step1.component.scss',
 })
 export class Step1Component {
-  form = new FormGroup({
+  form = new FormGroup<ControlsOf<Partial<ScenarioCreation>>>({
     configuration: new FormGroup({
-      stand_size: new FormControl(null, [Validators.required]),
+      stand_size: new FormControl<STAND_SIZE | null>(null, [
+        Validators.required,
+      ]),
     }),
     treatment_goal: new FormControl(null, [Validators.required]),
   });

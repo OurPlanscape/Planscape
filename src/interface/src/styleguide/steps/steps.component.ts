@@ -14,10 +14,6 @@ import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
 import { ButtonComponent } from '../button/button.component';
 
-export interface Step {
-  form: FormGroup;
-}
-
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).
  * Similar to the Angular Material component, it manages flow based on individual
