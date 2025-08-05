@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Collection, Optional
 
 from collaboration.models import UserObjectRole
+from core.gcs import create_download_url
 from core.models import (
     AliveObjectsManager,
     CreatedAtMixin,
@@ -11,7 +12,6 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
-from core.gcs import create_download_url
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -235,15 +235,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[
-        DataLayer, models.Model
-    ] = models.ManyToManyField(
-        to=DataLayer,
-        through="TreatmentGoalUsesDataLayer",
-        through_fields=(
-            "treatment_goal",
-            "datalayer",
-        ),
+    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
+        models.ManyToManyField(
+            to=DataLayer,
+            through="TreatmentGoalUsesDataLayer",
+            through_fields=(
+                "treatment_goal",
+                "datalayer",
+            ),
+        )
     )
 
     geometry = models.PolygonField(
