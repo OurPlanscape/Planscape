@@ -97,7 +97,6 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
   }
 
   getData() {
-    console.log(this.form.value);
     return this.form.value;
   }
 }

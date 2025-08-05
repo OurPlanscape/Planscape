@@ -1,13 +1,15 @@
-import { Component, ContentChild, Directive } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ContentChild,
+  Directive,
+} from '@angular/core';
 import { CdkStep, CdkStepperModule } from '@angular/cdk/stepper';
 import { FormGroup } from '@angular/forms';
-
-type PartialDeep<T> = {
-  [K in keyof T]?: T[K] extends object ? PartialDeep<T[K]> | null : T[K] | null;
-};
+import { PartialDeep } from '@types';
 
 @Directive({
-  selector: '[sgStepLogic]', // must exist!
+  selector: '[sgStepLogic]',
   standalone: true,
 })
 export abstract class StepDirective<T> {
@@ -25,10 +27,22 @@ export abstract class StepDirective<T> {
   providers: [{ provide: CdkStep, useExisting: StepComponent }],
   standalone: true,
 })
-export class StepComponent<T> extends CdkStep {
+export class StepComponent<T> extends CdkStep implements AfterViewInit {
   @ContentChild(StepDirective) stepLogic?: StepDirective<T>;
+
+  ngAfterViewInit() {
+    if (!this.stepLogic) {
+      throw new Error(
+        'StepComponent: No step logic (StepDirective) was projected into this step.'
+      );
+    }
+  }
 
   getData(): PartialDeep<T> {
     return this.stepLogic?.getData() || {};
+  }
+
+  get form() {
+    return this.stepLogic?.form;
   }
 }

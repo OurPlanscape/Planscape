@@ -25,11 +25,13 @@ import { StepComponent } from './step.component';
  * If you provide a step with a form, it checks its validity to figure out if we can go to the next step.
  * You can make steps optional by setting your own form validity.
  *
+ * This can be used with `cdk-step` or `sg-step` as steps
+ *
  * ```
  * <sg-steps [save]='saveData'>
  *   <cdk-step>Simple step, no form</cdk-step>
  *   <cdk-step [stepControl]='step1.form'><step-1 #step1></step-1></cdk-step>
- *   <cdk-step [stepControl]='step2.form'><step-2 #step2></step-1></cdk-step>
+ *   <sg-step><step-2></step-2></cdk-step>
  * </sg-steps>
  *```
  *
@@ -68,7 +70,10 @@ export class StepsComponent<T> extends CdkStepper {
     const currentStep = this.selected;
 
     // grab the control (formControl) from the selected step
-    const control = currentStep?.stepControl;
+    const control =
+      currentStep instanceof StepComponent
+        ? currentStep.form
+        : currentStep?.stepControl;
 
     // if no control go ahead to the next step
     if (!control) {
@@ -105,7 +110,7 @@ export class StepsComponent<T> extends CdkStepper {
         this.moveNextOrFinish();
       }
     } else {
-      this.selected?.stepControl.markAllAsTouched();
+      control.markAllAsTouched();
     }
   }
 

@@ -105,7 +105,6 @@ export class ScenarioCreationComponent {
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    console.log(data);
     this.config = { ...this.config, ...data };
     return of(true);
   }

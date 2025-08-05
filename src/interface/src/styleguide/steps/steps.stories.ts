@@ -132,9 +132,9 @@ const meta: Meta<StepsComponent<Person>> = {
         Some <br> long <br>  step <br>  that <br>  does <br>  not <br>  have a  <br> form
       </div>
     </cdk-step>
-    <sg-step [stepControl]='step1.form'><sg-step-demo-1 #step1></sg-step-demo-1></sg-step>
-    <sg-step [stepControl]='step3.form'><sg-step-demo-3 #step3></sg-step-demo-3></sg-step>
-    <sg-step [stepControl]='step2.form'><sg-step-demo-2 #step2></sg-step-demo-2></sg-step>
+    <sg-step><sg-step-demo-1></sg-step-demo-1></sg-step>
+    <sg-step><sg-step-demo-3></sg-step-demo-3></sg-step>
+    <sg-step><sg-step-demo-2></sg-step-demo-2></sg-step>
     <cdk-step>Bye</cdk-step>
   </sg-steps>
 </section>`,
