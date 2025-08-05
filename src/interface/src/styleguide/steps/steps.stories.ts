@@ -6,7 +6,7 @@ import {
 } from '@storybook/angular';
 
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { Step, StepsComponent } from './steps.component';
+import { StepsComponent } from './steps.component';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
@@ -17,6 +17,7 @@ import {
 } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { mergeMap, of, throwError, timer } from 'rxjs';
+import { StepComponent, StepDirective } from './step.component';
 
 // interface just for testing
 interface Person {
@@ -27,21 +28,26 @@ interface Person {
 
 @Component({
   selector: 'sg-step-demo-1',
+  providers: [{ provide: StepDirective, useExisting: MyStep1Component }],
   template: `
     <form [formGroup]="form">
       <div>Enter "fail" for validation to fail</div>
       Name : <input type="text" id="name" formControlName="name" />
-      <div *ngIf="!form.valid && form.dirty">not valid</div>
-      <div *ngIf="form.hasError('invalid') && form.dirty">
+      <div *ngIf="!form.valid && form.touched">not valid</div>
+      <div *ngIf="form.hasError('invalid') && form.touched">
         {{ form.getError('invalid') }}
       </div>
     </form>
   `,
 })
-class MyStep1Component implements Step {
+class MyStep1Component extends StepDirective<Person> {
   form: FormGroup = new FormGroup({
     name: new FormControl('', Validators.required),
   });
+
+  getData(): Partial<Person> {
+    return this.form.value;
+  }
 }
 
 @Component({
@@ -49,14 +55,18 @@ class MyStep1Component implements Step {
   template: `
     <form [formGroup]="form">
       Age : <input type="text" id="name" formControlName="age" />
-      <div *ngIf="!form.valid && form.dirty">not valid</div>
+      <div *ngIf="!form.valid && form.touched">not valid</div>
     </form>
   `,
 })
-class MyStep2Component implements Step {
+class MyStep2Component extends StepDirective<Person> {
   form: FormGroup = new FormGroup({
     age: new FormControl('', Validators.required),
   });
+
+  getData(): Partial<Person> {
+    return this.form.value;
+  }
 }
 
 @Component({
@@ -65,14 +75,18 @@ class MyStep2Component implements Step {
     <form [formGroup]="form">
       email (optional) :
       <input type="text" id="email" formControlName="email" />
-      <div *ngIf="!form.valid && form.dirty">not valid</div>
+      <div *ngIf="!form.valid && form.touched">not valid</div>
     </form>
   `,
 })
-class MyStep3Component implements Step {
+class MyStep3Component extends StepDirective<Person> {
   form: FormGroup = new FormGroup({
     email: new FormControl('', Validators.email),
   });
+
+  getData(): Partial<Person> {
+    return this.form.value;
+  }
 }
 
 const meta: Meta<StepsComponent<Person>> = {
@@ -84,7 +98,12 @@ const meta: Meta<StepsComponent<Person>> = {
     }),
     moduleMetadata({
       declarations: [MyStep1Component, MyStep2Component, MyStep3Component],
-      imports: [CommonModule, CdkStepperModule, ReactiveFormsModule],
+      imports: [
+        CommonModule,
+        CdkStepperModule,
+        ReactiveFormsModule,
+        StepComponent,
+      ],
     }),
   ],
   tags: ['autodocs'],
@@ -111,9 +130,9 @@ const meta: Meta<StepsComponent<Person>> = {
         Some <br> long <br>  step <br>  that <br>  does <br>  not <br>  have a  <br> form
       </div>
     </cdk-step>
-    <cdk-step [stepControl]='step1.form'><sg-step-demo-1 #step1></sg-step-demo-1></cdk-step>
-    <cdk-step [stepControl]='step3.form'><sg-step-demo-3 #step3></sg-step-demo-3></cdk-step>
-    <cdk-step [stepControl]='step2.form'><sg-step-demo-2 #step2></sg-step-demo-2></cdk-step>
+    <sg-step [stepControl]='step1.form'><sg-step-demo-1 #step1></sg-step-demo-1></sg-step>
+    <sg-step [stepControl]='step3.form'><sg-step-demo-3 #step3></sg-step-demo-3></sg-step>
+    <sg-step [stepControl]='step2.form'><sg-step-demo-2 #step2></sg-step-demo-2></sg-step>
     <cdk-step>Bye</cdk-step>
   </sg-steps>
 </section>`,

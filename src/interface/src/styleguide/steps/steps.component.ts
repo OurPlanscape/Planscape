@@ -1,10 +1,12 @@
 import {
   ChangeDetectorRef,
   Component,
+  ContentChildren,
   ElementRef,
   EventEmitter,
   Input,
   Output,
+  QueryList,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -13,10 +15,7 @@ import { Observable, take } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
 import { ButtonComponent } from '../button/button.component';
-
-export interface Step {
-  form: FormGroup;
-}
+import { StepComponent } from './step.component';
 
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).
@@ -56,6 +55,8 @@ export class StepsComponent<T> extends CdkStepper {
   // event that emits after saving the last step
   @Output() finished = new EventEmitter();
 
+  @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent>;
+
   // flag to show loader
   savingStep = false;
 
@@ -64,6 +65,12 @@ export class StepsComponent<T> extends CdkStepper {
   }
 
   goNext(): void {
+    const currentStep = this.selected;
+    if (currentStep instanceof StepComponent) {
+      const data = currentStep.getData();
+      console.log('Current step data:', data);
+    }
+
     // grab the control (formControl) from the selected step
     const control = this.selected?.stepControl;
 
@@ -77,6 +84,7 @@ export class StepsComponent<T> extends CdkStepper {
     }
 
     if (control.valid) {
+      console.log('is valid?');
       // async
       if (this.save) {
         this.savingStep = true;
@@ -98,6 +106,7 @@ export class StepsComponent<T> extends CdkStepper {
         this.moveNextOrFinish();
       }
     } else {
+      console.log('is NOT  valid?');
       this.selected?.stepControl.markAllAsTouched();
     }
   }
