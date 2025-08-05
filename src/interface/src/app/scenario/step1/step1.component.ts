@@ -31,7 +31,6 @@ import { FeatureService } from 'src/app/features/feature.service';
   standalone: true,
   imports: [
     CommonModule,
-    SectionComponent,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
@@ -39,7 +38,6 @@ import { FeatureService } from 'src/app/features/feature.service';
     SectionComponent,
     MatFormFieldModule,
     MatSelectModule,
-    ReactiveFormsModule,
     KeyValuePipe,
   ],
   providers: [{ provide: StepDirective, useExisting: Step1Component }],
@@ -48,11 +46,9 @@ import { FeatureService } from 'src/app/features/feature.service';
 })
 export class Step1Component extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
-    configuration: new FormGroup({
-      stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
-        Validators.required,
-      ]),
-    }),
+    stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
+      Validators.required,
+    ]),
     treatment_goal: new FormControl<number | undefined>(undefined, [
       Validators.required,
     ]),
