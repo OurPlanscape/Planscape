@@ -52,6 +52,7 @@ class MyStep1Component extends StepDirective<Person> {
 
 @Component({
   selector: 'sg-step-demo-2',
+  providers: [{ provide: StepDirective, useExisting: MyStep2Component }],
   template: `
     <form [formGroup]="form">
       Age : <input type="text" id="name" formControlName="age" />
@@ -71,6 +72,7 @@ class MyStep2Component extends StepDirective<Person> {
 
 @Component({
   selector: 'sg-step-demo-3',
+  providers: [{ provide: StepDirective, useExisting: MyStep3Component }],
   template: `
     <form [formGroup]="form">
       email (optional) :

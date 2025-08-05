@@ -55,7 +55,7 @@ export class StepsComponent<T> extends CdkStepper {
   // event that emits after saving the last step
   @Output() finished = new EventEmitter();
 
-  @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent>;
+  @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
   // flag to show loader
   savingStep = false;
@@ -66,13 +66,9 @@ export class StepsComponent<T> extends CdkStepper {
 
   goNext(): void {
     const currentStep = this.selected;
-    if (currentStep instanceof StepComponent) {
-      const data = currentStep.getData();
-      console.log('Current step data:', data);
-    }
 
     // grab the control (formControl) from the selected step
-    const control = this.selected?.stepControl;
+    const control = currentStep?.stepControl;
 
     // if no control go ahead to the next step
     if (!control) {
@@ -83,12 +79,15 @@ export class StepsComponent<T> extends CdkStepper {
       this.outerForm.markAllAsTouched();
     }
 
-    if (control.valid) {
-      console.log('is valid?');
+    if (currentStep && control.valid) {
       // async
       if (this.save) {
+        const data =
+          currentStep instanceof StepComponent
+            ? currentStep.getData()
+            : control.value;
         this.savingStep = true;
-        this.save(control.value)
+        this.save(data)
           .pipe(take(1))
           .subscribe({
             next: () => {
@@ -106,7 +105,6 @@ export class StepsComponent<T> extends CdkStepper {
         this.moveNextOrFinish();
       }
     } else {
-      console.log('is NOT  valid?');
       this.selected?.stepControl.markAllAsTouched();
     }
   }
