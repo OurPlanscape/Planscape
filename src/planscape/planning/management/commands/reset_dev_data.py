@@ -10,13 +10,13 @@ class Command(BaseCommand):
     help = "Deletes development-only data for specific models across planning, datasets, and organizations apps."
 
     def handle(self, *args, **kwargs):
-        if settings.ENV != "local":
+        if settings.ENV == "local":
+            TreatmentGoalUsesDataLayer.objects.all().delete()
+            TreatmentGoal.objects.all().delete()
+            DataLayer.objects.all().delete()
+            Category.objects.all().delete()
+            Dataset.objects.all().delete()
+        else:
             raise CommandError(
                 f"This command can only be run in local environment. Current ENV={settings.ENV}"
             )
-
-        TreatmentGoalUsesDataLayer.objects.all().delete()
-        TreatmentGoal.objects.all().delete()
-        DataLayer.objects.all().delete()
-        Category.objects.all().delete()
-        Dataset.objects.all().delete()

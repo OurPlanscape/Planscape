@@ -198,9 +198,9 @@ docker-migrate:
 
 # Reset relevant tables and load development fixture data
 load-dev-data:
-	docker compose exec web bash -c "cd /usr/src/app/src/planscape && \
-	python manage.py reset_dev_data && \
-	python manage.py loaddata planning/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json"
+	load-dev-data:
+	./src/planscape/bin/run.sh python manage.py reset_dev_data
+	./src/planscape/bin/run.sh python manage.py loaddata datasets/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate load-dev-data
 
