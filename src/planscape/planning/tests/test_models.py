@@ -1,5 +1,6 @@
-from django.test import TestCase
 from django.db.utils import IntegrityError
+from django.test import TestCase
+
 from planning.models import PlanningArea, RegionChoices
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory

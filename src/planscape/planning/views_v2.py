@@ -3,7 +3,6 @@ import logging
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
-from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, pagination, permissions, status, viewsets
@@ -17,6 +16,7 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioFilter,
     ScenarioOrderingFilter,
+    TreatmentGoalFilter,
 )
 from planning.models import PlanningArea, ProjectArea, Scenario, TreatmentGoal
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
@@ -41,7 +41,6 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
-    export_to_geopackage,
 )
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -300,6 +299,7 @@ class TreatmentGoalViewSet(
 
     queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
+    filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
