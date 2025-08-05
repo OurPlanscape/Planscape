@@ -36,11 +36,7 @@
       (finished)="onFinish()"
       [outerForm]="form">
       <cdk-step [stepControl]="step1.form">
-        <!-- Treatment goals selector -->
-        <app-treatment-goals #step1></app-treatment-goals>
-
-        <!-- Stand size configuration -->
-        <app-stand-size></app-stand-size>
+        <app-step1 #step1></app-step1>
       </cdk-step>
       <cdk-step>Step 2</cdk-step>
       <cdk-step>Step 3</cdk-step>

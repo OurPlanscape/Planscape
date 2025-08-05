@@ -1,3 +1,5 @@
+import { STAND_SIZE } from '../plan/plan-helpers';
+
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 
@@ -58,6 +60,32 @@ export interface ScenarioResult {
     features: FeatureCollection[]; // TODO this is actually Features[]
     type: string;
   };
+}
+
+export interface ScenarioCreation {
+  // TODO: Add the keys for the steps: 2, 3, 4.
+  configuration: {
+    stand_size: STAND_SIZE;
+  };
+  treatment_goal: number;
+  name: string;
+}
+
+export interface ScenarioConfigPayload {
+  estimated_cost: number;
+  excluded_areas: number[];
+  max_area: number;
+  max_slope: number | null;
+  min_distance_from_road: number | null;
+  stand_size: STAND_SIZE;
+}
+
+export interface ScenarioCreationPayload {
+  configuration: ScenarioConfigPayload;
+  name: string;
+  planning_area: number;
+  status: ScenarioResultStatus;
+  treatment_goal: number;
 }
 
 export type ScenarioResultStatus =

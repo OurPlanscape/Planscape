@@ -9,8 +9,7 @@ import { firstValueFrom, Observable, of } from 'rxjs';
 import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
-import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
-import { StandSizeComponent } from '../stand-size/stand-size.component';
+import { Step1Component } from '../step1/step1.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -32,11 +31,7 @@ describe('ScenarioCreationComponent', () => {
           paths$: of([]),
         }),
       ],
-      declarations: [
-        MockDeclarations(DataLayersComponent),
-        MockDeclarations(TreatmentGoalsComponent),
-        MockDeclarations(StandSizeComponent),
-      ],
+      declarations: [MockDeclarations(DataLayersComponent, Step1Component)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioCreationComponent);

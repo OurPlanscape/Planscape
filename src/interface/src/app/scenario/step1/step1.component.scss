@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'mixins';
 
 .mat-radio-group {
   display: flex;
@@ -18,9 +19,9 @@
 
   ::ng-deep {
     .long-question-tooltip.mat-tooltip {
-      border: 1px solid #979797;
+      border: 1px solid $color-text-gray;
       border-radius: 11px;
-      background-color: #e6e9f4;
+      background-color: $color-secondary-white;
       color: black;
       font-size: 14px;
       padding: 8px;
@@ -33,7 +34,7 @@
   flex-direction: row;
   width: auto;
   margin: 5px;
-  background: white;
+  background: $color-white;
 }
 
 .goal-panel-header {
@@ -87,4 +88,44 @@ sg-section {
 
 .error-message {
   color: $color-error;
+  margin: 0;
+}
+
+.input-field {
+  margin-top: 10px;
+}
+
+.error {
+  color: $color-error;
+}
+
+.stand-size {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.stand-size ::ng-deep .mat-mdc-form-field-error-wrapper {
+  padding: 0;
+}
+
+.option-text {
+  width: 100%;
+  margin: 0;
+}
+
+.option-description {
+  @include xs-label();
+  color: $color-text-gray;
+}
+
+.stand-size ::ng-deep .mat-mdc-form-field-required-marker {
+  color: $color-error;
+}
+
+.stand-size ::ng-deep .mdc-floating-label {
+  height: 100%;
+}
+
+.stand-label {
+  margin: 0 0 8px 0;
 }

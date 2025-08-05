@@ -1,5 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { SharedModule } from '@shared';
@@ -7,17 +13,17 @@ import { ScenarioGoal } from '@types';
 import { TreatmentGoalsService } from '@services';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentGoalsComponent } from './treatment-goals.component';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { MOCK_SCENARIO } from '@services/mocks';
+import { Step1Component } from './step1.component';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
 
-describe('TreatmentGoalsComponent', () => {
-  let component: TreatmentGoalsComponent;
-  let fixture: ComponentFixture<TreatmentGoalsComponent>;
+describe('Step1Component', () => {
+  let component: Step1Component;
+  let fixture: ComponentFixture<Step1Component>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -27,7 +33,7 @@ describe('TreatmentGoalsComponent', () => {
         LegacyMaterialModule,
         ReactiveFormsModule,
         SharedModule,
-        TreatmentGoalsComponent,
+        Step1Component,
       ],
       declarations: [ScenarioTooltipMockComponent],
       providers: [
@@ -41,12 +47,14 @@ describe('TreatmentGoalsComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TreatmentGoalsComponent);
+    fixture = TestBed.createComponent(Step1Component);
     component = fixture.componentInstance;
 
-    const fb = fixture.componentRef.injector.get(FormBuilder);
-    component.form = fb.group({
-      selectedQuestion: null,
+    component.form = new FormGroup({
+      configuration: new FormGroup({
+        stand_size: new FormControl(null),
+      }),
+      treatment_goal: new FormControl(null),
     });
     fixture.detectChanges();
   });

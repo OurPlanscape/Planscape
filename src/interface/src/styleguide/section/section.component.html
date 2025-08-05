@@ -3,7 +3,9 @@
   expanded="true"
   [disabled]="!isCollapsible">
   <mat-expansion-panel-header class="panel-header">
-    <div class="title-txt">{{ headline }}</div>
+    <div class="title-txt">
+      {{ headline }}<span class="required" *ngIf="required"> *</span>
+    </div>
     <button
       *ngIf="tooltipContent"
       (click)="stopPropagation($event)"

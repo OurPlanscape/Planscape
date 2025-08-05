@@ -1,5 +1,7 @@
+<!-- Treatment goals -->
 <sg-section
   headline="Treatment Goals"
+  [required]="true"
   tooltipContent="Treatment goals allow you to select one goal that will generate a
           scenario based on your landscape. Each of the goals uses a different
           set of input variables, thresholds and primary metrics to generate
@@ -11,17 +13,17 @@
     <span
       class="error-message"
       *ngIf="
-        form.get('selectedQuestion')?.touched &&
-        form.get('selectedQuestion')?.hasError('required')
+        form.get('treatment_goal')?.touched &&
+        form.get('treatment_goal')?.hasError('required')
       ">
-      Treatment goal is required
+      Please select a treatment goal to continue
     </span>
     <mat-radio-group
       name="treatmentGoalSelect"
       aria-label="Select an option"
       class="layer-radio-group"
       color="primary"
-      [formControlName]="'selectedQuestion'">
+      [formControlName]="'treatment_goal'">
       <div>
         <div
           class="goal-loader"
@@ -57,5 +59,42 @@
         </ng-container>
       </div>
     </mat-radio-group>
+  </form>
+</sg-section>
+
+<!-- Stand size -->
+<sg-section headline="Stand Size">
+  <p class="stand-label">
+    Choose the stand size ForSys will use to evaluate your planning area. Stands
+    are standarized hexagonal units that represent potential treatment areas.
+  </p>
+
+  <form [formGroup]="form.controls['configuration']">
+    <mat-form-field class="stand-size" appearance="outline">
+      <mat-label> Stand Size</mat-label>
+      <mat-select formControlName="stand_size">
+        <mat-option
+          *ngFor="let size of standSizeOptions | keyvalue: reverseAlpha"
+          [value]="size.key">
+          <p class="option-text">
+            {{ size.value.label + ' (' + size.value.acres + ' acres)' }}
+          </p>
+          <p
+            class="option-text option-description"
+            *ngIf="size.value.description">
+            {{ size.value.description }}
+          </p>
+        </mat-option>
+      </mat-select>
+      <mat-error
+        *ngIf="
+          form.controls['configuration']?.get('stand_size')?.touched &&
+          form.controls['configuration']
+            ?.get('stand_size')
+            ?.hasError('required')
+        ">
+        Stand size is required
+      </mat-error>
+    </mat-form-field>
   </form>
 </sg-section>
