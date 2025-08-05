@@ -10,6 +10,7 @@ RUN apt-get update && \
     libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
+    libglpk-dev \
     postgresql-client
 
 RUN mkdir -p /usr/src/app
@@ -22,4 +23,10 @@ COPY .env /usr/src/app/
 COPY src/forsys/server.R /usr/src/app/
 COPY src/planscape/rscripts/* /usr/src/app/
 
+COPY src/forsys/run_forsys_server.sh /usr/local/bin/run_forsys_server.sh
+RUN chmod +x /usr/local/bin/run_forsys_server.sh
+
 EXPOSE 8000
+
+ENTRYPOINT ["/usr/local/bin/run_forsys_server.sh"]
+CMD ["8000"]
