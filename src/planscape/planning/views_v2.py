@@ -33,6 +33,7 @@ from planning.serializers import (
     ScenarioV2Serializer,
     TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
+    PatchConfigurationV2Serializer,
 )
 from planning.services import (
     create_planning_area,
@@ -226,6 +227,49 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         return (
             self.serializer_classes.get(self.action, self.serializer_class)
             or self.serializer_class
+        )
+
+    @extend_schema(
+        methods=["PATCH"],
+        request=PatchConfigurationV2Serializer,
+        responses={200: ScenarioSerializer},
+        description="Partially update Scenario.configuration. Each field is validated independently. Global validation is deferred until the scenario is run.",
+    )
+    @action(methods=["patch"], detail=True, url_path="configuration")
+    def patch_configuration(self, request, pk=None):
+        scenario = self.get_object()
+
+        if not ScenarioViewPermission().has_object_permission(request, self, scenario):
+            return Response(
+                {"error": "Permission denied."}, status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Validate unexpected fields
+        allowed_fields = set(PatchConfigurationV2Serializer().get_fields().keys())
+        unexpected_fields = set(request.data.keys()) - allowed_fields
+        if unexpected_fields:
+            return Response(
+                {"error": f"Unexpected fields: {', '.join(unexpected_fields)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        current_config = scenario.configuration or {}
+
+        serializer = PatchConfigurationV2Serializer(
+            data=request.data, partial=True, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated_config = {**current_config, **serializer.validated_data}
+        scenario.configuration = updated_config
+        scenario.save()
+
+        return Response(
+            {
+                "id": scenario.id,
+                "configuration": scenario.configuration,
+            },
+            status=status.HTTP_200_OK,
         )
 
     @extend_schema(description="Toggle status of a Scenario.")
