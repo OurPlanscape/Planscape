@@ -182,6 +182,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
         "retrieve": ScenarioV2Serializer,
+        "partial_update": PatchConfigurationV2Serializer,
     }
     filterset_class = ScenarioFilter
     filter_backends = [
@@ -229,40 +230,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             or self.serializer_class
         )
 
-    @extend_schema(
-        methods=["PATCH"],
-        request=PatchConfigurationV2Serializer,
-        responses={200: ScenarioSerializer},
-        description="Partially update Scenario.configuration. Each field is validated independently. Global validation is deferred until the scenario is run.",
-    )
-    @action(methods=["patch"], detail=True, url_path="configuration")
-    def patch_configuration(self, request, pk=None):
-        scenario = self.get_object()
-
-        if not ScenarioViewPermission().has_object_permission(request, self, scenario):
-            return Response(
-                {"error": "Permission denied."}, status=status.HTTP_403_FORBIDDEN
-            )
-
-        current_config = scenario.configuration or {}
-
-        serializer = PatchConfigurationV2Serializer(
-            data=request.data, partial=True, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        updated_config = {**current_config, **serializer.validated_data}
-        scenario.configuration = updated_config
-        scenario.save()
-
-        return Response(
-            {
-                "id": scenario.id,
-                "configuration": scenario.configuration,
-            },
-            status=status.HTTP_200_OK,
-        )
-
     @extend_schema(description="Toggle status of a Scenario.")
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, pk=None):
@@ -284,6 +251,15 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_201_CREATED,
         )
+
+    @extend_schema(description="Partially update a Scenario.")
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        response_serializer = ScenarioV2Serializer(instance)
+        return Response(response_serializer.data)
 
 
 # TODO: migrate this to an action inside the planning area viewset

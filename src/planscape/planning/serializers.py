@@ -428,7 +428,6 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
 
 class PatchConfigurationV2Serializer(ConfigurationV2Serializer):
     def validate(self, attrs):
-        # Forbid unexpected fields
         allowed_fields = set(self.get_fields().keys())
         incoming_fields = set(self.initial_data.keys())
         unexpected_fields = incoming_fields - allowed_fields
@@ -437,6 +436,15 @@ class PatchConfigurationV2Serializer(ConfigurationV2Serializer):
                 {"error": f"Unexpected fields: {', '.join(unexpected_fields)}"}
             )
         return super().validate(attrs)
+
+    def update(self, instance, validated_data):
+        instance.configuration = {**(instance.configuration or {}), **validated_data}
+        instance.save(update_fields=["configuration"])
+        return instance
+
+    def to_representation(self, instance):
+        config = instance.configuration or {}
+        return {key: config.get(key) for key in self.get_fields().keys()}
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):

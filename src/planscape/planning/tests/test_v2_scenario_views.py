@@ -664,8 +664,10 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory()
         self.other_user = UserFactory()
+
         self.planning_area = PlanningAreaFactory(user=self.user)
         self.treatment_goal = TreatmentGoalFactory()
+
         self.scenario = ScenarioFactory(
             user=self.user,
             planning_area=self.planning_area,
@@ -675,9 +677,8 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
                 "max_budget": 1000,
             },
         )
-        self.url = reverse(
-            "api:planning:scenarios-patch-configuration", args=[self.scenario.pk]
-        )
+
+        self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
 
     def test_patch_scenario_configuration_success(self):
         payload = {
@@ -690,36 +691,34 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.url, payload, format="json")
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
-        self.assertEqual(response.data["configuration"]["max_budget"], 20000)
-        self.assertEqual(response.data["configuration"]["min_distance_from_road"], 100)
-        self.assertEqual(response.data["configuration"]["stand_size"], "SMALL")
-        self.assertEqual(response.data["configuration"]["max_project_count"], 5)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        config = response.data["configuration"]
+        self.assertEqual(config.get("max_budget"), 20000)
+        self.assertEqual(config.get("min_distance_from_road"), 100)
+        self.assertEqual(config.get("stand_size"), "SMALL")
+        self.assertEqual(config.get("max_project_count"), 5)
 
     def test_patch_scenario_configuration_invalid_field(self):
-        url = self.url
         payload = {"invalid_field": 123}
 
         self.client.force_authenticate(self.user)
-        response = self.client.patch(url, payload, format="json")
+        response = self.client.patch(self.url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        error_messages = [str(error) for error in response.data["error"]]
+        error_messages = [str(error) for error in response.data.get("error", [])]
 
         self.assertTrue(any("Unexpected fields" in msg for msg in error_messages))
         self.assertTrue(any("invalid_field" in msg for msg in error_messages))
 
     def test_patch_scenario_configuration_unauthenticated(self):
         payload = {"max_budget": 5000}
-
         response = self.client.patch(self.url, payload, format="json")
-
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_patch_scenario_configuration_forbidden_for_other_user(self):
         scenario = ScenarioFactory(user=self.other_user)
-        url = reverse("api:planning:scenarios-patch-configuration", args=[scenario.pk])
+        url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
         payload = {"max_budget": 100000}
 
         # Authenticate as a user who does not own the scenario
@@ -730,11 +729,9 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
-        invalid_url = reverse(
-            "api:planning:scenarios-patch-configuration", args=[999999]
-        )
-
+        invalid_url = reverse("api:planning:scenarios-detail", args=[999999])
         self.client.force_authenticate(self.user)
-        response = self.client.patch(invalid_url, {"max_budget": 5000}, format="json")
+        payload = {"max_budget": 5000}
 
+        response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
