@@ -690,10 +690,6 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.url, payload, format="json")
 
-        # Temporary debug logs
-        print("Status Code:", response.status_code)
-        print("Response Data:", response.data)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
         self.assertEqual(response.data["configuration"]["max_budget"], 20000)
         self.assertEqual(response.data["configuration"]["min_distance_from_road"], 100)
