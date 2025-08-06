@@ -1,3 +1,7 @@
+@import "mixins";
+@import "colors";
+
+
 :host {
   display: flex;
   flex-direction: column;
@@ -14,8 +18,16 @@
   display: flex;
   gap: 8px;
   background-color: white;
-  border-top: 1px solid #e1e1e1;
+  border-top: 1px solid $color-fields-gray;
   padding: 16px;
   align-items: center;
   justify-content: flex-end;
+}
+
+.step-count {
+  color: $color-md-gray;
+  margin-right: auto;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
