@@ -1,9 +1,9 @@
 import logging
 
 import rasterio
-from gis.core import get_storage_session
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from gis.core import get_storage_session
 from stands.models import Stand
 from stands.services import calculate_stand_zonal_stats
 from utils.cli_utils import call_forsys
@@ -114,5 +114,6 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
         raise ValueError(
             f"Scenario {scenario_id} is not ready for geopackage generation."
         )
+
     geopackage_path = export_to_geopackage(scenario)
     log.info(f"Geopackage generated at {geopackage_path}")

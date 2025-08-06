@@ -4,9 +4,6 @@ import logging
 import math
 import os
 import zipfile
-
-from cacheops import redis_client
-
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
@@ -14,9 +11,10 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
+from cacheops import redis_client
 from celery import chord
-from core.gcs import upload_file_via_cli
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.gcs import upload_file_via_cli
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -33,6 +31,7 @@ from utils.geometry import to_multi
 
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
+    GeoPackageStatus,
     PlanningArea,
     ProjectArea,
     Scenario,
@@ -144,6 +143,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         "user": user,
         "origin": ScenarioOrigin.SYSTEM,
         "result_status": ScenarioResultStatus.PENDING,
+        "geopackage_status": GeoPackageStatus.PENDING,
         "treatment_goal": treatment_goal,
         **kwargs,
     }
@@ -682,51 +682,62 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
 
 
 def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
-    is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
-    if is_exporting:
-        raise ValueError(
-            f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
+    try:
+        is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
+        if is_exporting:
+            raise ValueError(
+                f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
+            )
+
+        if not regenerate and scenario.geopackage_url:
+            logger.info(
+                "Scenario %s already has a geopackage URL: %s",
+                scenario.pk,
+                scenario.geopackage_url,
+            )
+            return scenario.geopackage_url
+
+        redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        if not temp_folder.exists():
+            temp_folder.mkdir(parents=True)
+        temp_file = temp_folder / f"{scenario.uuid}.gpkg"
+        if temp_file.exists():
+            temp_file.unlink()
+
+        scenario.geopackage_status = GeoPackageStatus.PROCESSING
+        scenario.save()
+
+        export_scenario_to_geopackage(scenario, temp_file)
+        export_scenario_inputs_to_geopackage(scenario, temp_file)
+        export_scenario_outputs_to_geopackage(scenario, temp_file)
+
+        geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
+        zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
+        if zip_file.exists():
+            zip_file.unlink()
+        with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.write(temp_file, arcname=temp_file.name)
+
+        upload_file_via_cli(
+            object_name=geopackage_path.replace(
+                f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
+            ),
+            input_file=str(zip_file),
         )
 
-    if not regenerate and scenario.geopackage_url:
-        logger.info(
-            "Scenario %s already has a geopackage URL: %s",
-            scenario.pk,
-            scenario.geopackage_url,
-        )
-        return scenario.geopackage_url
+        temp_file.unlink(missing_ok=True)
+        scenario.geopackage_url = geopackage_path
+        scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
+        scenario.save(update_fields=["geopackage_url", "updated_at"])
 
-    redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
-    temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
-    if not temp_folder.exists():
-        temp_folder.mkdir(parents=True)
-    temp_file = temp_folder / f"{scenario.uuid}.gpkg"
-    if temp_file.exists():
-        temp_file.unlink()
+        redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
-    export_scenario_to_geopackage(scenario, temp_file)
-    export_scenario_inputs_to_geopackage(scenario, temp_file)
-    export_scenario_outputs_to_geopackage(scenario, temp_file)
-
-    geopackage_path = f"gs://{settings.GCS_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
-    zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
-    if zip_file.exists():
-        zip_file.unlink()
-    with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
-        zipf.write(temp_file, arcname=temp_file.name)
-
-    upload_file_via_cli(
-        object_name=geopackage_path.replace(f"gs://{settings.GCS_BUCKET}/", ""),
-        input_file=str(zip_file),
-    )
-
-    temp_file.unlink(missing_ok=True)
-    scenario.geopackage_url = geopackage_path
-    scenario.save(update_fields=["geopackage_url", "updated_at"])
-
-    redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
-
-    return str(geopackage_path)
+        return str(geopackage_path)
+    except Exception:
+        logger.error("Failed to export to geopackage")
+        scenario.geopackage_url = None
+        scenario.geopackage_status = GeoPackageStatus.FAILED
 
 
 @transaction.atomic()
