@@ -445,7 +445,10 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_geopackage_url(self) -> Optional[str]:
         if not self.geopackage_url:
             return None
-        signed_url = create_download_url(self.geopackage_url)
+        signed_url = create_download_url(
+            self.geopackage_url,
+            bucket=settings.GCS_MEDIA_BUCKET,
+        )
         if signed_url is None:
             create_download_url.invalidate(self.geopackage_url)  # type: ignore
         return signed_url
