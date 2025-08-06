@@ -19,7 +19,12 @@ import {
   skip,
   switchMap,
 } from 'rxjs';
-import { Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
+import {
+  GeoPackageStatus,
+  Scenario,
+  ScenarioResult,
+  ScenarioResultStatus,
+} from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -76,6 +81,7 @@ export class CreateScenariosComponent implements OnInit {
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
+  geoPackageStatus: GeoPackageStatus = null;
   geoPackageURL: string | null = null;
   priorities: string[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
@@ -184,6 +190,19 @@ export class CreateScenariosComponent implements OnInit {
       ]);
   }
 
+  private shouldPollForGeoPackage() {
+    if (!this.geoPackageStatus) {
+      return false; // if this is null, we can assume there will be no geopackage, ever
+    }
+    if (
+      this.geoPackageStatus === 'PENDING' ||
+      this.geoPackageStatus === 'PROCESSING'
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   pollForChanges() {
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
@@ -192,7 +211,7 @@ export class CreateScenariosComponent implements OnInit {
         if (
           this.scenarioState === 'PENDING' ||
           this.scenarioState === 'RUNNING' ||
-          !this.geoPackageURL
+          this.shouldPollForGeoPackage()
         ) {
           this.loadConfig();
         }
@@ -232,8 +251,20 @@ export class CreateScenariosComponent implements OnInit {
           this.tabAnimation = this.tabAnimationOptions.on;
         }
 
+        if (scenario.geopackage_status) {
+          this.geoPackageStatus = scenario.geopackage_status ?? null;
+          if (this.geoPackageStatus === 'FAILED') {
+            this.matSnackBar.open(
+              `Error: GeoPackage generation failed.`,
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+          }
+        }
+
         if (scenario.geopackage_url) {
-          this.geoPackageURL = scenario.geopackage_url ?? null;
+          this.geoPackageStatus === 'SUCCEEDED';
+          this.geoPackageURL = scenario.geopackage_url;
         }
 
         //setting name
@@ -268,6 +299,8 @@ export class CreateScenariosComponent implements OnInit {
         ...prioritiesData,
       },
       treatment_goal: prioritiesData.treatment_question as any,
+      geopackage_status: null,
+      geopackage_url: null,
     };
   }
 

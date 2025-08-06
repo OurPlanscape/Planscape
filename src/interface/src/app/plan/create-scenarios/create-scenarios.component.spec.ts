@@ -8,7 +8,7 @@ import {
 } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { ScenarioResultStatus } from '@types';
+import { GeoPackageStatus, ScenarioResultStatus } from '@types';
 
 import { PlanModule } from '../plan.module';
 import {
@@ -89,7 +89,6 @@ describe('CreateScenariosComponent', () => {
         }),
       ],
     }).compileComponents();
-
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
   });
@@ -256,7 +255,7 @@ describe('CreateScenariosComponent', () => {
       fixture.destroy();
     }));
 
-    it('should not poll for changes if status is not pending', fakeAsync(() => {
+    it('should not poll for changes if status is not pending and no geopackage is in progess', fakeAsync(() => {
       setupPollingScenario(component, 'SUCCESS');
       fixture.detectChanges();
       tick();
@@ -272,11 +271,77 @@ describe('CreateScenariosComponent', () => {
       discardPeriodicTasks();
       fixture.destroy();
     }));
+
+    it('should poll for geopackage if results are done, but geopackage is pending ', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS', 'PENDING');
+      fixture.detectChanges();
+      tick();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(2);
+
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('should poll for geopackage if results are done, but geopackage is processing ', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS', 'PROCESSING');
+      fixture.detectChanges();
+      tick();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(2);
+
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('if results are done and geopackage is SUCCEEDED, there should be no polling, and button should be enabled', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS', 'SUCCEEDED');
+      fixture.detectChanges();
+      tick();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+      component.geoPackageURL = 'someurl';
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('should stop polling if results are done and geopackage is FAILED ', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS', 'FAILED');
+      fixture.detectChanges();
+      tick();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
   });
 
   function setupPollingScenario(
     component: CreateScenariosComponent,
-    status: ScenarioResultStatus
+    status: ScenarioResultStatus,
+    geoPackageStatus?: GeoPackageStatus
   ) {
     mockPlan$.next({
       ...mockPlan$.value,
@@ -284,6 +349,7 @@ describe('CreateScenariosComponent', () => {
 
     mockScenario$.next({
       ...mockScenario$.value,
+      geopackage_status: geoPackageStatus,
       scenario_result: {
         ...mockScenario$.value.scenario_result!,
         status,

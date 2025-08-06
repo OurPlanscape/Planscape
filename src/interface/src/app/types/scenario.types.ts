@@ -21,7 +21,8 @@ export interface Scenario {
     name: string;
   };
   version?: string;
-  geopackage_url?: string; // optional: older scenarios may not have this
+  geopackage_status: GeoPackageStatus;
+  geopackage_url: string | null;
 }
 
 /**
@@ -70,6 +71,13 @@ export type ScenarioResultStatus =
   | 'FAILURE' // Run failed;
   | 'PANIC' // Run failed; panic
   | 'TIMED_OUT'; // Run failed; timed out
+
+export type GeoPackageStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | null;
 
 export interface TreatmentGoalConfig {
   category_name?: string;
