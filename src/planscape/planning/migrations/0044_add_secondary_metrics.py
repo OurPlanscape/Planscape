@@ -10,14 +10,14 @@ SECONDARY_LAYER_NAMES = [
     "Structure Exposure Score",
 ]
 
+
 def apply_migration(apps, schema_editor):
-    TreatmentGoal          = apps.get_model("planning",  "TreatmentGoal")
-    TGDataLayerRelation    = apps.get_model("planning",  "TreatmentGoalUsesDataLayer")
-    DataLayer              = apps.get_model("datasets",  "DataLayer")
+    TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
+    TGDataLayerRelation = apps.get_model("planning", "TreatmentGoalUsesDataLayer")
+    DataLayer = apps.get_model("datasets", "DataLayer")
 
     required_layers = {
-        name: DataLayer.objects.get(name__iexact=name)
-        for name in SECONDARY_LAYER_NAMES
+        name: DataLayer.objects.get(name__iexact=name) for name in SECONDARY_LAYER_NAMES
     }
 
     for tg in TreatmentGoal.objects.filter(active=True):
@@ -45,8 +45,8 @@ def reverse_migration(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning",  "0043_scenario_geopackage_status"),
-        ("datasets",  "0018_alter_datalayer_url"),
+        ("planning", "0043_scenario_geopackage_status"),
+        ("datasets", "0018_alter_datalayer_url"),
     ]
 
     operations = [
