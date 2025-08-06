@@ -13,14 +13,14 @@ import {
 } from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
-import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { NotesSidebarState } from '@styleguide';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { ScenarioState } from '../maplibre-map/scenario.state';
+import { ScenarioState } from '../scenario/scenario.state';
 import { getPlanPath } from './plan-helpers';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';

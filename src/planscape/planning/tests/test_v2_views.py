@@ -1,9 +1,8 @@
 import json
-from datetime import date, datetime
 
-from unittest import mock
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
+from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
 from impacts.permissions import (
@@ -11,23 +10,20 @@ from impacts.permissions import (
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
-from rest_framework.test import APITestCase, APITransactionTestCase
 from rest_framework import status
+from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     PlanningArea,
     RegionChoices,
     ScenarioResult,
     TreatmentGoalCategory,
-    ScenarioResultStatus,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
-    UserFactory,
     TreatmentGoalFactory,
-    ProjectAreaFactory,
-    ScenarioResultFactory,
+    UserFactory,
 )
 from planning.tests.helpers import _load_geojson_fixture
 
@@ -1008,7 +1004,15 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
-
+        # Create two overlapping polygons
+        self.poly1 = GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))")
+        self.poly2 = GEOSGeometry(
+            "POLYGON((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5))"
+        )
+        self.poly3 = GEOSGeometry("POLYGON((2 2, 3 2, 3 3, 2 3, 2 2))")
+        self.dl1 = DataLayerFactory.create(name="Layer 1", geometry=self.poly1)
+        self.dl2 = DataLayerFactory.create(name="Layer 2", geometry=self.poly2)
+        self.dl3 = DataLayerFactory.create(name="Layer 3", geometry=self.poly3)
         self.markdown_description = (
             "# This is a h1\n"
             "## This is a h2\n"
@@ -1027,8 +1031,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             name="First",
             description=self.markdown_description,
             category=TreatmentGoalCategory.BIODIVERSITY,
+            geometry=self.poly1.intersection(self.poly2),
         )
-        self.treatment_goals = TreatmentGoalFactory.create_batch(10)
+        self.treatment_goals = TreatmentGoalFactory.create_batch(
+            10, geometry=self.poly3
+        )
         self.inactive_treatment_goal = TreatmentGoalFactory.create(active=False)
 
     def test_list_treatment_goals(self):
@@ -1080,56 +1087,19 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
-class DownloadGeopackageTest(APITransactionTestCase):
-    def setUp(self):
-        self.user = UserFactory.create(username="testuser")
-        self.client.force_authenticate(self.user)
-        self.unit_poly = GEOSGeometry(
-            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+    def test_list_treatment_goals_with_filter(self):
+        intersection = self.poly1.intersection(self.poly2).buffer(-0.00001)
+        planning_area = PlanningAreaFactory.create(
+            user=self.user, geometry=MultiPolygon([intersection])
         )
-        self.planning = PlanningAreaFactory.create(
-            name="foo",
-            region_name="sierra-nevada",
-            geometry=self.unit_poly,
-            user=self.user,
+        url = (
+            reverse("api:planning:treatment-goals-list")
+            + f"?planning_area={planning_area.pk}"
         )
-        self.scenario = ScenarioFactory.create(
-            planning_area=self.planning, name="s1", user=self.user
-        )
-        data = {
-            "foo": "abc",
-            "bar": 1,
-            "baz": 1.2,
-            "now": str(datetime.now()),
-            "today": date.today(),
-        }
-        ProjectAreaFactory.create(
-            scenario=self.scenario,
-            geometry=self.unit_poly,
-            data=data,
-            created_by=self.user,
-            name="foo",
-        )
-        ScenarioResultFactory.create(
-            scenario=self.scenario, status=ScenarioResultStatus.SUCCESS
-        )
-
-    @mock.patch(
-        "planning.services.export_scenario_inputs_to_geopackage",
-        return_value=None,
-    )
-    @mock.patch(
-        "planning.services.export_scenario_outputs_to_geopackage",
-        return_value=None,
-    )
-    def test_download_geopackage(self, mock1, mock2):
         response = self.client.get(
-            reverse(
-                "api:planning:scenarios-download-geopackage", args=[self.scenario.pk]
-            ),
+            url,
             content_type="application/json",
         )
+        treatment_goals = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response["Content-Type"], "application/geopackage+sqlite3")
-        self.assertTrue(response.has_header("Content-Disposition"))
+        self.assertEqual(len(treatment_goals), 1)

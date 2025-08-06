@@ -1,14 +1,12 @@
 import logging
-
-from typing import Optional, Collection, Dict, Any
-
 from pathlib import Path
+from typing import Any, Collection, Dict, Optional
+
+import requests
 from cacheops import cached
 from django.conf import settings
-from rasterio.session import GSSession
-import requests
-
 from google.cloud import storage
+from rasterio.session import GSSession
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +83,7 @@ def create_upload_url(object_name: str) -> Optional[Dict[str, Any]]:
 def create_download_url(
     gs_url: str,
     expiration: int = int(settings.GCS_PUBLIC_URL_TTL),
+    bucket: str = settings.GCS_BUCKET,
 ) -> Optional[str]:
     """
     Creates a download URL for a Google Cloud Storage file.
@@ -99,12 +98,12 @@ def create_download_url(
         raise ValueError(f"Invalid GCS URL: {gs_url}")
 
     storage_client = storage.Client()
-    bucket = storage_client.bucket(settings.GCS_BUCKET)
+    bucket = storage_client.bucket(bucket)
 
-    blob_name = gs_url.replace(f"gs://{settings.GCS_BUCKET}/", "")
+    blob_name = gs_url.replace(f"gs://{bucket}/", "")
     blob = bucket.get_blob(blob_name)
     if not blob:
-        logger.error(f"Blob not found: {blob_name} in bucket {settings.GCS_BUCKET}")
+        logger.error(f"Blob not found: {blob_name} in bucket {bucket}")
         return None
 
     url = blob.generate_signed_url(
@@ -114,6 +113,28 @@ def create_download_url(
     )
 
     return url
+
+
+def upload_file_via_cli(
+    object_name: str,
+    input_file: str,
+    bucket: str = settings.GCS_BUCKET,
+):
+    """
+    Uploads a file to a specified URL using the command line.
+
+    Args:
+        object_name (str): The name of the object in GCS.
+        input_file (str): The path to the local file to upload.
+    """
+    logger.info(f"Uploading file {object_name} via CLI.")
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket)
+
+    blob = bucket.blob(object_name)
+
+    blob.upload_from_filename(input_file)
+    logger.info(f"Uploaded file {object_name} via CLI done.")
 
 
 def upload_file_via_api(

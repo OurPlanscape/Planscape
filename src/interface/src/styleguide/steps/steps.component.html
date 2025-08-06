@@ -5,6 +5,9 @@
 </div>
 
 <div class="actions">
+  <div class="step-count">
+    Step {{ selectedIndex + 1 }} of {{ steps.length }}
+  </div>
   <button sg-button [disabled]="selectedIndex === 0" (click)="goBack()">
     {{ backLabel }}
   </button>
@@ -14,6 +17,6 @@
     variant="primary"
     [disabled]="savingStep"
     [loading]="savingStep">
-    {{ selectedIndex === steps.length - 1 ? finishLabel : continueLabel }}
+    {{ isLastStep ? finishLabel : continueLabel }}
   </button>
 </div>

@@ -24,7 +24,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { FeaturesModule } from '../../features/features.module';
 import { SharedModule } from '@shared';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { MatMenuModule } from '@angular/material/menu';
@@ -37,7 +37,6 @@ import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dia
 import { getMergedRouteData } from '../treatments-routing-data';
 import { TreatmentToPDFService } from '../treatment-to-pdf.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 import { canRunTreatmentAnalysis } from '../../plan/permissions';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';

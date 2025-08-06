@@ -152,7 +152,11 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
       if (!groupedAttainment[key]) {
         groupedAttainment[key] = [];
       }
-      groupedAttainment[key].push(convertTo2DecimalsNumbers(value as number));
+      const _value = Number(value);
+      // Preventing "NaN"
+      if (_value) {
+        groupedAttainment[key].push(convertTo2DecimalsNumbers(_value));
+      }
     }
   });
   return groupedAttainment;
@@ -178,7 +182,7 @@ export function getChartDatasetsFromFeatures(
 }
 
 export function convertTo2DecimalsNumbers(value: number): number {
-  return Number((value as number).toFixed(2));
+  return Number(value.toFixed(2));
 }
 
 export function getProjectAreaLabelsFromFeatures(

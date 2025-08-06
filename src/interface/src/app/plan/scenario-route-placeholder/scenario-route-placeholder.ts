@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { filter } from 'rxjs';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 
 @Component({
   selector: 'app-scenario-route-placeholder',

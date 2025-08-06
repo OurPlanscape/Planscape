@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PlanningAreasSearchComponent } from './planning-areas-search.component';
-import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
+import { SearchBarComponent } from '@styleguide';
 
 describe('PlanningAreasSearchComponent', () => {
   let component: PlanningAreasSearchComponent;

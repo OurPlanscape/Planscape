@@ -10,7 +10,7 @@ import {
   whiteTooltipBaseConfig,
 } from '../../chart-helper';
 import { ChartColors } from '@shared';
-import { ChartComponent } from '../../../styleguide/chart/chart.component';
+import { ChartComponent } from '@styleguide';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
@@ -27,11 +27,17 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     maintainAspectRatio: false,
     scales: {
       x: {
+        type: 'linear',
         title: {
           display: false,
         },
         ticks: {
           maxTicksLimit: 5,
+          maxRotation: 0,
+          minRotation: 0,
+          callback: function (value) {
+            return Number(value).toLocaleString('en-US');
+          },
         },
         grid: {
           color: '#FFFFFFFF',
@@ -40,6 +46,8 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         },
       },
       y: {
+        beginAtZero: true,
+        min: -10,
         title: {
           display: false,
         },
@@ -48,7 +56,10 @@ export class CumulativeAttainmentChartComponent implements OnInit {
           ...getDarkGridConfig(),
         },
         ticks: {
-          maxTicksLimit: 4,
+          maxTicksLimit: 5,
+          callback: (value) => {
+            return value === -10 ? '' : value;
+          },
         },
       },
     },
