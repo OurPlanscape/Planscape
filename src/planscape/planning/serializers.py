@@ -428,8 +428,15 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
 
 class PatchConfigurationV2Serializer(ConfigurationV2Serializer):
     def validate(self, attrs):
-        return attrs
-
+        # Forbid unexpected fields
+        allowed_fields = set(self.get_fields().keys())
+        incoming_fields = set(self.initial_data.keys())
+        unexpected_fields = incoming_fields - allowed_fields
+        if unexpected_fields:
+            raise serializers.ValidationError(
+                {"error": f"Unexpected fields: {', '.join(unexpected_fields)}"}
+            )
+        return super().validate(attrs)
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
