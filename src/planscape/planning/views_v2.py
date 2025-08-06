@@ -244,15 +244,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 {"error": "Permission denied."}, status=status.HTTP_403_FORBIDDEN
             )
 
-        # Validate unexpected fields
-        allowed_fields = set(PatchConfigurationV2Serializer().get_fields().keys())
-        unexpected_fields = set(request.data.keys()) - allowed_fields
-        if unexpected_fields:
-            return Response(
-                {"error": f"Unexpected fields: {', '.join(unexpected_fields)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         current_config = scenario.configuration or {}
 
         serializer = PatchConfigurationV2Serializer(
