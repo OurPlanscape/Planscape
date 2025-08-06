@@ -438,6 +438,7 @@ class PatchConfigurationV2Serializer(ConfigurationV2Serializer):
             )
         return super().validate(attrs)
 
+
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
         help_text="Description of the Treatment Goal on HTML format.",
