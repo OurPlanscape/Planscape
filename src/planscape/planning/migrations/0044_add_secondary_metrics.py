@@ -1,7 +1,5 @@
 from django.db import migrations
 
-SECONDARY_USAGE = "SECONDARY_METRIC"
-
 SECONDARY_LAYER_NAMES = [
     "Probability of Fire Severity - High",
     "Probability of Fire Severity - Low",
@@ -12,35 +10,38 @@ SECONDARY_LAYER_NAMES = [
 
 
 def apply_migration(apps, schema_editor):
+    from planning.models import TreatmentGoalUsageType
+
+    secondary_usage = TreatmentGoalUsageType.SECONDARY_METRIC
     TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
     TGDataLayerRelation = apps.get_model("planning", "TreatmentGoalUsesDataLayer")
     DataLayer = apps.get_model("datasets", "DataLayer")
+    available_layers = {}
+    for name in SECONDARY_LAYER_NAMES:
+        layer = DataLayer.objects.filter(name__iexact=name).first()
+        if layer:
+            available_layers[name] = layer
 
-    required_layers = {
-        name: DataLayer.objects.get(name__iexact=name) for name in SECONDARY_LAYER_NAMES
-    }
+    if not available_layers:
+        return
 
     for tg in TreatmentGoal.objects.filter(active=True):
-        for layer in required_layers.values():
+        for layer in available_layers.values():
             TGDataLayerRelation.objects.get_or_create(
                 treatment_goal=tg,
                 datalayer=layer,
-                usage_type=SECONDARY_USAGE,
+                usage_type=secondary_usage,
                 defaults={"threshold": None},
             )
 
         TGDataLayerRelation.objects.filter(
             treatment_goal=tg,
-            usage_type=SECONDARY_USAGE,
-        ).exclude(datalayer__in=required_layers.values()).delete()
+            usage_type=secondary_usage,
+        ).exclude(datalayer__in=available_layers.values()).delete()
 
 
 def reverse_migration(apps, schema_editor):
-    TGDataLayerRelation = apps.get_model("planning", "TreatmentGoalUsesDataLayer")
-    TGDataLayerRelation.objects.filter(
-        usage_type=SECONDARY_USAGE,
-        datalayer__name__in=SECONDARY_LAYER_NAMES,
-    ).delete()
+    pass
 
 
 class Migration(migrations.Migration):
