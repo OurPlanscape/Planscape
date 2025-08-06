@@ -328,6 +328,13 @@ class TreatmentGoalUsesDataLayer(
         ]
 
 
+class GeoPackageStatus(models.TextChoices):
+    SUCCEEDED = ("SUCCEEDED", "Succeeded")
+    PROCESSING = ("PROCESSING", "Processing")
+    PENDING = ("PENDING", "Pending")
+    FAILED = ("FAILED", "Failed")
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     planning_area_id: int
@@ -374,6 +381,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         choices=ScenarioResultStatus.choices,
         null=True,
         help_text="Result status of the Scenario.",
+    )
+
+    geopackage_status = models.CharField(
+        max_length=32,
+        choices=GeoPackageStatus.choices,
+        null=True,
+        help_text="Result status of the generation of a geopackage.",
     )
 
     treatment_goal = models.ForeignKey(
