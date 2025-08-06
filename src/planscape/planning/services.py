@@ -738,6 +738,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         logger.error("Failed to export to geopackage")
         scenario.geopackage_url = None
         scenario.geopackage_status = GeoPackageStatus.FAILED
+        scenario.save()
 
 
 @transaction.atomic()
