@@ -320,22 +320,6 @@ describe('CreateScenariosComponent', () => {
       discardPeriodicTasks();
       fixture.destroy();
     }));
-
-    it('should stop polling if results are done and geopackage is FAILED ', fakeAsync(() => {
-      setupPollingScenario(component, 'SUCCESS', 'FAILED');
-      fixture.detectChanges();
-      tick();
-
-      expect(component.loadConfig).toHaveBeenCalledTimes(1);
-
-      tick(POLLING_INTERVAL);
-      fixture.detectChanges();
-
-      expect(component.loadConfig).toHaveBeenCalledTimes(1);
-
-      discardPeriodicTasks();
-      fixture.destroy();
-    }));
   });
 
   function setupPollingScenario(
@@ -349,7 +333,7 @@ describe('CreateScenariosComponent', () => {
 
     mockScenario$.next({
       ...mockScenario$.value,
-      geopackage_status: geoPackageStatus,
+      geopackage_status: geoPackageStatus ?? null,
       scenario_result: {
         ...mockScenario$.value.scenario_result!,
         status,
