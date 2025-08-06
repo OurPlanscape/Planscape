@@ -1,0 +1,17 @@
+<sg-modal
+  title="Exit Workflow?"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [centerFooter]="false"
+  [padBody]="true"
+  [showClose]="false"
+  primaryButtonText="Keep Editing"
+  [hasSecondaryButton]="true"
+  secondaryButtonText="Leave"
+  (clickedPrimary)="cancelExit()"
+  (clickedSecondary)="confirmExit()">
+  <div modalBodyContent class="padded">
+    Are you sure you want to exit "Create New Scenario"? All unsaved changes
+    will be lost.
+  </div>
+</sg-modal>
