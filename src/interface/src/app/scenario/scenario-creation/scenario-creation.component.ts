@@ -27,6 +27,10 @@ import {
 } from '@types';
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
+import { CanComponentDeactivate } from '@services/can-deactivate.guard';
+import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
+import { MatDialog } from '@angular/material/dialog';
+import { Observable } from 'rxjs';
 
 enum ScenarioTabs {
   CONFIG,
@@ -51,7 +55,7 @@ enum ScenarioTabs {
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
-export class ScenarioCreationComponent {
+export class ScenarioCreationComponent implements CanComponentDeactivate {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -70,7 +74,8 @@ export class ScenarioCreationComponent {
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
-    private goalOverlayService: GoalOverlayService
+    private goalOverlayService: GoalOverlayService,
+    private dialog: MatDialog
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -79,6 +84,14 @@ export class ScenarioCreationComponent {
           this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
         }
       });
+  }
+
+  canDeactivate(): Observable<boolean> | boolean {
+    if (this.finished) {
+      return true;
+    }
+    const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
+    return dialogRef.afterClosed();
   }
 
   // Async validator
