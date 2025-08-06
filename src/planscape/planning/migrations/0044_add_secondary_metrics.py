@@ -45,7 +45,7 @@ def reverse_migration(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning",  "0042_scenario_geopackage_url"),
+        ("planning",  "0043_scenario_geopackage_status"),
         ("datasets",  "0018_alter_datalayer_url"),
     ]
 
