@@ -29,6 +29,7 @@ import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { ScenarioService } from '@services';
 import { FormControl, FormGroup } from '@angular/forms';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
@@ -45,6 +46,7 @@ describe('CreateScenariosComponent', () => {
         HttpClientTestingModule,
         PlanModule,
         RouterTestingModule,
+        FeaturesModule,
       ],
       declarations: [
         CreateScenariosComponent,

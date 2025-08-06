@@ -14,10 +14,7 @@ import {
   interval,
   map,
   NEVER,
-  Observable,
-  of,
   skip,
-  switchMap,
 } from 'rxjs';
 import { Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -35,6 +32,7 @@ import { MatTabGroup } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { PlanState } from '../plan.state';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
+import { FeatureService } from '../../features/feature.service';
 
 export enum ScenarioTabs {
   CONFIG,
@@ -60,19 +58,8 @@ export class CreateScenariosComponent implements OnInit {
   planId: number = this.route.parent!.snapshot.data['planId'];
   plan$ = this.planState.currentPlan$;
 
-  // Current scenario or null in case we are creating a new scenario
-  scenario$: Observable<Scenario | null> =
-    this.scenarioStateService.currentScenarioId$.pipe(
-      untilDestroyed(this),
-      switchMap((scenarioId) => {
-        return scenarioId
-          ? this.scenarioStateService.currentScenario$
-          : of(null);
-      })
-    );
-
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
-  existingScenarioNames: string[] = [];
+
   forms: FormGroup = this.fb.group({});
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
@@ -115,7 +102,8 @@ export class CreateScenariosComponent implements OnInit {
     private scenarioStateService: ScenarioState,
     private dataLayersStateService: DataLayersStateService,
     private planState: PlanState,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private featureService: FeatureService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -146,12 +134,18 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   async initScenario() {
-    // Creating the forms
-    await this.createForms();
+    if (!this.isScenariosStepsEnabled) {
+      // Creating all the forms
+      await this.createForms();
 
-    // Setting the scenario name validator
-    this.setExistingNameValidator();
-
+      // Setting the scenario name validator
+      this.setExistingNameValidator();
+    } else {
+      // just create the name
+      this.forms = this.fb.group({
+        scenarioName: new FormControl('', [Validators.required]),
+      });
+    }
     // initialize scenario component - if we are creating or viewing a scenario
     this.setScenarioMode();
   }
@@ -230,8 +224,10 @@ export class CreateScenariosComponent implements OnInit {
           this.scenarioNameFormField?.setValue(scenario.name);
         }
 
-        // setting constraints
-        this.constraintsPanelComponent.setFormData(scenario.configuration);
+        if (!this.isScenariosStepsEnabled) {
+          // setting constraints
+          this.constraintsPanelComponent.setFormData(scenario.configuration);
+        }
 
         // setting version
         this.scenarioVersion = scenario.version;
@@ -351,5 +347,9 @@ export class CreateScenariosComponent implements OnInit {
 
   goToPlan() {
     this.router.navigate(['/plan', this.planId]);
+  }
+
+  get isScenariosStepsEnabled() {
+    return this.featureService.isFeatureEnabled('SCENARIO_CONFIGURATION_STEPS');
   }
 }

@@ -38,7 +38,7 @@
     class="scenario-tabs"
     mat-stretch-tabs="false"
     mat-align-tabs="start">
-    <mat-tab label="Configurations">
+    <mat-tab label="Configurations" *ngIf="!isScenariosStepsEnabled">
       <div class="create-scenarios-inner-wrapper">
         <app-set-priorities
           [scenarioStatus]="scenarioState"></app-set-priorities>
