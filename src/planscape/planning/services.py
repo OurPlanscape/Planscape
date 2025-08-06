@@ -730,7 +730,9 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         temp_file.unlink(missing_ok=True)
         scenario.geopackage_url = geopackage_path
         scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
-        scenario.save(update_fields=["geopackage_url", "updated_at"])
+        scenario.save(
+            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
 
         redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
@@ -739,7 +741,9 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         logger.error("Failed to export to geopackage")
         scenario.geopackage_url = None
         scenario.geopackage_status = GeoPackageStatus.FAILED
-        scenario.save()
+        scenario.save(
+            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
 
 
 @transaction.atomic()
