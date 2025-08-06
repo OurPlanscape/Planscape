@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Collection, Optional
 
 from collaboration.models import UserObjectRole
+from core.gcs import create_download_url
 from core.models import (
     AliveObjectsManager,
     CreatedAtMixin,
@@ -11,7 +12,6 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
-from core.gcs import create_download_url
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
