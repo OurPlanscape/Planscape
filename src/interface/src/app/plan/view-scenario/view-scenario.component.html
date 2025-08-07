@@ -7,9 +7,10 @@
     <div class="results-container">
       <ng-container *ngIf="scenarioStatus === 'LOADING'"></ng-container>
       <app-scenario-pending
-        *ngIf="scenarioStatus === 'PENDING'"></app-scenario-pending>
-      <app-scenario-pending
-        *ngIf="scenarioStatus === 'RUNNING'"></app-scenario-pending>
+        *ngIf="
+          scenarioStatus === 'PENDING' || scenarioStatus === 'RUNNING'
+        "></app-scenario-pending>
+
       <app-scenario-results
         *ngIf="scenarioStatus === 'SUCCESS'"
         [scenarioVersion]="(scenarioVersion$ | async) || ''"
@@ -34,7 +35,7 @@
   <mat-tab label="Data Layers">
     <app-data-layers class="white-background"></app-data-layers>
   </mat-tab>
-  <mat-tab label="Treatment Plans">
+  <mat-tab label="Treatment Plans" *ngIf="scenarioStatus === 'SUCCESS'">
     <app-treatments-tab
       [scenarioId]="scenarioId"
       [planningArea]="plan$ | async"></app-treatments-tab>
