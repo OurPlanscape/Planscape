@@ -1,0 +1,42 @@
+<mat-tab-group
+  #tabGroup
+  mat-stretch-tabs="false"
+  mat-align-tabs="start"
+  class="scenario-tabs">
+  <mat-tab label="Results" *ngIf="scenarioState !== 'NOT_STARTED'">
+    <div class="results-container">
+      <ng-container *ngIf="scenarioState === 'LOADING'"></ng-container>
+      <app-scenario-pending
+        *ngIf="scenarioState === 'PENDING'"></app-scenario-pending>
+      <app-scenario-pending
+        *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>
+      <app-scenario-results
+        *ngIf="scenarioState === 'SUCCESS'"
+        [scenarioVersion]="scenarioVersion || ''"
+        [results]="scenarioResults"
+        [priorities]="priorities"
+        [scenarioName]="scenarioNameFormField?.value"
+        [scenarioId]="scenarioId!">
+      </app-scenario-results>
+      <app-scenario-failure
+        *ngIf="
+          scenarioState === 'FAILURE' ||
+          scenarioState === 'PANIC' ||
+          scenarioState === 'TIMED_OUT'
+        "
+        (tryAgain)="goToConfig()"
+        (goBack)="goToPlan()"
+        [scenarioName]="scenarioNameFormField?.value"
+        [scenarioId]="scenarioId!"
+        [scenarioState]="scenarioState"></app-scenario-failure>
+    </div>
+  </mat-tab>
+  <mat-tab label="Data Layers">
+    <app-data-layers class="white-background"></app-data-layers>
+  </mat-tab>
+  <mat-tab label="Treatment Plans">
+    <app-treatments-tab
+      [scenarioId]="scenarioId"
+      [planningArea]="plan$ | async"></app-treatments-tab>
+  </mat-tab>
+</mat-tab-group>
