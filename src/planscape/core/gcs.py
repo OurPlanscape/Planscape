@@ -59,7 +59,7 @@ def get_gcs_hash(gs_url: str) -> Optional[str]:
 
 def create_upload_url(
     object_name: str,
-    bucket: str = settings.GCS_BUCKET,
+    bucket_name: str = settings.GCS_BUCKET,
 ) -> Optional[Dict[str, Any]]:
     """
     Creates an upload URL for a Google Cloud Storage file.
@@ -72,7 +72,7 @@ def create_upload_url(
     """
 
     storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket)
+    bucket = storage_client.bucket(bucket_name)
 
     blob = bucket.blob(object_name)
 
@@ -119,7 +119,7 @@ def create_download_url(
 def upload_file_via_cli(
     object_name: str,
     input_file: str,
-    bucket: str = settings.GCS_BUCKET,
+    bucket_name: str = settings.GCS_BUCKET,
 ):
     """
     Uploads a file to a specified URL using the command line.
@@ -130,7 +130,7 @@ def upload_file_via_cli(
     """
     logger.info(f"Uploading file {object_name} via CLI.")
     storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket)
+    bucket = storage_client.bucket(bucket_name)
 
     blob = bucket.blob(object_name)
 
