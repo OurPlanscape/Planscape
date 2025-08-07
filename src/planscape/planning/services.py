@@ -724,7 +724,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
                 f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
             ),
             input_file=str(zip_file),
-            bucket=settings.GCS_MEDIA_BUCKET,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
         )
 
         temp_file.unlink(missing_ok=True)
