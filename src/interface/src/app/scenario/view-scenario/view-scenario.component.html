@@ -1,34 +1,34 @@
 <mat-tab-group
-  #tabGroup
   mat-stretch-tabs="false"
   mat-align-tabs="start"
-  class="scenario-tabs">
-  <mat-tab label="Results" *ngIf="scenarioState !== 'NOT_STARTED'">
+  class="scenario-tabs"
+  *ngIf="scenarioStatus$ | async as scenarioStatus">
+  <mat-tab label="Results">
     <div class="results-container">
-      <ng-container *ngIf="scenarioState === 'LOADING'"></ng-container>
+      <ng-container *ngIf="scenarioStatus === 'LOADING'"></ng-container>
       <app-scenario-pending
-        *ngIf="scenarioState === 'PENDING'"></app-scenario-pending>
+        *ngIf="scenarioStatus === 'PENDING'"></app-scenario-pending>
       <app-scenario-pending
-        *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>
+        *ngIf="scenarioStatus === 'RUNNING'"></app-scenario-pending>
       <app-scenario-results
-        *ngIf="scenarioState === 'SUCCESS'"
-        [scenarioVersion]="scenarioVersion || ''"
-        [results]="scenarioResults"
-        [priorities]="priorities"
-        [scenarioName]="scenarioNameFormField?.value"
+        *ngIf="scenarioStatus === 'SUCCESS'"
+        [scenarioVersion]="(scenarioVersion$ | async) || ''"
+        [results]="(scenarioResults$ | async) || null"
+        [priorities]="(scenarioPriorities$ | async) || []"
+        [scenarioName]="(scenarioName$ | async) || ''"
         [scenarioId]="scenarioId!">
       </app-scenario-results>
       <app-scenario-failure
         *ngIf="
-          scenarioState === 'FAILURE' ||
-          scenarioState === 'PANIC' ||
-          scenarioState === 'TIMED_OUT'
+          scenarioStatus === 'FAILURE' ||
+          scenarioStatus === 'PANIC' ||
+          scenarioStatus === 'TIMED_OUT'
         "
         (tryAgain)="goToConfig()"
         (goBack)="goToPlan()"
-        [scenarioName]="scenarioNameFormField?.value"
+        [scenarioName]="(scenarioName$ | async) || ''"
         [scenarioId]="scenarioId!"
-        [scenarioState]="scenarioState"></app-scenario-failure>
+        [scenarioState]="scenarioStatus"></app-scenario-failure>
     </div>
   </mat-tab>
   <mat-tab label="Data Layers">
