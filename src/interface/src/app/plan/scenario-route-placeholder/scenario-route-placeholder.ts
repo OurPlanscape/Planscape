@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { filter } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
+import { takeWhile } from 'rxjs';
 
 @Component({
   selector: 'app-scenario-route-placeholder',
@@ -9,8 +9,11 @@ import { ScenarioState } from 'src/app/scenario/scenario.state';
 })
 export class ScenarioRoutePlaceholderComponent {
   currentScenarioResource$ = this.scenarioState.currentScenarioResource$.pipe(
-    filter((resource) => !resource.isLoading)
+    // complete this stream after the resource is loaded.
+    takeWhile((resource) => resource.isLoading, true)
   );
 
-  constructor(private scenarioState: ScenarioState) {}
+  constructor(private scenarioState: ScenarioState) {
+    console.log('this one');
+  }
 }

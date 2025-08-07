@@ -2,11 +2,14 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 
-import { map, skip } from 'rxjs';
+import { EMPTY, interval, map, skip, switchMap, takeUntil, tap } from 'rxjs';
 import { ScenarioState } from '../../scenario/scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatTabGroup } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { Scenario } from '@types';
+import { POLLING_INTERVAL } from '../plan-helpers';
+import { filter } from 'rxjs/operators';
 
 export enum ScenarioTabs {
   RESULTS,
@@ -33,7 +36,11 @@ export class ViewScenarioComponent {
     map((s) => s.configuration.treatment_question?.scenario_priorities || [])
   );
 
-  scenarioStatus$ = this.scenario$.pipe(map((s) => s.scenario_result?.status));
+  scenarioStatus$ = this.scenario$.pipe(
+    map((s) => {
+      return s.scenario_result?.status;
+    })
+  );
 
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
@@ -51,6 +58,22 @@ export class ViewScenarioComponent {
           this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
         }
       });
+
+    this.scenario$
+      .pipe(
+        untilDestroyed(this),
+        switchMap((s) =>
+          this.scenarioIsPending(s) ? this.startPolling() : EMPTY
+        )
+      )
+      .subscribe();
+  }
+
+  private startPolling() {
+    return interval(POLLING_INTERVAL).pipe(
+      tap(() => this.scenarioState.reloadScenario()),
+      takeUntil(this.scenario$.pipe(filter((s) => !this.scenarioIsPending(s))))
+    );
   }
 
   goToConfig() {
@@ -59,5 +82,12 @@ export class ViewScenarioComponent {
 
   goToPlan() {
     this.router.navigate(['/plan', this.planId]);
+  }
+
+  scenarioIsPending(scenario: Scenario) {
+    return (
+      scenario.scenario_result?.status === 'PENDING' ||
+      scenario.scenario_result?.status === 'RUNNING'
+    );
   }
 }
