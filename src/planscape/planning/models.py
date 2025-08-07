@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 from pathlib import Path
 from typing import Collection, Optional
@@ -25,6 +26,8 @@ from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
 from stands.models import Stand, StandSizeChoices
 from utils.uuid_utils import generate_short_uuid
+
+logger = logging.getLogger(__name__)
 
 
 class PlanningAreaManager(AliveObjectsManager):
@@ -444,13 +447,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     def get_geopackage_url(self) -> Optional[str]:
         if not self.geopackage_url:
+            logger.warning("No geopackage url ready yet")
             return None
         signed_url = create_download_url(
             self.geopackage_url,
-            bucket=settings.GCS_MEDIA_BUCKET,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
         )
-        if signed_url is None:
-            create_download_url.invalidate(self.geopackage_url)  # type: ignore
+        logger.info("PUBLIC URL GENERATED %s", signed_url)
         return signed_url
 
     objects = ScenarioManager()

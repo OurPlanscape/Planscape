@@ -24,11 +24,6 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -42,6 +37,11 @@ from planning.models import (
     TreatmentGoal,
 )
 from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -724,13 +724,15 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
                 f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
             ),
             input_file=str(zip_file),
-            bucket=settings.GCS_MEDIA_BUCKET,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
         )
 
         temp_file.unlink(missing_ok=True)
         scenario.geopackage_url = geopackage_path
         scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
-        scenario.save(update_fields=["geopackage_url", "updated_at"])
+        scenario.save(
+            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
 
         redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
@@ -739,7 +741,9 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         logger.error("Failed to export to geopackage")
         scenario.geopackage_url = None
         scenario.geopackage_status = GeoPackageStatus.FAILED
-        scenario.save()
+        scenario.save(
+            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
 
 
 @transaction.atomic()

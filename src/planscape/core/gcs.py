@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any, Collection, Dict, Optional
 
 import requests
-from cacheops import cached
 from django.conf import settings
 from google.cloud import storage
 from rasterio.session import GSSession
@@ -58,7 +57,10 @@ def get_gcs_hash(gs_url: str) -> Optional[str]:
     return blob.crc32c
 
 
-def create_upload_url(object_name: str) -> Optional[Dict[str, Any]]:
+def create_upload_url(
+    object_name: str,
+    bucket_name: str = settings.GCS_BUCKET,
+) -> Optional[Dict[str, Any]]:
     """
     Creates an upload URL for a Google Cloud Storage file.
 
@@ -70,7 +72,7 @@ def create_upload_url(object_name: str) -> Optional[Dict[str, Any]]:
     """
 
     storage_client = storage.Client()
-    bucket = storage_client.bucket(settings.GCS_BUCKET)
+    bucket = storage_client.bucket(bucket_name)
 
     blob = bucket.blob(object_name)
 
@@ -79,11 +81,10 @@ def create_upload_url(object_name: str) -> Optional[Dict[str, Any]]:
     return {"url": url}
 
 
-@cached(timeout=settings.GCS_PUBLIC_URL_TTL)
 def create_download_url(
     gs_url: str,
     expiration: int = int(settings.GCS_PUBLIC_URL_TTL),
-    bucket: str = settings.GCS_BUCKET,
+    bucket_name: str = settings.GCS_BUCKET,
 ) -> Optional[str]:
     """
     Creates a download URL for a Google Cloud Storage file.
@@ -98,12 +99,12 @@ def create_download_url(
         raise ValueError(f"Invalid GCS URL: {gs_url}")
 
     storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket)
+    bucket = storage_client.bucket(bucket_name)
 
-    blob_name = gs_url.replace(f"gs://{bucket}/", "")
+    blob_name = gs_url.replace(f"gs://{bucket_name}/", "")
     blob = bucket.get_blob(blob_name)
     if not blob:
-        logger.error(f"Blob not found: {blob_name} in bucket {bucket}")
+        logger.error(f"Blob not found: {blob_name} in bucket {bucket_name}")
         return None
 
     url = blob.generate_signed_url(
@@ -118,7 +119,7 @@ def create_download_url(
 def upload_file_via_cli(
     object_name: str,
     input_file: str,
-    bucket: str = settings.GCS_BUCKET,
+    bucket_name: str = settings.GCS_BUCKET,
 ):
     """
     Uploads a file to a specified URL using the command line.
@@ -129,7 +130,7 @@ def upload_file_via_cli(
     """
     logger.info(f"Uploading file {object_name} via CLI.")
     storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket)
+    bucket = storage_client.bucket(bucket_name)
 
     blob = bucket.blob(object_name)
 
