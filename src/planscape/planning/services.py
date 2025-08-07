@@ -36,11 +36,7 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import (
-    async_calculate_stand_metrics_v2,
-    async_forsys_run,
-    async_generate_scenario_geopackage,
-)
+from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -178,9 +174,9 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         },
         user_id=user.pk,
     )
-    chord_callback = async_forsys_run.si(scenario_id=scenario.pk)
-    chord_callback.link(async_generate_scenario_geopackage.si())
-    transaction.on_commit(lambda: chord(tasks)(chord_callback))
+    transaction.on_commit(
+        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    )
     return scenario
 
 
