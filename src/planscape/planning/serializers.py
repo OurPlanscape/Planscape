@@ -426,25 +426,11 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
         return [excluded_area.pk for excluded_area in excluded_areas]
 
 
-class PatchConfigurationV2Serializer(ConfigurationV2Serializer):
-    def validate(self, attrs):
-        allowed_fields = set(self.get_fields().keys())
-        incoming_fields = set(self.initial_data.keys())
-        unexpected_fields = incoming_fields - allowed_fields
-        if unexpected_fields:
-            raise serializers.ValidationError(
-                {"error": f"Unexpected fields: {', '.join(unexpected_fields)}"}
-            )
-        return super().validate(attrs)
-
+class PatchConfigurationV2Serializer(CreateConfigurationV2Serializer):
     def update(self, instance, validated_data):
         instance.configuration = {**(instance.configuration or {}), **validated_data}
         instance.save(update_fields=["configuration"])
         return instance
-
-    def to_representation(self, instance):
-        config = instance.configuration or {}
-        return {key: config.get(key) for key in self.get_fields().keys()}
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):

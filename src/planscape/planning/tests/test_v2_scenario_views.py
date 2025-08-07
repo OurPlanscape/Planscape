@@ -693,23 +693,11 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        config = response.data["configuration"]
+        config = response.data.get("configuration", {})
         self.assertEqual(config.get("max_budget"), 20000)
         self.assertEqual(config.get("min_distance_from_road"), 100)
         self.assertEqual(config.get("stand_size"), "SMALL")
         self.assertEqual(config.get("max_project_count"), 5)
-
-    def test_patch_scenario_configuration_invalid_field(self):
-        payload = {"invalid_field": 123}
-
-        self.client.force_authenticate(self.user)
-        response = self.client.patch(self.url, payload, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        error_messages = [str(error) for error in response.data.get("error", [])]
-
-        self.assertTrue(any("Unexpected fields" in msg for msg in error_messages))
-        self.assertTrue(any("invalid_field" in msg for msg in error_messages))
 
     def test_patch_scenario_configuration_unauthenticated(self):
         payload = {"max_budget": 5000}
