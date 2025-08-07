@@ -451,7 +451,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             return None
         signed_url = create_download_url(
             self.geopackage_url,
-            bucket=settings.GCS_MEDIA_BUCKET,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
         )
         logger.info("PUBLIC URL GENERATED %s", signed_url)
         return signed_url
