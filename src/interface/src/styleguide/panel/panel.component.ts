@@ -5,9 +5,10 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { ButtonComponent } from '@styleguide';
+
 import { MatIconModule } from '@angular/material/icon';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
+import { ButtonComponent } from '../button/button.component';
 
 export interface PanelIconButton {
   icon: string;

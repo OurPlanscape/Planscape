@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, ResolveFn } from '@angular/router';
-import { ScenarioState } from '../maplibre-map/scenario.state';
+import { ScenarioState } from '../scenario/scenario.state';
 
 export const scenarioLoaderResolver: ResolveFn<number | null> = (
   route: ActivatedRouteSnapshot

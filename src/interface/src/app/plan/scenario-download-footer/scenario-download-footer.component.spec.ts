@@ -24,6 +24,4 @@ describe('ScenarioDownloadFooterComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-
-  // TODO: add some download tests here...
 });

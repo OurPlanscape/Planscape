@@ -1,0 +1,69 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: block;
+
+  // material overrides
+  --mat-expansion-header-collapsed-state-height: 54px;
+  --mat-expansion-header-expanded-state-height: 54px;
+  --mat-expansion-header-hover-state-layer-color: #{$color-white};
+  --mat-expansion-header-disabled-state-text-color: #{$color-black};
+  --mat-expansion-header-indicator-color: #{$color-black};
+
+  .mat-expansion-panel {
+    border: 1px solid $color-light-purple;
+    box-shadow: none;
+  }
+
+  ::ng-deep {
+    .mat-expansion-panel-body {
+      padding: 0 16px 16px;
+    }
+  }
+
+  .panel-header {
+    padding: 0 10px 0 22px;
+
+    &[aria-disabled='true'] {
+      padding-left: 16px;
+    }
+
+    ::ng-deep {
+      .mat-expansion-indicator {
+        height: 30px;
+      }
+
+      .mat-content {
+        align-items: center;
+      }
+
+      .mat-content.mat-content-hide-toggle {
+        margin-left: 0;
+      }
+    }
+  }
+}
+
+.tooltip-btn {
+  margin-left: auto;
+  color: $color-standard-blue;
+}
+
+.tooltip {
+  padding: 20px;
+}
+
+.title-txt {
+  @include public-sans();
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 14px;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.required {
+  color: $color-error;
+}

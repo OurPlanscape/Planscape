@@ -7,7 +7,7 @@ import { ConstraintsPanelComponent } from './constraints-panel.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FeaturesModule } from '../../../features/features.module';
 import { MockProvider } from 'ng-mocks';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { BehaviorSubject } from 'rxjs';
 //TODO Add the following tests once implementation for tested behaviors is added/desired behavior is confirmed:
 /**

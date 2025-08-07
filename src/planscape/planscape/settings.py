@@ -296,13 +296,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Regional Resource Kits: the CRS code used for the rasters, and the proj4
 # representation of that coordinate system.
 DEFAULT_CRS = 4269
-CRS_FOR_RASTERS = 3857
-CRS_INTERNAL_REPRESENTATION = DEFAULT_CRS
-CRS_9822_PROJ4 = (
-    "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 "
-    "+datum=WGS84 +units=m +no_defs"
-)
-CRS_9822_SCALE = (300, -300)  # a raster transform has origin, scale, and skew.
+RASTER_CRS = 3857
 
 CRS_GEOPACKAGE_EXPORT = 4326
 
@@ -450,7 +444,12 @@ AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
+GEOPACKAGES_FOLDER = "geopackages"
+TEMP_GEOPACKAGE_FOLDER = config(
+    "TEMP_GEOPACKAGE_FOLDER", default="/tmp/planscape/geopackages"
+)
 GCS_BUCKET = config("GCS_BUCKET", "planscape-datastore-dev")
+GCS_MEDIA_BUCKET = config("GCS_MEDIA_BUCKET", f"planscape-media-{ENV}")
 GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
 )

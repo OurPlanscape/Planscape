@@ -11,7 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { InputDirective } from './input/input.directive';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent } from './button/button.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';

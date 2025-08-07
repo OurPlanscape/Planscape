@@ -14,8 +14,8 @@ import { TreatmentGoalsService } from '@services';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
-import { ScenarioState } from '../../../maplibre-map/scenario.state';
-import { SectionComponent } from '../../../../styleguide/collapsible-panel/section.component';
+import { ScenarioState } from '../../../scenario/scenario.state';
+import { SectionComponent } from '@styleguide';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}

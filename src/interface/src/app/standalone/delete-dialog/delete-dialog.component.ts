@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ModalComponent } from '../../../styleguide/modal/modal.component';
+import { ModalComponent } from '@styleguide';
 
 @Component({
   selector: 'app-delete-dialog',

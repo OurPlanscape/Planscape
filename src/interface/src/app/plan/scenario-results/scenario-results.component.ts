@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
 import { ScenarioResult } from '@types';
-import { parseResultsToProjectAreas } from '../plan-helpers';
+import { hasAnalytics, parseResultsToProjectAreas } from '../plan-helpers';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
 import { FeatureService } from '../../features/feature.service';
@@ -62,10 +62,14 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   isScenarioImprovementsEnabled() {
+    let analytics = false;
     const isFlagEnabled = this.featureService.isFeatureEnabled(
       'SCENARIO_IMPROVEMENTS'
     );
-    const isScenarioV2 = this.scenarioVersion === 'V2';
-    return isFlagEnabled && isScenarioV2;
+    if (this.results) {
+      analytics = hasAnalytics(this.results);
+    }
+
+    return isFlagEnabled && analytics;
   }
 }
