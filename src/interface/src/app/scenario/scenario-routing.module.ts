@@ -6,7 +6,6 @@ import { resetDatalayerResolver } from '../resolvers/reset-datalayer.resolver';
 import { createFeatureGuard } from '../features/feature.guard';
 import { CreateScenariosComponent } from '../plan/create-scenarios/create-scenarios.component';
 import { ScenarioRoutePlaceholderComponent } from '../plan/scenario-route-placeholder/scenario-route-placeholder';
-import { ViewScenarioComponent } from './view-scenario/view-scenario.component';
 
 const routes: Routes = [
   {
@@ -33,7 +32,7 @@ const routes: Routes = [
       },
       {
         path: ':scenarioId',
-        component: ViewScenarioComponent,
+        component: ScenarioRoutePlaceholderComponent,
         title: 'Scenario Configuration',
         data: {
           showOverview: false,
