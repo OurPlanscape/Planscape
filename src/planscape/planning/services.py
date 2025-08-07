@@ -180,7 +180,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
     )
     callback_chain = chain(
         async_forsys_run.si(scenario_id=scenario.pk),
-        async_generate_scenario_geopackage.si(),
+        async_generate_scenario_geopackage.si(scenario_id=scenario.pk),
     )
     transaction.on_commit(lambda: chord(tasks)(callback_chain))
     return scenario
