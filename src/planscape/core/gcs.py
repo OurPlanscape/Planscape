@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any, Collection, Dict, Optional
 
 import requests
-from cacheops import cached
 from django.conf import settings
 from google.cloud import storage
 from rasterio.session import GSSession
@@ -82,7 +81,6 @@ def create_upload_url(
     return {"url": url}
 
 
-@cached(timeout=settings.GCS_PUBLIC_URL_TTL)
 def create_download_url(
     gs_url: str,
     expiration: int = int(settings.GCS_PUBLIC_URL_TTL),

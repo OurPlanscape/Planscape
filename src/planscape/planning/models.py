@@ -454,12 +454,6 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             bucket=settings.GCS_MEDIA_BUCKET,
         )
         logger.info("PUBLIC URL GENERATED %s", signed_url)
-        if signed_url is None:
-            logger.info("INVALIDATING PUBLIC URL")
-            create_download_url.invalidate(
-                self.geopackage_url,
-                bucket=settings.GCS_MEDIA_BUCKET,
-            )  # type: ignore
         return signed_url
 
     objects = ScenarioManager()

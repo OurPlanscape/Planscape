@@ -33,7 +33,7 @@ def async_forsys_run(scenario_id: int) -> None:
             scenario.result_status = ScenarioResultStatus.SUCCESS
         scenario.save()
         async_generate_scenario_geopackage.apply_async(
-            scenario_id=scenario.id,
+            args=(scenario.id,),
             countdown=120,
         )
     except ForsysTimeoutException:
