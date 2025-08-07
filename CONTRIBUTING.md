@@ -56,16 +56,16 @@ You will need to ask a member of the
 [Planscape team](https://github.com/orgs/OurPlanscape/people) to be added to the
 group in order to make changes to the repository.
 
-## Development environment
+### Development environment
 
-### Docker & Docker Compose
+#### Docker & Docker Compose
 
 We structured Planscape to have a corresponding Dockerfile, that includes all the necessary
 dependencies to run and develop Planscape locally. Right now, only the backend part of Planscape
 is  being built with Docker. We have a plan to create another Dockerfile to enable front-end
 developer to easily collaborate.
 
-### Requirements
+#### Requirements
 
 1. Docker & Docker Compose
 
@@ -74,15 +74,10 @@ developer to easily collaborate.
 Make sure you have all the requirements in the previous section installed in your machine.
 
 1. Clone the repository from GitHub
-1. Create your `.env` file in the project repository root. You can copy the `.sample.env` file
-   and tweak some of the environment variables, if necessary. All the `PLANSCAPE_DATABASE_*` variables are
-   correctly configured for the Dockerfile.
-1. Create a new `features.dev.json` file. This file should be located in `<repo>/src/interface/src/app/features/`. You
-   can copy the contents of `<repo>/src/interface/src/app/features/features.json`. This file controls all the front-end
-   feature flags in build time.
-1. Create a new `environment.dev.ts` file. This file should be located in `<repo>/src/interface/environments/`. You can
-   copy the contents of `<repo>/src/interface/src/app/environments/environment.ts`. This file controls all the ENV variables
-   for the front-end in build time.
+1. Create your `.env` file in the project repository root. You can copy the `.sample.env` file and tweak some of the environment variables, if necessary. All the `PLANSCAPE_DATABASE_*` variables are correctly configured for the Dockerfile.
+1. Create a new `features.dev.json` file. This file should be located in `<repo>/src/interface/src/app/features/`. You can copy the contents of `<repo>/src/interface/src/app/features/features.json`. This file controls all the front-end feature flags in build time.
+1. Create a new `environment.dev.ts` file. This file should be located in `<repo>/src/interface/environments/`. You can copy the contents of `<repo>/src/interface/src/app/environments/environment.ts`. This file controls all the ENV variables for the front-end in build time.
+1. Create a `proxy.conf.json` file, This file should be located in `<repo>/src/interface`,  configures the frontend to route API requests to the backend during local development. You can copy the contents of `<repo>/src/interface/proxy.conf.template.json` and updating the target field to point to your backend URL.
 
 After cloning the repository, and setting up your `.env` file you can spin an environment
 by issuing the following commands in your terminal of choice.  We assume that `<project-root>`
@@ -93,6 +88,11 @@ cd ~/<project-root>
 make docker-build
 make docker-migrate
 make docker-run
+```
+
+and in other terminal run:
+```
+make load-dev-data
 ```
 
 That is all it should take for you to have the running server on your machine. The repository root
@@ -114,8 +114,9 @@ Here's a list of the commands implemented so far:
 * `make docker-shell` - opens up a terminal inside the container
 * `make docker-makemigrations` - creates all pending migrations. you can specify an `APP_LABEL` to choose specific Django apps
 * `make docker-migrate` - executes all pending migrations
+* `make load-dev-data` - add all catalogs in database
 
-## Local development environment
+### Local development environment
 
 The instructions below have been developed using MacOS.  It should be straightforward
 to adapt them to other environments (Linux, Windows).
@@ -123,7 +124,7 @@ to adapt them to other environments (Linux, Windows).
 During installation of packages you may be asked to modify directory permissions
 (e.g. sudo chmod ...).
 
-### Install Python and GDAL
+#### Install Python and GDAL
 
 First you must install Python and GDAL.  On MacOS,
 
@@ -145,7 +146,7 @@ Please read the install output carefully since most of the installs are dependen
   brew install gdal
   ```
 
-### Source code structure
+#### Source code structure
 
 The directory structure will look like
 
@@ -172,7 +173,7 @@ env/                        # Python environment
       planscape/            # Django backend
 ```
 
-### Set up Python
+#### Set up Python
 
 In a terminal window,
 
@@ -260,7 +261,7 @@ and install the forsys libraries:
 > devtools::install_github("forsys-sp/patchmax")
 ```
 
-### Download the source code
+#### Download the source code
 
 The Planscape source code is stored in GitHub, which provides support for code reviews,
 continuous integration, deployment, etc.  The [OurPlanscape/Planscape](https://github.com/OurPlanscape/Planscape) GitHub Repository contains the code, and the [Planscape develoment](https://github.com/orgs/OurPlanscape/projects/1) GitHub project contains the issues and
@@ -299,9 +300,9 @@ git clone ssh://git@github.com/OurPlanscape/Planscape.git
 
 If you intend on making modifications, see instructions on how to make your own branch.
 
-### Install More Planscape-specific Libraries
+#### Install More Planscape-specific Libraries
 
-#### Install pip
+##### Install pip
 If you do not have pip installed, this will fail:
 ```
 pip --version
@@ -309,14 +310,14 @@ pip --version
 In that case, you will need to install pip.  For macOS, you will have to "bootstrap" pip; instructions
 can be found [here](https://www.geeksforgeeks.org/how-to-install-pip-in-macos/).
 
-#### Download the Python dependencies:
+##### Download the Python dependencies:
 ```
 cd Planscape/src/planscape/
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install poetry setuptools && python3 -m poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && pip install -r requirements.txt
 ```
 
-#### Install Frontend Libraries and Services
+##### Install Frontend Libraries and Services
 npm is a tool to manage javascript libraries (including more Angular code).
 
 ```
@@ -335,7 +336,7 @@ cd ../interface
 npm install -g @angular/cli
 ```
 
-### Linting & Formatting (Python)
+#### Linting & Formatting (Python)
 
 If you're not using VSCode, you will need to install `black` (automatically installed as part of the `requirements.txt`)
 and use it before commiting your code.
@@ -349,7 +350,7 @@ black .
 
 That will reformat any necessary files.
 
-### Install VSCode (optional)
+#### Install VSCode (optional)
 
 VSCode is very helpful for developing both frontend and backend code.  It provides syntax highlighting,
 code completion, and type checking.
@@ -393,9 +394,9 @@ Helpful tip: VS Code also has useful linter extensions that can be installed for
 
 
 
-### Set environment variables
+#### Set environment variables
 
-#### Backend
+##### Backend
 Create a Python config file: ```src/planscape/planscape/.env``` with the contents
 ```
 SECRET_KEY = 'some string'
@@ -406,17 +407,19 @@ The SECRET_KEY is what django uses for signing requests, and provides protection
 
 If you don't want to use your local database, there is a shared developer instance of postgres.  Please contact a team member to get the PLANSCAPE_DATABASE_.* values if you want to use that instance instead.
 
-#### Frontend
+##### Frontend
 The angular code reads two kinds of files that can contain settings that are specific to the environment or development box.
 1. features.json
 The features.dev.json (and features.json) file (located in src/interface/src/app/features) contains feature flags, which can be used to show or hide certain features in the UI.  **You must add a features.dev.json file for angular to behave correctly.**
 You can find more details in the [features.json readme](https://github.com/OurPlanscape/Planscape/blob/main/src/interface/src/app/features/README.md).
 1. environment.ts
 The environment.dev.ts file (or environment.prod.ts file), found in src/interface/src/environments/, contains server-side settings for the frontend (such as a Google Analytics ID). Similarly to `features.json` **you'll need to add a `environment.dev.ts` file for angular to load this variables on dev mode**.
+3. proxy.conf.json 
+The proxy.conf.json file, found in src/interface/, configures the frontend to route API requests to the backend during local development. You must add a proxy.conf.json file by copying proxy.conf.template.json and updating the target field to point to your backend URL.
 
 You can edit your files such as:
 
-##### features.dev.json sample (as of Aug 30 2023)
+###### features.dev.json sample (as of Aug 30 2023)
 Add this to src/interface/src/app/features if you don't have it yet.
 ```
 {
@@ -435,17 +438,36 @@ Add this to src/interface/src/app/features if you don't have it yet.
 }
 ```
 
-##### environment.ts example
+###### environment.ts example
 ```
 export const environment = {
+  environment: '',
   production: false,
   backend_endpoint: 'http://localhost:8000/planscape-backend',
-  google_analytics_id: '', 
-  tile_endpoint: '',
+  google_analytics_id: '',
+  tile_endpoint: 'http://localhost:3000/',
   download_endpoint: '',
+  martin_server: 'http://localhost:3000/',
+  mapbox_key: '',
+  open_panel_key: '',
+  open_panel_enabled: false,
+  debug_layers: false,
+  sentry: {
+    dsn_url: '',
+    enable_extra_error_data: true,
+    enable_httpclient: true,
+    enable_browser_reporting: true,
+    enable_interventions_reporting: true,
+    enable_crash_reporting: true,
+    enable_profiling: false,
+    traces_sample_rate: 0.0,
+    profiling_sample_rate: 0.0,
+    enable_context_lines: false,
+    enable_deprecations_reporting: false,
+  },
 };
 ```
-### Set Up PostGIS (Postgres)
+#### Set Up PostGIS (Postgres)
 You will need to create the planscape user, database, and populate your DB with tables.
 <i>Alternatively</i>, as of Aug 29 2023 there exists a shared developer database running on AWS; please
 contact a team member if you want to use that instead.
@@ -481,7 +503,7 @@ python manage.py test planning
 ```
 This will run the suite of tests in the planning/ directory which will work with the planning area and scenario tables, along with the user tables.
 
-### Test run some tests
+#### Test run some tests
 
 From src/planscape, run:
 ```
@@ -489,7 +511,7 @@ python manage.py test -p "*test*.py"
 ```
 This should end in "OK"
 
-### Test run the application
+#### Test run the application
 
 In one terminal window or tab, start the Django backend from the ```src/planscape``` directory:
 ```
