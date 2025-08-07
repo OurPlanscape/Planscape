@@ -12,7 +12,7 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
 from actstream import action
 from cacheops import redis_client
-from celery import chain, chord
+from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
 from django.conf import settings
@@ -178,11 +178,14 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         },
         user_id=user.pk,
     )
-    callback_chain = chain(
-        async_forsys_run.si(scenario_id=scenario.pk),
-        async_generate_scenario_geopackage.si(scenario_id=scenario.pk),
+    transaction.on_commit(
+        lambda: chord(tasks)(
+            async_forsys_run.si(
+                scenario_id=scenario.pk,
+                link=async_generate_scenario_geopackage.si(),
+            )
+        )
     )
-    transaction.on_commit(lambda: chord(tasks)(callback_chain))
     return scenario
 
 
