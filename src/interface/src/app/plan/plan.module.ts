@@ -121,5 +121,6 @@ import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenari
     CumulativeAttainmentChartComponent,
     ScenarioCreationComponent,
   ],
+  exports: [TreatmentsTabComponent],
 })
 export class PlanModule {}
