@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { NgIf } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
@@ -70,6 +70,14 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
     ),
   });
 
+  @HostListener('window:beforeunload', ['$event'])
+  beforeUnload(event: BeforeUnloadEvent) {
+    if (this.finished) {
+      return;
+    }
+    event.returnValue = '';
+  }
+  
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
