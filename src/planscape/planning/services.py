@@ -802,3 +802,4 @@ def planning_area_covers(
             "Planning Area covers geometry using a buffered version of test geometry."
         )
         return True
+    return False
