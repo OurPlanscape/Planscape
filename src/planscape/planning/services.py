@@ -178,13 +178,10 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         },
         user_id=user.pk,
     )
+    chord_callback = async_forsys_run.si(scenario_id=scenario.pk)
+    chord_callback.link(async_generate_scenario_geopackage.si())
     transaction.on_commit(
-        lambda: chord(tasks)(
-            async_forsys_run.si(
-                scenario_id=scenario.pk,
-                link=async_generate_scenario_geopackage.si(),
-            )
-        )
+        lambda: chord(tasks)(chord_callback)
     )
     return scenario
 
@@ -804,6 +801,10 @@ def planning_area_covers(
 
     if all_stands.covers(test_geometry):
         logger.info(
+            "Planning Area covers geometry using a buffered version of test geometry."
+        )
+        return True
+    return False
             "Planning Area covers geometry using a buffered version of test geometry."
         )
         return True
