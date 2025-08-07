@@ -19,7 +19,12 @@ import {
   skip,
   switchMap,
 } from 'rxjs';
-import { Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
+import {
+  GeoPackageStatus,
+  Scenario,
+  ScenarioResult,
+  ScenarioResultStatus,
+} from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -77,6 +82,8 @@ export class CreateScenariosComponent implements OnInit {
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
+  geoPackageStatus: GeoPackageStatus = null;
+  geoPackageURL: string | null = null;
   priorities: string[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
@@ -184,14 +191,28 @@ export class CreateScenariosComponent implements OnInit {
       ]);
   }
 
+  private shouldPollForGeoPackage() {
+    if (!this.geoPackageStatus) {
+      return false; // if this is null, we can assume there will be no geopackage, ever
+    }
+    if (
+      this.geoPackageStatus === 'PENDING' ||
+      this.geoPackageStatus === 'PROCESSING'
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   pollForChanges() {
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        // only poll when scenario is pending or running
+        // only poll when scenario is pending or running, OR if the geopackage is not ready
         if (
           this.scenarioState === 'PENDING' ||
-          this.scenarioState === 'RUNNING'
+          this.scenarioState === 'RUNNING' ||
+          this.shouldPollForGeoPackage()
         ) {
           this.loadConfig();
         }
@@ -202,7 +223,10 @@ export class CreateScenariosComponent implements OnInit {
     this.scenarioService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
-        if (this.scenarioState === scenario.scenario_result?.status) {
+        if (
+          this.scenarioState === scenario.scenario_result?.status &&
+          this.geoPackageURL
+        ) {
           return;
         }
 
@@ -210,7 +234,10 @@ export class CreateScenariosComponent implements OnInit {
         this.scenarioId = scenario.id;
 
         this.disableForms();
-        if (scenario.scenario_result) {
+        if (
+          scenario.scenario_result &&
+          scenario.scenario_result !== this.scenarioResults
+        ) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
           this.priorities =
@@ -223,6 +250,22 @@ export class CreateScenariosComponent implements OnInit {
           }
           // enable animation
           this.tabAnimation = this.tabAnimationOptions.on;
+        }
+
+        if (scenario.geopackage_status) {
+          this.geoPackageStatus = scenario.geopackage_status ?? null;
+          if (this.geoPackageStatus === 'FAILED') {
+            this.matSnackBar.open(
+              `Error: GeoPackage generation failed.`,
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+          }
+        }
+
+        if (scenario.geopackage_url) {
+          this.geoPackageStatus === 'SUCCEEDED';
+          this.geoPackageURL = scenario.geopackage_url;
         }
 
         //setting name
@@ -257,6 +300,8 @@ export class CreateScenariosComponent implements OnInit {
         ...prioritiesData,
       },
       treatment_goal: prioritiesData.treatment_question as any,
+      geopackage_status: null,
+      geopackage_url: null,
     };
   }
 

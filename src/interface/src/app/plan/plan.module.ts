@@ -48,12 +48,13 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
 import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
-import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.component';
+import { NewTreatmentFooterComponent } from './new-treatment-footer/new-treatment-footer.component';
 import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
 import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
+import { ScenarioDownloadFooterComponent } from './scenario-download-footer/scenario-download-footer.component';
 import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
 import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenario-creation.component';
 
@@ -115,11 +116,12 @@ import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenari
     OpacitySliderComponent,
     MatTabsModule,
     ScenarioMapComponent,
-    PlanTabsFooterComponent,
+    NewTreatmentFooterComponent,
     DataLayersComponent,
     ScenarioMetricsLegendComponent,
     SectionComponent,
     TreatmentOpportunityChartComponent,
+    ScenarioDownloadFooterComponent,
     CumulativeAttainmentChartComponent,
     ScenarioCreationComponent,
   ],

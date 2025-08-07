@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioResultsComponent } from './scenario-results.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { By } from '@angular/platform-browser';
 import { FileSaverService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { ProjectAreasComponent } from '../project-areas/project-areas.component';
@@ -13,8 +12,6 @@ import { FeaturesModule } from '../../features/features.module';
 describe('ScenarioResultsComponent', () => {
   let component: ScenarioResultsComponent;
   let fixture: ComponentFixture<ScenarioResultsComponent>;
-  let scenarioService: ScenarioService;
-  let fileSaverService: FileSaverService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -38,45 +35,10 @@ describe('ScenarioResultsComponent', () => {
     component.scenarioId = 1234;
     component.scenarioName = 'A\\great.scenario/result';
 
-    scenarioService = TestBed.inject(ScenarioService);
-    fileSaverService = TestBed.inject(FileSaverService);
-
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  describe('downloading files', () => {
-    beforeEach(() => {
-      spyOn(scenarioService, 'downloadCsvData').and.callThrough();
-      spyOn(scenarioService, 'downloadShapeFiles').and.callThrough();
-      spyOn(fileSaverService, 'saveAs');
-    });
-
-    it('should download csv file with scenario name', () => {
-      const button = fixture.debugElement.query(
-        By.css('[data-id="downloadCsv"]')
-      );
-      button.nativeElement.click();
-
-      expect(scenarioService.downloadCsvData).toHaveBeenCalledWith(1234);
-      expect(fileSaverService.saveAs).toHaveBeenCalledWith(
-        jasmine.any(Blob),
-        'a_great_scenario_result_csv.zip'
-      );
-    });
-    it('should download shapefile file with scenario name', () => {
-      const button = fixture.debugElement.query(
-        By.css('[data-id="downloadShapeFiles"]')
-      );
-      button.nativeElement.click();
-      expect(scenarioService.downloadShapeFiles).toHaveBeenCalledWith(1234);
-      expect(fileSaverService.saveAs).toHaveBeenCalledWith(
-        jasmine.any(Blob),
-        'a_great_scenario_result_shp.zip'
-      );
-    });
   });
 });
