@@ -12,7 +12,7 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
 from actstream import action
 from cacheops import redis_client
-from celery import chord
+from celery import chain, chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
 from django.conf import settings
@@ -24,11 +24,6 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -41,7 +36,16 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
+from planning.tasks import (
+    async_calculate_stand_metrics_v2,
+    async_forsys_run,
+    async_generate_scenario_geopackage,
+)
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -174,9 +178,11 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         },
         user_id=user.pk,
     )
-    transaction.on_commit(
-        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    callback_chain = chain(
+        async_forsys_run.si(scenario_id=scenario.pk),
+        async_generate_scenario_geopackage.si(),
     )
+    transaction.on_commit(lambda: chord(tasks)(callback_chain))
     return scenario
 
 
