@@ -12,10 +12,8 @@ import { NgChartsModule } from 'ng2-charts';
 import { NgModule } from '@angular/core';
 import { NgxMaskModule } from 'ngx-mask';
 import { PlanComponent } from './plan.component';
-import { PlanNavigationBarComponent } from './plan-navigation-bar/plan-navigation-bar.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { ProjectAreasComponent } from './project-areas/project-areas.component';
-import { ReportChartComponent } from './report-chart/report-chart.component';
 import { ResourceUnavailableComponent } from './resource-unavailable/resource-unavailable.component';
 import { RouterModule } from '@angular/router';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
@@ -68,10 +66,8 @@ import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenari
     GoalOverlayComponent,
     IdentifyProjectAreasComponent,
     PlanComponent,
-    PlanNavigationBarComponent,
     PlanOverviewComponent,
     ProjectAreasComponent,
-    ReportChartComponent,
     ResourceUnavailableComponent,
     SavedScenariosComponent,
     ScenarioFailureComponent,
