@@ -426,6 +426,13 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
         return [excluded_area.pk for excluded_area in excluded_areas]
 
 
+class PatchConfigurationV2Serializer(CreateConfigurationV2Serializer):
+    def update(self, instance, validated_data):
+        instance.configuration = {**(instance.configuration or {}), **validated_data}
+        instance.save(update_fields=["configuration"])
+        return instance
+
+
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
         help_text="Description of the Treatment Goal on HTML format.",
