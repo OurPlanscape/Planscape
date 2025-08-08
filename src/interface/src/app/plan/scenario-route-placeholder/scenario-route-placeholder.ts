@@ -13,7 +13,5 @@ export class ScenarioRoutePlaceholderComponent {
     takeWhile((resource) => resource.isLoading, true)
   );
 
-  constructor(private scenarioState: ScenarioState) {
-    console.log('this one');
-  }
+  constructor(private scenarioState: ScenarioState) {}
 }

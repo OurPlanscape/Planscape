@@ -2,7 +2,17 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 
-import { EMPTY, interval, map, skip, switchMap, takeUntil, tap } from 'rxjs';
+import {
+  combineLatest,
+  EMPTY,
+  interval,
+  map,
+  Observable,
+  skip,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs';
 import { ScenarioState } from '../../scenario/scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatTabGroup } from '@angular/material/tabs';
@@ -10,8 +20,9 @@ import { DataLayersStateService } from '../../data-layers/data-layers.state.serv
 import { Scenario } from '@types';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { filter } from 'rxjs/operators';
+import { canAddTreatmentPlan } from '../permissions';
 
-export enum ScenarioTabs {
+enum ScenarioTabs {
   RESULTS,
   DATA_LAYERS,
   TREATMENTS,
@@ -27,19 +38,17 @@ export class ViewScenarioComponent {
   planId = this.route.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
 
-  plan$ = this.planState.currentPlan$;
-  scenario$ = this.scenarioState.currentScenario$;
-  scenarioName$ = this.scenario$.pipe(map((s) => s.name));
-  scenarioVersion$ = this.scenario$.pipe(map((s) => s.version));
-  scenarioResults$ = this.scenario$.pipe(map((s) => s.scenario_result));
-  scenarioPriorities$ = this.scenario$.pipe(
-    map((s) => s.configuration.treatment_question?.scenario_priorities || [])
-  );
+  selectedTab = ScenarioTabs.RESULTS;
 
-  scenarioStatus$ = this.scenario$.pipe(
-    map((s) => {
-      return s.scenario_result?.status;
-    })
+  plan$ = this.planState.currentPlan$;
+
+  scenario$: Observable<Scenario> = this.scenarioState.currentScenario$;
+
+  showTreatmentFooter$ = combineLatest([this.plan$, this.scenario$]).pipe(
+    map(
+      ([plan, scenario]) =>
+        this.scenarioHasResults(scenario) && !!plan && canAddTreatmentPlan(plan)
+    )
   );
 
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
@@ -51,6 +60,7 @@ export class ViewScenarioComponent {
     private router: Router,
     private dataLayersStateService: DataLayersStateService
   ) {
+    // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
@@ -59,6 +69,7 @@ export class ViewScenarioComponent {
         }
       });
 
+    // poll if scenario is pending
     this.scenario$
       .pipe(
         untilDestroyed(this),
@@ -71,7 +82,10 @@ export class ViewScenarioComponent {
 
   private startPolling() {
     return interval(POLLING_INTERVAL).pipe(
-      tap(() => this.scenarioState.reloadScenario()),
+      tap(() => {
+        console.log('aboutt to reload');
+        this.scenarioState.reloadScenario();
+      }),
       takeUntil(this.scenario$.pipe(filter((s) => !this.scenarioIsPending(s))))
     );
   }
@@ -89,5 +103,30 @@ export class ViewScenarioComponent {
       scenario.scenario_result?.status === 'PENDING' ||
       scenario.scenario_result?.status === 'RUNNING'
     );
+  }
+
+  scenarioHasResults(scenario: Scenario) {
+    return scenario.scenario_result?.status === 'SUCCESS';
+  }
+
+  scenarioHasFailed(scenario: Scenario) {
+    const status = scenario.scenario_result?.status;
+    return status === 'FAILURE' || status === 'PANIC' || status === 'TIMED_OUT';
+  }
+
+  scenarioStatus(scenario: Scenario) {
+    return scenario.scenario_result?.status || 'PENDING';
+  }
+
+  scenarioPriorities(s: Scenario) {
+    return s.configuration.treatment_question?.scenario_priorities || [];
+  }
+
+  get onTreatmentsTab() {
+    return this.selectedTab === ScenarioTabs.TREATMENTS;
+  }
+
+  get onResultsTab() {
+    return this.selectedTab === ScenarioTabs.RESULTS;
   }
 }
