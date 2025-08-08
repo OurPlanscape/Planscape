@@ -40,6 +40,7 @@ import { MatTabGroup } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { PlanState } from '../plan.state';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
+import { FeatureService } from 'src/app/features/feature.service';
 
 export enum ScenarioTabs {
   CONFIG,
@@ -113,6 +114,10 @@ export class CreateScenariosComponent implements OnInit {
     })
   );
 
+  scenarioImprovementsFeature = this.featureService.isFeatureEnabled(
+    'SCENARIO_IMPROVEMENTS'
+  );
+
   constructor(
     private fb: FormBuilder,
     private scenarioService: ScenarioService,
@@ -122,7 +127,8 @@ export class CreateScenariosComponent implements OnInit {
     private scenarioStateService: ScenarioState,
     private dataLayersStateService: DataLayersStateService,
     private planState: PlanState,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private featureService: FeatureService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
