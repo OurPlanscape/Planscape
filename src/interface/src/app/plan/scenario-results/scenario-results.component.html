@@ -35,7 +35,7 @@ Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up
     [scenarioResult]="results"></app-scenario-metrics-legend>
 </sg-section>
 
-<div class="actions" *ngIf="isScenarioImprovementsEnabled()">
+<div class="actions" *ngIf="!isScenarioImprovementsEnabled()">
   <button
     mat-raised-button
     (click)="downloadShapeFiles()"
