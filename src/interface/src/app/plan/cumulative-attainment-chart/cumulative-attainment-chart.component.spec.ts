@@ -55,8 +55,8 @@ describe('CumulativeAttainmentChartComponent', () => {
     const color = component.colorForLabel('Total Aboveground Carbon');
     expect(color).toEqual(
       jasmine.objectContaining({
-        backgroundColor: '#BBE3B6',
-        borderColor: '#BBE3B6',
+        backgroundColor: '#66CC66',
+        borderColor: '#66CC66',
       })
     );
   });
