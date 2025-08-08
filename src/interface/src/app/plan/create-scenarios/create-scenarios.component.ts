@@ -198,7 +198,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   private shouldPollForGeoPackage() {
-    if (!this.geoPackageStatus) {
+    if (!this.geoPackageStatus || !this.scenarioImprovementsFeature) {
       return false; // if this is null, we can assume there will be no geopackage, ever
     }
     if (
