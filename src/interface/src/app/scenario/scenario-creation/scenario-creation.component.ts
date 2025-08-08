@@ -28,6 +28,7 @@ import {
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { StepComponent } from '../../../styleguide/steps/step.component';
+import { Step3Component } from '../step3/step3.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -49,6 +50,7 @@ enum ScenarioTabs {
     LegacyMaterialModule,
     Step1Component,
     StepComponent,
+    Step3Component,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -105,7 +107,15 @@ export class ScenarioCreationComponent {
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
+    // Merging the configuration
+    const configuration = {
+      ...this.config?.configuration!,
+      ...data.configuration,
+    };
+    // Merging all the other controls
     this.config = { ...this.config, ...data };
+    // Updating configuration values
+    this.config.configuration = configuration;
     return of(true);
   }
 
@@ -127,6 +137,8 @@ export class ScenarioCreationComponent {
     const result: Partial<ScenarioCreationPayload> = {
       configuration: {
         stand_size: scenario.configuration.stand_size,
+        max_slope: scenario.configuration.max_slope,
+        min_distance_from_road: scenario.configuration.min_distance_from_road,
       } as ScenarioConfigPayload,
       name: this.form.get('name')?.value,
       treatment_goal: scenario.treatment_goal,

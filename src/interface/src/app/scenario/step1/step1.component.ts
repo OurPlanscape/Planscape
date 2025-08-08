@@ -29,7 +29,6 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
   standalone: true,
   imports: [
     CommonModule,
-    SectionComponent,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
@@ -37,7 +36,6 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
     SectionComponent,
     MatFormFieldModule,
     MatSelectModule,
-    ReactiveFormsModule,
     KeyValuePipe,
   ],
   providers: [{ provide: StepDirective, useExisting: Step1Component }],

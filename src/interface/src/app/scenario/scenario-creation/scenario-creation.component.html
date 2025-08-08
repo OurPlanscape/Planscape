@@ -39,7 +39,9 @@
         <app-step1 #step1></app-step1>
       </sg-step>
       <cdk-step>Step 2</cdk-step>
-      <cdk-step>Step 3</cdk-step>
+      <sg-step [stepControl]="step3.form">
+        <app-step3 #step3></app-step3>
+      </sg-step>
       <cdk-step>Step 4</cdk-step>
     </sg-steps>
   </mat-tab>
