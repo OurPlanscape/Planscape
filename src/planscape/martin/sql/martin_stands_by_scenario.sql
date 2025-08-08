@@ -1,13 +1,8 @@
-CREATE OR REPLACE FUNCTION martin_stands_by_scenario(
-  z INTEGER,
-  x INTEGER,
-  y INTEGER,
-  query_params JSON
-)
+CREATE OR REPLACE FUNCTION martin_stands_by_scenario(z integer, x integer, y integer, query_params json)
 RETURNS bytea AS $$
 DECLARE
-  p_mvt BYTEA;
-  p_stand_size VARCHAR;
+  p_mvt bytea;
+  p_stand_size varchar;
 BEGIN
 
   -- Fetch the scenario's stand_size from its configuration
@@ -34,7 +29,6 @@ BEGIN
     SELECT
       ss.id AS "id",
       ss.size AS "stand_size",
-      ss.area_m2 AS "area_m2",
       rpa.id AS "project_area_id",
       rpa.name AS "project_area_name",
       ST_AsMVTGeom(
