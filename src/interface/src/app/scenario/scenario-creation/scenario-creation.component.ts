@@ -28,6 +28,7 @@ import {
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { StepComponent } from '../../../styleguide/steps/step.component';
+import { TreatmentTargetStepComponent } from '../treatment-target-step/treatment-target-step.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -49,6 +50,7 @@ enum ScenarioTabs {
     LegacyMaterialModule,
     Step1Component,
     StepComponent,
+    TreatmentTargetStepComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
