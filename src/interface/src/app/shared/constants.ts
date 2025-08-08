@@ -123,13 +123,29 @@ export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
 interface ChartColorMap {
   [key: string]: string; // This allows any string key to map to a string value (the color code)
 }
-//TODO: revise these with finished list?
-export const ChartColors: ChartColorMap = {
-  'Probability of Fire Severity - High': '#483D78',
-  'Probability of Fire Severity - Low': '#ffaaaa',
-  'Total Aboveground Carbon': '#BBE3B6',
-  'Damage Potential': '#85B167',
-  'Structure Exposure Score': '#FFDB69',
-  'SNV Standing Dead and Ladder Fuels': '#F18226',
-  'Forest Canopy Cover': '#A59CCD',
-};
+
+export const CHART_COLORS: ChartColorMap = {
+  "Annual Probability of Wildfire": "#003366",
+  "Calif Spotted Owl Habitat": "#FFD700",
+  "Community Wildfire Risk Reduction Zones": "#FFCC00",
+  "Conditional Flame Length": "#990000",
+  "Damage Potential": "#009900",
+  "Flame Length Exceedance Probability - 4 Feet": "#660066",
+  "Flame Length Exceedance Probability - 8 Feet": "#3399FF",
+  "Forest Canopy Cover": "#FF6600",
+  "FVEG Type": "#6A5ACD",
+  "Housing Unit Risk": "#008080",
+  "Mean FRI Departure Condition Class": "#FF7F50",
+  "Probability of Fire Severity - High": "#333333",
+  "Probability of Fire Severity - Low": "#CCCCCC",
+  "Probability of Fire Severity - Moderate": "#4B0082",
+  "Reduce WUI Fire Risk": "#FF8C5A",
+  "Risk to Potential Structures": "#FF007F",
+  "SNV Standing Dead and Ladder Fuels": "#808000",
+  "Structure Exposure Score": "#0066CC",
+  "Threatened/Endangered Vertebrate Species Richness": "#A8D8B9",
+  "Total Aboveground Carbon": "#66CC66",
+  "Wildfire Hazard Potential": "#800020",
+  "Wildland Urban Interface 100m": "#3399FF",
+  "Wildlife Species Richness": "#FFCC00"
+}
