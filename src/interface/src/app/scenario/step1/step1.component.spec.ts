@@ -18,6 +18,7 @@ import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { MOCK_SCENARIO } from '@services/mocks';
 import { Step1Component } from './step1.component';
 import { STAND_SIZE } from '../../plan/plan-helpers';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -44,6 +45,13 @@ describe('Step1Component', () => {
         }),
         MockProvider(TreatmentGoalsService, {
           getTreatmentGoals: () => of([] as any),
+        }),
+        MockProvider(ActivatedRoute, {
+          snapshot: {
+            data: {
+              planId: 24,
+            },
+          } as any,
         }),
       ],
     }).compileComponents();
