@@ -12,10 +12,8 @@
         <mat-checkbox
           class="exclude-checkbox"
           [color]="'primary'"
-          *ngFor="let item of excludedAreas"
-          [formControlName]="item.key"
+          *ngFor="let item of excludedAreas$ | async"
           [value]="item.key.toString()"
-          [checked]="isChecked(item.key)"
           (change)="onCheckboxChange(item.key, $event)">
           {{ item.label }}
         </mat-checkbox>

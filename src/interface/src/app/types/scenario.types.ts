@@ -70,6 +70,7 @@ export interface ScenarioCreation {
     stand_size: STAND_SIZE;
   };
   treatment_goal: number;
+  excluded_areas: number[];
   name: string;
 }
 
