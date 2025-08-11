@@ -24,6 +24,7 @@ class TreatmentGoalAdminForm(forms.ModelForm):
             "category",
             "group",
             "description",
+            "geometry",
             "active",
             "created_by",
         )
