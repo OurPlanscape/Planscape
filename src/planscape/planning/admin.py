@@ -35,7 +35,7 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         treatment_goal = form.instance
-        geometry = treatment_goal.datalayers.all().geometric_intersection()  # type: ignore
+        geometry = treatment_goal.get_coverage()
         treatment_goal.geometry = geometry
         treatment_goal.save()
 

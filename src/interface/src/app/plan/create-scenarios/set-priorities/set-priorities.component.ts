@@ -13,6 +13,8 @@ import {
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
 import { ScenarioState } from '../../../scenario/scenario.state';
 import { KeyValue } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-set-priorities',
@@ -26,8 +28,14 @@ export class SetPrioritiesComponent {
     selectedQuestion: <TreatmentQuestionConfig>[null, Validators.required],
   });
 
+  planId = this.route.snapshot.data['planId'];
+
   categorizedStatewideGoals$ = this.treatmentGoalsService
-    .getTreatmentGoals()
+    .getTreatmentGoals(
+      this.featuresService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')
+        ? this.planId
+        : null
+    )
     .pipe(
       map((goals) =>
         goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
@@ -50,7 +58,9 @@ export class SetPrioritiesComponent {
     private fb: FormBuilder,
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private route: ActivatedRoute,
+    private featuresService: FeatureService
   ) {}
 
   createForm() {
