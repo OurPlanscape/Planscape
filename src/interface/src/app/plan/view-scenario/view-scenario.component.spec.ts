@@ -8,10 +8,13 @@ import { ScenarioState } from '../../scenario/scenario.state';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { of } from 'rxjs';
 import { MOCK_SCENARIO } from '@services/mocks';
-import { MatTabGroup } from '@angular/material/tabs';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { ScenarioPendingComponent } from '../scenario-pending/scenario-pending.component';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { Scenario, ScenarioResult } from '@types';
+import { FeaturesModule } from '../../features/features.module';
+import { TreatmentsTabComponent } from '../create-scenarios/treatments-tab/treatments-tab.component';
+import { ScenarioResultsComponent } from '../scenario-results/scenario-results.component';
 
 describe('ViewScenarioComponent', () => {
   let component: ViewScenarioComponent;
@@ -29,10 +32,13 @@ describe('ViewScenarioComponent', () => {
         MockDeclarations(
           MatTabGroup,
           ScenarioPendingComponent,
-          DataLayersComponent
+          DataLayersComponent,
+          TreatmentsTabComponent,
+          ScenarioResultsComponent,
+          MatTab
         ),
       ],
-      imports: [RouterTestingModule],
+      imports: [RouterTestingModule, FeaturesModule],
       providers: [
         MockProviders(PlanState),
         MockProvider(DataLayersStateService, {

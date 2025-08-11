@@ -46,6 +46,8 @@
     [scenarioName]="scenario.name"
     [geoPackageURL]="scenario.geopackage_url"
     *ngIf="
-      onResultsTab && scenario.geopackage_status !== null
+      onResultsTab &&
+      scenarioImprovementsFeature &&
+      scenario.geopackage_status !== null
     "></app-scenario-download-footer>
 </ng-container>

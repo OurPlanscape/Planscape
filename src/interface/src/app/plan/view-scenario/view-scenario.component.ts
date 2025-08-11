@@ -21,6 +21,7 @@ import { Scenario } from '@types';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { filter } from 'rxjs/operators';
 import { canAddTreatmentPlan } from '../permissions';
+import { FeatureService } from '../../features/feature.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -58,7 +59,8 @@ export class ViewScenarioComponent {
     private planState: PlanState,
     private scenarioState: ScenarioState,
     private router: Router,
-    private dataLayersStateService: DataLayersStateService
+    private dataLayersStateService: DataLayersStateService,
+    private featureService: FeatureService
   ) {
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
@@ -83,7 +85,6 @@ export class ViewScenarioComponent {
   private startPolling() {
     return interval(POLLING_INTERVAL).pipe(
       tap(() => {
-        console.log('aboutt to reload');
         this.scenarioState.reloadScenario();
       }),
       takeUntil(this.scenario$.pipe(filter((s) => !this.scenarioIsPending(s))))
@@ -129,4 +130,8 @@ export class ViewScenarioComponent {
   get onResultsTab() {
     return this.selectedTab === ScenarioTabs.RESULTS;
   }
+
+  scenarioImprovementsFeature = this.featureService.isFeatureEnabled(
+    'SCENARIO_IMPROVEMENTS'
+  );
 }
