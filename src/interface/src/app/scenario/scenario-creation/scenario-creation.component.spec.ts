@@ -10,6 +10,7 @@ import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
 import { Step1Component } from '../step1/step1.component';
+import { ScenarioState } from '../scenario.state';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -27,6 +28,9 @@ describe('ScenarioCreationComponent', () => {
           } as any,
         }),
         MockProvider(ScenarioService),
+        MockProvider(ScenarioState, {
+          excludedAreas$: of([]),
+        }),
         MockProvider(DataLayersStateService, {
           paths$: of([]),
         }),
