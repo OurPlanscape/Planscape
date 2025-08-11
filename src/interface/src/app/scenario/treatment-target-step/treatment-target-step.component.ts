@@ -1,13 +1,190 @@
-import { Component } from '@angular/core';
+import { Component, Input, SimpleChanges, OnChanges } from '@angular/core';
+import { NgClass, CurrencyPipe, DecimalPipe, NgIf } from '@angular/common';
 import { SectionComponent } from '@styleguide';
+import { ScenarioCreation } from '@types';
+import { StepDirective } from '../../../styleguide/steps/step.component';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  FormGroupDirective,
+  ReactiveFormsModule,
+  NgForm,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
+import {
+  calculateMaxArea,
+  calculateMinArea,
+  calculateMinBudget,
+  hasEnoughBudget,
+} from '../../validators/scenarios';
+import { ErrorStateMatcher } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
+  {
+    notEnoughBudget: 'notEnoughBudget',
+    budgetOrAreaRequired: 'budgetOrAreaRequired',
+  };
 
 @Component({
   selector: 'app-treatment-target-step',
   standalone: true,
-  imports: [SectionComponent],
+  imports: [
+    CurrencyPipe,
+    DecimalPipe,
+    MatSelectModule,
+    MatInputModule,
+    MatFormFieldModule,
+    NgClass,
+    NgIf,
+    ReactiveFormsModule,
+    SectionComponent,
+  ],
   templateUrl: './treatment-target-step.component.html',
-  styleUrl: './treatment-target-step.component.scss'
+  styleUrl: './treatment-target-step.component.scss',
 })
-export class TreatmentTargetStepComponent {
+export class TreatmentTargetStepComponent
+  extends StepDirective<ScenarioCreation>
+  implements OnChanges
+{
+  form = new FormGroup({
+    configuration: new FormGroup({}),
+    max_area: new FormControl<number | undefined>(undefined, [
+      Validators.required,
+    ]),
+    max_budget: new FormControl<number | undefined>(undefined, [
+      Validators.required,
+    ]),
+    estimated_cost: new FormControl<number | undefined>(undefined, [
+      Validators.required,
+    ]),
+  });
+  focusedSelection = ''; // string to identify which selection is focused
+  @Input() planningAreaAcres = 0;
 
+  get minMaxAreaValue() {
+    return calculateMinArea(this.planningAreaAcres);
+  }
+
+  get maxMaxAreaValue() {
+    return calculateMaxArea(this.planningAreaAcres);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // update the form when the planningAreaAcres is updated
+    if (changes['planningAreaAcres'] && this.form) {
+      // const maxArea = this.maxArea as FormControl; // eh?
+      // const maxArea = this.maxArea; // eh?
+
+      // maxArea.clearValidators();
+      // maxArea.addValidators([
+      //   Validators.min(this.minMaxAreaValue),
+      //   Validators.max(this.maxMaxAreaValue),
+      // ]);
+      // also update the totalBudgetValidator
+      this.form.clearValidators();
+      this.form.addValidators([
+        this.budgetOrAreaRequiredValidator,
+        this.totalBudgetedValidator(this.planningAreaAcres),
+      ]);
+
+      // refresh form
+      this.form.updateValueAndValidity();
+    }
+  }
+
+  budgetStateMatcher = new NotEnoughBudgetStateMatcher();
+
+  get maxArea() {
+    return this.form?.get('form.maxArea');
+  }
+
+  get maxCost() {
+    return this.form.get('form.maxCost');
+  }
+  /**
+   * checks that one of budget or treatment area constraints is provided.
+   * @param constraintsForm
+   * @private
+   */
+  private budgetOrAreaRequiredValidator(
+    constraintsForm: AbstractControl
+  ): ValidationErrors | null {
+    const maxCost = constraintsForm.get('budgetForm.maxCost');
+    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
+    const valid = !!maxCost?.value || !!maxArea?.value;
+    return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
+  }
+
+  /**
+   * Checks that the maxBudget is enough for the selected estimatedCost per acre
+   * @param planningAreaAcres
+   * @private
+   */
+  private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
+    return (constraintsForm: AbstractControl): ValidationErrors | null => {
+      const maxCost = constraintsForm.get('budgetForm.maxCost')?.value;
+      const estCostPerAcre = constraintsForm.get(
+        'budgetForm.estimatedCost'
+      )?.value;
+      if (!!maxCost) {
+        const hasBudget = hasEnoughBudget(
+          planningAreaAcres,
+          estCostPerAcre,
+          maxCost
+        );
+
+        return hasBudget
+          ? null
+          : {
+              [customErrors.notEnoughBudget]: calculateMinBudget(
+                planningAreaAcres,
+                estCostPerAcre
+              ),
+            };
+      }
+      return null;
+    };
+  }
+
+  calculateMinBudget() {
+    //TODO: don't put zero here
+    const estCostPerAcre = this.form.get('form.estimatedCost')?.value ?? 0;
+    return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
+  }
+
+  getData() {
+    return this.form.value;
+  }
+
+  toggleMaxAreaAndMaxCost() {
+    // if (this.form!.get('budgetForm.maxCost')!.value) {
+    //   (this.form!.get('physicalConstraintForm') as FormGroup).controls[
+    //     'maxArea'
+    //   ].disable();
+    // } else {
+    //   (this.form!.get('physicalConstraintForm') as FormGroup).controls[
+    //     'maxArea'
+    //   ].enable();
+    // }
+    // if (this.form!.get('physicalConstraintForm.maxArea')!.value) {
+    //   (this.form!.get('budgetForm') as FormGroup).controls['maxCost'].disable();
+    // } else {
+    //   (this.form!.get('budgetForm') as FormGroup).controls['maxCost'].enable();
+    // }
+  }
+}
+
+class NotEnoughBudgetStateMatcher implements ErrorStateMatcher {
+  isErrorState(
+    control: FormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
+    const hasError = form?.hasError(customErrors.notEnoughBudget);
+    return !!(control && control.touched && (control.invalid || hasError));
+  }
 }
