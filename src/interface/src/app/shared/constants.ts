@@ -151,7 +151,6 @@ export const CHART_COLORS: ChartColorMap = {
   'Wildlife Species Richness': '#0066CC',
 };
 
-
 /* For convenience, here are some unused colors from our palette,
  in case we need to add more to this JSON.
     #3399FF, #FF6600, #6A5ACD, #808000, #0066CC,
