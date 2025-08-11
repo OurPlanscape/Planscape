@@ -36,6 +36,7 @@
 .legend-name {
     color: $color-black;
     @include standard-label();
+    font-size: 14px;
 }
 
 .legend-color {

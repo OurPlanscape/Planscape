@@ -1,4 +1,4 @@
-import { ChartColors } from '@shared';
+import { CHART_COLORS } from '@shared';
 import { FeatureCollection } from '@types';
 import { ChartConfiguration, ChartDataset } from 'chart.js';
 
@@ -172,7 +172,7 @@ export function getChartDatasetsFromFeatures(
   Object.keys(groupedAttainment).forEach((key, _) => {
     result.push({
       data: groupedAttainment[key],
-      backgroundColor: ChartColors[key],
+      backgroundColor: CHART_COLORS[key],
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });

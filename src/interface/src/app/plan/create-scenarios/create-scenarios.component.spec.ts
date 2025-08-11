@@ -237,6 +237,7 @@ describe('CreateScenariosComponent', () => {
       });
       mockScenarioId$.next(1001);
       component.geoPackageURL = 'http://localhost/someurl';
+      component.scenarioImprovementsFeature = true;
     });
 
     it('should poll for changes if status is pending', fakeAsync(() => {

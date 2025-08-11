@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgFor } from '@angular/common';
-import { ChartColors } from '@shared';
+import { CHART_COLORS } from '@shared';
 import { getGroupedAttainment } from 'src/app/chart-helper';
 import { ScenarioResult } from '@types';
 
@@ -13,7 +13,7 @@ import { ScenarioResult } from '@types';
 })
 export class ScenarioMetricsLegendComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
-  chartColors = ChartColors;
+  chartColors = CHART_COLORS;
   metrics: string[] = [];
 
   ngOnInit() {

@@ -110,6 +110,7 @@
     [scenarioName]="scenarioNameFormField?.value"
     [geoPackageURL]="geoPackageURL"
     *ngIf="
+      scenarioImprovementsFeature &&
       selectedTab !== SCENARIO_TABS.TREATMENTS &&
       selectedTab !== SCENARIO_TABS.DATA_LAYERS &&
       scenarioResults?.status === 'SUCCESS' &&
