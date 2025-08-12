@@ -40,7 +40,11 @@
       </sg-step>
       <cdk-step>Step 2</cdk-step>
       <cdk-step>Step 3</cdk-step>
-      <cdk-step><app-treatment-target-step></app-treatment-target-step>></cdk-step>
+      <cdk-step
+        ><app-treatment-target-step
+          [planningAreaAcres]="planningAreaAcres"></app-treatment-target-step
+        >></cdk-step
+      >
     </sg-steps>
   </mat-tab>
   <mat-tab label="Data Layers">

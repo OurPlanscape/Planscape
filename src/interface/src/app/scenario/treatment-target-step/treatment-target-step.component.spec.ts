@@ -8,10 +8,9 @@ describe('TreatmentTargetStepComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentTargetStepComponent]
-    })
-    .compileComponents();
-    
+      imports: [TreatmentTargetStepComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(TreatmentTargetStepComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -24,6 +24,8 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
+import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
+
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
     notEnoughBudget: 'notEnoughBudget',
@@ -51,6 +53,8 @@ export class TreatmentTargetStepComponent
   extends StepDirective<ScenarioCreation>
   implements OnChanges
 {
+  @Input() planningAreaAcres = 0;
+
   form = new FormGroup({
     configuration: new FormGroup({}),
     max_area: new FormControl<number | undefined>(undefined, [
@@ -59,12 +63,20 @@ export class TreatmentTargetStepComponent
     max_budget: new FormControl<number | undefined>(undefined, [
       Validators.required,
     ]),
-    estimated_cost: new FormControl<number | undefined>(undefined, [
+    estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
       Validators.required,
     ]),
   });
   focusedSelection = ''; // string to identify which selection is focused
-  @Input() planningAreaAcres = 0;
+  budgetStateMatcher = new NotEnoughBudgetStateMatcher();
+
+  get maxArea() {
+    return this.form?.get('form.maxArea');
+  }
+
+  get maxCost() {
+    return this.form.get('form.maxCost');
+  }
 
   get minMaxAreaValue() {
     return calculateMinArea(this.planningAreaAcres);
@@ -97,15 +109,6 @@ export class TreatmentTargetStepComponent
     }
   }
 
-  budgetStateMatcher = new NotEnoughBudgetStateMatcher();
-
-  get maxArea() {
-    return this.form?.get('form.maxArea');
-  }
-
-  get maxCost() {
-    return this.form.get('form.maxCost');
-  }
   /**
    * checks that one of budget or treatment area constraints is provided.
    * @param constraintsForm
@@ -152,8 +155,8 @@ export class TreatmentTargetStepComponent
   }
 
   calculateMinBudget() {
-    //TODO: don't put zero here
-    const estCostPerAcre = this.form.get('form.estimatedCost')?.value ?? 0;
+    const estCostPerAcre =
+      this.form.get('form.estimatedCost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
     return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
   }
 
@@ -161,21 +164,22 @@ export class TreatmentTargetStepComponent
     return this.form.value;
   }
 
+  // This enables and disables fields, based on what our current selection is
   toggleMaxAreaAndMaxCost() {
-    // if (this.form!.get('budgetForm.maxCost')!.value) {
-    //   (this.form!.get('physicalConstraintForm') as FormGroup).controls[
-    //     'maxArea'
-    //   ].disable();
-    // } else {
-    //   (this.form!.get('physicalConstraintForm') as FormGroup).controls[
-    //     'maxArea'
-    //   ].enable();
-    // }
-    // if (this.form!.get('physicalConstraintForm.maxArea')!.value) {
-    //   (this.form!.get('budgetForm') as FormGroup).controls['maxCost'].disable();
-    // } else {
-    //   (this.form!.get('budgetForm') as FormGroup).controls['maxCost'].enable();
-    // }
+    const maxCostControl = this.form!.get('maxCost');
+    const maxAreaControl = this.form!.get('maxArea');
+
+    if (maxCostControl?.value) {
+      maxAreaControl?.disable();
+    } else {
+      maxAreaControl?.enable();
+    }
+
+    if (maxAreaControl?.value) {
+      maxCostControl?.disable();
+    } else {
+      maxCostControl?.enable();
+    }
   }
 }
 

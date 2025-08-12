@@ -62,6 +62,9 @@ export class ScenarioCreationComponent {
 
   planId = this.route.snapshot.data['planId'];
 
+  //TODO: pull this from the planning Area
+  planningAreaAcres = 1000;
+
   form = new FormGroup({
     scenarioName: new FormControl(
       '',
