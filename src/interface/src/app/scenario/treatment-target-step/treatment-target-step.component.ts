@@ -61,7 +61,8 @@ export class TreatmentTargetStepComponent
   form = new FormGroup({
     configuration: new FormGroup({
       max_area: new FormControl<number | undefined>(undefined, [
-        Validators.required,
+        Validators.min(this.minMaxAreaValue),
+        Validators.max(this.maxMaxAreaValue),
       ]),
       max_budget: new FormControl<number | undefined>(undefined, [
         Validators.required,
@@ -94,7 +95,7 @@ export class TreatmentTargetStepComponent
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the planningAreaAcres is updated
     if (changes['planningAreaAcres'] && this.form) {
-      const maxArea = this.form.get('configuration.max_area');
+      const maxArea = this.maxArea as FormControl;
       maxArea?.clearValidators();
       maxArea?.addValidators([
         Validators.min(this.minMaxAreaValue),
