@@ -495,6 +495,7 @@ class Command(PlanscapeCommand):
             org=org,
             layer_type=layer_type,
             geometry_type=geometry_type,
+            geometry=geometry,
             layer_info=layer_info,
             mimetype=mimetype,
             original_name=original_name,
