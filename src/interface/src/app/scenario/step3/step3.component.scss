@@ -1,0 +1,30 @@
+@import 'colors';
+
+.stand-label {
+  margin: 0 0 16px 0;
+}
+
+.stand-level-input {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.suffix {
+  padding-right: 10px;
+}
+
+.stand-level-input ::ng-deep .mat-mdc-form-field-required-marker {
+  color: $color-error;
+}
+
+.stand-level-input ::ng-deep .mdc-floating-label {
+  height: 100%;
+}
+
+.step3-input {
+  vertical-align: sub;
+}
+
+.stand-level-input ::ng-deep .mat-mdc-form-field-error-wrapper {
+  padding: 0;
+}

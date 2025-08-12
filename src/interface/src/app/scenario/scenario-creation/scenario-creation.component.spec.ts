@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
 import { Step1Component } from '../step1/step1.component';
 import { ScenarioState } from '../scenario.state';
+import { Step3Component } from '../step3/step3.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -35,7 +36,9 @@ describe('ScenarioCreationComponent', () => {
           paths$: of([]),
         }),
       ],
-      declarations: [MockDeclarations(DataLayersComponent, Step1Component)],
+      declarations: [
+        MockDeclarations(DataLayersComponent, Step1Component, Step3Component),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioCreationComponent);

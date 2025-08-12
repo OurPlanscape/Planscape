@@ -2,7 +2,8 @@ from django.db import migrations
 
 
 def forward(apps, schema_editor):
-    TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
+    from planning.models import TreatmentGoal
+
     for t in TreatmentGoal.objects.all():
         t.geometry = t.datalayers.all().geometric_intersection()  # type: ignore
         t.save()
