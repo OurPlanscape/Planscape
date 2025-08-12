@@ -9,13 +9,13 @@ from urllib.parse import urlencode
 
 import requests
 from core.base_commands import PlanscapeCommand
+from core.gcs import is_gcs_file
+from core.gcs import upload_file_via_api as upload_to_gcs
 from core.pprint import pprint
-from core.s3 import (
-    is_s3_file,
-    list_files,
-    upload_file_via_api as upload_to_s3,
-)
-from core.gcs import is_gcs_file, upload_file_via_api as upload_to_gcs
+from core.s3 import is_s3_file, list_files
+from core.s3 import upload_file_via_api as upload_to_s3
+from datasets.models import DataLayerType, MapServiceChoices
+from datasets.parsers import get_and_parse_datalayer_file_metadata
 from django.core.management.base import CommandParser
 from gis.core import (
     fetch_datalayer_type,
@@ -23,13 +23,9 @@ from gis.core import (
     get_layer_info,
     with_vsi_prefix,
 )
-from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
 from gis.vectors import to_planscape_multi_layer
-
-from datasets.models import DataLayerType, MapServiceChoices
-from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -359,6 +355,7 @@ class Command(PlanscapeCommand):
         category = kwargs.get("category")
         metadata = metadata or {}
         style = kwargs.get("style", None) or None
+        geometry = kwargs.get("geometry", None) or None
         input_data = {
             "organization": org,
             "name": name,
@@ -373,6 +370,7 @@ class Command(PlanscapeCommand):
             "style": style,
             "map_service_type": map_service_type,
             "url": url,
+            "geometry": geometry,
         }
 
         response = requests.post(
@@ -421,7 +419,7 @@ class Command(PlanscapeCommand):
                 self._skip_existing(**check_existing_args)
         except DataLayerAlreadyExists as datalayer_exists:
             return {"info": str(datalayer_exists)}
-
+        geometry = data_mask(input_file)
         if url:
             return self._create_datalayer_request(
                 name=name,
@@ -435,6 +433,7 @@ class Command(PlanscapeCommand):
                 url=url,
                 mimetype=None,
                 original_name=None,
+                geometry=geometry,
                 **kwargs,
             )
 

@@ -1,14 +1,19 @@
 import logging
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+import numpy as np
 import rasterio
 from django.conf import settings
+from gis.core import get_layer_info, get_random_output_file
+from gis.info import get_gdal_env
+from rasterio.features import shapes
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
-
-from gis.core import get_layer_info, get_random_output_file
-from gis.info import get_gdal_env
+from shapely.geometry import MultiPolygon, shape
+from shapely.ops import unary_union
+from shapely.validation import make_valid
 
 log = logging.getLogger(__name__)
 Number = Union[int, float]
@@ -146,3 +151,56 @@ def warp(
                         resampling=resampling_method,
                     )
             return output_file
+
+
+def data_mask(
+    raster_path: Path,
+    band: int = 1,
+    connectivity: int = 8,
+    min_area_pixels: int = 1,  # drop tiny specks
+    dissolve: bool = True,
+) -> str | None:
+    """
+    Given a particular raster, returns it's datamask. The region with
+    data.
+    """
+    raster_path = Path(raster_path)
+    with rasterio.Env(**get_gdal_env()):
+        with rasterio.open(raster_path) as ds:
+            arr = ds.read(band, masked=True)
+
+            valid_mask = (~arr.mask).astype(np.uint8)
+
+            if valid_mask.sum() == 0:
+                return None
+
+            geoms = []
+            for geom, val in shapes(
+                valid_mask,
+                mask=valid_mask,
+                transform=ds.transform,
+                connectivity=connectivity,
+            ):
+                if val != 1:
+                    continue
+                geoms.append(shape(geom))
+
+            if not geoms:
+                return None
+
+            px_area = abs(ds.transform.a * ds.transform.e)
+            min_area = max(0.0, (min_area_pixels or 0) * px_area)
+
+            geoms = [g for g in geoms if g.area >= min_area]
+
+            if not geoms:
+                return None
+
+            geom_out = (
+                unary_union(geoms)
+                if dissolve
+                else MultiPolygon([g for g in geoms if g.geom_type == "Polygon"])
+            )
+            geom_out = make_valid(geom_out)
+
+            return geom_out.wkt

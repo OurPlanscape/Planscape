@@ -8,9 +8,9 @@ from datasets.models import (
     DataLayerStatus,
     DataLayerType,
     Dataset,
+    MapServiceChoices,
     StorageTypeChoices,
     Style,
-    MapServiceChoices,
 )
 from datasets.styles import (
     get_default_raster_style,
@@ -193,6 +193,10 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 
     map_service_type = serializers.ChoiceField(
         choices=MapServiceChoices.choices,
+        required=False,
+        allow_null=True,
+    )
+    geometry = serializers.GeometryField(
         required=False,
         allow_null=True,
     )
@@ -576,4 +580,5 @@ class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()
+    data = serializers.JSONField()  # type: ignore
     data = serializers.JSONField()  # type: ignore
