@@ -81,6 +81,7 @@ class DataLayerAdminForm(forms.ModelForm):
             "table",
             "info",
             "metadata",
+            "geometry",
             "outline",
         )
 
