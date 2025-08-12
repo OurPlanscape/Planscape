@@ -93,7 +93,6 @@ export class TreatmentTargetStepComponent
 
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the planningAreaAcres is updated
-    // TODO: can't we just subscribe to an observable instead?
     if (changes['planningAreaAcres'] && this.form) {
       const maxArea = this.form.get('configuration.max_area');
       maxArea?.clearValidators();

@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { NgIf } from '@angular/common';
+import { NgIf, AsyncPipe } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepsComponent } from '@styleguide';
@@ -29,6 +29,7 @@ import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goa
 import { Step1Component } from '../step1/step1.component';
 import { StepComponent } from '../../../styleguide/steps/step.component';
 import { TreatmentTargetStepComponent } from '../treatment-target-step/treatment-target-step.component';
+import { PlanState } from 'src/app/plan/plan.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -40,6 +41,7 @@ enum ScenarioTabs {
   selector: 'app-scenario-creation',
   standalone: true,
   imports: [
+    AsyncPipe,
     MatTabsModule,
     ReactiveFormsModule,
     MatLegacyButtonModule,
@@ -61,6 +63,8 @@ export class ScenarioCreationComponent {
   config: Partial<ScenarioCreation> = {};
 
   planId = this.route.snapshot.data['planId'];
+  plan$ = this.planState.currentPlan$;
+  acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
 
   //TODO: pull this from the planning Area
   planningAreaAcres = 1000;
@@ -77,6 +81,7 @@ export class ScenarioCreationComponent {
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
+    private planState: PlanState,
     private goalOverlayService: GoalOverlayService
   ) {
     this.dataLayersStateService.paths$

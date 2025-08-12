@@ -39,7 +39,9 @@
       <sg-step [stepControl]="step0.form">
         <app-treatment-target-step
           #step0
-          [planningAreaAcres]="planningAreaAcres"></app-treatment-target-step
+          [planningAreaAcres]="
+            (acres$ | async) ?? 0
+          "></app-treatment-target-step
       ></sg-step>
       <sg-step [stepControl]="step1.form">
         <app-step1 #step1></app-step1>
