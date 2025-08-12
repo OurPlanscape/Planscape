@@ -19,6 +19,7 @@ from datasets.styles import (
 )
 from organizations.models import Organization
 from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -196,7 +197,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         required=False,
         allow_null=True,
     )
-    geometry = serializers.GeometryField(
+    geometry = gis_serializers.GeometryField(
         required=False,
         allow_null=True,
     )
@@ -580,5 +581,4 @@ class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()
-    data = serializers.JSONField()  # type: ignore
     data = serializers.JSONField()  # type: ignore

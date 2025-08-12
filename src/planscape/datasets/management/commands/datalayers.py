@@ -590,5 +590,3 @@ class Command(PlanscapeCommand):
             )
         data = response.json()
         return data
-        data = response.json()
-        return data
