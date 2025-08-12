@@ -68,6 +68,9 @@ export interface ScenarioCreation {
   // TODO: Add the keys for the steps: 2, 3, 4.
   configuration: {
     stand_size: STAND_SIZE;
+    max_area: number,
+    max_budget: number,
+    estimated_cost: number,
   };
   treatment_goal: number;
   name: string;
