@@ -9,7 +9,7 @@ import {
   getDarkGridConfig,
   whiteTooltipBaseConfig,
 } from '../../chart-helper';
-import { ChartColors } from '@shared';
+import { CHART_COLORS } from '@shared';
 import { ChartComponent } from '@styleguide';
 
 @Component({
@@ -103,10 +103,10 @@ export class CumulativeAttainmentChartComponent implements OnInit {
 
   colorForLabel(label: string) {
     return {
-      backgroundColor: ChartColors[label],
-      borderColor: ChartColors[label],
-      pointBackgroundColor: ChartColors[label],
-      pointBorderColor: ChartColors[label],
+      backgroundColor: CHART_COLORS[label],
+      borderColor: CHART_COLORS[label],
+      pointBackgroundColor: CHART_COLORS[label],
+      pointBorderColor: CHART_COLORS[label],
     };
   }
 }

@@ -1,3 +1,5 @@
+import { STAND_SIZE } from '../plan/plan-helpers';
+
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 
@@ -21,6 +23,8 @@ export interface Scenario {
     name: string;
   };
   version?: string;
+  geopackage_status: GeoPackageStatus;
+  geopackage_url: string | null;
 }
 
 /**
@@ -60,6 +64,30 @@ export interface ScenarioResult {
   };
 }
 
+export interface ScenarioCreation extends ScenarioConfigPayload {
+  treatment_goal: number;
+  excluded_areas: number[];
+  name: string;
+  planning_area: number;
+}
+
+export interface ScenarioConfigPayload {
+  estimated_cost: number;
+  excluded_areas: number[];
+  max_area: number;
+  max_slope: number | null;
+  min_distance_from_road: number | null;
+  stand_size: STAND_SIZE;
+}
+
+export interface ScenarioCreationPayload {
+  configuration: ScenarioConfigPayload;
+  name: string;
+  planning_area: number;
+  status: ScenarioResultStatus;
+  treatment_goal: number;
+}
+
 export type ScenarioResultStatus =
   | 'LOADING' // when loading results
   | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
@@ -69,6 +97,13 @@ export type ScenarioResultStatus =
   | 'FAILURE' // Run failed;
   | 'PANIC' // Run failed; panic
   | 'TIMED_OUT'; // Run failed; timed out
+
+export type GeoPackageStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | null;
 
 export interface TreatmentGoalConfig {
   category_name?: string;

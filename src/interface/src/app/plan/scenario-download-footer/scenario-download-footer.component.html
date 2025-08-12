@@ -1,0 +1,9 @@
+<mat-spinner diameter="24" *ngIf="downloadingScenario"></mat-spinner>
+<button
+  sg-button
+  variant="primary"
+  class="new-treatment"
+  [disabled]="downloadingScenario || !geoPackageURL"
+  (click)="handleDownload()">
+  {{ geoPackageURL ? 'Download GeoPackage' : 'Generating GeoPackage' }}
+</button>

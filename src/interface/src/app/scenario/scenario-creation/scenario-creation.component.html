@@ -35,17 +35,15 @@
       (selectedIndexChange)="stepChanged()"
       (finished)="onFinish()"
       [outerForm]="form">
-      <cdk-step [stepControl]="step1.form">
-        <!-- Treatment goals selector -->
-        <app-treatment-goals #step1></app-treatment-goals>
-
-        <!-- Stand size configuration -->
-        <app-stand-size></app-stand-size>
-      </cdk-step>
+      <sg-step>
+        <app-step1 #step1></app-step1>
+      </sg-step>
       <cdk-step [stepControl]="step2.form"
         ><app-excluded-areas #step2></app-excluded-areas
       ></cdk-step>
-      <cdk-step>Step 3</cdk-step>
+      <sg-step>
+        <app-step3 #step3></app-step3>
+      </sg-step>
       <cdk-step>Step 4</cdk-step>
     </sg-steps>
   </mat-tab>

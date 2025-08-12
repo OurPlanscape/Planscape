@@ -1,14 +1,23 @@
 from typing import Optional
-from django_filters import rest_framework as filters
-from django.db.models import F, Func, Value, ExpressionWrapper, FloatField, QuerySet
-from django.contrib.gis.db.models.functions import Area, Transform
+
 from django.conf import settings
-from planscape.filters import MultipleValueFilter
-from planning.models import PlanningArea, Scenario, RegionChoices
-from rest_framework.request import Request
-from rest_framework.filters import OrderingFilter
+from django.contrib.gis.db.models.functions import Area, Transform
+from django.db.models import (
+    ExpressionWrapper,
+    F,
+    FloatField,
+    Func,
+    Max,
+    QuerySet,
+    Value,
+)
 from django.db.models.functions import Coalesce
-from django.db.models import Max
+from django_filters import rest_framework as filters
+from rest_framework.filters import OrderingFilter
+from rest_framework.request import Request
+
+from planning.models import PlanningArea, RegionChoices, Scenario, TreatmentGoal
+from planscape.filters import MultipleValueFilter
 
 
 class PlanningAreaOrderingFilter(OrderingFilter):
@@ -120,3 +129,26 @@ class ScenarioFilter(filters.FilterSet):
     class Meta:
         model = Scenario
         fields = ["name", "planning_area"]
+
+
+class TreatmentGoalFilter(filters.FilterSet):
+    planning_area = filters.ModelChoiceFilter(
+        queryset=get_planning_areas_for_filter,
+        method="filter_planning_area",
+    )
+
+    def filter_planning_area(self, queryset, name, value):
+        planning_area_geometry = value.geometry
+        if not planning_area_geometry:
+            return queryset.none()
+
+        return queryset.filter(
+            geometry__isnull=False,
+            geometry__contains=planning_area_geometry,
+        )
+
+    class Meta:
+        model = TreatmentGoal
+        fields = [
+            "planning_area",
+        ]

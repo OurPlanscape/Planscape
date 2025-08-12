@@ -9,13 +9,13 @@ from urllib.parse import urlencode
 
 import requests
 from core.base_commands import PlanscapeCommand
+from core.gcs import is_gcs_file
+from core.gcs import upload_file_via_api as upload_to_gcs
 from core.pprint import pprint
-from core.s3 import (
-    is_s3_file,
-    list_files,
-    upload_file_via_api as upload_to_s3,
-)
-from core.gcs import is_gcs_file, upload_file_via_api as upload_to_gcs
+from core.s3 import is_s3_file, list_files
+from core.s3 import upload_file_via_api as upload_to_s3
+from datasets.models import DataLayerType, MapServiceChoices
+from datasets.parsers import get_and_parse_datalayer_file_metadata
 from django.core.management.base import CommandParser
 from gis.core import (
     fetch_datalayer_type,
@@ -23,13 +23,10 @@ from gis.core import (
     get_layer_info,
     with_vsi_prefix,
 )
-from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
+from gis.rasters import data_mask
 from gis.rasters import to_planscape as to_planscape_raster
 from gis.vectors import to_planscape_multi_layer
-
-from datasets.models import DataLayerType, MapServiceChoices
-from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -359,6 +356,7 @@ class Command(PlanscapeCommand):
         category = kwargs.get("category")
         metadata = metadata or {}
         style = kwargs.get("style", None) or None
+        geometry = kwargs.get("geometry", None) or None
         input_data = {
             "organization": org,
             "name": name,
@@ -373,6 +371,7 @@ class Command(PlanscapeCommand):
             "style": style,
             "map_service_type": map_service_type,
             "url": url,
+            "geometry": geometry,
         }
 
         response = requests.post(
@@ -409,7 +408,13 @@ class Command(PlanscapeCommand):
 
         if url and not layer_type:
             raise ValueError("Missing required layer_type when using url.")
+        cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
+        original_file_path = Path(input_file)
+        vsi_input_file = with_vsi_prefix(input_file)
 
+        layer_type = fetch_datalayer_type(input_file=vsi_input_file)
+        layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
+        mimetype = detect_mimetype(input_file=vsi_input_file)
         try:
             if skip_existing:
                 check_existing_args = {
@@ -421,6 +426,11 @@ class Command(PlanscapeCommand):
                 self._skip_existing(**check_existing_args)
         except DataLayerAlreadyExists as datalayer_exists:
             return {"info": str(datalayer_exists)}
+
+        if layer_type == DataLayerType.RASTER:
+            geometry = data_mask(original_file_path)
+        else:
+            geometry = None
 
         if url:
             return self._create_datalayer_request(
@@ -435,16 +445,10 @@ class Command(PlanscapeCommand):
                 url=url,
                 mimetype=None,
                 original_name=None,
+                geometry=geometry,
                 **kwargs,
             )
 
-        cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
-        original_file_path = Path(input_file)
-        vsi_input_file = with_vsi_prefix(input_file)
-
-        layer_type = fetch_datalayer_type(input_file=vsi_input_file)
-        layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
-        mimetype = detect_mimetype(input_file=vsi_input_file)
         match layer_type:
             case DataLayerType.RASTER:
                 processed_files = to_planscape_raster(
@@ -491,6 +495,7 @@ class Command(PlanscapeCommand):
             org=org,
             layer_type=layer_type,
             geometry_type=geometry_type,
+            geometry=geometry,
             layer_info=layer_info,
             mimetype=mimetype,
             original_name=original_name,

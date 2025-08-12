@@ -8,9 +8,9 @@ from datasets.models import (
     DataLayerStatus,
     DataLayerType,
     Dataset,
+    MapServiceChoices,
     StorageTypeChoices,
     Style,
-    MapServiceChoices,
 )
 from datasets.styles import (
     get_default_raster_style,
@@ -19,6 +19,7 @@ from datasets.styles import (
 )
 from organizations.models import Organization
 from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -193,6 +194,10 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 
     map_service_type = serializers.ChoiceField(
         choices=MapServiceChoices.choices,
+        required=False,
+        allow_null=True,
+    )
+    geometry = gis_serializers.GeometryField(
         required=False,
         allow_null=True,
     )

@@ -38,7 +38,7 @@ urlpatterns = [
     path("martor/", include("martor.urls")),
 ]
 
-if settings.ENV == "development":
+if settings.ENV not in ("production", "staging"):
     urlpatterns.append(
         path("planscape-backend/v2/schema", SpectacularAPIView.as_view(), name="schema")
     )

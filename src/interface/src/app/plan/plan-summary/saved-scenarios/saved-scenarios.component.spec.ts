@@ -60,6 +60,8 @@ describe('SavedScenariosComponent', () => {
               max_budget: 200,
             },
             status: 'ACTIVE',
+            geopackage_status: 'PENDING',
+            geopackage_url: null,
           },
         ]),
       },

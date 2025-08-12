@@ -18,6 +18,9 @@ export class MultiMapConfigState extends MapConfigState {
   private _selectedMapId$ = new BehaviorSubject<number | null>(1);
   public selectedMapId$ = this._selectedMapId$.asObservable();
 
+  private _allowClickOnMap$ = new BehaviorSubject(false);
+  public allowClickOnMap$ = this._allowClickOnMap$.asObservable();
+
   constructor(
     private multiMapsStorageService: MultiMapsStorageService,
     private baseLayersStateService: BaseLayersStateService,
@@ -87,5 +90,9 @@ export class MultiMapConfigState extends MapConfigState {
     if (this._selectedMapId$.value === null) {
       this._selectedMapId$.next(1);
     }
+  }
+
+  setAllowClickOnMap(allow: boolean) {
+    this._allowClickOnMap$.next(allow);
   }
 }

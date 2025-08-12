@@ -1,4 +1,4 @@
-import { ChartColors } from '@shared';
+import { CHART_COLORS } from '@shared';
 import { FeatureCollection } from '@types';
 import { ChartConfiguration, ChartDataset } from 'chart.js';
 
@@ -152,7 +152,11 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
       if (!groupedAttainment[key]) {
         groupedAttainment[key] = [];
       }
-      groupedAttainment[key].push(convertTo2DecimalsNumbers(value as number));
+      const _value = Number(value);
+      // Preventing "NaN"
+      if (_value) {
+        groupedAttainment[key].push(convertTo2DecimalsNumbers(_value));
+      }
     }
   });
   return groupedAttainment;
@@ -168,7 +172,7 @@ export function getChartDatasetsFromFeatures(
   Object.keys(groupedAttainment).forEach((key, _) => {
     result.push({
       data: groupedAttainment[key],
-      backgroundColor: ChartColors[key],
+      backgroundColor: CHART_COLORS[key],
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });
@@ -178,7 +182,7 @@ export function getChartDatasetsFromFeatures(
 }
 
 export function convertTo2DecimalsNumbers(value: number): number {
-  return Number((value as number).toFixed(2));
+  return Number(value.toFixed(2));
 }
 
 export function getProjectAreaLabelsFromFeatures(

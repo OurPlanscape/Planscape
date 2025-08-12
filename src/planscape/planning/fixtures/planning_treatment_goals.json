@@ -1,0 +1,1591 @@
+[
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 1,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.624Z",
+      "updated_at": "2025-07-11T18:19:17.255Z",
+      "deleted_at": null,
+      "name": "High-severity Fire Areas",
+      "description": "What areas have the highest probability of high severity fire?\r\n\r\nThe output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".\r\n\r\nThe threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment).",
+      "priorities": [
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0"
+      ],
+      "active": true,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 2,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.705Z",
+      "updated_at": "2025-04-10T17:01:21.114Z",
+      "deleted_at": null,
+      "name": "Reduce WUI Fire Risk",
+      "description": "What areas have the highest probability of high severity fire?\r\n\r\nThe output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer Probability of Fire Severity High.\r\n\r\nThe threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment).",
+      "priorities": [
+        "structure_exposure",
+        "damage_potential_wui"
+      ],
+      "stand_thresholds": [
+        "(wildland_urban_interface == 1 | wildland_urban_interface == 2)",
+        "total_fuel_exposed_to_fire > 0",
+        "probability_of_fire_severity_high > 0",
+        "(mean_percent_fire_return_interval_departure_condition_class == 2 | mean_percent_fire_return_interval_departure_condition_class == 3)"
+      ],
+      "active": true,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 3,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.676Z",
+      "updated_at": "2025-04-11T13:42:09.871Z",
+      "deleted_at": null,
+      "name": "[Legacy] Fuel-load Reduction Opportunities",
+      "description": "Where are the optimal areas to treat to reduce overall fuel loads?\r\nThe output of this treatment goal shows the optimal areas to reduce overall fuel load, and  is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Probability of Fire Severity High\"\r\nThe thresholds for this question have both those layers set to be greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape by reviewing them under your planning area in Explore.",
+      "priorities": [
+        "total_fuel_exposed_to_fire",
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "total_fuel_exposed_to_fire > 0",
+        "probability_of_fire_severity_high > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 4,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.784Z",
+      "updated_at": "2025-06-12T21:34:46.296Z",
+      "deleted_at": null,
+      "name": "Rx Burn for Fire Reintroduction",
+      "description": "What areas are both needed and are suitable for prescribed burning?\r\n\r\nThis treatment goal identifies areas that are both needed and suitable for prescribed burning, specifically targeting locations where fire can be reintroduced without requiring mechanical pre-treatment. The output is derived from the Explore map layer Probability of Fire Severity (Low), using a threshold greater than 0.33, and the Mean FRID Condition Class for Departure, which must be greater than 0% (indicating Condition Class 1, or ≤33% departed from historical fire regime). These criteria ensure that selected areas are likely to experience low-severity fire and are ecologically ready for reintroduction. \r\n\r\nBefore running this query, review your planning area in Explore to confirm that all relevant map layers have adequate coverage. This is a constrained question, so we recommend minimizing the use of additional constraints such as roads, slope, or landscape filters, and setting the stand size to \"Small\" to maximize flexibility.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment) .",
+      "priorities": [
+        "total_fuel_exposed_to_fire",
+        "standing_dead_and_ladder_fuels"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "probability_of_fire_severity_high < 0.4",
+        "(mean_percent_fire_return_interval_departure_condition_class == 1 | mean_percent_fire_return_interval_departure_condition_class == 2)"
+      ],
+      "active": true,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 5,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.948Z",
+      "updated_at": "2025-05-05T14:13:24.900Z",
+      "deleted_at": null,
+      "name": "Reduce Fire Risk to Riparian Habitat",
+      "description": "Where are the priority opportunities to effectively reduce high severity fire risk to riparian habitats?\r\n\r\nThe output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer Probability of Fire Severity (High).\r\n\r\nThe thresholds for this question have both those layers set to be greater than zero, as well as CWHR - Vegetation Types associated with Riparian Habitat set to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape, and review the CWHR data in the metrics dictionary.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment).",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "total_fuel_exposed_to_fire"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "total_fuel_exposed_to_fire > 0",
+        "(f3veg100 != 1200 | f3veg100 != 2700 | f3veg100 != 3300 | f3veg100 != 1100 | f3veg100 != 1300 | f3veg100 != 1900 | f3veg100 != 2900 | f3veg100 != 3800)"
+      ],
+      "active": true,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 6,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.789Z",
+      "updated_at": "2025-04-10T17:53:09.160Z",
+      "deleted_at": null,
+      "name": "Reduce Fire Risk in Owl Habitat",
+      "description": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to California Spotted Owl habitat?\r\n\r\nThis treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output is derived from the data from the Explore map layer Probability of Fire Severity (High).\r\n\r\nThe thresholds have Probability of Fire Severity (High) set to be greater than 0, as well as California Spotted Owl Habitat equal to zero. The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment. Ensure that your planning area has a high concentration of high severity fire landscape and review the CSO Habitat layer as well.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment) .",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "total_fuel_exposed_to_fire"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "total_fuel_exposed_to_fire > 0",
+        "california_spotted_owl_habitat == 0"
+      ],
+      "active": true,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 7,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.794Z",
+      "updated_at": "2025-04-10T17:46:07.047Z",
+      "deleted_at": null,
+      "name": "Wildlife Richness Exposure to Fire",
+      "description": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?\r\n\r\nThis treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers Wildlife Species Richness and Probability of Fire Severity (High).\r\n\r\nThe thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment).",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "wildlife_species_richness"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "wildlife_species_richness > 0"
+      ],
+      "active": true,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 8,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.119Z",
+      "updated_at": "2025-04-10T17:44:02.990Z",
+      "deleted_at": null,
+      "name": "Threatened/Endangered Species Exposure to Fire",
+      "description": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?\r\n\r\nThis treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this question is derived from the data from the Explore map layers Threatened/Endangered Vertebrate Species Richness and Probability of Fire Severity (High).\r\n\r\nThe thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment).",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "endangered_vertebrate"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "endangered_vertebrate > 0"
+      ],
+      "active": true,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 9,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.047Z",
+      "updated_at": "2025-04-11T13:41:54.758Z",
+      "deleted_at": null,
+      "name": "[Legacy] Areas with Long-term Carbon Storage",
+      "description": "What areas should be managed to maximize existing long-term above ground carbon accumulation and storage?\r\nThis treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layer \"Aboveground Live Tree Carbon\".\r\nThe threshold for this question has Aboveground Live Tree Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of Aboveground Live Tree Carbon on the landscape by reviewing it under the map in Explore.",
+      "priorities": [
+        "aboveground_live_tree_carbon"
+      ],
+      "stand_thresholds": [
+        "aboveground_live_tree_carbon > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 10,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.045Z",
+      "updated_at": "2025-04-11T13:42:36.089Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce Fire Risk in Carbon Sinks",
+      "description": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?\r\nThis treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers \"Aboveground Live Tree Carbon\" and \"Probability of Fire Severity - High\".\r\nThe thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "aboveground_live_tree_carbon"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "aboveground_live_tree_carbon > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 11,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.628Z",
+      "updated_at": "2025-04-11T13:42:26.335Z",
+      "deleted_at": null,
+      "name": "[Legacy] High-severity Fire Areas",
+      "description": "What areas have the greatest probability of high severity fire?\r\nThe output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\".\r\nThe threshold for this goal is that same layer, Probability of High Severity Fire, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0"
+      ],
+      "active": false,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 12,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.743Z",
+      "updated_at": "2025-04-11T13:43:27.411Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce WUI Fire Risk",
+      "description": "Where are the best opportunities to reduce fire risk within the Wildland Urban Interface?\r\nThis treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Probability of High Severity Fire\",  \"Structure Exposure Score\" and \"WUI Damage Potential\".\r\nThere are multiple thresholds for this goal, and additional Wildland Urban Interface layer constraints, creating more constrained output. Make sure that your planning area has a high concentration of at-risk structures by reviewing High Severity Fire, WUI Damage Potential and SES layers in Explore under your planning area.  We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "structure_exposure_score",
+        "wui_damage_potential"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "structure_exposure_score != 1",
+        "wui_damage_potential != 0",
+        "wildland_urban_interface != 0"
+      ],
+      "active": false,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 13,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.095Z",
+      "updated_at": "2025-04-11T13:43:08.627Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce Fire Risk to Riparian Habitat",
+      "description": "Where are the best opportunities to reduce high severity fire risk to riparian habitats?\r\nThe output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\".\r\nThe thresholds for this goal have that layer set to be greater than zero, and includes CWHR - Vegetation Types associated with Riparian Habitat set to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape by viewing it in Explore, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>",
+      "priorities": [
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "!(cwhr_vegetation_type  %in% c(59, 79, 43, 5, 21, 56, 15, 41, 35, 37, 19))"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 14,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.093Z",
+      "updated_at": "2025-04-11T13:42:44.685Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce Fire Risk in Owl Habitat",
+      "description": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to California Spotted Owl habitat?\r\n\r\nThis treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output is derived from the data from the Explore map layer Probability of Fire Severity (High).\r\n\r\nThe thresholds have Probability of Fire Severity (High) set to be greater than 0, as well as California Spotted Owl Habitat equal to zero. The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment. Ensure that your planning area has a high concentration of high severity fire landscape and review the CSO Habitat layer as well.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment) .",
+      "priorities": [
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "california_spotted_owl == 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 15,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.007Z",
+      "updated_at": "2025-04-11T13:44:02.875Z",
+      "deleted_at": null,
+      "name": "[Legacy] Wildlife Richness Exposure to Fire",
+      "description": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?\r\nThis treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species Richness\" and \"Probability of Fire Severity High\".\r\nThe thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "wildlife_species_richness"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "wildlife_species_richness > 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 16,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.946Z",
+      "updated_at": "2025-04-11T13:43:45.091Z",
+      "deleted_at": null,
+      "name": "[Legacy] Threatened/Endangered Species Exposure to Fire",
+      "description": "What areas support high threatened and endangered species richness and are exposed to to high severity fire risk?\r\nThis treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species Richness\" and \"Probability of Fire Severity High\".\r\nThe thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "threatened_endangered_vertebrate_species_richness"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "threatened_endangered_vertebrate_species_richness > 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 17,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.088Z",
+      "updated_at": "2025-04-11T13:41:45.759Z",
+      "deleted_at": null,
+      "name": "[Legacy] Areas with Long-term Carbon Storage",
+      "description": "What areas could be managed for long-term above ground carbon accumulation and storage?\r\nThis treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layers \"Probability of FIre Severity High\" and \"Aboveground Live Tree Carbon\".\r\nThe threshold for this goal has Aboveground Live Tree Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing them in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "total_aboveground_carbon"
+      ],
+      "stand_thresholds": [
+        "total_aboveground_carbon > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 18,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.621Z",
+      "updated_at": "2025-04-11T13:42:20.320Z",
+      "deleted_at": null,
+      "name": "[Legacy] High-severity Fire Areas",
+      "description": "What areas have the greatest probability of high severity fire?\r\nThe output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".\r\nThe threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0"
+      ],
+      "active": false,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 19,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.701Z",
+      "updated_at": "2025-04-11T13:43:21.679Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce WUI Fire Risk",
+      "description": "Where are the best opportunities to reduce fire risk within the Wildland Urban Interface?\r\nThis treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Probability of High Severity Fire\", \"Structure Exposure Score\" and \"Damage Potential\".\r\nThere are multiple thresholds for this question, creating more constrained output, and it includes the operational layer in the <a href='https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf' target='_blank'>metrics dictionary</a> Wildland Urban Interface equal to 1 and 2. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\".",
+      "priorities": [
+        "structure_exposure_score",
+        "wui_damage_potential",
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "structure_exposure_score != 1",
+        "wui_damage_potential > 0",
+        "wui_damage_potential < 6",
+        "wildland_urban_interface == 1 | wildland_urban_interface == 2"
+      ],
+      "active": false,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 24,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.899Z",
+      "updated_at": "2025-04-11T13:43:55.366Z",
+      "deleted_at": null,
+      "name": "[Legacy] Wildlife Richness Exposure to Fire",
+      "description": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?\r\nThis treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species Richness\" and \"Probability of Fire Severity High\".\r\nThe thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "wildlife_species_richness"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "wildlife_species_richness > 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 25,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.160Z",
+      "updated_at": "2025-04-11T13:43:38.854Z",
+      "deleted_at": null,
+      "name": "[Legacy] Threatened/Endangered Species Exposure to Fire",
+      "description": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?\r\nThis treatment goal identifies areas with relatively high threatened/endangered species richness that are at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species Richness\" and \"Probability of Fire Severity High\". \r\nThe thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "threatened_endangered_vertebrate_species_richness"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "threatened_endangered_vertebrate_species_richness > 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 26,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.876Z",
+      "updated_at": "2025-04-11T13:41:37.018Z",
+      "deleted_at": null,
+      "name": "[Legacy] Areas with Long-term Carbon Storage",
+      "description": "What areas could be managed for long-term above ground carbon accumulation and storage?\r\nThis treatment goal identifies areas with relatively elevated aboveground live tree carbon. The output of this goal is derived from the data from the Explore map layer \"Total Aboveground Carbon\".\r\nThe threshold for this goal has Total Aboveground Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of Total Aboveground Carbon on the landscape by reviewing them in Explore.",
+      "priorities": [
+        "total_aboveground_carbon"
+      ],
+      "stand_thresholds": [
+        "total_aboveground_carbon > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 27,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.723Z",
+      "updated_at": "2025-04-11T13:42:14.892Z",
+      "deleted_at": null,
+      "name": "[Legacy] High-severity Fire Areas",
+      "description": "What areas have the greatest probability of high severity fire?\r\nThe output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".\r\nThe threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0"
+      ],
+      "active": false,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 28,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.958Z",
+      "updated_at": "2025-04-11T13:43:16.464Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce WUI Fire Risk",
+      "description": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface (WUI)?\r\nThis treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Structure Exposure Score\" and \"Damage Potential\". \r\nThere are multiple thresholds for this question, creating more constrained output, including the WUI operational layer being equal to 1 or 2 in the metrics dictionary. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\".",
+      "priorities": [
+        "structure_exposure_score",
+        "wui_damage_potential"
+      ],
+      "stand_thresholds": [
+        "structure_exposure_score > 0",
+        "wui_damage_potential > 1",
+        "probability_of_fire_severity_high > 0",
+        "wildland_urban_interface == 1 | wildland_urban_interface == 2"
+      ],
+      "active": false,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 30,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.725Z",
+      "updated_at": "2025-04-11T13:41:30.955Z",
+      "deleted_at": null,
+      "name": "[Legacy] Areas for Prescribed Burns",
+      "description": "What areas need and are suitable for prescribed burning?\r\nThe output of this treatment goal shows areas that are both needed and most suitable for prescribed burning, and is derived from the data from the Explore map layer \"FRID Condition Class for Departure\".\r\nIt will identify where existing conditions would allow for prescribed burning with minimal pre-treatment of vegetation. The thresholds for this question have \"Probability of Fire Severity - High\" set to between zero and 0.2, FRID Condition Class equal to 1, meaning that it is 0-33% departed, and Wildland Urban Interface is not = 0.. Review your planning layer in this map layer in Explore before running this query, especially the FRID CC layer, and ensure that there is coverage.\r\nThis is a constrained question, so we recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\".",
+      "priorities": [
+        "mean_fri_departure_condition_class"
+      ],
+      "stand_thresholds": [
+        "mean_fri_departure_condition_class == 1",
+        "probability_of_fire_severity_high > 0",
+        "probability_of_fire_severity_high < 0.2",
+        "wildland_urban_interface == 0"
+      ],
+      "active": false,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 31,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.909Z",
+      "updated_at": "2025-04-11T13:42:55.799Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce Fire Risk to Pacific Fisher Habitat",
+      "description": "Where are the priority opportunities to reduce high severity fire risk to Pacific Fisher habitat?\r\nThe output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\". \r\nThe thresholds for this question has \"Probability of High Severity Fire\" set to be greater than zero, and Pacific Fisher Predicted Habitat between >0 and <.25. The goal is to not plan treatments on areas where there is a large amount of Pacific Fisher habitat and instead to treat around that area. Ensure that your planning area has a high concentration of high severity fire landscape and understand the amount of Pacific Fisher habitat as well.",
+      "priorities": [
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "pacific_fisher > 0",
+        "pacific_fisher < 0.25"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 32,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.903Z",
+      "updated_at": "2025-04-11T13:43:01.756Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce Fire Risk to Riparian Habitat",
+      "description": "Where are the priority opportunities to reduce high severity fire risk to riparian habitats?\r\nThe output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from equal weighting of the data from the Explore map layers \"Probability of High Severity Fire\" and \"Wildfire Hazard Potential\". \r\nThe thresholds for this goal set both of those layers to be greater than zero, and include Riparian Habitat equal to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire and wildfire hazard potential landscape by viewing it in Explore, and review the Riparian Habitat data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "wildfire_hazard_potential"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "wildfire_hazard_potential > 0",
+        "riparian_habitat == 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 33,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.072Z",
+      "updated_at": "2025-04-11T13:42:49.347Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce Fire Risk to Northern Spotted Owl Habitat",
+      "description": "Where are opportunities to reduce high severity fire risk to Northern Spotted Owl (NSPO) nesting/roosting habitat?\r\nThis treatment goal is designed to identify treatment areas to reduce high severity fire risk to NSPO habitat, and specifically are NOT in NSPO habitat. The output is derived from the data from the Explore map layers \"Probability of Fire Severity High\" and NSPO Nesting/Roosting Forest Cover Type.\r\nThe thresholds have Probability of High Severity Fire set to be greater than zero, and NSPO Nesting/Roosting Forest Cover Type Suitability Index greater than zero and less than 800. The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment. Ensure that your planning area has a high concentration of high severity fire landscape, and review the NSPO Nesting/Roosting Forest Cover Type layer as well.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "inverse_nso_nest_roost_suitability"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "north_spotted_owl_nesting_suitablity_index <= 800"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 34,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.721Z",
+      "updated_at": "2025-04-11T13:43:50.630Z",
+      "deleted_at": null,
+      "name": "[Legacy] Wildlife Richness Exposure to Fire",
+      "description": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?\r\nThis treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species RIchness\" and \"Probability of Fire Severity High\".\r\nThe thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "wildlife_species_richness"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "wildlife_species_richness > 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 35,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.302Z",
+      "updated_at": "2025-04-11T13:43:32.759Z",
+      "deleted_at": null,
+      "name": "[Legacy] Threatened/Endangered Species Exposure to Fire",
+      "description": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?\r\nThis treatment goal identifies areas with relatively high threatened/endangered species richness that are at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species RIchness\" and \"Probability of Fire Severity High\".\r\nThe thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape.",
+      "priorities": [
+        "threatened_endangered_vertebrate_species_richness",
+        "probability_of_fire_severity_high"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "threatened_endangered_vertebrate_species_richness > 0"
+      ],
+      "active": false,
+      "category": "BIODIVERSITY",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 36,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.300Z",
+      "updated_at": "2025-04-10T17:42:42.317Z",
+      "deleted_at": null,
+      "name": "Areas with Aboveground Carbon",
+      "description": "What areas should be managed to maximize existing long-term above ground carbon accumulation and storage?\r\n\r\nThis treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layer Total Aboveground Carbon.\r\n\r\nThe threshold for this question has Total Aboveground Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of Total Aboveground Carbon on the landscape by reviewing it under the map in Explore.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment).",
+      "priorities": [
+        "total_aboveground_carbon",
+        "aboveground_carbon_turnover_time"
+      ],
+      "stand_thresholds": [
+        "total_aboveground_carbon > 0",
+        "aboveground_carbon_turnover_time > 0"
+      ],
+      "active": true,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 37,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.298Z",
+      "updated_at": "2025-04-11T13:42:05.298Z",
+      "deleted_at": null,
+      "name": "[Legacy] Fire Risk in Carbon Sinks",
+      "description": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?\r\nThis treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from equal weighting of the data from the Explore map layers \"Total Aboveground Carbon\", \"Aboveground Carbon Turnover Time\" and \"Probability of Fire Severity High\".\r\nThe thresholds for this goal have Probability of High Severity fire greater than zero, Total Aboveground Carbon greater than 0 mg C/ha, and Aboveground Carbon Turnover Time greater than zero years.. Ensure that your planning area has a high concentration of High Severity Fire and Total Aboveground Carbon on the landscape, as well as Aboveground Carbon Turnover greater than zero, by reviewing them in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "total_aboveground_carbon",
+        "aboveground_carbon_turnover_time"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "total_aboveground_carbon > 0",
+        "aboveground_carbon_turnover_time > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 38,
+    "fields": {
+      "created_at": "2025-03-26T19:13:14.894Z",
+      "updated_at": "2025-04-11T13:42:00.120Z",
+      "deleted_at": null,
+      "name": "[Legacy] Fire Risk in Carbon Sinks",
+      "description": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?\r\nThis treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from equal weighting of the data from the Explore map layers \"Total Aboveground Carbon\", \"Aboveground Carbon Turnover Time\" and \"Probability of Fire Severity High\". \r\nThe thresholds for this goal have Probability of High Severity fire greater than zero, Total Aboveground Carbon greater than 0 mg C/ha and Aboveground Carbon Turnover Time > 0 years.. Ensure that your planning area has a high concentration of High Severity Fire and Total Aboveground Carbon on the landscape, and the correct metric for Aboveground Carbon Turnover Time by reviewing them in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "total_aboveground_carbon",
+        "aboveground_carbon_turnover_time"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "total_aboveground_carbon > 0",
+        "aboveground_carbon_turnover_time > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 50,
+    "fields": {
+      "created_at": "2025-03-26T19:13:15.086Z",
+      "updated_at": "2025-04-11T13:42:31.168Z",
+      "deleted_at": null,
+      "name": "[Legacy] Reduce Fire Risk in Carbon Sinks",
+      "description": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?\r\nThis treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers \"Aboveground Live Tree Carbon\" and \"Probability of Fire Severity High\".\r\nThe thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing in Explore.",
+      "priorities": [
+        "probability_of_fire_severity_high",
+        "total_aboveground_carbon"
+      ],
+      "stand_thresholds": [
+        "probability_of_fire_severity_high > 0",
+        "total_aboveground_carbon > 0"
+      ],
+      "active": false,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 52,
+    "fields": {
+      "created_at": "2025-04-10T17:37:31.530Z",
+      "updated_at": "2025-06-10T19:11:24.631Z",
+      "deleted_at": null,
+      "name": "Reduce Fire Risk in Carbon Stocks",
+      "description": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?\r\n\r\nThis treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers Total Aboveground Carbon and Probability of Fire Severity (High).\r\n\r\nThe thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Total Aboveground Carbon on the landscape by reviewing in Explore.\r\n\r\nFor more information, see the [User Guide](https://www.planscape.org/documentation/user-guide/#treatment) .",
+      "priorities": [
+        "Probability of Fire Severity (High)",
+        "Total Aboveground Carbon"
+      ],
+      "stand_thresholds": [
+        "Probability of Fire Severity (High) is > 0",
+        "Total Aboveground Carbon > 0"
+      ],
+      "active": true,
+      "category": "CARBON_BIOMASS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 1101,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.514Z",
+      "updated_at": "2025-07-23T15:33:33.514Z",
+      "deleted_at": null,
+      "name": "Reduce Destructive Wildfire Risk to High‑Density Housing",
+      "description": "Minimize the impact of destructive wildfire on areas with the highest housing density by targeting areas with high wildfire risk overlapping with communities containing the greatest number of homes.\r\n\r\nThis scenario uses Housing Unit Risk as its priority objective.",
+      "priorities": null,
+      "stand_thresholds": null,
+      "active": true,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 1102,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.513Z",
+      "updated_at": "2025-07-23T15:44:36.513Z",
+      "deleted_at": null,
+      "name": "Reduce High-Severity Fire in the Wildland-Urban Interface (WUI)",
+      "description": "Reduce the risk of high-severity wildfire impacting homes and other important structures in or near the WUI by targeting areas with elevated risk to potential structures for risk mitigation treatments (e.g., fuel reduction, defensible space).\r\n\r\nThis scenario uses Risk to Potential Structures as its priority objective and sets a stand level constraint that requires Community Wildfire Risk Reduction Zones to be categorized Direct Exposure.",
+      "priorities": null,
+      "stand_thresholds": null,
+      "active": true,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoal",
+    "pk": 1103,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.323Z",
+      "updated_at": "2025-07-23T15:47:41.323Z",
+      "deleted_at": null,
+      "name": "Reduce Destructive Wildfire Risk in the Viewshed",
+      "description": "Identify and prioritize treatment areas within the viewshed that are likely to experience destructive wildfire and pose challenges to fire suppression by targeting areas with both high likelihood of destructive wildfire and elevated suppression difficulty.\r\n\r\nThis scenario uses Wildfire Hazard Potential as its priority objective.",
+      "priorities": null,
+      "stand_thresholds": null,
+      "active": true,
+      "category": "FIRE_DYNAMICS",
+      "created_by": 1,
+      "geometry": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1,
+    "fields": {
+      "created_at": "2025-04-10T21:33:09.467Z",
+      "updated_at": "2025-04-10T21:33:09.467Z",
+      "deleted_at": null,
+      "treatment_goal": 1,
+      "datalayer": 2803,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 3,
+    "fields": {
+      "created_at": "2025-04-10T22:01:39.376Z",
+      "updated_at": "2025-04-11T17:07:12.157Z",
+      "deleted_at": null,
+      "treatment_goal": 1,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 4,
+    "fields": {
+      "created_at": "2025-04-11T12:58:13.200Z",
+      "updated_at": "2025-04-11T12:58:18.333Z",
+      "deleted_at": null,
+      "treatment_goal": 2,
+      "datalayer": 2803,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 5,
+    "fields": {
+      "created_at": "2025-04-11T12:59:25.617Z",
+      "updated_at": "2025-04-11T17:07:28.202Z",
+      "deleted_at": null,
+      "treatment_goal": 2,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 6,
+    "fields": {
+      "created_at": "2025-04-11T13:00:42.368Z",
+      "updated_at": "2025-04-11T16:56:30.681Z",
+      "deleted_at": null,
+      "treatment_goal": 4,
+      "datalayer": 2801,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 7,
+    "fields": {
+      "created_at": "2025-04-11T13:01:38.918Z",
+      "updated_at": "2025-06-12T21:04:44.957Z",
+      "deleted_at": null,
+      "treatment_goal": 4,
+      "datalayer": 2801,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0.33"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 8,
+    "fields": {
+      "created_at": "2025-04-11T13:03:40.392Z",
+      "updated_at": "2025-06-12T21:04:44.958Z",
+      "deleted_at": null,
+      "treatment_goal": 4,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value < 0.33"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 9,
+    "fields": {
+      "created_at": "2025-04-11T13:08:46.202Z",
+      "updated_at": "2025-04-11T13:08:46.202Z",
+      "deleted_at": null,
+      "treatment_goal": 5,
+      "datalayer": 2803,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 10,
+    "fields": {
+      "created_at": "2025-04-11T13:09:23.435Z",
+      "updated_at": "2025-04-11T17:08:41.573Z",
+      "deleted_at": null,
+      "treatment_goal": 5,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 11,
+    "fields": {
+      "created_at": "2025-04-11T13:14:47.803Z",
+      "updated_at": "2025-04-11T13:14:47.803Z",
+      "deleted_at": null,
+      "treatment_goal": 52,
+      "datalayer": 2803,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 12,
+    "fields": {
+      "created_at": "2025-04-11T13:15:36.701Z",
+      "updated_at": "2025-04-11T13:15:36.701Z",
+      "deleted_at": null,
+      "treatment_goal": 52,
+      "datalayer": 2763,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 13,
+    "fields": {
+      "created_at": "2025-04-11T13:16:33.531Z",
+      "updated_at": "2025-04-11T17:09:13.520Z",
+      "deleted_at": null,
+      "treatment_goal": 52,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 14,
+    "fields": {
+      "created_at": "2025-04-11T13:17:22.250Z",
+      "updated_at": "2025-04-11T17:09:20.330Z",
+      "deleted_at": null,
+      "treatment_goal": 52,
+      "datalayer": 2763,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 15,
+    "fields": {
+      "created_at": "2025-04-11T13:19:23.477Z",
+      "updated_at": "2025-04-11T13:19:23.477Z",
+      "deleted_at": null,
+      "treatment_goal": 36,
+      "datalayer": 2763,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 16,
+    "fields": {
+      "created_at": "2025-04-11T13:20:05.155Z",
+      "updated_at": "2025-04-11T17:09:39.989Z",
+      "deleted_at": null,
+      "treatment_goal": 36,
+      "datalayer": 2763,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 17,
+    "fields": {
+      "created_at": "2025-04-11T13:21:09.389Z",
+      "updated_at": "2025-04-11T13:21:09.389Z",
+      "deleted_at": null,
+      "treatment_goal": 8,
+      "datalayer": 2803,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 18,
+    "fields": {
+      "created_at": "2025-04-11T13:22:01.207Z",
+      "updated_at": "2025-04-11T13:22:01.207Z",
+      "deleted_at": null,
+      "treatment_goal": 8,
+      "datalayer": 2725,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 19,
+    "fields": {
+      "created_at": "2025-04-11T13:27:02.792Z",
+      "updated_at": "2025-04-11T17:10:19.160Z",
+      "deleted_at": null,
+      "treatment_goal": 8,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 20,
+    "fields": {
+      "created_at": "2025-04-11T13:27:47.592Z",
+      "updated_at": "2025-04-11T17:10:28.816Z",
+      "deleted_at": null,
+      "treatment_goal": 8,
+      "datalayer": 2725,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 21,
+    "fields": {
+      "created_at": "2025-04-11T13:28:45.566Z",
+      "updated_at": "2025-04-11T13:28:45.566Z",
+      "deleted_at": null,
+      "treatment_goal": 7,
+      "datalayer": 2803,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 22,
+    "fields": {
+      "created_at": "2025-04-11T13:29:16.747Z",
+      "updated_at": "2025-04-11T13:29:16.747Z",
+      "deleted_at": null,
+      "treatment_goal": 7,
+      "datalayer": 2724,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 23,
+    "fields": {
+      "created_at": "2025-04-11T13:29:46.867Z",
+      "updated_at": "2025-04-11T17:10:47.793Z",
+      "deleted_at": null,
+      "treatment_goal": 7,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 24,
+    "fields": {
+      "created_at": "2025-04-11T13:30:38.319Z",
+      "updated_at": "2025-04-11T17:10:55.918Z",
+      "deleted_at": null,
+      "treatment_goal": 7,
+      "datalayer": 2724,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 25,
+    "fields": {
+      "created_at": "2025-04-11T13:31:39.549Z",
+      "updated_at": "2025-04-11T13:31:39.549Z",
+      "deleted_at": null,
+      "treatment_goal": 6,
+      "datalayer": 2803,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 26,
+    "fields": {
+      "created_at": "2025-04-11T13:32:14.253Z",
+      "updated_at": "2025-04-11T17:11:32.508Z",
+      "deleted_at": null,
+      "treatment_goal": 6,
+      "datalayer": 2803,
+      "usage_type": "THRESHOLD",
+      "threshold": "value > 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 27,
+    "fields": {
+      "created_at": "2025-04-11T13:33:22.983Z",
+      "updated_at": "2025-04-11T17:11:23.370Z",
+      "deleted_at": null,
+      "treatment_goal": 6,
+      "datalayer": 2729,
+      "usage_type": "THRESHOLD",
+      "threshold": "value == 0"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 28,
+    "fields": {
+      "created_at": "2025-04-22T13:03:26.184Z",
+      "updated_at": "2025-05-05T14:13:24.901Z",
+      "deleted_at": null,
+      "treatment_goal": 5,
+      "datalayer": 2892,
+      "usage_type": "THRESHOLD",
+      "threshold": "value != 10 & value != 45 & value != 46 & value != 210 & value != 245 & value != 246 & value != 310 & value != 410 & value != 445 & value != 446 & value != 502 & value != 508"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 29,
+    "fields": {
+      "created_at": "2025-06-10T19:11:24.632Z",
+      "updated_at": "2025-06-10T19:11:24.632Z",
+      "deleted_at": null,
+      "treatment_goal": 52,
+      "datalayer": 2714,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 30,
+    "fields": {
+      "created_at": "2025-06-10T19:11:24.635Z",
+      "updated_at": "2025-06-10T19:11:24.635Z",
+      "deleted_at": null,
+      "treatment_goal": 52,
+      "datalayer": 2800,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 31,
+    "fields": {
+      "created_at": "2025-06-12T21:04:44.960Z",
+      "updated_at": "2025-06-12T21:04:44.960Z",
+      "deleted_at": null,
+      "treatment_goal": 4,
+      "datalayer": 2802,
+      "usage_type": "THRESHOLD",
+      "threshold": "value < 0.33"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 32,
+    "fields": {
+      "created_at": "2025-06-12T21:04:44.960Z",
+      "updated_at": "2025-06-12T21:04:44.960Z",
+      "deleted_at": null,
+      "treatment_goal": 4,
+      "datalayer": 2798,
+      "usage_type": "THRESHOLD",
+      "threshold": "value >= 1"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1033,
+    "fields": {
+      "created_at": "2025-07-11T18:14:10.870Z",
+      "updated_at": "2025-07-11T18:14:10.870Z",
+      "deleted_at": null,
+      "treatment_goal": 1,
+      "datalayer": 3022,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1036,
+    "fields": {
+      "created_at": "2025-07-11T18:18:05.337Z",
+      "updated_at": "2025-07-11T18:18:05.338Z",
+      "deleted_at": null,
+      "treatment_goal": 1,
+      "datalayer": 2763,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1037,
+    "fields": {
+      "created_at": "2025-07-11T18:19:17.257Z",
+      "updated_at": "2025-07-11T18:19:17.257Z",
+      "deleted_at": null,
+      "treatment_goal": 1,
+      "datalayer": 2805,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1039,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.519Z",
+      "updated_at": "2025-07-23T15:33:33.519Z",
+      "deleted_at": null,
+      "treatment_goal": 1101,
+      "datalayer": 4184,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1040,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.523Z",
+      "updated_at": "2025-07-23T15:33:33.523Z",
+      "deleted_at": null,
+      "treatment_goal": 1101,
+      "datalayer": 4178,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1041,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.524Z",
+      "updated_at": "2025-07-23T15:33:33.524Z",
+      "deleted_at": null,
+      "treatment_goal": 1101,
+      "datalayer": 4179,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1042,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.525Z",
+      "updated_at": "2025-07-23T15:33:33.525Z",
+      "deleted_at": null,
+      "treatment_goal": 1101,
+      "datalayer": 4171,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1043,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.526Z",
+      "updated_at": "2025-07-23T15:33:33.526Z",
+      "deleted_at": null,
+      "treatment_goal": 1101,
+      "datalayer": 4172,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1044,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.527Z",
+      "updated_at": "2025-07-23T15:33:33.527Z",
+      "deleted_at": null,
+      "treatment_goal": 1101,
+      "datalayer": 4176,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1045,
+    "fields": {
+      "created_at": "2025-07-23T15:33:33.528Z",
+      "updated_at": "2025-07-23T15:33:33.528Z",
+      "deleted_at": null,
+      "treatment_goal": 1101,
+      "datalayer": 4177,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1046,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.515Z",
+      "updated_at": "2025-07-23T15:44:36.515Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4178,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1047,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.516Z",
+      "updated_at": "2025-07-23T15:44:36.516Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4180,
+      "usage_type": "THRESHOLD",
+      "threshold": "value == 2"
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1048,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.516Z",
+      "updated_at": "2025-07-23T15:44:36.516Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4179,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1049,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.517Z",
+      "updated_at": "2025-07-23T15:44:36.517Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4184,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1050,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.518Z",
+      "updated_at": "2025-07-23T15:44:36.518Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4171,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1051,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.519Z",
+      "updated_at": "2025-07-23T15:44:36.519Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4172,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1052,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.519Z",
+      "updated_at": "2025-07-23T15:44:36.519Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4176,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1053,
+    "fields": {
+      "created_at": "2025-07-23T15:44:36.520Z",
+      "updated_at": "2025-07-23T15:44:36.520Z",
+      "deleted_at": null,
+      "treatment_goal": 1102,
+      "datalayer": 4177,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1054,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.325Z",
+      "updated_at": "2025-07-23T15:47:41.325Z",
+      "deleted_at": null,
+      "treatment_goal": 1103,
+      "datalayer": 4179,
+      "usage_type": "PRIORITY",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1055,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.326Z",
+      "updated_at": "2025-07-23T15:47:41.326Z",
+      "deleted_at": null,
+      "treatment_goal": 1103,
+      "datalayer": 4178,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1056,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.327Z",
+      "updated_at": "2025-07-23T15:47:41.327Z",
+      "deleted_at": null,
+      "treatment_goal": 1103,
+      "datalayer": 4184,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1057,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.327Z",
+      "updated_at": "2025-07-23T15:47:41.328Z",
+      "deleted_at": null,
+      "treatment_goal": 1103,
+      "datalayer": 4171,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1058,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.328Z",
+      "updated_at": "2025-07-23T15:47:41.328Z",
+      "deleted_at": null,
+      "treatment_goal": 1103,
+      "datalayer": 4172,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1059,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.329Z",
+      "updated_at": "2025-07-23T15:47:41.329Z",
+      "deleted_at": null,
+      "treatment_goal": 1103,
+      "datalayer": 4176,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  },
+  {
+    "model": "planning.treatmentgoalusesdatalayer",
+    "pk": 1060,
+    "fields": {
+      "created_at": "2025-07-23T15:47:41.329Z",
+      "updated_at": "2025-07-23T15:47:41.329Z",
+      "deleted_at": null,
+      "treatment_goal": 1103,
+      "datalayer": 4177,
+      "usage_type": "SECONDARY_METRIC",
+      "threshold": null
+    }
+  }
+]

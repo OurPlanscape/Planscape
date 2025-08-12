@@ -9,9 +9,9 @@ import { firstValueFrom, Observable, of } from 'rxjs';
 import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
-import { TreatmentGoalsComponent } from '../treatment-goals/treatment-goals.component';
-import { StandSizeComponent } from '../stand-size/stand-size.component';
+import { Step1Component } from '../step1/step1.component';
 import { ScenarioState } from '../scenario.state';
+import { Step3Component } from '../step3/step3.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -37,9 +37,7 @@ describe('ScenarioCreationComponent', () => {
         }),
       ],
       declarations: [
-        MockDeclarations(DataLayersComponent),
-        MockDeclarations(TreatmentGoalsComponent),
-        MockDeclarations(StandSizeComponent),
+        MockDeclarations(DataLayersComponent, Step1Component, Step3Component),
       ],
     }).compileComponents();
 

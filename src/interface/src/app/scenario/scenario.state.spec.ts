@@ -40,6 +40,8 @@ describe('ScenarioState', () => {
         features: [],
       },
     },
+    geopackage_status: null,
+    geopackage_url: null,
   };
 
   beforeEach(() => {
