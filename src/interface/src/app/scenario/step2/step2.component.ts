@@ -8,7 +8,7 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ScenarioCreation } from '@types';
 
 @Component({
-  selector: 'app-excluded-areas',
+  selector: 'app-step2',
   standalone: true,
   imports: [
     CommonModule,
@@ -16,6 +16,7 @@ import { ScenarioCreation } from '@types';
     SectionComponent,
     ReactiveFormsModule,
   ],
+  providers: [{ provide: StepDirective, useExisting: Step2Component }],
   templateUrl: './step2.component.html',
   styleUrl: './step2.component.scss',
 })
