@@ -8,8 +8,14 @@ import rasterio
 from django.conf import settings
 from gis.core import get_layer_info, get_random_output_file
 from gis.info import get_gdal_env
+from rasterio.crs import CRS
 from rasterio.features import shapes, sieve
-from rasterio.warp import Resampling, calculate_default_transform, reproject
+from rasterio.warp import (
+    Resampling,
+    calculate_default_transform,
+    reproject,
+    transform_geom,
+)
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
 from shapely.geometry import mapping, shape
@@ -159,14 +165,18 @@ def data_mask(
     connectivity: int = 8,
     min_area_pixels: int = 10,
     simplify_tol_pixels=0,
+    target_epsg: int = 4269,
 ) -> str | None:
     """
     Given a particular raster, returns it's datamask. The region with
     data.
     """
+
     raster_path = Path(raster_path)
     with rasterio.Env(**get_gdal_env()):
         with rasterio.open(raster_path) as ds:
+            src_crs = ds.crs
+            dst_crs = CRS.from_epsg(target_epsg)
             mask = ds.dataset_mask()  # uint8, shape (H, W)
 
             if not mask.any():
@@ -199,4 +209,14 @@ def data_mask(
 
             out_geom = unary_union(geoms)
             out_geom = make_valid(out_geom)
+            if src_crs != dst_crs:
+                out_geom = shape(
+                    transform_geom(
+                        src_crs,
+                        dst_crs,
+                        mapping(out_geom),
+                        precision=15,
+                    )
+                )
+
             return json.dumps(mapping(out_geom))
