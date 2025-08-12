@@ -602,4 +602,3 @@ class Command(PlanscapeCommand):
             )
         data = response.json()
         return data
-        return data
