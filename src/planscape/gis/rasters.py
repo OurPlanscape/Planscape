@@ -154,7 +154,7 @@ def warp(
 
 
 def data_mask(
-    raster_path: Path,
+    raster_path: Union[str, Path],
     band: int = 1,
     connectivity: int = 8,
     min_area_pixels: int = 1,  # drop tiny specks

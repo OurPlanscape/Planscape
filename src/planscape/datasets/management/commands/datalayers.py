@@ -24,6 +24,7 @@ from gis.core import (
     with_vsi_prefix,
 )
 from gis.io import detect_mimetype
+from gis.rasters import data_mask
 from gis.rasters import to_planscape as to_planscape_raster
 from gis.vectors import to_planscape_multi_layer
 
@@ -407,7 +408,13 @@ class Command(PlanscapeCommand):
 
         if url and not layer_type:
             raise ValueError("Missing required layer_type when using url.")
+        cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
+        original_file_path = Path(input_file)
+        vsi_input_file = with_vsi_prefix(input_file)
 
+        layer_type = fetch_datalayer_type(input_file=vsi_input_file)
+        layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
+        mimetype = detect_mimetype(input_file=vsi_input_file)
         try:
             if skip_existing:
                 check_existing_args = {
@@ -419,7 +426,12 @@ class Command(PlanscapeCommand):
                 self._skip_existing(**check_existing_args)
         except DataLayerAlreadyExists as datalayer_exists:
             return {"info": str(datalayer_exists)}
-        geometry = data_mask(input_file)
+
+        if layer_type == DataLayerType.RASTER:
+            geometry = data_mask(original_file_path)
+        else:
+            geometry = None
+
         if url:
             return self._create_datalayer_request(
                 name=name,
@@ -437,13 +449,6 @@ class Command(PlanscapeCommand):
                 **kwargs,
             )
 
-        cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
-        original_file_path = Path(input_file)
-        vsi_input_file = with_vsi_prefix(input_file)
-
-        layer_type = fetch_datalayer_type(input_file=vsi_input_file)
-        layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
-        mimetype = detect_mimetype(input_file=vsi_input_file)
         match layer_type:
             case DataLayerType.RASTER:
                 processed_files = to_planscape_raster(
@@ -582,5 +587,7 @@ class Command(PlanscapeCommand):
                 f"Failed to set datalayer {datalayer_id} to {status}. "
                 f"Response: {response.status_code} => {response.text}"
             )
+        data = response.json()
+        return data
         data = response.json()
         return data
