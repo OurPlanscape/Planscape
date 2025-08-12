@@ -33,7 +33,7 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 
 ## Architecture at a Glance
 
-```
+```bash
 | Layer        | Tech (current)                                    | Purpose                                                |
 |--------------|---------------------------------------------------|--------------------------------------------------------|
 | Database     | PostgreSQL + PostGIS                              | Geometry, plans, scenarios, auth                       |
@@ -48,7 +48,7 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 
 
 ## Brief Repo Tour
-```
+```bash
 `Planscape/`
 ├── `.github/` # CI workflows, issue/PR templates
 ├── `analysis/` # ForSys algorithm code and docs, written in R
