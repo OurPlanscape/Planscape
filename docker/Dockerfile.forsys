@@ -20,15 +20,10 @@ COPY install.R /usr/src/app/
 RUN Rscript install.R
 
 COPY .env /usr/src/app/
-COPY src/forsys/* /usr/src/app/
+COPY src/forsys/server.R /usr/src/app/
 COPY src/planscape/rscripts/* /usr/src/app/
-
-RUN chmod +x /usr/src/app/src/forsys/run_forsys_server.sh
-WORKDIR /usr/src/app/src/forsys
 
 EXPOSE 8001
 
-ENTRYPOINT ["/usr/src/app/src/forsys/run_forsys_server.sh"]
-CMD ["8001"]
-
-#CMD [ "Rscript", "--vanilla", "-e", "library(plumber); pr('server.R') %>% pr_run(port=8001)" ]
+WORKDIR /usr/src/app/src/forsys
+CMD [ "Rscript", "--vanilla", "-e", "library(plumber); pr('server.R') %>% pr_run(port=8001)" ]
