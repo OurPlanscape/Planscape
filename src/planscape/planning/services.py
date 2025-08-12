@@ -12,7 +12,7 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
 from actstream import action
 from cacheops import redis_client
-from celery import chain, chord
+from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
 from django.conf import settings
@@ -36,11 +36,7 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import (
-    async_calculate_stand_metrics_v2,
-    async_forsys_run,
-    async_generate_scenario_geopackage,
-)
+from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -178,11 +174,9 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         },
         user_id=user.pk,
     )
-    callback_chain = chain(
-        async_forsys_run.si(scenario_id=scenario.pk),
-        async_generate_scenario_geopackage.si(scenario_id=scenario.pk),
+    transaction.on_commit(
+        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
     )
-    transaction.on_commit(lambda: chord(tasks)(callback_chain))
     return scenario
 
 
@@ -730,7 +724,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
                 f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
             ),
             input_file=str(zip_file),
-            bucket=settings.GCS_MEDIA_BUCKET,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
         )
 
         temp_file.unlink(missing_ok=True)
@@ -744,7 +738,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
 
         return str(geopackage_path)
     except Exception:
-        logger.error("Failed to export to geopackage")
+        logger.exception("Failed to export to geopackage")
         scenario.geopackage_url = None
         scenario.geopackage_status = GeoPackageStatus.FAILED
         scenario.save(

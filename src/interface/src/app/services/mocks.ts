@@ -59,4 +59,6 @@ export const MOCK_SCENARIO: Scenario = {
       type: 'test',
     },
   },
+  geopackage_status: null,
+  geopackage_url: null,
 };

@@ -19,6 +19,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
@@ -255,6 +256,9 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
 
+    def get_coverage(self) -> GEOSGeometry:
+        return self.datalayers.all().geometric_intersection()  # type: ignore
+
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(
             self.datalayers.exclude(
@@ -451,15 +455,9 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             return None
         signed_url = create_download_url(
             self.geopackage_url,
-            bucket=settings.GCS_MEDIA_BUCKET,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
         )
         logger.info("PUBLIC URL GENERATED %s", signed_url)
-        if signed_url is None:
-            logger.info("INVALIDATING PUBLIC URL")
-            create_download_url.invalidate(
-                self.geopackage_url,
-                bucket=settings.GCS_MEDIA_BUCKET,
-            )  # type: ignore
         return signed_url
 
     objects = ScenarioManager()

@@ -12,14 +12,14 @@ export class TreatmentGoalsService {
 
   private _cachedStatewideGoals: ScenarioGoal[] | null = null;
 
-  getTreatmentGoals() {
+  getTreatmentGoals(planning_area?: number) {
     if (this._cachedStatewideGoals) {
       return of(this._cachedStatewideGoals);
     }
     return this.http
       .get<
         ScenarioGoal[]
-      >(environment.backend_endpoint + '/v2/treatment-goals/')
+      >(`${environment.backend_endpoint ?? ''}/v2/treatment-goals/${planning_area ? '?planning_area=' + planning_area : ''}`)
       .pipe(tap((c) => (this._cachedStatewideGoals = c)));
   }
 }

@@ -23,13 +23,14 @@ import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/g
 import { SectionComponent } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 import { StepDirective } from '../../../styleguide/steps/step.component';
+import { ActivatedRoute } from '@angular/router';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-step1',
   standalone: true,
   imports: [
     CommonModule,
-    SectionComponent,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
@@ -37,7 +38,6 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
     SectionComponent,
     MatFormFieldModule,
     MatSelectModule,
-    ReactiveFormsModule,
     KeyValuePipe,
   ],
   providers: [{ provide: StepDirective, useExisting: Step1Component }],
@@ -46,11 +46,9 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
 })
 export class Step1Component extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
-    configuration: new FormGroup({
-      stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
-        Validators.required,
-      ]),
-    }),
+    stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
+      Validators.required,
+    ]),
     treatment_goal: new FormControl<number | undefined>(undefined, [
       Validators.required,
     ]),
@@ -58,8 +56,14 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
 
   readonly standSizeOptions = STAND_OPTIONS;
 
+  planId = this.route.snapshot.data['planId'];
+
   categorizedStatewideGoals$ = this.treatmentGoalsService
-    .getTreatmentGoals()
+    .getTreatmentGoals(
+      this.featuresService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')
+        ? this.planId
+        : null
+    )
     .pipe(
       map((goals) =>
         goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
@@ -81,7 +85,9 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
   constructor(
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private route: ActivatedRoute,
+    private featuresService: FeatureService
   ) {
     super();
   }
