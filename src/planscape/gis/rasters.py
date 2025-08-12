@@ -1,3 +1,4 @@
+import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -11,7 +12,7 @@ from rasterio.features import shapes, sieve
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
-from shapely.geometry import shape
+from shapely.geometry import mapping, shape
 from shapely.ops import unary_union
 from shapely.validation import make_valid
 
@@ -198,4 +199,4 @@ def data_mask(
 
             out_geom = unary_union(geoms)
             out_geom = make_valid(out_geom)
-            return out_geom.wkt
+            return json.dumps(mapping(out_geom))
