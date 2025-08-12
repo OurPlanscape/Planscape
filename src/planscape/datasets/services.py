@@ -314,7 +314,7 @@ def create_datalayer(
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
-    geometry = kwargs.pop("geometry") or geometry_from_info(
+    geometry = kwargs.pop("geometry", None) or geometry_from_info(
         info,
         datalayer_type=type,
     )
