@@ -318,7 +318,7 @@ def create_datalayer(
         info,
         datalayer_type=type,
     )
-    outline = kwargs.pop("geometry", None)
+    outline = kwargs.pop("outline", None)
 
     if bool(url) == bool(original_name):
         raise ValueError(
