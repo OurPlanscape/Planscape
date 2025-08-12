@@ -75,14 +75,19 @@ export class StepsComponent<T> extends CdkStepper {
         ? currentStep.form
         : currentStep?.stepControl;
 
+    console.log('what is the control?', control);
+
     // if no control go ahead to the next step
     if (!control) {
+      console.log('there is no control!?');
       this.moveNextOrFinish();
       return;
     }
     if (this.outerForm && this.outerForm.invalid) {
       this.outerForm.markAllAsTouched();
     }
+    console.log('we have a current step?:', currentStep);
+    console.log('is control valid?:', control.valid);
 
     if (currentStep && control.valid) {
       // async

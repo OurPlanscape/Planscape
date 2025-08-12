@@ -35,19 +35,17 @@
       (selectedIndexChange)="stepChanged()"
       (finished)="onFinish()"
       [outerForm]="form">
-    <!-- TODO: just moving this here for faster dev/testing -->
-      <sg-step [stepControl]="step0.form"
-        >
-        <app-treatment-target-step #step0
+      <!-- TODO: just moving this here for faster dev/testing -->
+      <cdk-step [stepControl]="step0.form">
+        <app-treatment-target-step
+          #step0
           [planningAreaAcres]="planningAreaAcres"></app-treatment-target-step
-        ></sg-step
-      >
+      ></cdk-step>
       <sg-step [stepControl]="step1.form">
         <app-step1 #step1></app-step1>
       </sg-step>
       <cdk-step>Step 2</cdk-step>
       <cdk-step>Step 3</cdk-step>
-      
     </sg-steps>
   </mat-tab>
   <mat-tab label="Data Layers">

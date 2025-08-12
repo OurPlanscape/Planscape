@@ -22,18 +22,18 @@
           <mat-label>Max acres to be treated</mat-label>
           <input
             class="right-align"
-            formControlName="maxArea"
+            formControlName="max_area"
             type="text"
             mask="separator"
             thousandSeparator=","
-            (focus)="focusedSelection = 'maxAcres'"
-            (input)="toggleMaxAreaAndMaxCost()"
+            (focus)="focusedSelection = 'max_area'"
+            (input)="toggleMaxAreaAndMaxBudget()"
             matInput />
         </mat-form-field>
       </div>
       <div
         class="help-text"
-        *ngIf="focusedSelection === 'maxAcres'"
+        *ngIf="focusedSelection === 'max_area'"
         [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
         Max acres needs to be between
         {{ minMaxAreaValue | number: '1.0-0' }} and
@@ -49,24 +49,24 @@
           floatLabel="always">
           <mat-label>Max Budget</mat-label>
           <input
-            id="maxCost"
+            id="maxBudget"
             class="right-align"
-            formControlName="maxCost"
+            formControlName="max_budget"
             matInput
             type="text"
             mask="separator"
             thousandSeparator=","
-            (focus)="focusedSelection = 'maxCost'"
-            (input)="toggleMaxAreaAndMaxCost()"
+            (focus)="focusedSelection = 'max_budget'"
+            (input)="toggleMaxAreaAndMaxBudget()"
             [errorStateMatcher]="budgetStateMatcher" />
           <span matPrefix>$&nbsp;</span>
         </mat-form-field>
 
         <div
           class="help-text"
-          *ngIf="focusedSelection === 'maxCost'"
+          *ngIf="focusedSelection === 'max_budget'"
           [ngClass]="{
-            error: form.hasError('notEnoughBudget') && maxCost?.touched,
+            error: form.hasError('notEnoughBudget') && maxBudget?.touched,
           }">
           Budget needs to be at least
           {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}

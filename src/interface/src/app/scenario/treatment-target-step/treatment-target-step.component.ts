@@ -67,15 +67,16 @@ export class TreatmentTargetStepComponent
       Validators.required,
     ]),
   });
+
   focusedSelection = ''; // string to identify which selection is focused
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
 
   get maxArea() {
-    return this.form?.get('form.maxArea');
+    return this.form?.get('max_area');
   }
 
-  get maxCost() {
-    return this.form.get('form.maxCost');
+  get maxBudget() {
+    return this.form?.get('max_budget');
   }
 
   get minMaxAreaValue() {
@@ -88,15 +89,14 @@ export class TreatmentTargetStepComponent
 
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the planningAreaAcres is updated
+    // TODO: can't we just subscribe to an observable instead?
     if (changes['planningAreaAcres'] && this.form) {
-      // const maxArea = this.maxArea as FormControl; // eh?
-      // const maxArea = this.maxArea; // eh?
-
-      // maxArea.clearValidators();
-      // maxArea.addValidators([
-      //   Validators.min(this.minMaxAreaValue),
-      //   Validators.max(this.maxMaxAreaValue),
-      // ]);
+      const maxArea = this.maxArea as FormControl;
+      maxArea.clearValidators();
+      maxArea.addValidators([
+        Validators.min(this.minMaxAreaValue),
+        Validators.max(this.maxMaxAreaValue),
+      ]);
       // also update the totalBudgetValidator
       this.form.clearValidators();
       this.form.addValidators([
@@ -111,15 +111,16 @@ export class TreatmentTargetStepComponent
 
   /**
    * checks that one of budget or treatment area constraints is provided.
-   * @param constraintsForm
+   * @param form
    * @private
    */
   private budgetOrAreaRequiredValidator(
-    constraintsForm: AbstractControl
+    form: AbstractControl
   ): ValidationErrors | null {
-    const maxCost = constraintsForm.get('budgetForm.maxCost');
-    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
+    const maxCost = form.get('max_budget');
+    const maxArea = form.get('max_area');
     const valid = !!maxCost?.value || !!maxArea?.value;
+
     return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }
 
@@ -130,15 +131,13 @@ export class TreatmentTargetStepComponent
    */
   private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
     return (constraintsForm: AbstractControl): ValidationErrors | null => {
-      const maxCost = constraintsForm.get('budgetForm.maxCost')?.value;
-      const estCostPerAcre = constraintsForm.get(
-        'budgetForm.estimatedCost'
-      )?.value;
-      if (!!maxCost) {
+      const maxBudget = this.form.get('max_budget')?.value;
+      const estCostPerAcre = constraintsForm.get('estimated_cost')?.value;
+      if (!!maxBudget) {
         const hasBudget = hasEnoughBudget(
           planningAreaAcres,
           estCostPerAcre,
-          maxCost
+          maxBudget
         );
 
         return hasBudget
@@ -161,24 +160,25 @@ export class TreatmentTargetStepComponent
   }
 
   getData() {
+    console.log('here is the getData value:', this.form.value);
     return this.form.value;
   }
 
   // This enables and disables fields, based on what our current selection is
-  toggleMaxAreaAndMaxCost() {
-    const maxCostControl = this.form!.get('maxCost');
-    const maxAreaControl = this.form!.get('maxArea');
+  toggleMaxAreaAndMaxBudget() {
+    const maxBudgetControl = this.form!.get('max_budget');
+    const maxAreaControl = this.form!.get('max_area');
 
-    if (maxCostControl?.value) {
+    if (maxBudgetControl?.value) {
       maxAreaControl?.disable();
     } else {
       maxAreaControl?.enable();
     }
 
     if (maxAreaControl?.value) {
-      maxCostControl?.disable();
+      maxBudgetControl?.disable();
     } else {
-      maxCostControl?.enable();
+      maxBudgetControl?.enable();
     }
   }
 }

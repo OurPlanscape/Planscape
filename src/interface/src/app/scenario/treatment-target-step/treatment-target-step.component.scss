@@ -1,5 +1,21 @@
+@import 'colors';
+
 .flex-row {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
+  align-items: center;
+  display: flex;
+  gap:12px;
 }
+
+.input-field {
+  margin: 10px;
+}
+
+.error-message {
+  color: $color-error;
+  margin: 0;
+}
+
+.error {
+  color: $color-error;
+}
+
