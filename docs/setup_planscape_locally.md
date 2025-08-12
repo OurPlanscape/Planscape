@@ -1,6 +1,6 @@
-# PLANSCAPE LOCAL Development Environment — UPDATED 11 AUG 2025
+# PLANSCAPE LOCAL DEV ENV — UPDATED 11 AUG 2025
 
-## Introduction — Contributing
+## Introduction - Local Planscape Setup
 
 The following are instructions for getting **[Planscape](https://www.planscape.org/)** running on your machine for development. Let's get started.
 
