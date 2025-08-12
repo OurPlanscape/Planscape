@@ -14,6 +14,8 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatLegacyMenuHarness as MatMenuHarness } from '@angular/material/legacy-menu/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { MockDeclarations } from 'ng-mocks';
+import { ButtonComponent } from '@styleguide';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -39,7 +41,7 @@ describe('TopBarComponent', () => {
         RouterTestingModule,
         NoopAnimationsModule,
       ],
-      declarations: [TopBarComponent],
+      declarations: [TopBarComponent, MockDeclarations(ButtonComponent)],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [{ provide: AuthService, useValue: mockAuthService }],
     }).compileComponents();

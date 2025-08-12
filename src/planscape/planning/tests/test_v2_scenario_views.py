@@ -590,3 +590,71 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("version"), ScenarioVersion.V2)
+
+
+class ScenarioDetailTest(APITestCase):
+    def setUp(self):
+        self.owner_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.owner_user)
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.configuration = {
+            "question_id": self.treatment_goal.pk,
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            name="test scenario",
+            configuration=self.configuration,
+            user=self.owner_user,
+        )
+
+    @mock.patch(
+        "planning.models.create_download_url",
+        return_value="http://example.com/download",
+    )
+    def test_detail_scenario_v2_with_geopackage_url(self, mock_create_download_url):
+        self.scenario.geopackage_url = "gs://bucket/path/to/geopackage.gpkg"
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("geopackage_url"), "http://example.com/download")
+
+    def test_detail_scenario_v2_without_geopackage_url(self):
+        self.scenario.geopackage_url = None
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(data.get("geopackage_url"))

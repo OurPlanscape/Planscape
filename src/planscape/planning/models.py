@@ -1,9 +1,11 @@
 import json
+import logging
 import uuid
 from pathlib import Path
 from typing import Collection, Optional
 
 from collaboration.models import UserObjectRole
+from core.gcs import create_download_url
 from core.models import (
     AliveObjectsManager,
     CreatedAtMixin,
@@ -17,6 +19,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
@@ -24,6 +27,8 @@ from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
 from stands.models import Stand, StandSizeChoices
 from utils.uuid_utils import generate_short_uuid
+
+logger = logging.getLogger(__name__)
 
 
 class PlanningAreaManager(AliveObjectsManager):
@@ -83,7 +88,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
     notes = models.TextField(null=True, help_text="Notes of the Planning Area.")
 
     geometry = models.MultiPolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        srid=settings.DEFAULT_CRS,
         null=True,
         help_text="Geometry of the Planning Area represented by polygons.",
     )
@@ -188,6 +193,17 @@ class TreatmentGoalCategory(models.TextChoices):
     CARBON_BIOMASS = "CARBON_BIOMASS", "Carbon/Biomass"
 
 
+class TreatmentGoalGroup(models.TextChoices):
+    WILDFIRE_RISK_TO_COMMUTIES = (
+        "WILDFIRE_RISK_TO_COMMUTIES",
+        "Wildfire Risk to Communities",
+    )
+    CALIFORNIA_PLANNING_METRICS = (
+        "CALIFORNIA_PLANNING_METRICS",
+        "California Planning Metrics",
+    )
+
+
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
@@ -209,6 +225,12 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         help_text="Treatment Goal category.",
         null=True,
     )
+    group = models.CharField(
+        max_length=64,
+        choices=TreatmentGoalGroup.choices,
+        help_text="Treatment Goal group.",
+        null=True,
+    )
     created_by_id: int
     created_by = models.ForeignKey(
         User,
@@ -227,6 +249,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
             "datalayer",
         ),
     )
+
+    geometry = models.PolygonField(
+        srid=settings.DEFAULT_CRS,
+        null=True,
+        help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
+    )
+
+    def get_coverage(self) -> GEOSGeometry:
+        return self.datalayers.all().geometric_intersection()  # type: ignore
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(
@@ -304,6 +335,13 @@ class TreatmentGoalUsesDataLayer(
         ]
 
 
+class GeoPackageStatus(models.TextChoices):
+    SUCCEEDED = ("SUCCEEDED", "Succeeded")
+    PROCESSING = ("PROCESSING", "Processing")
+    PENDING = ("PENDING", "Pending")
+    FAILED = ("FAILED", "Failed")
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     planning_area_id: int
@@ -352,12 +390,24 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Result status of the Scenario.",
     )
 
+    geopackage_status = models.CharField(
+        max_length=32,
+        choices=GeoPackageStatus.choices,
+        null=True,
+        help_text="Result status of the generation of a geopackage.",
+    )
+
     treatment_goal = models.ForeignKey(
         TreatmentGoal,
         related_name="treatment_goals",
         on_delete=models.RESTRICT,
         null=True,
         help_text="Treatment Goal of the Scenario.",
+    )
+
+    geopackage_url = models.URLField(
+        null=True,
+        help_text="Geopackage URL of the Scenario.",
     )
 
     @cached_property
@@ -398,6 +448,17 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return Stand.objects.within_polygon(
             project_areas_geometry, self.get_stand_size()
         )
+
+    def get_geopackage_url(self) -> Optional[str]:
+        if not self.geopackage_url:
+            logger.warning("No geopackage url ready yet")
+            return None
+        signed_url = create_download_url(
+            self.geopackage_url,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
+        )
+        logger.info("PUBLIC URL GENERATED %s", signed_url)
+        return signed_url
 
     objects = ScenarioManager()
 
@@ -505,7 +566,7 @@ class ProjectArea(
     )
 
     geometry = models.MultiPolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        srid=settings.DEFAULT_CRS,
         help_text="Geometry of the Project Area.",
     )
 

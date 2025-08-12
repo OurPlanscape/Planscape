@@ -16,6 +16,7 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioFilter,
     ScenarioOrderingFilter,
+    TreatmentGoalFilter,
 )
 from planning.models import PlanningArea, ProjectArea, Scenario, TreatmentGoal
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
@@ -298,6 +299,7 @@ class TreatmentGoalViewSet(
 
     queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
+    filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]

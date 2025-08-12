@@ -5,7 +5,7 @@ import {
   convertToParamMap,
   RouterStateSnapshot,
 } from '@angular/router';
-import { ScenarioState } from '../maplibre-map/scenario.state';
+import { ScenarioState } from '../scenario/scenario.state';
 import { scenarioLoaderResolver } from './scenario-loader.resolver';
 
 describe('scenarioLoaderResolver', () => {
@@ -33,8 +33,8 @@ describe('scenarioLoaderResolver', () => {
     } as any as ActivatedRouteSnapshot;
   }
 
-  it('sets scenarioId from `id` and returns it', () => {
-    const route = makeRoute({ id: '123' });
+  it('sets scenarioId and returns it', () => {
+    const route = makeRoute({ scenarioId: '123' });
 
     const result = TestBed.runInInjectionContext(() =>
       scenarioLoaderResolver(route, dummyState)
@@ -45,31 +45,7 @@ describe('scenarioLoaderResolver', () => {
     expect(result).toBe(123);
   });
 
-  it('falls back to `scenarioId` when `id` is absent', () => {
-    const route = makeRoute({ scenarioId: '456' });
-
-    const result = TestBed.runInInjectionContext(() =>
-      scenarioLoaderResolver(route, dummyState)
-    );
-
-    expect(mockScenarioState.setScenarioId).toHaveBeenCalledWith(456);
-    expect(mockScenarioState.resetScenarioId).not.toHaveBeenCalled();
-    expect(result).toBe(456);
-  });
-
-  it('prefers `id` over `scenarioId` when both are present', () => {
-    const route = makeRoute({ id: '100', scenarioId: '200' });
-
-    const result = TestBed.runInInjectionContext(() =>
-      scenarioLoaderResolver(route, dummyState)
-    );
-
-    expect(mockScenarioState.setScenarioId).toHaveBeenCalledWith(100);
-    expect(mockScenarioState.resetScenarioId).not.toHaveBeenCalled();
-    expect(result).toBe(100);
-  });
-
-  it('calls resetScenarioId and returns null when neither param is present', () => {
+  it('calls resetScenarioId and returns null when scenarioId param is not present', () => {
     const route = makeRoute({});
 
     const result = TestBed.runInInjectionContext(() =>
@@ -82,7 +58,7 @@ describe('scenarioLoaderResolver', () => {
   });
 
   it('calls resetScenarioId and returns null on invalid numeric value', () => {
-    const route = makeRoute({ id: 'foo' });
+    const route = makeRoute({ scenarioId: 'foo' });
 
     const result = TestBed.runInInjectionContext(() =>
       scenarioLoaderResolver(route, dummyState)

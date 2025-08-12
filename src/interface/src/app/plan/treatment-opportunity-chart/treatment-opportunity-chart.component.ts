@@ -11,7 +11,7 @@ import {
   getProjectAreaLabelsFromFeatures,
   whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
-import { ChartComponent } from '../../../styleguide/chart/chart.component';
+import { ChartComponent } from '@styleguide';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',

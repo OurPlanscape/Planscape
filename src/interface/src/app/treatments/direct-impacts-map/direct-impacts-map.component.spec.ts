@@ -8,7 +8,7 @@ import { AuthService } from '@services';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { BehaviorSubject } from 'rxjs';
 
 const fakeRoute = jasmine.createSpyObj(

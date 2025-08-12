@@ -22,6 +22,7 @@ import {
   ButtonComponent,
   FilterDropdownComponent,
   ModalComponent,
+  OverlayLoaderComponent,
   PanelComponent,
   StatusChipComponent,
   TreatmentTypeIconComponent,
@@ -45,7 +46,6 @@ import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-ti
 import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
 import { TreatmentProjectArea } from '@types';
-import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
@@ -54,7 +54,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 

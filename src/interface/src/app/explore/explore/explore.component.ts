@@ -23,6 +23,11 @@ import { getPlanPath } from '../../plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '../../map/map.constants';
 
+enum SidebarTabs {
+  DATA_LAYERS,
+  BASE_LAYERS,
+}
+
 @UntilDestroy()
 @Component({
   selector: 'app-explore',
@@ -113,7 +118,7 @@ export class ExploreComponent implements OnDestroy {
         this.panelExpanded = true;
         // if I have a selected map, go to data layer tab
         if (id) {
-          this.tabIndex = 0;
+          this.tabIndex = SidebarTabs.DATA_LAYERS;
         }
       });
 
@@ -145,15 +150,22 @@ export class ExploreComponent implements OnDestroy {
     const options = this.exploreStorageService.getItem();
     if (options) {
       this.panelExpanded = options.isPanelExpanded || false;
-      this.tabIndex = options.tabIndex || 0;
+      this.tabIndex = options.tabIndex || SidebarTabs.DATA_LAYERS;
       this.multiMapConfigState.updateDataLayersOpacity(
         options.opacity || FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY
+      );
+      this.multiMapConfigState.setAllowClickOnMap(
+        this.tabIndex === SidebarTabs.DATA_LAYERS
       );
     }
   }
 
   onTabIndexChange(index: number) {
-    if (index !== 0) {
+    // allow click on map only if viewing data layers tab
+    this.multiMapConfigState.setAllowClickOnMap(
+      index === SidebarTabs.DATA_LAYERS
+    );
+    if (index !== SidebarTabs.DATA_LAYERS) {
       this.multiMapConfigState.setSelectedMap(null);
     } else {
       this.multiMapConfigState.resetToFirstMap();

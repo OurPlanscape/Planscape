@@ -6,20 +6,21 @@ import {
   filter,
   map,
   Observable,
+  of,
   startWith,
   switchMap,
   take,
 } from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
-import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { NotesSidebarState } from '@styleguide';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { ScenarioState } from '../maplibre-map/scenario.state';
+import { ScenarioState } from '../scenario/scenario.state';
 import { getPlanPath } from './plan-helpers';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';
@@ -61,35 +62,37 @@ export class PlanComponent implements OnInit {
       })
     );
 
-    combineLatest([
-      this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-      this.scenarioState.currentScenario$.pipe(startWith(null)),
-      this.router.events.pipe(
-        filter((event) => event instanceof NavigationEnd)
-      ),
-    ])
-      .pipe(untilDestroyed(this))
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd
+        ),
+        switchMap(() =>
+          combineLatest([
+            this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
+            this.scenario$,
+          ])
+        ),
+        untilDestroyed(this)
+      )
       .subscribe(([plan, scenario]) => {
-        const routeChild = this.route.snapshot.firstChild;
-        const path = routeChild?.url[0].path;
-        const id = routeChild?.paramMap.get('id') ?? null;
+        const deepestRoute = this.getDeepestChild(this.route);
+        const path = deepestRoute?.routeConfig?.path ?? null;
+        const scenarioId = deepestRoute.snapshot.data['scenarioId'];
 
-        if (!path) {
-          // on plan
+        if (!path && scenarioId === undefined) {
           this.breadcrumbService.updateBreadCrumb({
             label: 'Planning Area: ' + plan.name,
             backUrl: '/home',
           });
-        } else if (id) {
-          // on a specific scenario. Need to have scenario name to populate breadcrumbs.
-          if (scenario && scenario.id === Number(id)) {
-            this.breadcrumbService.updateBreadCrumb({
-              label: 'Scenario: ' + scenario.name,
-              backUrl: getPlanPath(plan.id),
-            });
-          }
+        } else if (scenarioId && scenario) {
+          // On specific scenario
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Scenario: ' + scenario.name,
+            backUrl: getPlanPath(plan.id),
+          });
         } else {
-          // creating new scenario
+          // Creating new scenario
           this.breadcrumbService.updateBreadCrumb({
             label: 'Scenario: New Scenario',
             backUrl: getPlanPath(plan.id),
@@ -98,10 +101,17 @@ export class PlanComponent implements OnInit {
       });
   }
 
+  scenario$ = this.scenarioState.currentScenarioId$.pipe(
+    untilDestroyed(this),
+    switchMap((id) => {
+      return !id ? of(null) : this.scenarioState.currentScenario$;
+    })
+  );
+
   currentPlan$ = this.planState.currentPlan$;
   planOwner$ = new Observable<User | null>();
 
-  planId = this.route.snapshot.paramMap.get('id');
+  planId = this.route.snapshot.paramMap.get('planId');
   planNotFound: boolean = !this.planId;
 
   sidebarNotes: Note[] = [];

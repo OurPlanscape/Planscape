@@ -9,14 +9,10 @@ from uuid import uuid4
 import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
-from core.s3 import create_upload_url as create_upload_url_s3, is_s3_file, s3_filename
-from core.gcs import create_upload_url as create_upload_url_gcs, is_gcs_file
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
-
+from core.gcs import create_upload_url as create_upload_url_gcs
+from core.gcs import is_gcs_file
+from core.s3 import create_upload_url as create_upload_url_s3
+from core.s3 import is_s3_file, s3_filename
 from datasets.models import (
     Category,
     DataLayer,
@@ -37,6 +33,12 @@ from datasets.search import (
     organization_to_search_result,
 )
 from datasets.tasks import datalayer_uploaded
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
+from organizations.models import Organization
+
 from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
@@ -128,7 +130,7 @@ def geometry_from_info(
         Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0))),
         srid=int(srid),
     ).transform(
-        settings.CRS_INTERNAL_REPRESENTATION,
+        settings.DEFAULT_CRS,
         clone=True,
     )  # type: ignore
 
@@ -312,7 +314,11 @@ def create_datalayer(
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
-    geometry = geometry_from_info(info, datalayer_type=type)
+    geometry = geometry_from_info(
+        info,
+        datalayer_type=type,
+    )
+    outline = kwargs.pop("outline", None)
 
     if bool(url) == bool(original_name):
         raise ValueError(
@@ -371,6 +377,7 @@ def create_datalayer(
         info=info,
         original_name=original_file_name,
         mimetype=mimetype,
+        outline=outline,
         **kwargs,
     )
 

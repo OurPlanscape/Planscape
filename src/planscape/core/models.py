@@ -1,5 +1,6 @@
 from typing import Dict, Tuple
 from uuid import uuid4
+
 from django.db import models
 from django.utils import timezone
 from django_stubs_ext.db.models import TypedModelMeta

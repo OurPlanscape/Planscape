@@ -2,6 +2,7 @@ import json
 
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
+from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
 from impacts.permissions import (
@@ -9,8 +10,8 @@ from impacts.permissions import (
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
-from rest_framework.test import APITestCase, APITransactionTestCase
 from rest_framework import status
+from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     PlanningArea,
@@ -21,8 +22,8 @@ from planning.models import (
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
-    UserFactory,
     TreatmentGoalFactory,
+    UserFactory,
 )
 from planning.tests.helpers import _load_geojson_fixture
 
@@ -1003,7 +1004,15 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
-
+        # Create two overlapping polygons
+        self.poly1 = GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))")
+        self.poly2 = GEOSGeometry(
+            "POLYGON((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5))"
+        )
+        self.poly3 = GEOSGeometry("POLYGON((2 2, 3 2, 3 3, 2 3, 2 2))")
+        self.dl1 = DataLayerFactory.create(name="Layer 1", geometry=self.poly1)
+        self.dl2 = DataLayerFactory.create(name="Layer 2", geometry=self.poly2)
+        self.dl3 = DataLayerFactory.create(name="Layer 3", geometry=self.poly3)
         self.markdown_description = (
             "# This is a h1\n"
             "## This is a h2\n"
@@ -1022,8 +1031,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             name="First",
             description=self.markdown_description,
             category=TreatmentGoalCategory.BIODIVERSITY,
+            geometry=self.poly1.intersection(self.poly2),
         )
-        self.treatment_goals = TreatmentGoalFactory.create_batch(10)
+        self.treatment_goals = TreatmentGoalFactory.create_batch(
+            10, geometry=self.poly3
+        )
         self.inactive_treatment_goal = TreatmentGoalFactory.create(active=False)
 
     def test_list_treatment_goals(self):
@@ -1074,3 +1086,20 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_list_treatment_goals_with_filter(self):
+        intersection = self.poly1.intersection(self.poly2).buffer(-0.00001)
+        planning_area = PlanningAreaFactory.create(
+            user=self.user, geometry=MultiPolygon([intersection])
+        )
+        url = (
+            reverse("api:planning:treatment-goals-list")
+            + f"?planning_area={planning_area.pk}"
+        )
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        treatment_goals = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(treatment_goals), 1)
