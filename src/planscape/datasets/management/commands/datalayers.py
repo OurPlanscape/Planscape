@@ -358,7 +358,7 @@ class Command(PlanscapeCommand):
         category = kwargs.get("category")
         metadata = metadata or {}
         style = kwargs.get("style", None) or None
-        geometry = kwargs.get("geometry", None) or None
+        geometry = kwargs.get("outline", None) or None
         input_data = {
             "organization": org,
             "name": name,
@@ -373,7 +373,7 @@ class Command(PlanscapeCommand):
             "style": style,
             "map_service_type": map_service_type,
             "url": url,
-            "geometry": geometry,
+            "outline": geometry,
         }
 
         response = requests.post(
@@ -430,9 +430,9 @@ class Command(PlanscapeCommand):
             return {"info": str(datalayer_exists)}
 
         if layer_type == DataLayerType.RASTER:
-            geometry = data_mask(original_file_path)
+            outline = data_mask(original_file_path)
         else:
-            geometry = None
+            outline = None
 
         if url:
             response = self._create_datalayer_request(
@@ -447,7 +447,7 @@ class Command(PlanscapeCommand):
                 url=url,
                 mimetype=None,
                 original_name=None,
-                geometry=geometry,
+                outline=outline,
                 **kwargs,
             )
             try:
@@ -502,7 +502,7 @@ class Command(PlanscapeCommand):
                 org=org,
                 layer_type=layer_type,
                 geometry_type=geometry_type,
-                geometry=geometry,
+                outline=outline,
                 layer_info=layer_info,
                 mimetype=mimetype,
                 original_name=original_name,

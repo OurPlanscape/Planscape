@@ -197,7 +197,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         required=False,
         allow_null=True,
     )
-    geometry = gis_serializers.GeometryField(
+    outline = gis_serializers.GeometryField(
         required=False,
         allow_null=True,
     )
@@ -217,7 +217,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "original_name",
             "url",
             "mimetype",
-            "geometry",
+            "outline",
             "geometry_type",
             "style",
             "map_service_type",
