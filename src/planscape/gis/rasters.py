@@ -215,7 +215,7 @@ def data_mask(
                         src_crs,
                         dst_crs,
                         mapping(out_geom),
-                        precision=15,
+                        precision=6,
                     )
                 )
 
