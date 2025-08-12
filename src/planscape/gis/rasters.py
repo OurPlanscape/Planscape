@@ -163,7 +163,7 @@ def warp(
 def data_mask(
     raster_path: Union[str, Path],
     connectivity: int = 8,
-    min_area_pixels: int = 10,
+    min_area_pixels: int = 50,
     simplify_tol_pixels=0,
     target_epsg: int = 4269,
 ) -> str | None:
@@ -215,7 +215,7 @@ def data_mask(
                         src_crs,
                         dst_crs,
                         mapping(out_geom),
-                        precision=15,
+                        precision=6,
                     )
                 )
 
