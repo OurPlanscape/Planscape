@@ -314,10 +314,11 @@ def create_datalayer(
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
-    geometry = kwargs.pop("geometry", None) or geometry_from_info(
+    geometry = geometry_from_info(
         info,
         datalayer_type=type,
     )
+    outline = kwargs.pop("geometry", None)
 
     if bool(url) == bool(original_name):
         raise ValueError(
@@ -376,6 +377,7 @@ def create_datalayer(
         info=info,
         original_name=original_file_name,
         mimetype=mimetype,
+        outline=outline,
         **kwargs,
     )
 

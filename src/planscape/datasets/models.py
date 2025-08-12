@@ -363,7 +363,11 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Represents the polygon that encompasses the datalayer. It can be null.",
         null=True,
     )
-
+    outline = models.MultiPolygonField(
+        srid=settings.DEFAULT_CRS,
+        help_text="Represents the detailed geometry of the layer. Only shows where there is data at the time of upload",
+        null=True,
+    )
     hash = models.CharField(
         null=True,
         max_length=256,
