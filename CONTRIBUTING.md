@@ -33,6 +33,7 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 
 ## Architecture at a Glance
 
+```
 | Layer        | Tech (current)                                    | Purpose                                                |
 |--------------|---------------------------------------------------|--------------------------------------------------------|
 | Database     | PostgreSQL + PostGIS                              | Geometry, plans, scenarios, auth                       |
@@ -40,7 +41,7 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 | Frontend     | Angular + Leaflet                                 | Interactive map & scenario editor                      |
 | Tiles        | Martin (vector tiles) / Mapbox (basemap)          | Serve tiles to the client                              |
 | Background   | Celery + Redis                                    | Heavy analysis, batch jobs, exports                    |
-
+```
 **Recommended tutorials**:
 - [Django tutorial](https://docs.djangoproject.com/en/stable/intro/tutorial01/)
 - [Angular + Leaflet overview](https://leafletjs.com/examples/quick-start/)
