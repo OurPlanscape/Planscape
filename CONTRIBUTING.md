@@ -48,7 +48,7 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 
 
 ## Brief Repo Tour
-
+```
 `Planscape/`
 ├── `.github/` # CI workflows, issue/PR templates
 ├── `analysis/` # ForSys algorithm code and docs, written in R
@@ -59,7 +59,7 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
   ├── `interface/` # Angular app (frontend)
   ├── `planscape/` # Django project (apps/, settings/)
   └── `forsys/` # ForSys server access
-
+```
 
 ### GitHub Account
 
