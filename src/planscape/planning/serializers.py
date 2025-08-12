@@ -426,7 +426,23 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
         return [excluded_area.pk for excluded_area in excluded_areas]
 
 
-class PatchConfigurationV2Serializer(CreateConfigurationV2Serializer):
+class PatchConfigurationV2Serializer(ConfigurationV2Serializer):
+    excluded_areas = serializers.ListField(
+        source="excluded_areas_ids",
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=DataLayer.objects.filter(
+                type=DataLayerType.VECTOR,
+                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+            )
+        ),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+    )
+
+    def validate_excluded_areas(self, excluded_areas):
+        return [excluded_area.pk for excluded_area in excluded_areas]
+
     def update(self, instance, validated_data):
         instance.configuration = {**(instance.configuration or {}), **validated_data}
         instance.save(update_fields=["configuration"])
