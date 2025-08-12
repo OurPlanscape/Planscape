@@ -46,6 +46,9 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
     ReactiveFormsModule,
     SectionComponent,
   ],
+  providers: [
+    { provide: StepDirective, useExisting: TreatmentTargetStepComponent },
+  ],
   templateUrl: './treatment-target-step.component.html',
   styleUrl: './treatment-target-step.component.scss',
 })
@@ -56,27 +59,28 @@ export class TreatmentTargetStepComponent
   @Input() planningAreaAcres = 0;
 
   form = new FormGroup({
-    configuration: new FormGroup({}),
-    max_area: new FormControl<number | undefined>(undefined, [
-      Validators.required,
-    ]),
-    max_budget: new FormControl<number | undefined>(undefined, [
-      Validators.required,
-    ]),
-    estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
-      Validators.required,
-    ]),
+    configuration: new FormGroup({
+      max_area: new FormControl<number | undefined>(undefined, [
+        Validators.required,
+      ]),
+      max_budget: new FormControl<number | undefined>(undefined, [
+        Validators.required,
+      ]),
+      estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
+        Validators.required,
+      ]),
+    }),
   });
 
   focusedSelection = ''; // string to identify which selection is focused
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
 
   get maxArea() {
-    return this.form?.get('max_area');
+    return this.form?.get('configuration.max_area');
   }
 
   get maxBudget() {
-    return this.form?.get('max_budget');
+    return this.form?.get('configuration.max_budget');
   }
 
   get minMaxAreaValue() {
@@ -91,9 +95,9 @@ export class TreatmentTargetStepComponent
     // update the form when the planningAreaAcres is updated
     // TODO: can't we just subscribe to an observable instead?
     if (changes['planningAreaAcres'] && this.form) {
-      const maxArea = this.maxArea as FormControl;
-      maxArea.clearValidators();
-      maxArea.addValidators([
+      const maxArea = this.form.get('configuration.max_area');
+      maxArea?.clearValidators();
+      maxArea?.addValidators([
         Validators.min(this.minMaxAreaValue),
         Validators.max(this.maxMaxAreaValue),
       ]);
@@ -117,10 +121,9 @@ export class TreatmentTargetStepComponent
   private budgetOrAreaRequiredValidator(
     form: AbstractControl
   ): ValidationErrors | null {
-    const maxCost = form.get('max_budget');
-    const maxArea = form.get('max_area');
-    const valid = !!maxCost?.value || !!maxArea?.value;
-
+    const maxBudget = form.get('configuration.max_budget');
+    const maxArea = form.get('configuration.max_area');
+    const valid = !!maxBudget?.value || !!maxArea?.value;
     return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }
 
@@ -131,8 +134,10 @@ export class TreatmentTargetStepComponent
    */
   private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
     return (constraintsForm: AbstractControl): ValidationErrors | null => {
-      const maxBudget = this.form.get('max_budget')?.value;
-      const estCostPerAcre = constraintsForm.get('estimated_cost')?.value;
+      const maxBudget = this.form.get('configuration.max_budget')?.value;
+      const estCostPerAcre = constraintsForm.get(
+        'configuration.estimated_cost'
+      )?.value;
       if (!!maxBudget) {
         const hasBudget = hasEnoughBudget(
           planningAreaAcres,
@@ -155,19 +160,19 @@ export class TreatmentTargetStepComponent
 
   calculateMinBudget() {
     const estCostPerAcre =
-      this.form.get('form.estimatedCost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
+      this.form.get('configuration.estimated_cost')?.value ??
+      DEFAULT_TX_COST_PER_ACRE;
     return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
   }
 
   getData() {
-    console.log('here is the getData value:', this.form.value);
     return this.form.value;
   }
 
   // This enables and disables fields, based on what our current selection is
   toggleMaxAreaAndMaxBudget() {
-    const maxBudgetControl = this.form!.get('max_budget');
-    const maxAreaControl = this.form!.get('max_area');
+    const maxBudgetControl = this.form!.get('configuration.max_budget');
+    const maxAreaControl = this.form!.get('configuration.max_area');
 
     if (maxBudgetControl?.value) {
       maxAreaControl?.disable();
