@@ -2,11 +2,10 @@ import json
 
 import mmh3
 from cacheops import invalidate_model
+from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
 from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
-
-from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -83,6 +82,7 @@ class DataLayerAdminForm(forms.ModelForm):
             "info",
             "metadata",
             "geometry",
+            "outline",
         )
 
 
