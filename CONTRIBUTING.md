@@ -96,7 +96,7 @@ git checkout -b plan-<ticket>-short-slug
 To style Python files with black manually:
 
 ```bash
-black src/planscape/planning/models.py # specific path to file to format
+black src/planscape/planning/models.py # specific path of file to format
 ```
 
 To run unit tests inside Docker web container:
