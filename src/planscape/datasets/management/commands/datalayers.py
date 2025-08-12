@@ -27,6 +27,8 @@ from gis.io import detect_mimetype
 from gis.rasters import data_mask
 from gis.rasters import to_planscape as to_planscape_raster
 from gis.vectors import to_planscape_multi_layer
+from requests import Response
+from requests.exceptions import JSONDecodeError
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -347,7 +349,7 @@ class Command(PlanscapeCommand):
         map_service_type: Optional[str] = None,
         url: str | None = None,
         **kwargs,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Response:
         base_url = self.get_base_url(**kwargs)
         request_url = base_url + "/v2/admin/datalayers/"
         headers = self.get_headers(**kwargs)
@@ -379,7 +381,7 @@ class Command(PlanscapeCommand):
             headers=headers,
             json=input_data,
         )
-        return response.json()
+        return response
 
     def _datalayer_exists(self, token, **kwargs) -> bool:
         response = self._list_request(token, **kwargs)
@@ -433,7 +435,7 @@ class Command(PlanscapeCommand):
             geometry = None
 
         if url:
-            return self._create_datalayer_request(
+            response = self._create_datalayer_request(
                 name=name,
                 dataset=dataset,
                 org=org,
@@ -448,6 +450,10 @@ class Command(PlanscapeCommand):
                 geometry=geometry,
                 **kwargs,
             )
+            try:
+                return response.json()
+            except JSONDecodeError:
+                return {"error": str(response.text)}
 
         match layer_type:
             case DataLayerType.RASTER:
@@ -488,22 +494,28 @@ class Command(PlanscapeCommand):
             if file_metadata:
                 metadata.update({"metadata": file_metadata})
 
-        # updated info
-        output_data = self._create_datalayer_request(
-            name=name,
-            dataset=dataset,
-            org=org,
-            layer_type=layer_type,
-            geometry_type=geometry_type,
-            geometry=geometry,
-            layer_info=layer_info,
-            mimetype=mimetype,
-            original_name=original_name,
-            metadata=metadata,
-            map_service_type=map_service_type,
-            url=url,
-            **kwargs,
-        )
+        output_data = {}
+        try:
+            response = self._create_datalayer_request(
+                name=name,
+                dataset=dataset,
+                org=org,
+                layer_type=layer_type,
+                geometry_type=geometry_type,
+                geometry=geometry,
+                layer_info=layer_info,
+                mimetype=mimetype,
+                original_name=original_name,
+                metadata=metadata,
+                map_service_type=map_service_type,
+                url=url,
+                **kwargs,
+            )
+            output_data = response.json()
+        except JSONDecodeError:
+            print(f"[ERROR]\n{response.text}")
+            raise
+
         if not output_data:
             raise ValueError("request failed.")
         datalayer = output_data.get("datalayer")
