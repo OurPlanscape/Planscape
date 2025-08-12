@@ -8,7 +8,6 @@ import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { map, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { ExcludedAreasComponent } from '../excluded-areas/excluded-areas.component';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -25,6 +24,7 @@ import { ScenarioCreation } from '@types';
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { StepComponent } from '../../../styleguide/steps/step.component';
+import { Step2Component } from '../step2/step2.component';
 import { Step3Component } from '../step3/step3.component';
 
 enum ScenarioTabs {
@@ -45,9 +45,9 @@ enum ScenarioTabs {
     StepsComponent,
     CdkStepperModule,
     LegacyMaterialModule,
-    Step1Component,
     StepComponent,
-    ExcludedAreasComponent,
+    Step1Component,
+    Step2Component,
     Step3Component,
   ],
   templateUrl: './scenario-creation.component.html',

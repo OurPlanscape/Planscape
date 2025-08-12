@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ExcludedAreasComponent } from './excluded-areas.component';
+import { ExcludedAreasComponent } from './step2.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ExcludedAreasComponent', () => {

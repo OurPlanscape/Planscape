@@ -3,7 +3,7 @@ import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ScenarioState } from '../../scenario/scenario.state';
+import { ScenarioState } from '../scenario.state';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ScenarioCreation } from '@types';
 
@@ -16,10 +16,10 @@ import { ScenarioCreation } from '@types';
     SectionComponent,
     ReactiveFormsModule,
   ],
-  templateUrl: './excluded-areas.component.html',
-  styleUrl: './excluded-areas.component.scss',
+  templateUrl: './step2.component.html',
+  styleUrl: './step2.component.scss',
 })
-export class ExcludedAreasComponent extends StepDirective<ScenarioCreation> {
+export class Step2Component extends StepDirective<ScenarioCreation> {
   constructor(private scenarioState: ScenarioState) {
     super();
   }
