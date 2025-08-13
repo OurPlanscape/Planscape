@@ -56,6 +56,11 @@ export enum ScenarioTabs {
   styleUrls: ['./create-scenarios.component.scss'],
 })
 export class CreateScenariosComponent implements OnInit {
+  // TODO:
+  // After fully using ViewScenarioComponent remove all the pieces here for
+  // populating forms, polling, etc.
+  // just keep this view for creating the scenario.
+
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   SCENARIO_TABS = ScenarioTabs;
