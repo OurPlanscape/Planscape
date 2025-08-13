@@ -75,9 +75,7 @@ export class ViewScenarioComponent {
     this.scenario$
       .pipe(
         untilDestroyed(this),
-        switchMap((s) =>
-          this.scenarioIsPending(s) ? this.startPolling() : EMPTY
-        )
+        switchMap((s) => (this.shouldPoll(s) ? this.startPolling() : EMPTY))
       )
       .subscribe();
   }
@@ -87,7 +85,7 @@ export class ViewScenarioComponent {
       tap(() => {
         this.scenarioState.reloadScenario();
       }),
-      takeUntil(this.scenario$.pipe(filter((s) => !this.scenarioIsPending(s))))
+      takeUntil(this.scenario$.pipe(filter((s) => !this.shouldPoll(s))))
     );
   }
 
@@ -97,6 +95,21 @@ export class ViewScenarioComponent {
 
   goToPlan() {
     this.router.navigate(['/plan', this.planId]);
+  }
+
+  private shouldPoll(scenario: Scenario) {
+    return (
+      this.scenarioIsPending(scenario) || this.shouldPollForGeoPackage(scenario)
+    );
+  }
+
+  private shouldPollForGeoPackage(scenario: Scenario) {
+    const geoPackageStatus = scenario.geopackage_status;
+
+    if (!geoPackageStatus || !this.scenarioImprovementsFeature) {
+      return false; // if this is null, we can assume there will be no geopackage, ever
+    }
+    return geoPackageStatus === 'PENDING' || geoPackageStatus === 'PROCESSING';
   }
 
   scenarioIsPending(scenario: Scenario) {
