@@ -33,7 +33,7 @@ from planning.serializers import (
     ScenarioV2Serializer,
     TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
-    PatchConfigurationV2Serializer,
+    UpsertConfigurationV2Serializer,
 )
 from planning.services import (
     create_planning_area,
@@ -182,7 +182,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
         "retrieve": ScenarioV2Serializer,
-        "partial_update": PatchConfigurationV2Serializer,
+        "partial_update": UpsertConfigurationV2Serializer,
     }
     filterset_class = ScenarioFilter
     filter_backends = [
