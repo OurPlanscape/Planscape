@@ -23,11 +23,11 @@ sf_use_s2(FALSE)
 
 readRenviron("../../.env")
 
-import::from("/usr/src/app/src/planscape/rscripts/io_processing.R", .all = TRUE)
-import::from("/usr/src/app/src/planscape/rscripts/queries.R", .all = TRUE)
-import::from("/usr/src/app/src/planscape/rscripts/constants.R", .all = TRUE)
-import::from("/usr/src/app/src/planscape/rscripts/base_forsys.R", .all = TRUE)
-import::from("/usr/src/app/src/planscape/rscripts/postprocessing.R", .all = TRUE)
+import::from("rscripts/io_processing.R", .all = TRUE)
+import::from("rscripts/queries.R", .all = TRUE)
+import::from("rscripts/constants.R", .all = TRUE)
+import::from("rscripts/base_forsys.R", .all = TRUE)
+import::from("rscripts/postprocessing.R", .all = TRUE)
 
 options <- list(
   make_option(

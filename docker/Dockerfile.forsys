@@ -1,4 +1,4 @@
-FROM rstudio/plumber:v1.2.0
+FROM rstudio/r-base:4.5-noble
 
 RUN apt-get update && \
     apt-get -y install \
@@ -10,7 +10,7 @@ RUN apt-get update && \
     libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
-    libglpk-dev \
+    libsodium-dev libglpk-dev \
     postgresql-client
 
 RUN mkdir -p /usr/src/app
@@ -21,12 +21,12 @@ RUN Rscript install.R
 
 COPY .env /usr/src/app/
 COPY src/forsys/server.R /usr/src/app/
-COPY src/planscape/rscripts/* /usr/src/app/
+COPY src/planscape/rscripts /usr/src/app/rscripts
 
 COPY src/forsys/run_forsys_server.sh /usr/local/bin/run_forsys_server.sh
 RUN chmod +x /usr/local/bin/run_forsys_server.sh
 
-EXPOSE 8000
+EXPOSE 8001
 
 ENTRYPOINT ["/usr/local/bin/run_forsys_server.sh"]
-CMD ["8000"]
+CMD ["8001"]
