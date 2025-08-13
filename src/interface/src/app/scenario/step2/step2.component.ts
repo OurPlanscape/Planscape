@@ -27,21 +27,19 @@ export class Step2Component extends StepDirective<ScenarioCreation> {
 
   excludedAreas$ = this.scenarioState.excludedAreas$;
   form: FormGroup = new FormGroup({
-    configuration: new FormGroup({
       excluded_areas: new FormControl<number[]>([]),
-    }),
   });
 
   onCheckboxChange(key: number, event: any) {
     const excludedAreas =
-      this.form.get('configuration.excluded_areas')?.value || [];
+      this.form.get('excluded_areas')?.value || [];
     if (event.checked) {
       this.form
-        .get('configuration.excluded_areas')
+        .get('excluded_areas')
         ?.setValue([...excludedAreas, key]);
     } else {
       this.form
-        .get('configuration.excluded_areas')
+        .get('excluded_areas')
         ?.setValue(excludedAreas.filter((k: number) => k !== key));
     }
   }
