@@ -25,6 +25,8 @@ import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ActivatedRoute } from '@angular/router';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MatIconModule } from '@angular/material/icon';
+import { FeaturesModule } from '../../features/features.module';
 
 @Component({
   selector: 'app-step1',
@@ -39,6 +41,8 @@ import { FeatureService } from 'src/app/features/feature.service';
     MatFormFieldModule,
     MatSelectModule,
     KeyValuePipe,
+    MatIconModule,
+    FeaturesModule,
   ],
   providers: [{ provide: StepDirective, useExisting: Step1Component }],
   templateUrl: './step1.component.html',

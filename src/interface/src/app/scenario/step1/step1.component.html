@@ -64,10 +64,16 @@
 
 <!-- Stand size -->
 <sg-section headline="Stand Size">
-  <p class="stand-label">
-    Choose the stand size ForSys will use to evaluate your planning area. Stands
-    are standarized hexagonal units that represent potential treatment areas.
-  </p>
+  <div class="stand-label">
+    <mat-icon class="stand-icon" *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'"
+      >hexagon</mat-icon
+    >
+    <div>
+      Choose the stand size ForSys will use to evaluate your planning area.
+      Stands are standarized hexagonal units that represent potential treatment
+      areas.
+    </div>
+  </div>
 
   <form [formGroup]="form">
     <mat-form-field class="stand-size" appearance="outline">
