@@ -76,9 +76,6 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   treatment_goal: number;
   name: string;
   planning_area: number;
-  max_area: number;
-  max_budget: number;
-  estimated_cost: number;
 }
 
 export interface ScenarioConfigPayload {
@@ -88,6 +85,7 @@ export interface ScenarioConfigPayload {
   max_slope: number | null;
   min_distance_from_road: number | null;
   stand_size: STAND_SIZE;
+  max_budget: number;
 }
 
 export interface ScenarioCreationPayload {
