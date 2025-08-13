@@ -408,7 +408,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
     )
 
 
-class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
+class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
         source="excluded_areas_ids",
         child=serializers.PrimaryKeyRelatedField(
@@ -425,8 +425,6 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
     def validate_excluded_areas(self, excluded_areas):
         return [excluded_area.pk for excluded_area in excluded_areas]
 
-
-class UpsertConfigurationV2Serializer(CreateConfigurationV2Serializer):
     def update(self, instance, validated_data):
         instance.configuration = {**(instance.configuration or {}), **validated_data}
         instance.save(update_fields=["configuration"])
@@ -587,7 +585,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
         required=True,
         help_text="Treatment goal of the scenario.",
     )
-    configuration = CreateConfigurationV2Serializer()
+    configuration = UpsertConfigurationV2Serializer()
 
     class Meta:
         model = Scenario
