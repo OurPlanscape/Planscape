@@ -74,7 +74,8 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
   beforeUnload($event: any) {
     if (!this.finished) {
       // text only for noncompliant browsers
-      $event.returnValue = 'Are you sure you want to leave this page? Your unsaved changes will be lost.';
+      $event.returnValue =
+        'Are you sure you want to leave this page? Your unsaved changes will be lost.';
     }
   }
 
