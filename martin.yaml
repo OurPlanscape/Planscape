@@ -99,7 +99,7 @@ postgres:
         geometry_type: string
         status: string
         original_name: string
-        mime_type: string
+        mimetype: string
     stands:
       layer_id: stands
       schema: public
