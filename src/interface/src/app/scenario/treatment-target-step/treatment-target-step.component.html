@@ -8,13 +8,13 @@
           as many scenario runs as you choose by selecting different treatment
           goal questions and parameters each time. Click on the options below
           for full question details.">
-  <div>
+  <p class="section-label">
     Set treatment targets that Forsys will aim to achieve in each sub-unit and
     stop once reached.
-  </div>
+  </p>
   <form class="constraints-form" *ngIf="form" [formGroup]="form!">
     <div formGroupName="configuration">
-      <div class="flex-row space-evenly">
+      <div>
         <mat-form-field
           class="input-field"
           appearance="outline"
@@ -30,16 +30,18 @@
             (input)="toggleMaxAreaAndMaxBudget()"
             matInput />
         </mat-form-field>
-        <div
-          class="help-text"
-          *ngIf="focusedSelection === 'max_area'"
-          [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
-          Max acres needs to be between
-          {{ minMaxAreaValue | number: '1.0-0' }} and
-          {{ maxMaxAreaValue | number: '1.0-0' }}
+        <div class="help-placeholder">
+          <div
+            class="help-text"
+            *ngIf="focusedSelection === 'max_area'"
+            [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
+            Max acres needs to be between
+            {{ minMaxAreaValue | number: '1.0-0' }} and
+            {{ maxMaxAreaValue | number: '1.0-0' }}
+          </div>
         </div>
       </div>
-      or
+      <div class="or-divider">OR</div>
       <div class="flex-row space-evenly">
         <div>
           <mat-form-field
@@ -60,16 +62,6 @@
               [errorStateMatcher]="budgetStateMatcher" />
             <span matPrefix>$&nbsp;</span>
           </mat-form-field>
-
-          <div
-            class="help-text"
-            *ngIf="focusedSelection === 'max_budget'"
-            [ngClass]="{
-              error: form.hasError('notEnoughBudget') && maxBudget?.touched,
-            }">
-            Budget needs to be at least
-            {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
-          </div>
         </div>
 
         <mat-form-field
@@ -87,6 +79,17 @@
             thousandSeparator="," />
           <span matSuffix class="suffix">/acre</span>
         </mat-form-field>
+      </div>
+      <div class="help-placeholder">
+        <div
+          class="help-text"
+          *ngIf="focusedSelection === 'max_budget'"
+          [ngClass]="{
+            error: form.hasError('notEnoughBudget') && maxBudget?.touched,
+          }">
+          Budget needs to be at least
+          {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
+        </div>
       </div>
     </div>
   </form>

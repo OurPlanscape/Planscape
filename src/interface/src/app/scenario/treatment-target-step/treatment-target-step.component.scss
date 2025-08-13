@@ -1,10 +1,14 @@
 @import 'colors';
+@import 'mixins';
 
 .flex-row {
   align-items: center;
   display: flex;
-  gap:12px;
-    margin-bottom: 10px;
+  gap: 20px;
+}
+
+.section-label {
+  margin: 0 0 8px 0;
 }
 
 .input-field {
@@ -30,3 +34,21 @@
   color: $color-error;
 }
 
+.help-placeholder {
+  height: 22px;
+}
+
+.or-divider {
+  @include public-sans();
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 20px;
+  text-transform: uppercase;
+  height: 30px;
+}
+
+::ng-deep {
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+}}
