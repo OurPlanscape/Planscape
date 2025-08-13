@@ -4,10 +4,21 @@
   align-items: center;
   display: flex;
   gap:12px;
+    margin-bottom: 10px;
 }
 
 .input-field {
-  margin: 10px;
+  padding-top: 4px;
+  width: 180px;
+  border: black;
+
+  &.disabled {
+    opacity: 0.6;
+  }
+}
+
+.right-align {
+  text-align: right;
 }
 
 .error-message {
