@@ -59,12 +59,12 @@ export class TreatmentTargetStepComponent
   @Input() planningAreaAcres = 0;
 
   form = new FormGroup({
-    max_area: new FormControl<number | undefined>(undefined, [
+    max_area: new FormControl<number | null>(null, [
       Validators.min(this.minMaxAreaValue),
       Validators.max(this.maxMaxAreaValue),
     ]),
-    max_budget: new FormControl<number | undefined>(undefined, [
-      Validators.required,
+    max_budget: new FormControl<number | null>(null, [
+      Validators.min(0),
     ]),
     estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
       Validators.required,
@@ -80,6 +80,12 @@ export class TreatmentTargetStepComponent
 
   get maxBudget() {
     return this.form?.get('max_budget');
+  }
+
+  get minBudgetValue() :number {
+    const estCostPerAcre =
+      this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
+    return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
   }
 
   get minMaxAreaValue() {
@@ -154,11 +160,7 @@ export class TreatmentTargetStepComponent
     };
   }
 
-  calculateMinBudget() {
-    const estCostPerAcre =
-      this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
-    return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
-  }
+
 
   getData() {
     return this.form.value;

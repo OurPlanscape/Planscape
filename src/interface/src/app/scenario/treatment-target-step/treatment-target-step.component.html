@@ -1,4 +1,5 @@
 <sg-section
+class="treatment-step"
   headline="Treatment Target"
   [required]="true"
   tooltipContent="Treatment goals allow you to select one goal that will generate a
@@ -59,7 +60,7 @@
             (focus)="focusedSelection = 'max_budget'"
             (input)="toggleMaxAreaAndMaxBudget()"
             [errorStateMatcher]="budgetStateMatcher" />
-          <span matPrefix>$&nbsp;</span>
+          <span matPrefix class="prefix">$&nbsp;</span>
         </mat-form-field>
       </div>
 
@@ -87,7 +88,7 @@
           error: form.hasError('notEnoughBudget') && maxBudget?.touched,
         }">
         Budget needs to be at least
-        {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
+        {{ minBudgetValue | currency: 'USD' : 'symbol' : '1.0-0' }}
       </div>
     </div>
   </form>

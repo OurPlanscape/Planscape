@@ -48,7 +48,20 @@
   height: 30px;
 }
 
-::ng-deep {
+.prefix {
+  padding-left: 8px;
+}
+
+.suffix {
+  padding-right: 10px;
+}
+
+::ng-deep .treatment-step {
   .mat-mdc-form-field-subscript-wrapper {
     display: none;
-}}
+}
+
+  .mat-mdc-form-field-icon-suffix {
+    width: 80px;
+  }
+}
