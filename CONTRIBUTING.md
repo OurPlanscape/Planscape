@@ -111,7 +111,7 @@ python manage.py test <app>.tests.<test_class>.<test_name> # run tests in a app/
 Commit conventions:
 
 ```bash
-PLAN-<xyz>: short-descriptive-slug-of-commit
+PLAN-<ticket>: short-descriptive-slug-of-commit
 ```
 
 
