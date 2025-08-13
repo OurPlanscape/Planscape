@@ -1005,11 +1005,15 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
         # Create two overlapping polygons
-        self.poly1 = GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))")
-        self.poly2 = GEOSGeometry(
-            "POLYGON((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5))"
+        self.poly1 = GEOSGeometry(
+            "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0))()", srid=4269
         )
-        self.poly3 = GEOSGeometry("POLYGON((2 2, 3 2, 3 3, 2 3, 2 2))")
+        self.poly2 = GEOSGeometry(
+            "MULTIPOLYGON(((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5)))", srid=4269
+        )
+        self.poly3 = GEOSGeometry(
+            "MULTIPOLYGON(((2 2, 3 2, 3 3, 2 3, 2 2)))", srid=4269
+        )
         self.dl1 = DataLayerFactory.create(name="Layer 1", geometry=self.poly1)
         self.dl2 = DataLayerFactory.create(name="Layer 2", geometry=self.poly2)
         self.dl3 = DataLayerFactory.create(name="Layer 3", geometry=self.poly3)
