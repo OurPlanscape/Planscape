@@ -1,6 +1,5 @@
 import json
 import logging
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
@@ -161,7 +160,7 @@ def warp(
 
 
 def data_mask(
-    raster_path: Union[str, Path],
+    raster_path: str,
     connectivity: int = 8,
     min_area_pixels: int = 1000,
     simplify_tol_pixels=0,
@@ -177,7 +176,6 @@ def data_mask(
     Polygon is returned in `target_epsg`
     """
 
-    raster_path = Path(raster_path)
     with rasterio.Env(**get_gdal_env()):
         with rasterio.open(raster_path, "r") as ds:
             src_crs = ds.crs
