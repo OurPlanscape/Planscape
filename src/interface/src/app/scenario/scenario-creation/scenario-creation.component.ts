@@ -73,7 +73,13 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.finished) {
-      // text only for noncompliant browsers
+      /* Most browsers will display their own default dialog to confirm navigation away 
+        from a window or URL. e.g, "Changes that you made may not be saved"
+        
+        Older browsers will display the message in the string below. 
+        
+        All browsers require this string to be non-empty, in order to display anything.
+      */
       $event.returnValue =
         'Are you sure you want to leave this page? Your unsaved changes will be lost.';
     }
