@@ -20,7 +20,7 @@ COPY install.R /usr/src/app/
 RUN Rscript install.R
 
 COPY .env /usr/src/app/
-COPY src/forsys/server.R /usr/src/app/
+COPY src/forsys/server.R /usr/src/app/server.R
 COPY src/planscape/rscripts /usr/src/app/rscripts
 
 COPY src/forsys/run_forsys_server.sh /usr/local/bin/run_forsys_server.sh
