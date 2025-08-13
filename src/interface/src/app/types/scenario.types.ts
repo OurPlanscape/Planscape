@@ -76,6 +76,9 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   treatment_goal: number;
   name: string;
   planning_area: number;
+  max_area: number;
+  max_budget: number;
+  estimated_cost: number;
 }
 
 export interface ScenarioConfigPayload {

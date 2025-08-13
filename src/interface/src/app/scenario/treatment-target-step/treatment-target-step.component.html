@@ -13,83 +13,81 @@
     stop once reached.
   </p>
   <form class="constraints-form" *ngIf="form" [formGroup]="form!">
-    <div formGroupName="configuration">
+    <div>
+      <mat-form-field
+        class="input-field"
+        appearance="outline"
+        floatLabel="always">
+        <mat-label>Max acres to be treated</mat-label>
+        <input
+          class="right-align"
+          formControlName="max_area"
+          type="text"
+          mask="separator"
+          thousandSeparator=","
+          (focus)="focusedSelection = 'max_area'"
+          (input)="toggleMaxAreaAndMaxBudget()"
+          matInput />
+      </mat-form-field>
+      <div class="help-placeholder">
+        <div
+          class="help-text"
+          *ngIf="focusedSelection === 'max_area'"
+          [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
+          Max acres needs to be between
+          {{ minMaxAreaValue | number: '1.0-0' }} and
+          {{ maxMaxAreaValue | number: '1.0-0' }}
+        </div>
+      </div>
+    </div>
+    <div class="or-divider">OR</div>
+    <div class="flex-row space-evenly">
       <div>
         <mat-form-field
           class="input-field"
           appearance="outline"
           floatLabel="always">
-          <mat-label>Max acres to be treated</mat-label>
+          <mat-label>Max Budget</mat-label>
           <input
+            id="maxBudget"
             class="right-align"
-            formControlName="max_area"
-            type="text"
-            mask="separator"
-            thousandSeparator=","
-            (focus)="focusedSelection = 'max_area'"
-            (input)="toggleMaxAreaAndMaxBudget()"
-            matInput />
-        </mat-form-field>
-        <div class="help-placeholder">
-          <div
-            class="help-text"
-            *ngIf="focusedSelection === 'max_area'"
-            [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
-            Max acres needs to be between
-            {{ minMaxAreaValue | number: '1.0-0' }} and
-            {{ maxMaxAreaValue | number: '1.0-0' }}
-          </div>
-        </div>
-      </div>
-      <div class="or-divider">OR</div>
-      <div class="flex-row space-evenly">
-        <div>
-          <mat-form-field
-            class="input-field"
-            appearance="outline"
-            floatLabel="always">
-            <mat-label>Max Budget</mat-label>
-            <input
-              id="maxBudget"
-              class="right-align"
-              formControlName="max_budget"
-              matInput
-              type="text"
-              mask="separator"
-              thousandSeparator=","
-              (focus)="focusedSelection = 'max_budget'"
-              (input)="toggleMaxAreaAndMaxBudget()"
-              [errorStateMatcher]="budgetStateMatcher" />
-            <span matPrefix>$&nbsp;</span>
-          </mat-form-field>
-        </div>
-
-        <mat-form-field
-          class="input-field"
-          appearance="outline"
-          floatLabel="always">
-          <mat-label>Treatment cost</mat-label>
-          <input
-            id="estimatedCost"
-            class="right-align"
-            formControlName="estimated_cost"
+            formControlName="max_budget"
             matInput
             type="text"
             mask="separator"
-            thousandSeparator="," />
-          <span matSuffix class="suffix">/acre</span>
+            thousandSeparator=","
+            (focus)="focusedSelection = 'max_budget'"
+            (input)="toggleMaxAreaAndMaxBudget()"
+            [errorStateMatcher]="budgetStateMatcher" />
+          <span matPrefix>$&nbsp;</span>
         </mat-form-field>
       </div>
-      <div class="help-placeholder">
-        <div
-          class="help-text"
-          *ngIf="focusedSelection === 'max_budget'"
-          [ngClass]="{
-            error: form.hasError('notEnoughBudget') && maxBudget?.touched,
-          }">
-          Budget needs to be at least
-          {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
-        </div>
+
+      <mat-form-field
+        class="input-field"
+        appearance="outline"
+        floatLabel="always">
+        <mat-label>Treatment cost</mat-label>
+        <input
+          id="estimatedCost"
+          class="right-align"
+          formControlName="estimated_cost"
+          matInput
+          type="text"
+          mask="separator"
+          thousandSeparator="," />
+        <span matSuffix class="suffix">/acre</span>
+      </mat-form-field>
+    </div>
+    <div class="help-placeholder">
+      <div
+        class="help-text"
+        *ngIf="focusedSelection === 'max_budget'"
+        [ngClass]="{
+          error: form.hasError('notEnoughBudget') && maxBudget?.touched,
+        }">
+        Budget needs to be at least
+        {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
       </div>
     </div>
   </form>

@@ -59,29 +59,27 @@ export class TreatmentTargetStepComponent
   @Input() planningAreaAcres = 0;
 
   form = new FormGroup({
-    configuration: new FormGroup({
-      max_area: new FormControl<number | undefined>(undefined, [
-        Validators.min(this.minMaxAreaValue),
-        Validators.max(this.maxMaxAreaValue),
-      ]),
-      max_budget: new FormControl<number | undefined>(undefined, [
-        Validators.required,
-      ]),
-      estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
-        Validators.required,
-      ]),
-    }),
+    max_area: new FormControl<number | undefined>(undefined, [
+      Validators.min(this.minMaxAreaValue),
+      Validators.max(this.maxMaxAreaValue),
+    ]),
+    max_budget: new FormControl<number | undefined>(undefined, [
+      Validators.required,
+    ]),
+    estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
+      Validators.required,
+    ]),
   });
 
   focusedSelection = ''; // string to identify which selection is focused
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
 
   get maxArea() {
-    return this.form?.get('configuration.max_area');
+    return this.form?.get('max_area');
   }
 
   get maxBudget() {
-    return this.form?.get('configuration.max_budget');
+    return this.form?.get('max_budget');
   }
 
   get minMaxAreaValue() {
@@ -121,8 +119,8 @@ export class TreatmentTargetStepComponent
   private budgetOrAreaRequiredValidator(
     form: AbstractControl
   ): ValidationErrors | null {
-    const maxBudget = form.get('configuration.max_budget');
-    const maxArea = form.get('configuration.max_area');
+    const maxBudget = form.get('max_budget');
+    const maxArea = form.get('max_area');
     const valid = !!maxBudget?.value || !!maxArea?.value;
     return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }
@@ -134,10 +132,8 @@ export class TreatmentTargetStepComponent
    */
   private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
     return (constraintsForm: AbstractControl): ValidationErrors | null => {
-      const maxBudget = this.form.get('configuration.max_budget')?.value;
-      const estCostPerAcre = constraintsForm.get(
-        'configuration.estimated_cost'
-      )?.value;
+      const maxBudget = this.form.get('max_budget')?.value;
+      const estCostPerAcre = constraintsForm.get('estimated_cost')?.value;
       if (!!maxBudget) {
         const hasBudget = hasEnoughBudget(
           planningAreaAcres,
@@ -160,8 +156,7 @@ export class TreatmentTargetStepComponent
 
   calculateMinBudget() {
     const estCostPerAcre =
-      this.form.get('configuration.estimated_cost')?.value ??
-      DEFAULT_TX_COST_PER_ACRE;
+      this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
     return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
   }
 
@@ -171,8 +166,8 @@ export class TreatmentTargetStepComponent
 
   // This enables and disables fields, based on what our current selection is
   toggleMaxAreaAndMaxBudget() {
-    const maxBudgetControl = this.form!.get('configuration.max_budget');
-    const maxAreaControl = this.form!.get('configuration.max_area');
+    const maxBudgetControl = this.form!.get('max_budget');
+    const maxAreaControl = this.form!.get('max_area');
 
     if (maxBudgetControl?.value) {
       maxAreaControl?.disable();
