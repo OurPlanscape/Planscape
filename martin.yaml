@@ -80,7 +80,7 @@ postgres:
     datalayers:
       layer_id: datalayers
       schema: public
-      table: datasets_dataset
+      table: datasets_datalayer
       srid: 4269
       id_column: id
       minzoom: 0
