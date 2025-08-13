@@ -250,7 +250,7 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         ),
     )
 
-    geometry = models.PolygonField(
+    geometry = models.MultiPolygonField(
         srid=settings.DEFAULT_CRS,
         null=True,
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
