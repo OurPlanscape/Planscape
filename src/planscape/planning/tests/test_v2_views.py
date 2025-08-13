@@ -1006,7 +1006,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         # Create two overlapping polygons
         self.poly1 = GEOSGeometry(
-            "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0))()", srid=4269
+            "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
         )
         self.poly2 = GEOSGeometry(
             "MULTIPOLYGON(((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5)))", srid=4269
