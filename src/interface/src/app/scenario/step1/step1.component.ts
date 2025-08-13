@@ -12,19 +12,25 @@ import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
-import { CategorizedScenarioGoals, ScenarioGoal } from '@types';
+import {
+  CategorizedScenarioGoals,
+  ScenarioCreation,
+  ScenarioGoal,
+} from '@types';
 import { map, shareReplay } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { SectionComponent } from '@styleguide';
-import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
+import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
+import { StepDirective } from '../../../styleguide/steps/step.component';
+import { ActivatedRoute } from '@angular/router';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-step1',
   standalone: true,
   imports: [
     CommonModule,
-    SectionComponent,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
@@ -32,24 +38,32 @@ import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
     SectionComponent,
     MatFormFieldModule,
     MatSelectModule,
-    ReactiveFormsModule,
     KeyValuePipe,
   ],
+  providers: [{ provide: StepDirective, useExisting: Step1Component }],
   templateUrl: './step1.component.html',
   styleUrl: './step1.component.scss',
 })
-export class Step1Component {
+export class Step1Component extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
-    configuration: new FormGroup({
-      stand_size: new FormControl(null, [Validators.required]),
-    }),
-    treatment_goal: new FormControl(null, [Validators.required]),
+    stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
+      Validators.required,
+    ]),
+    treatment_goal: new FormControl<number | undefined>(undefined, [
+      Validators.required,
+    ]),
   });
 
   readonly standSizeOptions = STAND_OPTIONS;
 
+  planId = this.route.snapshot.data['planId'];
+
   categorizedStatewideGoals$ = this.treatmentGoalsService
-    .getTreatmentGoals()
+    .getTreatmentGoals(
+      this.featuresService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')
+        ? this.planId
+        : null
+    )
     .pipe(
       map((goals) =>
         goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
@@ -71,8 +85,12 @@ export class Step1Component {
   constructor(
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
-    private scenarioState: ScenarioState
-  ) {}
+    private scenarioState: ScenarioState,
+    private route: ActivatedRoute,
+    private featuresService: FeatureService
+  ) {
+    super();
+  }
 
   selectStatewideGoal(goal: ScenarioGoal) {
     if (this.form.get('treatment_goal')?.enabled) {
@@ -82,5 +100,9 @@ export class Step1Component {
 
   reverseAlpha(a: KeyValue<string, any>, b: KeyValue<string, any>): number {
     return b.key.localeCompare(a.key);
+  }
+
+  getData() {
+    return this.form.value;
   }
 }

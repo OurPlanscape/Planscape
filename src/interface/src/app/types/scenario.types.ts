@@ -23,6 +23,8 @@ export interface Scenario {
     name: string;
   };
   version?: string;
+  geopackage_status: GeoPackageStatus;
+  geopackage_url: string | null;
 }
 
 /**
@@ -62,13 +64,10 @@ export interface ScenarioResult {
   };
 }
 
-export interface ScenarioCreation {
-  // TODO: Add the keys for the steps: 2, 3, 4.
-  configuration: {
-    stand_size: STAND_SIZE;
-  };
+export interface ScenarioCreation extends ScenarioConfigPayload {
   treatment_goal: number;
   name: string;
+  planning_area: number;
 }
 
 export interface ScenarioConfigPayload {
@@ -97,6 +96,13 @@ export type ScenarioResultStatus =
   | 'FAILURE' // Run failed;
   | 'PANIC' // Run failed; panic
   | 'TIMED_OUT'; // Run failed; timed out
+
+export type GeoPackageStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | null;
 
 export interface TreatmentGoalConfig {
   category_name?: string;

@@ -16,6 +16,7 @@ import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
 import { ScenarioState } from '../../../scenario/scenario.state';
 import { SectionComponent } from '@styleguide';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -65,6 +66,13 @@ describe('SetPrioritiesComponent', () => {
         }),
         MockProvider(ScenarioState, {
           currentScenario$: of({} as Scenario),
+        }),
+        MockProvider(ActivatedRoute, {
+          snapshot: {
+            data: {
+              planId: 24,
+            },
+          } as any,
         }),
       ],
     }).compileComponents();

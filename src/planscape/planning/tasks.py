@@ -1,14 +1,14 @@
 import logging
 
 import rasterio
-from gis.core import get_storage_session
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from gis.core import get_storage_session
+from planning.models import Scenario, ScenarioResultStatus
 from stands.models import Stand
 from stands.services import calculate_stand_zonal_stats
 from utils.cli_utils import call_forsys
 
-from planning.models import Scenario, ScenarioResultStatus
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -32,7 +32,10 @@ def async_forsys_run(scenario_id: int) -> None:
         if not feature_enabled("FORSYS_VIA_API"):
             scenario.result_status = ScenarioResultStatus.SUCCESS
         scenario.save()
-        async_generate_scenario_geopackage.apply_async((scenario_id,), countdown=120)
+        async_generate_scenario_geopackage.apply_async(
+            args=(scenario.id,),
+            countdown=120,
+        )
     except ForsysTimeoutException:
         # this case should not happen as is, as the default parameter
         # for call_forsys timeout is None.
@@ -114,5 +117,6 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
         raise ValueError(
             f"Scenario {scenario_id} is not ready for geopackage generation."
         )
+
     geopackage_path = export_to_geopackage(scenario)
     log.info(f"Geopackage generated at {geopackage_path}")

@@ -449,6 +449,7 @@ TEMP_GEOPACKAGE_FOLDER = config(
     "TEMP_GEOPACKAGE_FOLDER", default="/tmp/planscape/geopackages"
 )
 GCS_BUCKET = config("GCS_BUCKET", "planscape-datastore-dev")
+GCS_MEDIA_BUCKET = config("GCS_MEDIA_BUCKET", f"planscape-media-{ENV}")
 GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
 )

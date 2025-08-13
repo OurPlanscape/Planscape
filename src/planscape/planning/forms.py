@@ -22,7 +22,9 @@ class TreatmentGoalAdminForm(forms.ModelForm):
         fields = (
             "name",
             "category",
+            "group",
             "description",
+            "geometry",
             "active",
             "created_by",
         )

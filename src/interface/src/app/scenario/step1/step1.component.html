@@ -69,7 +69,7 @@
     are standarized hexagonal units that represent potential treatment areas.
   </p>
 
-  <form [formGroup]="form.controls['configuration']">
+  <form [formGroup]="form">
     <mat-form-field class="stand-size" appearance="outline">
       <mat-label> Stand Size</mat-label>
       <mat-select formControlName="stand_size">
@@ -88,10 +88,8 @@
       </mat-select>
       <mat-error
         *ngIf="
-          form.controls['configuration']?.get('stand_size')?.touched &&
-          form.controls['configuration']
-            ?.get('stand_size')
-            ?.hasError('required')
+          form.get('stand_size')?.touched &&
+          form?.get('stand_size')?.hasError('required')
         ">
         Stand size is required
       </mat-error>

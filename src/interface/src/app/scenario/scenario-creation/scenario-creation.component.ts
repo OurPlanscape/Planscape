@@ -20,17 +20,15 @@ import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
-import {
-  ScenarioCreation,
-  ScenarioConfigPayload,
-  ScenarioCreationPayload,
-} from '@types';
+import { ScenarioCreation } from '@types';
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
+import { StepComponent } from '../../../styleguide/steps/step.component';
+import { Step3Component } from '../step3/step3.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -51,6 +49,8 @@ enum ScenarioTabs {
     CdkStepperModule,
     LegacyMaterialModule,
     Step1Component,
+    StepComponent,
+    Step3Component,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -133,25 +133,11 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
 
   onFinish() {
     // TODO: Onfinish convert the config to scenarioPayload using the following line and send to backend:
-    // const body = this.getScenarioPayloadFromConfiguration(this.config)
+    // const body = getScenarioCreationPayloadScenarioCreation({...this.config, name: this.form.get(name).value, planning_area: this.planId})
     this.finished = true;
   }
 
   stepChanged() {
     this.goalOverlayService.close();
-  }
-
-  getScenarioPayloadFromConfiguration(scenario: ScenarioCreation) {
-    // TODO: Remove Partial<> once we implemented all steps
-    const result: Partial<ScenarioCreationPayload> = {
-      configuration: {
-        stand_size: scenario.configuration.stand_size,
-      } as ScenarioConfigPayload,
-      name: this.form.get('name')?.value,
-      treatment_goal: scenario.treatment_goal,
-      status: 'NOT_STARTED',
-      planning_area: this.planId,
-    };
-    return result;
   }
 }

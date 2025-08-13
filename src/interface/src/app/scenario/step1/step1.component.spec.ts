@@ -17,6 +17,8 @@ import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { MOCK_SCENARIO } from '@services/mocks';
 import { Step1Component } from './step1.component';
+import { STAND_SIZE } from '../../plan/plan-helpers';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -44,6 +46,13 @@ describe('Step1Component', () => {
         MockProvider(TreatmentGoalsService, {
           getTreatmentGoals: () => of([] as any),
         }),
+        MockProvider(ActivatedRoute, {
+          snapshot: {
+            data: {
+              planId: 24,
+            },
+          } as any,
+        }),
       ],
     }).compileComponents();
 
@@ -51,10 +60,8 @@ describe('Step1Component', () => {
     component = fixture.componentInstance;
 
     component.form = new FormGroup({
-      configuration: new FormGroup({
-        stand_size: new FormControl(null),
-      }),
-      treatment_goal: new FormControl(null),
+      stand_size: new FormControl<STAND_SIZE | undefined>(undefined),
+      treatment_goal: new FormControl<number | undefined>(undefined),
     });
     fixture.detectChanges();
   });

@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PlanTabsFooterComponent } from './plan-tabs-footer.component';
+import { NewTreatmentFooterComponent } from './new-treatment-footer.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 
-describe('PlanTabsFooterComponent', () => {
-  let component: PlanTabsFooterComponent;
-  let fixture: ComponentFixture<PlanTabsFooterComponent>;
+describe('NewTreatmentFooterComponent', () => {
+  let component: NewTreatmentFooterComponent;
+  let fixture: ComponentFixture<NewTreatmentFooterComponent>;
   const fakeRoute = jasmine.createSpyObj(
     'ActivatedRoute',
     {},
@@ -21,7 +21,7 @@ describe('PlanTabsFooterComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        PlanTabsFooterComponent,
+        NewTreatmentFooterComponent,
         HttpClientTestingModule,
         MatSnackBarModule,
         MatDialogModule,
@@ -29,7 +29,7 @@ describe('PlanTabsFooterComponent', () => {
       providers: [{ provide: ActivatedRoute, useValue: fakeRoute }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PlanTabsFooterComponent);
+    fixture = TestBed.createComponent(NewTreatmentFooterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

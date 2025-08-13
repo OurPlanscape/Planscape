@@ -12,10 +12,8 @@ import { NgChartsModule } from 'ng2-charts';
 import { NgModule } from '@angular/core';
 import { NgxMaskModule } from 'ngx-mask';
 import { PlanComponent } from './plan.component';
-import { PlanNavigationBarComponent } from './plan-navigation-bar/plan-navigation-bar.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { ProjectAreasComponent } from './project-areas/project-areas.component';
-import { ReportChartComponent } from './report-chart/report-chart.component';
 import { ResourceUnavailableComponent } from './resource-unavailable/resource-unavailable.component';
 import { RouterModule } from '@angular/router';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
@@ -48,12 +46,13 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
 import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
-import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.component';
+import { NewTreatmentFooterComponent } from './new-treatment-footer/new-treatment-footer.component';
 import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
 import { ScenarioMetricsLegendComponent } from './scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart/treatment-opportunity-chart.component';
+import { ScenarioDownloadFooterComponent } from './scenario-download-footer/scenario-download-footer.component';
 import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
 import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenario-creation.component';
 
@@ -67,10 +66,8 @@ import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenari
     GoalOverlayComponent,
     IdentifyProjectAreasComponent,
     PlanComponent,
-    PlanNavigationBarComponent,
     PlanOverviewComponent,
     ProjectAreasComponent,
-    ReportChartComponent,
     ResourceUnavailableComponent,
     SavedScenariosComponent,
     ScenarioFailureComponent,
@@ -115,11 +112,12 @@ import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenari
     OpacitySliderComponent,
     MatTabsModule,
     ScenarioMapComponent,
-    PlanTabsFooterComponent,
+    NewTreatmentFooterComponent,
     DataLayersComponent,
     ScenarioMetricsLegendComponent,
     SectionComponent,
     TreatmentOpportunityChartComponent,
+    ScenarioDownloadFooterComponent,
     CumulativeAttainmentChartComponent,
     ScenarioCreationComponent,
   ],

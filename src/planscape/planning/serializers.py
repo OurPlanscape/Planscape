@@ -568,6 +568,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "status",
             "version",
             "geopackage_url",
+            "geopackage_status",
         )
         model = Scenario
 

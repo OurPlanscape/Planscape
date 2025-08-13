@@ -13,12 +13,6 @@ from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -39,6 +33,12 @@ from datasets.search import (
     organization_to_search_result,
 )
 from datasets.tasks import datalayer_uploaded
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
+from organizations.models import Organization
+
 from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
@@ -314,7 +314,11 @@ def create_datalayer(
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
-    geometry = geometry_from_info(info, datalayer_type=type)
+    geometry = geometry_from_info(
+        info,
+        datalayer_type=type,
+    )
+    outline = kwargs.pop("outline", None)
 
     if bool(url) == bool(original_name):
         raise ValueError(
@@ -373,6 +377,7 @@ def create_datalayer(
         info=info,
         original_name=original_file_name,
         mimetype=mimetype,
+        outline=outline,
         **kwargs,
     )
 
