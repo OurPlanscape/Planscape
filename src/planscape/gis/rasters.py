@@ -163,13 +163,18 @@ def warp(
 def data_mask(
     raster_path: Union[str, Path],
     connectivity: int = 8,
-    min_area_pixels: int = 50,
+    min_area_pixels: int = 1000,
     simplify_tol_pixels=0,
     target_epsg: int = 4269,
 ) -> str | None:
     """
     Given a particular raster, returns it's datamask. The region with
-    data.
+    valid data, excluding nodata.
+    The return is the polygon that composes all of this. INTENSIVE operation,
+    takes a while to finish on large rasters.
+    This does a sieve operation by default. Uses a lot of CPU with large rasters.
+    A LOT.
+    Polygon is returned in `target_epsg`
     """
 
     raster_path = Path(raster_path)
