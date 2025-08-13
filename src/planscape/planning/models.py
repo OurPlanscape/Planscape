@@ -257,7 +257,7 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     )
 
     def get_coverage(self) -> GEOSGeometry:
-        return self.datalayers.all().geometric_intersection()  # type: ignore
+        return self.datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(
