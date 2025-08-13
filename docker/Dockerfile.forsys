@@ -10,7 +10,7 @@ RUN apt-get update && \
     libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
-    libsodium-dev \
+    libsodium-dev libglpk-dev \
     postgresql-client
 
 RUN mkdir -p /usr/src/app
