@@ -179,7 +179,7 @@ def data_mask(
 
     raster_path = Path(raster_path)
     with rasterio.Env(**get_gdal_env()):
-        with rasterio.open(raster_path) as ds:
+        with rasterio.open(raster_path, "r") as ds:
             src_crs = ds.crs
             dst_crs = CRS.from_epsg(target_epsg)
             mask = ds.dataset_mask()  # uint8, shape (H, W)
