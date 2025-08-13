@@ -1,11 +1,11 @@
-# CONTRIBUTING TO PLANSCAPE — UPDATED 11 AUG 2025
+# CONTRIBUTING TO PLANSCAPE
 
 ## Introduction — Contributing to Planscape
 
-Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**, an open-source landscape-planning web application built by **[Spatial Informatics Group (SIG)](https://sig-gis.com/)** for the [U.S. Forest Service and partners](https://code.gov/).
+Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**, an open-source landscape-planning web application built by *
+*[Spatial Informatics Group (SIG)](https://sig-gis.com/)** for the [U.S. Forest Service and partners](https://code.gov/).
 
-
-## Planscape Docs Organization 
+## Planscape Docs Organization
 
 ```bash
 `README.md` 
@@ -21,7 +21,6 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 - **Open Source Policy:** We adhere to the [18F Open Source Policy](https://github.com/18f/open-source-policy).
 - **Vulnerability Disclosure:** Please review the [18F Vulnerability Disclosure Policy](https://18f.gsa.gov/vulnerability-disclosure-policy/).
 
-
 ### Coding Standards
 
 - **Python**: type-annotate; format with `black`; keep functions small and testable.
@@ -29,7 +28,6 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 - **Tests**: write and maintain unit tests; CI runs them automatically in GitHub.
 - **Reviews**: at least one maintainer approval of pull request before merge using the github.com interface.
 - **Docs**: update docs when you add a non-obvious dev step or concept.
-
 
 ## Architecture at a Glance
 
@@ -42,12 +40,15 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 | Tiles        | Martin (vector tiles) / Mapbox (basemap)          | Serve tiles to the client                              |
 | Background   | Celery + Redis                                    | Heavy analysis, batch jobs, exports                    |
 ```
-**Recommended tutorials**:
-- [Django tutorial](https://docs.djangoproject.com/en/stable/intro/tutorial01/)
-- [Angular + Leaflet overview](https://leafletjs.com/examples/quick-start/)
 
+**Recommended resources**:
+
+- [Django tutorial](https://docs.djangoproject.com/en/stable/intro/tutorial01/)
+- [Maplibre Docs](https://maplibre.org/maplibre-gl-js/docs/)
+- [Angular + Maplibre docs](https://github.com/maplibre/ngx-maplibre-gl)
 
 ## Brief Repo Tour
+
 ```bash
 `Planscape/`
 ├── `.github/` # CI workflows, issue/PR templates
@@ -63,8 +64,8 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 
 ### GitHub Account
 
-Use an account that will persist (e.g., a personal account not tied to an employer). Ask a maintainer to add you to the [Planscape team](https://github.com/orgs/OurPlanscape/people) for write access.
-
+Use an account that will persist (e.g., a personal account not tied to an employer). Ask a maintainer to add you to
+the [Planscape team](https://github.com/orgs/OurPlanscape/people) for write access.
 
 ## TL;DR Set Up — run the whole stack (Docker)
 
@@ -84,7 +85,6 @@ make docker-run
 # (optional) seed sample data
 make load-dev-data
 ```
-
 
 ## Developer Workflow
 
@@ -114,7 +114,6 @@ Commit conventions:
 PLAN-<ticket>: short-descriptive-slug-of-commit
 ```
 
-
 ## Pull-Request Checklist
 
 - CI green (lint, type-checks, tests)
@@ -122,33 +121,32 @@ PLAN-<ticket>: short-descriptive-slug-of-commit
 - squash-merge preferred
 - Update docs/CHANGELOG when behavior or schema changes
 
-
 ## Releases
 
 - Merge PRs to main → CI builds and tests
 - Tag a release via terminal and submit its tag to: https://github.com/OurPlanscape/Planscape/releases
 - If cleared to do so, enable VPN and deploy via Jenkins to staging/production
 
-
 ## Planscape Key Glossary Terms
 
 - **Data Layer**: relevant raster/vector dataset used in Explore/analysis (e.g., fire probability).
 - **Base Layer**: background raster/vector dataset used under data layers (e.g., private land)
-- **Planning Area**: user-selected land area with management objectives 
+- **Planning Area**: user-selected land area with management objectives
 - **Scenario**: a saved ForSys run for a Planning Area with a specific treatment goal (e.g., area with aboveground carbon).
 - **Project Areas**: areas in the Planning Area selected by ForSys as best to manage under a specific Scenario.
 - **Treatment Plan**: specific treatment applied to a Project Area(s) (e.g., moderate thinning).
 - **Scenario Analytics**: results of applying your Treatment Plan to your Project Areas.
 - More definitions: see `https://github.com/OurPlanscape/Planscape/wiki/Glossary`.
 
-
 ## Next Step: Local Setup
 
-Next, to set up Planscape locally, see the docs in the [docs](docs) folder, particularly the [setup_planscape_locally.md](docs/setup_planscape_locally.md) file. If you haven’t already, read the [README](README.md) for an introduction to the Planscape product, and a link to its Wiki.  
-
+Next, to set up Planscape locally, see the docs in the [docs](docs) folder, particularly
+the [setup_planscape_locally.md](docs/setup_planscape_locally.md) file. If you haven’t already, read the [README](README.md) for an introduction to
+the Planscape product, and a link to its Wiki.
 
 ## Public Domain
 
 - This project is in the worldwide [public domain](LICENSE.md).
-- This project is in the United States public domain, and worldwide rights are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
+- This project is in the United States public domain, and worldwide rights are waived through
+  the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 - All contributions are released under the CC0 dedication. By submitting a pull request, you agree to this waiver.
