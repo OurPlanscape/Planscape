@@ -105,7 +105,7 @@ To run unit tests inside Docker web container:
 ```bash
 docker exec -it planscape-web-1 bash
 python manage.py test # run all tests 
-python manage.py <app>.tests.<test_class>.<test_name> # run tests in a app/class/test
+python manage.py test <app>.tests.<test_class>.<test_name> # run tests in a app/class/test
 ```
 
 Commit conventions:
