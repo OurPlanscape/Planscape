@@ -159,12 +159,17 @@ class MapServiceChoices(models.TextChoices):
 
 
 class DataLayerQuerySet(models.QuerySet):
-    def geometric_intersection(self) -> Optional[GEOSGeometry]:
+    def geometric_intersection(
+        self, geometry_field: str = "geometry"
+    ) -> Optional[GEOSGeometry]:
         geometries = (
             self.all()
             .annotate(area=Area("geometry"))
             .order_by("-area")
-            .values_list("geometry", flat=True)
+            .values_list(
+                geometry_field,
+                flat=True,
+            )
         )
         temp_geometry = None
         for i, geometry in enumerate(geometries):
