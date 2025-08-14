@@ -64,9 +64,6 @@ export class ScenarioCreationComponent {
   plan$ = this.planState.currentPlan$;
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
 
-  //TODO: pull this from the planning Area
-  planningAreaAcres = 1000;
-
   form = new FormGroup({
     scenarioName: new FormControl(
       '',
