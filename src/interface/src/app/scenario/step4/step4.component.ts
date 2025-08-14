@@ -40,7 +40,7 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   };
 
 @Component({
-  selector: 'app-treatment-target-step',
+  selector: 'app-step4',
   standalone: true,
   imports: [
     CommonModule,
@@ -55,13 +55,11 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
     ReactiveFormsModule,
     SectionComponent,
   ],
-  providers: [
-    { provide: StepDirective, useExisting: TreatmentTargetStepComponent },
-  ],
-  templateUrl: './treatment-target-step.component.html',
-  styleUrl: './treatment-target-step.component.scss',
+  providers: [{ provide: StepDirective, useExisting: Step4Component }],
+  templateUrl: './step4.component.html',
+  styleUrl: './step4.component.scss',
 })
-export class TreatmentTargetStepComponent
+export class Step4Component
   extends StepDirective<ScenarioCreation>
   implements OnChanges
 {
