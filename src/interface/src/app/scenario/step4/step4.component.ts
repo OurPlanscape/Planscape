@@ -79,14 +79,6 @@ export class Step4Component
   focusedSelection = ''; // string to identify which selection is focused
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
 
-  get maxArea() {
-    return this.form?.get('max_area');
-  }
-
-  get maxBudget() {
-    return this.form?.get('max_budget');
-  }
-
   get minBudgetValue(): number {
     const estCostPerAcre =
       this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
@@ -104,7 +96,7 @@ export class Step4Component
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the planningAreaAcres is updated
     if (changes['planningAreaAcres'] && this.form) {
-      const maxArea = this.maxArea as FormControl;
+      const maxArea = this.form.get('max_area') as FormControl;
       maxArea?.clearValidators();
       maxArea?.addValidators([
         Validators.min(this.minMaxAreaValue),
@@ -142,9 +134,10 @@ export class Step4Component
    * @private
    */
   private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
-    return (constraintsForm: AbstractControl): ValidationErrors | null => {
+    return (): ValidationErrors | null => {
       const maxBudget = this.form.get('max_budget')?.value;
-      const estCostPerAcre = constraintsForm.get('estimated_cost')?.value;
+      const estCostPerAcre =
+        this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
       if (!!maxBudget) {
         const hasBudget = hasEnoughBudget(
           planningAreaAcres,

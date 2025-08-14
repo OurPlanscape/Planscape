@@ -34,7 +34,10 @@
         <div
           class="help-text"
           *ngIf="focusedSelection === 'max_area'"
-          [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
+          [ngClass]="{
+            error:
+              form.get('max_area')?.invalid && form.get('max_area')?.touched,
+          }">
           Max acres needs to be between
           {{ minMaxAreaValue | number: '1.0-0' }} and
           {{ maxMaxAreaValue | number: '1.0-0' }}
@@ -85,7 +88,8 @@
         class="help-text"
         *ngIf="focusedSelection === 'max_budget'"
         [ngClass]="{
-          error: form.hasError('notEnoughBudget') && maxBudget?.touched,
+          error:
+            form.hasError('notEnoughBudget') && form.get('max_budget')?.touched,
         }">
         Budget needs to be at least
         {{ minBudgetValue | currency: 'USD' : 'symbol' : '1.0-0' }}
