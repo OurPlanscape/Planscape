@@ -11,6 +11,8 @@ import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
 import { Step1Component } from '../step1/step1.component';
 import { Step3Component } from '../step3/step3.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { NgxMaskModule } from 'ngx-mask';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -18,7 +20,12 @@ describe('ScenarioCreationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ScenarioCreationComponent, NoopAnimationsModule],
+      imports: [
+        HttpClientTestingModule,
+        ScenarioCreationComponent,
+        NgxMaskModule.forRoot(),
+        NoopAnimationsModule,
+      ],
       providers: [
         MockProvider(ActivatedRoute, {
           snapshot: {

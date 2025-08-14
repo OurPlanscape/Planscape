@@ -1,5 +1,11 @@
 import { Component, Input, SimpleChanges, OnChanges } from '@angular/core';
-import { CommonModule, NgClass, CurrencyPipe, DecimalPipe, NgIf } from '@angular/common';
+import {
+  CommonModule,
+  NgClass,
+  CurrencyPipe,
+  DecimalPipe,
+  NgIf,
+} from '@angular/common';
 import { SectionComponent } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { StepDirective } from '../../../styleguide/steps/step.component';
@@ -66,9 +72,7 @@ export class TreatmentTargetStepComponent
       Validators.min(this.minMaxAreaValue),
       Validators.max(this.maxMaxAreaValue),
     ]),
-    max_budget: new FormControl<number | null>(null, [
-      Validators.min(0),
-    ]),
+    max_budget: new FormControl<number | null>(null, [Validators.min(0)]),
     estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
       Validators.required,
     ]),
@@ -85,7 +89,7 @@ export class TreatmentTargetStepComponent
     return this.form?.get('max_budget');
   }
 
-  get minBudgetValue() :number {
+  get minBudgetValue(): number {
     const estCostPerAcre =
       this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
     return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
@@ -162,8 +166,6 @@ export class TreatmentTargetStepComponent
       return null;
     };
   }
-
-
 
   getData() {
     return this.form.value;

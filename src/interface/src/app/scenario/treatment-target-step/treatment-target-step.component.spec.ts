@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { NgxMaskModule } from 'ngx-mask';
 import { TreatmentTargetStepComponent } from './treatment-target-step.component';
 
 describe('TreatmentTargetStepComponent', () => {
@@ -8,7 +9,11 @@ describe('TreatmentTargetStepComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentTargetStepComponent],
+      imports: [
+        NoopAnimationsModule,
+        NgxMaskModule.forRoot(),
+        TreatmentTargetStepComponent,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentTargetStepComponent);

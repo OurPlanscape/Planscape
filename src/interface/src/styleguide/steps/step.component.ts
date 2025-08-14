@@ -31,8 +31,6 @@ export class StepComponent<T> extends CdkStep implements AfterViewInit {
   @ContentChild(StepDirective) stepLogic?: StepDirective<T>;
 
   ngAfterViewInit() {
-    console.log('what is this?', this);
-    console.log('is there step Logic:', this.stepLogic);
     if (!this.stepLogic) {
       throw new Error(
         'StepComponent: No step logic (StepDirective) was projected into this step.'

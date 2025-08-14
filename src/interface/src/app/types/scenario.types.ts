@@ -81,11 +81,11 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
 export interface ScenarioConfigPayload {
   estimated_cost: number;
   excluded_areas: number[];
-  max_area: number;
+  max_area?: number; // TODO: does this need to be optional?
   max_slope: number | null;
   min_distance_from_road: number | null;
   stand_size: STAND_SIZE;
-  max_budget: number;
+  max_budget?: number; // TODO: does this need to be optional?
 }
 
 export interface ScenarioCreationPayload {
