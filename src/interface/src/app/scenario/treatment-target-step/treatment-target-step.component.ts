@@ -1,8 +1,9 @@
 import { Component, Input, SimpleChanges, OnChanges } from '@angular/core';
-import { NgClass, CurrencyPipe, DecimalPipe, NgIf } from '@angular/common';
+import { CommonModule, NgClass, CurrencyPipe, DecimalPipe, NgIf } from '@angular/common';
 import { SectionComponent } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { StepDirective } from '../../../styleguide/steps/step.component';
+import { NgxMaskModule } from 'ngx-mask';
 import {
   AbstractControl,
   FormControl,
@@ -36,6 +37,7 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   selector: 'app-treatment-target-step',
   standalone: true,
   imports: [
+    CommonModule,
     CurrencyPipe,
     DecimalPipe,
     MatSelectModule,
@@ -43,6 +45,7 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
     MatFormFieldModule,
     NgClass,
     NgIf,
+    NgxMaskModule,
     ReactiveFormsModule,
     SectionComponent,
   ],
