@@ -250,14 +250,14 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         ),
     )
 
-    geometry = models.PolygonField(
+    geometry = models.MultiPolygonField(
         srid=settings.DEFAULT_CRS,
         null=True,
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
 
     def get_coverage(self) -> GEOSGeometry:
-        return self.datalayers.all().geometric_intersection()  # type: ignore
+        return self.datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(

@@ -658,3 +658,68 @@ class ScenarioDetailTest(APITestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(data.get("geopackage_url"))
+
+
+class PatchScenarioConfigurationTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.other_user = UserFactory()
+
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.treatment_goal = TreatmentGoalFactory()
+
+        self.scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "max_budget": 1000,
+            },
+        )
+
+        self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
+
+    def test_patch_scenario_configuration_success(self):
+        payload = {
+            "max_budget": 20000,
+            "min_distance_from_road": 100,
+            "stand_size": "SMALL",
+            "max_project_count": 5,
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        config = response.data.get("configuration", {})
+        self.assertEqual(config.get("max_budget"), 20000)
+        self.assertEqual(config.get("min_distance_from_road"), 100)
+        self.assertEqual(config.get("stand_size"), "SMALL")
+        self.assertEqual(config.get("max_project_count"), 5)
+
+    def test_patch_scenario_configuration_unauthenticated(self):
+        payload = {"max_budget": 5000}
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_scenario_configuration_forbidden_for_other_user(self):
+        scenario = ScenarioFactory(user=self.other_user)
+        url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
+        payload = {"max_budget": 100000}
+
+        # Authenticate as a user who does not own the scenario
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+
+        # Expect 404 since get_object() hides unauthorized scenarios
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_scenario_configuration_invalid_scenario_id(self):
+        invalid_url = reverse("api:planning:scenarios-detail", args=[999999])
+        self.client.force_authenticate(self.user)
+        payload = {"max_budget": 5000}
+
+        response = self.client.patch(invalid_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

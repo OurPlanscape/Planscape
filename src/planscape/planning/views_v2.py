@@ -33,6 +33,7 @@ from planning.serializers import (
     ScenarioV2Serializer,
     TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
+    UpsertConfigurationV2Serializer,
 )
 from planning.services import (
     create_planning_area,
@@ -181,6 +182,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
         "retrieve": ScenarioV2Serializer,
+        "partial_update": UpsertConfigurationV2Serializer,
     }
     filterset_class = ScenarioFilter
     filter_backends = [
@@ -249,6 +251,15 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_201_CREATED,
         )
+
+    @extend_schema(description="Partially update a Scenario.")
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        response_serializer = ScenarioV2Serializer(instance)
+        return Response(response_serializer.data)
 
 
 # TODO: migrate this to an action inside the planning area viewset
