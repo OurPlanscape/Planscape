@@ -65,6 +65,16 @@ postgres:
       maxzoom: 20
       bounds: [-180.0, -90.0, 180.0, 90.0]
       id_column: id
+    # Returns vector tiles of stands filtered by scenario_id
+    # parameters:
+    # - scenario_id: int
+    stands_by_scenario:
+      schema: public
+      function: martin_stands_by_scenario
+      minzoom: 0
+      maxzoom: 20
+      bounds: [ -180.0, -90.0, 180.0, 90.0 ]
+      id_column: id
     # dynamic endpoint for any imported DataLayer by ID
     # parameters:
     # - layer: integer  (DataLayer id)
