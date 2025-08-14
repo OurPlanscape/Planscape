@@ -6,6 +6,7 @@ def add_wildfire_treatment_goals(apps, schema_editor):
     TGUD = apps.get_model("planning", "TreatmentGoalUsesDataLayer")
     DataLayer = apps.get_model("datasets", "DataLayer")
     User = apps.get_model("auth", "User")
+    dataset_name = "Wildfire Risk to Communities"
 
     admin_user = User.objects.filter(username="admin").first()
     if not admin_user:
@@ -18,11 +19,11 @@ def add_wildfire_treatment_goals(apps, schema_editor):
             is_superuser=True,
         )
 
-    def get_layer_by_name(name: str):
-        layer = DataLayer.objects.filter(name__iexact=name).first()
-        if not layer:
-            return None
-        return layer
+    def get_layer_by_name_and_dataset(name: str, dataset_name: str):
+        layer = DataLayer.objects.filter(
+            name__iexact=name, dataset__name__iexact=dataset_name
+        ).first()
+        return layer if layer else None
 
     GOALS = [
         {
@@ -126,19 +127,32 @@ def add_wildfire_treatment_goals(apps, schema_editor):
 
         for field_name, value in tg_defaults.items():
             setattr(tg, field_name, value)
-
         tg.save(update_fields=list(tg_defaults.keys()))
 
         for usage_type, layer_name, threshold in spec["layers"]:
-            datalayer = get_layer_by_name(layer_name)
+            datalayer = get_layer_by_name_and_dataset(layer_name, dataset_name)
             if not datalayer:
                 continue
-            TGUD.objects.update_or_create(
+
+            existing_qs = TGUD.objects.filter(
                 treatment_goal=tg,
                 datalayer=datalayer,
                 usage_type=usage_type,
-                defaults={"threshold": threshold},
+                deleted_at=None,
             )
+
+            obj = existing_qs.first()
+            if obj:
+                if obj.threshold != threshold:
+                    obj.threshold = threshold
+                    obj.save(update_fields=["threshold"])
+            else:
+                TGUD.objects.create(
+                    treatment_goal=tg,
+                    datalayer=datalayer,
+                    usage_type=usage_type,
+                    threshold=threshold,
+                )
 
 
 class Migration(migrations.Migration):
