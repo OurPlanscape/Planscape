@@ -18,6 +18,7 @@ from planning.models import (
     RegionChoices,
     ScenarioResult,
     TreatmentGoalCategory,
+    TreatmentGoalGroup,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -1078,6 +1079,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             first_treatment_goal["category_text"],
             self.first_treatment_goal.category.label,
         )
+        self.assertEqual(first_treatment_goal["group"], self.first_treatment_goal.group)
+        self.assertEqual(
+            first_treatment_goal["group_text"],
+            TreatmentGoalGroup(self.first_treatment_goal.group).label,
+        )
 
     def test_detail_treatment_goal(self):
         response = self.client.get(
@@ -1095,6 +1101,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(treatment_goal["category"], self.first_treatment_goal.category)
         self.assertEqual(
             treatment_goal["category_text"], self.first_treatment_goal.category.label
+        )
+        self.assertEqual(treatment_goal["group"], self.first_treatment_goal.group)
+        self.assertEqual(
+            treatment_goal["group_text"],
+            TreatmentGoalGroup(self.first_treatment_goal.group).label,
         )
 
     def test_detail_inactive_treatment_goal(self):
