@@ -1,4 +1,4 @@
-FROM rstudio/plumber:v1.2.0
+FROM rstudio/r-base:4.5-noble
 
 RUN apt-get update && \
     apt-get -y install \
@@ -10,6 +10,7 @@ RUN apt-get update && \
     libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
+    libsodium-dev libglpk-dev \
     postgresql-client
 
 RUN mkdir -p /usr/src/app
@@ -19,7 +20,10 @@ COPY install.R /usr/src/app/
 RUN Rscript install.R
 
 COPY .env /usr/src/app/
-COPY src/forsys/server.R /usr/src/app/
-COPY src/planscape/rscripts/* /usr/src/app/
+COPY src/forsys/server.R /usr/src/app/server.R
+COPY src/planscape/rscripts /usr/src/app/rscripts
 
-EXPOSE 8000
+EXPOSE 8001
+
+WORKDIR /usr/src/app/src/forsys
+CMD [ "Rscript", "--vanilla", "-e", "library(plumber); pr('server.R') %>% pr_run(host='0.0.0.0', port=8001)" ]
