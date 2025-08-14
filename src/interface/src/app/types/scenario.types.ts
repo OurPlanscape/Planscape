@@ -158,6 +158,8 @@ export interface ScenarioGoal {
   priorities: string[];
   category: string;
   category_text: string;
+  group: string;
+  group_text: string;
 }
 
 export interface CategorizedScenarioGoals {
