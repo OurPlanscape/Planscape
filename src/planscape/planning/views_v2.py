@@ -19,7 +19,13 @@ from planning.filters import (
     ScenarioOrderingFilter,
     TreatmentGoalFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario, TreatmentGoal
+from planning.models import (
+    PlanningArea,
+    ProjectArea,
+    Scenario,
+    TreatmentGoal,
+    TreatmentGoalGroup,
+)
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
@@ -309,7 +315,6 @@ class TreatmentGoalViewSet(
     A viewset for viewing and editing TreatmentGoal instances.
     """
 
-    CA_GROUP = "WILDFIRE_RISK_TO_COMMUTIES"
     queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
     filterset_class = TreatmentGoalFilter
@@ -319,7 +324,7 @@ class TreatmentGoalViewSet(
     ordering = ["category", "name"]
 
     def get_queryset(self):
-        qs = TreatmentGoal.objects.filter(active=True)
+        qs = super().get_queryset()
         if feature_enabled("FEATURE_ALL_TREATMENT_GOALS"):
             return qs
-        return qs.filter(group=CA_GROUP)
+        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)

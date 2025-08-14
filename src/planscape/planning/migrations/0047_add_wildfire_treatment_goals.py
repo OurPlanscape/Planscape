@@ -21,10 +21,7 @@ def add_wildfire_treatment_goals(apps, schema_editor):
     def get_layer_by_name(name: str):
         layer = DataLayer.objects.filter(name__iexact=name).first()
         if not layer:
-            raise RuntimeError(
-                f"[add_wildfire_treatment_goals] DataLayer named '{name}' not found. "
-                "Load/import your layers first, then re-run the migration."
-            )
+            return None
         return layer
 
     GOALS = [
@@ -134,6 +131,8 @@ def add_wildfire_treatment_goals(apps, schema_editor):
 
         for usage_type, layer_name, threshold in spec["layers"]:
             datalayer = get_layer_by_name(layer_name)
+            if not datalayer:
+                continue
             TGUD.objects.update_or_create(
                 treatment_goal=tg,
                 datalayer=datalayer,
