@@ -28,14 +28,11 @@ BEGIN
           ST_TileEnvelope(z, x, y),
           4096, 64, true) AS geom
     FROM stands_stand ss
+    INNER JOIN planning_area_geom pag ON ss.geometry && pag.geometry AND
+                                         ST_Within(ST_Centroid(ss.geometry), pag.geometry)
     WHERE 
         ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269) AND
-        ss.size = p_stand_size AND
-        EXISTS (
-          SELECT 1
-          FROM planning_area_geom pag
-          WHERE ST_Within(ST_Centroid(ss.geometry), pag.geometry)
-        )
+        ss.size = p_stand_size
   ) as tile WHERE geom IS NOT NULL;
 
   RETURN p_mvt;
