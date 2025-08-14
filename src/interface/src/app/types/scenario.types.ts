@@ -77,6 +77,7 @@ export interface ScenarioConfigPayload {
   max_slope: number | null;
   min_distance_from_road: number | null;
   stand_size: STAND_SIZE;
+  max_budget?: number; // TODO: does this need to be optional?
 }
 
 export interface ScenarioCreationPayload {

@@ -38,11 +38,17 @@
       <sg-step>
         <app-step1 #step1></app-step1>
       </sg-step>
-      <cdk-step>Step 2</cdk-step>
+      <cdk-step> </cdk-step>
       <sg-step>
         <app-step3 #step3></app-step3>
       </sg-step>
-      <cdk-step>Step 4</cdk-step>
+      <sg-step
+        ><app-treatment-target-step
+          #step4
+          [planningAreaAcres]="
+            (acres$ | async) ?? 0
+          "></app-treatment-target-step
+      ></sg-step>
     </sg-steps>
   </mat-tab>
   <mat-tab label="Data Layers">
