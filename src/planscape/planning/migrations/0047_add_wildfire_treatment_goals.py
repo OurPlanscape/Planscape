@@ -38,13 +38,21 @@ def add_wildfire_treatment_goals(apps, schema_editor):
                 "This scenario uses Housing Unit Risk as its priority objective."
             ),
             "layers": [
-                ("PRIORITY",         "Housing Unit Risk", None),
+                ("PRIORITY", "Housing Unit Risk", None),
                 ("SECONDARY_METRIC", "Risk to Potential Structures", None),
                 ("SECONDARY_METRIC", "Wildfire Hazard Potential", None),
                 ("SECONDARY_METRIC", "Annual Probability of Wildfire", None),
                 ("SECONDARY_METRIC", "Conditional Flame Length", None),
-                ("SECONDARY_METRIC", "Flame Length Exceedance Probability - 4 Feet", None),
-                ("SECONDARY_METRIC", "Flame Length Exceedance Probability - 8 Feet", None),
+                (
+                    "SECONDARY_METRIC",
+                    "Flame Length Exceedance Probability - 4 Feet",
+                    None,
+                ),
+                (
+                    "SECONDARY_METRIC",
+                    "Flame Length Exceedance Probability - 8 Feet",
+                    None,
+                ),
             ],
         },
         {
@@ -59,14 +67,22 @@ def add_wildfire_treatment_goals(apps, schema_editor):
                 "constraint that requires Community Wildfire Risk Reduction Zones to be categorized Direct Exposure."
             ),
             "layers": [
-                ("PRIORITY",         "Risk to Potential Structures", None),
-                ("THRESHOLD",        "Community Wildfire Risk Reduction Zones", "value == 2"),
+                ("PRIORITY", "Risk to Potential Structures", None),
+                ("THRESHOLD", "Community Wildfire Risk Reduction Zones", "value == 2"),
                 ("SECONDARY_METRIC", "Wildfire Hazard Potential", None),
                 ("SECONDARY_METRIC", "Housing Unit Risk", None),
                 ("SECONDARY_METRIC", "Annual Probability of Wildfire", None),
                 ("SECONDARY_METRIC", "Conditional Flame Length", None),
-                ("SECONDARY_METRIC", "Flame Length Exceedance Probability - 4 Feet", None),
-                ("SECONDARY_METRIC", "Flame Length Exceedance Probability - 8 Feet", None),
+                (
+                    "SECONDARY_METRIC",
+                    "Flame Length Exceedance Probability - 4 Feet",
+                    None,
+                ),
+                (
+                    "SECONDARY_METRIC",
+                    "Flame Length Exceedance Probability - 8 Feet",
+                    None,
+                ),
             ],
         },
         {
@@ -79,13 +95,21 @@ def add_wildfire_treatment_goals(apps, schema_editor):
                 "suppression difficulty.\n\nThis scenario uses Wildfire Hazard Potential as its priority objective."
             ),
             "layers": [
-                ("PRIORITY",         "Wildfire Hazard Potential", None),
+                ("PRIORITY", "Wildfire Hazard Potential", None),
                 ("SECONDARY_METRIC", "Risk to Potential Structures", None),
                 ("SECONDARY_METRIC", "Housing Unit Risk", None),
                 ("SECONDARY_METRIC", "Annual Probability of Wildfire", None),
                 ("SECONDARY_METRIC", "Conditional Flame Length", None),
-                ("SECONDARY_METRIC", "Flame Length Exceedance Probability - 4 Feet", None),
-                ("SECONDARY_METRIC", "Flame Length Exceedance Probability - 8 Feet", None),
+                (
+                    "SECONDARY_METRIC",
+                    "Flame Length Exceedance Probability - 4 Feet",
+                    None,
+                ),
+                (
+                    "SECONDARY_METRIC",
+                    "Flame Length Exceedance Probability - 8 Feet",
+                    None,
+                ),
             ],
         },
     ]
@@ -100,15 +124,13 @@ def add_wildfire_treatment_goals(apps, schema_editor):
         }
 
         tg, created = TreatmentGoal.objects.get_or_create(
-            name=spec["name"],
-            defaults=tg_defaults
+            name=spec["name"], defaults=tg_defaults
         )
 
         for field_name, value in tg_defaults.items():
             setattr(tg, field_name, value)
 
         tg.save(update_fields=list(tg_defaults.keys()))
-
 
         for usage_type, layer_name, threshold in spec["layers"]:
             datalayer = get_layer_by_name(layer_name)
