@@ -297,6 +297,7 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         "retrieve": ProjectAreaSerializer,
     }
 
+
 @extend_schema_view(
     list=extend_schema(description="List Treatment Goals."),
     retrieve=extend_schema(description="Detail Treatment Goal."),
@@ -307,6 +308,7 @@ class TreatmentGoalViewSet(
     """
     A viewset for viewing and editing TreatmentGoal instances.
     """
+
     CA_GROUP = "WILDFIRE_RISK_TO_COMMUTIES"
     queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
