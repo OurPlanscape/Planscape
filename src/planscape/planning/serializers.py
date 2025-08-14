@@ -20,6 +20,7 @@ from planning.models import (
     SharedLink,
     TreatmentGoal,
     TreatmentGoalCategory,
+    TreatmentGoalGroup,
     User,
     UserPrefs,
 )
@@ -438,10 +439,22 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
     category_text = serializers.SerializerMethodField(
         help_text="Text format of Treatment Goal Category.",
     )
+    group_text = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="Text format of Treatment Goal Group.",
+    )
 
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name", "description", "category", "category_text")
+        fields = (
+            "id",
+            "name",
+            "description",
+            "category",
+            "category_text",
+            "group",
+            "group_text",
+        )
 
     def get_description(self, instance):
         if instance.description:
@@ -452,6 +465,12 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
         if instance.category:
             category = TreatmentGoalCategory(instance.category)
             return category.label
+        return None
+
+    def get_group_text(self, instance):
+        if instance.group:
+            group = TreatmentGoalGroup(instance.group)
+            return group.label
         return None
 
 
