@@ -1,5 +1,6 @@
 import logging
 
+from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
@@ -296,7 +297,6 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         "retrieve": ProjectAreaSerializer,
     }
 
-
 @extend_schema_view(
     list=extend_schema(description="List Treatment Goals."),
     retrieve=extend_schema(description="Detail Treatment Goal."),
@@ -307,7 +307,7 @@ class TreatmentGoalViewSet(
     """
     A viewset for viewing and editing TreatmentGoal instances.
     """
-
+    CA_GROUP = "WILDFIRE_RISK_TO_COMMUTIES"
     queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
     filterset_class = TreatmentGoalFilter
@@ -315,3 +315,9 @@ class TreatmentGoalViewSet(
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
+
+    def get_queryset(self):
+        qs = TreatmentGoal.objects.filter(active=True)
+        if feature_enabled("FEATURE_ALL_TREATMENT_GOALS"):
+            return qs
+        return qs.filter(group=CA_GROUP)
