@@ -1049,16 +1049,24 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             '<p>This is a paragraph with a <a href="https://planscape.org">link</a></p>'
         )
 
+        ca_group = TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
+
         self.first_treatment_goal = TreatmentGoalFactory.create(
             name="First",
             description=self.markdown_description,
             category=TreatmentGoalCategory.BIODIVERSITY,
             geometry=MultiPolygon([self.poly1.intersection(self.poly2)]),
+            group=ca_group,
         )
         self.treatment_goals = TreatmentGoalFactory.create_batch(
-            10, geometry=self.mpoly3
+            10,
+            geometry=self.mpoly3,
+            group=ca_group,
         )
-        self.inactive_treatment_goal = TreatmentGoalFactory.create(active=False)
+        self.inactive_treatment_goal = TreatmentGoalFactory.create(
+            active=False,
+            group=ca_group,
+        )
 
     def test_list_treatment_goals(self):
         response = self.client.get(
