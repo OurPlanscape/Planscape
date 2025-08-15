@@ -53,4 +53,8 @@
   <mgl-control position="top-left">
     <app-map-layer-color-legend></app-map-layer-color-legend>
   </mgl-control>
+
+  <mgl-control position="top-right" *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'">
+    <app-scenario-legend></app-scenario-legend>
+  </mgl-control>
 </mgl-map>

@@ -26,6 +26,8 @@ import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-laye
 import { MapConfigService } from '../map-config.service';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { FrontendConstants } from '../../map/map.constants';
+import { ScenarioLegendComponent } from '../../scenario/scenario-legend/scenario-legend.component';
+import { FeaturesModule } from '../../features/features.module';
 
 @Component({
   selector: 'app-scenario-map',
@@ -43,6 +45,8 @@ import { FrontendConstants } from '../../map/map.constants';
     ControlComponent,
     MapLayerColorLegendComponent,
     DataLayerNameComponent,
+    ScenarioLegendComponent,
+    FeaturesModule,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',

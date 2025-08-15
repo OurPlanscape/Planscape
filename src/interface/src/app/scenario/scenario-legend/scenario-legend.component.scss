@@ -1,0 +1,64 @@
+@import "colors";
+@import "mixins";
+
+:host {
+  @include public-sans();
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+  background-color: rgba($color-black, 0.5);
+  border-radius: 4px;
+  padding: 16px;
+  color: $color-white;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 240px;
+  box-sizing: border-box;
+}
+
+.legend {
+  display: flex;
+
+
+  & + div {
+    margin-top: 6px;
+  }
+
+  &.icon {
+    &:before {
+      content: '';
+      width: 14px;
+      height: 14px;
+      background-color: $color-dark-gray;
+      margin-right: 10px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+  }
+
+  // icon colors
+  &.blue {
+    &:before {
+      background-color: $color-standard-blue;
+    }
+  }
+
+  &.magenta {
+    &:before {
+      background-color: $color-dark-magenta;
+    }
+  }
+
+  &.pattern {
+    &:before {
+      // placeholder, not actual final pattern!
+      background-color: $color-light-magenta;
+      background-image: url('/assets/png/patterns/stripes-black.png');
+    }
+  }
+}
+
+
+
