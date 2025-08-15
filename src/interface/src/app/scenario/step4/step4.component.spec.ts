@@ -1,6 +1,12 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Step4Component } from './step4.component';
 
 describe('Step4Component', () => {
@@ -9,7 +15,12 @@ describe('Step4Component', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, NgxMaskModule.forRoot(), Step4Component],
+      imports: [
+        NoopAnimationsModule,
+        BrowserAnimationsModule,
+        NgxMaskModule.forRoot(),
+        Step4Component,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Step4Component);
@@ -20,4 +31,34 @@ describe('Step4Component', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should have invalid max_budget if value is less than 0', () => {
+    const control = component.form.get('max_budget');
+    control?.setValue(-1);
+    expect(control?.valid).toBeFalse();
+  });
+
+  it('should have invalid max_area if value is less than 0', () => {
+    const control = component.form.get('max_area');
+    control?.setValue(-1);
+    expect(control?.valid).toBeFalse();
+  });
+
+  it('should have invalid max_area if less than 20% of planning area', fakeAsync(() => {
+    component.planningAreaAcres = 1000;
+    const control = component.form.get('max_area');
+    control?.setValue(100);
+    fixture.detectChanges();
+    tick();
+    expect(control?.valid).toBeFalse();
+  }));
+
+  it('should have invalid max_area if more than 80% of planning area', fakeAsync(() => {
+    component.planningAreaAcres = 1000;
+    const control = component.form.get('max_area');
+    control?.setValue(900);
+    fixture.detectChanges();
+    tick();
+    expect(control?.valid).toBeFalse();
+  }));
 });
