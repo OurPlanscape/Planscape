@@ -23,7 +23,7 @@ class GeometricIntersectionTest(TransactionTestCase):
         expected = self.poly1.intersection(self.poly2)
         self.assertEqual(intersection, expected)
 
-    def test_geometric_intersection_raises(self):
+    def test_geometric_intersection_with_empty_intersection_returns_none(self):
         qs = DataLayer.objects.all()
-        with self.assertRaises(ValueError):
-            qs.geometric_intersection()
+        output = qs.geometric_intersection()
+        self.assertIsNone(output)
