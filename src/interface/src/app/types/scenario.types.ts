@@ -66,6 +66,7 @@ export interface ScenarioResult {
 
 export interface ScenarioCreation extends ScenarioConfigPayload {
   treatment_goal: number;
+  excluded_areas: number[];
   name: string;
   planning_area: number;
 }
