@@ -180,9 +180,7 @@ class DataLayerQuerySet(models.QuerySet):
             comparison = temp_geometry if temp_geometry else geometry
 
             if not comparison or not comparison.intersects(next_geometry):
-                raise ValueError(
-                    "Current Polygon is disjoint, cannot grab intersection of multiple datalayers."
-                )
+                return None
             temp_geometry = comparison.intersection(next_geometry)
 
         return temp_geometry
