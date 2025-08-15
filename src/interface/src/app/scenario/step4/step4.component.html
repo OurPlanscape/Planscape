@@ -1,0 +1,99 @@
+<sg-section
+  class="treatment-step"
+  headline="Treatment Target"
+  [required]="true"
+  tooltipContent="Treatment goals allow you to select one goal that will generate a
+          scenario based on your landscape. Each of the goals uses a different
+          set of input variables, thresholds and primary metrics to generate
+          your result. You can only select one goal per run, however you can do
+          as many scenario runs as you choose by selecting different treatment
+          goal questions and parameters each time. Click on the options below
+          for full question details.">
+  <p class="section-label">
+    Set treatment targets that Forsys will aim to achieve in each sub-unit and
+    stop once reached.
+  </p>
+  <form *ngIf="form" [formGroup]="form!">
+    <div>
+      <mat-form-field
+        class="input-field"
+        appearance="outline"
+        floatLabel="always">
+        <mat-label>Max acres to be treated</mat-label>
+        <input
+          class="right-align"
+          formControlName="max_area"
+          type="text"
+          mask="separator"
+          thousandSeparator=","
+          (focus)="focusedSelection = 'max_area'"
+          (input)="toggleMaxAreaAndMaxBudget()"
+          matInput />
+      </mat-form-field>
+      <div class="help-placeholder">
+        <div
+          class="help-text"
+          *ngIf="focusedSelection === 'max_area'"
+          [ngClass]="{
+            error:
+              form.get('max_area')?.invalid && form.get('max_area')?.touched,
+          }">
+          Max acres needs to be between
+          {{ minMaxAreaValue | number: '1.0-0' }} and
+          {{ maxMaxAreaValue | number: '1.0-0' }}
+        </div>
+      </div>
+    </div>
+    <div class="or-divider">OR</div>
+    <div class="flex-row space-evenly">
+      <div>
+        <mat-form-field
+          class="input-field"
+          appearance="outline"
+          floatLabel="always">
+          <mat-label>Max Budget</mat-label>
+          <input
+            id="maxBudget"
+            class="right-align"
+            formControlName="max_budget"
+            matInput
+            type="text"
+            mask="separator"
+            thousandSeparator=","
+            (focus)="focusedSelection = 'max_budget'"
+            (input)="toggleMaxAreaAndMaxBudget()"
+            [errorStateMatcher]="budgetStateMatcher" />
+          <span matPrefix class="prefix">$&nbsp;</span>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field
+        class="input-field"
+        appearance="outline"
+        floatLabel="always">
+        <mat-label>Treatment cost</mat-label>
+        <input
+          id="estimatedCost"
+          class="right-align"
+          formControlName="estimated_cost"
+          matInput
+          type="text"
+          mask="separator"
+          thousandSeparator="," />
+        <span matSuffix class="suffix">/acre</span>
+      </mat-form-field>
+    </div>
+    <div class="help-placeholder">
+      <div
+        class="help-text"
+        *ngIf="focusedSelection === 'max_budget'"
+        [ngClass]="{
+          error:
+            form.hasError('notEnoughBudget') && form.get('max_budget')?.touched,
+        }">
+        Budget needs to be at least
+        {{ minBudgetValue | currency: 'USD' : 'symbol' : '1.0-0' }}
+      </div>
+    </div>
+  </form>
+</sg-section>

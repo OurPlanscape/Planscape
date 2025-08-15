@@ -1,5 +1,7 @@
 import { MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
 
+export const DEFAULT_TX_COST_PER_ACRE: number = 2470;
+
 /**
  * @desc Error message indicating some unknown error occurred while attempting a
  * password reset
