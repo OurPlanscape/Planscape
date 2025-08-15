@@ -134,10 +134,11 @@ export class Step4Component
    * @private
    */
   private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
-    return (): ValidationErrors | null => {
-      const maxBudget = this.form.get('max_budget')?.value;
+    return (form): ValidationErrors | null => {
+      const maxBudget = form.get('max_budget')?.value;
       const estCostPerAcre =
-        this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
+        form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
+
       if (!!maxBudget) {
         const hasBudget = hasEnoughBudget(
           planningAreaAcres,
