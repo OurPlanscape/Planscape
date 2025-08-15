@@ -294,7 +294,10 @@ export class MapStandsComponent implements OnChanges, OnInit, OnDestroy {
       this.isMouseEndEvent(changes['selectEnd']) &&
       this.selectedStandsState.getSelectedStands().length > 0
     ) {
-      this.treatmentsState.setShowApplyTreatmentsDialog(true);
+      // Defer with a microtask to schedule a new check
+      Promise.resolve().then(() =>
+        this.treatmentsState.setShowApplyTreatmentsDialog(true)
+      );
     }
   }
 
