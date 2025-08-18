@@ -1,6 +1,5 @@
 import json
 import logging
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
@@ -8,8 +7,14 @@ import rasterio
 from django.conf import settings
 from gis.core import get_layer_info, get_random_output_file
 from gis.info import get_gdal_env
+from rasterio.crs import CRS
 from rasterio.features import shapes, sieve
-from rasterio.warp import Resampling, calculate_default_transform, reproject
+from rasterio.warp import (
+    Resampling,
+    calculate_default_transform,
+    reproject,
+    transform_geom,
+)
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
 from shapely.geometry import mapping, shape
@@ -55,11 +60,11 @@ def to_planscape(input_file: str) -> List[str]:
     log.info("Raster info available")
     _epsg, srid = layer_crs.split(":")
     warped_output = get_random_output_file(input_file=input_file)
-    if int(srid) != settings.CRS_FOR_RASTERS:
+    if int(srid) != settings.RASTER_CRS:
         warped_raster = warp(
             input_file=input_file,
             output_file=warped_output,
-            crs=f"EPSG:{settings.CRS_FOR_RASTERS}",
+            crs=f"EPSG:{settings.RASTER_CRS}",
         )
     else:
         log.info("Raster DataLayer already has EPSG:3857 projection.")
@@ -155,18 +160,26 @@ def warp(
 
 
 def data_mask(
-    raster_path: Union[str, Path],
+    raster_path: str,
     connectivity: int = 8,
-    min_area_pixels: int = 10,
+    min_area_pixels: int = 1000,
     simplify_tol_pixels=0,
+    target_epsg: int = 4269,
 ) -> str | None:
     """
     Given a particular raster, returns it's datamask. The region with
-    data.
+    valid data, excluding nodata.
+    The return is the polygon that composes all of this. INTENSIVE operation,
+    takes a while to finish on large rasters.
+    This does a sieve operation by default. Uses a lot of CPU with large rasters.
+    A LOT.
+    Polygon is returned in `target_epsg`
     """
-    raster_path = Path(raster_path)
+
     with rasterio.Env(**get_gdal_env()):
-        with rasterio.open(raster_path) as ds:
+        with rasterio.open(raster_path, "r") as ds:
+            src_crs = ds.crs
+            dst_crs = CRS.from_epsg(target_epsg)
             mask = ds.dataset_mask()  # uint8, shape (H, W)
 
             if not mask.any():
@@ -199,4 +212,14 @@ def data_mask(
 
             out_geom = unary_union(geoms)
             out_geom = make_valid(out_geom)
+            if src_crs != dst_crs:
+                out_geom = shape(
+                    transform_geom(
+                        src_crs,
+                        dst_crs,
+                        mapping(out_geom),
+                        precision=6,
+                    )
+                )
+
             return json.dumps(mapping(out_geom))

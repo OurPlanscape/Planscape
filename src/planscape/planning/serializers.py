@@ -20,6 +20,7 @@ from planning.models import (
     SharedLink,
     TreatmentGoal,
     TreatmentGoalCategory,
+    TreatmentGoalGroup,
     User,
     UserPrefs,
 )
@@ -408,7 +409,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
     )
 
 
-class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
+class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
         source="excluded_areas_ids",
         child=serializers.PrimaryKeyRelatedField(
@@ -425,6 +426,11 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
     def validate_excluded_areas(self, excluded_areas):
         return [excluded_area.pk for excluded_area in excluded_areas]
 
+    def update(self, instance, validated_data):
+        instance.configuration = {**(instance.configuration or {}), **validated_data}
+        instance.save(update_fields=["configuration"])
+        return instance
+
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
@@ -433,10 +439,22 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
     category_text = serializers.SerializerMethodField(
         help_text="Text format of Treatment Goal Category.",
     )
+    group_text = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="Text format of Treatment Goal Group.",
+    )
 
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name", "description", "category", "category_text")
+        fields = (
+            "id",
+            "name",
+            "description",
+            "category",
+            "category_text",
+            "group",
+            "group_text",
+        )
 
     def get_description(self, instance):
         if instance.description:
@@ -447,6 +465,12 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
         if instance.category:
             category = TreatmentGoalCategory(instance.category)
             return category.label
+        return None
+
+    def get_group_text(self, instance):
+        if instance.group:
+            group = TreatmentGoalGroup(instance.group)
+            return group.label
         return None
 
 
@@ -580,7 +604,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
         required=True,
         help_text="Treatment goal of the scenario.",
     )
-    configuration = CreateConfigurationV2Serializer()
+    configuration = UpsertConfigurationV2Serializer()
 
     class Meta:
         model = Scenario

@@ -55,6 +55,7 @@ import { TreatmentOpportunityChartComponent } from './treatment-opportunity-char
 import { ScenarioDownloadFooterComponent } from './scenario-download-footer/scenario-download-footer.component';
 import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
 import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenario-creation.component';
+import { ViewScenarioComponent } from '../plan/view-scenario/view-scenario.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -78,6 +79,7 @@ import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenari
     SetPrioritiesComponent,
     TreatmentsTabComponent,
     UploadedScenarioViewComponent,
+    ViewScenarioComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,

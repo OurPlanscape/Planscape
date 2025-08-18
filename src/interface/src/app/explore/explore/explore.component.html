@@ -34,16 +34,15 @@
         [sliderValue]="(dataLayerOpacity$ | async) ?? defaultDataLayerOpacity"
         (valueChange)="handleOpacityChange($event)"
         tooltip="Layer Opacity"></sg-opacity-slider>
-      <div class="right-controls">
-        <div *ngIf="totalAcres$ | async as totalAcres" class="total-acres">
-          Total Acres: {{ totalAcres | number: '1.0-0' }}
-        </div>
 
-        <app-explore-modes-selection-toggle
-          *ngIf="
-            showSelectionToggle$ | async
-          "></app-explore-modes-selection-toggle>
+      <div *ngIf="totalAcres$ | async as totalAcres" class="total-acres">
+        Total Acres: {{ totalAcres | number: '1.0-0' }}
       </div>
+
+      <app-explore-modes-selection-toggle
+        *ngIf="
+          showSelectionToggle$ | async
+        "></app-explore-modes-selection-toggle>
     </app-map-nav-bar>
     <app-synced-maps [ngClass]="{ withPanel: panelExpanded }"></app-synced-maps>
   </div>

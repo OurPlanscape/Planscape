@@ -13,6 +13,7 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
     TreatmentGoalCategory,
+    TreatmentGoalGroup,
 )
 
 from planscape.tests.factories import UserFactory
@@ -87,6 +88,7 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
     priorities = ["foo", "bar", "baz"]
     category = factory.fuzzy.FuzzyChoice(TreatmentGoalCategory.values)
     created_by = factory.SubFactory(UserFactory)
+    group = factory.fuzzy.FuzzyChoice(TreatmentGoalGroup.values)
 
 
 class ScenarioFactory(factory.django.DjangoModelFactory):

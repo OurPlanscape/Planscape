@@ -78,6 +78,7 @@ export interface ScenarioConfigPayload {
   max_slope: number | null;
   min_distance_from_road: number | null;
   stand_size: STAND_SIZE;
+  max_budget?: number;
 }
 
 export interface ScenarioCreationPayload {
@@ -159,6 +160,8 @@ export interface ScenarioGoal {
   priorities: string[];
   category: string;
   category_text: string;
+  group: string;
+  group_text: string;
 }
 
 export interface CategorizedScenarioGoals {

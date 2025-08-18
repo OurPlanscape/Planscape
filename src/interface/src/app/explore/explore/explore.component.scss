@@ -77,22 +77,17 @@ app-synced-maps.withPanel {
   margin-left: $side-panel-width;
 }
 
-.right-controls {
-  margin-left: auto;
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-}
 
 .total-acres {
   @include standard-label();
   box-sizing: border-box;
-  padding: 1px;
-  margin-left: auto;
-  display: flex;
-  flex-direction: row;
   color: $color-white;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0 8px;
+}
+
+sg-opacity-slider {
+  margin-right: auto;
 }

@@ -6,6 +6,7 @@ import { resetDatalayerResolver } from '../resolvers/reset-datalayer.resolver';
 import { createFeatureGuard } from '../features/feature.guard';
 import { CreateScenariosComponent } from '../plan/create-scenarios/create-scenarios.component';
 import { ScenarioRoutePlaceholderComponent } from '../plan/scenario-route-placeholder/scenario-route-placeholder';
+import { canDeactivateGuard } from '../../app/services/can-deactivate.guard';
 
 const routes: Routes = [
   {
@@ -25,6 +26,7 @@ const routes: Routes = [
             fallback: 'config',
           }),
         ],
+        canDeactivate: [canDeactivateGuard],
         resolve: {
           scenarioId: scenarioLoaderResolver,
           dataLayerInit: resetDatalayerResolver,

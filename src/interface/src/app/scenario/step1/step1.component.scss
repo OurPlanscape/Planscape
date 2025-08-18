@@ -128,4 +128,28 @@ sg-section {
 
 .stand-label {
   margin: 0 0 8px 0;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: $color-text-gray;
+}
+
+.stand-icon {
+  flex-shrink: 0;
+  color: $color-dark-magenta;
+  position: relative;
+
+  // add a smaller layer on top to simulate fill
+  &::after {
+    content: "hexagon";
+    display: block;
+    color: $color-light-magenta;
+    position: absolute;
+    z-index: 1000;
+    width: 10px;
+    height: 20px;
+    top: 2px;
+    font-size: 20px;
+    left: 2px;
+  }
 }
