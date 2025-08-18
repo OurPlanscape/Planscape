@@ -254,8 +254,6 @@ export class CreateScenariosComponent implements OnInit {
           this.priorities =
             scenario.configuration.treatment_question?.scenario_priorities ||
             [];
-
-          this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
             this.scenarioStateService.reloadScenario();
           }
