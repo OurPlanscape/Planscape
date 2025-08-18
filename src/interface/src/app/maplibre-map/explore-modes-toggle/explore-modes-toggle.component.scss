@@ -1,12 +1,11 @@
 @import "colors";
 
 :host {
-    box-sizing: border-box;
-    padding: 1px;
-    margin-left: auto;
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
+  box-sizing: border-box;
+  padding: 1px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 }
 
 .mode-buttons {
@@ -16,62 +15,62 @@
 }
 
 .left-option {
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-right: 1px $color-text-gray solid;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-right: 1px $color-text-gray solid;
 }
 
 .right-option {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
 }
 
 button {
-    border: none;
-    background: $color-white;
-    border-radius: 4px;
-    padding: 3px;
-    height: 40px;
-    width: 56px;
-    cursor: pointer;
-    color: $color-standard-blue;
+  border: none;
+  background: $color-white;
+  border-radius: 4px;
+  padding: 3px;
+  height: 40px;
+  width: 56px;
+  cursor: pointer;
+  color: $color-standard-blue;
+
+  &:hover {
+    background: $color-soft-gray;
+  }
+
+  &.active,
+  &:active {
+    background: $color-main-blue;
+    color: $color-white;
 
     &:hover {
-        background: $color-soft-gray;
+      background: $color-main-blue;
+      color: $color-white;
     }
-
-    &.active,
-    &:active {
-        background: $color-main-blue;
-        color: $color-white;
-
-        &:hover {
-            background: $color-main-blue;
-            color: $color-white;
-        }
-    }
+  }
 }
 
 mat-icon {
-    &:hover {
-        background: none;
-    }
+  &:hover {
+    background: none;
+  }
 }
 
 .drawing-options {
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    --mat-divider-color: white;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  --mat-divider-color: white;
 
-    button {
-        height: 40px;
-        width: 40px;
-    }
+  button {
+    height: 40px;
+    width: 40px;
+  }
 
 
-    .check-button {
-        color: $color-brand-teal;
-    }
+  .check-button {
+    color: $color-brand-teal;
+  }
 }
