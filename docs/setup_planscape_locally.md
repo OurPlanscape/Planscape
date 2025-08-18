@@ -32,11 +32,9 @@ Make sure you have all the requirements in the previous section installed in you
 1. Clone the repository from GitHub
 2. Create your `.env` file in the project repository root. You can copy the `.sample.env` file and tweak some of the environment variables, if
    necessary. All the `PLANSCAPE_DATABASE_*` variables are correctly configured for the Dockerfile.
-3. Create a new `features.dev.json` file. This file should be located in `<repo>/src/interface/src/app/features/`. You can copy the contents
-   of `<repo>/src/interface/src/app/features/features.json`. This file controls all the front-end feature flags in build time.
-4. Create a new `environment.dev.ts` file. This file should be located in `<repo>/src/interface/environments/`. You can copy the contents
+3. Create a new `environment.dev.ts` file. This file should be located in `<repo>/src/interface/environments/`. You can copy the contents
    of `<repo>/src/interface/src/app/environments/environment.ts`. This file controls all the ENV variables for the front-end in build time.
-5. Create a `proxy.conf.json` file, This file should be located in `<repo>/src/interface`, configures the frontend to route API requests to the
+4. Create a `proxy.conf.json` file, This file should be located in `<repo>/src/interface`, configures the frontend to route API requests to the
    backend during local development. You can copy the contents of `<repo>/src/interface/proxy.conf.template.json` and updating the target field to
    point to your backend URL.
 
