@@ -95,37 +95,44 @@ def calculate_stand_zonal_stats(
             datalayer_id=datalayer.pk,
         )
 
-    stand_geojson = list(map(to_geojson, missing_stands))
-    nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-    with rasterio.Env(**get_gdal_env()):
-        stats = zonal_stats(
-            raster=datalayer.url,
-            vectors=stand_geojson,
-            stats=aggregations,
-            nodata=nodata,
-            geojson_out=True,
-            band=1,
+    chunk_size = 1000  # Limit to 1000 stands for processing
+    i = 0
+    while True:
+        processing_stands = missing_stands[i : i + chunk_size]
+        stand_geojson = list(map(to_geojson, processing_stands))
+        nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
+        with rasterio.Env(**get_gdal_env()):
+            stats = zonal_stats(
+                raster=datalayer.url,
+                vectors=stand_geojson,
+                stats=aggregations,
+                nodata=nodata,
+                geojson_out=True,
+                band=1,
+            )
+
+        results = list(
+            map(
+                lambda r: to_stand_metric(
+                    stats_result=r,
+                    datalayer=datalayer,
+                    aggregations=aggregations,
+                ),
+                stats,
+            )
         )
 
-    results = list(
-        map(
-            lambda r: to_stand_metric(
-                stats_result=r,
-                datalayer=datalayer,
-                aggregations=aggregations,
-            ),
-            stats,
+        StandMetric.objects.bulk_create(
+            results,
+            batch_size=100,
+            update_conflicts=True,
+            unique_fields=["stand_id", "datalayer_id"],
+            update_fields="min avg max sum count majority minority".split(),
         )
-    )
-    StandMetric.objects.bulk_create(
-        results,
-        batch_size=100,
-        update_conflicts=True,
-        unique_fields=["stand_id", "datalayer_id"],
-        update_fields="min avg max sum count majority minority".split(),
-    )
-
-    log.info(f"Created/Updated {len(results)} stand metrics.")
+        log.info(f"Created/Updated {len(results)} stand metrics.")
+        i += chunk_size
+        if i >= len(missing_stands):
+            break
 
     return StandMetric.objects.filter(
         stand_id__in=stand_ids,
