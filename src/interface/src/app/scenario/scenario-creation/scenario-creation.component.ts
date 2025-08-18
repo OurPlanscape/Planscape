@@ -1,6 +1,6 @@
 import { Component, HostListener, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { NgIf } from '@angular/common';
+import { NgIf, AsyncPipe } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepsComponent } from '@styleguide';
@@ -28,6 +28,8 @@ import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { StepComponent } from '../../../styleguide/steps/step.component';
+import { Step4Component } from '../step4/step4.component';
+import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 
 enum ScenarioTabs {
@@ -40,6 +42,7 @@ enum ScenarioTabs {
   selector: 'app-scenario-creation',
   standalone: true,
   imports: [
+    AsyncPipe,
     MatTabsModule,
     ReactiveFormsModule,
     MatLegacyButtonModule,
@@ -50,6 +53,7 @@ enum ScenarioTabs {
     LegacyMaterialModule,
     Step1Component,
     StepComponent,
+    Step4Component,
     Step3Component,
   ],
   templateUrl: './scenario-creation.component.html',
@@ -61,6 +65,8 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
   config: Partial<ScenarioCreation> = {};
 
   planId = this.route.snapshot.data['planId'];
+  plan$ = this.planState.currentPlan$;
+  acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
 
   form = new FormGroup({
     scenarioName: new FormControl(
@@ -89,6 +95,7 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
+    private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog
   ) {
