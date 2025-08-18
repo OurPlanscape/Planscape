@@ -56,6 +56,12 @@ export class ScenarioState {
   );
 
   /**
+   * Flag to turn on or off the visibility of the config overlay
+   */
+  private _displayConfigOverlay$ = new BehaviorSubject<boolean>(false);
+  public displayConfigOverlay$ = this._displayConfigOverlay$.asObservable();
+
+  /**
    * This observable filter currentScenarioResource$ to only emit when we have a scenario,
    * and we are not loading.
    * Use this when you know you should have a scenario. If you might not have a scenario check scenarioId$ first
@@ -94,5 +100,9 @@ export class ScenarioState {
   // Reload the current scenario manually
   reloadScenario() {
     this._reloadScenario$.next();
+  }
+
+  setDisplayOverlay(display: boolean) {
+    this._displayConfigOverlay$.next(display);
   }
 }

@@ -1,9 +1,27 @@
-<mat-spinner diameter="24" *ngIf="downloadingScenario"></mat-spinner>
-<button
-  sg-button
-  variant="primary"
-  class="new-treatment"
-  [disabled]="downloadingScenario || !geoPackageURL"
-  (click)="handleDownload()">
-  {{ geoPackageURL ? 'Download GeoPackage' : 'Generating GeoPackage' }}
-</button>
+<ng-container *appFeatureFlag="'SCENARIO_CONFIGURATION_STEPS'">
+  <button
+    sg-button
+    variant="ghost"
+    class="footer-button configuration-button"
+    (click)="setDisplayOverlay(true)"
+    [disabled]="displayScenarioConfigOverlay$ | async"
+    [matMenuTriggerFor]="popoverMenu"
+    (menuClosed)="setDisplayOverlay(false)">
+    View Configurations
+  </button>
+  <mat-menu #popoverMenu="matMenu" class="scenario-config-overlay">
+    <app-scenario-config-overlay></app-scenario-config-overlay>
+  </mat-menu>
+</ng-container>
+
+<div class="download-container">
+  <mat-spinner diameter="24" *ngIf="downloadingScenario"></mat-spinner>
+  <button
+    sg-button
+    variant="primary"
+    class="footer-button"
+    [disabled]="downloadingScenario || !geoPackageURL"
+    (click)="handleDownload()">
+    {{ geoPackageURL ? 'Download GeoPackage' : 'Generating GeoPackage' }}
+  </button>
+</div>
