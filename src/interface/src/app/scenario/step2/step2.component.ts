@@ -11,7 +11,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ScenarioState } from '../scenario.state';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ScenarioCreation } from '@types';
-import { Observable } from 'rxjs';
 
 interface ExcludedArea {
   key: number;
@@ -43,11 +42,10 @@ export class Step2Component
   form = new FormGroup({
     excluded_areas: new FormArray([]),
   });
-  excludedAreas$!: Observable<ExcludedArea[]>;
+  excludedAreas$ = this.scenarioState.excludedAreas$;
   excludedAreas: ExcludedArea[] = [];
 
   ngOnInit() {
-    this.excludedAreas$ = this.scenarioState.excludedAreas$;
     this.excludedAreas$.subscribe((areas: ExcludedArea[]) => {
       this.excludedAreas = areas;
       this.createFormControls();
