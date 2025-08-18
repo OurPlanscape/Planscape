@@ -28,6 +28,7 @@ import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { StepComponent } from '../../../styleguide/steps/step.component';
+import { Step2Component } from '../step2/step2.component';
 import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
@@ -51,10 +52,11 @@ enum ScenarioTabs {
     StepsComponent,
     CdkStepperModule,
     LegacyMaterialModule,
-    Step1Component,
     StepComponent,
-    Step4Component,
+    Step1Component,
+    Step2Component,
     Step3Component,
+    Step4Component,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',

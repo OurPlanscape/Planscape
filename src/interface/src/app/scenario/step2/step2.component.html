@@ -1,0 +1,23 @@
+<sg-section
+  headline="Exclude Areas (OPTIONAL)"
+  tooltipContent="Exclude areas are types of land that you can choose to exclude from
+          your planning scenarios. If you choose to exclude these areas, project
+          areas will not be assigned on these lands.">
+  <div>
+    Select areas you want to exclude from your Potential Treatable Area.
+  </div>
+  <section class="area-selection">
+    <form [formGroup]="form">
+      <div formArrayName="excluded_areas" class="checkbox-column">
+        <div *ngFor="let area of excludedAreas$ | async; let i = index">
+          <mat-checkbox
+            [color]="'primary'"
+            class="exclude-checkbox"
+            [formControlName]="i"
+            >{{ area.label }}</mat-checkbox
+          >
+        </div>
+      </div>
+    </form>
+  </section>
+</sg-section>
