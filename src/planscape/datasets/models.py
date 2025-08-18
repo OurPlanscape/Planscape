@@ -164,7 +164,7 @@ class DataLayerQuerySet(models.QuerySet):
     ) -> Optional[GEOSGeometry]:
         geometries = (
             self.all()
-            .annotate(area=Area("geometry"))
+            .annotate(area=Area(geometry_field))
             .order_by("-area")
             .values_list(
                 geometry_field,
@@ -178,10 +178,9 @@ class DataLayerQuerySet(models.QuerySet):
             except IndexError:
                 break
             comparison = temp_geometry if temp_geometry else geometry
-            if not comparison.intersects(next_geometry):
-                raise ValueError(
-                    "Current Polygon is disjoint, cannot grab intersection of multiple datalayers."
-                )
+
+            if not comparison or not comparison.intersects(next_geometry):
+                return None
             temp_geometry = comparison.intersection(next_geometry)
 
         return temp_geometry
