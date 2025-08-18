@@ -531,6 +531,20 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_owner_has_permission__stands_by_scenario(self):
+        self.client.force_authenticate(self.owner)
+        martins_path = f"/tiles/stands_by_scenario?scenario_id={self.scenario.pk}"
+        response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"valid": True})
+
+    def test_user_has_no_permission__stands_by_scenario(self):
+        another_user = UserFactory.create()
+        self.client.force_authenticate(another_user)
+        martins_path = f"/tiles/stands_by_scenario?scenario_id={self.scenario.pk}"
+        response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
+        self.assertEqual(response.status_code, 403)
+
     def test_unauthenticated_user(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 400)

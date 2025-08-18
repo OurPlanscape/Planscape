@@ -18,6 +18,7 @@ from planning.models import (
     RegionChoices,
     ScenarioResult,
     TreatmentGoalCategory,
+    TreatmentGoalGroup,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -1005,14 +1006,35 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
         # Create two overlapping polygons
-        self.poly1 = GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))")
-        self.poly2 = GEOSGeometry(
-            "POLYGON((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5))"
+        self.mpoly1 = GEOSGeometry(
+            "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
         )
-        self.poly3 = GEOSGeometry("POLYGON((2 2, 3 2, 3 3, 2 3, 2 2))")
-        self.dl1 = DataLayerFactory.create(name="Layer 1", geometry=self.poly1)
-        self.dl2 = DataLayerFactory.create(name="Layer 2", geometry=self.poly2)
-        self.dl3 = DataLayerFactory.create(name="Layer 3", geometry=self.poly3)
+        self.mpoly2 = GEOSGeometry(
+            "MULTIPOLYGON(((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5)))", srid=4269
+        )
+        self.mpoly3 = GEOSGeometry(
+            "MULTIPOLYGON(((2 2, 3 2, 3 3, 2 3, 2 2)))", srid=4269
+        )
+        self.poly1 = GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=4269)
+        self.poly2 = GEOSGeometry(
+            "POLYGON((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5))", srid=4269
+        )
+        self.poly3 = GEOSGeometry("POLYGON((2 2, 3 2, 3 3, 2 3, 2 2))", srid=4269)
+        self.dl1 = DataLayerFactory.create(
+            name="Layer 1",
+            geometry=self.poly1,
+            outline=self.mpoly1,
+        )
+        self.dl2 = DataLayerFactory.create(
+            name="Layer 2",
+            geometry=self.poly2,
+            outline=self.mpoly2,
+        )
+        self.dl3 = DataLayerFactory.create(
+            name="Layer 3",
+            geometry=self.poly3,
+            outline=self.mpoly3,
+        )
         self.markdown_description = (
             "# This is a h1\n"
             "## This is a h2\n"
@@ -1027,16 +1049,24 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             '<p>This is a paragraph with a <a href="https://planscape.org">link</a></p>'
         )
 
+        ca_group = TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
+
         self.first_treatment_goal = TreatmentGoalFactory.create(
             name="First",
             description=self.markdown_description,
             category=TreatmentGoalCategory.BIODIVERSITY,
-            geometry=self.poly1.intersection(self.poly2),
+            geometry=MultiPolygon([self.poly1.intersection(self.poly2)]),
+            group=ca_group,
         )
         self.treatment_goals = TreatmentGoalFactory.create_batch(
-            10, geometry=self.poly3
+            10,
+            geometry=self.mpoly3,
+            group=ca_group,
         )
-        self.inactive_treatment_goal = TreatmentGoalFactory.create(active=False)
+        self.inactive_treatment_goal = TreatmentGoalFactory.create(
+            active=False,
+            group=ca_group,
+        )
 
     def test_list_treatment_goals(self):
         response = self.client.get(
@@ -1057,6 +1087,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             first_treatment_goal["category_text"],
             self.first_treatment_goal.category.label,
         )
+        self.assertEqual(first_treatment_goal["group"], self.first_treatment_goal.group)
+        self.assertEqual(
+            first_treatment_goal["group_text"],
+            TreatmentGoalGroup(self.first_treatment_goal.group).label,
+        )
 
     def test_detail_treatment_goal(self):
         response = self.client.get(
@@ -1074,6 +1109,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(treatment_goal["category"], self.first_treatment_goal.category)
         self.assertEqual(
             treatment_goal["category_text"], self.first_treatment_goal.category.label
+        )
+        self.assertEqual(treatment_goal["group"], self.first_treatment_goal.group)
+        self.assertEqual(
+            treatment_goal["group_text"],
+            TreatmentGoalGroup(self.first_treatment_goal.group).label,
         )
 
     def test_detail_inactive_treatment_goal(self):

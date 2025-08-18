@@ -20,37 +20,85 @@
         {{ scenarioGoal$ | async }}
       </div>
       <div *ngIf="isNewScenario">
-        <div
-          class="goal-loader"
-          *ngIf="(categorizedStatewideGoals$ | async) === null">
-          <mat-spinner diameter="24"></mat-spinner>
-        </div>
-
-        <ng-container
-          *ngIf="
-            categorizedStatewideGoals$ | async as categorizedScenarioGoals
-          ">
+        <ng-container *appFeatureFlag="'CONUS_WIDE_SCENARIOS'">
           <div
-            *ngFor="
-              let goalCategory of categorizedScenarioGoals
-                | keyvalue: reverseAlpha
-            "
-            class="goal-control-container">
-            <mat-expansion-panel expanded="true" [togglePosition]="'before'">
-              <mat-expansion-panel-header class="goal-panel-header">
-                {{ goalCategory.key }}
-              </mat-expansion-panel-header>
-              <div
-                *ngFor="let goal of goalCategory.value"
-                class="layer-control-container">
-                <mat-radio-button
-                  [value]="goal.id"
-                  (click)="selectStatewideGoal(goal)">
-                  {{ goal.name }}
-                </mat-radio-button>
-              </div>
-            </mat-expansion-panel>
+            class="goal-loader"
+            *ngIf="(groupedStatewideGoals$ | async) === null">
+            <mat-spinner diameter="24"></mat-spinner>
           </div>
+          <ng-container
+            *ngIf="groupedStatewideGoals$ | async as groupedScenarioGoals">
+            <!-- Displaying groups -->
+            <div
+              *ngFor="let goalGroup of groupedScenarioGoals | keyvalue"
+              class="goal-control-container">
+              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+                <mat-expansion-panel-header class="goal-panel-header">
+                  {{ goalGroup.key }}
+                </mat-expansion-panel-header>
+
+                <!-- Displaying categories -->
+                <div
+                  class="goal-control-container"
+                  *ngFor="
+                    let goalCategory of goalGroup.value | keyvalue: reverseAlpha
+                  ">
+                  <mat-expansion-panel
+                    expanded="true"
+                    [togglePosition]="'before'">
+                    <mat-expansion-panel-header class="goal-panel-header">
+                      {{ goalCategory.key }}
+                    </mat-expansion-panel-header>
+
+                    <!-- Treatment goals -->
+                    <div
+                      *ngFor="let goal of goalCategory.value"
+                      class="layer-control-container">
+                      <mat-radio-button
+                        [value]="goal.id"
+                        (click)="selectStatewideGoal(goal)">
+                        {{ goal.name }}
+                      </mat-radio-button>
+                    </div>
+                  </mat-expansion-panel>
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <ng-container *appFeatureFlag="'CONUS_WIDE_SCENARIOS'; hide: true">
+          <div
+            class="goal-loader"
+            *ngIf="(categorizedStatewideGoals$ | async) === null">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+          <ng-container
+            *ngIf="
+              categorizedStatewideGoals$ | async as categorizedScenarioGoals
+            ">
+            <div
+              *ngFor="
+                let goalCategory of categorizedScenarioGoals
+                  | keyvalue: reverseAlpha
+              "
+              class="goal-control-container">
+              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+                <mat-expansion-panel-header class="goal-panel-header">
+                  {{ goalCategory.key }}
+                </mat-expansion-panel-header>
+                <div
+                  *ngFor="let goal of goalCategory.value"
+                  class="layer-control-container">
+                  <mat-radio-button
+                    [value]="goal.id"
+                    (click)="selectStatewideGoal(goal)">
+                    {{ goal.name }}
+                  </mat-radio-button>
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </ng-container>
         </ng-container>
       </div>
     </mat-radio-group>

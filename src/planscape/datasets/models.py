@@ -159,12 +159,17 @@ class MapServiceChoices(models.TextChoices):
 
 
 class DataLayerQuerySet(models.QuerySet):
-    def geometric_intersection(self) -> Optional[GEOSGeometry]:
+    def geometric_intersection(
+        self, geometry_field: str = "geometry"
+    ) -> Optional[GEOSGeometry]:
         geometries = (
             self.all()
-            .annotate(area=Area("geometry"))
+            .annotate(area=Area(geometry_field))
             .order_by("-area")
-            .values_list("geometry", flat=True)
+            .values_list(
+                geometry_field,
+                flat=True,
+            )
         )
         temp_geometry = None
         for i, geometry in enumerate(geometries):
@@ -173,10 +178,9 @@ class DataLayerQuerySet(models.QuerySet):
             except IndexError:
                 break
             comparison = temp_geometry if temp_geometry else geometry
-            if not comparison.intersects(next_geometry):
-                raise ValueError(
-                    "Current Polygon is disjoint, cannot grab intersection of multiple datalayers."
-                )
+
+            if not comparison or not comparison.intersects(next_geometry):
+                return None
             temp_geometry = comparison.intersection(next_geometry)
 
         return temp_geometry

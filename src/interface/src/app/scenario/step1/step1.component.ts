@@ -12,11 +12,7 @@ import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
-import {
-  CategorizedScenarioGoals,
-  ScenarioCreation,
-  ScenarioGoal,
-} from '@types';
+import { ScenarioCreation, ScenarioGoal } from '@types';
 import { map, shareReplay } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/goal-overlay.service';
@@ -25,6 +21,9 @@ import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ActivatedRoute } from '@angular/router';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MatIconModule } from '@angular/material/icon';
+import { FeaturesModule } from '../../features/features.module';
+import { getGroupedGoals } from '../scenario-helper';
 
 @Component({
   selector: 'app-step1',
@@ -39,6 +38,8 @@ import { FeatureService } from 'src/app/features/feature.service';
     MatFormFieldModule,
     MatSelectModule,
     KeyValuePipe,
+    MatIconModule,
+    FeaturesModule,
   ],
   providers: [{ provide: StepDirective, useExisting: Step1Component }],
   templateUrl: './step1.component.html',
@@ -65,16 +66,9 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
         : null
     )
     .pipe(
-      map((goals) =>
-        goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
-          const category = goal.category_text;
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push(goal);
-          return acc;
-        }, {})
-      ),
+      map((goals) => {
+        return getGroupedGoals(goals);
+      }),
       shareReplay(1)
     );
 

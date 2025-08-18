@@ -1,5 +1,6 @@
 import logging
 
+from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
@@ -18,7 +19,13 @@ from planning.filters import (
     ScenarioOrderingFilter,
     TreatmentGoalFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario, TreatmentGoal
+from planning.models import (
+    PlanningArea,
+    ProjectArea,
+    Scenario,
+    TreatmentGoal,
+    TreatmentGoalGroup,
+)
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
@@ -33,6 +40,7 @@ from planning.serializers import (
     ScenarioV2Serializer,
     TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
+    UpsertConfigurationV2Serializer,
 )
 from planning.services import (
     create_planning_area,
@@ -181,6 +189,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
         "retrieve": ScenarioV2Serializer,
+        "partial_update": UpsertConfigurationV2Serializer,
     }
     filterset_class = ScenarioFilter
     filter_backends = [
@@ -250,6 +259,15 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(description="Partially update a Scenario.")
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        response_serializer = ScenarioV2Serializer(instance)
+        return Response(response_serializer.data)
+
 
 # TODO: migrate this to an action inside the planning area viewset
 @extend_schema_view(
@@ -304,3 +322,9 @@ class TreatmentGoalViewSet(
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if feature_enabled("CONUS_WIDE_SCENARIOS"):
+            return qs
+        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)

@@ -35,24 +35,39 @@
           *ngIf="
             categorizedStatewideGoals$ | async as categorizedScenarioGoals
           ">
+          <!-- Displaying groups -->
           <div
-            *ngFor="
-              let goalCategory of categorizedScenarioGoals
-                | keyvalue: reverseAlpha
-            "
+            *ngFor="let goalGroup of categorizedScenarioGoals | keyvalue"
             class="goal-control-container">
             <mat-expansion-panel expanded="true" [togglePosition]="'before'">
               <mat-expansion-panel-header class="goal-panel-header">
-                {{ goalCategory.key }}
+                {{ goalGroup.key }}
               </mat-expansion-panel-header>
+
+              <!-- Displaying categories -->
               <div
-                *ngFor="let goal of goalCategory.value"
-                class="layer-control-container">
-                <mat-radio-button
-                  [value]="goal.id"
-                  (click)="selectStatewideGoal(goal)">
-                  {{ goal.name }}
-                </mat-radio-button>
+                class="goal-control-container"
+                *ngFor="
+                  let goalCategory of goalGroup.value | keyvalue: reverseAlpha
+                ">
+                <mat-expansion-panel
+                  expanded="true"
+                  [togglePosition]="'before'">
+                  <mat-expansion-panel-header class="goal-panel-header">
+                    {{ goalCategory.key }}
+                  </mat-expansion-panel-header>
+
+                  <!-- Treatment goals -->
+                  <div
+                    *ngFor="let goal of goalCategory.value"
+                    class="layer-control-container">
+                    <mat-radio-button
+                      [value]="goal.id"
+                      (click)="selectStatewideGoal(goal)">
+                      {{ goal.name }}
+                    </mat-radio-button>
+                  </div>
+                </mat-expansion-panel>
               </div>
             </mat-expansion-panel>
           </div>
@@ -64,10 +79,16 @@
 
 <!-- Stand size -->
 <sg-section headline="Stand Size">
-  <p class="stand-label">
-    Choose the stand size ForSys will use to evaluate your planning area. Stands
-    are standarized hexagonal units that represent potential treatment areas.
-  </p>
+  <div class="stand-label">
+    <mat-icon class="stand-icon" *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'"
+      >hexagon</mat-icon
+    >
+    <div>
+      Choose the stand size ForSys will use to evaluate your planning area.
+      Stands are standarized hexagonal units that represent potential treatment
+      areas.
+    </div>
+  </div>
 
   <form [formGroup]="form">
     <mat-form-field class="stand-size" appearance="outline">
