@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { NgIf, AsyncPipe } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
@@ -23,6 +23,10 @@ import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { ScenarioCreation } from '@types';
 import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
+import { CanComponentDeactivate } from '@services/can-deactivate.guard';
+import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
+import { MatDialog } from '@angular/material/dialog';
+import { Observable } from 'rxjs';
 import { StepComponent } from '../../../styleguide/steps/step.component';
 import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
@@ -55,7 +59,7 @@ enum ScenarioTabs {
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
-export class ScenarioCreationComponent {
+export class ScenarioCreationComponent implements CanComponentDeactivate {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -72,12 +76,28 @@ export class ScenarioCreationComponent {
     ),
   });
 
+  @HostListener('window:beforeunload', ['$event'])
+  beforeUnload($event: any) {
+    if (!this.finished) {
+      /* Most browsers will display their own default dialog to confirm navigation away 
+        from a window or URL. e.g, "Changes that you made may not be saved"
+        
+        Older browsers will display the message in the string below. 
+        
+        All browsers require this string to be non-empty, in order to display anything.
+      */
+      $event.returnValue =
+        'Are you sure you want to leave this page? Your unsaved changes will be lost.';
+    }
+  }
+
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
     private planState: PlanState,
-    private goalOverlayService: GoalOverlayService
+    private goalOverlayService: GoalOverlayService,
+    private dialog: MatDialog
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -86,6 +106,14 @@ export class ScenarioCreationComponent {
           this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
         }
       });
+  }
+
+  canDeactivate(): Observable<boolean> | boolean {
+    if (this.finished) {
+      return true;
+    }
+    const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
+    return dialogRef.afterClosed();
   }
 
   // Async validator
