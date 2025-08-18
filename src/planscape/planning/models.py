@@ -375,6 +375,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     configuration = models.JSONField(default=dict, help_text="Scenario configuration.")
 
+    forsys_input = models.JSONField(
+        null=True,
+        help_text="Forsys input data for the Scenario.",
+        encoder=DjangoJSONEncoder,
+    )
+
     uuid = models.UUIDField(
         default=uuid.uuid4,
         unique=True,

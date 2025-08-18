@@ -150,6 +150,32 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
         return
 
 
+@app.task(max_retries=3, retry_backoff=True)
+def async_pre_frosys_process(scenario_id: int) -> None:
+    scenario = Scenario.objects.get(id=scenario_id)
+    
+    tx_goal = scenario.treatment_goal
+    if not tx_goal:
+        log.warning(f"Scenario {scenario_id} does not have an associated TreatmentGoal.")
+        return
+    
+    stand_ids = Stand.objects.within_polygon(
+        scenario.planning_area.geometry,
+        scenario.get_stand_size(),
+    ).with_webmercator().values_list("id", flat=True)
+
+    datalayers = tx_goal.datalayers.all()
+    
+    for datalayer in datalayers:
+
+    
+    # TODO: get list of stands
+    # TODO: get datalayers from TreatmentGoal associated with the Scenario
+    # TODO: get desired metrics from TreatmentGoal associated with the Scenario
+    # TODO: get thresholds from TreatmentGoal associated with the Scenario
+    # TODO: get other varialbles (min_area_project, max_area_project, etc) 
+
+
 @app.task()
 def trigger_geopackage_generation():
     scenarios = Scenario.objects.filter(
