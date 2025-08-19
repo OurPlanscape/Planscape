@@ -6,6 +6,7 @@ import rasterio
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
 from gis.info import get_gdal_env
+from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
 from rasterstats.io import Raster
 from shapely import total_bounds
@@ -96,16 +97,22 @@ def calculate_stand_zonal_stats(
         )
 
     stand_geojson = list(map(to_geojson, missing_stands))
+    bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
     with rasterio.Env(**get_gdal_env()):
-        stats = zonal_stats(
-            raster=datalayer.url,
-            vectors=stand_geojson,
-            stats=aggregations,
-            nodata=nodata,
-            geojson_out=True,
-            band=1,
-        )
+        with rasterio.open(datalayer.url) as main_raster:
+            window = from_bounds(*bounds, transform=main_raster.transform)
+            data = main_raster.read(1, window=window)
+            window_transform = main_raster.window_transform(window)
+            stats = zonal_stats(
+                raster=data,
+                affine=window_transform,
+                vectors=stand_geojson,
+                stats=aggregations,
+                nodata=nodata,
+                geojson_out=True,
+                band=1,
+            )
 
     results = list(
         map(
