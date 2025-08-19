@@ -33,6 +33,14 @@ export class TreatmentOpportunityChartComponent implements OnInit {
     plugins: {
       tooltip: {
         ...whiteTooltipBaseConfig(),
+        titleFont: {
+          ...whiteTooltipBaseConfig().titleFont,
+          weight: '600',
+        },
+        bodyFont: {
+          ...whiteTooltipBaseConfig().bodyFont,
+          weight: '500',
+        },
         callbacks: {
           title: (items) => {
             const dataset = items[0]?.dataset as CustomChartDataset;
