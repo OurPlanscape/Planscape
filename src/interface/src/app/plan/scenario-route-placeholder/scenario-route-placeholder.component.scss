@@ -1,3 +1,11 @@
 :host {
   height: 100%;
 }
+
+.spinner-row {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 48px;
+}

@@ -7,15 +7,11 @@ import {
   Router,
 } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of, Subject } from 'rxjs';
-import { Plan, Region } from '@types';
+import { of, Subject } from 'rxjs';
+import { Plan } from '@types';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
-import {
-  AuthService,
-  LegacyPlanStateService,
-  PlanningAreaNotesService,
-} from '@services';
+import { AuthService, PlanningAreaNotesService } from '@services';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
@@ -65,7 +61,9 @@ describe('PlanComponent', () => {
         params: { id: 'scenario-99' },
         data: { showOverview: true },
         url: [{ path: 'config' }],
-        paramMap: convertToParamMap({ id: 'scenario-99' }),
+        paramMap: convertToParamMap({
+          scenarioId: 'scenario-99',
+        }),
       },
       data: of({ showOverview: true }),
       firstChild: null,
@@ -73,7 +71,7 @@ describe('PlanComponent', () => {
 
     const fakeRoute = {
       snapshot: {
-        paramMap: convertToParamMap({ id: '24' }),
+        paramMap: convertToParamMap({ planId: '24' }),
         url: [],
       },
       firstChild: mockChildRoute,
@@ -94,22 +92,6 @@ describe('PlanComponent', () => {
     });
     (mockNotesService.getNotes as jasmine.Spy).and.returnValue(of([]));
 
-    const fakeService = jasmine.createSpyObj(
-      'LegacyPlanStateService',
-      {
-        getPlan: of(fakePlan),
-        getProjectsForPlan: of([]),
-        updateStateWithPlan: of(),
-        updateStateWithScenario: of(),
-        getScenariosForPlan: of([]),
-        updateStateWithShapes: of([]),
-      },
-      {
-        planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA),
-      }
-    );
-    fakeService.planState$ = of({});
-
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
@@ -129,7 +111,6 @@ describe('PlanComponent', () => {
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: AuthService, useValue: mockAuthService },
-        { provide: LegacyPlanStateService, useValue: fakeService },
         { provide: PlanningAreaNotesService, useValue: mockNotesService },
       ],
     }).compileComponents();

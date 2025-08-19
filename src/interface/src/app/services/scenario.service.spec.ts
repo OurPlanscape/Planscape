@@ -64,6 +64,8 @@ describe('ScenarioService', () => {
         configuration: scenarioConfig,
         scenario_result: undefined,
         status: 'ACTIVE',
+        geopackage_status: null,
+        geopackage_url: null,
       };
 
       service.getScenario(1).subscribe((res) => {
@@ -104,6 +106,8 @@ describe('ScenarioService', () => {
         planning_area: 1,
         configuration: scenarioConfig,
         status: 'ACTIVE',
+        geopackage_status: null,
+        geopackage_url: null,
       };
 
       const backendConfig = {

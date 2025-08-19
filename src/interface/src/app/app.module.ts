@@ -5,7 +5,7 @@ import {
   HttpClientModule,
   HttpClientXsrfModule,
 } from '@angular/common/http';
-import { NgModule, ErrorHandler } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -16,13 +16,12 @@ import {
 } from 'ngx-google-analytics';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
 
 import { FeaturesModule } from './features/features.module';
 import { HomeComponent } from './home/home.component';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
-import { MapModule } from './map/map.module';
 
 import { LegacyMaterialModule } from './material/legacy-material.module';
 
@@ -36,7 +35,6 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
 
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { OverlayLoaderComponent } from '../styleguide/overlay-loader/overlay-loader.component';
 import * as Sentry from '@sentry/angular';
 
 @NgModule({
@@ -67,7 +65,6 @@ import * as Sentry from '@sentry/angular';
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,
-    MapModule,
     NgxMaskModule.forRoot(),
     ButtonComponent,
     DeleteDialogComponent,

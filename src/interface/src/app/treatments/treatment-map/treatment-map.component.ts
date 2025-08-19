@@ -39,7 +39,7 @@ import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
-import { FrontendConstants, TreatmentProjectArea } from '@types';
+import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
@@ -51,6 +51,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { MapBaseLayersComponent } from '../../maplibre-map/map-base-layers/map-base-layers.component';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { FrontendConstants } from '../../map/map.constants';
 
 @UntilDestroy()
 @Component({

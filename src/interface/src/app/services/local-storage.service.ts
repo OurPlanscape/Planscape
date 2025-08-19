@@ -1,14 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
 import { RedirectData } from '@services/redirect.service';
-import {
-  BaseLayer,
-  DataLayer,
-  Extent,
-  MapConfig,
-  MapViewOptions,
-  Region,
-} from '@types';
+import { BaseLayer, DataLayer, Extent } from '@types';
 import { BaseMapType } from '../types/maplibre.map.types';
 
 export abstract class BaseLocalStorageService<T> {
@@ -58,37 +51,6 @@ export class HomeParametersStorageService extends BaseLocalStorageService<Params
   }
 }
 
-@Injectable({
-  providedIn: 'root',
-})
-export class RegionStorageService extends BaseLocalStorageService<Region> {
-  constructor() {
-    super('region');
-  }
-}
-
-@Injectable({
-  providedIn: 'root',
-})
-export class MapViewOptionsStorageService extends BaseLocalStorageService<MapViewOptions> {
-  constructor() {
-    super('mapViewOptions');
-  }
-}
-
-@Injectable({
-  providedIn: 'root',
-})
-export class MapConfigsStorageService extends BaseLocalStorageService<Record<
-  Region,
-  MapConfig[]
-> | null> {
-  constructor() {
-    super('mapConfigs');
-  }
-}
-
-// Explore 2.0 storage
 @Injectable({
   providedIn: 'root',
 })

@@ -8,7 +8,7 @@ import {
 } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { Region, Scenario, ScenarioResultStatus } from '@types';
+import { GeoPackageStatus, ScenarioResultStatus } from '@types';
 
 import { PlanModule } from '../plan.module';
 import {
@@ -26,9 +26,10 @@ import { SetPrioritiesComponent } from './set-priorities/set-priorities.componen
 import { PlanState } from '../plan.state';
 import { BehaviorSubject } from 'rxjs';
 import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
-import { LegacyPlanStateService, ScenarioService } from '@services';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
+import { ScenarioService } from '@services';
 import { FormControl, FormGroup } from '@angular/forms';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
@@ -41,6 +42,7 @@ describe('CreateScenariosComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        MatSnackBarModule,
         BrowserAnimationsModule,
         HttpClientTestingModule,
         PlanModule,
@@ -85,12 +87,8 @@ describe('CreateScenariosComponent', () => {
           getScenario: () => mockScenario$,
           getExcludedAreas: () => new BehaviorSubject([]),
         }),
-        MockProvider(LegacyPlanStateService, {
-          updateStateWithShapes: () => {},
-        }),
       ],
     }).compileComponents();
-
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
   });
@@ -103,20 +101,16 @@ describe('CreateScenariosComponent', () => {
 
   it('should initialize scenario  correctly', async () => {
     spyOn(component, 'createForms').and.returnValue(Promise.resolve());
-    spyOn(component, 'setPlanRegion');
     spyOn(component, 'setExistingNameValidator');
     spyOn(component, 'setScenarioMode');
-    spyOn(component, 'listenForProjectAreasChanges');
 
     // Calling init scenario
     await component.initScenario();
 
     // We should call all the methods we need
     expect(component.createForms).toHaveBeenCalled();
-    expect(component.setPlanRegion).toHaveBeenCalled();
     expect(component.setExistingNameValidator).toHaveBeenCalled();
     expect(component.setScenarioMode).toHaveBeenCalled();
-    expect(component.listenForProjectAreasChanges).toHaveBeenCalled();
   });
 
   it('should create forms correctly', async () => {
@@ -147,46 +141,6 @@ describe('CreateScenariosComponent', () => {
     expect(component.forms.contains('priorities')).toBeTrue();
     expect(component.forms.contains('constrains')).toBeTrue();
     expect(component.forms.contains('projectAreas')).toBeTrue();
-  });
-
-  it('should set plan region if region_name exists', async () => {
-    mockPlan$.next({
-      ...mockPlan$.value,
-      region_name: Region.SIERRA_NEVADA,
-    });
-
-    // Mock LegacyPlanStateService
-    (component as any).LegacyPlanStateService = {
-      setPlanRegion: jasmine.createSpy(),
-      updateStateWithShapes: jasmine.createSpy(),
-    } as any;
-
-    await component.setPlanRegion();
-
-    // Verify the legacy state was called with the correct region
-    expect(
-      (component as any).LegacyPlanStateService.setPlanRegion
-    ).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
-  });
-
-  it('should not set plan region if region_name does not exist', async () => {
-    mockPlan$.next({
-      ...mockPlan$.value,
-      region_name: null as any,
-    });
-
-    // Mock LegacyPlanStateService
-    (component as any).LegacyPlanStateService = {
-      setPlanRegion: jasmine.createSpy(),
-      updateStateWithShapes: jasmine.createSpy(),
-    } as any;
-
-    await component.setPlanRegion();
-
-    // Verify legacyPlanStateService was not called
-    expect(
-      (component as any).LegacyPlanStateService.setPlanRegion
-    ).not.toHaveBeenCalled();
   });
 
   it('should add validator with existing scenario names', async () => {
@@ -274,54 +228,6 @@ describe('CreateScenariosComponent', () => {
     expect(component.isLoading$.next).toHaveBeenCalledWith(false);
   });
 
-  describe('loadConfig', () => {
-    it('should do nothing if scenario state is the same', () => {
-      (component as any).LegacyPlanStateService = {
-        updateStateWithScenario: jasmine.createSpy(),
-        updateStateWithShapes: jasmine.createSpy(),
-      } as any;
-
-      component.scenarioState = 'RUNNING';
-
-      mockScenario$.next({
-        ...MOCK_SCENARIO,
-        scenario_result: {
-          ...MOCK_SCENARIO.scenario_result,
-          status: 'RUNNING',
-        },
-      } as Scenario);
-
-      component.loadConfig();
-
-      expect(
-        (component as any).LegacyPlanStateService.updateStateWithScenario
-      ).not.toHaveBeenCalled();
-    });
-
-    it('should update State with scenario if status is different', () => {
-      (component as any).LegacyPlanStateService = {
-        updateStateWithScenario: jasmine.createSpy(),
-        updateStateWithShapes: jasmine.createSpy(),
-      } as any;
-
-      component.scenarioState = 'RUNNING';
-
-      mockScenario$.next({
-        ...MOCK_SCENARIO,
-        scenario_result: {
-          ...MOCK_SCENARIO.scenario_result,
-          status: 'FAILURE',
-        },
-      } as Scenario);
-
-      component.loadConfig();
-
-      expect(
-        (component as any).LegacyPlanStateService.updateStateWithScenario
-      ).toHaveBeenCalledWith(MOCK_SCENARIO.id, MOCK_SCENARIO.name);
-    });
-  });
-
   describe('polling', () => {
     beforeEach(() => {
       spyOn(component, 'loadConfig').and.callThrough();
@@ -330,6 +236,8 @@ describe('CreateScenariosComponent', () => {
         id: 1001,
       });
       mockScenarioId$.next(1001);
+      component.geoPackageURL = 'http://localhost/someurl';
+      component.scenarioImprovementsFeature = true;
     });
 
     it('should poll for changes if status is pending', fakeAsync(() => {
@@ -348,9 +256,25 @@ describe('CreateScenariosComponent', () => {
       fixture.destroy();
     }));
 
-    it('should not poll for changes if status is not pending', fakeAsync(() => {
+    it('should not poll for changes if status is not pending and no geopackage is in progess', fakeAsync(() => {
       setupPollingScenario(component, 'SUCCESS');
+      fixture.detectChanges();
+      tick();
 
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+      component.geoPackageURL = 'http://localhost/someurl';
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('should poll for geopackage if results are done, but geopackage is pending ', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS', 'PENDING');
       fixture.detectChanges();
       tick();
 
@@ -358,6 +282,39 @@ describe('CreateScenariosComponent', () => {
 
       tick(POLLING_INTERVAL);
       fixture.detectChanges();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(2);
+
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('should poll for geopackage if results are done, but geopackage is processing ', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS', 'PROCESSING');
+      fixture.detectChanges();
+      tick();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(2);
+
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('if results are done and geopackage is SUCCEEDED, there should be no polling, and button should be enabled', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS', 'SUCCEEDED');
+      fixture.detectChanges();
+      tick();
+
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+      component.geoPackageURL = 'someurl';
 
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
 
@@ -368,7 +325,8 @@ describe('CreateScenariosComponent', () => {
 
   function setupPollingScenario(
     component: CreateScenariosComponent,
-    status: ScenarioResultStatus
+    status: ScenarioResultStatus,
+    geoPackageStatus?: GeoPackageStatus
   ) {
     mockPlan$.next({
       ...mockPlan$.value,
@@ -376,6 +334,7 @@ describe('CreateScenariosComponent', () => {
 
     mockScenario$.next({
       ...mockScenario$.value,
+      geopackage_status: geoPackageStatus ?? null,
       scenario_result: {
         ...mockScenario$.value.scenario_result!,
         status,

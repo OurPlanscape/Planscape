@@ -5,7 +5,7 @@
     *ngIf="scenario"
     [scenarioId]="scenario.id!"
     [planningArea]="plan$ | async"></app-treatments-tab>
-  <app-plan-tabs-footer
+  <app-new-treatment-footer
     [scenarioId]="scenario?.id!"
-    *ngIf="showTreatmentFooter$ | async"></app-plan-tabs-footer>
+    *ngIf="showTreatmentFooter$ | async"></app-new-treatment-footer>
 </div>

@@ -143,11 +143,7 @@ export interface CustomChartDataset extends ChartDataset<'bar', number[]> {
   extraInfo?: string;
 }
 
-export function getChartDatasetsFromFeatures(
-  features: FeatureCollection[]
-): CustomChartDataset[] {
-  const result: CustomChartDataset[] = [];
-
+export function getGroupedAttainment(features: FeatureCollection[]) {
   const groupedAttainment: { [key: string]: number[] } = {};
 
   features.forEach((feature) => {
@@ -156,14 +152,27 @@ export function getChartDatasetsFromFeatures(
       if (!groupedAttainment[key]) {
         groupedAttainment[key] = [];
       }
-      groupedAttainment[key].push(convertTo2DecimalsNumbers(value as number));
+      const _value = Number(value);
+      // Preventing "NaN"
+      if (_value) {
+        groupedAttainment[key].push(convertTo2DecimalsNumbers(_value));
+      }
     }
   });
+  return groupedAttainment;
+}
 
-  Object.keys(groupedAttainment).forEach((key, index) => {
+export function getChartDatasetsFromFeatures(
+  features: FeatureCollection[]
+): CustomChartDataset[] {
+  const result: CustomChartDataset[] = [];
+
+  const groupedAttainment = getGroupedAttainment(features);
+
+  Object.keys(groupedAttainment).forEach((key, _) => {
     result.push({
       data: groupedAttainment[key],
-      backgroundColor: CHART_COLORS[index - 1],
+      backgroundColor: CHART_COLORS[key],
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });
@@ -173,7 +182,7 @@ export function getChartDatasetsFromFeatures(
 }
 
 export function convertTo2DecimalsNumbers(value: number): number {
-  return Number((value as number).toFixed(2));
+  return Number(value.toFixed(2));
 }
 
 export function getProjectAreaLabelsFromFeatures(
@@ -185,6 +194,14 @@ export function getProjectAreaLabelsFromFeatures(
   }
   // By default we want to display 5 project areas
   return result.length < 5 ? ['1', '2', '3', '4', '5'] : result;
+}
+
+export function getDarkGridConfig() {
+  return {
+    borderColor: 'black',
+    tickColor: 'black',
+    color: '#898989',
+  };
 }
 
 export function whiteTooltipBaseConfig() {

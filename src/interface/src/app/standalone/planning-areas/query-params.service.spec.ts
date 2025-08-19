@@ -57,26 +57,6 @@ describe('QueryParamsService', () => {
     });
   });
 
-  describe('getInitialRegionParam', () => {
-    it('should return region param from URL if it exists', () => {
-      route.snapshot.queryParams = { region: 'sierra-nevada' };
-
-      const regionParam = service.getInitialRegionParam();
-
-      expect(regionParam).toEqual([
-        { name: 'Sierra Nevada', value: 'sierra-nevada' },
-      ]);
-    });
-
-    it('should return default region param if URL param does not exist', () => {
-      route.snapshot.queryParams = {};
-
-      const regionParam = service.getInitialRegionParam();
-
-      expect(regionParam).toEqual([]);
-    });
-  });
-
   describe('getInitialCreatorsIdParam', () => {
     it('should return creators ID param from URL if it exists', () => {
       route.snapshot.queryParams = { creators: '2,19' };
@@ -170,7 +150,6 @@ describe('QueryParamsService', () => {
     });
 
     it('should remove parameters if we provide undefined', () => {
-      const region = 'sierra-nevada';
       const pageOptions = {
         page: '2',
         name: 'test',
@@ -178,7 +157,6 @@ describe('QueryParamsService', () => {
       const newOptions = {
         page: undefined,
         name: undefined,
-        region: region,
       };
       const url = '/?' + new URLSearchParams(pageOptions).toString();
 
@@ -197,7 +175,7 @@ describe('QueryParamsService', () => {
       const locationGoSpy = spyOn(location, 'go');
 
       service.updateUrl(newOptions);
-      expect(urlTree.queryParams['region']).toBe(region);
+
       expect(urlTree.queryParams['page']).toBe(undefined);
       expect(urlTree.queryParams['name']).toBe(undefined);
       expect(locationGoSpy).toHaveBeenCalledWith(urlTree.toString());

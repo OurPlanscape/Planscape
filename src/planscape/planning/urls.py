@@ -15,7 +15,6 @@ from planning.views import (
     get_shared_link,
     list_planning_areas,
     list_scenarios_for_planning_area,
-    treatment_goals_config,
     update_planning_area,
     update_scenario,
     update_scenario_result,
@@ -28,12 +27,6 @@ app_name = "planning"
 urlpatterns = [
     # Auto-generated API documentation
     path("admin/doc/", include("django.contrib.admindocs.urls")),
-    # Treatment Goals
-    path(
-        "treatment_goals_config/",
-        treatment_goals_config,
-        name="treatment_goals_config",
-    ),
     # Plans / Planning Areas
     path(
         "validate_planning_area/",

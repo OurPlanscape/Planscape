@@ -6,12 +6,16 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { StatusChipComponent, StatusChipStatus } from '@styleguide';
+
 import { MatMenuModule } from '@angular/material/menu';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TreatmentStatus } from '@types';
+import {
+  StatusChipComponent,
+  StatusChipStatus,
+} from '../status-chip/status-chip.component';
 
 @Component({
   selector: 'sg-treatment-card',

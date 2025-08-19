@@ -3,7 +3,6 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
@@ -39,25 +38,6 @@ class CreateScenarioTest(APITransactionTestCase):
             "scenario_output_fields": ["out1"],
             "max_treatment_area_ratio": 40000,
         }
-
-    @mock.patch("planning.services.chord", autospec=True)
-    def test_create_without_explicit_treatment_goal(self, chord_mock):
-        self.client.force_authenticate(self.user)
-        data = {
-            "planning_area": self.planning_area.pk,
-            "name": "Hello Scenario!",
-            "origin": "SYSTEM",
-            "configuration": self.configuration,
-        }
-        response = self.client.post(
-            reverse("api:planning:scenarios-list"), data, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIsNotNone(response.json().get("id"))
-        self.assertEqual(chord_mock.call_count, 1)
-        self.assertEqual(1, Scenario.objects.count())
-        scenario = Scenario.objects.get()
-        self.assertEqual(scenario.treatment_goal, self.treatment_goal)
 
     @mock.patch("planning.services.chord", autospec=True)
     def test_create_with_explicit_treatment_goal(self, chord_mock):
@@ -128,7 +108,7 @@ class CreateScenarioTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            b'{"global":["Invalid treatment goal id"]}',
+            b'{"treatment_goal":["This field is required."]}',
             response.content,
         )
 
@@ -151,7 +131,7 @@ class CreateScenarioTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            b'{"global":["You must provide either a treatment goal or a question ID."]}',
+            b'{"treatment_goal":["This field is required."]}',
             response.content,
         )
 
@@ -168,7 +148,6 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @override_settings(FEATURE_FLAGS="USE_SCENARIO_V2")
     def test_create_v2_serializer(self):
         excluded_areas = DataLayerFactory.create_batch(
             2, type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
@@ -203,7 +182,6 @@ class CreateScenarioTest(APITransactionTestCase):
             response_data.get("configuration").get("excluded_areas"), excluded_areas
         )
 
-    @override_settings(USE_SCENARIO_V2=True)
     def test_create_v2_serializer__invalid_excluded_area(self):
         invalid_excluded_areas = DataLayerFactory.create_batch(
             2, type=DataLayerType.RASTER, geometry_type=GeometryType.RASTER
@@ -612,3 +590,136 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("version"), ScenarioVersion.V2)
+
+
+class ScenarioDetailTest(APITestCase):
+    def setUp(self):
+        self.owner_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.owner_user)
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.configuration = {
+            "question_id": self.treatment_goal.pk,
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            name="test scenario",
+            configuration=self.configuration,
+            user=self.owner_user,
+        )
+
+    @mock.patch(
+        "planning.models.create_download_url",
+        return_value="http://example.com/download",
+    )
+    def test_detail_scenario_v2_with_geopackage_url(self, mock_create_download_url):
+        self.scenario.geopackage_url = "gs://bucket/path/to/geopackage.gpkg"
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("geopackage_url"), "http://example.com/download")
+
+    def test_detail_scenario_v2_without_geopackage_url(self):
+        self.scenario.geopackage_url = None
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(data.get("geopackage_url"))
+
+
+class PatchScenarioConfigurationTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.other_user = UserFactory()
+
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.treatment_goal = TreatmentGoalFactory()
+
+        self.scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "max_budget": 1000,
+            },
+        )
+
+        self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
+
+    def test_patch_scenario_configuration_success(self):
+        payload = {
+            "max_budget": 20000,
+            "min_distance_from_road": 100,
+            "stand_size": "SMALL",
+            "max_project_count": 5,
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        config = response.data.get("configuration", {})
+        self.assertEqual(config.get("max_budget"), 20000)
+        self.assertEqual(config.get("min_distance_from_road"), 100)
+        self.assertEqual(config.get("stand_size"), "SMALL")
+        self.assertEqual(config.get("max_project_count"), 5)
+
+    def test_patch_scenario_configuration_unauthenticated(self):
+        payload = {"max_budget": 5000}
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_scenario_configuration_forbidden_for_other_user(self):
+        scenario = ScenarioFactory(user=self.other_user)
+        url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
+        payload = {"max_budget": 100000}
+
+        # Authenticate as a user who does not own the scenario
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+
+        # Expect 404 since get_object() hides unauthorized scenarios
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_scenario_configuration_invalid_scenario_id(self):
+        invalid_url = reverse("api:planning:scenarios-detail", args=[999999])
+        self.client.force_authenticate(self.user)
+        payload = {"max_budget": 5000}
+
+        response = self.client.patch(invalid_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

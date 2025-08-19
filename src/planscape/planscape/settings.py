@@ -10,6 +10,7 @@ import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEnv
+from openpanel import OpenPanel
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
@@ -39,9 +40,7 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 # Application definition
 PLANSCAPE_APPS = [
     "admin.apps.PlanscapeAdmin",
-    "boundary",
     "collaboration",
-    "conditions",
     "core",
     "datasets",
     "e2e",
@@ -297,13 +296,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Regional Resource Kits: the CRS code used for the rasters, and the proj4
 # representation of that coordinate system.
 DEFAULT_CRS = 4269
-CRS_FOR_RASTERS = 3857
-CRS_INTERNAL_REPRESENTATION = DEFAULT_CRS
-CRS_9822_PROJ4 = (
-    "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 "
-    "+datum=WGS84 +units=m +no_defs"
-)
-CRS_9822_SCALE = (300, -300)  # a raster transform has origin, scale, and skew.
+RASTER_CRS = 3857
+
+CRS_GEOPACKAGE_EXPORT = 4326
 
 # The area of a raster pixel (in km-squared).
 RASTER_PIXEL_AREA = 0.300 * 0.300
@@ -369,14 +364,6 @@ if SENTRY_DSN is not None:
         traces_sample_rate=0.05,
     )
 
-DEFAULT_CONDITIONS_FILE = config(
-    "DEFAULT_CONDITIONS_FILE", BASE_DIR / "config" / "conditions.json"
-)
-DEFAULT_TREATMENTS_FILE = config(
-    "DEFAULT_TREATMENTS_FILE", BASE_DIR / "config" / "treatment_goals.json"
-)
-RASTER_ROOT = config("RASTER_ROOT", "/mnt/gis/planscape")
-RASTER_TILE = config("RASTER_TILE", "32x32")
 GDAL_NUM_THREADS = config(
     "GDAL_NUM_THREADS", default=multiprocessing.cpu_count(), cast=int
 )
@@ -384,7 +371,7 @@ GDAL_NUM_THREADS = config(
 FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 
 # FORSYS API
-FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8000/")
+FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8001/")
 FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600, cast=int)  # 10m
 FORSYS_VIA_API = config("FORSYS_VIA_API", False, cast=bool)
 
@@ -457,7 +444,12 @@ AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
+GEOPACKAGES_FOLDER = "geopackages"
+TEMP_GEOPACKAGE_FOLDER = config(
+    "TEMP_GEOPACKAGE_FOLDER", default="/tmp/planscape/geopackages"
+)
 GCS_BUCKET = config("GCS_BUCKET", "planscape-datastore-dev")
+GCS_MEDIA_BUCKET = config("GCS_MEDIA_BUCKET", f"planscape-media-{ENV}")
 GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
 )
@@ -502,7 +494,16 @@ DEFAULT_ADMIN_EMAIL = "admin@planscape.org"
 DEFAULT_BASELAYERS_DATASET_ID = 999
 
 
-USE_SCENARIO_V2 = config("USE_SCENARIO_V2", default=False, cast=bool)
 FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
+
+if not TESTING_MODE and not OPENPANEL_URL:
+    OPENPANEL_CLIENT = OpenPanel(
+        client_id=OPENPANEL_CLIENT_ID,  # type: ignore
+        client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
+        api_url=OPENPANEL_URL,  # type: ignore
+    )
+    OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
+else:
+    OPENPANEL_CLIENT = None

@@ -6,7 +6,11 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from planning.geometry import coerce_geometry, coerce_geojson
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+from stands.models import StandSizeChoices
+
+from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
@@ -16,14 +20,11 @@ from planning.models import (
     SharedLink,
     TreatmentGoal,
     TreatmentGoalCategory,
+    TreatmentGoalGroup,
     User,
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
-from stands.models import StandSizeChoices
-
 from planscape.exceptions import InvalidGeometry
 
 
@@ -137,8 +138,8 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
                 else:
                     raise
 
-        if geom.srid != settings.CRS_INTERNAL_REPRESENTATION:
-            geom = geom.transform(settings.CRS_INTERNAL_REPRESENTATION, clone=True)
+        if geom.srid != settings.DEFAULT_CRS:
+            geom = geom.transform(settings.DEFAULT_CRS, clone=True)
 
         try:
             return coerce_geometry(geom)
@@ -193,10 +194,8 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
         if not geometry.valid:
             raise serializers.ValidationError(str(geometry.valid_reason))
 
-        if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
-            geometry = geometry.transform(
-                settings.CRS_INTERNAL_REPRESENTATION, clone=True
-            )
+        if geometry.srid != settings.DEFAULT_CRS:
+            geometry = geometry.transform(settings.DEFAULT_CRS, clone=True)
 
         return geometry
 
@@ -410,7 +409,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
     )
 
 
-class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
+class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
         source="excluded_areas_ids",
         child=serializers.PrimaryKeyRelatedField(
@@ -427,6 +426,11 @@ class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
     def validate_excluded_areas(self, excluded_areas):
         return [excluded_area.pk for excluded_area in excluded_areas]
 
+    def update(self, instance, validated_data):
+        instance.configuration = {**(instance.configuration or {}), **validated_data}
+        instance.save(update_fields=["configuration"])
+        return instance
+
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
@@ -435,10 +439,22 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
     category_text = serializers.SerializerMethodField(
         help_text="Text format of Treatment Goal Category.",
     )
+    group_text = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="Text format of Treatment Goal Group.",
+    )
 
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name", "description", "category", "category_text")
+        fields = (
+            "id",
+            "name",
+            "description",
+            "category",
+            "category_text",
+            "group",
+            "group_text",
+        )
 
     def get_description(self, instance):
         if instance.description:
@@ -449,6 +465,12 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
         if instance.category:
             category = TreatmentGoalCategory(instance.category)
             return category.label
+        return None
+
+    def get_group_text(self, instance):
+        if instance.group:
+            group = TreatmentGoalGroup(instance.group)
+            return group.label
         return None
 
 
@@ -542,6 +564,16 @@ class ListScenarioSerializer(serializers.ModelSerializer):
 
 class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV2Serializer()
+    geopackage_url = serializers.SerializerMethodField(
+        help_text="URL to download the scenario's geopackage file.",
+    )
+
+    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+        """
+        Returns the URL to download the scenario's geopackage file.
+        If the scenario is currently being exported, returns None.
+        """
+        return scenario.get_geopackage_url()
 
     class Meta:
         fields = (
@@ -559,6 +591,8 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "creator",
             "status",
             "version",
+            "geopackage_url",
+            "geopackage_status",
         )
         model = Scenario
 
@@ -570,7 +604,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
         required=True,
         help_text="Treatment goal of the scenario.",
     )
-    configuration = CreateConfigurationV2Serializer()
+    configuration = UpsertConfigurationV2Serializer()
 
     class Meta:
         model = Scenario
@@ -631,6 +665,9 @@ class ScenarioSerializer(
     serializers.ModelSerializer,
 ):
     configuration = serializers.SerializerMethodField()
+    geopackage_url = serializers.SerializerMethodField(
+        help_text="URL to download the scenario's geopackage file.",
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -655,6 +692,13 @@ class ScenarioSerializer(
         validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
+    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+        """
+        Returns the URL to download the scenario's geopackage file.
+        If the scenario is currently being exported, returns None.
+        """
+        return scenario.get_geopackage_url()
+
     class Meta:
         fields = (
             "id",
@@ -671,6 +715,7 @@ class ScenarioSerializer(
             "creator",
             "status",
             "version",
+            "geopackage_url",
         )
         model = Scenario
 

@@ -2,15 +2,18 @@ import { Component, Input } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { map, shareReplay } from 'rxjs';
 import { TreatmentGoalsService } from '@services';
-import {
-  CategorizedScenarioGoals,
-  ScenarioConfig,
-  ScenarioGoal,
-  TreatmentQuestionConfig,
-} from '@types';
+
+import { ScenarioConfig, ScenarioGoal, TreatmentQuestionConfig } from '@types';
+
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
-import { ScenarioState } from '../../../maplibre-map/scenario.state';
+import { ScenarioState } from '../../../scenario/scenario.state';
 import { KeyValue } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { FeatureService } from 'src/app/features/feature.service';
+import {
+  getGroupedGoals,
+  legacyGetCategorizedGoals,
+} from 'src/app/scenario/scenario-helper';
 
 @Component({
   selector: 'app-set-priorities',
@@ -24,21 +27,26 @@ export class SetPrioritiesComponent {
     selectedQuestion: <TreatmentQuestionConfig>[null, Validators.required],
   });
 
-  categorizedStatewideGoals$ = this.treatmentGoalsService
-    .getTreatmentGoals()
-    .pipe(
-      map((goals) =>
-        goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
-          const category = goal.category_text;
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push(goal);
-          return acc;
-        }, {})
-      ),
-      shareReplay(1)
-    );
+  planId = this.route.snapshot.data['planId'];
+
+  treatmentGoals$ = this.treatmentGoalsService.getTreatmentGoals(
+    this.featuresService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')
+      ? this.planId
+      : null
+  );
+
+  groupedStatewideGoals$ = this.treatmentGoals$.pipe(
+    map((goals) => {
+      return getGroupedGoals(goals);
+    }),
+    shareReplay(1)
+  );
+
+  // TODO: remove this entire observable once CONUS_WIDE_SCENARIOS is removed
+  categorizedStatewideGoals$ = this.treatmentGoals$.pipe(
+    map((goals) => legacyGetCategorizedGoals(goals)),
+    shareReplay(1)
+  );
 
   scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
     map((s) => s.treatment_goal?.name || '')
@@ -48,7 +56,9 @@ export class SetPrioritiesComponent {
     private fb: FormBuilder,
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private route: ActivatedRoute,
+    private featuresService: FeatureService
   ) {}
 
   createForm() {

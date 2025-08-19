@@ -6,9 +6,11 @@ import { ChartOptions, InteractionMode, TooltipItem } from 'chart.js';
 import {
   getChartBorderDash,
   getChartFontConfig,
+  getDarkGridConfig,
   whiteTooltipBaseConfig,
 } from '../../chart-helper';
-import { ChartComponent } from '../../../styleguide/chart/chart.component';
+import { CHART_COLORS } from '@shared';
+import { ChartComponent } from '@styleguide';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
@@ -25,26 +27,39 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     maintainAspectRatio: false,
     scales: {
       x: {
+        type: 'linear',
         title: {
           display: false,
         },
         ticks: {
           maxTicksLimit: 5,
+          maxRotation: 0,
+          minRotation: 0,
+          callback: function (value) {
+            return Number(value).toLocaleString('en-US');
+          },
         },
         grid: {
           color: '#FFFFFFFF',
           tickColor: 'black',
+          borderColor: 'black',
         },
       },
       y: {
+        beginAtZero: true,
+        min: -10,
         title: {
           display: false,
         },
         grid: {
           borderDash: getChartBorderDash(),
+          ...getDarkGridConfig(),
         },
         ticks: {
-          maxTicksLimit: 4,
+          maxTicksLimit: 5,
+          callback: (value) => {
+            return value === -10 ? '' : value;
+          },
         },
       },
     },
@@ -80,30 +95,18 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     this.data.datasets = d.datasets.map((data, index) => {
       return {
         ...data,
-        ...this.colorForIndex(index),
+        ...this.colorForLabel(data.label),
         pointRadius: 0, // Hides the circles
       };
     });
   }
 
-  colorForIndex(i: number) {
-    const CHART_COLORS = [
-      '#483D78',
-      '#A59CCD',
-      '#BBE3B6',
-      '#85B167',
-      '#FFDB69',
-      '#F18226',
-      '#483D78',
-      '#483D78',
-      '#CC4678',
-    ];
-
+  colorForLabel(label: string) {
     return {
-      backgroundColor: CHART_COLORS[i - 1],
-      borderColor: CHART_COLORS[i - 1],
-      pointBackgroundColor: CHART_COLORS[i - 1],
-      pointBorderColor: CHART_COLORS[i - 1],
+      backgroundColor: CHART_COLORS[label],
+      borderColor: CHART_COLORS[label],
+      pointBackgroundColor: CHART_COLORS[label],
+      pointBorderColor: CHART_COLORS[label],
     };
   }
 }

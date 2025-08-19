@@ -18,13 +18,16 @@ import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
-import { ScenarioState } from '../scenario.state';
+import { ScenarioState } from '../../scenario/scenario.state';
 import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
-import { FrontendConstants } from '@types';
+
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
 import { MapConfigService } from '../map-config.service';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
+import { FrontendConstants } from '../../map/map.constants';
+import { ScenarioLegendComponent } from '../../scenario/scenario-legend/scenario-legend.component';
+import { FeaturesModule } from '../../features/features.module';
 
 @Component({
   selector: 'app-scenario-map',
@@ -42,6 +45,8 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
     ControlComponent,
     MapLayerColorLegendComponent,
     DataLayerNameComponent,
+    ScenarioLegendComponent,
+    FeaturesModule,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',

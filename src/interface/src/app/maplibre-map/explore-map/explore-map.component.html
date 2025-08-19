@@ -14,6 +14,7 @@
   [attributionControl]="false"
   (mapMouseMove)="onMapMouseMove($event)"
   [transformRequest]="transformRequest"
+  (mapClick)="selectMapIfInViewMode()"
   [ngClass]="{
     'highlighted-map': showMapNumber && (isSelected$ | async) === true,
     'padded-map': mapNumber === 1 || mapNumber === 2,

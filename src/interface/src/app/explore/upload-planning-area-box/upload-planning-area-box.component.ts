@@ -11,10 +11,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
-import { FileUploadFieldComponent } from 'src/styleguide/file-upload-field/file-upload-field.component';
-import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.component';
 import booleanValid from '@turf/boolean-valid';
 import kinks from '@turf/kinks';
+import { FileUploadFieldComponent, ModalInfoComponent } from '@styleguide';
 
 @Component({
   selector: 'app-upload-planning-area-box',

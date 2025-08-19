@@ -19,21 +19,28 @@ import {
   skip,
   switchMap,
 } from 'rxjs';
-import { Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
+import {
+  GeoPackageStatus,
+  Scenario,
+  ScenarioResult,
+  ScenarioResultStatus,
+} from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { LegacyPlanStateService, ScenarioService } from '@services';
+import { ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { MatTabGroup } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { PlanState } from '../plan.state';
+import { nameMustBeNew } from 'src/app/validators/unique-scenario';
+import { FeatureService } from 'src/app/features/feature.service';
 
 export enum ScenarioTabs {
   CONFIG,
@@ -49,6 +56,11 @@ export enum ScenarioTabs {
   styleUrls: ['./create-scenarios.component.scss'],
 })
 export class CreateScenariosComponent implements OnInit {
+  // TODO:
+  // After fully using ViewScenarioComponent remove all the pieces here for
+  // populating forms, polling, etc.
+  // just keep this view for creating the scenario.
+
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   SCENARIO_TABS = ScenarioTabs;
@@ -76,6 +88,8 @@ export class CreateScenariosComponent implements OnInit {
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
+  geoPackageStatus: GeoPackageStatus = null;
+  geoPackageURL: string | null = null;
   priorities: string[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
@@ -105,9 +119,12 @@ export class CreateScenariosComponent implements OnInit {
     })
   );
 
+  scenarioImprovementsFeature = this.featureService.isFeatureEnabled(
+    'SCENARIO_IMPROVEMENTS'
+  );
+
   constructor(
     private fb: FormBuilder,
-    private LegacyPlanStateService: LegacyPlanStateService,
     private scenarioService: ScenarioService,
     private router: Router,
     private matSnackBar: MatSnackBar,
@@ -115,7 +132,8 @@ export class CreateScenariosComponent implements OnInit {
     private scenarioStateService: ScenarioState,
     private dataLayersStateService: DataLayersStateService,
     private planState: PlanState,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private featureService: FeatureService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -149,17 +167,11 @@ export class CreateScenariosComponent implements OnInit {
     // Creating the forms
     await this.createForms();
 
-    // Setting plan region if we have a valid regiion
-    this.setPlanRegion();
-
     // Setting the scenario name validator
     this.setExistingNameValidator();
 
     // initialize scenario component - if we are creating or viewing a scenario
     this.setScenarioMode();
-
-    // Listening for project area changes
-    this.listenForProjectAreasChanges();
   }
 
   setScenarioMode() {
@@ -186,42 +198,32 @@ export class CreateScenariosComponent implements OnInit {
       .get('scenarioName')
       ?.addValidators([
         (control: AbstractControl) =>
-          scenarioNameMustBeNew(control, existingScenarioNames),
+          nameMustBeNew(control, existingScenarioNames),
       ]);
   }
 
-  async setPlanRegion() {
-    const plan = await firstValueFrom(this.plan$);
-    if (plan.region_name) {
-      0.0;
-      this.LegacyPlanStateService.setPlanRegion(plan.region_name!);
+  private shouldPollForGeoPackage() {
+    if (!this.geoPackageStatus || !this.scenarioImprovementsFeature) {
+      return false; // if this is null, we can assume there will be no geopackage, ever
     }
-  }
-
-  listenForProjectAreasChanges() {
-    // When an area is uploaded, issue an event to draw it on the map.
-    // If the "generate areas" option is selected, remove any drawn areas.
-    this.projectAreasForm?.valueChanges.subscribe((_) => {
-      const generateAreas = this.forms
-        .get('projectAreas')
-        ?.get('generateAreas');
-      const uploadedArea = this.projectAreasForm?.get('uploadedArea');
-      if (generateAreas?.value) {
-        this.drawShapes(null);
-      } else {
-        this.drawShapes(uploadedArea?.value);
-      }
-    });
+    if (
+      this.geoPackageStatus === 'PENDING' ||
+      this.geoPackageStatus === 'PROCESSING'
+    ) {
+      return true;
+    }
+    return false;
   }
 
   pollForChanges() {
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        // only poll when scenario is pending or running
+        // only poll when scenario is pending or running, OR if the geopackage is not ready
         if (
           this.scenarioState === 'PENDING' ||
-          this.scenarioState === 'RUNNING'
+          this.scenarioState === 'RUNNING' ||
+          this.shouldPollForGeoPackage()
         ) {
           this.loadConfig();
         }
@@ -232,32 +234,47 @@ export class CreateScenariosComponent implements OnInit {
     this.scenarioService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
-        if (this.scenarioState === scenario.scenario_result?.status) {
+        if (
+          this.scenarioState === scenario.scenario_result?.status &&
+          this.geoPackageURL
+        ) {
           return;
         }
 
         // Updating breadcrumbs
         this.scenarioId = scenario.id;
-        this.LegacyPlanStateService.updateStateWithScenario(
-          this.scenarioId,
-          scenario.name
-        );
 
         this.disableForms();
-        if (scenario.scenario_result) {
+        if (
+          scenario.scenario_result &&
+          scenario.scenario_result !== this.scenarioResults
+        ) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
           this.priorities =
             scenario.configuration.treatment_question?.scenario_priorities ||
             [];
-
-          this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
-            this.processScenarioResults(scenario);
             this.scenarioStateService.reloadScenario();
           }
           // enable animation
           this.tabAnimation = this.tabAnimationOptions.on;
+        }
+
+        if (scenario.geopackage_status) {
+          this.geoPackageStatus = scenario.geopackage_status ?? null;
+          if (this.geoPackageStatus === 'FAILED') {
+            this.matSnackBar.open(
+              `Error: GeoPackage generation failed.`,
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+          }
+        }
+
+        if (scenario.geopackage_url) {
+          this.geoPackageStatus === 'SUCCEEDED';
+          this.geoPackageURL = scenario.geopackage_url;
         }
 
         //setting name
@@ -292,6 +309,8 @@ export class CreateScenariosComponent implements OnInit {
         ...prioritiesData,
       },
       treatment_goal: prioritiesData.treatment_question as any,
+      geopackage_status: null,
+      geopackage_url: null,
     };
   }
 
@@ -335,17 +354,6 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   /**
-   * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
-   */
-  processScenarioResults(scenario: Scenario) {
-    if (scenario && this.scenarioResults && this.planId) {
-      this.LegacyPlanStateService.updateStateWithShapes(
-        this.scenarioResults?.result.features
-      );
-    }
-  }
-
-  /**
    * Converts each feature found in a GeoJSON into individual GeoJSONs, else
    * returns the original GeoJSON, which may result in an error upon project area creation.
    * Only polygon or multipolygon feature types are expected in the uploaded shapefile.
@@ -365,10 +373,6 @@ export class CreateScenariosComponent implements OnInit {
       geometries.push(original);
     }
     return geometries;
-  }
-
-  private drawShapes(shapes: any | null): void {
-    this.LegacyPlanStateService.updateStateWithShapes(shapes);
   }
 
   goToConfig() {
@@ -396,30 +400,10 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   async goToScenario() {
-    const scenario = await firstValueFrom(this.scenario$);
-    if (scenario) {
-      // Updating breadcrums so when we navigate we can see it
-      this.LegacyPlanStateService.updateStateWithScenario(
-        scenario.id,
-        scenario.name
-      );
-    }
     this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
   }
 
   goToPlan() {
     this.router.navigate(['/plan', this.planId]);
   }
-}
-
-function scenarioNameMustBeNew(
-  nameControl: AbstractControl,
-  existingNames: string[]
-): {
-  [key: string]: any;
-} | null {
-  if (existingNames.includes(nameControl.value?.trim())) {
-    return { duplicate: true };
-  }
-  return null;
 }

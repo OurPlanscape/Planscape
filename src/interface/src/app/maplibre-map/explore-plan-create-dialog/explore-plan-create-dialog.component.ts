@@ -1,17 +1,18 @@
 import { Component, inject, Inject } from '@angular/core';
 import {
-  ModalComponent,
   InputDirective,
   InputFieldComponent,
+  ModalComponent,
+  ModalInfoComponent,
 } from '@styleguide';
-import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.component';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DrawService } from '../draw.service';
 import { PlanService } from '@services';
 import {
-  ReactiveFormsModule,
   FormControl,
   FormGroup,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { isValidTotalArea } from '../../plan/plan-helpers';

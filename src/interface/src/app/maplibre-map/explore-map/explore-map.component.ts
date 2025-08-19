@@ -12,7 +12,7 @@ import {
   LayerComponent,
   MapComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { FrontendConstants } from '../../map/map.constants';
+
 import {
   LngLat,
   Map as MapLibreMap,
@@ -27,7 +27,7 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { map, switchMap, tap } from 'rxjs';
+import { firstValueFrom, map, switchMap, take, tap } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
 import { DefaultSelectConfig, DrawService } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
@@ -41,6 +41,7 @@ import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
 import { MultiMapsStorageService } from '@services/local-storage.service';
+import { FrontendConstants } from '../../map/map.constants';
 
 @UntilDestroy()
 @Component({
@@ -232,6 +233,16 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     } else {
       this.drawService.setMode('select');
       this.drawService.stop();
+    }
+  }
+
+  async selectMapIfInViewMode() {
+    const mode = await firstValueFrom(this.mapInteractionMode$.pipe(take(1)));
+    const enabled = await firstValueFrom(
+      this.multiMapConfigState.allowClickOnMap$.pipe(take(1))
+    );
+    if (mode === 'view' && enabled) {
+      this.multiMapConfigState.setSelectedMap(this.mapNumber);
     }
   }
 

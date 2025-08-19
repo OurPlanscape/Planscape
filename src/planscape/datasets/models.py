@@ -14,6 +14,8 @@ from core.schemes import SUPPORTED_SCHEMES
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
+from django.contrib.gis.db.models.functions import Area
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.validators import RegexValidator, URLValidator
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
@@ -156,8 +158,39 @@ class MapServiceChoices(models.TextChoices):
     GEOJSON = "GEOJSON", "GeoJSON"
 
 
+class DataLayerQuerySet(models.QuerySet):
+    def geometric_intersection(
+        self, geometry_field: str = "geometry"
+    ) -> Optional[GEOSGeometry]:
+        geometries = (
+            self.all()
+            .annotate(area=Area(geometry_field))
+            .order_by("-area")
+            .values_list(
+                geometry_field,
+                flat=True,
+            )
+        )
+        temp_geometry = None
+        for i, geometry in enumerate(geometries):
+            try:
+                next_geometry = geometries[i + 1]
+            except IndexError:
+                break
+            comparison = temp_geometry if temp_geometry else geometry
+
+            if not comparison or not comparison.intersects(next_geometry):
+                return None
+            temp_geometry = comparison.intersection(next_geometry)
+
+        return temp_geometry
+
+
 class DataLayerManager(models.Manager):
-    def by_module(self, module: str) -> "QuerySet[DataLayer]":
+    def get_queryset(self):
+        return DataLayerQuerySet(self.model, using=self._db)
+
+    def by_module(self, module: str):
         return self.get_queryset().filter(metadata__modules__has_key=module)
 
 
@@ -334,7 +367,11 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Represents the polygon that encompasses the datalayer. It can be null.",
         null=True,
     )
-
+    outline = models.MultiPolygonField(
+        srid=settings.DEFAULT_CRS,
+        help_text="Represents the detailed geometry of the layer. Only shows where there is data at the time of upload",
+        null=True,
+    )
     hash = models.CharField(
         null=True,
         max_length=256,
@@ -372,10 +409,6 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
         elif is_gcs_file(self.url):
             download_url = create_gcs_download_url(self.url)
-            if download_url is None:
-                create_gcs_download_url.invalidate(
-                    self.url
-                )  # Invalidate cache if download URL creation fails
         else:
             download_url = None
 

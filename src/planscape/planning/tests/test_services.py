@@ -1,9 +1,12 @@
 import shutil
 from datetime import date, datetime
 
+import csv
 import fiona
 import json
 import shapely
+from unittest import mock
+from cacheops import invalidate_all
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
@@ -18,6 +21,7 @@ from planning.models import (
 )
 from planning.services import (
     export_to_shapefile,
+    export_to_geopackage,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
@@ -25,8 +29,14 @@ from planning.services import (
     validate_scenario_treatment_ratio,
     get_acreage,
 )
-from planning.tests.factories import PlanningAreaFactory
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ScenarioFactory,
+    ProjectAreaFactory,
+    ScenarioResultFactory,
+)
 from planscape.tests.factories import UserFactory
+from stands.tests.factories import StandFactory
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -256,6 +266,134 @@ class ExportToShapefileTest(TransactionTestCase):
             self.assertEqual(1, len(source))
             self.assertEqual(to_string(source.crs), "EPSG:4269")
             shutil.rmtree(str(output))
+
+
+class TestExportToGeopackage(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.unit_poly = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+        )
+        self.stand = StandFactory.create()
+        self.planning = PlanningAreaFactory.create(
+            name="foo",
+            region_name="sierra-nevada",
+            geometry=self.unit_poly,
+            user=self.user,
+        )
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning, name="s1", user=self.user
+        )
+        data = {
+            "foo": "abc",
+            "bar": 1,
+            "baz": 1.2,
+            "now": str(datetime.now()),
+            "today": date.today(),
+        }
+        ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=self.unit_poly,
+            data=data,
+            created_by=self.user,
+            name="foo",
+        )
+        ScenarioResultFactory.create(
+            scenario=self.scenario, status=ScenarioResultStatus.SUCCESS
+        )
+
+        forsys_folder = self.scenario.get_forsys_folder()
+        if not forsys_folder.exists():
+            forsys_folder.mkdir(parents=True, exist_ok=True)
+        self.inputs_file = forsys_folder / "inputs.csv"
+
+        inputs_data_rows = [
+            [
+                "WKT",
+                "stand_id",
+                "area_acres",
+                "datalayer_1",
+                "datalayer_2",
+                "datalayer_3",
+                "datalayer_4",
+                "datalayer_5",
+                "datalayer_6_SPM",
+                "datalayer_7_PCP",
+                "priority",
+            ],
+            [
+                "POLYGON ((-2226358.53928425 1950498.20568641,-2225919.84794646 1949738.37000051,-2225042.46527088 1949738.37000052,-2224603.77393309 1950498.20568641,-2225042.46527088 1951258.0413723,-2225919.84794646 1951258.0413723,-2226358.53928425 1950498.20568641))",
+                self.stand.pk,
+                494.193231034226,
+                73,
+                0,
+                38.9199636198272,
+                0,
+                0,
+                0,
+                -0,
+                0,
+            ],
+        ]
+        with open(self.inputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(inputs_data_rows)
+
+        stnd_data_rows = [
+            [
+                "stand_id",
+                "proj_id",
+                "DoTreat",
+                "selected",
+                "ETrt_YR",
+                "area_acres",
+                "datalayer_1",
+                "datalayer_2",
+                "datalayer_3",
+                "datalayer_4",
+                "weightedPriority",
+                "Pr_1_priority",
+            ],
+            [
+                self.stand.pk,
+                1,
+                1,
+                1,
+                1,
+                494.193231036229,
+                0.136334928019663,
+                10.27318640955,
+                7882.24269662921,
+                0,
+                16.6071320953935,
+                1,
+            ],
+        ]
+
+        forsys_folder = self.scenario.get_forsys_folder()
+        self.outputs_file = forsys_folder / f"stnd_{self.scenario.uuid}.csv"
+        with open(self.outputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(stnd_data_rows)
+
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage(self, upload_mock):
+        invalidate_all()
+        output = export_to_geopackage(self.scenario)
+        self.assertIsNotNone(output)
+        self.assertTrue(output.endswith(".gpkg.zip"))
+        self.assertTrue(upload_mock.called)
+
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_already_existing(self, upload_mock):
+        invalidate_all()
+        self.scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg.zip"
+        self.scenario.save(update_fields=["geopackage_url"])
+
+        output = export_to_geopackage(self.scenario)
+        self.assertIsNotNone(output)
+        self.assertEqual(self.scenario.geopackage_url, output)
+        self.assertFalse(upload_mock.called)
 
 
 class TestPlanningAreaCovers(TestCase):

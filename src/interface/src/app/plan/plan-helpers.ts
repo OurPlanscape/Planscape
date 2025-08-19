@@ -1,10 +1,4 @@
-import {
-  ConditionsConfig,
-  PriorityRow,
-  ScenarioResult,
-  TreatmentGoalConfig,
-  TreatmentQuestionConfig,
-} from '@types';
+import { ScenarioResult } from '@types';
 import {
   ProjectAreaReport,
   ProjectTotalReport,
@@ -24,6 +18,25 @@ export const STAND_SIZES_LABELS: Record<string, string> = {
   SMALL: 'Small',
   MEDIUM: 'Medium',
   LARGE: 'Large',
+};
+
+export type STAND_SIZE = 'SMALL' | 'MEDIUM' | 'LARGE';
+
+export const STAND_OPTIONS: Record<
+  STAND_SIZE,
+  { label: string; description: string | null; acres: number }
+> = {
+  SMALL: { label: 'Small', description: null, acres: 10 },
+  MEDIUM: {
+    label: 'Medium',
+    description: null,
+    acres: 100,
+  },
+  LARGE: {
+    label: 'Large',
+    description: 'Recommended for Larger Planning Areas',
+    acres: 500,
+  },
 };
 
 export function parseResultsToProjectAreas(
@@ -64,71 +77,6 @@ export function getColorForProjectPosition(rank: number) {
     return DEFAULT_AREA_COLOR;
   }
   return PROJECT_AREA_COLORS[(rank - 1) % PROJECT_AREA_COLORS.length];
-}
-
-export function findQuestionOnTreatmentGoalsConfig(
-  treatmentGoalConfigs: TreatmentGoalConfig[],
-  treatmentQuestion: TreatmentQuestionConfig
-) {
-  let selectedQuestion: TreatmentQuestionConfig | undefined;
-  treatmentGoalConfigs.some((goal) => {
-    selectedQuestion = goal.questions.find(
-      (question) => question.id === treatmentQuestion?.id
-    );
-    return !!selectedQuestion;
-  });
-  return selectedQuestion;
-}
-
-export function conditionsConfigToPriorityData(
-  config: ConditionsConfig
-): PriorityRow[] {
-  let data: PriorityRow[] = [];
-  config.pillars
-    ?.filter((pillar) => pillar.display)
-    .forEach((pillar) => {
-      let pillarRow: PriorityRow = {
-        conditionName: pillar.pillar_name!,
-        displayName: pillar.display_name,
-        filepath: pillar.filepath! ? pillar.filepath.concat('_normalized') : '',
-        children: [],
-        level: 0,
-        expanded: false,
-      };
-      data.push(pillarRow);
-      pillar.elements
-        ?.filter((element) => element.display)
-        .forEach((element) => {
-          let elementRow: PriorityRow = {
-            conditionName: element.element_name!,
-            displayName: element.display_name,
-            filepath: element.filepath
-              ? element.filepath.concat('_normalized')
-              : '',
-            children: [],
-            level: 1,
-            expanded: false,
-            hidden: true,
-          };
-          data.push(elementRow);
-          pillarRow.children.push(elementRow);
-          element.metrics
-            ?.filter((metric) => !!metric.filepath)
-            .forEach((metric) => {
-              let metricRow: PriorityRow = {
-                conditionName: metric.metric_name!,
-                displayName: metric.display_name,
-                filepath: metric.filepath!.concat('_normalized'),
-                children: [],
-                level: 2,
-                hidden: true,
-              };
-              data.push(metricRow);
-              elementRow.children.push(metricRow);
-            });
-        });
-    });
-  return data;
 }
 
 export function getPlanPath(planId: number) {
@@ -189,4 +137,10 @@ export function processCumulativeAttainment(features: any[]): {
       data,
     })),
   };
+}
+
+export function hasAnalytics(results: ScenarioResult): boolean {
+  return results.result.features.some(
+    (feature) => feature.properties['attainment']
+  );
 }
