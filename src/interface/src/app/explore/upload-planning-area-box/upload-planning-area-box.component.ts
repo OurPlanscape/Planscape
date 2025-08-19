@@ -12,6 +12,7 @@ import {
 } from '@angular/forms';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
 import booleanValid from '@turf/boolean-valid';
+import flatten from '@turf/flatten'
 import kinks from '@turf/kinks';
 import { FileUploadFieldComponent, ModalInfoComponent } from '@styleguide';
 
@@ -63,17 +64,29 @@ export class UploadPlanningAreaBoxComponent {
 
   validateGeoJSONFeatures(geoJSON: GeoJSON.GeoJSON): boolean {
     if (geoJSON.type === 'FeatureCollection') {
+      console.log('this is a featurecollection...');
+      
+
       return geoJSON.features.every((f) => {
+        console.log('inspecting feature:', f);
+        console.log('what kind of feature is this supposed to be?', f.geometry.type);
+        if (f.geometry.type === 'MultiPolygon'){
+          const flattenedThings = flatten(f);
+          console.log('here is the flattened things:', flattenedThings);
+        }
+      
         if (
-          f.geometry.type === 'Polygon' ||
-          f.geometry.type === 'MultiPolygon'
+          f.geometry.type === 'Polygon'
         ) {
+          console.log('this is a polygon...');
           const ks = kinks(f.geometry);
+          console.log('what is the ks?', ks);
           if (ks.features.length > 0) {
             throw new Error('Self-intersection detected.');
           }
           return true;
         }
+
         return booleanValid(f);
       });
     }
@@ -93,7 +106,11 @@ export class UploadPlanningAreaBoxComponent {
       const geojson = (await shp.parseZip(
         fileAsArrayBuffer
       )) as GeoJSON.GeoJSON;
+      console.log('here is the geojson we uploaded:', geojson);
       const isValid = this.validateGeoJSONFeatures(geojson);
+      console.log('is it valid?:', isValid);
+      console.log('is gjv valid?', GJV.valid(geojson));
+
       if (
         geojson.type == 'FeatureCollection' &&
         GJV.valid(geojson) &&

@@ -18,6 +18,7 @@ import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
 import { FeatureService } from '../features/feature.service';
+import flatten from '@turf/flatten';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -60,7 +61,7 @@ export class DrawService {
   constructor(
     private http: HttpClient,
     private featureService: FeatureService
-  ) {}
+  ) { }
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -268,7 +269,22 @@ export class DrawService {
         mode: 'polygon',
       },
     }));
-    this._terraDraw?.addFeatures(featuresArray);
+    const justPolygons: any[] = [];
+    featuresArray.forEach((f: any) => {
+      console.log('here is the feature:', f);
+      if (f.geometry.type === 'Polygon') {
+        justPolygons.push(f);
+      } else if (f.geometry.type === 'MultiPolygon') {
+        const flattened = flatten(f);
+        flattened.features.forEach((flat) => {
+          if (flat.geometry && (flat.geometry as any).type === 'Polygon') {
+            justPolygons.push(flat);
+          }
+        });
+      }
+    })
+    const storeValidation = this._terraDraw?.addFeatures(justPolygons);
+    console.log('here is the validation:', storeValidation);
     this.updateTotalAcreage();
     this._terraDraw?.setMode('select'); // should be in select mode to add
   }
