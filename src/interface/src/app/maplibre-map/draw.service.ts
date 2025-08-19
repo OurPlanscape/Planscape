@@ -16,6 +16,7 @@ import {
 } from 'rxjs';
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
+import flatten from '@turf/flatten';
 import { HttpClient } from '@angular/common/http';
 import { FeatureService } from '../features/feature.service';
 
@@ -256,6 +257,23 @@ export class DrawService {
     return this._totalAcres$.value;
   }
 
+  flattenPolygons(featuresArray : any[]) {
+    const justPolygons: any[] = [];
+    featuresArray.forEach((f: any) => {
+      if (f.geometry.type === 'Polygon') {
+        justPolygons.push(f);
+      }else if (f.geometry.type === 'MultiPolygon') {
+        const flattened = flatten(f);
+        flattened.features.forEach((flat) => {
+          if ((flat.geometry as any).type === 'Polygon') {
+            justPolygons.push(flat);
+          }
+        });
+      }
+    })
+    return justPolygons;
+  }
+
   addGeoJSONFeature(shape: any) {
     const featuresArray = shape.features.map((feature: any) => ({
       type: 'Feature',
@@ -268,7 +286,8 @@ export class DrawService {
         mode: 'polygon',
       },
     }));
-    this._terraDraw?.addFeatures(featuresArray);
+    const flatFeatures = this.flattenPolygons(featuresArray);
+    this._terraDraw?.addFeatures(flatFeatures);
     this.updateTotalAcreage();
     this._terraDraw?.setMode('select'); // should be in select mode to add
   }
