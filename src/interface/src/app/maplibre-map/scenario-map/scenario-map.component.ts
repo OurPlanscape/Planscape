@@ -28,6 +28,7 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { FrontendConstants } from '../../map/map.constants';
 import { ScenarioLegendComponent } from '../../scenario/scenario-legend/scenario-legend.component';
 import { FeaturesModule } from '../../features/features.module';
+import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -47,6 +48,7 @@ import { FeaturesModule } from '../../features/features.module';
     DataLayerNameComponent,
     ScenarioLegendComponent,
     FeaturesModule,
+    ScenarioStandsComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',

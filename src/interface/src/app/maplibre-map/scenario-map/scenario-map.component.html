@@ -50,6 +50,9 @@
     <app-data-layer-name></app-data-layer-name>
   </mgl-control>
 
+  <app-scenario-stands
+    *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'"></app-scenario-stands>
+
   <mgl-control position="top-left">
     <app-map-layer-color-legend></app-map-layer-color-legend>
   </mgl-control>
