@@ -3,12 +3,12 @@ import logging
 from typing import Any, Collection, Dict
 
 import rasterio
+from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
 from gis.info import get_gdal_env
 from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
-from rasterstats.io import Raster
 from shapely import total_bounds
 from shapely.geometry import shape
 from stands.models import Stand, StandMetric
@@ -88,7 +88,7 @@ def calculate_stand_zonal_stats(
     )
     existing_stand_ids = set(existing_metrics.all().values_list("stand_id", flat=True))
     missing_stand_ids = stand_ids - existing_stand_ids
-    missing_stands = stands.all().filter(id__in=missing_stand_ids)
+    missing_stands = Stand.objects.filter(id__in=missing_stand_ids).with_webmercator()
     if missing_stands.count() <= 0:
         log.info("There are no missing stands. Early return.")
         return StandMetric.objects.filter(
@@ -97,16 +97,27 @@ def calculate_stand_zonal_stats(
         )
 
     stand_geojson = list(map(to_geojson, missing_stands))
-    bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-    with rasterio.Env(**get_gdal_env()):
-        with rasterio.open(datalayer.url) as main_raster:
-            window = from_bounds(*bounds, transform=main_raster.transform)
-            data = main_raster.read(1, window=window)
-            window_transform = main_raster.window_transform(window)
+    if feature_enabled("RASTERIO_WINDOWED_READ"):
+        with rasterio.Env(**get_gdal_env()):
+            with rasterio.open(datalayer.url) as main_raster:
+                bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
+                window = from_bounds(*bounds, transform=main_raster.transform)
+                data = main_raster.read(1, window=window)
+                window_transform = main_raster.window_transform(window)
+                stats = zonal_stats(
+                    raster=data,
+                    affine=window_transform,
+                    vectors=stand_geojson,
+                    stats=aggregations,
+                    nodata=nodata,
+                    geojson_out=True,
+                    band=1,
+                )
+    else:
+        with rasterio.Env(**get_gdal_env()):
             stats = zonal_stats(
-                raster=data,
-                affine=window_transform,
+                raster=datalayer.url,
                 vectors=stand_geojson,
                 stats=aggregations,
                 nodata=nodata,
