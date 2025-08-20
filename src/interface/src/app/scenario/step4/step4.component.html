@@ -14,6 +14,11 @@
     stop once reached.
   </p>
   <form *ngIf="form" [formGroup]="form!">
+    <span
+      class="error-message"
+      *ngIf="form?.touched && form.hasError('budgetOrAreaRequired')">
+      Please enter a budget or max acres to be treated
+    </span>
     <div>
       <mat-form-field
         class="input-field"

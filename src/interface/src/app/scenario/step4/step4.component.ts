@@ -65,16 +65,19 @@ export class Step4Component
 {
   @Input() planningAreaAcres = 0;
 
-  form = new FormGroup({
-    max_area: new FormControl<number | null>(null, [
-      Validators.min(this.minMaxAreaValue),
-      Validators.max(this.maxMaxAreaValue),
-    ]),
-    max_budget: new FormControl<number | null>(null, [Validators.min(0)]),
-    estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
-      Validators.required,
-    ]),
-  });
+  form = new FormGroup(
+    {
+      max_area: new FormControl<number | null>(null, [
+        Validators.min(this.minMaxAreaValue),
+        Validators.max(this.maxMaxAreaValue),
+      ]),
+      max_budget: new FormControl<number | null>(null, [Validators.min(0)]),
+      estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
+        Validators.required,
+      ]),
+    },
+    { validators: this.budgetOrAreaRequiredValidator }
+  );
 
   focusedSelection = ''; // string to identify which selection is focused
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
@@ -125,6 +128,7 @@ export class Step4Component
     const maxBudget = form.get('max_budget');
     const maxArea = form.get('max_area');
     const valid = !!maxBudget?.value || !!maxArea?.value;
+    console.log('is budgetOrAreaRequiredValidator valid?', valid);
     return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }
 
@@ -160,6 +164,8 @@ export class Step4Component
   }
 
   getData() {
+    console.log('this form:', this.form);
+    console.log('Form errors?:', this.form.errors);
     return this.form.value;
   }
 
