@@ -128,7 +128,6 @@ export class Step4Component
     const maxBudget = form.get('max_budget');
     const maxArea = form.get('max_area');
     const valid = !!maxBudget?.value || !!maxArea?.value;
-    console.log('is budgetOrAreaRequiredValidator valid?', valid);
     return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }
 
@@ -164,8 +163,6 @@ export class Step4Component
   }
 
   getData() {
-    console.log('this form:', this.form);
-    console.log('Form errors?:', this.form.errors);
     return this.form.value;
   }
 
