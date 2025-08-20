@@ -2,7 +2,8 @@
   <button
     type="button"
     [ngClass]="{ active: views === 1 }"
-    (click)="setLayoutMode(1)">
+    (click)="setLayoutMode(1)"
+    aria-label="Show 1 map">
     <span class="wrapper">
       <span class="square"></span>
     </span>
@@ -11,6 +12,7 @@
     type="button"
     [ngClass]="{ active: views === 2 }"
     (click)="setLayoutMode(2)"
+    aria-label="Show 2 maps"
     [disabled]="(mapInteractionMode$ | async) === 'draw'">
     <span class="wrapper">
       <span class="square"></span>
@@ -21,6 +23,7 @@
     type="button"
     [ngClass]="{ active: views === 4 }"
     (click)="setLayoutMode(4)"
+    aria-label="Show 4 maps"
     [disabled]="(mapInteractionMode$ | async) === 'draw'">
     <span class="wrapper">
       <span class="square"></span>

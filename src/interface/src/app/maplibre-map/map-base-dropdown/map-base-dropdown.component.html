@@ -28,6 +28,7 @@
       *ngFor="let baseMap of baseMaps"
       class="base-map-option"
       (click)="updateBaseMap(baseMap)"
+      [attr.aria-label]="'Select ' + baseMap + ' base map'"
       [class.selected]="(selectedBaseMap$ | async) === baseMap">
       <img
         (click)="updateBaseMap(baseMap)"
