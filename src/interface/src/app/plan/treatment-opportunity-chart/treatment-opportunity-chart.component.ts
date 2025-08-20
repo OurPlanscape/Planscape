@@ -12,6 +12,7 @@ import {
   whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
 import { ChartComponent } from '@styleguide';
+import { ChartColorsService } from 'src/app/scenario/chart-colors.service';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
@@ -95,12 +96,15 @@ export class TreatmentOpportunityChartComponent implements OnInit {
     },
   };
 
+  constructor(private colorService: ChartColorsService) {}
+
   ngOnInit(): void {
     this.barChartData = {
       labels: getProjectAreaLabelsFromFeatures(
         this.scenarioResult.result.features
       ),
       datasets: getChartDatasetsFromFeatures(
+        this.colorService,
         this.scenarioResult.result.features
       ),
     };
