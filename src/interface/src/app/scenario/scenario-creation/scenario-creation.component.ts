@@ -1,4 +1,4 @@
-import { Component, HostListener, ViewChild } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { NgIf, AsyncPipe } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
@@ -10,10 +10,10 @@ import { map, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
-  AsyncValidatorFn,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { ScenarioService } from '@services';
@@ -61,7 +61,9 @@ enum ScenarioTabs {
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
-export class ScenarioCreationComponent implements CanComponentDeactivate {
+export class ScenarioCreationComponent
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -71,11 +73,7 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
 
   form = new FormGroup({
-    scenarioName: new FormControl(
-      '',
-      [Validators.required],
-      [this.scenarioNameMustBeUnique(this.scenarioService, this.planId)]
-    ),
+    scenarioName: new FormControl('', [Validators.required]),
   });
 
   @HostListener('window:beforeunload', ['$event'])
@@ -110,6 +108,18 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
       });
   }
 
+  ngOnInit(): void {
+    // Adding scenario name validator
+    this.scenarioService
+      .getScenariosForPlan(this.planId)
+      .subscribe((scenarioNames) => {
+        const names = scenarioNames.map((s) => s.name);
+        this.form
+          .get('scenarioName')
+          ?.addValidators(this.scenarioNameMustBeUnique(names));
+      });
+  }
+
   canDeactivate(): Observable<boolean> | boolean {
     if (this.finished) {
       return true;
@@ -118,24 +128,15 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
     return dialogRef.afterClosed();
   }
 
-  // Async validator
-  scenarioNameMustBeUnique(
-    scenarioService: ScenarioService,
-    planId: number
-  ): AsyncValidatorFn {
+  scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {
     return (control: AbstractControl) => {
       const name = control.value;
 
-      if (!name) {
-        return of(null);
+      if (!name || names.length === 0) {
+        return null;
       }
 
-      return scenarioService.getScenariosForPlan(planId).pipe(
-        map((scenarios) => {
-          const names = scenarios.map((s) => s.name);
-          return nameMustBeNew(control, names);
-        })
-      );
+      return nameMustBeNew(control, names);
     };
   }
 
