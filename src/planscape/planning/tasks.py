@@ -1,6 +1,8 @@
 import logging
 
 import rasterio
+from django.conf import settings
+from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
 from gis.core import get_storage_session
@@ -75,7 +77,15 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
                 type=DataLayerType.RASTER,
                 metadata__contains=query,
             )
-            calculate_stand_zonal_stats(stands, datalayer)
+            if feature_enabled("PAGINATED_STAND_METRICS"):
+                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
+                for page in paginator.page_range:
+                    paginated_stands = paginator.page(page)
+                    log.info(f"Processing page {page} of stands")
+
+                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
+            else:
+                calculate_stand_zonal_stats(stands, datalayer)
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with name {datalayer_name} does not exist.")
         return
@@ -94,7 +104,15 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
             datalayer = DataLayer.objects.get(
                 pk=datalayer_id,
             )
-            calculate_stand_zonal_stats(stands, datalayer)
+            if feature_enabled("PAGINATED_STAND_METRICS"):
+                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
+                for page in paginator.page_range:
+                    paginated_stands = paginator.page(page)
+                    log.info(f"Processing page {page} of stands")
+
+                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
+            else:
+                calculate_stand_zonal_stats(stands, datalayer)
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
