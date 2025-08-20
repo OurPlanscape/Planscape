@@ -17,7 +17,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ScenarioService } from '@services';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { ScenarioCreation } from '@types';
@@ -32,6 +32,7 @@ import { Step2Component } from '../step2/step2.component';
 import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
+import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
 
 enum ScenarioTabs {
   CONFIG,
@@ -71,6 +72,7 @@ export class ScenarioCreationComponent
   planId = this.route.snapshot.data['planId'];
   plan$ = this.planState.currentPlan$;
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
+  finished = false;
 
   form = new FormGroup({
     scenarioName: new FormControl('', [Validators.required]),
@@ -97,7 +99,8 @@ export class ScenarioCreationComponent
     private route: ActivatedRoute,
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -145,13 +148,22 @@ export class ScenarioCreationComponent
     return of(true);
   }
 
-  // dummy flag to test/debug. Remove once we implement running/saving the scenario
-  finished = false;
-
   onFinish() {
-    // TODO: Onfinish convert the config to scenarioPayload using the following line and send to backend:
-    // const body = getScenarioCreationPayloadScenarioCreation({...this.config, name: this.form.get(name).value, planning_area: this.planId})
-    this.finished = true;
+    const payload = getScenarioCreationPayloadScenarioCreation({
+      ...this.config,
+      name: this.form.getRawValue().scenarioName || '',
+      planning_area: this.planId,
+    });
+
+    this.scenarioService.createScenarioFromSteps(payload).subscribe({
+      next: (result) => {
+        this.finished = true;
+        this.router.navigate([result.id], { relativeTo: this.route });
+      },
+      error: () => {
+        // TODO: Do something if there is an error i.e: name already exist
+      },
+    });
   }
 
   stepChanged() {

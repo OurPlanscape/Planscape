@@ -85,6 +85,7 @@ export class ViewScenarioComponent {
       tap(() => {
         this.scenarioState.reloadScenario();
       }),
+      untilDestroyed(this),
       takeUntil(this.scenario$.pipe(filter((s) => !this.shouldPoll(s))))
     );
   }

@@ -85,7 +85,6 @@ export interface ScenarioCreationPayload {
   configuration: ScenarioConfigPayload;
   name: string;
   planning_area: number;
-  status: ScenarioResultStatus;
   treatment_goal: number;
 }
 

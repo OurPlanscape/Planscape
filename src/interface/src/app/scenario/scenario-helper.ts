@@ -12,21 +12,23 @@ import {
  * @returns a ScenarioCreationPayload ready to send to the backend
  */
 export function getScenarioCreationPayloadScenarioCreation(
-  scenario: ScenarioCreation
-) {
-  // TODO: Remove Partial<> once we implemented all steps
+  scenario: Partial<ScenarioCreation>
+): ScenarioCreationPayload {
   const result: Partial<ScenarioCreationPayload> = {
     configuration: {
-      stand_size: scenario.stand_size,
+      estimated_cost: scenario.estimated_cost,
+      excluded_areas: scenario.excluded_areas,
+      max_area: scenario.max_area,
+      max_budget: scenario.max_budget,
       max_slope: scenario.max_slope,
       min_distance_from_road: scenario.min_distance_from_road,
+      stand_size: scenario.stand_size,
     } as ScenarioConfigPayload,
     name: scenario.name,
-    treatment_goal: scenario.treatment_goal,
-    status: 'NOT_STARTED',
     planning_area: scenario.planning_area,
+    treatment_goal: scenario.treatment_goal,
   };
-  return result;
+  return result as ScenarioCreationPayload;
 }
 
 /**
