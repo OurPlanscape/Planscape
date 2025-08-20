@@ -122,7 +122,7 @@ PLANSCAPE_DATABASE_HOST = config("PLANSCAPE_DATABASE_HOST", default="localhost")
 PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pass")
 PLANSCAPE_DATABASE_USER = config("PLANSCAPE_DATABASE_USER", default="planscape")
 PLANSCAPE_DATABASE_NAME = config("PLANSCAPE_DATABASE_NAME", default="planscape")
-PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_PORT", default=5432)
+PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_DATABASE_PORT", default=5432)
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
