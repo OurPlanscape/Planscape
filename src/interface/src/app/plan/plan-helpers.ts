@@ -4,6 +4,8 @@ import {
   ProjectTotalReport,
 } from './project-areas/project-areas.component';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
+import flatten from '@turf/flatten';
+import { Feature } from 'maplibre-gl';
 
 export const POLLING_INTERVAL = 3000;
 
@@ -143,4 +145,25 @@ export function hasAnalytics(results: ScenarioResult): boolean {
   return results.result.features.some(
     (feature) => feature.properties['attainment']
   );
+}
+
+/* from a mixed featuresArray of polygons and multipolygons, 
+  this function converts each multipolygon to a polygon,
+  then returns an array of just polygons
+*/
+export function flattenMultipolygons(featuresArray: Feature[]) {
+  const polygons: any[] = [];
+  featuresArray.forEach((f: any) => {
+    if (f.geometry.type === 'Polygon') {
+      polygons.push(f);
+    } else if (f.geometry.type === 'MultiPolygon') {
+      const flattened = flatten(f);
+      flattened.features.forEach((flat) => {
+        if ((flat.geometry as any).type === 'Polygon') {
+          polygons.push(flat);
+        }
+      });
+    }
+  })
+  return polygons;
 }
