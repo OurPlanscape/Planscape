@@ -98,8 +98,8 @@ def calculate_stand_zonal_stats(
 
     stand_geojson = list(map(to_geojson, missing_stands))
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-    if feature_enabled("RASTERIO_WINDOWED_READ"):
-        with rasterio.Env(**get_gdal_env()):
+    with rasterio.Env(**get_gdal_env()):
+        if feature_enabled("RASTERIO_WINDOWED_READ"):
             with rasterio.open(datalayer.url) as main_raster:
                 bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
                 window = from_bounds(*bounds, transform=main_raster.transform)
@@ -114,8 +114,7 @@ def calculate_stand_zonal_stats(
                     geojson_out=True,
                     band=1,
                 )
-    else:
-        with rasterio.Env(**get_gdal_env()):
+        else:
             stats = zonal_stats(
                 raster=datalayer.url,
                 vectors=stand_geojson,

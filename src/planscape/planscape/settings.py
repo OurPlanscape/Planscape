@@ -507,3 +507,5 @@ if not TESTING_MODE and not OPENPANEL_URL:
     OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
 else:
     OPENPANEL_CLIENT = None
+
+STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=int)

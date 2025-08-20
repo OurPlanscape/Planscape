@@ -1,6 +1,7 @@
 import logging
 
 import rasterio
+from django.conf import settings
 from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
@@ -77,7 +78,7 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
                 metadata__contains=query,
             )
             if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, 1000)  # Process in chunks of 1000
+                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
                 for page in paginator.page_range:
                     paginated_stands = paginator.page(page)
                     log.info(f"Processing page {page} of stands")
@@ -104,7 +105,7 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
                 pk=datalayer_id,
             )
             if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, 1000)  # Process in chunks of 1000
+                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
                 for page in paginator.page_range:
                     paginated_stands = paginator.page(page)
                     log.info(f"Processing page {page} of stands")
