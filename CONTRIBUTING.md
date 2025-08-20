@@ -36,7 +36,7 @@ Welcome, and thank you for improving **[Planscape](https://www.planscape.org/)**
 |--------------|---------------------------------------------------|--------------------------------------------------------|
 | Database     | PostgreSQL + PostGIS                              | Geometry, plans, scenarios, auth                       |
 | API          | Django REST Framework                             | REST/JSON endpoints & business logic                   |
-| Frontend     | Angular + Leaflet                                 | Interactive map & scenario editor                      |
+| Frontend     | Angular + Maplibre                                | Interactive map & scenario editor                      |
 | Tiles        | Martin (vector tiles) / Mapbox (basemap)          | Serve tiles to the client                              |
 | Background   | Celery + Redis                                    | Heavy analysis, batch jobs, exports                    |
 ```
