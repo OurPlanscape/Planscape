@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from django.db import connection
 from gis.core import get_storage_session
 from planning.models import Scenario, ScenarioResultStatus
 from stands.models import Stand
@@ -28,6 +29,34 @@ def async_forsys_run(scenario_id: int) -> None:
         log.info(f"Running scenario {scenario_id}")
         scenario.result_status = ScenarioResultStatus.RUNNING
         scenario.save()
+        stand_size = scenario.get_stand_size()
+        planning_area_geom = scenario.planning_area.geometry
+
+        with connection.cursor() as cur:
+            cur.execute(
+                """
+                SELECT public.generate_stands_for_planning_area(
+                    ST_GeomFromText(%s, %s),  -- planning area geometry WKT + SRID
+                    %s,                       -- stand size label
+                    %s, %s                    -- grid origin in EPSG:5070
+                );
+                """,
+                [
+                    planning_area_geom.wkt,
+                    planning_area_geom.srid or 4269,
+                    stand_size,
+                    -2356881.4306262177,
+                    1242364.3072737672,
+                ],
+            )
+            inserted = cur.fetchone()[0]
+
+        log.info(
+            "generate_stands_for_planning_area inserted %s stands (size=%s) for scenario %s",
+            inserted,
+            stand_size,
+            scenario_id,
+        )
 
         call_forsys(scenario.pk)
 
