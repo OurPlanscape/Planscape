@@ -65,9 +65,10 @@ postgres:
       maxzoom: 20
       bounds: [-180.0, -90.0, 180.0, 90.0]
       id_column: id
-    # Returns vector tiles of stands filtered by scenario_id
+    # Returns vector tiles of stands filtered by planning_area_id.
     # parameters:
-    # - scenario_id: int
+    # - planning_area_id: int
+    # - stand_size: string (optional) — filters by stands_stand.size; omit to return all sizes
     stands_by_planning_area:
       schema: public
       function: martin_stands_by_planning_area

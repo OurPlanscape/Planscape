@@ -531,9 +531,12 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    # stands_by_planning_area expects planning_area_id (required) and optional stand_size
     def test_owner_has_permission__stands_by_planning_area(self):
         self.client.force_authenticate(self.owner)
-        martins_path = f"/tiles/stands_by_planning_area?scenario_id={self.scenario.pk}"
+        martins_path = (
+            f"/tiles/stands_by_planning_area?planning_area_id={self.planning_area.pk}"
+        )
         response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"valid": True})
@@ -541,7 +544,9 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
     def test_user_has_no_permission__stands_by_planning_area(self):
         another_user = UserFactory.create()
         self.client.force_authenticate(another_user)
-        martins_path = f"/tiles/stands_by_planning_area?scenario_id={self.scenario.pk}"
+        martins_path = (
+            f"/tiles/stands_by_planning_area?planning_area_id={self.planning_area.pk}"
+        )
         response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
         self.assertEqual(response.status_code, 403)
 
