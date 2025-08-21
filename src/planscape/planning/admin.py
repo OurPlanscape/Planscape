@@ -25,6 +25,7 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
     list_filter = ["active", "category", "group"]
     ordering = ["name"]
     raw_id_fields = ["created_by"]
+    readonly_fields = ["geometry"]
     inlines = [
         TreatmentGoalUsesDataLayerInline,
     ]
