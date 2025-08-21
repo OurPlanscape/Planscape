@@ -62,7 +62,6 @@ export class ViewScenarioComponent {
     private dataLayersStateService: DataLayersStateService,
     private featureService: FeatureService
   ) {
-    console.log('en view scenario', this.route.snapshot);
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))

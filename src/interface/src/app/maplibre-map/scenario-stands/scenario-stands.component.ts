@@ -16,7 +16,6 @@ import { filter } from 'rxjs/operators';
   standalone: true,
   imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './scenario-stands.component.html',
-  styleUrl: './scenario-stands.component.scss',
 })
 export class ScenarioStandsComponent {
   protected readonly COLORS = BASE_COLORS;
