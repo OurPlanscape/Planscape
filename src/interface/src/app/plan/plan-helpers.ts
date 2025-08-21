@@ -5,7 +5,8 @@ import {
 } from './project-areas/project-areas.component';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 import flatten from '@turf/flatten';
-import { Feature } from 'maplibre-gl';
+import { Feature, MultiPolygon, Polygon } from 'geojson';
+import { GeoJSONStoreFeatures } from 'terra-draw';
 
 export const POLLING_INTERVAL = 3000;
 
@@ -149,21 +150,25 @@ export function hasAnalytics(results: ScenarioResult): boolean {
 
 /* from a mixed featuresArray of polygons and multipolygons, 
   this function converts each multipolygon to a polygon,
-  then returns an array of just polygons
+  then returns a GeoJSONStoreFeatures array of just polygons
 */
-export function flattenMultipolygons(featuresArray: Feature[]) {
-  const polygons: any[] = [];
-  featuresArray.forEach((f: any) => {
+export function flattenMultipolygons(
+  featuresArray: Feature<Polygon | MultiPolygon>[]
+): GeoJSONStoreFeatures[] {
+  const polygons: GeoJSONStoreFeatures[] = [];
+    featuresArray.forEach((f) => {
     if (f.geometry.type === 'Polygon') {
-      polygons.push(f);
+      polygons.push(f as GeoJSONStoreFeatures);
     } else if (f.geometry.type === 'MultiPolygon') {
       const flattened = flatten(f);
-      flattened.features.forEach((flat) => {
-        if ((flat.geometry as any).type === 'Polygon') {
-          polygons.push(flat);
-        }
-      });
+      if (flattened.features) {
+        flattened.features.forEach((p) => {
+          if (p.geometry && p.geometry.type === 'Polygon') {
+            polygons.push(p as GeoJSONStoreFeatures);
+          }
+        });
+      }
     }
-  })
+  });
   return polygons;
 }
