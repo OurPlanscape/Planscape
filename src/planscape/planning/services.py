@@ -620,8 +620,18 @@ def export_scenario_inputs_to_geopackage(
                             )
                             raise InvalidGeometry(f"Invalid WKT: {value}")
                     case _:
-                        f = float(value)
-                        row[key] = truncate_result(f, quantize=".001")
+                        try:
+                            f = float(value)
+                            f = truncate_result(f, quantize=".001")
+                        except ValueError:
+                            logger.warning(
+                                "Value %s for key %s in scenario %s is not a float.",
+                                value,
+                                key,
+                                scenario.pk,
+                            )
+                            f = None
+                        row[key] = f
             scenario_inputs.append(row)
 
     feature = scenario_inputs[0].copy()  # Copy the first feature to modify
