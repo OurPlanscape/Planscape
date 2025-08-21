@@ -1,9 +1,11 @@
-CREATE OR REPLACE FUNCTION martin_stands_by_planning_area(z integer, x integer, y integer, query_params json) 
+CREATE OR REPLACE FUNCTION martin_stands_by_planning_area(z integer, x integer, y integer, query_params json)
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
-  p_stand_size varchar := nullif(query_params->>'stand_size', '');
+  p_stand_size varchar;
 BEGIN
+  p_stand_size := query_params->>'stand_size';
+
   WITH planning_area_geom AS (
     SELECT pa.geometry AS "geometry"
     FROM planning_planningarea pa
@@ -25,7 +27,7 @@ BEGIN
      AND ST_Within(ST_Centroid(ss.geometry), pag.geometry)
     WHERE
       ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269)
-      AND (p_stand_size IS NULL OR ss.size = p_stand_size)
+      AND ss.size = p_stand_size
   ) AS tile
   WHERE geom IS NOT NULL;
 
