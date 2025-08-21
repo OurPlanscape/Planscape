@@ -68,7 +68,7 @@ postgres:
     # Returns vector tiles of stands filtered by planning_area_id.
     # parameters:
     # - planning_area_id: int
-    # - stand_size: string (optional) — filters by stands_stand.size; omit to return all sizes
+    # - stand_size: Optional[string]
     stands_by_planning_area:
       schema: public
       function: martin_stands_by_planning_area
