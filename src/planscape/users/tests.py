@@ -535,7 +535,8 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
     def test_owner_has_permission__stands_by_planning_area(self):
         self.client.force_authenticate(self.owner)
         martins_path = (
-            f"/tiles/stands_by_planning_area?planning_area_id={self.planning_area.pk}"
+            f"/tiles/stands_by_planning_area?"
+            f"planning_area_id={self.planning_area.pk}&stand_size=SMALL"
         )
         response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
         self.assertEqual(response.status_code, 200)
@@ -545,7 +546,8 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
         another_user = UserFactory.create()
         self.client.force_authenticate(another_user)
         martins_path = (
-            f"/tiles/stands_by_planning_area?planning_area_id={self.planning_area.pk}"
+            f"/tiles/stands_by_planning_area?"
+            f"planning_area_id={self.planning_area.pk}&stand_size=SMALL"
         )
         response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
         self.assertEqual(response.status_code, 403)
