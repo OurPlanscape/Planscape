@@ -42,13 +42,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="stand",
             name="grid_key",
-            field=models.TextField(null=True, blank=True),
+            field=models.CharField(max_length=64, null=True, blank=True),
         ),
-        migrations.RunSQL(BACKFILL_SQL),
+        migrations.RunSQL(BACKFILL_SQL, reverse_sql=migrations.RunSQL.noop),
         migrations.RunPython(check_no_dups, reverse_code=migrations.RunPython.noop),
         migrations.AlterField(
             model_name="stand",
             name="grid_key",
-            field=models.TextField(null=False, blank=False),
+            field=models.CharField(max_length=64, null=False, blank=False),
         ),
     ]
