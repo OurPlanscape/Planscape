@@ -1,12 +1,12 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { map, of, skip } from 'rxjs';
+import { map, Observable, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
@@ -26,13 +26,13 @@ import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs';
 import { StepComponent } from '../../../styleguide/steps/step.component';
 import { Step2Component } from '../step2/step2.component';
 import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
+import { ScenarioState } from '../scenario.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -81,11 +81,11 @@ export class ScenarioCreationComponent
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.finished) {
-      /* Most browsers will display their own default dialog to confirm navigation away 
+      /* Most browsers will display their own default dialog to confirm navigation away
         from a window or URL. e.g, "Changes that you made may not be saved"
-        
-        Older browsers will display the message in the string below. 
-        
+
+        Older browsers will display the message in the string below.
+
         All browsers require this string to be non-empty, in order to display anything.
       */
       $event.returnValue =
@@ -96,6 +96,7 @@ export class ScenarioCreationComponent
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
+    private scenarioState: ScenarioState,
     private route: ActivatedRoute,
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
@@ -145,6 +146,7 @@ export class ScenarioCreationComponent
 
   saveStep(data: Partial<ScenarioCreation>) {
     this.config = { ...this.config, ...data };
+    this.scenarioState.setScenarioConfig(this.config);
     return of(true);
   }
 

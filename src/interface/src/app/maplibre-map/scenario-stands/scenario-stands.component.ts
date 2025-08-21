@@ -9,6 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { ScenarioState } from '../../scenario/scenario.state';
 import { map } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-scenario-stands',
@@ -19,20 +20,22 @@ import { map } from 'rxjs';
 })
 export class ScenarioStandsComponent {
   protected readonly COLORS = BASE_COLORS;
-  sourceName = 'stands_by_scenario';
+  sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
 
   scenarioId = this.route.snapshot.data['scenarioId'];
-  tilesUrl =
-    MARTIN_SOURCES.scenarioStands.tilesUrl + `?scenario_id=${this.scenarioId}`;
+  planId = this.route.snapshot.data['planId'];
 
-  tilesUrl$ = this.scenarioState.currentScenarioId$.pipe(
-    map((id) => MARTIN_SOURCES.scenarioStands.tilesUrl + `?scenario_id=${id}`)
+  tilesUrl$ = this.scenarioState.scenarioConfig$.pipe(
+    filter((config) => !!config.stand_size),
+    map(
+      (config) =>
+        MARTIN_SOURCES.scenarioStands.tilesUrl +
+        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
+    )
   );
 
   constructor(
     private route: ActivatedRoute,
     private scenarioState: ScenarioState
-  ) {
-    console.log(this.route.snapshot);
-  }
+  ) {}
 }
