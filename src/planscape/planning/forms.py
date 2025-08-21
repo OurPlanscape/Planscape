@@ -13,6 +13,7 @@ class TreatmentGoalAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["description"].required = False
         self.fields["created_by"].required = False
+        self.fields["geometry"].required = False
 
     class Meta:
         model = TreatmentGoal
