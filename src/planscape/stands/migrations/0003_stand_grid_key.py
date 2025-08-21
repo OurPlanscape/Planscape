@@ -23,6 +23,7 @@ WITH d AS (
 SELECT COUNT(*) FROM d;
 """
 
+
 def check_no_dups(apps, schema_editor):
     with schema_editor.connection.cursor() as cur:
         cur.execute(CHECK_DUPS_SQL)
@@ -32,6 +33,7 @@ def check_no_dups(apps, schema_editor):
                 f"Backfill produced {n} duplicate grid_key groups. "
                 "Resolve before adding the unique index."
             )
+
 
 class Migration(migrations.Migration):
     dependencies = [("stands", "0002_auto_20250725_1720")]
