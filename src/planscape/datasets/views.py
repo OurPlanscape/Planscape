@@ -74,10 +74,16 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             type=serializer.validated_data.get("type"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
+        email = (
+            request.user.email
+            if request.user and hasattr(request.user, "email")
+            else None
+        )
         track_openpanel(
             name="datasets.dataset.browse",
             properties={
                 "dataset_id": dataset.pk,
+                "email": email,
             },
             user_id=request.user.pk,
         )
@@ -150,6 +156,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             properties={
                 "term": term,
                 "type": type,
+                "email": request.user.email if request.user.email else None,
             },
             user_id=request.user.pk,
         )

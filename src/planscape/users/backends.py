@@ -11,5 +11,8 @@ class PlanscapeAuthBackend(AuthenticationBackend):
             track_openpanel(
                 "users.logged_in",
                 user_id=user.pk,
+                properties={
+                    "email": user.email if user.email else None,
+                },
             )
         return user
