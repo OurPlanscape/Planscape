@@ -162,13 +162,17 @@ def async_pre_frosys_process(scenario_id: int) -> None:
     stand_ids = Stand.objects.within_polygon(
         scenario.planning_area.geometry,
         scenario.get_stand_size(),
-    ).with_webmercator().values_list("id", flat=True)
+    ).values_list("id", flat=True)
 
     datalayers = tx_goal.datalayers.all()
     
-    for datalayer in datalayers:
 
-    
+    datalayer_dict = {}
+    for datalayer in datalayers:
+        datalayer_dict[datalayer.id] = {
+            "metric": "TODO",
+            "thresholds": "TODO",
+        }
     # TODO: get list of stands
     # TODO: get datalayers from TreatmentGoal associated with the Scenario
     # TODO: get desired metrics from TreatmentGoal associated with the Scenario
