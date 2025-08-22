@@ -5,7 +5,6 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
-from django.conf import settings
 from django.db import connection
 from gis.core import get_storage_session
 from planning.models import Scenario, ScenarioResultStatus
@@ -46,8 +45,8 @@ def async_forsys_run(scenario_id: int) -> None:
                     planning_area_geom.wkt,
                     planning_area_geom.srid or 4269,
                     stand_size,
-                    settings.HEX_GRID_ORIGIN_X,
-                    settings.HEX_GRID_ORIGIN_Y,
+                    -2356881.4306262177,
+                    1242364.3072737672,
                 ],
             )
             inserted = cur.fetchone()[0]
