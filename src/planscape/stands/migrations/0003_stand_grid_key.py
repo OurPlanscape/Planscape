@@ -2,48 +2,13 @@
 
 from django.db import migrations, models
 
-# Note: We compute grid_key entries in EPSG:5070 to align with hex grid origin & cell size.
-BACKFILL_SQL = r"""
-UPDATE public.stands_stand
-SET grid_key =
-    UPPER(size) || ':' ||
-    ROUND(ST_X(ST_Transform(ST_PointOnSurface(geometry), 5070))::numeric, 3)::text || ':' ||
-    ROUND(ST_Y(ST_Transform(ST_PointOnSurface(geometry), 5070))::numeric, 3)::text
-WHERE grid_key IS NULL;
-"""
-
-CHECK_DUPS_SQL = r"""
-WITH d AS (
-  SELECT grid_key, COUNT(*) c
-  FROM public.stands_stand
-  WHERE grid_key IS NOT NULL
-  GROUP BY grid_key
-  HAVING COUNT(*) > 1
-)
-SELECT COUNT(*) FROM d;
-"""
-
-
-def check_no_dups(apps, schema_editor):
-    with schema_editor.connection.cursor() as cur:
-        cur.execute(CHECK_DUPS_SQL)
-        n = cur.fetchone()[0]
-        if n and n > 0:
-            raise RuntimeError(
-                f"Backfill produced {n} duplicate grid_key groups. "
-                "Resolve before adding the unique index."
-            )
-
 
 class Migration(migrations.Migration):
     dependencies = [("stands", "0002_auto_20250725_1720")]
-
     operations = [
         migrations.AddField(
             model_name="stand",
             name="grid_key",
             field=models.CharField(max_length=64, null=True, blank=True),
         ),
-        migrations.RunSQL(BACKFILL_SQL, reverse_sql=migrations.RunSQL.noop),
-        migrations.RunPython(check_no_dups, reverse_code=migrations.RunPython.noop),
     ]
