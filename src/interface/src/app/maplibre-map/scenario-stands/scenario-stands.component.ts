@@ -25,7 +25,6 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   protected readonly COLORS = BASE_COLORS;
   sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
 
-  scenarioId = this.route.snapshot.data['scenarioId'];
   planId = this.route.snapshot.data['planId'];
 
   tilesUrl$ = this.scenarioState.scenarioConfig$.pipe(
@@ -37,18 +36,8 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     ),
     distinctUntilChanged(),
     tap((s) => {
-      console.log('setting true');
       this.scenarioMapService.setLoading(true);
     })
-    // pairwise(),
-    // map(([prev, current]) => {
-    //   console.log('prev', prev);
-    //   console.log('curr', current);
-    //   if (current != prev) {
-    //     this.scenarioMapService.setLoading(true);
-    //   }
-    //   return current;
-    // })
   );
 
   constructor(
@@ -63,12 +52,12 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.mapLibreMap.off('data', this.onDataListener);
+    this.mapLibreMap.off('sourcedata', this.onDataListener);
   }
 
   private onDataListener = (event: any) => {
     if (
-      event.sourceId === 'stands_by_planning_area' &&
+      event.sourceId === this.sourceName &&
       event.isSourceLoaded &&
       !event.sourceDataType
     ) {

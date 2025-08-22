@@ -39,9 +39,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  visibility: hidden;
   opacity: 0;
   transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
 
   mat-spinner {
     --mdc-circular-progress-active-indicator-color: white;
@@ -52,7 +52,7 @@
 
 .loader.visible {
   opacity: 1;
-  visibility: visible;
+  transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
 
 }
 

@@ -18,6 +18,11 @@ describe('ScenarioStandsComponent', () => {
 
   let scenarioConfig$: BehaviorSubject<any>;
 
+  let mockMapLibreMap = {
+    on: jasmine.createSpy('on'),
+    off: jasmine.createSpy('off'),
+  };
+
   beforeEach(async () => {
     scenarioConfig$ = new BehaviorSubject<any>({}); // no stand_size initially
 
@@ -42,6 +47,7 @@ describe('ScenarioStandsComponent', () => {
 
   function create() {
     const fixture = TestBed.createComponent(ScenarioStandsComponent);
+    fixture.componentInstance.mapLibreMap = mockMapLibreMap as any;
     fixture.detectChanges(); // let template init
     return { fixture, component: fixture.componentInstance };
   }
@@ -49,7 +55,6 @@ describe('ScenarioStandsComponent', () => {
   it('reads planId and scenarioId from route snapshot', () => {
     const { component } = create();
     expect(component.planId).toBe(planId);
-    expect(component.scenarioId).toBe(scenarioId);
   });
 
   it('exposes COLORS and sourceName constants', () => {

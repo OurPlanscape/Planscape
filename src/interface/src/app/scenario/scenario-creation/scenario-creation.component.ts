@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
@@ -53,7 +52,6 @@ enum ScenarioTabs {
     AsyncPipe,
     MatTabsModule,
     ReactiveFormsModule,
-    MatLegacyButtonModule,
     NgIf,
     DataLayersComponent,
     StepsComponent,
