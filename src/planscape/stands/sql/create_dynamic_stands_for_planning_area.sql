@@ -1,12 +1,3 @@
-ALTER TABLE public.stands_stand
-  ADD COLUMN IF NOT EXISTS grid_key text;
-
-CREATE UNIQUE INDEX IF NOT EXISTS stands_stand_grid_key_uidx
-  ON public.stands_stand(grid_key);
-
-CREATE INDEX IF NOT EXISTS stands_stand_gix
-  ON public.stands_stand USING GIST (geometry);
-
 CREATE OR REPLACE FUNCTION public.generate_stands_for_planning_area(
   planning_area geometry,
   size_label text,
@@ -47,8 +38,7 @@ BEGIN
   );
 
   WITH hexes AS (
-    SELECT geom
-    FROM ST_HexagonGrid(side_m, snapped_env) AS g(geom)
+    SELECT geom FROM ST_HexagonGrid(side_m, snapped_env) AS g(geom)
   ),
   inside AS (
     SELECT h.geom
@@ -64,7 +54,10 @@ BEGIN
     FROM inside i
     LEFT JOIN public.stands_stand s0
       ON s0.size = lbl
-     AND ST_Contains(s0.geometry, ST_Transform(ST_PointOnSurface(i.geom), 4269))
+     AND ST_Contains(
+           s0.geometry,
+           ST_Transform(ST_PointOnSurface(i.geom), 4269)
+         )
     WHERE s0.id IS NULL
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
@@ -80,3 +73,4 @@ BEGIN
   RETURN inserted;
 END;
 $$;
+
