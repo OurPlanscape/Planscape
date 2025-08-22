@@ -50,8 +50,11 @@
     <app-data-layer-name></app-data-layer-name>
   </mgl-control>
 
-  <app-scenario-stands
-    *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'"></app-scenario-stands>
+  <ng-container *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'">
+    <app-scenario-stands
+      *ngIf="mapLibreMap"
+      [mapLibreMap]="mapLibreMap"></app-scenario-stands>
+  </ng-container>
 
   <mgl-control position="top-left">
     <app-map-layer-color-legend></app-map-layer-color-legend>
@@ -61,3 +64,10 @@
     <app-scenario-legend></app-scenario-legend>
   </mgl-control>
 </mgl-map>
+
+<div
+  class="loader"
+  [class.visible]="loading$ | async"
+  [attr.aria-hidden]="!(loading$ | async)">
+  <mat-spinner diameter="32"></mat-spinner>
+</div>

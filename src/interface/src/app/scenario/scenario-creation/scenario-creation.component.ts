@@ -1,4 +1,10 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
@@ -63,7 +69,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate
+  implements OnInit, CanComponentDeactivate, OnDestroy
 {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
@@ -170,5 +176,9 @@ export class ScenarioCreationComponent
 
   stepChanged() {
     this.goalOverlayService.close();
+  }
+
+  ngOnDestroy(): void {
+    this.scenarioState.setScenarioConfig({});
   }
 }

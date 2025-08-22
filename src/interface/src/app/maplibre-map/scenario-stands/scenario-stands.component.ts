@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
@@ -8,8 +8,10 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { ScenarioState } from '../../scenario/scenario.state';
-import { map } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { map, tap } from 'rxjs';
+import { distinctUntilChanged, filter } from 'rxjs/operators';
+import { ScenarioMapService } from '../scenario-map.service';
+import { Map as MapLibreMap } from 'maplibre-gl';
 
 @Component({
   selector: 'app-scenario-stands',
@@ -17,7 +19,9 @@ import { filter } from 'rxjs/operators';
   imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './scenario-stands.component.html',
 })
-export class ScenarioStandsComponent {
+export class ScenarioStandsComponent implements OnInit, OnDestroy {
+  @Input() mapLibreMap!: MapLibreMap;
+
   protected readonly COLORS = BASE_COLORS;
   sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
 
@@ -30,11 +34,47 @@ export class ScenarioStandsComponent {
       (config) =>
         MARTIN_SOURCES.scenarioStands.tilesUrl +
         `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
-    )
+    ),
+    distinctUntilChanged(),
+    tap((s) => {
+      console.log('setting true');
+      this.scenarioMapService.setLoading(true);
+    })
+    // pairwise(),
+    // map(([prev, current]) => {
+    //   console.log('prev', prev);
+    //   console.log('curr', current);
+    //   if (current != prev) {
+    //     this.scenarioMapService.setLoading(true);
+    //   }
+    //   return current;
+    // })
   );
 
   constructor(
     private route: ActivatedRoute,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private scenarioMapService: ScenarioMapService,
+    private zone: NgZone
   ) {}
+
+  ngOnInit(): void {
+    this.mapLibreMap.on('sourcedata', this.onDataListener);
+  }
+
+  ngOnDestroy(): void {
+    this.mapLibreMap.off('data', this.onDataListener);
+  }
+
+  private onDataListener = (event: any) => {
+    if (
+      event.sourceId === 'stands_by_planning_area' &&
+      event.isSourceLoaded &&
+      !event.sourceDataType
+    ) {
+      this.zone.run(() => {
+        this.scenarioMapService.setLoading(false);
+      });
+    }
+  };
 }

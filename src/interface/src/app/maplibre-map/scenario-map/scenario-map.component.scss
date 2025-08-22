@@ -8,6 +8,7 @@
   height: 100%;
   width: 100%;
   justify-content: flex-end;
+  position: relative;
 
   ::ng-deep {
     .maplibregl-ctrl-top-left {
@@ -27,6 +28,32 @@
       z-index: 0;
     }
   }
+}
+
+.loader {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: rgba($color-black, 0.4);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  mat-spinner {
+    --mdc-circular-progress-active-indicator-color: white;
+  }
+
+
+}
+
+.loader.visible {
+  opacity: 1;
+  visibility: visible;
+
 }
 
 mgl-map {
