@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from django.conf import settings
 from django.db import connection
 from gis.core import get_storage_session
 from planning.models import Scenario, ScenarioResultStatus
@@ -36,9 +37,9 @@ def async_forsys_run(scenario_id: int) -> None:
             cur.execute(
                 """
                 SELECT public.generate_stands_for_planning_area(
-                    ST_GeomFromText(%s, %s),
-                    %s,
-                    %s, %s
+                    ST_GeomFromText(%s, %s),  -- planning area geometry WKT + SRID
+                    %s,                       -- stand size label
+                    %s, %s                    -- grid origin in EPSG:5070
                 );
                 """,
                 [
