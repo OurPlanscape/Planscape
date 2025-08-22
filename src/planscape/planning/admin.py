@@ -25,7 +25,6 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
     list_filter = ["active", "category", "group"]
     ordering = ["name"]
     raw_id_fields = ["created_by"]
-    readonly_fields = ["geometry"]
     inlines = [
         TreatmentGoalUsesDataLayerInline,
     ]
@@ -33,12 +32,12 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
     def get_changeform_initial_data(self, request) -> Dict[str, Any]:
         return {"created_by": request.user}
 
-    def save_related(self, request, form, formsets, change):
-        super().save_related(request, form, formsets, change)
-        treatment_goal = form.instance
-        geometry = treatment_goal.get_coverage()
-        treatment_goal.geometry = geometry
-        treatment_goal.save()
+    def save_form(self, request, form, change):
+        instace = form.instance
+        db_instance = TreatmentGoal.objects.get(pk=instace.pk)
+        instace.geometry = db_instance.geometry
+        form.instance = instace
+        return super().save_form(request, form, change)
 
 
 class TreatmentGoalUsesDataLayerAdmin(admin.ModelAdmin):
