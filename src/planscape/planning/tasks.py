@@ -172,6 +172,7 @@ def async_pre_frosys_process(scenario_id: int) -> None:
         datalayer_dict[datalayer.id] = {
             "metric": "TODO",
             "thresholds": "TODO",
+            "name": datalayer.name,
         }
     # TODO: get list of stands
     # TODO: get datalayers from TreatmentGoal associated with the Scenario
