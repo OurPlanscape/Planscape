@@ -33,6 +33,7 @@ class CalculateStandZonalStatsTestCase(TestCase):
         self.datalayer = DataLayerFactory.create(
             url="impacts/tests/test_data/test_raster.tif",
             type=DataLayerType.RASTER,
+            info={"nodata": -999},
         )
 
     def test_calculate_stand_zonal_stats_returns_stand_metrics(self):

@@ -1,8 +1,11 @@
 import logging
 
 import rasterio
+from django.conf import settings
+from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from django.db import connection
 from gis.core import get_storage_session
 from planning.models import Scenario, ScenarioResultStatus
 from stands.models import Stand
@@ -26,6 +29,34 @@ def async_forsys_run(scenario_id: int) -> None:
         log.info(f"Running scenario {scenario_id}")
         scenario.result_status = ScenarioResultStatus.RUNNING
         scenario.save()
+        stand_size = scenario.get_stand_size()
+        planning_area_geom = scenario.planning_area.geometry
+
+        with connection.cursor() as cur:
+            cur.execute(
+                """
+                SELECT public.generate_stands_for_planning_area(
+                    ST_GeomFromText(%s, %s),
+                    %s,
+                    %s, %s
+                );
+                """,
+                [
+                    planning_area_geom.wkt,
+                    planning_area_geom.srid or 4269,
+                    stand_size,
+                    settings.HEX_GRID_ORIGIN_X,
+                    settings.HEX_GRID_ORIGIN_Y,
+                ],
+            )
+            inserted = cur.fetchone()[0]
+
+        log.info(
+            "generate_stands_for_planning_area inserted %s stands (size=%s) for scenario %s",
+            inserted,
+            stand_size,
+            scenario_id,
+        )
 
         call_forsys(scenario.pk)
 
@@ -75,7 +106,15 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
                 type=DataLayerType.RASTER,
                 metadata__contains=query,
             )
-            calculate_stand_zonal_stats(stands, datalayer)
+            if feature_enabled("PAGINATED_STAND_METRICS"):
+                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
+                for page in paginator.page_range:
+                    paginated_stands = paginator.page(page)
+                    log.info(f"Processing page {page} of stands")
+
+                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
+            else:
+                calculate_stand_zonal_stats(stands, datalayer)
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with name {datalayer_name} does not exist.")
         return
@@ -94,7 +133,15 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
             datalayer = DataLayer.objects.get(
                 pk=datalayer_id,
             )
-            calculate_stand_zonal_stats(stands, datalayer)
+            if feature_enabled("PAGINATED_STAND_METRICS"):
+                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
+                for page in paginator.page_range:
+                    paginated_stands = paginator.page(page)
+                    log.info(f"Processing page {page} of stands")
+
+                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
+            else:
+                calculate_stand_zonal_stats(stands, datalayer)
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return

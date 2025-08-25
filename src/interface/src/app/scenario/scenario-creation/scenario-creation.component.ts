@@ -1,4 +1,4 @@
-import { Component, HostListener, ViewChild } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { NgIf, AsyncPipe } from '@angular/common';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
@@ -10,14 +10,14 @@ import { map, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
-  AsyncValidatorFn,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { ScenarioService } from '@services';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { ScenarioCreation } from '@types';
@@ -32,6 +32,7 @@ import { Step2Component } from '../step2/step2.component';
 import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
+import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
 
 enum ScenarioTabs {
   CONFIG,
@@ -61,7 +62,9 @@ enum ScenarioTabs {
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
-export class ScenarioCreationComponent implements CanComponentDeactivate {
+export class ScenarioCreationComponent
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -69,13 +72,10 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
   planId = this.route.snapshot.data['planId'];
   plan$ = this.planState.currentPlan$;
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
+  finished = false;
 
   form = new FormGroup({
-    scenarioName: new FormControl(
-      '',
-      [Validators.required],
-      [this.scenarioNameMustBeUnique(this.scenarioService, this.planId)]
-    ),
+    scenarioName: new FormControl('', [Validators.required]),
   });
 
   @HostListener('window:beforeunload', ['$event'])
@@ -99,7 +99,8 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
     private route: ActivatedRoute,
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -107,6 +108,18 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
         if (path.length > 0) {
           this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
         }
+      });
+  }
+
+  ngOnInit(): void {
+    // Adding scenario name validator
+    this.scenarioService
+      .getScenariosForPlan(this.planId)
+      .subscribe((scenarioNames) => {
+        const names = scenarioNames.map((s) => s.name);
+        this.form
+          .get('scenarioName')
+          ?.addValidators(this.scenarioNameMustBeUnique(names));
       });
   }
 
@@ -118,24 +131,15 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
     return dialogRef.afterClosed();
   }
 
-  // Async validator
-  scenarioNameMustBeUnique(
-    scenarioService: ScenarioService,
-    planId: number
-  ): AsyncValidatorFn {
+  scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {
     return (control: AbstractControl) => {
       const name = control.value;
 
-      if (!name) {
-        return of(null);
+      if (!name || names.length === 0) {
+        return null;
       }
 
-      return scenarioService.getScenariosForPlan(planId).pipe(
-        map((scenarios) => {
-          const names = scenarios.map((s) => s.name);
-          return nameMustBeNew(control, names);
-        })
-      );
+      return nameMustBeNew(control, names);
     };
   }
 
@@ -144,13 +148,22 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
     return of(true);
   }
 
-  // dummy flag to test/debug. Remove once we implement running/saving the scenario
-  finished = false;
-
   onFinish() {
-    // TODO: Onfinish convert the config to scenarioPayload using the following line and send to backend:
-    // const body = getScenarioCreationPayloadScenarioCreation({...this.config, name: this.form.get(name).value, planning_area: this.planId})
-    this.finished = true;
+    const payload = getScenarioCreationPayloadScenarioCreation({
+      ...this.config,
+      name: this.form.getRawValue().scenarioName || '',
+      planning_area: this.planId,
+    });
+
+    this.scenarioService.createScenarioFromSteps(payload).subscribe({
+      next: (result) => {
+        this.finished = true;
+        this.router.navigate([result.id], { relativeTo: this.route });
+      },
+      error: () => {
+        // TODO: Do something if there is an error i.e: name already exist
+      },
+    });
   }
 
   stepChanged() {

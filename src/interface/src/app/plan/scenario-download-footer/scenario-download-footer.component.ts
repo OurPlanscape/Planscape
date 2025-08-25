@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '@styleguide';
 import { ScenarioService } from '@services';
@@ -7,17 +7,30 @@ import { FileSaverService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { getSafeFileName } from '../../shared/files';
 import { SNACK_ERROR_CONFIG } from '@shared';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
+import { FeaturesModule } from 'src/app/features/features.module';
+import { ScenarioConfigOverlayComponent } from 'src/app/scenario/scenario-config-overlay/scenario-config-overlay.component';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-scenario-download-footer',
   standalone: true,
-  imports: [NgIf, MatProgressSpinnerModule, ButtonComponent],
+  imports: [
+    NgIf,
+    AsyncPipe,
+    MatProgressSpinnerModule,
+    ButtonComponent,
+    FeaturesModule,
+    MatMenuModule,
+    ScenarioConfigOverlayComponent,
+  ],
   templateUrl: './scenario-download-footer.component.html',
   styleUrl: './scenario-download-footer.component.scss',
 })
 export class ScenarioDownloadFooterComponent {
   constructor(
     private scenarioService: ScenarioService,
+    private scenarioState: ScenarioState,
     private fileServerService: FileSaverService,
     private snackbar: MatSnackBar
   ) {}
@@ -26,6 +39,7 @@ export class ScenarioDownloadFooterComponent {
   @Input() scenarioName!: string;
   @Input() geoPackageURL!: string | null;
   downloadingScenario = false;
+  displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
 
   handleDownload() {
     this.downloadingScenario = true;
@@ -51,5 +65,9 @@ export class ScenarioDownloadFooterComponent {
         },
       });
     }
+  }
+
+  setDisplayOverlay(display: boolean) {
+    this.scenarioState.setDisplayOverlay(display);
   }
 }

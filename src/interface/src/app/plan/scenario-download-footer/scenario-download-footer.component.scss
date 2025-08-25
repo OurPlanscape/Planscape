@@ -1,5 +1,5 @@
 @import 'colors';
-@import "mixins";
+@import 'mixins';
 
 :host {
   background-color: $color-white;
@@ -17,6 +17,16 @@
   z-index: 500;
 }
 
-.new-treatment {
+.footer-button {
   margin: 0 16px;
+}
+
+.configuration-button {
+  margin-right: auto;
+}
+
+.download-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
