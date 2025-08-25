@@ -22,6 +22,7 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
+from datasets.models import DataLayer
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
@@ -36,6 +37,8 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalUsesDataLayer,
+    TreatmentGoalUsageType,
 )
 from planning.tasks import (
     async_calculate_stand_metrics_v2,
@@ -945,3 +948,18 @@ def get_available_stands(
             "unavailable_area": 0,
         },
     }
+
+
+def get_datalayer_thresholds(datalayer: DataLayer, tx_goal: TreatmentGoal) -> Any:
+    try:
+        tgud = TreatmentGoalUsesDataLayer.objects.get(
+            treatment_goal=tx_goal,
+            datalayer=datalayer,
+            usage_typ=TreatmentGoalUsageType.THRESHOLD,
+        )
+        return tgud.threshold
+    except TreatmentGoalUsesDataLayer.DoesNotExist:
+        logger.warning(
+            f"Thresholds for datalayer {datalayer.name} and treatment goal {tx_goal.name} not configured."
+        )
+        return None

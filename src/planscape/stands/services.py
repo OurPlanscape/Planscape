@@ -356,3 +356,12 @@ def calculate_stand_zonal_stats(
         stand_id__in=stand_ids,
         datalayer=datalayer,
     )
+
+
+def get_datalayer_metric(datalayer: DataLayer) -> str:
+    if not datalayer.metadata:
+        return "avg"
+    metric = datalayer.metadata.get("forsys", {}).get("metric", "avg")
+    if metric not in MODEL_AGGREGATION_MAP:
+        return "avg"
+    return metric

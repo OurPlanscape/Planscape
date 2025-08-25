@@ -1,16 +1,22 @@
 import logging
 
 import rasterio
+from django.conf import settings
+from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from django.db import connection
 from django.conf import settings
 from django.core.paginator import Paginator
 from gis.core import get_storage_session
+from planning.models import Scenario, ScenarioResultStatus
+from planning.services import get_datalayer_thresholds
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats3,
     calculate_stand_zonal_stats,
     create_stands_for_geometry,
+    get_datalayer_metric,
 )
 from utils.cli_utils import call_forsys
 
@@ -153,32 +159,56 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
 @app.task(max_retries=3, retry_backoff=True)
 def async_pre_frosys_process(scenario_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
-    
+
     tx_goal = scenario.treatment_goal
     if not tx_goal:
-        log.warning(f"Scenario {scenario_id} does not have an associated TreatmentGoal.")
+        log.warning(
+            f"Scenario {scenario_id} does not have an associated TreatmentGoal."
+        )
         return
-    
+
     stand_ids = Stand.objects.within_polygon(
         scenario.planning_area.geometry,
         scenario.get_stand_size(),
     ).values_list("id", flat=True)
 
-    datalayers = tx_goal.datalayers.all()
-    
-
-    datalayer_dict = {}
-    for datalayer in datalayers:
-        datalayer_dict[datalayer.id] = {
-            "metric": "TODO",
-            "thresholds": "TODO",
+    datalayers = {
+        datalayer.id: {
+            "metric": get_datalayer_metric(datalayer),
+            "thresholds": get_datalayer_thresholds(datalayer, tx_goal),
             "name": datalayer.name,
         }
-    # TODO: get list of stands
-    # TODO: get datalayers from TreatmentGoal associated with the Scenario
-    # TODO: get desired metrics from TreatmentGoal associated with the Scenario
-    # TODO: get thresholds from TreatmentGoal associated with the Scenario
-    # TODO: get other varialbles (min_area_project, max_area_project, etc) 
+        for datalayer in tx_goal.datalayers.all()
+    }
+
+    min_area_project = tx_goal.min_area_project
+    max_area_project = tx_goal.max_area_project
+    number_of_projects = tx_goal.number_of_projects
+    sdw = tx_goal.spatial_distribution_weight
+    epw = tx_goal.edge_proximity_weight
+    exclusion_limit = tx_goal.exclusion_limit
+    sample_fraction = tx_goal.sample_fraction
+    seed = tx_goal.seed
+    sdw = tx_goal.spatial_distribution_weight
+
+    forsys_input = {
+        "stand_ids": list(stand_ids),
+        "datalayers": datalayers,
+        "variables": {
+            "min_area_project": min_area_project,
+            "max_area_project": max_area_project,
+            "number_of_projects": number_of_projects,
+            "spatial_distribution_weight": sdw,
+            "edge_proximity_weight": epw,
+            "exclusion_limit": exclusion_limit,
+            "sample_fraction": sample_fraction,
+            "seed": seed,
+            "std": sdw,
+        },
+    }
+
+    scenario.forsys_input = forsys_input  # type: ignore
+    scenario.save(update_fields=["forsys_input", "updated_at"])
 
 
 @app.task()
