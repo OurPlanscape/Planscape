@@ -11,7 +11,7 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { map, Observable, of, skip } from 'rxjs';
+import { map, Observable, of, skip, firstValueFrom } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
@@ -38,6 +38,7 @@ import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
 import { ScenarioState } from '../scenario.state';
+import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -118,14 +119,7 @@ export class ScenarioCreationComponent
 
   ngOnInit(): void {
     // Adding scenario name validator
-    this.scenarioService
-      .getScenariosForPlan(this.planId)
-      .subscribe((scenarioNames) => {
-        const names = scenarioNames.map((s) => s.name);
-        this.form
-          .get('scenarioName')
-          ?.addValidators(this.scenarioNameMustBeUnique(names));
-      });
+    this.refreshScenarioNameValidator();
   }
 
   canDeactivate(): Observable<boolean> | boolean {
@@ -134,6 +128,39 @@ export class ScenarioCreationComponent
     }
     const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
     return dialogRef.afterClosed();
+  }
+
+  saveStep(data: Partial<ScenarioCreation>) {
+    this.config = { ...this.config, ...data };
+    this.scenarioState.setScenarioConfig(this.config);
+    return of(true);
+  }
+
+  async onFinish() {
+    const payload = getScenarioCreationPayloadScenarioCreation({
+      ...this.config,
+      name: this.form.getRawValue().scenarioName || '',
+      planning_area: this.planId,
+    });
+
+    // Firing scenario name validation before finish
+    const validated = await this.refreshScenarioNameValidator();
+
+    if (validated && this.form.valid) {
+      this.scenarioService.createScenarioFromSteps(payload).subscribe({
+        next: (result) => {
+          this.finished = true;
+          this.router.navigate([result.id], { relativeTo: this.route });
+        },
+        error: () => {
+          this.dialog.open(SavingErrorModalComponent);
+        },
+      });
+    }
+  }
+
+  stepChanged() {
+    this.goalOverlayService.close();
   }
 
   scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {
@@ -148,32 +175,27 @@ export class ScenarioCreationComponent
     };
   }
 
-  saveStep(data: Partial<ScenarioCreation>) {
-    this.config = { ...this.config, ...data };
-    this.scenarioState.setScenarioConfig(this.config);
-    return of(true);
-  }
+  // Adds the name validator and return true or returns false in case there is an error getting scenarios
+  async refreshScenarioNameValidator(): Promise<boolean> {
+    try {
+      const scenarios = await firstValueFrom(
+        this.scenarioService.getScenariosForPlan(this.planId)
+      );
 
-  onFinish() {
-    const payload = getScenarioCreationPayloadScenarioCreation({
-      ...this.config,
-      name: this.form.getRawValue().scenarioName || '',
-      planning_area: this.planId,
-    });
+      const names = scenarios.map((s) => s.name);
+      const ctrl = this.form.get('scenarioName')!;
 
-    this.scenarioService.createScenarioFromSteps(payload).subscribe({
-      next: (result) => {
-        this.finished = true;
-        this.router.navigate([result.id], { relativeTo: this.route });
-      },
-      error: () => {
-        // TODO: Do something if there is an error i.e: name already exist
-      },
-    });
-  }
+      ctrl.setValidators([
+        Validators.required,
+        this.scenarioNameMustBeUnique(names),
+      ]);
 
-  stepChanged() {
-    this.goalOverlayService.close();
+      ctrl.updateValueAndValidity({ emitEvent: false });
+      return true;
+    } catch {
+      this.dialog.open(SavingErrorModalComponent);
+      return false;
+    }
   }
 
   ngOnDestroy(): void {
