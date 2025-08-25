@@ -21,6 +21,7 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
+from datasets.models import DataLayer
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
@@ -35,8 +36,14 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalUsesDataLayer,
+    TreatmentGoalUsageType,
 )
-from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
+from planning.tasks import (
+    async_calculate_stand_metrics_v2,
+    async_pre_forsys_process,
+    async_forsys_run,
+)
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -161,6 +168,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
         for d in datalayers
     ]
+    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
 
     track_openpanel(
         name="planning.scenario.created",
@@ -819,3 +827,29 @@ def planning_area_covers(
         )
         return True
     return False
+
+
+def get_datalayer_thresholds(datalayer: DataLayer, tx_goal: TreatmentGoal) -> Any:
+    try:
+        tgud = TreatmentGoalUsesDataLayer.objects.get(
+            treatment_goal=tx_goal,
+            datalayer=datalayer,
+            usage_typ=TreatmentGoalUsageType.THRESHOLD,
+        )
+        return tgud.threshold
+    except TreatmentGoalUsesDataLayer.DoesNotExist:
+        logger.warning(
+            f"Thresholds for datalayer {datalayer.name} and treatment goal {tx_goal.name} not configured."
+        )
+        return None
+
+
+def get_min_project_area(scenario: Scenario) -> float:
+    stand_size = scenario.get_stand_size()
+    match stand_size:
+        case StandSizeChoices.SMALL:
+            return settings.MIN_AREA_PROJECT_SMALL
+        case StandSizeChoices.MEDIUM:
+            return settings.MIN_AREA_PROJECT_MEDIUM
+        case StandSizeChoices.LARGE:
+            return settings.MIN_AREA_PROJECT_LARGE
