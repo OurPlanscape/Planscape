@@ -1,0 +1,18 @@
+<sg-modal
+  title="Planscape System Error"
+  [width]="'small'"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [centerFooter]="false"
+  [padBody]="true"
+  [showClose]="false"
+  primaryButtonText="Submit Feedback"
+  [hasSecondaryButton]="true"
+  secondaryButtonText="Close"
+  (clickedPrimary)="submitFeedback()"
+  (clickedSecondary)="closeModal()">
+  <div modalBodyContent class="padded">
+    There is a system error, and Planscape cannot download this GeoPackage.
+    Please report this issue in our feedback form.
+  </div>
+</sg-modal>
