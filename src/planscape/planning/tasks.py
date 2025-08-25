@@ -2,6 +2,7 @@ import logging
 
 import rasterio
 from django.conf import settings
+from django.db import transaction
 from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
@@ -10,7 +11,11 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from gis.core import get_storage_session
 from planning.models import Scenario, ScenarioResultStatus
-from planning.services import get_datalayer_thresholds
+from planning.services import (
+    get_datalayer_thresholds,
+    get_min_project_area,
+    get_max_treatable_area,
+)
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats3,
@@ -157,7 +162,7 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_pre_frosys_process(scenario_id: int) -> None:
+def async_pre_forsys_process(scenario_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
 
     tx_goal = scenario.treatment_goal
@@ -181,15 +186,16 @@ def async_pre_frosys_process(scenario_id: int) -> None:
         for datalayer in tx_goal.datalayers.all()
     }
 
-    min_area_project = tx_goal.min_area_project
-    max_area_project = tx_goal.max_area_project
-    number_of_projects = tx_goal.number_of_projects
-    sdw = tx_goal.spatial_distribution_weight
-    epw = tx_goal.edge_proximity_weight
-    exclusion_limit = tx_goal.exclusion_limit
-    sample_fraction = tx_goal.sample_fraction
-    seed = tx_goal.seed
-    sdw = tx_goal.spatial_distribution_weight
+    min_area_project = get_min_project_area(scenario)
+    max_area_project = get_max_treatable_area(scenario.configuration)
+    number_of_projects = scenario.configuration.get(
+        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+    )
+    sdw = settings.FORSYS_SDW
+    epw = settings.FORSYS_EPW
+    exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
+    sample_fraction = settings.FORSYS_SAMPLE_FRACTION
+    seed = scenario.configuration.get("seed")
 
     forsys_input = {
         "stand_ids": list(stand_ids),
@@ -203,12 +209,13 @@ def async_pre_frosys_process(scenario_id: int) -> None:
             "exclusion_limit": exclusion_limit,
             "sample_fraction": sample_fraction,
             "seed": seed,
-            "std": sdw,
         },
     }
 
-    scenario.forsys_input = forsys_input  # type: ignore
-    scenario.save(update_fields=["forsys_input", "updated_at"])
+    with transaction.atomic():
+        scenario = Scenario.objects.select_for_update().get(id=scenario_id)
+        scenario.forsys_input = forsys_input  # type: ignore
+        scenario.save(update_fields=["forsys_input", "updated_at"])
 
 
 @app.task()
