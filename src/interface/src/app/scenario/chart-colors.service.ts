@@ -53,7 +53,6 @@ export class ChartColorsService {
     throw new Error('No available colors left to assign.');
   }
 
-
   public getAssignedColors() {
     return Object.fromEntries(this.selectedColors);
   }

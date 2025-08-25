@@ -19,9 +19,8 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   constructor(private colorService: ChartColorsService) {}
 
   ngOnInit() {
+    this.assignedColors = this.colorService.getAssignedColors();
 
-    this.assignedColors = this.colorService.getAssignedColors(); 
-    
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)
     );
