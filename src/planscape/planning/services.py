@@ -39,7 +39,11 @@ from planning.models import (
     TreatmentGoalUsesDataLayer,
     TreatmentGoalUsageType,
 )
-from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
+from planning.tasks import (
+    async_calculate_stand_metrics_v2,
+    async_pre_forsys_process,
+    async_forsys_run,
+)
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -164,6 +168,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
         for d in datalayers
     ]
+    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
 
     track_openpanel(
         name="planning.scenario.created",
@@ -837,3 +842,14 @@ def get_datalayer_thresholds(datalayer: DataLayer, tx_goal: TreatmentGoal) -> An
             f"Thresholds for datalayer {datalayer.name} and treatment goal {tx_goal.name} not configured."
         )
         return None
+
+
+def get_min_project_area(scenario: Scenario) -> float:
+    stand_size = scenario.get_stand_size()
+    match stand_size:
+        case StandSizeChoices.SMALL:
+            return settings.MIN_AREA_PROJECT_SMALL
+        case StandSizeChoices.MEDIUM:
+            return settings.MIN_AREA_PROJECT_MEDIUM
+        case StandSizeChoices.LARGE:
+            return settings.MIN_AREA_PROJECT_LARGE
