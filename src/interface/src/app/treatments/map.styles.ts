@@ -17,6 +17,7 @@ export const BASE_COLORS = {
   yellow: '#FFD54F',
   almost_white: '#F6F6F6',
   white_light_blue: '#E9F1FF',
+  dark_magenta: '#A60958',
 } as const;
 
 export const SELECTED_STANDS_PAINT = {

@@ -1,0 +1,25 @@
+<ng-container *ngIf="tilesUrl$ | async as tilesUrl">
+  <mgl-vector-source [id]="sourceName" [tiles]="[tilesUrl]"></mgl-vector-source>
+  <mgl-layer
+    id="scenario-stands-polygon"
+    type="line"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [paint]="{
+      'line-color': COLORS.dark_magenta,
+      'line-width': 2,
+    }">
+  </mgl-layer>
+  <mgl-layer
+    id="scenario-stands-fill"
+    type="fill"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [paint]="{
+      'fill-color': COLORS.dark_magenta,
+      'fill-opacity': 0.1,
+    }"
+    before="scenario-stands-polygon">
+  </mgl-layer>
+</ng-container>
+<div class="loader"></div>
