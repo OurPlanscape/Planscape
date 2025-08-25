@@ -1,4 +1,3 @@
-import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 
 const AVAILABLE_COLORS: string[] = [
@@ -37,10 +36,7 @@ const AVAILABLE_COLORS: string[] = [
   providedIn: 'root', // TODO: probably just this module...
 })
 export class ChartColorsService {
-  private selectedColors: Map<string, string> = new Map();
-  private assignedColors$: BehaviorSubject<Map<string, string>> =
-    new BehaviorSubject(this.selectedColors);
-  public colorAssignments$ = this.assignedColors$.asObservable();
+  public selectedColors: Map<string, string> = new Map();
 
   getOrAddColor(name: string): string {
     if (this.selectedColors.has(name)) {
@@ -50,7 +46,6 @@ export class ChartColorsService {
     for (let color of AVAILABLE_COLORS) {
       if (![...this.selectedColors.values()].includes(color)) {
         this.selectedColors.set(name, color);
-        this.assignedColors$.next(this.selectedColors);
         return color;
       }
     }
@@ -58,8 +53,12 @@ export class ChartColorsService {
     throw new Error('No available colors left to assign.');
   }
 
+
+  public getAssignedColors() {
+    return Object.fromEntries(this.selectedColors);
+  }
+
   resetColors() {
     this.selectedColors.clear();
-    this.assignedColors$.next(this.selectedColors);
   }
 }

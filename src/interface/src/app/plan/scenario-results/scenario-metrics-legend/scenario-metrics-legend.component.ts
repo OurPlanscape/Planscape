@@ -14,18 +14,14 @@ import { ChartColorsService } from '../../../scenario/chart-colors.service';
 export class ScenarioMetricsLegendComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
   metrics: string[] = [];
-  assignedColors: { [key: string]: string } = {};
+  assignedColors: { [name: string]: string } = {};
 
   constructor(private colorService: ChartColorsService) {}
 
   ngOnInit() {
-    this.colorService.colorAssignments$.subscribe((colors) => {
-      this.assignedColors = {};
-      colors.forEach((color, name) => {
-        this.assignedColors[name] = color;
-      });
-    });
 
+    this.assignedColors = this.colorService.getAssignedColors(); 
+    
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)
     );
