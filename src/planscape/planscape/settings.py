@@ -363,6 +363,9 @@ if SENTRY_DSN is not None:
 
 # Scenario planning settings
 DEFAULT_MAX_PROJECT_COUNT = config("DEFAULT_MAX_PROJECT_COUNT", 10, cast=int)
+MIN_AREA_PROJECT_SMALL = config("MIN_AREA_PROJECT_SMALL", 10, cast=int)
+MIN_AREA_PROJECT_MEDIUM = config("MIN_AREA_PROJECT_MEDIUM", 100, cast=int)
+MIN_AREA_PROJECT_LARGE = config("MIN_AREA_PROJECT_LARGE", 500, cast=int)
 
 # Forsys settings
 FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
