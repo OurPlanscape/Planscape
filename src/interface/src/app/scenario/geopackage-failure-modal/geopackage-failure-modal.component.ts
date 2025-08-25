@@ -7,7 +7,7 @@ import { MatDialogRef } from '@angular/material/dialog';
   standalone: true,
   imports: [ModalComponent],
   templateUrl: './geopackage-failure-modal.component.html',
-  styleUrl: './geopackage-failure-modal.component.scss'
+  styleUrl: './geopackage-failure-modal.component.scss',
 })
 export class GeopackageFailureModalComponent {
   constructor() {}

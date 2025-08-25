@@ -47,15 +47,15 @@ export class ScenarioDownloadFooterComponent {
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
 
   buttonLabels: { [key: string]: string } = {
-    'FAILED': "GeoPackage Failed",
-    'SUCCEEDED': "Download GeoPackage",
-    'PENDING': "Generating GeoPackage"
+    FAILED: 'GeoPackage Failed',
+    SUCCEEDED: 'Download GeoPackage',
+    PENDING: 'Generating GeoPackage',
   };
 
   handleButton() {
     if (this.geoPackageStatus === 'SUCCEEDED') {
-      this.handleDownload()
-    }else {
+      this.handleDownload();
+    } else {
       this.displayFailureModal();
     }
   }
@@ -89,7 +89,6 @@ export class ScenarioDownloadFooterComponent {
   displayFailureModal() {
     const dialogRef = this.dialog.open(GeopackageFailureModalComponent);
     return dialogRef.afterClosed();
-
   }
 
   setDisplayOverlay(display: boolean) {

@@ -10,16 +10,15 @@ describe('GeopackageFailureModalComponent', () => {
     await TestBed.configureTestingModule({
       imports: [GeopackageFailureModalComponent],
       providers: [
-              {
-                provide: MatDialogRef,
-                useValue: {
-                  close: () => {},
-                },
-              },
-            ],
-    })
-    .compileComponents();
-    
+        {
+          provide: MatDialogRef,
+          useValue: {
+            close: () => {},
+          },
+        },
+      ],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(GeopackageFailureModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
