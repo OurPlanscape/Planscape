@@ -43,7 +43,8 @@
       *ngIf="projectAreaCount$ | async as projectAreasCount"
       [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
-      [mapLibreMap]="mapLibreMap">
+      [mapLibreMap]="mapLibreMap"
+      [labelField]="'rank'">
     </app-map-project-areas>
   </ng-container>
   <mgl-control position="bottom-left">
