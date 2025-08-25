@@ -1,6 +1,6 @@
-import { CHART_COLORS } from '@shared';
 import { FeatureCollection } from '@types';
 import { ChartConfiguration, ChartDataset } from 'chart.js';
+import { ChartColorsService } from './scenario/chart-colors.service';
 
 // Base font configuration
 const baseFont = {
@@ -163,6 +163,7 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
 }
 
 export function getChartDatasetsFromFeatures(
+  colorService: ChartColorsService,
   features: FeatureCollection[]
 ): CustomChartDataset[] {
   const result: CustomChartDataset[] = [];
@@ -172,7 +173,7 @@ export function getChartDatasetsFromFeatures(
   Object.keys(groupedAttainment).forEach((key, _) => {
     result.push({
       data: groupedAttainment[key],
-      backgroundColor: CHART_COLORS[key],
+      backgroundColor: colorService.getOrAddColor(key),
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });
