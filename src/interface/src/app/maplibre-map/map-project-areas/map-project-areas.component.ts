@@ -52,6 +52,8 @@ export class MapProjectAreasComponent implements OnInit {
    */
   @Input() projectAreasCount: number | null = null;
 
+  @Input() labelField: 'name' | 'rank' = 'name';
+
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
   @Output() selectProjectArea = new EventEmitter<string>();
