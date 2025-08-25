@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import { LoadedResult, Resource, Scenario } from '@types';
+import { LoadedResult, Resource, Scenario, ScenarioCreation } from '@types';
 import {
   BehaviorSubject,
   catchError,
@@ -27,6 +27,9 @@ export class ScenarioState {
 
   // BehaviorSubject that we are going to use to manually reload the scenario
   private _reloadScenario$ = new BehaviorSubject<void>(undefined);
+
+  private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioCreation>>({});
+  public scenarioConfig$ = this._scenarioConfig$.asObservable();
 
   // Observable that we are going to use to get the excluded_areas
   excludedAreas$ = this.scenarioService.getExcludedAreas().pipe(shareReplay(1));
@@ -104,5 +107,9 @@ export class ScenarioState {
 
   setDisplayOverlay(display: boolean) {
     this._displayConfigOverlay$.next(display);
+  }
+
+  setScenarioConfig(config: Partial<ScenarioCreation>) {
+    this._scenarioConfig$.next(config);
   }
 }
