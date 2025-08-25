@@ -38,8 +38,24 @@ export class ScenarioDownloadFooterComponent {
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
   @Input() geoPackageURL!: string | null;
+  @Input() geoPackageStatus!: string;
+
   downloadingScenario = false;
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
+
+  buttonLabels: { [key: string]: string } = {
+    'FAILED': "GeoPackage Failed",
+    'SUCCEEDED': "Download GeoPackage",
+    'PENDING': "Generating GeoPackage"
+  };
+
+  handleButton() {
+    if (this.geoPackageStatus === 'SUCCEEDED') {
+      this.handleDownload()
+    }else {
+      this.displayFailureModal();
+    }
+  }
 
   handleDownload() {
     this.downloadingScenario = true;
@@ -65,6 +81,10 @@ export class ScenarioDownloadFooterComponent {
         },
       });
     }
+  }
+
+  displayFailureModal() {
+
   }
 
   setDisplayOverlay(display: boolean) {

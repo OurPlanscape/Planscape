@@ -264,11 +264,7 @@ export class CreateScenariosComponent implements OnInit {
         if (scenario.geopackage_status) {
           this.geoPackageStatus = scenario.geopackage_status ?? null;
           if (this.geoPackageStatus === 'FAILED') {
-            this.matSnackBar.open(
-              `Error: GeoPackage generation failed.`,
-              'Dismiss',
-              SNACK_ERROR_CONFIG
-            );
+            
           }
         }
 
