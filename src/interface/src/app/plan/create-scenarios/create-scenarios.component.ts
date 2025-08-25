@@ -263,9 +263,6 @@ export class CreateScenariosComponent implements OnInit {
 
         if (scenario.geopackage_status) {
           this.geoPackageStatus = scenario.geopackage_status ?? null;
-          if (this.geoPackageStatus === 'FAILED') {
-            
-          }
         }
 
         if (scenario.geopackage_url) {
