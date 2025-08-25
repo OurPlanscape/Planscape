@@ -68,6 +68,8 @@
 <div
   class="loader"
   [class.visible]="loading$ | async"
-  [attr.aria-hidden]="!(loading$ | async)">
+  [attr.aria-hidden]="
+    (loading$ | async) === false || (loading$ | async) === null
+  ">
   <mat-spinner diameter="32"></mat-spinner>
 </div>
