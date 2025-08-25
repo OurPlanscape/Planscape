@@ -156,7 +156,7 @@ export function flattenMultipolygons(
   featuresArray: Feature<Polygon | MultiPolygon>[]
 ): GeoJSONStoreFeatures[] {
   const polygons: GeoJSONStoreFeatures[] = [];
-    featuresArray.forEach((f) => {
+  featuresArray.forEach((f) => {
     if (f.geometry.type === 'Polygon') {
       polygons.push(f as GeoJSONStoreFeatures);
     } else if (f.geometry.type === 'MultiPolygon') {

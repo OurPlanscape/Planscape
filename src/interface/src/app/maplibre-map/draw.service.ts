@@ -257,7 +257,6 @@ export class DrawService {
     return this._totalAcres$.value;
   }
 
-
   addGeoJSONFeature(shape: any) {
     const featuresArray = shape.features.map((feature: any) => ({
       type: 'Feature',
