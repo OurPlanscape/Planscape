@@ -162,6 +162,12 @@ def get_treatment_goal_from_configuration(
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
+    from planning.tasks import (
+        async_calculate_stand_metrics_v2,
+        async_pre_forsys_process,
+        async_forsys_run,
+    )
+
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
     treatment_goal = kwargs.pop("treatment_goal", None)
@@ -957,7 +963,7 @@ def get_datalayer_thresholds(datalayer: DataLayer, tx_goal: TreatmentGoal) -> An
         tgud = TreatmentGoalUsesDataLayer.objects.get(
             treatment_goal=tx_goal,
             datalayer=datalayer,
-            usage_typ=TreatmentGoalUsageType.THRESHOLD,
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
         )
         return tgud.threshold
     except TreatmentGoalUsesDataLayer.DoesNotExist:
