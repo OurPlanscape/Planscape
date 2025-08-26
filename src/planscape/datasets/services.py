@@ -160,6 +160,7 @@ def create_dataset(
             "organization_id": organization.pk,
             "organization_name": organization.name,
             "visibility": visibility,
+            "email": created_by.email if created_by else None,
         },
         user_id=created_by.pk,
     )
@@ -196,6 +197,7 @@ def create_style(
             "organization_id": organization.pk,
             "organization_name": organization.name,
             "type": type,
+            "email": created_by.email if created_by else None,
         },
         user_id=created_by.pk,
     )
@@ -244,6 +246,7 @@ def assign_style(
             "datalayer_id": datalayer.pk,
             "datalayer_name": datalayer.name,
             "dataset_id": datalayer.dataset.pk,
+            "email": created_by.email if created_by else None,
         },
         user_id=created_by.pk,
     )
@@ -287,6 +290,7 @@ def change_datalayer_status(
             "organization_name": organization.name,
             "dataset_id": datalayer.dataset.pk,
             "dataset_name": datalayer.dataset.name,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
@@ -397,6 +401,7 @@ def create_datalayer(
             "organization_name": organization.name,
             "dataset_id": dataset.pk,
             "dataset_name": dataset.name,
+            "email": created_by.email if created_by else None,
         },
         user_id=created_by.pk,
     )

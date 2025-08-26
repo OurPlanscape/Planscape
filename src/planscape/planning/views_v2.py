@@ -6,12 +6,6 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import mixins, pagination, permissions, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
-from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
-
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
@@ -28,8 +22,10 @@ from planning.models import (
 )
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
+    AvailableStandsSerializer,
     CreatePlanningAreaSerializer,
     CreateScenarioV2Serializer,
+    GetAvailableStandsSerializer,
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
@@ -48,8 +44,15 @@ from planning.services import (
     create_scenario_from_upload,
     delete_planning_area,
     delete_scenario,
+    get_available_stands,
     toggle_scenario_status,
 )
+from rest_framework import mixins, pagination, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
+from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 from planscape.serializers import BaseErrorMessageSerializer
 
 User = get_user_model()
@@ -133,6 +136,18 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_201_CREATED,
             headers=headers,
+        )
+
+    @action(methods=["POST"], detail=True)
+    def available_stands(self, request, pk=None):
+        planning_area = self.get_object()
+        serializer = GetAvailableStandsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = get_available_stands(planning_area, **serializer.validated_data)
+        out_serializer = AvailableStandsSerializer(instance=result)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_200_OK,
         )
 
     def perform_destroy(self, instance):

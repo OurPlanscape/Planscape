@@ -8,8 +8,6 @@ from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 import fiona
 import rasterio
 from actstream import action as actstream_action
-from fiona.crs import from_epsg
-from gis.core import get_storage_session
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -18,6 +16,8 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
+from fiona.crs import from_epsg
+from gis.core import get_storage_session
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -34,7 +34,6 @@ from impacts.models import (
     get_prescription_type,
 )
 from planning.models import PlanningArea, ProjectArea, Scenario
-from rasterio.session import AWSSession
 from stands.models import (
     STAND_AREA_ACRES,
     Stand,
@@ -68,6 +67,9 @@ def create_treatment_plan(
     track_openpanel(
         name="impacts.treatment_plan.create",
         user_id=created_by.pk,
+        properties={
+            "email": created_by.email if created_by else None,
+        },
     )
     actstream_action.send(created_by, verb="created", action_object=treatment_plan)
     return treatment_plan
@@ -157,6 +159,9 @@ def clone_treatment_plan(
     track_openpanel(
         name="impacts.treatment_plan.clone",
         user_id=user.pk,
+        properties={
+            "email": user.email if user else None,
+        },
     )
     actstream_action.send(
         user,
