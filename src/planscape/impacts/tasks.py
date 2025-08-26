@@ -294,4 +294,3 @@ def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
                 "user": user.pk,
             },
         )
-        )
