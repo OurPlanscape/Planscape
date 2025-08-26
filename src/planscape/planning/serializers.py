@@ -409,6 +409,18 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
+    one_off = serializers.BooleanField(read_only=True, required=False)
+    one_off_config = serializers.JSONField(
+        read_only=True,
+        required=False,
+        help_text="TreatmentGoal-like bindings used for a one-off run.",
+    )
+    coverage = serializers.JSONField(
+        read_only=True,
+        required=False,
+        help_text="Derived GeoJSON coverage from selected one-off datalayers.",
+    )
+
 
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
@@ -639,7 +651,7 @@ class OneOffConfigV2Serializer(serializers.Serializer):
         many=True,
         required=True,
         allow_empty=False,
-        help_text="TG-like bindings: datalayer id + usage_type + optional threshold",
+        help_text="treatmentgoal-like bindings: datalayer id + usage_type + optional threshold",
     )
 
 
@@ -682,8 +694,6 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
         ids = [dl.id for dl in layer_objs]
         qs = DataLayer.objects.filter(id__in=ids)
         coverage = qs.geometric_intersection(geometry_field="outline")  # type: ignore
-        if coverage and coverage.srid != settings.DEFAULT_CRS:
-            coverage = coverage.transform(settings.DEFAULT_CRS, clone=True)
         return coverage
 
     def validate(self, attrs):
@@ -724,12 +734,10 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
         return super().validate(attrs)
 
     def update(self, instance: Scenario, validated_data):
-        # Pop one-off fields so base updater won't write raw nested objects
         ooc = validated_data.pop("one_off_config", None)
         one_off_flag = validated_data.pop("one_off", None)
         derived_cov = validated_data.pop("_derived_coverage", None)
 
-        # merge standard v2 fields (stand_size/max_budget/etc., excluded_areas_ids)
         super().update(instance, validated_data)
 
         cfg = instance.configuration or {}
