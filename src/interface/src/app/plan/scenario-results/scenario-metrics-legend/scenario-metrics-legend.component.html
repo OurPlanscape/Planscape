@@ -1,9 +1,15 @@
-<div class="title">Legend:</div>
-<div class="legend-box">
-  <div class="legend-line" *ngFor="let metric of metrics">
-    <div class="legend-name">{{ metric }}</div>
-    <div
-      class="legend-color"
-      [style.backgroundColor]="chartColors[metric]"></div>
-  </div>
+<div class="title">View Metrics</div>
+<div class="legend-box" *ngFor="let metric of metrics">
+  <mat-checkbox
+    [value]="metric"
+    [checked]="isSelected(metric)"
+    class="chart-legend-selection"
+    (change)="onMetricChange($event, metric)">
+    <div class="legend-line">
+      <div class="legend-name">{{ metric }}</div>
+      <div
+        class="legend-color"
+        [style.backgroundColor]="chartColors[metric]"></div>
+    </div>
+  </mat-checkbox>
 </div>

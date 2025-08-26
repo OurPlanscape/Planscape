@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ScenarioResult } from '@types';
 import { ChartData, ChartOptions } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
+import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import {
   CustomChartDataset,
   getChartBorderDash,
@@ -16,12 +17,14 @@ import { ChartComponent } from '@styleguide';
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [NgChartsModule, ChartComponent],
+  imports: [NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
+
+  public selectedMetrics = new Set<string>();
 
   public barChartType: 'bar' = 'bar';
 
