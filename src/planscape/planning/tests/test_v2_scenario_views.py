@@ -661,6 +661,34 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(data.get("geopackage_url"))
 
+    def test_detail_includes_one_off_fields_when_present(self):
+        # seed config with the new read-only fields
+        self.scenario.configuration = {
+            **self.scenario.configuration,
+            "one_off": True,
+            "one_off_config": {
+                "priorities": ["p1"],
+                "stand_thresholds": ["t1"],
+                "datalayers": [{"id": 123, "usage_type": "PRIORITY"}],
+            },
+            "coverage": {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+        }
+        self.scenario.save(update_fields=["configuration"])
+
+        self.client.force_authenticate(self.owner_user)
+        resp = self.client.get(
+            reverse("api:planning:scenarios-detail", kwargs={"pk": self.scenario.pk}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        cfg = resp.json().get("configuration", {})
+        self.assertTrue(cfg.get("one_off"))
+        self.assertIsInstance(cfg.get("one_off_config"), dict)
+        self.assertEqual(cfg.get("coverage", {}).get("type"), "Polygon")
+
 
 class PatchScenarioConfigurationTest(APITransactionTestCase):
     def setUp(self):
