@@ -12,10 +12,13 @@ from planning.tasks import (
     async_forsys_run,
     trigger_geopackage_generation,
 )
-from planning.tests.factories import ScenarioFactory
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
-
+from planning.tests.factories import (
+    ScenarioFactory,
+    TreatmentGoalFactory,
+    PlanningAreaFactory,
+)
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 
@@ -109,6 +112,42 @@ class AsyncCalculateStandMetricsTest(TestCase):
         async_calculate_stand_metrics(self.scenario.pk, "foo_bar")
 
         self.assertEqual(StandMetric.objects.count(), 0)
+
+
+class AsyncPreForsysProcessTest(TestCase):
+    def setUp(self):
+        configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "max_treatment_area_ratio": 0.3,
+            "max_project_count": 10,
+            "seed": 42,
+        }
+        self.planning_area = PlanningAreaFactory.create(with_stands=True)
+        self.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
+        self.scenario = ScenarioFactory.create(
+            treatment_goal=self.treatment_goal, configuration=configuration
+        )
+
+    def test_async_pre_forsys_process(self):
+        async_pre_forsys_process(self.scenario.pk)
+
+        self.scenario.refresh_from_db()
+        self.assertIsNotNone(self.scenario.forsys_input)
+
+        self.assertEqual(type(self.scenario.forsys_input["stand_ids"]), list)
+        self.assertGreater(len(self.scenario.forsys_input["stand_ids"]), 0)
+
+        self.assertEqual(type(self.scenario.forsys_input["datalayers"]), dict)
+        datalayers = self.scenario.forsys_input["datalayers"]
+        for dl_id, dl_info in datalayers.items():
+            self.assertIn("metric", dl_info)
+            self.assertIn("thresholds", dl_info)
+            self.assertIn("name", dl_info)
+
+        self.assertEqual(type(self.scenario.forsys_input["variables"]), dict)
+        variables = self.scenario.forsys_input["variables"]
+        self.assertEqual(variables["max_area_project"], 0.3)
+        self.assertEqual(variables["min_area_project"], 500)
 
 
 @override_settings(FEATURE_FLAGS="")
