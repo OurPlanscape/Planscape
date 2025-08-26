@@ -4,6 +4,9 @@ import {
   ProjectTotalReport,
 } from './project-areas/project-areas.component';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
+import flatten from '@turf/flatten';
+import { Feature, MultiPolygon, Polygon } from 'geojson';
+import { GeoJSONStoreFeatures } from 'terra-draw';
 
 export const POLLING_INTERVAL = 3000;
 
@@ -143,4 +146,29 @@ export function hasAnalytics(results: ScenarioResult): boolean {
   return results.result.features.some(
     (feature) => feature.properties['attainment']
   );
+}
+
+/* from a mixed featuresArray of polygons and multipolygons, 
+  this function converts each multipolygon to a polygon,
+  then returns a GeoJSONStoreFeatures array of just polygons
+*/
+export function flattenMultipolygons(
+  featuresArray: Feature<Polygon | MultiPolygon>[]
+): GeoJSONStoreFeatures[] {
+  const polygons: GeoJSONStoreFeatures[] = [];
+  featuresArray.forEach((f) => {
+    if (f.geometry.type === 'Polygon') {
+      polygons.push(f as GeoJSONStoreFeatures);
+    } else if (f.geometry.type === 'MultiPolygon') {
+      const flattened = flatten(f);
+      if (flattened.features) {
+        flattened.features.forEach((p) => {
+          if (p.geometry && p.geometry.type === 'Polygon') {
+            polygons.push(p as GeoJSONStoreFeatures);
+          }
+        });
+      }
+    }
+  });
+  return polygons;
 }

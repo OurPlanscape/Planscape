@@ -18,6 +18,7 @@ import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
 import { FeatureService } from '../features/feature.service';
+import { flattenMultipolygons } from '../plan/plan-helpers';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -268,7 +269,8 @@ export class DrawService {
         mode: 'polygon',
       },
     }));
-    this._terraDraw?.addFeatures(featuresArray);
+    const flatFeatures = flattenMultipolygons(featuresArray);
+    this._terraDraw?.addFeatures(flatFeatures);
     this.updateTotalAcreage();
     this._terraDraw?.setMode('select'); // should be in select mode to add
   }
