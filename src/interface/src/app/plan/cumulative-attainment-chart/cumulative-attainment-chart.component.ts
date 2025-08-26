@@ -11,11 +11,12 @@ import {
 } from '../../chart-helper';
 import { CHART_COLORS } from '@shared';
 import { ChartComponent } from '@styleguide';
+import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
   standalone: true,
-  imports: [NgChartsModule, ChartComponent],
+  imports: [NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
   templateUrl: './cumulative-attainment-chart.component.html',
   styleUrl: './cumulative-attainment-chart.component.scss',
 })
