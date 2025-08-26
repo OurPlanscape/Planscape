@@ -25,7 +25,7 @@ from planning.serializers import (
     AvailableStandsSerializer,
     CreatePlanningAreaSerializer,
     CreateScenarioV2Serializer,
-    GetAvailableStandSerializer,
+    GetAvailableStandsSerializer,
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
@@ -141,7 +141,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     @action(methods=["POST"], detail=True)
     def available_stands(self, request, pk=None):
         scenario = self.get_object()
-        serializer = GetAvailableStandSerializer(request.data)
+        serializer = GetAvailableStandsSerializer(request.data)
         serializer.is_valid(raise_exception=True)
         result = get_available_stands(scenario, **serializer.validated_data)
         out_serializer = AvailableStandsSerializer(instance=result)

@@ -935,7 +935,7 @@ class ConstraintSerializer(serializers.Serializer):
     )
 
 
-class GetAvailableStandSerializer(serializers.Serializer):
+class GetAvailableStandsSerializer(serializers.Serializer):
     stand_size = serializers.ChoiceField(
         choices=StandSizeChoices.choices,
         default=StandSizeChoices.LARGE,
