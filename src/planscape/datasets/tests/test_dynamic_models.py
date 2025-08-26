@@ -1,4 +1,9 @@
 # tests/test_dynamic_runtime_model.py
+from django.apps import apps
+from django.contrib.gis.db import models as gism
+from django.db import models as djm
+from django.test import SimpleTestCase
+
 from datasets.dynamic_models import (
     field_from_fiona,
     geometry_field_from_fiona,
@@ -6,10 +11,6 @@ from datasets.dynamic_models import (
     qualify_table_name,
     srid_from_crs,
 )
-from django.apps import apps
-from django.contrib.gis.db import models as gism
-from django.db import models as djm
-from django.test import SimpleTestCase
 
 
 class _DataLayerStub:
@@ -127,7 +128,7 @@ class ModelFromFionalTests(SimpleTestCase):
         self.assertEqual(Model._meta.db_table, '"client_a"."private_lands"')
 
         # Geometry
-        geom = Model._meta.get_field("geom")
+        geom = Model._meta.get_field("geometry")
         self.assertIsInstance(geom, gism.MultiPolygonField)
         self.assertEqual(geom.srid, 4269)
 
@@ -175,7 +176,7 @@ class ModelFromFionalTests(SimpleTestCase):
         Model = model_from_fional(dl, app_label=self.app_label, pg_schema="client_b")
         self.addCleanup_unregister(self.app_label, "LayerAAsModel")
 
-        geom = Model._meta.get_field("geom")
+        geom = Model._meta.get_field("geometry")
         self.assertIsInstance(geom, gism.PointField)
         self.assertEqual(geom.srid, 3857)  # from layer_a
 

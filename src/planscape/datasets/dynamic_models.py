@@ -3,9 +3,10 @@ from __future__ import annotations
 import re
 from typing import Dict, Optional, Tuple
 
-from datasets.models import DataLayer
 from django.apps import apps
 from django.contrib.gis.db import models
+
+from datasets.models import DataLayer
 
 
 def srid_from_crs(crs: Optional[str], default: int = 4326) -> int:
@@ -37,7 +38,6 @@ def geometry_field_from_fiona(geom_type: str) -> type[gis.GeometryField]:
 
 
 TYPE_MAP = {
-    # using TextField here because we don't know field size.
     "int": models.IntegerField,
     "integer": models.IntegerField,
     "int32": models.IntegerField,
@@ -83,7 +83,7 @@ def qualify_table_name(schema: str, table: str) -> str:
 def model_from_fional(
     datalayer: DataLayer,
     *,
-    app_label: str = "dynamic_models",
+    app_label: str = "datastore",
     pg_schema: str,
     model_name: Optional[str] = None,
     table_name: Optional[str] = None,
@@ -150,7 +150,7 @@ def model_from_fional(
                     attrs[field_name] = field_cls(null=True, blank=True)
 
     geom_cls = geometry_field_from_fiona(geom_type)
-    attrs["geom"] = geom_cls(srid=srid, null=False)
+    attrs["geometry"] = geom_cls(srid=srid, null=False)
 
     attrs["id"] = models.BigAutoField(primary_key=True)
 
