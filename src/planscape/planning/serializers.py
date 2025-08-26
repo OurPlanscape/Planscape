@@ -936,6 +936,11 @@ class ConstraintSerializer(serializers.Serializer):
 
 
 class GetAvailableStandSerializer(serializers.Serializer):
+    stand_size = serializers.ChoiceField(
+        choices=StandSizeChoices.choices,
+        default=StandSizeChoices.LARGE,
+        required=False,
+    )
     includes = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(
             queryset=DataLayer.objects.all(),
