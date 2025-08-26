@@ -61,4 +61,16 @@ describe('Step4Component', () => {
     tick();
     expect(control?.valid).toBeFalse();
   }));
+
+  it('should show an error if the form is touched but fields are empty', fakeAsync(() => {
+    component.planningAreaAcres = 1000;
+    const control = component.form.get('max_area');
+    control?.setValue(900);
+    fixture.detectChanges();
+    tick();
+    control?.setValue(null);
+    fixture.detectChanges();
+    tick();
+    expect(component.form.valid).toBeFalse();
+  }));
 });

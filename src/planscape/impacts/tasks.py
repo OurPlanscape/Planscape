@@ -4,10 +4,15 @@ from urllib.parse import urljoin
 
 from celery import chain, chord
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
+from rasterio.errors import RasterioIOError
+
+User = get_user_model()
+from django.contrib.auth import get_user_model
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -21,11 +26,11 @@ from impacts.services import (
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
 )
-from rasterio.errors import RasterioIOError
 
 from planscape.celery import app
 from planscape.openpanel import track_openpanel
 
+User = get_user_model()
 log = logging.getLogger(__name__)
 
 
@@ -138,6 +143,7 @@ def async_set_status(
     this is used as a callback in celery canvas.
     """
     with transaction.atomic():
+        user = User.objects.get(pk=user_id)
         try:
             treatment_plan = TreatmentPlan.objects.select_for_update().get(
                 pk=treatment_plan_pk
@@ -149,7 +155,11 @@ def async_set_status(
             log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
             track_openpanel(
                 name="impacts.treatment_plan.status_changed",
-                properties={"treatment_plan": treatment_plan_pk, "status": status},
+                properties={
+                    "treatment_plan": treatment_plan_pk,
+                    "status": status,
+                    "email": user.email if user else None,
+                },
                 user_id=user_id,
             )
         except TreatmentPlan.DoesNotExist:
@@ -174,7 +184,7 @@ def async_calculate_persist_impacts_treatment_plan(
         start=True,
         user_id=user_id,
     )
-
+    user = User.objects.filter(pk=user_id).first()
     treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
 
     calculation_matrix = get_calculation_matrix(
@@ -223,6 +233,7 @@ def async_calculate_persist_impacts_treatment_plan(
         name="impacts.treatment_plan.run",
         properties={
             "treatment_plan": treatment_plan_pk,
+            "email": user.email if user else None,
         },
         user_id=user_id,
     )

@@ -28,6 +28,9 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { FrontendConstants } from '../../map/map.constants';
 import { ScenarioLegendComponent } from '../../scenario/scenario-legend/scenario-legend.component';
 import { FeaturesModule } from '../../features/features.module';
+import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ScenarioMapService } from '../scenario-map.service';
 
 @Component({
   selector: 'app-scenario-map',
@@ -47,6 +50,8 @@ import { FeaturesModule } from '../../features/features.module';
     DataLayerNameComponent,
     ScenarioLegendComponent,
     FeaturesModule,
+    ScenarioStandsComponent,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -57,7 +62,8 @@ export class ScenarioMapComponent {
     private authService: AuthService,
     private planState: PlanState,
     private scenarioState: ScenarioState,
-    private mapConfigService: MapConfigService
+    private mapConfigService: MapConfigService,
+    private scenarioMapService: ScenarioMapService
   ) {
     this.mapConfigService.initialize();
   }
@@ -106,6 +112,8 @@ export class ScenarioMapComponent {
       );
     })
   );
+
+  loading$ = this.scenarioMapService.loading$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

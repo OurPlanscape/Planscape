@@ -1,0 +1,16 @@
+// Overriding modal styles
+.error-modal ::ng-deep {
+  .header {
+    height: auto;
+    padding: 24px 24px 0 24px;
+  }
+
+  .modal-body.padded {
+    padding: 16px 24px;
+  }
+
+  .footer {
+    height: auto;
+    padding: 16px 24px;
+  }
+}
