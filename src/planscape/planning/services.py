@@ -830,7 +830,7 @@ def planning_area_covers(
     return False
 
 
-def get_available_stands(scenario: Scenario, **kwargs):
+def get_available_stands(planning_area: PlanningArea, **kwargs):
     return {
         "unavailable": {
             "by_inclusions": [],
