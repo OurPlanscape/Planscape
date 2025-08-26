@@ -19,6 +19,7 @@ from planning.models import (
     TreatmentGoalGroup,
     User,
     UserPrefs,
+    TreatmentGoalUsageType,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
 from rest_framework import serializers
@@ -617,6 +618,148 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "configuration",
             "treatment_goal",
         )
+
+
+class OneOffDataLayerUsageV2Serializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+    usage_type = serializers.ChoiceField(choices=TreatmentGoalUsageType.choices)
+    threshold = serializers.CharField(
+        max_length=256, required=False, allow_blank=True, allow_null=True
+    )
+
+
+class OneOffConfigV2Serializer(serializers.Serializer):
+    priorities = serializers.ListField(
+        child=serializers.CharField(max_length=256), required=False, allow_empty=True
+    )
+    stand_thresholds = serializers.ListField(
+        child=serializers.CharField(max_length=512), required=False, allow_empty=True
+    )
+    datalayers = OneOffDataLayerUsageV2Serializer(
+        many=True,
+        required=True,
+        allow_empty=False,
+        help_text="TG-like bindings: datalayer id + usage_type + optional threshold",
+    )
+
+
+class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
+    one_off = serializers.BooleanField(required=False)
+    one_off_config = OneOffConfigV2Serializer(required=False)
+
+    def _has_canonical_raster(self, layer_objs, name: str) -> bool:
+        for dl in layer_objs:
+            if (
+                getattr(dl, "_usage_type", None)
+                == TreatmentGoalUsageType.EXCLUSION_ZONE
+            ):
+                continue
+            if dl.type != DataLayerType.RASTER:
+                continue
+            md = getattr(dl, "metadata", {}) or {}
+            if (
+                isinstance(md, dict)
+                and md.get("modules", {}).get("forsys", {}).get("name") == name
+            ):
+                return True
+        return False
+
+    def _validate_canonical_rasters(self, layer_objs):
+        missing = []
+        for required in ("slope", "distance_from_roads"):
+            if not self._has_canonical_raster(layer_objs, required):
+                missing.append(required)
+        if missing:
+            raise serializers.ValidationError(
+                {
+                    "one_off_config": [
+                        f"Missing required rasters in datalayers: {', '.join(missing)}."
+                    ]
+                }
+            )
+
+    def _derive_coverage(self, layer_objs):
+        ids = [dl.id for dl in layer_objs]
+        qs = DataLayer.objects.filter(id__in=ids)
+        coverage = qs.geometric_intersection(geometry_field="outline")  # type: ignore
+        if coverage and coverage.srid != settings.DEFAULT_CRS:
+            coverage = coverage.transform(settings.DEFAULT_CRS, clone=True)
+        return coverage
+
+    def validate(self, attrs):
+        if attrs.get("one_off") is True:
+            existing_cfg = (
+                getattr(self.instance, "configuration", {})
+                if getattr(self, "instance", None)
+                else {}
+            )
+            has_existing = bool(existing_cfg.get("one_off_config"))
+            if not attrs.get("one_off_config") and not has_existing:
+                raise serializers.ValidationError(
+                    {"one_off_config": ["Required when one_off is true."]}
+                )
+
+        ooc = attrs.get("one_off_config")
+        if ooc:
+            layer_objs = []
+            for item in ooc["datalayers"]:
+                dl = item["id"]
+                dl._usage_type = item["usage_type"]
+                dl._threshold = item.get("threshold")
+                layer_objs.append(dl)
+
+            self._validate_canonical_rasters(layer_objs)
+
+            coverage = self._derive_coverage(layer_objs)
+            if not coverage or coverage.empty:
+                raise serializers.ValidationError(
+                    {
+                        "one_off_config": [
+                            "Unable to derive coverage from selected datalayers."
+                        ]
+                    }
+                )
+            attrs["_derived_coverage"] = coverage
+
+        return super().validate(attrs)
+
+    def update(self, instance: Scenario, validated_data):
+        # Pop one-off fields so base updater won't write raw nested objects
+        ooc = validated_data.pop("one_off_config", None)
+        one_off_flag = validated_data.pop("one_off", None)
+        derived_cov = validated_data.pop("_derived_coverage", None)
+
+        # merge standard v2 fields (stand_size/max_budget/etc., excluded_areas_ids)
+        super().update(instance, validated_data)
+
+        cfg = instance.configuration or {}
+
+        if one_off_flag is not None:
+            cfg["one_off"] = bool(one_off_flag)
+
+        if ooc:
+            datalayers_compact = []
+            for item in ooc["datalayers"]:
+                _id = item["id"].pk if hasattr(item["id"], "pk") else int(item["id"])
+                row = {"id": _id, "usage_type": item["usage_type"]}
+                if item.get("threshold") not in (None, ""):
+                    row["threshold"] = item["threshold"]
+                datalayers_compact.append(row)
+
+            cfg["one_off_config"] = {
+                **(cfg.get("one_off_config") or {}),
+                **{
+                    k: v for k in ooc.items() if k in ("priorities", "stand_thresholds")
+                },
+                "datalayers": datalayers_compact,
+            }
+
+            if derived_cov:
+                cfg["coverage"] = json.loads(derived_cov.geojson)
+
+        instance.configuration = cfg
+        instance.save(update_fields=["configuration"])
+        return instance
 
 
 class CreateScenarioSerializer(serializers.ModelSerializer):

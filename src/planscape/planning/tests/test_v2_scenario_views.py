@@ -6,6 +6,8 @@ from datasets.tests.factories import DataLayerFactory
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
+from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 
 from planning.models import Scenario, ScenarioResult, ScenarioVersion
 from planning.tests.factories import (
@@ -723,3 +725,142 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_one_off_requires_config_when_true_and_no_existing(self):
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, {"one_off": True}, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("one_off_config", resp.json())
+
+    def test_patch_one_off_true_allowed_when_existing_config_present(self):
+        # Pre-seed existing one_off_config so `one_off` can be toggled without submitting config again
+        self.scenario.configuration = {
+            **self.scenario.configuration,
+            "one_off_config": {"datalayers": [{"id": 123, "usage_type": "PRIORITY"}]},
+        }
+        self.scenario.save(update_fields=["configuration"])
+
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, {"one_off": True}, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.scenario.refresh_from_db()
+        self.assertTrue(self.scenario.configuration.get("one_off"))
+
+    def test_patch_one_off_config_missing_required_rasters(self):
+        # Provide a non-canonical layer (e.g., vector) so validation fails before coverage
+        non_canonical = DataLayerFactory(
+            type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
+
+        payload = {
+            "one_off": True,
+            "one_off_config": {
+                "datalayers": [{"id": non_canonical.pk, "usage_type": "PRIORITY"}]
+            },
+        }
+
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        body = resp.json()
+        self.assertIn("one_off_config", body)
+        # Error message should mention missing canonical rasters
+        self.assertTrue(
+            any("Missing required rasters" in msg for msg in body["one_off_config"])
+        )
+
+    @mock.patch(
+        "planning.serializers.PatchScenarioConfigurationV2Serializer._derive_coverage",
+        return_value=GEOSGeometry(
+            "GEOMETRYCOLLECTION EMPTY", srid=settings.DEFAULT_CRS
+        ),
+    )
+    def test_patch_one_off_config_coverage_empty_is_rejected(self, _mock_cov):
+        slope = DataLayerFactory(
+            type=DataLayerType.RASTER,
+            geometry_type=GeometryType.RASTER,
+            metadata={"modules": {"forsys": {"name": "slope"}}},
+        )
+        roads = DataLayerFactory(
+            type=DataLayerType.RASTER,
+            geometry_type=GeometryType.RASTER,
+            metadata={"modules": {"forsys": {"name": "distance_from_roads"}}},
+        )
+
+        payload = {
+            "one_off": True,
+            "one_off_config": {
+                "datalayers": [
+                    {"id": slope.pk, "usage_type": "PRIORITY"},
+                    {"id": roads.pk, "usage_type": "PRIORITY"},
+                ]
+            },
+        }
+
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        body = resp.json()
+        self.assertIn("one_off_config", body)
+        self.assertTrue(
+            any("Unable to derive coverage" in msg for msg in body["one_off_config"])
+        )
+
+    @mock.patch(
+        "planning.serializers.PatchScenarioConfigurationV2Serializer._derive_coverage",
+        return_value=Polygon(
+            ((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=settings.DEFAULT_CRS
+        ),
+    )
+    def test_patch_one_off_config_success_persists_compact_and_coverage(
+        self, _mock_cov
+    ):
+        slope = DataLayerFactory(
+            type=DataLayerType.RASTER,
+            geometry_type=GeometryType.RASTER,
+            metadata={"modules": {"forsys": {"name": "slope"}}},
+        )
+        roads = DataLayerFactory(
+            type=DataLayerType.RASTER,
+            geometry_type=GeometryType.RASTER,
+            metadata={"modules": {"forsys": {"name": "distance_from_roads"}}},
+        )
+
+        payload = {
+            "one_off": True,
+            "one_off_config": {
+                "priorities": ["p1", "p2"],
+                "stand_thresholds": ["t1"],
+                "datalayers": [
+                    {"id": slope.pk, "usage_type": "PRIORITY", "threshold": ">=3"},
+                    {"id": roads.pk, "usage_type": "SECONDARY_METRIC"},
+                ],
+            },
+        }
+
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # Reload from DB to inspect full saved configuration (the response serializer hides one_off fields)
+        self.scenario.refresh_from_db()
+        cfg = self.scenario.configuration
+
+        self.assertTrue(cfg.get("one_off"))
+
+        # coverage persisted as GeoJSON dict
+        cov = cfg.get("coverage")
+        self.assertIsInstance(cov, dict)
+        self.assertEqual(cov.get("type"), "Polygon")
+
+        # datalayers saved in compact form (id + usage_type [+ threshold if provided])
+        ooc = cfg.get("one_off_config", {})
+        saved = sorted(ooc.get("datalayers", []), key=lambda d: d["id"])
+        self.assertEqual(len(saved), 2)
+        self.assertEqual(saved[0]["id"], min(slope.pk, roads.pk))
+        self.assertIn("usage_type", saved[0])
+        # threshold only present when passed
+        thresholds = [d for d in saved if d.get("threshold")]
+        self.assertEqual(len(thresholds), 1)
+        self.assertEqual(thresholds[0]["threshold"], ">=3")
