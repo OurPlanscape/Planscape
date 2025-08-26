@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy } from '@angular/core';
 import { ScenarioState } from '../scenario.state';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
@@ -20,6 +20,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MatIconModule,
     ButtonComponent,
     MatLegacyProgressSpinnerModule,
+    DecimalPipe,
   ],
   templateUrl: './scenario-config-overlay.component.html',
   styleUrl: './scenario-config-overlay.component.scss',
