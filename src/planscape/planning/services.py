@@ -828,3 +828,18 @@ def planning_area_covers(
         )
         return True
     return False
+
+
+def get_available_stands(scenario: Scenario, **kwargs):
+    return {
+        "unavailable": {
+            "by_inclusions": [],
+            "by_exclusions": [],
+            "by_thresholds": [],
+        },
+        "summary": {
+            "total_area": 0,
+            "available_area": 0,
+            "unavailable_area": 0,
+        },
+    }
