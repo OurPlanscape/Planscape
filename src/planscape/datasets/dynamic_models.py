@@ -169,5 +169,3 @@ def model_from_fional(
     ModelClass = type(model_name, (models.Model,), attrs)
     apps.register_model(app_label, ModelClass)
     return ModelClass
-    apps.register_model(app_label, ModelClass)
-    return ModelClass
