@@ -141,7 +141,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     @action(methods=["POST"], detail=True)
     def available_stands(self, request, pk=None):
         planning_area = self.get_object()
-        serializer = GetAvailableStandsSerializer(request.data)
+        serializer = GetAvailableStandsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = get_available_stands(planning_area, **serializer.validated_data)
         out_serializer = AvailableStandsSerializer(instance=result)
