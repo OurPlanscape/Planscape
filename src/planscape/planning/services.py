@@ -73,7 +73,10 @@ def create_planning_area(
     )
     track_openpanel(
         name="planning.planning_area.created",
-        properties={"region": region_name},
+        properties={
+            "region": region_name,
+            "email": user.email if user else None,
+        },
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
@@ -106,7 +109,10 @@ def delete_planning_area(
     )
     track_openpanel(
         name="planning.planning_area.deleted",
-        properties={"soft": True},
+        properties={
+            "soft": True,
+            "email": user.email if user else None,
+        },
         user_id=user.pk,
     )
     return (True, "deleted")
@@ -171,6 +177,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 treatment_goal.category if treatment_goal else None
             ),
             "treatment_goal_name": treatment_goal.name if treatment_goal else None,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
@@ -298,6 +305,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             "treatment_goal_id": None,
             "treatment_goal_category": None,
             "treatment_goal_name": None,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
@@ -330,6 +338,7 @@ def delete_scenario(
         name="planning.scenario.deleted",
         properties={
             "soft": True,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
