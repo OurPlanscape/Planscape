@@ -18,16 +18,6 @@ from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
 from fiona.crs import from_epsg
 from gis.core import get_storage_session
-from planning.models import PlanningArea, ProjectArea, Scenario
-from stands.models import (
-    STAND_AREA_ACRES,
-    Stand,
-    StandMetric,
-    StandSizeChoices,
-    pixels_from_size,
-)
-from stands.services import calculate_stand_zonal_stats
-
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -43,6 +33,16 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
+from planning.models import PlanningArea, ProjectArea, Scenario
+from stands.models import (
+    STAND_AREA_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    pixels_from_size,
+)
+from stands.services import calculate_stand_zonal_stats
+
 from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ def create_treatment_plan(
         name="impacts.treatment_plan.create",
         user_id=created_by.pk,
         properties={
-            "email": created_by.email if created_by.email else None,
+            "email": created_by.email if created_by else None,
         },
     )
     actstream_action.send(created_by, verb="created", action_object=treatment_plan)
@@ -160,7 +160,7 @@ def clone_treatment_plan(
         name="impacts.treatment_plan.clone",
         user_id=user.pk,
         properties={
-            "email": user.email if user.email else None,
+            "email": user.email if user else None,
         },
     )
     actstream_action.send(

@@ -12,6 +12,7 @@ from django.utils import timezone
 from rasterio.errors import RasterioIOError
 
 User = get_user_model()
+from django.contrib.auth import get_user_model
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -25,9 +26,11 @@ from impacts.services import (
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
 )
+
 from planscape.celery import app
 from planscape.openpanel import track_openpanel
 
+User = get_user_model()
 log = logging.getLogger(__name__)
 
 
@@ -155,7 +158,7 @@ def async_set_status(
                 properties={
                     "treatment_plan": treatment_plan_pk,
                     "status": status,
-                    "email": user.email if user.email else None,
+                    "email": user.email if user else None,
                 },
                 user_id=user_id,
             )
@@ -181,7 +184,7 @@ def async_calculate_persist_impacts_treatment_plan(
         start=True,
         user_id=user_id,
     )
-
+    user = User.objects.filter(pk=user_id).first()
     treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
 
     calculation_matrix = get_calculation_matrix(
@@ -230,6 +233,7 @@ def async_calculate_persist_impacts_treatment_plan(
         name="impacts.treatment_plan.run",
         properties={
             "treatment_plan": treatment_plan_pk,
+            "email": user.email if user else None,
         },
         user_id=user_id,
     )
@@ -289,4 +293,5 @@ def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
                 "treatment_plan": treatment_plan.pk,
                 "user": user.pk,
             },
+        )
         )

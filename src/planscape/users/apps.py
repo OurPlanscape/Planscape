@@ -27,7 +27,7 @@ def handle_user_logged_in(sender, request, user, **kwargs):
     track_openpanel(
         "users.logged_in",
         properties={
-            "email": user.email if user.email else None,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
