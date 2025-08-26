@@ -7,7 +7,7 @@ import zipfile
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
+from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
@@ -15,6 +15,7 @@ from cacheops import redis_client
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
+from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -22,6 +23,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
+from gis.geometry import get_bounding_box
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from planning.geometry import coerce_geojson, coerce_geometry
@@ -830,7 +832,21 @@ def planning_area_covers(
     return False
 
 
-def get_available_stands(planning_area: PlanningArea, **kwargs):
+def get_excluded_stands(stands, datalayer) -> List[int]:
+    pass
+
+
+def get_available_stands(
+    planning_area: PlanningArea,
+    stand_size: str,
+    includes: List[DataLayer],
+    excludes: List[DataLayer],
+    constraints: List[Dict[str, Any]],
+    **kwargs,
+):
+    stands = planning_area.get_stands(stand_size)
+    stands_bbox = get_bounding_box([s.geometry for s in stands])
+
     return {
         "unavailable": {
             "by_inclusions": [],
