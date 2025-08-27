@@ -19,7 +19,12 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-cumulative-attainment-chart',
   standalone: true,
-  imports: [AsyncPipe, NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
+  imports: [
+    AsyncPipe,
+    NgChartsModule,
+    ChartComponent,
+    ScenarioMetricsLegendComponent,
+  ],
   templateUrl: './cumulative-attainment-chart.component.html',
   styleUrl: './cumulative-attainment-chart.component.scss',
 })
@@ -122,8 +127,10 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     }
     const selectedData = {
       ...this.allData,
-      datasets: this.allData.datasets.filter((d:any) => this.selectedMetrics.has(d.label))
-    }
+      datasets: this.allData.datasets.filter((d: any) =>
+        this.selectedMetrics.has(d.label)
+      ),
+    };
     this.selectedData$.next(selectedData);
   }
 

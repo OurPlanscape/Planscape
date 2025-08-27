@@ -17,11 +17,15 @@ import { ChartComponent } from '@styleguide';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { BehaviorSubject } from 'rxjs';
 
-
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [AsyncPipe, NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
+  imports: [
+    AsyncPipe,
+    NgChartsModule,
+    ChartComponent,
+    ScenarioMetricsLegendComponent,
+  ],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
@@ -128,8 +132,10 @@ export class TreatmentOpportunityChartComponent implements OnInit {
     }
     const selectedData = {
       ...this.barChartData,
-      datasets: this.barChartData.datasets.filter((d: any) => this.selectedMetrics.has(d.extraInfo))
-    }
+      datasets: this.barChartData.datasets.filter((d: any) =>
+        this.selectedMetrics.has(d.extraInfo)
+      ),
+    };
     this.selectedData$.next(selectedData);
   }
 }
