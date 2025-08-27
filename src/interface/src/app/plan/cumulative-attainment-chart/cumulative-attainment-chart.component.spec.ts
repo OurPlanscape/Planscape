@@ -45,8 +45,8 @@ describe('CumulativeAttainmentChartComponent', () => {
   });
 
   it('should process input data and initialize chart data', () => {
-    expect(component.data.labels.length).toBe(2);
-    expect(component.data.datasets.length).toBe(2);
+    expect(component.allData.labels.length).toBe(2);
+    expect(component.allData.datasets.length).toBe(2);
   });
 
   it('should apply correct colors from colorForLabel()', () => {
@@ -82,7 +82,7 @@ describe('CumulativeAttainmentChartComponent', () => {
   });
 
   it('should round the labels', () => {
-    const original = component.data.labels;
+    const original = component.allData.labels;
     expect(original.every((l: number) => Number.isInteger(l))).toBeTrue();
   });
 });
