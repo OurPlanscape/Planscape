@@ -8,7 +8,7 @@ from datasets.dynamic_models import (
     field_from_fiona,
     geometry_field_from_fiona,
     model_from_fiona,
-    qualify_table_name,
+    qualify_for_django,
     srid_from_crs,
 )
 
@@ -48,13 +48,8 @@ class TestHelperFunctions(SimpleTestCase):
         self.assertEqual(field_from_fiona("int64"), ("int64", None, None))
         self.assertEqual(field_from_fiona(""), ("", None, None))
 
-    def test_qualify_table_name_ok_and_errors(self):
-        self.assertEqual(
-            qualify_table_name("client_a", "cities"), '"client_a"."cities"'
-        )
-        for schema, table in [("", "t"), ("s", ""), ("", "")]:
-            with self.assertRaises(ValueError):
-                qualify_table_name(schema, table)
+    def test_qualify_for_django_ok_and_errors(self):
+        self.assertEqual(qualify_for_django("client_a.cities"), '"client_a"."cities"')
 
 
 class ModelFromFionalTests(SimpleTestCase):
@@ -112,7 +107,7 @@ class ModelFromFionalTests(SimpleTestCase):
     def test_single_layer_maps_fields_and_meta(self):
         info = self.single_layer_info()
         dl = _DataLayerStub(
-            info=info, table="private_lands", model_name="PrivateLandsA"
+            info=info, table="foo.private_lands", model_name="PrivateLandsA"
         )
 
         Model = model_from_fiona(dl)
@@ -123,7 +118,7 @@ class ModelFromFionalTests(SimpleTestCase):
         self.assertIs(fetched, Model)
 
         # db_table schema qualification
-        self.assertEqual(Model._meta.db_table, "private_lands")
+        self.assertEqual(Model._meta.db_table, '"foo"."private_lands"')
 
         # Geometry
         geom = Model._meta.get_field("geometry")
@@ -158,7 +153,7 @@ class ModelFromFionalTests(SimpleTestCase):
     def test_idempotent_returns_existing(self):
         info = self.single_layer_info()
         dl = _DataLayerStub(
-            info=info, table="private_lands", model_name="PrivateLandsB"
+            info=info, table="foo.private_lands", model_name="PrivateLandsB"
         )
 
         first = model_from_fiona(dl)
@@ -169,7 +164,9 @@ class ModelFromFionalTests(SimpleTestCase):
 
     def test_multi_layer_uses_first_layer(self):
         info = self.multi_layer_info()
-        dl = _DataLayerStub(info=info, table="points_tbl", model_name="LayerAAsModel")
+        dl = _DataLayerStub(
+            info=info, table="foo.points_tbl", model_name="LayerAAsModel"
+        )
 
         Model = model_from_fiona(dl)
         self.addCleanup_unregister(self.app_label, "LayerAAsModel")
@@ -182,7 +179,7 @@ class ModelFromFionalTests(SimpleTestCase):
         self.assertIsInstance(title, djm.CharField)
         self.assertEqual(title.max_length, 40)
 
-        self.assertEqual(Model._meta.db_table, "points_tbl")
+        self.assertEqual(Model._meta.db_table, '"foo"."points_tbl"')
 
     def test_empty_info_raises(self):
         dl = _DataLayerStub(info=None, table="anything", model_name="Broken")
@@ -196,7 +193,7 @@ class ModelFromFionalTests(SimpleTestCase):
             "schema": {"geometry": "Polygon", "properties": {"amount": "decimal"}},
         }
         dl = _DataLayerStub(
-            info=info, table="prices", model_name="PricesDefaultDecimal"
+            info=info, table="bar.prices", model_name="PricesDefaultDecimal"
         )
 
         Model = model_from_fiona(dl)
