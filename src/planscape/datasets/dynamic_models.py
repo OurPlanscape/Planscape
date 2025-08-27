@@ -153,7 +153,7 @@ def model_from_fiona(
         "Meta",
         (),
         {
-            "db_table": qualify_table_name(pg_schema, table_name),
+            "db_table": table_name,
             "managed": managed,
             "app_label": app_label,
         },
