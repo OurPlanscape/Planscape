@@ -37,8 +37,8 @@ import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
-import { ScenarioState } from '../scenario.state';
 import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
+import { NewScenarioState } from '../new-scenario.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -101,13 +101,15 @@ export class ScenarioCreationComponent
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
-    private scenarioState: ScenarioState,
+    private newScenarioState: NewScenarioState,
     private route: ActivatedRoute,
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
     private router: Router
   ) {
+    this.newScenarioState.setPlanId(this.planId);
+
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
@@ -132,7 +134,7 @@ export class ScenarioCreationComponent
 
   saveStep(data: Partial<ScenarioCreation>) {
     this.config = { ...this.config, ...data };
-    this.scenarioState.setScenarioConfig(this.config);
+    this.newScenarioState.setScenarioConfig(this.config);
     return of(true);
   }
 
@@ -199,6 +201,6 @@ export class ScenarioCreationComponent
   }
 
   ngOnDestroy(): void {
-    this.scenarioState.setScenarioConfig({});
+    this.newScenarioState.setScenarioConfig({});
   }
 }

@@ -7,11 +7,10 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { ActivatedRoute } from '@angular/router';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
-import { ScenarioState } from '../../scenario/scenario.state';
 import { map, tap } from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
-import { ScenarioMapService } from '../scenario-map.service';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { NewScenarioState } from '../../scenario/new-scenario.state';
 
 @Component({
   selector: 'app-scenario-stands',
@@ -27,7 +26,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
 
   planId = this.route.snapshot.data['planId'];
 
-  tilesUrl$ = this.scenarioState.scenarioConfig$.pipe(
+  tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
     map(
       (config) =>
@@ -36,16 +35,19 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     ),
     distinctUntilChanged(),
     tap((s) => {
-      this.scenarioMapService.setLoading(true);
+      this.newScenarioState.setLoading(true);
     })
   );
 
   constructor(
     private route: ActivatedRoute,
-    private scenarioState: ScenarioState,
-    private scenarioMapService: ScenarioMapService,
+    private newScenarioState: NewScenarioState,
     private zone: NgZone
-  ) {}
+  ) {
+    this.newScenarioState.availableStands$.subscribe((s) =>
+      console.log('available', s)
+    );
+  }
 
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
@@ -62,7 +64,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       !event.sourceDataType
     ) {
       this.zone.run(() => {
-        this.scenarioMapService.setLoading(false);
+        this.newScenarioState.setLoading(false);
       });
     }
   };
