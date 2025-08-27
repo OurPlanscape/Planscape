@@ -43,6 +43,7 @@ PLANSCAPE_APPS = [
     "collaboration",
     "core",
     "datasets",
+    "datastore",
     "e2e",
     "impacts",
     "martin",
