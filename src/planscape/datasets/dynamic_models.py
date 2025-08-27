@@ -119,6 +119,7 @@ def model_from_fiona(
     }
 
     for field_name, field_type in properties.items():
+        field_name = field_name.lower()
         base, clen, decimal_spec = field_from_fiona(field_type)
         match base:
             case "str":
