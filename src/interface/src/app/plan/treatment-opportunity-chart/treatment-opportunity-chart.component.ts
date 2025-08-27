@@ -13,6 +13,7 @@ import {
   whiteTooltipBaseConfig,
 } from 'src/app/chart-helper';
 import { ChartComponent } from '@styleguide';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
@@ -24,7 +25,7 @@ import { ChartComponent } from '@styleguide';
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
 
-  public selectedMetrics = new Set<string>();
+  selectedMetrics: Set<string> = new Set<string>();
 
   public barChartType: 'bar' = 'bar';
 
@@ -107,5 +108,16 @@ export class TreatmentOpportunityChartComponent implements OnInit {
         this.scenarioResult.result.features
       ),
     };
+    this.barChartData.datasets.forEach((dataset: any) =>
+      this.selectedMetrics.add(dataset.extraInfo)
+    );
+  }
+
+  onMetricChange(event: MatCheckboxChange) {
+    if (event.checked) {
+      this.selectedMetrics.add(event.source.value);
+    } else {
+      this.selectedMetrics.delete(event.source.value);
+    }
   }
 }
