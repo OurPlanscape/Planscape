@@ -464,6 +464,16 @@ def get_schema(
     return schema
 
 
+def _get_datalayers_id_lookup_table(scenario):
+    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    dl_lookup = dict()
+    for dl in datalayers:
+        dl_lookup[f"datalayer_{dl.pk}"] = f"datalayer_{dl.name}"
+        dl_lookup[f"datalayer_{dl.pk}_SMP"] = f"datalayer_{dl.name}_SMP"
+        dl_lookup[f"datalayer_{dl.pk}_PCP"] = f"datalayer_{dl.name}_PCP"
+    return dl_lookup
+
+
 def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     """
     Get the geojson result of a scenario.
@@ -471,8 +481,7 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     to flatten nested dictionaries by appending the keys.
     """
     geojson = scenario.get_geojson_result()
-    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
-    dl_lookup = {f"datalayer_{dl.pk}": f"datalayer_{dl.name}" for dl in datalayers}
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
     features = geojson.get("features", [])
     for feature in features:
         properties = feature.get("properties", {})
@@ -529,23 +538,23 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
 
 def export_scenario_stand_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict]
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
     scenario_outputs = {}
-    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
-    dl_lookup = {f"datalayer_{dl.pk}": f"datalayer_{dl.name}" for dl in datalayers}
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            properties = {}
             for key, value in row.items():
                 match key:
                     case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        row[key] = int(value)
+                        properties[key] = int(value)
                     case "DoTreat", "selected":
-                        row[key] = bool(int(value))
+                        properties[key] = bool(int(value))
                     case _:
                         try:
                             f = float(value)
@@ -559,40 +568,28 @@ def export_scenario_stand_outputs_to_geopackage(
                             )
                             f = None
                         prop = dl_lookup.get(key, key)
-                        row[prop] = f
-            row["stand_size"] = stand_size
+                        properties[prop] = f
             stand_id = int(row.get("stand_id"))  # type: ignore
-            scenario_outputs[stand_id] = row
-
-    # injecting geometry from inputs.csv
-    inputs_file = forsys_folder / "inputs.csv"
-    with open(inputs_file, "r") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            stand_id = int(row.get("stand_id"))  # type: ignore
-            if stand_id not in scenario_outputs:
-                continue
-            wkt = row.get("WKT")
-            try:
-                geom = GEOSGeometry(wkt, srid=settings.AREA_SRID)
-                geom_json = geom.transform(
-                    settings.CRS_GEOPACKAGE_EXPORT, clone=True
-                ).json
-                geom_json = json.loads(geom_json)
-                scenario_outputs[stand_id]["geometry"] = to_multi(geom_json)
-            except Exception as e:
-                logger.error("Invalid WKT for scenario %s: %s", scenario.pk, e)
-                raise InvalidGeometry(f"Invalid WKT: {wkt}")
+            geometry = stand_inputs.get(stand_id, {}).get("WKT")
+            properties["WKT"] = geometry
+            properties["stand_size"] = stand_size
+            scenario_outputs[stand_id] = properties
 
     features = []
     for stand_id, properties in scenario_outputs.items():
-        geometry = properties.pop("geometry", None)
+        geometry = properties.pop("WKT", None)
         if geometry:
             feature = {
                 "geometry": geometry,
                 "properties": properties,
             }
             features.append(feature)
+        else:
+            logger.warning(
+                "Stand %s in scenario %s has no geometry. Skipping.",
+                stand_id,
+                scenario.pk,
+            )
 
     properties = features[0].get("properties", {})
     field_type_pairs = list(map(map_property, properties.items()))
@@ -624,20 +621,20 @@ def export_scenario_stand_outputs_to_geopackage(
 
 def export_scenario_inputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path
-) -> None:
+) -> Dict[int, Dict]:
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
-    scenario_inputs = []
-    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
-    dl_lookup = {f"datalayer_{dl.pk}": f"datalayer_{dl.name}" for dl in datalayers}
+    scenario_inputs = dict()
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
     with open(inputs_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            properties = {}
             for key, value in row.items():
                 match key:
                     case "stand_id":
-                        row[key] = int(value)
+                        properties[key] = int(value)
                     case "WKT":
                         try:
                             geom = GEOSGeometry(value, srid=settings.AREA_SRID)
@@ -645,7 +642,7 @@ def export_scenario_inputs_to_geopackage(
                                 settings.CRS_GEOPACKAGE_EXPORT, clone=True
                             ).json
                             geom_json = json.loads(geom_json)
-                            row[key] = to_multi(geom_json)
+                            properties[key] = to_multi(geom_json)
                         except Exception as e:
                             logger.error(
                                 "Invalid WKT for scenario %s: %s", scenario.pk, e
@@ -663,12 +660,14 @@ def export_scenario_inputs_to_geopackage(
                                 scenario.pk,
                             )
                             f = None
-                        prop = dl_lookup.get(key, key)
-                        row[prop] = f
-                row["stand_size"] = stand_size
-            scenario_inputs.append(row)
+                        prop_key = dl_lookup.get(key, key)
+                        properties[prop_key] = f
+            properties["stand_size"] = stand_size
+            stand_id = int(row.get("stand_id"))  # type: ignore
+            scenario_inputs[stand_id] = properties
 
-    feature = scenario_inputs[0].copy()  # Copy the first feature to modify
+    stand_id = next(iter(scenario_inputs))
+    feature = scenario_inputs[stand_id].copy()
     feature.pop("WKT", None)  # Remove WKT if present
     field_type_pairs = list(map(map_property, feature.items()))
     schema = {
@@ -687,16 +686,21 @@ def export_scenario_inputs_to_geopackage(
                 schema=schema,
                 allow_unsupported_drivers=True,
             ) as out:
-                for feature in scenario_inputs:
-                    geometry = feature.pop("WKT", None)
-                    feature = {"properties": feature, "geometry": geometry}
-                    out.write(feature)
+                for stand_id, feature in scenario_inputs.items():
+                    copyed_feature = feature.copy()
+                    geometry = copyed_feature.pop("WKT", None)
+                    copyed_feature = {
+                        "properties": copyed_feature,
+                        "geometry": geometry,
+                    }
+                    out.write(copyed_feature)
 
     except Exception as e:
         logger.exception(
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
         raise e
+    return scenario_inputs
 
 
 def export_scenario_project_areas_outputs_to_geopackage(
@@ -755,8 +759,8 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         scenario.save()
 
         export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
-        export_scenario_inputs_to_geopackage(scenario, temp_file)
-        export_scenario_stand_outputs_to_geopackage(scenario, temp_file)
+        stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
+        export_scenario_stand_outputs_to_geopackage(scenario, temp_file, stand_inputs)
 
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
