@@ -1,13 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import { AvailableStands, ScenarioCreation } from '@types';
+import { Constraint, ScenarioCreation } from '@types';
 import {
   BehaviorSubject,
   combineLatest,
   filter,
   map,
   shareReplay,
-  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -24,12 +23,11 @@ export class NewScenarioState {
   private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioCreation>>({});
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
 
-  private _excludedStands$ = new Subject<AvailableStands>();
-  public excludedStands$ = this._excludedStands$
-    .asObservable()
-    .pipe(shareReplay(1));
+  private _excludedAreas$ = new BehaviorSubject<number[]>([]);
+  public excludedAreas$ = this._excludedAreas$.asObservable();
 
-  public excludedAreas$ = new BehaviorSubject<number[]>([]);
+  private _constraints$ = new BehaviorSubject<Constraint[]>([]);
+  public constraints$ = this._constraints$.asObservable();
 
   private standSize$ = this.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
@@ -38,16 +36,19 @@ export class NewScenarioState {
   public availableStands$ = combineLatest([
     this.standSize$,
     this.excludedAreas$,
+    this.constraints$,
   ]).pipe(
     tap(() => this.setLoading(true)),
-    switchMap(([standSize, excludedAreas]) =>
+    switchMap(([standSize, excludedAreas, constraints]) =>
       this.scenarioService.getExcludedStands(
         this.planId,
         standSize,
-        excludedAreas
+        excludedAreas,
+        constraints
       )
     ),
-    tap(() => this.setLoading(false))
+    tap(() => this.setLoading(false)),
+    shareReplay(1)
   );
 
   private _loading$ = new BehaviorSubject(false);
@@ -64,10 +65,14 @@ export class NewScenarioState {
   }
 
   setExcludedAreas(value: number[]) {
-    this.excludedAreas$.next(value);
+    this._excludedAreas$.next(value);
   }
 
   setScenarioConfig(config: Partial<ScenarioCreation>) {
     this._scenarioConfig$.next(config);
+  }
+
+  setConstraints(constraints: Constraint[]) {
+    this._constraints$.next(constraints);
   }
 }
