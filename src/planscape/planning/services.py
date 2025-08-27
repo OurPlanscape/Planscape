@@ -471,6 +471,8 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     to flatten nested dictionaries by appending the keys.
     """
     geojson = scenario.get_geojson_result()
+    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    dl_lookup = {f"datalayer_{dl.pk}": f"datalayer_{dl.name}" for dl in datalayers}
     features = geojson.get("features", [])
     for feature in features:
         properties = feature.get("properties", {})
@@ -484,7 +486,8 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
             else:
                 if isinstance(value, float):
                     value = truncate_result(value, quantize=".001")
-                new_properties[prop] = value
+                key = dl_lookup.get(prop, prop)
+                new_properties[key] = value
         feature["properties"] = new_properties
     return geojson
 
@@ -525,12 +528,15 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     return shapefile_folder
 
 
-def export_scenario_outputs_to_geopackage(
+def export_scenario_stand_outputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
     scenario_outputs = {}
+    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    dl_lookup = {f"datalayer_{dl.pk}": f"datalayer_{dl.name}" for dl in datalayers}
+    stand_size = scenario.get_stand_size()
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -552,7 +558,9 @@ def export_scenario_outputs_to_geopackage(
                                 scenario.pk,
                             )
                             f = None
-                        row[key] = f
+                        prop = dl_lookup.get(key, key)
+                        row[prop] = f
+            row["stand_size"] = stand_size
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_outputs[stand_id] = row
 
@@ -599,7 +607,7 @@ def export_scenario_outputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}_outputs",
+                layer=f"stnd_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -620,6 +628,9 @@ def export_scenario_inputs_to_geopackage(
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
     scenario_inputs = []
+    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    dl_lookup = {f"datalayer_{dl.pk}": f"datalayer_{dl.name}" for dl in datalayers}
+    stand_size = scenario.get_stand_size()
     with open(inputs_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -652,7 +663,9 @@ def export_scenario_inputs_to_geopackage(
                                 scenario.pk,
                             )
                             f = None
-                        row[key] = f
+                        prop = dl_lookup.get(key, key)
+                        row[prop] = f
+                row["stand_size"] = stand_size
             scenario_inputs.append(row)
 
     feature = scenario_inputs[0].copy()  # Copy the first feature to modify
@@ -668,7 +681,7 @@ def export_scenario_inputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}_inputs",
+                layer=f"stnd_inputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -686,7 +699,9 @@ def export_scenario_inputs_to_geopackage(
         raise e
 
 
-def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
+def export_scenario_project_areas_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
@@ -695,7 +710,7 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}",
+                layer="proj_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -739,9 +754,9 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save()
 
-        export_scenario_to_geopackage(scenario, temp_file)
+        export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
         export_scenario_inputs_to_geopackage(scenario, temp_file)
-        export_scenario_outputs_to_geopackage(scenario, temp_file)
+        export_scenario_stand_outputs_to_geopackage(scenario, temp_file)
 
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
