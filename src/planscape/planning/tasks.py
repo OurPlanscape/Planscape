@@ -2,14 +2,20 @@ import logging
 
 import rasterio
 from django.conf import settings
+from django.db import transaction
 from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
 from django.db import connection
 from gis.core import get_storage_session
 from planning.models import Scenario, ScenarioResultStatus
+from planning.services import (
+    get_datalayer_thresholds,
+    get_min_project_area,
+    get_max_treatable_area,
+)
 from stands.models import Stand
-from stands.services import calculate_stand_zonal_stats
+from stands.services import calculate_stand_zonal_stats, get_datalayer_metric
 from utils.cli_utils import call_forsys
 
 from planscape.celery import app
@@ -145,6 +151,63 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
+
+
+@app.task(max_retries=3, retry_backoff=True)
+def async_pre_forsys_process(scenario_id: int) -> None:
+    scenario = Scenario.objects.get(id=scenario_id)
+
+    tx_goal = scenario.treatment_goal
+    if not tx_goal:
+        log.warning(
+            f"Scenario {scenario_id} does not have an associated TreatmentGoal."
+        )
+        return
+
+    stand_ids = Stand.objects.within_polygon(
+        scenario.planning_area.geometry,
+        scenario.get_stand_size(),
+    ).values_list("id", flat=True)
+
+    datalayers = {
+        datalayer.id: {
+            "metric": get_datalayer_metric(datalayer),
+            "thresholds": get_datalayer_thresholds(datalayer, tx_goal),
+            "name": datalayer.name,
+        }
+        for datalayer in tx_goal.datalayers.all()
+    }
+
+    min_area_project = get_min_project_area(scenario)
+    max_area_project = get_max_treatable_area(scenario.configuration)
+    number_of_projects = scenario.configuration.get(
+        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+    )
+    sdw = settings.FORSYS_SDW
+    epw = settings.FORSYS_EPW
+    exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
+    sample_fraction = settings.FORSYS_SAMPLE_FRACTION
+    seed = scenario.configuration.get("seed")
+
+    forsys_input = {
+        "stand_ids": list(stand_ids),
+        "datalayers": datalayers,
+        "variables": {
+            "min_area_project": min_area_project,
+            "max_area_project": max_area_project,
+            "number_of_projects": number_of_projects,
+            "spatial_distribution_weight": sdw,
+            "edge_proximity_weight": epw,
+            "exclusion_limit": exclusion_limit,
+            "sample_fraction": sample_fraction,
+            "seed": seed,
+        },
+    }
+
+    with transaction.atomic():
+        scenario = Scenario.objects.select_for_update().get(id=scenario_id)
+        scenario.forsys_input = forsys_input  # type: ignore
+        scenario.save(update_fields=["forsys_input", "updated_at"])
 
 
 @app.task(max_retries=10, retry_backoff=True, default_retry_delay=120)
