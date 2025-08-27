@@ -7,13 +7,14 @@ from django.test import SimpleTestCase
 from datasets.dynamic_models import (
     field_from_fiona,
     geometry_field_from_fiona,
+    model_from_fiona,
     qualify_table_name,
     srid_from_crs,
 )
 
 
 class _DataLayerStub:
-    """Minimal stub to satisfy model_from_fional() signature/usage."""
+    """Minimal stub to satisfy model_from_fiona() signature/usage."""
 
     def __init__(self, info, table: str, model_name: str):
         self.info = info
@@ -114,7 +115,7 @@ class ModelFromFionalTests(SimpleTestCase):
             info=info, table="private_lands", model_name="PrivateLandsA"
         )
 
-        Model = model_from_fional(
+        Model = model_from_fiona(
             dl, app_label=self.app_label, pg_schema="client_a", managed=False
         )
         self.addCleanup_unregister(self.app_label, "PrivateLandsA")
@@ -162,9 +163,9 @@ class ModelFromFionalTests(SimpleTestCase):
             info=info, table="private_lands", model_name="PrivateLandsB"
         )
 
-        first = model_from_fional(dl, app_label=self.app_label, pg_schema="client_a")
+        first = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_a")
         self.addCleanup_unregister(self.app_label, "PrivateLandsB")
-        second = model_from_fional(dl, app_label=self.app_label, pg_schema="client_a")
+        second = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_a")
 
         self.assertIs(first, second)
 
@@ -172,7 +173,7 @@ class ModelFromFionalTests(SimpleTestCase):
         info = self.multi_layer_info()
         dl = _DataLayerStub(info=info, table="points_tbl", model_name="LayerAAsModel")
 
-        Model = model_from_fional(dl, app_label=self.app_label, pg_schema="client_b")
+        Model = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_b")
         self.addCleanup_unregister(self.app_label, "LayerAAsModel")
 
         geom = Model._meta.get_field("geometry")
@@ -188,7 +189,7 @@ class ModelFromFionalTests(SimpleTestCase):
     def test_empty_info_raises(self):
         dl = _DataLayerStub(info=None, table="anything", model_name="Broken")
         with self.assertRaisesMessage(ValueError, "Empty Fiona info."):
-            model_from_fional(dl, app_label=self.app_label, pg_schema="client_x")
+            model_from_fiona(dl, app_label=self.app_label, pg_schema="client_x")
 
     def test_decimal_defaults_when_precision_missing(self):
         info = {
@@ -200,7 +201,7 @@ class ModelFromFionalTests(SimpleTestCase):
             info=info, table="prices", model_name="PricesDefaultDecimal"
         )
 
-        Model = model_from_fional(dl, app_label=self.app_label, pg_schema="client_c")
+        Model = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_c")
         self.addCleanup_unregister(self.app_label, "PricesDefaultDecimal")
 
         amount = Model._meta.get_field("amount")
