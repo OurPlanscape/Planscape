@@ -141,7 +141,7 @@ export class ScenarioService {
   getExcludedStands(
     planId: number,
     stand_size: string,
-    excluded_areas?: number[],
+    excludes?: number[],
     constraints?: Constraint[]
   ) {
     const url =
@@ -151,7 +151,7 @@ export class ScenarioService {
       url,
       {
         stand_size,
-        excluded_areas,
+        excludes,
         constraints,
       },
       {
