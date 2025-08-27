@@ -11,6 +11,8 @@ import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { ScenarioConfigOverlayComponent } from 'src/app/scenario/scenario-config-overlay/scenario-config-overlay.component';
 import { MatMenuModule } from '@angular/material/menu';
+import { GeopackageFailureModalComponent } from 'src/app/scenario/geopackage-failure-modal/geopackage-failure-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-scenario-download-footer',
@@ -32,14 +34,31 @@ export class ScenarioDownloadFooterComponent {
     private scenarioService: ScenarioService,
     private scenarioState: ScenarioState,
     private fileServerService: FileSaverService,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
   @Input() geoPackageURL!: string | null;
+  @Input() geoPackageStatus!: string;
+
   downloadingScenario = false;
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
+
+  buttonLabels: { [key: string]: string } = {
+    FAILED: 'GeoPackage Failed',
+    SUCCEEDED: 'Download GeoPackage',
+    PENDING: 'Generating GeoPackage',
+  };
+
+  handleButton() {
+    if (this.geoPackageStatus === 'SUCCEEDED') {
+      this.handleDownload();
+    } else {
+      this.displayFailureModal();
+    }
+  }
 
   handleDownload() {
     this.downloadingScenario = true;
@@ -65,6 +84,11 @@ export class ScenarioDownloadFooterComponent {
         },
       });
     }
+  }
+
+  displayFailureModal() {
+    const dialogRef = this.dialog.open(GeopackageFailureModalComponent);
+    return dialogRef.afterClosed();
   }
 
   setDisplayOverlay(display: boolean) {

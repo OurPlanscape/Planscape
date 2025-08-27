@@ -2,13 +2,10 @@
 <sg-section
   headline="Treatment Goals"
   [required]="true"
-  tooltipContent="Treatment goals allow you to select one goal that will generate a
-          scenario based on your landscape. Each of the goals uses a different
-          set of input variables, thresholds and primary metrics to generate
-          your result. You can only select one goal per run, however you can do
-          as many scenario runs as you choose by selecting different treatment
-          goal questions and parameters each time. Click on the options below
-          for full question details.">
+  tooltipContent="Treatment goals allow you to select one goal that will generate a scenario based on your landscape.
+  Each of the goals uses a different set of input variables, thresholds and primary metrics to generate your result.
+  You can only select one goal per run, however you can do as many scenario runs as you choose by selecting different treatment goal questions and parameters each time.
+  Click on the options below for full question details.">
   <form [formGroup]="form">
     <span
       class="error-message"
@@ -81,8 +78,8 @@
 <sg-section headline="Stand Size" [required]="true">
   <div class="stand-label">
     <mat-icon class="stand-icon" *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'"
-      >hexagon</mat-icon
-    >
+      >hexagon
+    </mat-icon>
     <div>
       Choose the stand size ForSys will use to evaluate your planning area.
       Stands are standarized hexagonal units that represent potential treatment
