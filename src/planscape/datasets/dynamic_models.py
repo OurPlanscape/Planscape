@@ -85,10 +85,6 @@ def model_from_fiona(
     datalayer: DataLayer,
     *,
     app_label: str = "datastore",
-    pg_schema: str,
-    model_name: Optional[str] = None,
-    table_name: Optional[str] = None,
-    managed: bool = False,
 ) -> type[models.Model]:
     fiona_info = datalayer.info
     if fiona_info is None:
@@ -153,8 +149,8 @@ def model_from_fiona(
         "Meta",
         (),
         {
-            "db_table": qualify_table_name(pg_schema, table_name),
-            "managed": managed,
+            "db_table": table_name,
+            "managed": False,
             "app_label": app_label,
         },
     )

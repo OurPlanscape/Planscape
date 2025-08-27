@@ -839,10 +839,11 @@ def get_excluded_stands(stands, datalayer) -> List[int]:
 
 def get_available_stands(
     planning_area: PlanningArea,
-    stand_size: str,
-    includes: List[DataLayer],
-    excludes: List[DataLayer],
-    constraints: List[Dict[str, Any]],
+    *,
+    stand_size: str = "LARGE",
+    includes: Optional[List[DataLayer]] = None,
+    excludes: Optional[List[DataLayer]] = None,
+    constraints: Optional[List[Dict[str, Any]]] = None,
     **kwargs,
 ):
     stands = planning_area.get_stands(stand_size)

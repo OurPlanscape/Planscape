@@ -58,7 +58,7 @@ class TestHelperFunctions(SimpleTestCase):
 
 
 class ModelFromFionalTests(SimpleTestCase):
-    app_label = "datasets"  # must be present in INSTALLED_APPS
+    app_label = "datastore"  # must be present in INSTALLED_APPS
 
     # ---------- helpers ----------
 
@@ -115,9 +115,7 @@ class ModelFromFionalTests(SimpleTestCase):
             info=info, table="private_lands", model_name="PrivateLandsA"
         )
 
-        Model = model_from_fiona(
-            dl, app_label=self.app_label, pg_schema="client_a", managed=False
-        )
+        Model = model_from_fiona(dl)
         self.addCleanup_unregister(self.app_label, "PrivateLandsA")
 
         # Registry returns the same class
@@ -125,7 +123,7 @@ class ModelFromFionalTests(SimpleTestCase):
         self.assertIs(fetched, Model)
 
         # db_table schema qualification
-        self.assertEqual(Model._meta.db_table, '"client_a"."private_lands"')
+        self.assertEqual(Model._meta.db_table, "private_lands")
 
         # Geometry
         geom = Model._meta.get_field("geometry")
@@ -163,9 +161,9 @@ class ModelFromFionalTests(SimpleTestCase):
             info=info, table="private_lands", model_name="PrivateLandsB"
         )
 
-        first = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_a")
+        first = model_from_fiona(dl)
         self.addCleanup_unregister(self.app_label, "PrivateLandsB")
-        second = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_a")
+        second = model_from_fiona(dl)
 
         self.assertIs(first, second)
 
@@ -173,7 +171,7 @@ class ModelFromFionalTests(SimpleTestCase):
         info = self.multi_layer_info()
         dl = _DataLayerStub(info=info, table="points_tbl", model_name="LayerAAsModel")
 
-        Model = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_b")
+        Model = model_from_fiona(dl)
         self.addCleanup_unregister(self.app_label, "LayerAAsModel")
 
         geom = Model._meta.get_field("geometry")
@@ -184,12 +182,12 @@ class ModelFromFionalTests(SimpleTestCase):
         self.assertIsInstance(title, djm.CharField)
         self.assertEqual(title.max_length, 40)
 
-        self.assertEqual(Model._meta.db_table, '"client_b"."points_tbl"')
+        self.assertEqual(Model._meta.db_table, "points_tbl")
 
     def test_empty_info_raises(self):
         dl = _DataLayerStub(info=None, table="anything", model_name="Broken")
         with self.assertRaisesMessage(ValueError, "Empty Fiona info."):
-            model_from_fiona(dl, app_label=self.app_label, pg_schema="client_x")
+            model_from_fiona(dl)
 
     def test_decimal_defaults_when_precision_missing(self):
         info = {
@@ -201,7 +199,7 @@ class ModelFromFionalTests(SimpleTestCase):
             info=info, table="prices", model_name="PricesDefaultDecimal"
         )
 
-        Model = model_from_fiona(dl, app_label=self.app_label, pg_schema="client_c")
+        Model = model_from_fiona(dl)
         self.addCleanup_unregister(self.app_label, "PricesDefaultDecimal")
 
         amount = Model._meta.get_field("amount")
