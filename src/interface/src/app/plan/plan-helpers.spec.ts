@@ -3,7 +3,7 @@ import {
   getColorForProjectPosition,
   isValidTotalArea,
   processCumulativeAttainment,
-  flattenMultipolygons
+  flattenMultipolygons,
 } from './plan-helpers';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
@@ -101,7 +101,6 @@ describe('Plan Helpers', () => {
   });
 });
 
-
 describe('Flatten multipolygon helper', () => {
   it('should return an empty array when given an empty array', () => {
     const result = flattenMultipolygons([]);
@@ -114,7 +113,14 @@ describe('Flatten multipolygon helper', () => {
         type: 'Feature',
         geometry: {
           type: 'Polygon',
-          coordinates: [[[0, 0], [1, 1], [1, 0], [0, 0]]],
+          coordinates: [
+            [
+              [0, 0],
+              [1, 1],
+              [1, 0],
+              [0, 0],
+            ],
+          ],
         },
         properties: {},
       },
@@ -131,10 +137,20 @@ describe('Flatten multipolygon helper', () => {
           type: 'MultiPolygon',
           coordinates: [
             [
-              [[0, 0], [1, 1], [1, 0], [0, 0]] // First polygon
+              [
+                [0, 0],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ], // First polygon
             ],
             [
-              [[2, 2], [3, 3], [3, 2], [2, 2]] // Second polygon
+              [
+                [2, 2],
+                [3, 3],
+                [3, 2],
+                [2, 2],
+              ], // Second polygon
             ],
           ],
         },
@@ -160,7 +176,14 @@ describe('Flatten multipolygon helper', () => {
         type: 'Feature',
         geometry: {
           type: 'Polygon',
-          coordinates: [[[0, 0], [1, 1], [1, 0], [0, 0]]],
+          coordinates: [
+            [
+              [0, 0],
+              [1, 1],
+              [1, 0],
+              [0, 0],
+            ],
+          ],
         },
         properties: {},
       },
@@ -168,5 +191,4 @@ describe('Flatten multipolygon helper', () => {
     const result = flattenMultipolygons(features);
     expect(result[0].geometry.type).toBe('Polygon');
   });
-
 });
