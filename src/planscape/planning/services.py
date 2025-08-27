@@ -465,6 +465,8 @@ def get_schema(
 
 
 def _get_datalayers_id_lookup_table(scenario):
+    # Lookup table to rename datalayer fields to their names
+    # e.g. datalayer_1 -> datalaye_Elevation
     datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
     dl_lookup = dict()
     for dl in datalayers:
