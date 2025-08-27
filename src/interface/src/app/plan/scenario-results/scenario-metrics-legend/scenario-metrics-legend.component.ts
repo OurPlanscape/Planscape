@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { CHART_COLORS } from '@shared';
 import { getGroupedAttainment } from 'src/app/chart-helper';
@@ -17,32 +17,26 @@ import {
 })
 export class ScenarioMetricsLegendComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
+  @Input() selectedMetrics!: Set<string>;
+  @Output() handleCheckbox = new EventEmitter<MatCheckboxChange>();
+
   chartColors = CHART_COLORS;
   metrics: string[] = [];
-  selectedMetrics: Set<string> = new Set();
 
   ngOnInit() {
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)
     );
-    // set each metric as selected by default
-    this.metrics.forEach((m) => this.selectedMetrics.add(m));
   }
 
   isSelected(metric: string) {
-    return this.selectedMetrics.has(metric);
+    if (this.selectedMetrics) {
+      return this.selectedMetrics.has(metric);
+    }
+    return false;
   }
 
-  metricSelected() {}
-
-  onMetricChange(event: MatCheckboxChange, metric: any) {
-    console.log('here is the event from clicking:', event);
-    console.log('here is the metric passed here:', metric);
-    if (event.checked) {
-      this.selectedMetrics.add(metric);
-    } else {
-      this.selectedMetrics.delete(metric);
-    }
-    console.log('metrics are now:', this.selectedMetrics);
+  metricSelected(event: MatCheckboxChange) {
+    this.handleCheckbox.emit(event);
   }
 }

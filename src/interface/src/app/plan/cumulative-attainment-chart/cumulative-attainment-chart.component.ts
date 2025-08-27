@@ -12,6 +12,7 @@ import {
 import { CHART_COLORS } from '@shared';
 import { ChartComponent } from '@styleguide';
 import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
@@ -22,6 +23,8 @@ import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-met
 })
 export class CumulativeAttainmentChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
+
+  selectedMetrics: Set<string> = new Set<string>();
 
   options: ChartOptions<'line'> = {
     responsive: true,
@@ -100,6 +103,18 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         pointRadius: 0, // Hides the circles
       };
     });
+    // todo: add dataset type
+    this.data.datasets.forEach((dataset: any) =>
+      this.selectedMetrics.add(dataset.label)
+    );
+  }
+
+  onMetricChange(event: MatCheckboxChange) {
+    if (event.checked) {
+      this.selectedMetrics.add(event.source.value);
+    } else {
+      this.selectedMetrics.delete(event.source.value);
+    }
   }
 
   colorForLabel(label: string) {

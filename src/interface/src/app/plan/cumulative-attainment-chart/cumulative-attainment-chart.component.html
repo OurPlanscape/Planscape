@@ -5,4 +5,6 @@
   xAxisLabel="Cumulative Area treated (Acres)"
   yAxisLabel="Cumulative Attainment (%)"></sg-chart>
 <app-scenario-metrics-legend
-  [scenarioResult]="scenarioResult"></app-scenario-metrics-legend>
+  [scenarioResult]="scenarioResult"
+  (handleCheckbox)="onMetricChange($event)"
+  [selectedMetrics]="selectedMetrics"></app-scenario-metrics-legend>
