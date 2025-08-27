@@ -38,6 +38,7 @@ def geometry_field_from_fiona(geom_type: str) -> type[gis.GeometryField]:
 
 
 TYPE_MAP = {
+    "str": models.CharField,
     "int": models.IntegerField,
     "integer": models.IntegerField,
     "int32": models.IntegerField,
@@ -80,7 +81,7 @@ def qualify_table_name(schema: str, table: str) -> str:
     return f'"{schema}"."{table}"'
 
 
-def model_from_fional(
+def model_from_fiona(
     datalayer: DataLayer,
     *,
     app_label: str = "datastore",
@@ -92,7 +93,6 @@ def model_from_fional(
     fiona_info = datalayer.info
     if fiona_info is None:
         raise ValueError("Empty Fiona info.")
-    # this functions handles multilayers as well
     if "schema" not in fiona_info:
         _, layer = next(iter(fiona_info.items()))
     else:
@@ -140,14 +140,8 @@ def model_from_fional(
                     blank=True,
                 )
             case _:
-                field_cls = TYPE_MAP.get(
-                    base, models.TextField if base == "str" else models.TextField
-                )
-                # fall back to TextField for unknowns
-                if field_cls is models.TextField and base == "str":
-                    attrs[field_name] = models.TextField(null=True, blank=True)
-                else:
-                    attrs[field_name] = field_cls(null=True, blank=True)
+                field_cls = TYPE_MAP.get(base, models.TextField)
+                attrs[field_name] = field_cls(null=True, blank=True)
 
     geom_cls = geometry_field_from_fiona(geom_type)
     attrs["geometry"] = geom_cls(srid=srid, null=False)

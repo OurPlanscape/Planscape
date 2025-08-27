@@ -7,7 +7,6 @@ from django.test import SimpleTestCase
 from datasets.dynamic_models import (
     field_from_fiona,
     geometry_field_from_fiona,
-    model_from_fional,
     qualify_table_name,
     srid_from_crs,
 )

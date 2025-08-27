@@ -26,6 +26,11 @@ from fiona.crs import from_epsg
 from gis.geometry import get_bounding_box
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -39,11 +44,6 @@ from planning.models import (
     TreatmentGoal,
 )
 from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -833,6 +833,7 @@ def planning_area_covers(
 
 
 def get_excluded_stands(stands, datalayer) -> List[int]:
+    # TODO: Implement it here
     pass
 
 
