@@ -166,3 +166,22 @@ export interface ScenarioGoal {
 export interface CategorizedScenarioGoals {
   [key: string]: ScenarioGoal[];
 }
+
+export interface Constraint {
+  datalayer: number;
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
+  value: number; // be supports string
+}
+
+export interface AvailableStands {
+  unavailable: {
+    by_inclusions: number[];
+    by_exclusions: number[];
+    by_thresholds: number[];
+  };
+  summary: {
+    total_area: number;
+    available_area: number;
+    unavailable_area: number;
+  };
+}
