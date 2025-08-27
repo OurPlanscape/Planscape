@@ -3,10 +3,12 @@ import {
   getColorForProjectPosition,
   isValidTotalArea,
   processCumulativeAttainment,
+  flattenMultipolygons
 } from './plan-helpers';
+import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 
-interface Feature {
+interface MockFeature {
   properties: {
     area_acres: number;
     attainment: Record<string, number>;
@@ -50,7 +52,7 @@ describe('Plan Helpers', () => {
     });
 
     it('should handle a single feature by returning its area and raw attainment as the running sum', () => {
-      const features: Feature[] = [
+      const features: MockFeature[] = [
         {
           properties: {
             area_acres: 50,
@@ -77,7 +79,7 @@ describe('Plan Helpers', () => {
     });
 
     it('should compute the running sum of attainment values over multiple features with exact decimals', () => {
-      const features: Feature[] = [
+      const features: MockFeature[] = [
         { properties: { area_acres: 10, attainment: { FLDH: 0.5 } } },
         { properties: { area_acres: 15, attainment: { FLDH: 0.25 } } },
         { properties: { area_acres: 20, attainment: { FLDH: 0.125 } } },
@@ -97,4 +99,74 @@ describe('Plan Helpers', () => {
       expect(ds.data).toEqual([0.5, 0.75, 0.875, 1]);
     });
   });
+});
+
+
+describe('Flatten multipolygon helper', () => {
+  it('should return an empty array when given an empty array', () => {
+    const result = flattenMultipolygons([]);
+    expect(result).toEqual([]);
+  });
+
+  it('should return a single polygon when given a single polygon feature', () => {
+    const features: Feature<Polygon>[] = [
+      {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[0, 0], [1, 1], [1, 0], [0, 0]]],
+        },
+        properties: {},
+      },
+    ];
+    const result = flattenMultipolygons(features);
+    expect(result[0].geometry.type).toBe('Polygon');
+  });
+
+  it('should flatten multipolygons into individual polygons', () => {
+    const features: Feature<MultiPolygon>[] = [
+      {
+        type: 'Feature',
+        geometry: {
+          type: 'MultiPolygon',
+          coordinates: [
+            [
+              [[0, 0], [1, 1], [1, 0], [0, 0]] // First polygon
+            ],
+            [
+              [[2, 2], [3, 3], [3, 2], [2, 2]] // Second polygon
+            ],
+          ],
+        },
+        properties: {},
+      },
+    ];
+    const result = flattenMultipolygons(features);
+    expect(result[0].geometry.type).toBe('Polygon');
+    expect(result[1].geometry.type).toBe('Polygon');
+  });
+
+  it('should ignore non-polygon features', () => {
+    const features: Feature<any>[] = [
+      {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [0, 0],
+        },
+        properties: {},
+      },
+      {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[0, 0], [1, 1], [1, 0], [0, 0]]],
+        },
+        properties: {},
+      },
+    ];
+    const result = flattenMultipolygons(features);
+    expect(result[0].geometry.type).toBe('Polygon');
+  });
+
 });
