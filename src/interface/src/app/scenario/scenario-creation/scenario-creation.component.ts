@@ -11,7 +11,7 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { map, Observable, of, skip, firstValueFrom } from 'rxjs';
+import { firstValueFrom, map, Observable, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
