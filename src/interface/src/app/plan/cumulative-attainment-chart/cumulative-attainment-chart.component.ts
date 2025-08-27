@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ScenarioResult } from '@types';
 import { processCumulativeAttainment } from '../plan-helpers';
@@ -13,11 +14,12 @@ import { CHART_COLORS } from '@shared';
 import { ChartComponent } from '@styleguide';
 import { ScenarioMetricsLegendComponent } from '../scenario-results/scenario-metrics-legend/scenario-metrics-legend.component';
 import { MatCheckboxChange } from '@angular/material/checkbox';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
   standalone: true,
-  imports: [NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
+  imports: [AsyncPipe, NgChartsModule, ChartComponent, ScenarioMetricsLegendComponent],
   templateUrl: './cumulative-attainment-chart.component.html',
   styleUrl: './cumulative-attainment-chart.component.scss',
 })
@@ -91,12 +93,14 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     },
   };
 
-  data: any = {};
+  allData: any = {};
+
+  selectedData$: BehaviorSubject<any> = new BehaviorSubject({});
 
   ngOnInit(): void {
     const d = processCumulativeAttainment(this.scenarioResult.result.features);
-    this.data.labels = d.area.map((data) => Math.round(data));
-    this.data.datasets = d.datasets.map((data, index) => {
+    this.allData.labels = d.area.map((data) => Math.round(data));
+    this.allData.datasets = d.datasets.map((data, index) => {
       return {
         ...data,
         ...this.colorForLabel(data.label),
@@ -104,9 +108,10 @@ export class CumulativeAttainmentChartComponent implements OnInit {
       };
     });
     // todo: add dataset type
-    this.data.datasets.forEach((dataset: any) =>
+    this.allData.datasets.forEach((dataset: any) =>
       this.selectedMetrics.add(dataset.label)
     );
+    this.selectedData$.next(structuredClone(this.allData));
   }
 
   onMetricChange(event: MatCheckboxChange) {
@@ -115,6 +120,11 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     } else {
       this.selectedMetrics.delete(event.source.value);
     }
+    let selectedData = {
+      ...this.allData,
+      datasets: this.allData.datasets.filter((d:any) => this.selectedMetrics.has(d.label))
+    }
+    this.selectedData$.next(selectedData);
   }
 
   colorForLabel(label: string) {
