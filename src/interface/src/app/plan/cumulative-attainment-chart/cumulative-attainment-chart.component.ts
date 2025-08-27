@@ -120,7 +120,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     } else {
       this.selectedMetrics.delete(event.source.value);
     }
-    let selectedData = {
+    const selectedData = {
       ...this.allData,
       datasets: this.allData.datasets.filter((d:any) => this.selectedMetrics.has(d.label))
     }
