@@ -391,6 +391,13 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     objects: "Manager[DataLayer]" = DataLayerManager()
 
+    def get_model_name(self):
+        """
+        Returns a fake, unique name for a the dynamically generated model.
+        """
+        layer_id = str(self.pk).zfill(5)
+        return f"DataLayer{layer_id}"
+
     def get_public_url(self) -> Optional[str]:
         if not self.url:
             return None

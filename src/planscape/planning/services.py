@@ -7,7 +7,7 @@ import zipfile
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
+from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
@@ -15,6 +15,7 @@ from cacheops import redis_client
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
+from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -22,8 +23,14 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
+from gis.geometry import get_bounding_box
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -37,11 +44,6 @@ from planning.models import (
     TreatmentGoal,
 )
 from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -830,7 +832,22 @@ def planning_area_covers(
     return False
 
 
-def get_available_stands(planning_area: PlanningArea, **kwargs):
+def get_excluded_stands(stands, datalayer) -> List[int]:
+    # TODO: Implement it here
+    pass
+
+
+def get_available_stands(
+    planning_area: PlanningArea,
+    stand_size: str,
+    includes: List[DataLayer],
+    excludes: List[DataLayer],
+    constraints: List[Dict[str, Any]],
+    **kwargs,
+):
+    stands = planning_area.get_stands(stand_size)
+    stands_bbox = get_bounding_box([s.geometry for s in stands])
+
     return {
         "unavailable": {
             "by_inclusions": [],
