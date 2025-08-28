@@ -1,6 +1,8 @@
 @import 'colors';
 @import 'mixins';
 
+$tile-size-md: 176px;
+
 .tile-button {
   border-radius: 4px;
   border: 1px solid $color-soft-gray;
@@ -17,10 +19,10 @@
   padding: 0;
 
   &.md {
-    min-height: 176px;
-    max-height: 176px;
-    min-width: 176px;
-    max-width: 176px;
+    min-height: $tile-size-md;
+    max-height: $tile-size-md;
+    min-width: $tile-size-md;
+    max-width: $tile-size-md;
   }
 
   &:hover:not(:disabled) {
