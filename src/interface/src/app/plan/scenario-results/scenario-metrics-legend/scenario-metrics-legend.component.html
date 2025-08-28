@@ -1,4 +1,19 @@
-<div class="title">View Metrics</div>
+<div class="title" *ngIf="priorities.length > 0">Priority Objectives:</div>
+<div class="legend-box" *ngFor="let metric of priorities">
+  <mat-checkbox
+    [value]="metric"
+    [checked]="isSelected(metric)"
+    class="chart-legend-selection"
+    (change)="metricSelected($event)">
+    <div class="legend-line">
+      <div class="legend-name">{{ metric }}</div>
+      <div
+        class="legend-color"
+        [style.backgroundColor]="chartColors[metric]"></div>
+    </div>
+  </mat-checkbox>
+</div>
+<div class="title" *ngIf="metrics.length > 0">Co-Benefits:</div>
 <div class="legend-box" *ngFor="let metric of metrics">
   <mat-checkbox
     [value]="metric"
