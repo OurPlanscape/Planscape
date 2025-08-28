@@ -56,7 +56,7 @@ def backwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     atomic = False
-    dependencies = [("stands", "0003_stand_grid_key")]
+    dependencies = [("stands", "0004_grid_key_unique_index")]
     operations = [
         migrations.RunPython(forwards, backwards),
     ]
