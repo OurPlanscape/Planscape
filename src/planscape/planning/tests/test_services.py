@@ -14,9 +14,6 @@ from stands.models import StandSizeChoices
 
 from planning.models import (
     PlanningArea,
-    ProjectArea,
-    Scenario,
-    ScenarioResult,
     ScenarioResultStatus,
 )
 from planning.services import (
@@ -189,11 +186,11 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo", region_name="sierra-nevada", geometry=unit_poly
         )
-        scenario = Scenario.objects.create(planning_area=planning, name="s1")
-        _ = ScenarioResult.objects.create(
+        scenario = ScenarioFactory.create(planning_area=planning, name="s1")
+        _ = ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.FAILURE
         )
         with self.assertRaises(ValueError):
@@ -203,11 +200,11 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo", region_name="sierra-nevada", geometry=unit_poly
         )
-        scenario = Scenario.objects.create(planning_area=planning, name="s1")
-        _ = ScenarioResult.objects.create(
+        scenario = ScenarioFactory.create(planning_area=planning, name="s1")
+        _ = ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.PENDING
         )
         with self.assertRaises(ValueError):
@@ -217,11 +214,11 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo", region_name="sierra-nevada", geometry=unit_poly
         )
-        scenario = Scenario.objects.create(planning_area=planning, name="s1")
-        _ = ScenarioResult.objects.create(
+        scenario = ScenarioFactory.create(planning_area=planning, name="s1")
+        _ = ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.RUNNING
         )
         with self.assertRaises(ValueError):
@@ -232,13 +229,13 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo",
             region_name="sierra-nevada",
             geometry=unit_poly,
             user=user,
         )
-        scenario = Scenario.objects.create(
+        scenario = ScenarioFactory.create(
             planning_area=planning,
             name="s1",
             user=user,
@@ -250,14 +247,14 @@ class ExportToShapefileTest(TransactionTestCase):
             "now": str(datetime.now()),
             "today": date.today(),
         }
-        ProjectArea.objects.create(
+        ProjectAreaFactory.create(
             scenario=scenario,
             geometry=unit_poly,
             data=data,
             created_by=user,
             name="foo",
         )
-        ScenarioResult.objects.create(
+        ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.SUCCESS
         )
 
