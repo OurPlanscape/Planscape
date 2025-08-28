@@ -18,15 +18,17 @@ import { DataLayersService } from '@services/data-layers.service';
 export class NewScenarioState {
   private scenarioService: ScenarioService = inject(ScenarioService);
 
-  // todo set this better
+  // todo set this via injection token once we split plan and scenario components
   public planId = 0;
 
   private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioCreation>>({});
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
 
+  // user selected excluded areas
   private _excludedAreas$ = new BehaviorSubject<number[]>([]);
   public excludedAreas$ = this._excludedAreas$.asObservable();
 
+  // max slope and/or distance to roads constraints
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
@@ -105,5 +107,6 @@ export class NewScenarioState {
     this._scenarioConfig$.next({});
     this._excludedAreas$.next([]);
     this._constraints$.next([]);
+    this.setPlanId(0);
   }
 }
