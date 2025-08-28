@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
     atomic = False
 
-    dependencies = [("stands", "0005_backfill_grid_key_batches")]
+    dependencies = [("stands", "0003_stand_grid_key")]
 
     operations = [
         migrations.RunSQL(
