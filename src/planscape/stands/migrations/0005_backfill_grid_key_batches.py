@@ -35,7 +35,6 @@ def forwards(apps, schema_editor):
 
         cur.execute(SQL_COUNT_MISSING)
         remaining = cur.fetchone()[0] or 0
-        print(f"[grid_key backfill] starting, missing={remaining}")
 
         i = 0
         while True:
@@ -47,14 +46,9 @@ def forwards(apps, schema_editor):
             if i % 5 == 0 or updated < CHUNK:
                 cur.execute(SQL_COUNT_MISSING)
                 remaining = cur.fetchone()[0] or 0
-                print(
-                    f"[grid_key backfill] batches={i}, last_batch={updated}, remaining={remaining}"
-                )
-
+            
         cur.execute(SQL_COUNT_MISSING)
         remaining = cur.fetchone()[0] or 0
-        print(f"[grid_key backfill] done, remaining={remaining}")
-
 
 def backwards(apps, schema_editor):
     pass
