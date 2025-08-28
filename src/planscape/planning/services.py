@@ -917,7 +917,7 @@ def get_available_stands(
     return {
         "unavailable": {
             "by_inclusions": [],
-            "by_exclusions": excluded_ids,
+            "by_exclusions": list(set(excluded_ids)),
             "by_thresholds": [],
         },
         "summary": {
