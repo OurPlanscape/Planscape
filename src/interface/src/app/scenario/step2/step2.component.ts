@@ -80,8 +80,4 @@ export class Step2Component
   getData() {
     return { excluded_areas: this.getSelectedExcludedAreas() };
   }
-
-  formChanged(event: Event) {
-    console.log(event);
-  }
 }

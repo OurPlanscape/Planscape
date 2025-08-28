@@ -173,6 +173,13 @@ export interface Constraint {
   value: number; // be supports string
 }
 
+// TODO - remove this and use `Constraint` when we implement dynamic constraints
+export interface NamedConstraint {
+  name: string;
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
+  value: number; // be supports string
+}
+
 export interface AvailableStands {
   unavailable: {
     by_inclusions: number[];

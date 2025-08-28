@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import { Constraint, ScenarioCreation } from '@types';
+import { Constraint, NamedConstraint, ScenarioCreation } from '@types';
 import {
   BehaviorSubject,
   combineLatest,
@@ -10,6 +10,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
+import { DataLayersService } from '@services/data-layers.service';
 
 @Injectable({
   providedIn: 'root',
@@ -54,7 +55,17 @@ export class NewScenarioState {
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
-  constructor() {}
+  public slopeId = 0;
+  public distanceToRoadsId = 0;
+
+  constructor(private dataLayersService: DataLayersService) {
+    this.dataLayersService.getMaxSlopeLayerId().subscribe((s) => {
+      this.slopeId = s;
+    });
+    this.dataLayersService.getDistanceToRoadsLayerId().subscribe((s) => {
+      this.distanceToRoadsId = s;
+    });
+  }
 
   setLoading(isLoading: boolean) {
     this._loading$.next(isLoading);
@@ -74,5 +85,25 @@ export class NewScenarioState {
 
   setConstraints(constraints: Constraint[]) {
     this._constraints$.next(constraints);
+  }
+
+  // TODO - remove and use setConstraints when we implement dynamic constraints
+  setNamedConstraints(namedConstraints: NamedConstraint[]) {
+    const constraints: Constraint[] = namedConstraints.map((c) => {
+      const datalayer =
+        c.name === 'maxSlope' ? this.slopeId : this.distanceToRoadsId;
+      return {
+        datalayer: datalayer,
+        value: c.value,
+        operator: c.operator,
+      };
+    });
+    this.setConstraints(constraints);
+  }
+
+  reset() {
+    this._scenarioConfig$.next({});
+    this._excludedAreas$.next([]);
+    this._constraints$.next([]);
   }
 }

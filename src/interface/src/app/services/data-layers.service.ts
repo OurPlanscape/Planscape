@@ -71,4 +71,14 @@ export class DataLayersService {
       )
       .pipe(map((data) => data.layer_url));
   }
+
+  getMaxSlopeLayerId() {
+    return this.search('Slope', 1).pipe(map((s) => s.results[0].id));
+  }
+
+  getDistanceToRoadsLayerId() {
+    return this.search('Distance from Roads - CA', 1).pipe(
+      map((s) => s.results[0].id)
+    );
+  }
 }
