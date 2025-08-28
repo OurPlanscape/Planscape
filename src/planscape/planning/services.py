@@ -606,7 +606,7 @@ def export_scenario_stand_outputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"stnd_outputs",
+                layer=f"stand_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -682,7 +682,7 @@ def export_scenario_inputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"stnd_inputs",
+                layer=f"stand_inputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -716,7 +716,7 @@ def export_scenario_project_areas_outputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer="proj_outputs",
+                layer="project_areas_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
