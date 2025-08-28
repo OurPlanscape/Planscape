@@ -6,10 +6,6 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
-from stands.models import StandSizeChoices
-
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -25,6 +21,10 @@ from planning.models import (
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+from stands.models import StandSizeChoices
+
 from planscape.exceptions import InvalidGeometry
 
 
@@ -916,3 +916,66 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
             geometry=uploaded_geos,
             stand_size=stand_size,
         )
+
+
+class ConstraintSerializer(serializers.Serializer):
+    datalayer = serializers.PrimaryKeyRelatedField(
+        queryset=DataLayer.objects.all(),
+        required=True,
+    )
+
+    operator = serializers.ChoiceField(
+        choices=["eq", "lt", "lte", "gt", "gte"],
+        required=True,
+    )
+
+    value = serializers.CharField(
+        max_length=16,
+        required=True,
+    )
+
+
+class GetAvailableStandsSerializer(serializers.Serializer):
+    stand_size = serializers.ChoiceField(
+        choices=StandSizeChoices.choices,
+        default=StandSizeChoices.LARGE,
+        required=False,
+    )
+    includes = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=DataLayer.objects.all(),
+        ),
+        required=False,
+    )
+    excludes = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=DataLayer.objects.all(),
+        ),
+        required=False,
+    )
+    constraints = serializers.ListField(
+        child=ConstraintSerializer(),
+        required=False,
+    )
+
+
+class UnavailableStandsSerializer(serializers.Serializer):
+    by_inclusions = serializers.ListField(child=serializers.IntegerField())
+
+    by_exclusions = serializers.ListField(child=serializers.IntegerField())
+
+    by_thresholds = serializers.ListField(child=serializers.IntegerField())
+
+
+class AvailableStandsSummarySerializer(serializers.Serializer):
+    total_area = serializers.FloatField()
+
+    available_area = serializers.FloatField()
+
+    unavailable_area = serializers.FloatField()
+
+
+class AvailableStandsSerializer(serializers.Serializer):
+    unavailable = UnavailableStandsSerializer()
+
+    summary = AvailableStandsSummarySerializer()

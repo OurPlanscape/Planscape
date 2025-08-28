@@ -2,7 +2,7 @@ import json
 import logging
 import uuid
 from pathlib import Path
-from typing import Collection, Optional
+from typing import Collection, List, Optional
 
 from collaboration.models import UserObjectRole
 from core.gcs import create_download_url
@@ -95,6 +95,11 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
 
     def creator_name(self) -> str:
         return self.user.get_full_name()
+
+    def get_stands(self, stand_size) -> List[Stand]:
+        """
+        Returns the list of stands inside that planning area."""
+        return list(Stand.objects.within_polygon(self.geometry, stand_size))
 
     objects: PlanningAreaManager = PlanningAreaManager()
 

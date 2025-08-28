@@ -14,7 +14,11 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalGroup,
+    TreatmentGoalUsesDataLayer,
+    TreatmentGoalUsageType,
 )
+from datasets.tests.factories import DataLayerFactory
 
 from planscape.tests.factories import UserFactory
 
@@ -89,6 +93,28 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
     category = factory.fuzzy.FuzzyChoice(TreatmentGoalCategory.values)
     created_by = factory.SubFactory(UserFactory)
     group = factory.fuzzy.FuzzyChoice(TreatmentGoalGroup.values)
+
+    @factory.post_generation
+    def datalayers(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        for datalayer in extracted:
+            TreatmentGoalUsesDataLayerFactory(
+                treatment_goal=self,
+                datalayer=datalayer,
+                usage_type=TreatmentGoalUsageType.PRIORITY,
+            )
+
+
+class TreatmentGoalUsesDataLayerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TreatmentGoalUsesDataLayer
+
+    treatment_goal = factory.SubFactory(TreatmentGoalFactory)
+    datalayer = factory.SubFactory(DataLayerFactory)
+    usage_type = TreatmentGoalUsageType.PRIORITY
+    threshold = None
 
 
 class ScenarioFactory(factory.django.DjangoModelFactory):

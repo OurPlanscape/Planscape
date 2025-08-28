@@ -68,6 +68,7 @@ export class StepsComponent<T> extends CdkStepper {
 
   goNext(): void {
     const currentStep = this.selected;
+    let outerFormValid = true;
 
     // grab the control (formControl) from the selected step
     const control =
@@ -82,9 +83,10 @@ export class StepsComponent<T> extends CdkStepper {
     }
     if (this.outerForm && this.outerForm.invalid) {
       this.outerForm.markAllAsTouched();
+      outerFormValid = false;
     }
 
-    if (currentStep && control.valid) {
+    if (currentStep && control.valid && outerFormValid) {
       // async
       if (this.save) {
         const data =
