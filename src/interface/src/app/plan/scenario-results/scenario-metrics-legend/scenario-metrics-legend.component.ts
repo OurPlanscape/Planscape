@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf} from '@angular/common';
 import { CHART_COLORS } from '@shared';
 import { getGroupedAttainment } from 'src/app/chart-helper';
 import { ScenarioResult } from '@types';
@@ -11,7 +11,7 @@ import {
 @Component({
   selector: 'app-scenario-metrics-legend',
   standalone: true,
-  imports: [NgFor, MatCheckboxModule],
+  imports: [NgFor, NgIf, MatCheckboxModule],
   templateUrl: './scenario-metrics-legend.component.html',
   styleUrl: './scenario-metrics-legend.component.scss',
 })
@@ -22,6 +22,7 @@ export class ScenarioMetricsLegendComponent implements OnInit {
 
   chartColors = CHART_COLORS;
   metrics: string[] = [];
+  priorities: string[] = [];
 
   ngOnInit() {
     this.metrics = Object.keys(

@@ -10,6 +10,8 @@
     align-self: stretch;
     border: 1px solid $color-soft-gray;
     background: $color-light-gray;
+    gap: 4px;
+    padding-left: 8px;
 }
 
 .title {
@@ -17,7 +19,7 @@
     color: $color-md-gray;
     font-weight: 700;
     line-height: 14px;
-    text-transform: uppercase;
+    padding-left: 8px;
 }
 
 .legend-box {
@@ -37,12 +39,14 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
+    gap: 4px;
 }
 
 .legend-name {
     color: $color-black;
     @include xs-label();
     font-size: 14px;
+    line-height: normal;
 }
 
 .legend-color {
