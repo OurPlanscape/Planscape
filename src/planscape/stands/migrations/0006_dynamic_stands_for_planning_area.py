@@ -24,7 +24,7 @@ def drop_sql(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("stands", "0005_backfill_grid_key_batches")]
+    dependencies = [("stands", "0004_grid_key_unique_index")]
     operations = [
         migrations.RunPython(load_sql, reverse_code=drop_sql),
     ]
