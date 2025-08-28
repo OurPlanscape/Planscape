@@ -15,15 +15,18 @@ from cacheops import redis_client
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
+from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
+from django.db.models import F, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce, NullIf
 from django.utils.timezone import now
 from fiona.crs import from_epsg
-from gis.geometry import get_bounding_box
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from pyproj import Geod
@@ -858,6 +861,43 @@ def get_excluded_stands(stands, datalayer) -> List[int]:
     pass
 
 
+def remove_excludes(
+    stands_qs,
+    exclude_model,
+    min_coverage: float = 0.51,
+    transform_srid: int | None = 5070,
+):
+    """
+    Return stands_qs with any stand removed if some exclude_model geometry covers
+    >= min_coverage of that stand's area.
+    """
+    stand_geom = "geometry"
+    excl_geom = "geometry"
+    if transform_srid:
+        stand_geom = Transform("geometry", transform_srid)
+        excl_geom = Transform("geometry", transform_srid)
+
+    stands_qs = stands_qs.annotate(stand_area=Area(stand_geom))
+    stand_area_expr = F("stand_area")
+
+    union_subq = (
+        exclude_model.objects.filter(geometry__intersects=OuterRef("geometry"))
+        .values()
+        .annotate(u=UnionOp(excl_geom))
+        .values("u")[:1]
+    )
+
+    stands_qs = (
+        stands_qs.annotate(excl_union=Subquery(union_subq))
+        .annotate(inter_area=Area(Intersection(stand_geom, F("excl_union"))))
+        .annotate(
+            coverage=Coalesce(F("inter_area"), Value(0.0))
+            / NullIf(stand_area_expr, 0.0)
+        )
+    )
+    return stands_qs.exclude(coverage__gte=min_coverage)
+
+
 def get_available_stands(
     planning_area: PlanningArea,
     *,
@@ -868,12 +908,16 @@ def get_available_stands(
     **kwargs,
 ):
     stands = planning_area.get_stands(stand_size)
-    stands_bbox = get_bounding_box([s.geometry for s in stands])
+    excluded_ids = []
+    for exclude in excludes:
+        ExcludeModel = model_from_fiona(exclude)
+        excluded_stands = remove_excludes(stands, ExcludeModel)
+        excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     return {
         "unavailable": {
             "by_inclusions": [],
-            "by_exclusions": [],
+            "by_exclusions": excluded_ids,
             "by_thresholds": [],
         },
         "summary": {
