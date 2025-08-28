@@ -4,7 +4,8 @@ import { ScenarioLegendComponent } from './scenario-legend.component';
 import { MockProvider } from 'ng-mocks';
 import { PlanState } from '../../plan/plan.state';
 import { of } from 'rxjs';
-import { Plan } from '@types';
+import { AvailableStands, Plan } from '@types';
+import { NewScenarioState } from '../new-scenario.state';
 
 describe('ScenarioLegendComponent', () => {
   let component: ScenarioLegendComponent;
@@ -16,6 +17,9 @@ describe('ScenarioLegendComponent', () => {
       providers: [
         MockProvider(PlanState, {
           currentPlan$: of({} as Plan),
+        }),
+        MockProvider(NewScenarioState, {
+          availableStands$: of({} as AvailableStands),
         }),
       ],
     }).compileComponents();
