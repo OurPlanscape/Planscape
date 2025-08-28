@@ -13,7 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SectionComponent } from '@styleguide';
 import { NgxMaskModule } from 'ngx-mask';
 import { StepDirective } from 'src/styleguide/steps/step.component';
-import { Constraint, ScenarioCreation } from '@types';
+import { NamedConstraint, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
@@ -62,22 +62,22 @@ export class Step3Component
     this.form.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((form) => {
-        const constraints: Constraint[] = [];
+        const constraints: NamedConstraint[] = [];
         if (form.max_slope != null) {
           constraints.push({
-            datalayer: 3017, //hardcoded!
+            name: 'maxSlope',
             operator: 'lte',
             value: form.max_slope,
           });
         }
         if (form.min_distance_from_road != null) {
           constraints.push({
-            datalayer: 3016, // hardcoded
+            name: 'distanceToRoads',
             operator: 'lte',
             value: form.min_distance_from_road,
           });
         }
-        this.newScenarioState.setConstraints(constraints);
+        this.newScenarioState.setNamedConstraints(constraints);
       });
   }
 }

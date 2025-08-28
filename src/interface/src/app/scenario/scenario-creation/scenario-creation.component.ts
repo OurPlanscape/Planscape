@@ -201,6 +201,6 @@ export class ScenarioCreationComponent
   }
 
   ngOnDestroy(): void {
-    this.newScenarioState.setScenarioConfig({});
+    this.newScenarioState.reset();
   }
 }

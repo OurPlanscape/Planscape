@@ -6,7 +6,7 @@
     Select areas you want to exclude from your Potential Treatable Area.
   </div>
   <section class="area-selection">
-    <form [formGroup]="form" (change)="formChanged($event)">
+    <form [formGroup]="form">
       <div formArrayName="excluded_areas" class="checkbox-column">
         <div *ngFor="let area of excludedAreas$ | async; let i = index">
           <mat-checkbox
