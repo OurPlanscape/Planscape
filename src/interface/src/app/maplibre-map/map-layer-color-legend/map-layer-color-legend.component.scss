@@ -23,8 +23,9 @@
   max-height: calc(100% - $map-nav-bar-height);
   text-overflow: ellipsis;
   overflow: hidden;
-  transition: width 0.8s ease,
-  height 0.8s ease;
+  transition:
+    width 0.8s ease,
+    height 0.8s ease;
   white-space: nowrap;
 
   &:hover {
@@ -78,9 +79,13 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow-y: auto;
+  overflow: hidden;
   height: 100%;
   width: 100%;
+}
+
+.entries-legend:hover {
+  overflow-y: auto;
 }
 
 .ramp-legend {

@@ -14,9 +14,6 @@ from stands.models import StandSizeChoices
 
 from planning.models import (
     PlanningArea,
-    ProjectArea,
-    Scenario,
-    ScenarioResult,
     ScenarioResultStatus,
 )
 from planning.services import (
@@ -34,9 +31,11 @@ from planning.tests.factories import (
     ScenarioFactory,
     ProjectAreaFactory,
     ScenarioResultFactory,
+    TreatmentGoalFactory,
 )
 from planscape.tests.factories import UserFactory
 from stands.tests.factories import StandFactory
+from datasets.tests.factories import DataLayerFactory
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -187,11 +186,11 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo", region_name="sierra-nevada", geometry=unit_poly
         )
-        scenario = Scenario.objects.create(planning_area=planning, name="s1")
-        _ = ScenarioResult.objects.create(
+        scenario = ScenarioFactory.create(planning_area=planning, name="s1")
+        _ = ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.FAILURE
         )
         with self.assertRaises(ValueError):
@@ -201,11 +200,11 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo", region_name="sierra-nevada", geometry=unit_poly
         )
-        scenario = Scenario.objects.create(planning_area=planning, name="s1")
-        _ = ScenarioResult.objects.create(
+        scenario = ScenarioFactory.create(planning_area=planning, name="s1")
+        _ = ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.PENDING
         )
         with self.assertRaises(ValueError):
@@ -215,11 +214,11 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo", region_name="sierra-nevada", geometry=unit_poly
         )
-        scenario = Scenario.objects.create(planning_area=planning, name="s1")
-        _ = ScenarioResult.objects.create(
+        scenario = ScenarioFactory.create(planning_area=planning, name="s1")
+        _ = ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.RUNNING
         )
         with self.assertRaises(ValueError):
@@ -230,13 +229,13 @@ class ExportToShapefileTest(TransactionTestCase):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        planning = PlanningArea.objects.create(
+        planning = PlanningAreaFactory.create(
             name="foo",
             region_name="sierra-nevada",
             geometry=unit_poly,
             user=user,
         )
-        scenario = Scenario.objects.create(
+        scenario = ScenarioFactory.create(
             planning_area=planning,
             name="s1",
             user=user,
@@ -248,14 +247,14 @@ class ExportToShapefileTest(TransactionTestCase):
             "now": str(datetime.now()),
             "today": date.today(),
         }
-        ProjectArea.objects.create(
+        ProjectAreaFactory.create(
             scenario=scenario,
             geometry=unit_poly,
             data=data,
             created_by=user,
             name="foo",
         )
-        ScenarioResult.objects.create(
+        ScenarioResultFactory.create(
             scenario=scenario, status=ScenarioResultStatus.SUCCESS
         )
 
@@ -274,6 +273,7 @@ class TestExportToGeopackage(TestCase):
         self.unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
+        self.datalayers = DataLayerFactory.create_batch(7)
         self.stand = StandFactory.create()
         self.planning = PlanningAreaFactory.create(
             name="foo",
@@ -281,8 +281,15 @@ class TestExportToGeopackage(TestCase):
             geometry=self.unit_poly,
             user=self.user,
         )
+        self.treatment_goal = TreatmentGoalFactory.create(
+            name="Test Goal",
+            datalayers=self.datalayers,
+        )
         self.scenario = ScenarioFactory.create(
-            planning_area=self.planning, name="s1", user=self.user
+            planning_area=self.planning,
+            name="s1",
+            user=self.user,
+            treatment_goal=self.treatment_goal,
         )
         data = {
             "foo": "abc",
@@ -312,13 +319,13 @@ class TestExportToGeopackage(TestCase):
                 "WKT",
                 "stand_id",
                 "area_acres",
-                "datalayer_1",
-                "datalayer_2",
-                "datalayer_3",
-                "datalayer_4",
-                "datalayer_5",
-                "datalayer_6_SPM",
-                "datalayer_7_PCP",
+                f"datalayer_{self.datalayers[0].pk}",
+                f"datalayer_{self.datalayers[1].pk}",
+                f"datalayer_{self.datalayers[2].pk}",
+                f"datalayer_{self.datalayers[3].pk}",
+                f"datalayer_{self.datalayers[4].pk}",
+                f"datalayer_{self.datalayers[5].pk}_SPM",
+                f"datalayer_{self.datalayers[6].pk}_PCP",
                 "priority",
             ],
             [
@@ -347,10 +354,10 @@ class TestExportToGeopackage(TestCase):
                 "selected",
                 "ETrt_YR",
                 "area_acres",
-                "datalayer_1",
-                "datalayer_2",
-                "datalayer_3",
-                "datalayer_4",
+                f"datalayer_{self.datalayers[0].pk}",
+                f"datalayer_{self.datalayers[1].pk}",
+                f"datalayer_{self.datalayers[2].pk}",
+                f"datalayer_{self.datalayers[3].pk}",
                 "weightedPriority",
                 "Pr_1_priority",
             ],

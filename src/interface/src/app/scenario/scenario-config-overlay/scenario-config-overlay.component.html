@@ -29,12 +29,24 @@
         {{
           scenario.configuration.max_slope
             ? 'Slope less or equal than (<=) ' +
-              scenario.configuration.max_slope
+              scenario.configuration.max_slope +
+              '%'
             : '--'
         }}
       </dd>
       <dt>Treatment Target:</dt>
-      <dd>--</dd>
+      <dd>
+        @if (scenario.configuration.max_area) {
+          Planning Area Acres
+          {{ scenario.configuration.max_area | number: '1.0-0' }}
+        } @else if (scenario.configuration.max_budget) {
+          Planning Area Budget ${{
+            scenario.configuration.max_budget | number: '1.0-2'
+          }}
+        } @else {
+          --
+        }
+      </dd>
     </dl>
   </div>
   <div class="footer">

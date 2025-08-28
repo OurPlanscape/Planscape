@@ -2,18 +2,20 @@
   class="treatment-step"
   headline="Treatment Target"
   [required]="true"
-  tooltipContent="Treatment goals allow you to select one goal that will generate a
-          scenario based on your landscape. Each of the goals uses a different
-          set of input variables, thresholds and primary metrics to generate
-          your result. You can only select one goal per run, however you can do
-          as many scenario runs as you choose by selecting different treatment
-          goal questions and parameters each time. Click on the options below
-          for full question details.">
+  tooltipContent="Treatment goals allow you to select one goal that will generate a scenario based on your landscape.
+  Each of the goals uses a different set of input variables, thresholds and primary metrics to generate your result.
+  You can only select one goal per run, however you can do as many scenario runs as you choose by selecting different treatment goal questions and parameters each time.
+  Click on the options below for full question details.">
   <p class="section-label">
     Set treatment targets that Forsys will aim to achieve in each sub-unit and
     stop once reached.
   </p>
   <form *ngIf="form" [formGroup]="form!">
+    <div
+      class="error-message"
+      *ngIf="form?.touched && form.hasError('budgetOrAreaRequired')">
+      Please enter a budget or max acres to be treated
+    </div>
     <div>
       <mat-form-field
         class="input-field"

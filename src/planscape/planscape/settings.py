@@ -43,6 +43,7 @@ PLANSCAPE_APPS = [
     "collaboration",
     "core",
     "datasets",
+    "datastore",
     "e2e",
     "impacts",
     "martin",
@@ -423,6 +424,9 @@ REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_E
 
 
 AREA_SRID = 5070
+# Global hex grid origin (EPSG:5070) used to align ALL dynamic stands
+HEX_GRID_ORIGIN_X = config("HEX_GRID_ORIGIN_X", default=-2356881.4306262177, cast=float)
+HEX_GRID_ORIGIN_Y = config("HEX_GRID_ORIGIN_Y", default=1242364.3072737672, cast=float)
 CONVERSION_SQM_ACRES = 4046.8564213562374
 
 ACTSTREAM_SETTINGS = {
@@ -467,6 +471,7 @@ boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 
 MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 
+GDAL_NUM_THREADS = config("GDAL_NUM_THREADS", default="4", cast=str)
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
 CPL_DEBUG = config("CPL_DEBUG", False, cast=bool)
 OGR2OGR_TIMEOUT = config("OGR2OGR_TIMEOUT", 600)  # 10m
@@ -507,3 +512,5 @@ if not TESTING_MODE and not OPENPANEL_URL:
     OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
 else:
     OPENPANEL_CLIENT = None
+
+STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=int)

@@ -10,7 +10,13 @@
     View Configurations
   </button>
   <mat-menu #popoverMenu="matMenu" class="scenario-config-overlay">
-    <app-scenario-config-overlay></app-scenario-config-overlay>
+    <!-- Preventing modal to be closed if you click on the content-->
+    <div
+      matMenuContent
+      (click)="$event.stopPropagation()"
+      *ngIf="displayScenarioConfigOverlay$ | async">
+      <app-scenario-config-overlay></app-scenario-config-overlay>
+    </div>
   </mat-menu>
 </ng-container>
 
@@ -20,8 +26,8 @@
     sg-button
     variant="primary"
     class="footer-button"
-    [disabled]="downloadingScenario || !geoPackageURL"
-    (click)="handleDownload()">
-    {{ geoPackageURL ? 'Download GeoPackage' : 'Generating GeoPackage' }}
+    [disabled]="downloadingScenario || geoPackageStatus === 'PENDING'"
+    (click)="handleButton()">
+    {{ buttonLabels[geoPackageStatus] }}
   </button>
 </div>

@@ -5,7 +5,7 @@ import { hasAnalytics, parseResultsToProjectAreas } from '../plan-helpers';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
 import { FeatureService } from '../../features/feature.service';
-import { ChartColorsService } from 'src/app/scenario/chart-colors.service';
+import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
 
 @Component({
   selector: 'app-scenario-results',
@@ -25,9 +25,9 @@ export class ScenarioResultsComponent implements OnChanges {
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
     private featureService: FeatureService,
-    private colorService: ChartColorsService
+    private chartService: ScenarioResultsChartsService
   ) {
-    this.colorService.resetColors();
+    this.chartService.resetColors();
   }
 
   ngOnChanges(changes: SimpleChanges) {

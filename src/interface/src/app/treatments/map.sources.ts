@@ -13,10 +13,10 @@ export const MARTIN_SOURCES = {
       standsByTxPlan: 'stands_by_tx_plan',
     },
   },
-  standsByScenario: {
-    tilesUrl: environment.martin_server + 'stands_by_scenario/{z}/{x}/{y}',
+  standsByPlanningArea: {
+    tilesUrl: environment.martin_server + 'stands_by_planning_area/{z}/{x}/{y}',
     sources: {
-      standsByScenario: 'stands_by_scenario',
+      standsByPlanningArea: 'stands_by_planning_area',
     },
   },
   projectAreasByScenario: {
@@ -37,6 +37,12 @@ export const MARTIN_SOURCES = {
     tilesUrl: environment.martin_server + 'planning_area_by_id/{z}/{x}/{y}',
     sources: {
       planningArea: 'planning_area',
+    },
+  },
+  scenarioStands: {
+    tilesUrl: environment.martin_server + 'stands_by_planning_area/{z}/{x}/{y}',
+    sources: {
+      stands: 'stands_by_planning_area',
     },
   },
 } as const;

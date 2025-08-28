@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 def get_gdal_env(
-    num_threads: Union[int, str] = "ALL_CPUS",
     allowed_extensions: Optional[str] = ".tif",
 ) -> Dict[str, Any]:
     gdal_env = {
@@ -22,7 +21,7 @@ def get_gdal_env(
         "CPL_VSIL_USE_TEMP_FILE_FOR_RANDOM_WRITE": "YES",
         "GDAL_CACHE_MAX": settings.GDAL_CACHE_MAX,
         "VSI_CACHE": False,
-        "GDAL_NUM_THREADS": str(num_threads),
+        "GDAL_NUM_THREADS": settings.GDAL_NUM_THREADS,
         "GDAL_TIFF_INTERNAL_MASK": True,
         "GDAL_TIFF_OVR_BLOCK_SIZE": 128,
         "CPL_DEBUG": settings.CPL_DEBUG,

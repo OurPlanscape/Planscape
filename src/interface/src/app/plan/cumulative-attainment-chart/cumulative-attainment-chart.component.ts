@@ -10,7 +10,7 @@ import {
   whiteTooltipBaseConfig,
 } from '../../chart-helper';
 import { ChartComponent } from '@styleguide';
-import { ChartColorsService } from 'src/app/scenario/chart-colors.service';
+import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
 
 @Component({
   selector: 'app-cumulative-attainment-chart',
@@ -22,7 +22,7 @@ import { ChartColorsService } from 'src/app/scenario/chart-colors.service';
 export class CumulativeAttainmentChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
 
-  constructor(private colorService: ChartColorsService) {}
+  constructor(private chartService: ScenarioResultsChartsService) {}
 
   options: ChartOptions<'line'> = {
     responsive: true,
@@ -105,10 +105,10 @@ export class CumulativeAttainmentChartComponent implements OnInit {
 
   colorForLabel(label: string) {
     return {
-      backgroundColor: this.colorService.getOrAddColor(label),
-      borderColor: this.colorService.getOrAddColor(label),
-      pointBackgroundColor: this.colorService.getOrAddColor(label),
-      pointBorderColor: this.colorService.getOrAddColor(label),
+      backgroundColor: this.chartService.getOrAddColor(label),
+      borderColor: this.chartService.getOrAddColor(label),
+      pointBackgroundColor: this.chartService.getOrAddColor(label),
+      pointBorderColor: this.chartService.getOrAddColor(label),
     };
   }
 }

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { getGroupedAttainment } from 'src/app/chart-helper';
 import { ScenarioResult } from '@types';
-import { ChartColorsService } from '../../../scenario/chart-colors.service';
+import { ScenarioResultsChartsService } from '../../../scenario/scenario-results-charts.service';
 
 @Component({
   selector: 'app-scenario-metrics-legend',
@@ -16,10 +16,10 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   metrics: string[] = [];
   assignedColors: { [name: string]: string } = {};
 
-  constructor(private colorService: ChartColorsService) {}
+  constructor(private chartService: ScenarioResultsChartsService) {}
 
   ngOnInit() {
-    this.assignedColors = this.colorService.getAssignedColors();
+    this.assignedColors = this.chartService.getAssignedColors();
 
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)

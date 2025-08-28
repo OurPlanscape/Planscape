@@ -3,7 +3,6 @@ import {
   convertTo2DecimalsNumbers,
   getProjectAreaLabelsFromFeatures,
 } from './chart-helper';
-import { ChartColorsService } from './scenario/chart-colors.service';
 
 describe('Chart helpers', () => {
   describe('convertTo2DecimalsNumbers', () => {
@@ -35,15 +34,13 @@ describe('Chart helpers', () => {
   });
 
   describe('getChartDatasetsFromFeatures', () => {
-    const colorService = new ChartColorsService();
-
     it('should group attainment properties into datasets', () => {
       const features = [
         { properties: { attainment: { a: 1.2345, b: 2.3456 } } },
         { properties: { attainment: { a: 3.4567, b: 4.5678 } } },
       ] as any;
 
-      const datasets = getChartDatasetsFromFeatures(colorService, features);
+      const datasets = getChartDatasetsFromFeatures(features);
 
       expect(datasets.length).toBe(2);
       expect(datasets[0].data).toEqual([1.23, 3.46]);
@@ -54,7 +51,7 @@ describe('Chart helpers', () => {
     });
 
     it('should handle empty features', () => {
-      const datasets = getChartDatasetsFromFeatures(colorService, []);
+      const datasets = getChartDatasetsFromFeatures([]);
       expect(datasets).toEqual([]);
     });
   });
