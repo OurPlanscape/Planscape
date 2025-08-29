@@ -388,6 +388,8 @@ class TestExportToGeopackage(TestCase):
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
+        self.output_path = Path("test_planning_area.gpkg")
+
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage(self, upload_mock):
         invalidate_all()
@@ -408,21 +410,19 @@ class TestExportToGeopackage(TestCase):
         self.assertFalse(upload_mock.called)
 
     def test_export_planning_area_to_geopackage(self):
-        output_path = "test_planning_area.gpkg"
-        try:
-            export_planning_area_to_geopackage(self.planning, Path(output_path))
-            layers = fiona.listlayers(output_path)
-            self.assertIn("planning_area", layers)
-            with fiona.open(output_path, layer="planning_area") as src:
-                self.assertEqual(1, len(src))
-                self.assertEqual(
-                    to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
-                )
-                feature = next(iter(src))
-                self.assertEqual(feature["properties"]["name"], self.planning.name)
-        finally:
-            if Path(output_path).exists():
-                Path(output_path).unlink()
+        export_planning_area_to_geopackage(self.planning, self.output_path)
+        layers = fiona.listlayers(self.output_path)
+        self.assertIn("planning_area", layers)
+        with fiona.open(self.output_path, layer="planning_area") as src:
+            self.assertEqual(1, len(src))
+            self.assertEqual(
+                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+            )
+            feature = next(iter(src))
+            self.assertEqual(feature["properties"]["name"], self.planning.name)
+
+    def tearDown(self) -> None:
+        self.output_path.unlink(missing_ok=True)
 
 
 class TestPlanningAreaCovers(TestCase):
