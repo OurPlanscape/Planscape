@@ -943,10 +943,22 @@ def remove_excludes(
     stands_qs = stands_qs.annotate(stand_area=Area(stand_geom))
     stand_area_expr = F("stand_area")
 
-    stands_qs = stands_qs.annotate(
-        inter_area=Area(Intersection(stand_geom, Value(intersection_geometry)))
-    ).annotate(
-        coverage=Coalesce(F("inter_area"), Value(0.0)) / NullIf(stand_area_expr, 0.0)
+    stands_qs = (
+        stands_qs.filter(stand_geom__intersects=intersection_geometry)
+        .annotate(
+            inter_area=Area(
+                Intersection(
+                    stand_geom,
+                    Value(
+                        intersection_geometry,
+                    ),
+                )
+            )
+        )
+        .annotate(
+            coverage=Coalesce(F("inter_area"), Value(0.0))
+            / NullIf(stand_area_expr, 0.0)
+        )
     )
     return stands_qs.exclude(coverage__gte=min_coverage)
 
