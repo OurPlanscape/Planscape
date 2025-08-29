@@ -902,12 +902,7 @@ def planning_area_covers(
     return False
 
 
-def get_excluded_stands(stands, datalayer) -> List[int]:
-    # TODO: Implement it here
-    pass
-
-
-def remove_excludes(
+def get_excluded_stands(
     stands_qs,
     exclude_model,
     min_coverage: float = 0.51,
@@ -959,7 +954,9 @@ def remove_excludes(
             / NullIf(F("stand_area"), 0.0)
         )
     )
-    return stands_qs.exclude(coverage__gte=min_coverage)
+    return stands_qs.filter(stand_geometry__intersects=intersection_geometry).filter(
+        coverage__gte=min_coverage
+    )
 
 
 def get_available_stands(
@@ -974,8 +971,9 @@ def get_available_stands(
     stands = planning_area.get_stands(stand_size)
     excluded_ids = []
     for exclude in excludes:
+        stands_queryset = stands.all()
         ExcludeModel = model_from_fiona(exclude)
-        excluded_stands = remove_excludes(stands, ExcludeModel)
+        excluded_stands = get_excluded_stands(stands, ExcludeModel)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     return {
