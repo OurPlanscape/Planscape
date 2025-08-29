@@ -926,9 +926,11 @@ def remove_excludes(
     bounding_poly = get_bounding_polygon(
         [s for s in stands_qs.all().values_list("geometry", flat=True)]
     )
-    intersection_geometry = exclude_model.objects.filter(
-        geometry__intersects=bounding_poly
-    ).aggregate(union=UnionOp("geometry"))["union"]
+    intersection_geometry = (
+        exclude_model.objects.filter(geometry__intersects=bounding_poly)
+        .values("geometry")
+        .aggregate(union=UnionOp("geometry"))["union"]
+    )
     if not intersection_geometry or intersection_geometry.empty:
         return stands_qs.all()
 
@@ -936,7 +938,7 @@ def remove_excludes(
     intersection_geometry = intersection_geometry.transform(
         transform_srid, clone=True
     ).simplify(
-        tolerance=50,
+        tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
         preserve_topology=True,
     )
 
