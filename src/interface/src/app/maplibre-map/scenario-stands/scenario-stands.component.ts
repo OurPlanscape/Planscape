@@ -2,6 +2,7 @@ import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
+  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
@@ -15,7 +16,13 @@ import { NewScenarioState } from '../../scenario/new-scenario.state';
 @Component({
   selector: 'app-scenario-stands',
   standalone: true,
-  imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
+  imports: [
+    AsyncPipe,
+    LayerComponent,
+    NgIf,
+    VectorSourceComponent,
+    ImageComponent,
+  ],
   templateUrl: './scenario-stands.component.html',
 })
 export class ScenarioStandsComponent implements OnInit, OnDestroy {
@@ -44,8 +51,8 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private newScenarioState: NewScenarioState,
     private zone: NgZone
   ) {
-    this.newScenarioState.availableStands$.subscribe((s) =>
-      console.log('available', s)
+    this.newScenarioState.excludedStands.subscribe((s) =>
+      s.forEach((id) => this.markStandAsExcluded(id))
     );
   }
 
@@ -68,4 +75,47 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       });
     }
   };
+
+  private markStandAsExcluded(id: number) {
+    this.mapLibreMap.setFeatureState(
+      {
+        source: this.sourceName,
+        sourceLayer: this.sourceName,
+        id: id,
+      },
+      { excluded: true }
+    );
+  }
+
+  standPaint = {
+    'fill-outline-color': 'transparent',
+    'fill-color': [
+      'case',
+      ['boolean', ['feature-state', 'excluded'], false],
+      BASE_COLORS.dark,
+      BASE_COLORS.dark_magenta,
+    ],
+    'fill-opacity': 0.2,
+  } as any;
+
+  standLinePaint = {
+    'line-width': 1,
+    'line-color': BASE_COLORS.dark_magenta,
+    'line-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'excluded'], false],
+      0.2,
+      1,
+    ],
+  } as any;
+
+  standExcludedPaint = {
+    'fill-pattern': 'stripes-pattern', // constant pattern
+    'fill-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'excluded'], false],
+      1, // show pattern
+      0, // hide pattern
+    ],
+  } as any;
 }

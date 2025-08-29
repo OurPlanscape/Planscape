@@ -54,6 +54,10 @@ export class NewScenarioState {
     shareReplay(1)
   );
 
+  public excludedStands = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_exclusions)
+  );
+
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
