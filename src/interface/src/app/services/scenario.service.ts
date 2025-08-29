@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map, Observable } from 'rxjs';
-import { Scenario, ScenarioConfig, ScenarioCreationPayload } from '@types';
+import {
+  AvailableStands,
+  Constraint,
+  Scenario,
+  ScenarioConfig,
+  ScenarioCreationPayload,
+} from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
 
@@ -129,6 +135,28 @@ export class ScenarioService {
         });
         return excludedAreas;
       })
+    );
+  }
+
+  getExcludedStands(
+    planId: number,
+    stand_size: string,
+    excludes?: number[],
+    constraints?: Constraint[]
+  ) {
+    const url =
+      environment.backend_endpoint +
+      `/v2/planningareas/${planId}/available_stands/`;
+    return this.http.post<AvailableStands>(
+      url,
+      {
+        stand_size,
+        excludes,
+        constraints,
+      },
+      {
+        withCredentials: true,
+      }
     );
   }
 

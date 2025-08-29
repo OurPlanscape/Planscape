@@ -11,6 +11,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ScenarioState } from '../scenario.state';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ScenarioCreation } from '@types';
+import { NewScenarioState } from '../new-scenario.state';
 
 interface ExcludedArea {
   key: number;
@@ -35,7 +36,10 @@ export class Step2Component
   extends StepDirective<ScenarioCreation>
   implements OnInit
 {
-  constructor(private scenarioState: ScenarioState) {
+  constructor(
+    private scenarioState: ScenarioState,
+    private newScenarioState: NewScenarioState
+  ) {
     super();
   }
 
@@ -49,6 +53,9 @@ export class Step2Component
     this.excludedAreas$.subscribe((areas: ExcludedArea[]) => {
       this.excludedAreas = areas;
       this.createFormControls();
+      this.form.get('excluded_areas')?.valueChanges.subscribe(() => {
+        this.newScenarioState.setExcludedAreas(this.getSelectedExcludedAreas());
+      });
     });
   }
 
