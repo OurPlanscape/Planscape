@@ -929,9 +929,7 @@ def remove_excludes(
     intersection_geometry = exclude_model.objects.filter(
         geometry__intersects=bounding_poly
     ).aggregate(union=UnionOp("geometry"))["union"]
-    if not intersection_geometry:
-        return stands_qs.all()
-    if intersection_geometry.empty:
+    if not intersection_geometry or intersection_geometry.empty:
         return stands_qs.all()
 
     # tolerance in meters
