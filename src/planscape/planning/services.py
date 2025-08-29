@@ -918,10 +918,8 @@ def remove_excludes(
     >= min_coverage of that stand's area.
     """
     stand_geom = "geometry"
-    excl_geom = "geometry"
     if transform_srid:
         stand_geom = Transform("geometry", transform_srid)
-        excl_geom = Transform("geometry", transform_srid)
 
     bounding_poly = get_bounding_polygon(
         [s for s in stands_qs.all().values_list("geometry", flat=True)]
@@ -944,12 +942,6 @@ def remove_excludes(
 
     stands_qs = stands_qs.annotate(stand_area=Area(stand_geom))
     stand_area_expr = F("stand_area")
-
-    # union_subq = (
-    #     exclude_model.objects.filter(geometry__intersects=OuterRef("geometry"))
-    #     .annotate(u=UnionOp("geometry"))
-    #     .values("u")[:1]
-    # )
 
     stands_qs = stands_qs.annotate(
         inter_area=Area(Intersection(stand_geom, Value(intersection_geometry)))
