@@ -29,6 +29,7 @@ export * from './section/section.component';
 export * from './sequence-icon/sequence-icon.component';
 export * from './status-chip/status-chip.component';
 export * from './steps/steps.component';
+export * from './tile-button/tile-button.component';
 export * from './treatment-card/treatment-card.component';
 export * from './treatment-prescription/treatment-prescription.component';
 export * from './treatment-type-icon/treatment-type-icon.component';
