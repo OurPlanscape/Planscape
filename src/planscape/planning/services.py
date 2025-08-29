@@ -736,7 +736,51 @@ def export_scenario_project_areas_outputs_to_geopackage(
         raise e
 
 
-def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
+def export_planning_area_to_geopackage(
+    planning_area: PlanningArea, geopackage_path: Path
+) -> None:
+    """Given a planning area, export it to geopackage"""
+
+    geometry = planning_area.geometry
+    if not geometry:
+        raise ValueError("Planning area has no geometry")
+
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": [("id", "int"), ("name", "str:128"), ("region_name", "str:128")],
+    }
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer="planning_area",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                geometry_json = json.loads(
+                    geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+                )
+                feature = {
+                    "geometry": to_multi(geometry_json),
+                    "properties": {
+                        "id": planning_area.pk,
+                        "name": planning_area.name,
+                        "region_name": planning_area.region_name or "",
+                    },
+                }
+                out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting planning area %s to geopackage: %s", planning_area.pk, e
+        )
+        raise e
+
+
+def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
     try:
         is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
         if is_exporting:
@@ -763,6 +807,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save()
 
+        export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
         export_scenario_stand_outputs_to_geopackage(scenario, temp_file, stand_inputs)
