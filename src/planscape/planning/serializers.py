@@ -454,6 +454,7 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             "category_text",
             "group",
             "group_text",
+            "priorities"
         )
 
     def get_description(self, instance):
