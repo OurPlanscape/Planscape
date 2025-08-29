@@ -20,7 +20,6 @@ from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
-from django.contrib.gis.db.models.aggregates import Collect
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
@@ -928,17 +927,19 @@ def remove_excludes(
     intersection_geometry = (
         exclude_model.objects.filter(geometry__intersects=bounding_poly)
         .values("geometry")
-        .aggregate(union=Collect("geometry"))["union"]
+        .aggregate(union=UnionOp("geometry"))["union"]
     )
     if not intersection_geometry or intersection_geometry.empty:
         return stands_qs.all()
 
     # tolerance in meters
-    intersection_geometry = intersection_geometry.transform(
-        transform_srid, clone=True
-    ).simplify(
-        tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
-        preserve_topology=True,
+    intersection_geometry = (
+        intersection_geometry.transform(transform_srid, clone=True)
+        .simplify(
+            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
+            preserve_topology=True,
+        )
+        .buffer(0)
     )
     stands_qs = (
         stands_qs.annotate(stand_geometry=Transform("geometry", transform_srid))
