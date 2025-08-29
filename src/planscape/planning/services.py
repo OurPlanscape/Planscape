@@ -23,10 +23,11 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
-from django.db.models import F, OuterRef, Subquery, Value
+from django.db.models import F, Value
 from django.db.models.functions import Coalesce, NullIf
 from django.utils.timezone import now
 from fiona.crs import from_epsg
+from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from pyproj import Geod
@@ -922,22 +923,36 @@ def remove_excludes(
         stand_geom = Transform("geometry", transform_srid)
         excl_geom = Transform("geometry", transform_srid)
 
+    bounding_poly = get_bounding_polygon(
+        [s for s in stands_qs.all().values_list("geometry", flat=True)]
+    )
+    intersection_geometry = exclude_model.objects.filter(
+        geometry__intersects=bounding_poly
+    ).aggregate(union=UnionOp("geometry"))["union"]
+    if not intersection_geometry or intersection_geometry.empty:
+        return stands_qs.all()
+
+    # tolerance in meters
+    intersection_geometry = intersection_geometry.transform(
+        transform_srid, clone=True
+    ).simplify(
+        tolerance=50,
+        preserve_topology=True,
+    )
+
     stands_qs = stands_qs.annotate(stand_area=Area(stand_geom))
     stand_area_expr = F("stand_area")
 
-    union_subq = (
-        exclude_model.objects.filter(geometry__intersects=OuterRef("geometry"))
-        .annotate(u=UnionOp(excl_geom))
-        .values("u")[:1]
-    )
+    # union_subq = (
+    #     exclude_model.objects.filter(geometry__intersects=OuterRef("geometry"))
+    #     .annotate(u=UnionOp("geometry"))
+    #     .values("u")[:1]
+    # )
 
-    stands_qs = (
-        stands_qs.annotate(excl_union=Subquery(union_subq))
-        .annotate(inter_area=Area(Intersection(stand_geom, F("excl_union"))))
-        .annotate(
-            coverage=Coalesce(F("inter_area"), Value(0.0))
-            / NullIf(stand_area_expr, 0.0)
-        )
+    stands_qs = stands_qs.annotate(
+        inter_area=Area(Intersection(stand_geom, Value(intersection_geometry)))
+    ).annotate(
+        coverage=Coalesce(F("inter_area"), Value(0.0)) / NullIf(stand_area_expr, 0.0)
     )
     return stands_qs.exclude(coverage__gte=min_coverage)
 
