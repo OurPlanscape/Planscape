@@ -1,11 +1,14 @@
 from django.db import migrations
 
+from datasets.dynamic_models import qualify_for_django
+
 
 def create_index_for_datalayer(datalayer, schema_editor):
     table_id = str(datalayer.pk).zfill(5)
+    qual_name = qualify_for_django(datalayer.table)
     command = f"""
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS 
-            dl{table_id}_gist_idx ON {datalayer.table} 
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS
+            dl{table_id}_gist_idx ON {qual_name}
         USING GIST (geometry);
     """.strip()
     schema_editor.execute(command)
