@@ -20,6 +20,7 @@ from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.aggregates import Collect
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
@@ -927,7 +928,7 @@ def remove_excludes(
     intersection_geometry = (
         exclude_model.objects.filter(geometry__intersects=bounding_poly)
         .values("geometry")
-        .aggregate(union=UnionOp("geometry"))["union"]
+        .aggregate(union=Collect("geometry"))["union"]
     )
     if not intersection_geometry or intersection_geometry.empty:
         return stands_qs.all()
@@ -939,12 +940,9 @@ def remove_excludes(
         tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
         preserve_topology=True,
     )
-
-    stands_qs = stands_qs.annotate(stand_area=Area(stand_geom))
-    stand_area_expr = F("stand_area")
-
     stands_qs = (
-        stands_qs.filter(stand_geom__intersects=intersection_geometry)
+        stands_qs.annotate(stand_geometry=Transform("geometry", transform_srid))
+        .annotate(stand_area=Area(stand_geom))
         .annotate(
             inter_area=Area(
                 Intersection(
@@ -957,7 +955,7 @@ def remove_excludes(
         )
         .annotate(
             coverage=Coalesce(F("inter_area"), Value(0.0))
-            / NullIf(stand_area_expr, 0.0)
+            / NullIf(F("stand_area"), 0.0)
         )
     )
     return stands_qs.exclude(coverage__gte=min_coverage)
