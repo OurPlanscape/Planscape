@@ -6,6 +6,8 @@ from unittest import mock
 
 import fiona
 import shapely
+from django.conf import settings
+from pathlib import Path
 from cacheops import invalidate_all
 from datasets.dynamic_models import model_from_fiona, qualify_for_django
 from datasets.models import DataLayerType, GeometryType
@@ -22,6 +24,7 @@ from planning.models import PlanningArea, ScenarioResultStatus
 from planning.services import (
     export_to_geopackage,
     export_to_shapefile,
+    export_planning_area_to_geopackage,
     get_acreage,
     get_max_treatable_area,
     get_max_treatable_stand_count,
@@ -403,6 +406,23 @@ class TestExportToGeopackage(TestCase):
         self.assertIsNotNone(output)
         self.assertEqual(self.scenario.geopackage_url, output)
         self.assertFalse(upload_mock.called)
+
+    def test_export_planning_area_to_geopackage(self):
+        output_path = "test_planning_area.gpkg"
+        try:
+            export_planning_area_to_geopackage(self.planning, Path(output_path))
+            layers = fiona.listlayers(output_path)
+            self.assertIn("planning_area", layers)
+            with fiona.open(output_path, layer="planning_area") as src:
+                self.assertEqual(1, len(src))
+                self.assertEqual(
+                    to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+                )
+                feature = next(iter(src))
+                self.assertEqual(feature["properties"]["name"], self.planning.name)
+        finally:
+            if Path(output_path).exists():
+                Path(output_path).unlink()
 
 
 class TestPlanningAreaCovers(TestCase):
