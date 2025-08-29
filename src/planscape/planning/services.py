@@ -941,7 +941,8 @@ def remove_excludes(
         )
         .buffer(0)
     )
-    stands_qs = (
+    all_stands = stands_qs.all()
+    excluded_stand_ids = (
         stands_qs.annotate(stand_geometry=Transform("geometry", transform_srid))
         .annotate(stand_area=Area(stand_geom))
         .annotate(
@@ -958,8 +959,11 @@ def remove_excludes(
             coverage=Coalesce(F("inter_area"), Value(0.0))
             / NullIf(F("stand_area"), 0.0)
         )
+        .filter(stand_geometry__intersects=intersection_geometry)
+        .filter(coverage__gte=min_coverage)
+        .values_list("id", flat=True)
     )
-    return stands_qs.exclude(coverage__gte=min_coverage)
+    return all_stands.exclude(id__in=excluded_stand_ids)
 
 
 def get_available_stands(
