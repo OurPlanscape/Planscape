@@ -75,9 +75,14 @@ def field_from_fiona(
     return base, char_len, dec
 
 
-def qualify_table_name(schema: str, table: str) -> str:
-    if not schema or not table:
-        raise ValueError("Both schema and table are required.")
+def qualify_for_django(full_qualified_table: str) -> str:
+    """
+    qualify tables name for django meta db_table.
+    transforms 'schema.table' into '"schema"."table"'.
+    """
+    if not full_qualified_table:
+        raise ValueError("full_qualified_table is required")
+    schema, table = full_qualified_table.split(".")
     return f'"{schema}"."{table}"'
 
 
@@ -114,6 +119,7 @@ def model_from_fiona(
     }
 
     for field_name, field_type in properties.items():
+        field_name = field_name.lower()
         base, clen, decimal_spec = field_from_fiona(field_type)
         match base:
             case "str":
@@ -149,7 +155,7 @@ def model_from_fiona(
         "Meta",
         (),
         {
-            "db_table": table_name,
+            "db_table": qualify_for_django(table_name),
             "managed": False,
             "app_label": app_label,
         },

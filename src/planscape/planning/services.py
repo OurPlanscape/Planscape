@@ -15,15 +15,19 @@ from cacheops import redis_client
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
+from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
+from django.db.models import F, Value
+from django.db.models.functions import Coalesce, NullIf
 from django.utils.timezone import now
 from fiona.crs import from_epsg
-from gis.geometry import get_bounding_box
+from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from pyproj import Geod
@@ -464,6 +468,18 @@ def get_schema(
     return schema
 
 
+def _get_datalayers_id_lookup_table(scenario):
+    # Lookup table to rename datalayer fields to their names
+    # e.g. datalayer_1 -> datalaye_Elevation
+    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    dl_lookup = dict()
+    for dl in datalayers:
+        dl_lookup[f"datalayer_{dl.pk}"] = f"datalayer_{dl.name}"
+        dl_lookup[f"datalayer_{dl.pk}_SMP"] = f"datalayer_{dl.name}_SMP"
+        dl_lookup[f"datalayer_{dl.pk}_PCP"] = f"datalayer_{dl.name}_PCP"
+    return dl_lookup
+
+
 def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     """
     Get the geojson result of a scenario.
@@ -471,6 +487,7 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     to flatten nested dictionaries by appending the keys.
     """
     geojson = scenario.get_geojson_result()
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
     features = geojson.get("features", [])
     for feature in features:
         properties = feature.get("properties", {})
@@ -484,7 +501,8 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
             else:
                 if isinstance(value, float):
                     value = truncate_result(value, quantize=".001")
-                new_properties[prop] = value
+                key = dl_lookup.get(prop, prop)
+                new_properties[key] = value
         feature["properties"] = new_properties
     return geojson
 
@@ -525,21 +543,24 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     return shapefile_folder
 
 
-def export_scenario_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+def export_scenario_stand_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict]
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
     scenario_outputs = {}
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
+    stand_size = scenario.get_stand_size()
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            properties = {}
             for key, value in row.items():
                 match key:
                     case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        row[key] = int(value)
+                        properties[key] = int(value)
                     case "DoTreat", "selected":
-                        row[key] = bool(int(value))
+                        properties[key] = bool(int(value))
                     case _:
                         try:
                             f = float(value)
@@ -552,39 +573,29 @@ def export_scenario_outputs_to_geopackage(
                                 scenario.pk,
                             )
                             f = None
-                        row[key] = f
+                        prop = dl_lookup.get(key, key)
+                        properties[prop] = f
             stand_id = int(row.get("stand_id"))  # type: ignore
-            scenario_outputs[stand_id] = row
-
-    # injecting geometry from inputs.csv
-    inputs_file = forsys_folder / "inputs.csv"
-    with open(inputs_file, "r") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            stand_id = int(row.get("stand_id"))  # type: ignore
-            if stand_id not in scenario_outputs:
-                continue
-            wkt = row.get("WKT")
-            try:
-                geom = GEOSGeometry(wkt, srid=settings.AREA_SRID)
-                geom_json = geom.transform(
-                    settings.CRS_GEOPACKAGE_EXPORT, clone=True
-                ).json
-                geom_json = json.loads(geom_json)
-                scenario_outputs[stand_id]["geometry"] = to_multi(geom_json)
-            except Exception as e:
-                logger.error("Invalid WKT for scenario %s: %s", scenario.pk, e)
-                raise InvalidGeometry(f"Invalid WKT: {wkt}")
+            geometry = stand_inputs.get(stand_id, {}).get("WKT")
+            properties["WKT"] = geometry
+            properties["stand_size"] = stand_size
+            scenario_outputs[stand_id] = properties
 
     features = []
     for stand_id, properties in scenario_outputs.items():
-        geometry = properties.pop("geometry", None)
+        geometry = properties.pop("WKT", None)
         if geometry:
             feature = {
                 "geometry": geometry,
                 "properties": properties,
             }
             features.append(feature)
+        else:
+            logger.warning(
+                "Stand %s in scenario %s has no geometry. Skipping.",
+                stand_id,
+                scenario.pk,
+            )
 
     properties = features[0].get("properties", {})
     field_type_pairs = list(map(map_property, properties.items()))
@@ -599,7 +610,7 @@ def export_scenario_outputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}_outputs",
+                layer="stand_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -616,17 +627,20 @@ def export_scenario_outputs_to_geopackage(
 
 def export_scenario_inputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path
-) -> None:
+) -> Dict[int, Dict]:
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
-    scenario_inputs = []
+    scenario_inputs = dict()
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
+    stand_size = scenario.get_stand_size()
     with open(inputs_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            properties = {}
             for key, value in row.items():
                 match key:
                     case "stand_id":
-                        row[key] = int(value)
+                        properties[key] = int(value)
                     case "WKT":
                         try:
                             geom = GEOSGeometry(value, srid=settings.AREA_SRID)
@@ -634,7 +648,7 @@ def export_scenario_inputs_to_geopackage(
                                 settings.CRS_GEOPACKAGE_EXPORT, clone=True
                             ).json
                             geom_json = json.loads(geom_json)
-                            row[key] = to_multi(geom_json)
+                            properties[key] = to_multi(geom_json)
                         except Exception as e:
                             logger.error(
                                 "Invalid WKT for scenario %s: %s", scenario.pk, e
@@ -652,10 +666,14 @@ def export_scenario_inputs_to_geopackage(
                                 scenario.pk,
                             )
                             f = None
-                        row[key] = f
-            scenario_inputs.append(row)
+                        prop_key = dl_lookup.get(key, key)
+                        properties[prop_key] = f
+            properties["stand_size"] = stand_size
+            stand_id = int(row.get("stand_id"))  # type: ignore
+            scenario_inputs[stand_id] = properties
 
-    feature = scenario_inputs[0].copy()  # Copy the first feature to modify
+    stand_id = next(iter(scenario_inputs))
+    feature = scenario_inputs[stand_id].copy()
     feature.pop("WKT", None)  # Remove WKT if present
     field_type_pairs = list(map(map_property, feature.items()))
     schema = {
@@ -668,25 +686,32 @@ def export_scenario_inputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}_inputs",
+                layer="stand_inputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
                 allow_unsupported_drivers=True,
             ) as out:
-                for feature in scenario_inputs:
-                    geometry = feature.pop("WKT", None)
-                    feature = {"properties": feature, "geometry": geometry}
-                    out.write(feature)
+                for stand_id, feature in scenario_inputs.items():
+                    copyed_feature = feature.copy()
+                    geometry = copyed_feature.pop("WKT", None)
+                    copyed_feature = {
+                        "properties": copyed_feature,
+                        "geometry": geometry,
+                    }
+                    out.write(copyed_feature)
 
     except Exception as e:
         logger.exception(
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
         raise e
+    return scenario_inputs
 
 
-def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
+def export_scenario_project_areas_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
@@ -695,7 +720,7 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}",
+                layer="project_areas_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -712,7 +737,51 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
         raise e
 
 
-def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
+def export_planning_area_to_geopackage(
+    planning_area: PlanningArea, geopackage_path: Path
+) -> None:
+    """Given a planning area, export it to geopackage"""
+
+    geometry = planning_area.geometry
+    if not geometry:
+        raise ValueError("Planning area has no geometry")
+
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": [("id", "int"), ("name", "str:128"), ("region_name", "str:128")],
+    }
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer="planning_area",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                geometry_json = json.loads(
+                    geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+                )
+                feature = {
+                    "geometry": to_multi(geometry_json),
+                    "properties": {
+                        "id": planning_area.pk,
+                        "name": planning_area.name,
+                        "region_name": planning_area.region_name or "",
+                    },
+                }
+                out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting planning area %s to geopackage: %s", planning_area.pk, e
+        )
+        raise e
+
+
+def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
     try:
         is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
         if is_exporting:
@@ -739,9 +808,10 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save()
 
-        export_scenario_to_geopackage(scenario, temp_file)
-        export_scenario_inputs_to_geopackage(scenario, temp_file)
-        export_scenario_outputs_to_geopackage(scenario, temp_file)
+        export_planning_area_to_geopackage(scenario.planning_area, temp_file)
+        export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+        stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
+        export_scenario_stand_outputs_to_geopackage(scenario, temp_file, stand_inputs)
 
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
@@ -837,6 +907,50 @@ def get_excluded_stands(stands, datalayer) -> List[int]:
     pass
 
 
+def remove_excludes(
+    stands_qs,
+    exclude_model,
+    min_coverage: float = 0.51,
+    transform_srid: int | None = 5070,
+):
+    """
+    Return stands_qs with any stand removed if some exclude_model geometry covers
+    >= min_coverage of that stand's area.
+    """
+    stand_geom = "geometry"
+    if transform_srid:
+        stand_geom = Transform("geometry", transform_srid)
+
+    bounding_poly = get_bounding_polygon(
+        [s for s in stands_qs.all().values_list("geometry", flat=True)]
+    )
+    intersection_geometry = (
+        exclude_model.objects.filter(geometry__intersects=bounding_poly)
+        .values("geometry")
+        .aggregate(union=UnionOp("geometry"))["union"]
+    )
+    if not intersection_geometry or intersection_geometry.empty:
+        return stands_qs.all()
+
+    # tolerance in meters
+    intersection_geometry = intersection_geometry.transform(
+        transform_srid, clone=True
+    ).simplify(
+        tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
+        preserve_topology=True,
+    )
+
+    stands_qs = stands_qs.annotate(stand_area=Area(stand_geom))
+    stand_area_expr = F("stand_area")
+
+    stands_qs = stands_qs.annotate(
+        inter_area=Area(Intersection(stand_geom, Value(intersection_geometry)))
+    ).annotate(
+        coverage=Coalesce(F("inter_area"), Value(0.0)) / NullIf(stand_area_expr, 0.0)
+    )
+    return stands_qs.exclude(coverage__gte=min_coverage)
+
+
 def get_available_stands(
     planning_area: PlanningArea,
     *,
@@ -847,12 +961,16 @@ def get_available_stands(
     **kwargs,
 ):
     stands = planning_area.get_stands(stand_size)
-    stands_bbox = get_bounding_box([s.geometry for s in stands])
+    excluded_ids = []
+    for exclude in excludes:
+        ExcludeModel = model_from_fiona(exclude)
+        excluded_stands = remove_excludes(stands, ExcludeModel)
+        excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     return {
         "unavailable": {
             "by_inclusions": [],
-            "by_exclusions": [],
+            "by_exclusions": list(set(excluded_ids)),
             "by_thresholds": [],
         },
         "summary": {

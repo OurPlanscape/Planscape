@@ -311,7 +311,6 @@ to_project_data <- function(
     filter(
       forsys_outputs$stand_output,
       proj_id == project_id,
-      DoTreat == 1
     ),
     stand_id
   )
