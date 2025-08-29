@@ -609,7 +609,7 @@ def export_scenario_stand_outputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"stand_outputs",
+                layer="stand_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -685,7 +685,7 @@ def export_scenario_inputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"stand_inputs",
+                layer="stand_inputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -882,7 +882,6 @@ def remove_excludes(
 
     union_subq = (
         exclude_model.objects.filter(geometry__intersects=OuterRef("geometry"))
-        .values()
         .annotate(u=UnionOp(excl_geom))
         .values("u")[:1]
     )
