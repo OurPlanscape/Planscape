@@ -2,17 +2,17 @@ import csv
 import json
 import shutil
 from datetime import date, datetime
+from pathlib import Path
 from unittest import mock
 
 import fiona
 import shapely
-from django.conf import settings
-from pathlib import Path
 from cacheops import invalidate_all
 from datasets.dynamic_models import model_from_fiona, qualify_for_django
 from datasets.models import DataLayerType, GeometryType
 from datasets.tasks import datalayer_uploaded
 from datasets.tests.factories import DataLayerFactory
+from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
 from django.test import TestCase, TransactionTestCase
@@ -22,15 +22,15 @@ from stands.tests.factories import StandFactory
 
 from planning.models import PlanningArea, ScenarioResultStatus
 from planning.services import (
+    export_planning_area_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
-    export_planning_area_to_geopackage,
     get_acreage,
+    get_excluded_stands,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
-    remove_excludes,
     validate_scenario_treatment_ratio,
 )
 from planning.tests.factories import (
@@ -608,9 +608,9 @@ class TestRemoveExcludes(TransactionTestCase):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
         MyModel = model_from_fiona(self.datalayer)
-        remaining = remove_excludes(
+        excluded_stands = get_excluded_stands(
             stands,
             MyModel,
         )
 
-        self.assertEqual(6, len(remaining))
+        self.assertEqual(11, len(excluded_stands))
