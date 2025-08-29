@@ -918,17 +918,17 @@ def remove_excludes(
     >= min_coverage of that stand's area.
     """
     stand_geom = "geometry"
-    excl_geom = "geometry"
     if transform_srid:
         stand_geom = Transform("geometry", transform_srid)
-        excl_geom = Transform("geometry", transform_srid)
 
     bounding_poly = get_bounding_polygon(
         [s for s in stands_qs.all().values_list("geometry", flat=True)]
     )
-    intersection_geometry = exclude_model.objects.filter(
-        geometry__intersects=bounding_poly
-    ).aggregate(union=UnionOp("geometry"))["union"]
+    intersection_geometry = (
+        exclude_model.objects.filter(geometry__intersects=bounding_poly)
+        .values("geometry")
+        .aggregate(union=UnionOp("geometry"))["union"]
+    )
     if not intersection_geometry or intersection_geometry.empty:
         return stands_qs.all()
 
@@ -936,18 +936,12 @@ def remove_excludes(
     intersection_geometry = intersection_geometry.transform(
         transform_srid, clone=True
     ).simplify(
-        tolerance=50,
+        tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
         preserve_topology=True,
     )
 
     stands_qs = stands_qs.annotate(stand_area=Area(stand_geom))
     stand_area_expr = F("stand_area")
-
-    # union_subq = (
-    #     exclude_model.objects.filter(geometry__intersects=OuterRef("geometry"))
-    #     .annotate(u=UnionOp("geometry"))
-    #     .values("u")[:1]
-    # )
 
     stands_qs = stands_qs.annotate(
         inter_area=Area(Intersection(stand_geom, Value(intersection_geometry)))
