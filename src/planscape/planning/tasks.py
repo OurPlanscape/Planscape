@@ -1,21 +1,35 @@
 import logging
 
 import rasterio
-from django.conf import settings
-from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
-from django.db import connection
+from django.conf import settings
+from django.core.paginator import Paginator
 from gis.core import get_storage_session
-from planning.models import Scenario, ScenarioResultStatus
-from stands.models import Stand
-from stands.services import calculate_stand_zonal_stats
+from stands.models import Stand, StandSizeChoices
+from stands.services import (
+    calculate_stand_vector_stats,
+    calculate_stand_zonal_stats,
+    create_stands_for_geometry,
+)
 from utils.cli_utils import call_forsys
 
+from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
+
+
+@app.task()
+def async_create_stands(planning_area_id: int) -> None:
+    try:
+        planning_area = PlanningArea.objects.get(id=planning_area_id)
+    except PlanningArea.DoesNotExist:
+        log.warning(f"Planning Area with {planning_area_id} does not exist.")
+        raise
+    for i in StandSizeChoices:
+        create_stands_for_geometry(planning_area.geometry, i)
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -29,35 +43,6 @@ def async_forsys_run(scenario_id: int) -> None:
         log.info(f"Running scenario {scenario_id}")
         scenario.result_status = ScenarioResultStatus.RUNNING
         scenario.save()
-        stand_size = scenario.get_stand_size()
-        planning_area_geom = scenario.planning_area.geometry
-
-        with connection.cursor() as cur:
-            cur.execute(
-                """
-                SELECT public.generate_stands_for_planning_area(
-                    ST_GeomFromText(%s, %s),
-                    %s,
-                    %s, %s
-                );
-                """,
-                [
-                    planning_area_geom.wkt,
-                    planning_area_geom.srid or 4269,
-                    stand_size,
-                    settings.HEX_GRID_ORIGIN_X,
-                    settings.HEX_GRID_ORIGIN_Y,
-                ],
-            )
-            inserted = cur.fetchone()[0]
-
-        log.info(
-            "generate_stands_for_planning_area inserted %s stands (size=%s) for scenario %s",
-            inserted,
-            stand_size,
-            scenario_id,
-        )
-
         call_forsys(scenario.pk)
 
         if not feature_enabled("FORSYS_VIA_API"):
@@ -118,6 +103,15 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with name {datalayer_name} does not exist.")
         return
+
+
+@app.task()
+def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> None:
+    planning_area = PlanningArea.objects.get(id=planning_area_id)
+    datalayer = DataLayer.objects.get(id=datalayer_id)
+    for i in StandSizeChoices:
+        stands = planning_area.get_stands(i)
+        calculate_stand_vector_stats(stands=stands, datalayer=datalayer)
 
 
 @app.task(max_retries=3, retry_backoff=True)
