@@ -7,7 +7,7 @@ from core.flags import feature_enabled
 from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
-from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models import Collect
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
@@ -119,7 +119,7 @@ def calculate_stand_vector_stats(
     intersection_geometry = (
         Vector.objects.filter(geometry__intersects=bounding_poly)
         .values("geometry")
-        .aggregate(union=UnionOp("geometry"))["union"]
+        .aggregate(collect=Collect("geometry"))["collect"]
     )
     if intersection_geometry and not intersection_geometry.empty:
         # tolerance in meters
