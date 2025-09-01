@@ -103,7 +103,7 @@ def calculate_stand_vector_stats(
         )
         .buffer(0)
     )
-    stands_qs = (
+    stands = (
         stands.annotate(stand_geometry=Transform("geometry", transform_srid))
         .annotate(stand_area=Area(stand_geom))
         .annotate(
@@ -131,14 +131,14 @@ def calculate_stand_vector_stats(
             stands,
         )
     )
-    StandMetric.objects.bulk_create(
+    log.info(f"Created/Updated {len(results)} stand metrics.")
+    return StandMetric.objects.bulk_create(
         results,
         batch_size=100,
         update_conflicts=True,
         unique_fields=["stand_id", "datalayer_id"],
         update_fields="min avg max sum count majority minority".split(),
     )
-    return stands_qs
 
 
 def calculate_stand_zonal_stats(
