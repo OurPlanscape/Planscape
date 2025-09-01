@@ -29,6 +29,7 @@ def async_create_stands(planning_area_id: int) -> None:
         log.warning(f"Planning Area with {planning_area_id} does not exist.")
         raise
     for i in StandSizeChoices:
+        log.info(f"Creating stands for {planning_area_id} for stand size {i}")
         create_stands_for_geometry(planning_area.geometry, i)
 
 
