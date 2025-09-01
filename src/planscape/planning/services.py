@@ -63,6 +63,7 @@ def create_planning_area(
         async_calculate_vector_metrics,
         async_create_stands,
     )
+
     """Canonical method to create a new planning area."""
 
     # FIXME: this code path is temporary. once we migrate to v2
