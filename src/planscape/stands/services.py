@@ -47,7 +47,7 @@ def create_stands_for_geometry(
             ],
         )
         inserted = cur.fetchone()[0]
-        log.info("Inserts {inserted} stands into the database.")
+        log.info(f"Created {inserted} stands.")
         return inserted
 
 
