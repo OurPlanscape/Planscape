@@ -12,11 +12,11 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 import fiona
 from actstream import action
 from cacheops import redis_client
-from celery import chord
+from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
 from datasets.dynamic_models import model_from_fiona
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -47,7 +47,12 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
+from planning.tasks import (
+    async_calculate_stand_metrics_v2,
+    async_calculate_vector_metrics,
+    async_create_stands,
+    async_forsys_run,
+)
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -77,6 +82,19 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
+    datalayers = DataLayer.objects.filter(
+        dataset_id=998,
+        type=DataLayerType.VECTOR,
+    )
+    vector_metrics_jobs = group(
+        [
+            async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+            for datalayer in datalayers
+        ]
+    )
+    job = chain(async_create_stands.si(planning_area.pk), vector_metrics_jobs)
+    job.apply_async()
+
     track_openpanel(
         name="planning.planning_area.created",
         properties={

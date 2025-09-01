@@ -9,6 +9,8 @@ from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
+from django.contrib.gis.geos import GEOSGeometry
+from django.db import connection
 from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
 from gis.geometry import get_bounding_polygon
@@ -18,9 +20,35 @@ from rasterstats import zonal_stats
 from shapely import total_bounds
 from shapely.geometry import shape
 
-from stands.models import Stand, StandMetric
+from stands.models import Stand, StandMetric, StandSizeChoices
 
 log = logging.getLogger(__name__)
+
+
+def create_stands_for_geometry(
+    geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
+):
+    with connection.cursor() as cur:
+        cur.execute(
+            """
+            SELECT public.generate_stands_for_planning_area(
+                ST_GeomFromText(%s, %s),
+                %s,
+                %s, %s
+            );
+            """,
+            [
+                geometry.wkt,
+                settings.DEFAULT_CRS,
+                stand_size,
+                settings.HEX_GRID_ORIGIN_X,
+                settings.HEX_GRID_ORIGIN_Y,
+            ],
+        )
+        inserted = cur.fetchone()[0]
+        log.info("Inserts {inserted} stands into the database.")
+        return inserted
 
 
 def to_geojson(stand: Stand) -> Dict[str, Any]:
