@@ -10,7 +10,6 @@ from django.conf import settings
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.measure import Area as A
 from django.db import connection
 from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
@@ -117,12 +116,9 @@ def calculate_stand_vector_stats(
         [s for s in stands.all().values_list("geometry", flat=True)]
     )
     Vector = model_from_fiona(datalayer)
-    intersection_geometry = (
-        Vector.objects.filter(geometry__intersects=bounding_poly)
-        .annotate(area=Area(Transform("geometry", transform_srid)))
-        .filter(area__gt=A(sq_m=0))
-        .aggregate(union=UnionOp("geometry"))["union"]
-    )
+    intersection_geometry = Vector.objects.filter(
+        geometry__intersects=bounding_poly
+    ).aggregate(union=UnionOp("geometry"))["union"]
     if intersection_geometry and not intersection_geometry.empty:
         # tolerance in meters
         intersection_geometry = (
@@ -167,7 +163,9 @@ def calculate_stand_vector_stats(
         )
         results.append(stand_metric)
 
-    log.info(f"Created/Updated {len(results)} stand metrics.")
+    log.info(
+        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+    )
     return StandMetric.objects.bulk_create(
         results,
         batch_size=100,
