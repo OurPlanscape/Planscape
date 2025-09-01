@@ -1,4 +1,5 @@
-from planning.models import SharedLink
+from planning.models import SharedLink, Scenario, GeoPackageStatus, ScenarioResultStatus
+from planning.tasks import async_generate_scenario_geopackage
 from django.utils import timezone
 from django.conf import settings
 import logging
@@ -14,3 +15,13 @@ def delete_old_shared_links(interval=settings.SHARED_LINKS_NUM_DAYS_VALID):
         logger.info(f"Deleted {counted} links from shared links table.")
     except Exception:
         logger.error("Could not delete links from shared links table.")
+
+
+def trigger_geopackage_generation():
+    scenarios = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS,
+        geopackage_status=GeoPackageStatus.PENDING,
+    ).values_list("id", flat=True)
+    for scenario in scenarios:
+        async_generate_scenario_geopackage.apply_async(scenario)
+        logger.info(f"Triggered geopackage generation for scenario {scenario}.")

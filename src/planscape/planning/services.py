@@ -11,7 +11,6 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
-from cacheops import redis_client
 from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
@@ -796,12 +795,6 @@ def export_planning_area_to_geopackage(
 
 def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
     try:
-        is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
-        if is_exporting:
-            raise ValueError(
-                f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
-            )
-
         if not regenerate and scenario.geopackage_url:
             logger.info(
                 "Scenario %s already has a geopackage URL: %s",
@@ -810,7 +803,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             )
             return scenario.geopackage_url
 
-        redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
             temp_folder.mkdir(parents=True)
@@ -819,7 +811,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             temp_file.unlink()
 
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
-        scenario.save()
+        scenario.save(update_fields=["geopackage_status", "updated_at"])
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
@@ -847,8 +839,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-
-        redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
         return str(geopackage_path)
     except Exception:
