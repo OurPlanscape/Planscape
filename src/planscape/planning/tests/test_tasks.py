@@ -137,12 +137,14 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(type(self.scenario.forsys_input["stand_ids"]), list)
         self.assertGreater(len(self.scenario.forsys_input["stand_ids"]), 0)
 
-        self.assertEqual(type(self.scenario.forsys_input["datalayers"]), dict)
+        self.assertEqual(type(self.scenario.forsys_input["datalayers"]), list)
         datalayers = self.scenario.forsys_input["datalayers"]
-        for dl_id, dl_info in datalayers.items():
-            self.assertIn("metric", dl_info)
-            self.assertIn("thresholds", dl_info)
-            self.assertIn("name", dl_info)
+        for dl in datalayers:
+            self.assertIn("metric", dl.keys())
+            self.assertIn("threshold", dl.keys())
+            self.assertIn("name", dl.keys())
+            self.assertIn("usage_type", dl.keys())
+            self.assertIn("id", dl.keys())
 
         self.assertEqual(type(self.scenario.forsys_input["variables"]), dict)
         variables = self.scenario.forsys_input["variables"]
