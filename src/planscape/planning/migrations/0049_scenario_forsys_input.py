@@ -4,7 +4,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning", "0047_add_wildfire_treatment_goals"),
+        ("planning", "0048_scale_pct_area_to_percent"),
     ]
 
     operations = [
