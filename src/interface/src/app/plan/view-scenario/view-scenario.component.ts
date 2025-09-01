@@ -18,10 +18,11 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatTabGroup } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { Scenario } from '@types';
-import { POLLING_INTERVAL } from '../plan-helpers';
+import { getPlanPath, POLLING_INTERVAL } from '../plan-helpers';
 import { filter } from 'rxjs/operators';
 import { canAddTreatmentPlan } from '../permissions';
 import { FeatureService } from '../../features/feature.service';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -60,7 +61,8 @@ export class ViewScenarioComponent {
     private scenarioState: ScenarioState,
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private breadcrumbService: BreadcrumbService
   ) {
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
@@ -75,7 +77,14 @@ export class ViewScenarioComponent {
     this.scenario$
       .pipe(
         untilDestroyed(this),
-        switchMap((s) => (this.shouldPoll(s) ? this.startPolling() : EMPTY))
+        switchMap((s) => {
+          // On specific scenario
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Scenario: ' + s.name,
+            backUrl: getPlanPath(this.planId),
+          });
+          return this.shouldPoll(s) ? this.startPolling() : EMPTY;
+        })
       )
       .subscribe();
   }

@@ -143,24 +143,13 @@ const routes: Routes = [
           import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
-        // follow the route structure of plan, but without nesting modules and components
-        path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({
-            featureName: 'SCENARIO_CONFIGURATION_STEPS',
-            inverted: true,
-          }),
-        ],
+        path: 'plan/:planId/scenario',
         resolve: {
-          planInit: planLoaderResolver,
-          treatmentId: numberResolver('treatmentId', ''),
-          scenarioInit: scenarioLoaderResolver,
+          planId: planLoaderResolver, // There is no planId for the scenario map, that is why I included this.
         },
+
         loadChildren: () =>
-          import('./treatments/treatments.module').then(
-            (m) => m.TreatmentsModule
-          ),
+          import('./scenario/scenario.module').then((m) => m.ScenarioModule),
       },
       {
         // follow the route structure of plan, but without nesting modules and components

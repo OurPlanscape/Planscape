@@ -1,0 +1,65 @@
+@import 'variables';
+
+.scenario-content {
+  width: 100%;
+  height: calc(100% - $navbar-height);
+  display: flex;
+  flex-direction: row;
+}
+
+.scenario-content-panel {
+  height: 100%;
+  width: 45%;
+  min-width: 450px;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scenario-map-container {
+  height: 100%;
+  flex: 1;
+  z-index: 1;
+  position: relative;
+}
+
+@media print {
+  app-nav-bar {
+    display: none;
+  }
+
+  .scenario-content {
+    flex-direction: column;
+    height: min-content;
+    width: 100%;
+
+    .scenario-content-panel {
+      width: 100%;
+    }
+
+    ::ng-deep {
+      app-scenario-download-footer {
+        display: none;
+      }
+
+      app-scenario-route-placeholder {
+        display: block;
+      }
+
+      app-scenario-metrics-legend {
+        display: block;
+        // Fixing an issue where the legends were cutted
+        margin-bottom: 150px;
+      }
+    }
+  }
+
+  .scenario-map-container {
+    app-scenario-map {
+      page-break-before: always;
+      display: flex;
+      flex-direction: column;
+      height: 625px;
+    }
+  }
+}
