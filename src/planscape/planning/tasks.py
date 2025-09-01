@@ -6,7 +6,6 @@ from django.db import transaction
 from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
-from django.db import connection
 from django.conf import settings
 from django.core.paginator import Paginator
 from gis.core import get_storage_session
@@ -163,6 +162,7 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
 @app.task(max_retries=3, retry_backoff=True)
 def async_pre_forsys_process(scenario_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
+    planning_area = scenario.planning_area
 
     tx_goal = scenario.treatment_goal
     if not tx_goal:
@@ -171,9 +171,8 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         )
         return
 
-    stand_ids = Stand.objects.within_polygon(
-        scenario.planning_area.geometry,
-        scenario.get_stand_size(),
+    stand_ids = planning_area.get_stands(
+        stand_size=scenario.get_stand_size()
     ).values_list("id", flat=True)
 
     datalayers = [
