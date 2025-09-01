@@ -418,6 +418,7 @@ TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
 SHARED_LINKS_NUM_DAYS_VALID = 60
 CRONJOBS = [
     ("0 0 * * *", "planning.cron.delete_old_shared_links"),  # Runs at midnight daily
+    ("* * * * *", "planning.cron.trigger_geopackage_generation"),  # Runs every minute
 ]
 
 REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_EMAIL)
