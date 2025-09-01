@@ -149,27 +149,29 @@ def calculate_stand_vector_stats(
                 / NullIf(F("stand_area"), 0.0)
             )
         )
+    results = []
+    for stand in stands:
+        majority = getattr(stand, "coverage", 0)
+        if majority > 0.5:
+            majority = 1
+        else:
+            majority = 0
+        stats_result = {"id": stand.pk, "properties": {"majority": majority}}
 
-    results = list(
-        map(
-            lambda s: to_stand_metric(
-                stats_result={
-                    "id": s.pk,
-                    "majority": getattr(s, "coverage", 0),
-                },  # type: ignore
-                datalayer=datalayer,
-                aggregations=["majority"],
-            ),
-            stands,
+        stand_metric = to_stand_metric(
+            stats_result=stats_result,
+            datalayer=datalayer,
+            aggregations=["majority"],
         )
-    )
+        results.append(stand_metric)
+
     log.info(f"Created/Updated {len(results)} stand metrics.")
     return StandMetric.objects.bulk_create(
         results,
         batch_size=100,
         update_conflicts=True,
         unique_fields=["stand_id", "datalayer_id"],
-        update_fields="min avg max sum count majority minority".split(),
+        update_fields=["majority"],
     )
 
 

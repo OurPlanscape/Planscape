@@ -65,7 +65,7 @@ def ogr2ogr_cli(
         "-lco",
         "precision=NO",
         "-lco",
-        "SPATIAL_INDEX=YES",
+        "SPATIAL_INDEX=GIST",
         conn,
         input_file,
     ]
