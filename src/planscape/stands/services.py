@@ -117,7 +117,9 @@ def calculate_stand_vector_stats(
     )
     Vector = model_from_fiona(datalayer)
     intersection_geometry = (
-        Vector.objects.filter(geometry__intersects=bounding_poly)
+        Vector.objects.annotate(area=Area("geometry"))
+        .filter(geometry__intersects=bounding_poly)
+        .filter(area__gt=0)
         .values("geometry")
         .aggregate(collect=Collect("geometry"))["collect"]
     )
