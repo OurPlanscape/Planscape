@@ -15,19 +15,14 @@ from cacheops import redis_client
 from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
-from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
-from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
-from django.db.models import F, Value
-from django.db.models.functions import Coalesce, NullIf
 from django.utils.timezone import now
 from fiona.crs import from_epsg
-from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from pyproj import Geod
@@ -922,58 +917,11 @@ def planning_area_covers(
 
 def get_excluded_stands(
     stands_qs,
-    exclude_model,
-    min_coverage: float = 0.51,
-    transform_srid: int | None = 5070,
+    datalayer,
 ):
-    """
-    Return stands_qs with any stand removed if some exclude_model geometry covers
-    >= min_coverage of that stand's area.
-    """
-    stand_geom = "geometry"
-    if transform_srid:
-        stand_geom = Transform("geometry", transform_srid)
-
-    bounding_poly = get_bounding_polygon(
-        [s for s in stands_qs.all().values_list("geometry", flat=True)]
-    )
-    intersection_geometry = (
-        exclude_model.objects.filter(geometry__intersects=bounding_poly)
-        .values("geometry")
-        .aggregate(union=UnionOp("geometry"))["union"]
-    )
-    if not intersection_geometry or intersection_geometry.empty:
-        return stands_qs.all()
-
-    # tolerance in meters
-    intersection_geometry = (
-        intersection_geometry.transform(transform_srid, clone=True)
-        .simplify(
-            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
-            preserve_topology=True,
-        )
-        .buffer(0)
-    )
-    stands_qs = (
-        stands_qs.annotate(stand_geometry=Transform("geometry", transform_srid))
-        .annotate(stand_area=Area(stand_geom))
-        .annotate(
-            inter_area=Area(
-                Intersection(
-                    stand_geom,
-                    Value(
-                        intersection_geometry,
-                    ),
-                )
-            )
-        )
-        .annotate(
-            coverage=Coalesce(F("inter_area"), Value(0.0))
-            / NullIf(F("stand_area"), 0.0)
-        )
-    )
-    return stands_qs.filter(stand_geometry__intersects=intersection_geometry).filter(
-        coverage__gte=min_coverage
+    return stands_qs.filter(
+        metrics__datalayer_id=datalayer.pk,
+        metrics__majority=1,
     )
 
 
@@ -990,8 +938,7 @@ def get_available_stands(
     excluded_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
-        ExcludeModel = model_from_fiona(exclude)
-        excluded_stands = get_excluded_stands(stands, ExcludeModel)
+        excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     return {
