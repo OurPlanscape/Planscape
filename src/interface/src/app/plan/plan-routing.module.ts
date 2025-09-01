@@ -21,13 +21,6 @@ const routes: Routes = [
       planId: planLoaderResolver,
     },
     data: { showOverview: true },
-    children: [
-      {
-        path: '',
-        loadChildren: () =>
-          import('../scenario/scenario.module').then((m) => m.ScenarioModule),
-      },
-    ],
   },
   {
     path: ':planId/climate-foresight',

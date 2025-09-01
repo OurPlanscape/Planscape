@@ -1,4 +1,4 @@
-@import "variables";
+@import 'variables';
 
 :host {
   position: absolute;
@@ -17,5 +17,11 @@
 
   &::ng-deep mat-card.slider-card {
     height: 40px;
+  }
+}
+
+@media print {
+  :host {
+    display: none;
   }
 }

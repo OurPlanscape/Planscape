@@ -36,3 +36,9 @@
     }
   }
 }
+
+@media print {
+  .attribution {
+    display: none;
+  }
+}

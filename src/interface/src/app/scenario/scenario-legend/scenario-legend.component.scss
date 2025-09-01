@@ -82,3 +82,18 @@
   --mdc-plain-tooltip-container-color: rgba(0, 0, 0, 0.7);
   --mdc-plain-tooltip-supporting-text-color: #fff;
 }
+
+@media print {
+  :host {
+    display: block;
+    width: 100%;
+  }
+
+  .icon {
+    // Force to display background colors (some browsers block it)
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: $color-black;
+    opacity: 1; // In case we have color with opacity
+  }
+}

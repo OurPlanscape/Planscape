@@ -46,3 +46,9 @@
   flex-direction: row;
   gap: 4px;
 }
+
+@media print {
+  :host {
+    display: none;
+  }
+}
