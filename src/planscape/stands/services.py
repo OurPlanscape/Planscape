@@ -121,38 +121,39 @@ def calculate_stand_vector_stats(
         .values("geometry")
         .aggregate(union=UnionOp("geometry"))["union"]
     )
-
-    # tolerance in meters
-    intersection_geometry = (
-        intersection_geometry.transform(transform_srid, clone=True)
-        .simplify(
-            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
-            preserve_topology=True,
+    if intersection_geometry and not intersection_geometry.empty:
+        # tolerance in meters
+        intersection_geometry = (
+            intersection_geometry.transform(transform_srid, clone=True)
+            .simplify(
+                tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
+                preserve_topology=True,
+            )
+            .buffer(0)
         )
-        .buffer(0)
-    )
-    stands = (
-        stands.annotate(stand_geometry=Transform("geometry", transform_srid))
-        .annotate(stand_area=Area(stand_geom))
-        .annotate(
-            inter_area=Area(
-                Intersection(
-                    stand_geom,
-                    Value(
-                        intersection_geometry,
-                    ),
+        stands = (
+            stands.annotate(stand_geometry=Transform("geometry", transform_srid))
+            .annotate(stand_area=Area(stand_geom))
+            .annotate(
+                inter_area=Area(
+                    Intersection(
+                        stand_geom,
+                        Value(
+                            intersection_geometry,
+                        ),
+                    )
                 )
             )
+            .annotate(
+                coverage=Coalesce(F("inter_area"), Value(0.0))
+                / NullIf(F("stand_area"), 0.0)
+            )
         )
-        .annotate(
-            coverage=Coalesce(F("inter_area"), Value(0.0))
-            / NullIf(F("stand_area"), 0.0)
-        )
-    )
+
     results = list(
         map(
             lambda s: to_stand_metric(
-                stats_result={"majority": s.coverage},  # type: ignore
+                stats_result={"majority": getattr(s, "coverage", 0)},  # type: ignore
                 datalayer=datalayer,
                 aggregations=["majority"],
             ),
