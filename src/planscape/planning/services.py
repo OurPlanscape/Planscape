@@ -93,7 +93,6 @@ def create_planning_area(
         ]
     )
     job = chain(async_create_stands.si(planning_area.pk), vector_metrics_jobs)
-    job.apply_async()
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -104,6 +103,7 @@ def create_planning_area(
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
+    transaction.on_commit(lambda: job.apply_async())
     return planning_area
 
 
