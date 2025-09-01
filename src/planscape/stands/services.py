@@ -154,7 +154,7 @@ def calculate_stand_vector_stats(
         map(
             lambda s: to_stand_metric(
                 stats_result={
-                    "stand_id": s.pk,
+                    "id": s.pk,
                     "majority": getattr(s, "coverage", 0),
                 },  # type: ignore
                 datalayer=datalayer,
