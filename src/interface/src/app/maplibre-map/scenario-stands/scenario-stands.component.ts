@@ -48,6 +48,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
 
   // local copy to reset feature state
   excludedStands: number[] = [];
+  readonly excludedKey = 'excluded';
 
   constructor(
     private route: ActivatedRoute,
@@ -92,7 +93,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
         sourceLayer: this.sourceName,
         id: id,
       },
-      { excluded: true }
+      { [this.excludedKey]: true }
     );
   }
 
@@ -103,7 +104,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
         sourceLayer: this.sourceName,
         id: id,
       },
-      'excluded'
+      this.excludedKey
     );
   }
 
@@ -114,32 +115,26 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       BASE_COLORS.black,
       BASE_COLORS.dark_magenta,
     ],
-    'fill-opacity': [
-      'case',
-      ['boolean', ['feature-state', 'excluded'], false],
-      0.3,
-      0.1,
-    ],
+    'fill-opacity': this.excludedCasePaint(0.3, 0.1),
   } as any;
 
   standLinePaint = {
     'line-width': 1,
     'line-color': BASE_COLORS.dark_magenta,
-    'line-opacity': [
-      'case',
-      ['boolean', ['feature-state', 'excluded'], false],
-      0.2,
-      1,
-    ],
+    'line-opacity': this.excludedCasePaint(0.2, 1),
   } as any;
 
   standExcludedPaint = {
     'fill-pattern': 'stripes-pattern', // constant pattern
-    'fill-opacity': [
-      'case',
-      ['boolean', ['feature-state', 'excluded'], false],
-      1, // show pattern
-      0, // hide pattern
-    ],
+    'fill-opacity': this.excludedCasePaint(1, 0),
   } as any;
+
+  private excludedCasePaint(valueOn: number, valueOff: number) {
+    return [
+      'case',
+      ['boolean', ['feature-state', this.excludedKey], false],
+      valueOn,
+      valueOff,
+    ];
+  }
 }
