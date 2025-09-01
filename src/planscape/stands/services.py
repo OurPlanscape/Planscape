@@ -4,13 +4,20 @@ from typing import Any, Collection, Dict
 
 import rasterio
 from core.flags import feature_enabled
+from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
-from django.db.models import QuerySet
+from django.conf import settings
+from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.functions import Area, Intersection, Transform
+from django.db.models import F, QuerySet, Value
+from django.db.models.functions import Coalesce, NullIf
+from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
 from shapely import total_bounds
 from shapely.geometry import shape
+
 from stands.models import Stand, StandMetric
 
 log = logging.getLogger(__name__)
@@ -63,6 +70,75 @@ AGGREGATION_MODEL_MAP = {
     "minority": "minority",
 }
 MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.items()}
+
+
+def calculate_stand_vector_stats(
+    stands: QuerySet[Stand],
+    datalayer: DataLayer,
+    transform_srid: int = 5070,
+):
+    if datalayer.type == DataLayerType.RASTER:
+        raise ValueError("Cannot calculate vector stats for raster layers.")
+
+    stand_geom = "geometry"
+    if transform_srid:
+        stand_geom = Transform("geometry", transform_srid)
+
+    bounding_poly = get_bounding_polygon(
+        [s for s in stands.all().values_list("geometry", flat=True)]
+    )
+    Vector = model_from_fiona(datalayer)
+    intersection_geometry = (
+        Vector.objects.filter(geometry__intersects=bounding_poly)
+        .values("geometry")
+        .aggregate(union=UnionOp("geometry"))["union"]
+    )
+
+    # tolerance in meters
+    intersection_geometry = (
+        intersection_geometry.transform(transform_srid, clone=True)
+        .simplify(
+            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
+            preserve_topology=True,
+        )
+        .buffer(0)
+    )
+    stands_qs = (
+        stands.annotate(stand_geometry=Transform("geometry", transform_srid))
+        .annotate(stand_area=Area(stand_geom))
+        .annotate(
+            inter_area=Area(
+                Intersection(
+                    stand_geom,
+                    Value(
+                        intersection_geometry,
+                    ),
+                )
+            )
+        )
+        .annotate(
+            coverage=Coalesce(F("inter_area"), Value(0.0))
+            / NullIf(F("stand_area"), 0.0)
+        )
+    )
+    results = list(
+        map(
+            lambda s: to_stand_metric(
+                stats_result={"majority": s.coverage},  # type: ignore
+                datalayer=datalayer,
+                aggregations=["majority"],
+            ),
+            stands,
+        )
+    )
+    StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields="min avg max sum count majority minority".split(),
+    )
+    return stands_qs
 
 
 def calculate_stand_zonal_stats(
