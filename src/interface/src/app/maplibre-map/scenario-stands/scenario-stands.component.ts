@@ -46,14 +46,23 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     })
   );
 
+  // local copy to reset feature state
+  excludedStands: number[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private newScenarioState: NewScenarioState,
     private zone: NgZone
   ) {
-    this.newScenarioState.excludedStands.subscribe((s) =>
-      s.forEach((id) => this.markStandAsExcluded(id))
-    );
+    this.newScenarioState.excludedStands.subscribe((ids) => {
+      const toRemove = this.excludedStands.filter((id) => !ids.includes(id));
+      const toAdd = ids.filter((id) => !this.excludedStands.includes(id));
+
+      toRemove.forEach((id) => this.removeMarkStandAsExcluded(id));
+      toAdd.forEach((id) => this.markStandAsExcluded(id));
+
+      this.excludedStands = ids;
+    });
   }
 
   ngOnInit(): void {
@@ -87,15 +96,30 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     );
   }
 
+  private removeMarkStandAsExcluded(id: number) {
+    this.mapLibreMap.removeFeatureState(
+      {
+        source: this.sourceName,
+        sourceLayer: this.sourceName,
+        id: id,
+      },
+      'excluded'
+    );
+  }
+
   standPaint = {
-    'fill-outline-color': 'transparent',
     'fill-color': [
       'case',
       ['boolean', ['feature-state', 'excluded'], false],
-      BASE_COLORS.dark,
+      BASE_COLORS.black,
       BASE_COLORS.dark_magenta,
     ],
-    'fill-opacity': 0.2,
+    'fill-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'excluded'], false],
+      0.3,
+      0.1,
+    ],
   } as any;
 
   standLinePaint = {

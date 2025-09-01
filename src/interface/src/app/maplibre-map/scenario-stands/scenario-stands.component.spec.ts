@@ -5,11 +5,12 @@ import { ScenarioStandsComponent } from './scenario-stands.component';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import {
+  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { MockDeclaration, MockProvider } from 'ng-mocks';
+import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
 import { AvailableStands } from '@types';
 
@@ -30,8 +31,7 @@ describe('ScenarioStandsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ScenarioStandsComponent],
       declarations: [
-        MockDeclaration(LayerComponent),
-        MockDeclaration(VectorSourceComponent),
+        MockDeclarations(LayerComponent, VectorSourceComponent, ImageComponent),
       ],
       providers: [
         {
@@ -42,6 +42,7 @@ describe('ScenarioStandsComponent', () => {
         MockProvider(NewScenarioState, {
           scenarioConfig$: scenarioConfig$,
           availableStands$: of({} as AvailableStands),
+          excludedStands: of([]),
         }),
       ],
     }).compileComponents();
