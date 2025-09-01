@@ -40,13 +40,6 @@ from planning.models import (
     TreatmentGoalUsesDataLayer,
     TreatmentGoalUsageType,
 )
-from planning.tasks import (
-    async_calculate_stand_metrics_v2,
-    async_calculate_vector_metrics,
-    async_create_stands,
-    async_pre_forsys_process,
-    async_forsys_run,
-)
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -66,6 +59,10 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
+    from planning.tasks import (
+        async_calculate_vector_metrics,
+        async_create_stands,
+    )
     """Canonical method to create a new planning area."""
 
     # FIXME: this code path is temporary. once we migrate to v2
