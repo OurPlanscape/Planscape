@@ -922,59 +922,11 @@ def planning_area_covers(
 
 def get_excluded_stands(
     stands_qs,
-    exclude_model,
+    datalayer: DataLayer,
     min_coverage: float = 0.51,
     transform_srid: int | None = 5070,
 ):
-    """
-    Return stands_qs with any stand removed if some exclude_model geometry covers
-    >= min_coverage of that stand's area.
-    """
-    stand_geom = "geometry"
-    if transform_srid:
-        stand_geom = Transform("geometry", transform_srid)
-
-    bounding_poly = get_bounding_polygon(
-        [s for s in stands_qs.all().values_list("geometry", flat=True)]
-    )
-    intersection_geometry = (
-        exclude_model.objects.filter(geometry__intersects=bounding_poly)
-        .values("geometry")
-        .aggregate(union=UnionOp("geometry"))["union"]
-    )
-    if not intersection_geometry or intersection_geometry.empty:
-        return stands_qs.all()
-
-    # tolerance in meters
-    intersection_geometry = (
-        intersection_geometry.transform(transform_srid, clone=True)
-        .simplify(
-            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
-            preserve_topology=True,
-        )
-        .buffer(0)
-    )
-    stands_qs = (
-        stands_qs.annotate(stand_geometry=Transform("geometry", transform_srid))
-        .annotate(stand_area=Area(stand_geom))
-        .annotate(
-            inter_area=Area(
-                Intersection(
-                    stand_geom,
-                    Value(
-                        intersection_geometry,
-                    ),
-                )
-            )
-        )
-        .annotate(
-            coverage=Coalesce(F("inter_area"), Value(0.0))
-            / NullIf(F("stand_area"), 0.0)
-        )
-    )
-    return stands_qs.filter(stand_geometry__intersects=intersection_geometry).filter(
-        coverage__gte=min_coverage
-    )
+    
 
 
 def get_available_stands(
