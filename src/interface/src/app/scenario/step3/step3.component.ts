@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -13,7 +13,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SectionComponent } from '@styleguide';
 import { NgxMaskModule } from 'ngx-mask';
 import { StepDirective } from 'src/styleguide/steps/step.component';
-import { ScenarioCreation } from '@types';
+import { NamedConstraint, ScenarioCreation } from '@types';
+import { NewScenarioState } from '../new-scenario.state';
+import { debounceTime } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-step3',
@@ -32,7 +35,10 @@ import { ScenarioCreation } from '@types';
   templateUrl: './step3.component.html',
   styleUrl: './step3.component.scss',
 })
-export class Step3Component extends StepDirective<ScenarioCreation> {
+export class Step3Component
+  extends StepDirective<ScenarioCreation>
+  implements OnInit
+{
   form = new FormGroup({
     max_slope: new FormControl<number | null>(null, [
       Validators.min(0),
@@ -44,7 +50,34 @@ export class Step3Component extends StepDirective<ScenarioCreation> {
     ]),
   });
 
+  constructor(private newScenarioState: NewScenarioState) {
+    super();
+  }
+
   getData() {
     return this.form.value;
+  }
+
+  ngOnInit(): void {
+    this.form.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((form) => {
+        const constraints: NamedConstraint[] = [];
+        if (form.max_slope != null) {
+          constraints.push({
+            name: 'maxSlope',
+            operator: 'lte',
+            value: form.max_slope,
+          });
+        }
+        if (form.min_distance_from_road != null) {
+          constraints.push({
+            name: 'distanceToRoads',
+            operator: 'lte',
+            value: form.min_distance_from_road,
+          });
+        }
+        this.newScenarioState.setNamedConstraints(constraints);
+      });
   }
 }
