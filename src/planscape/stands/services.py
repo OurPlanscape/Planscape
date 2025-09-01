@@ -116,10 +116,13 @@ def calculate_stand_vector_stats(
         [s for s in stands.all().values_list("geometry", flat=True)]
     )
     Vector = model_from_fiona(datalayer)
-    intersection_geometry = Vector.objects.filter(
-        geometry__intersects=bounding_poly
-    ).aggregate(union=UnionOp("geometry"))["union"]
+    intersection_geometry = (
+        Vector.objects.filter(geometry__intersects=bounding_poly)
+        .values("geometry")
+        .aggregate(union=UnionOp("geometry"))["union"]
+    )
     if intersection_geometry and not intersection_geometry.empty:
+        log.info("intersection with vector layer {datalayer.id} not empty.")
         # tolerance in meters
         intersection_geometry = (
             intersection_geometry.transform(transform_srid, clone=True)
@@ -152,10 +155,15 @@ def calculate_stand_vector_stats(
         majority = getattr(stand, "coverage", 0)
         if majority > 0.5:
             majority = 1
+            log.info(
+                f"Majority found for stand {stand.pk} and datalayer {datalayer.pk}"
+            )
         else:
             majority = 0
+            log.info(
+                f"Majority not found for stand {stand.pk} and datalayer {datalayer.pk}"
+            )
         stats_result = {"id": stand.pk, "properties": {"majority": majority}}
-
         stand_metric = to_stand_metric(
             stats_result=stats_result,
             datalayer=datalayer,
@@ -164,7 +172,7 @@ def calculate_stand_vector_stats(
         results.append(stand_metric)
 
     log.info(
-        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+        f"Created/Updated {len(results)} stand metrics for datalayer {datalayer.id}."
     )
     return StandMetric.objects.bulk_create(
         results,
