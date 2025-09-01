@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.gis.db.models import Collect
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import Area as A
 from django.db import connection
 from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
@@ -117,10 +118,9 @@ def calculate_stand_vector_stats(
     )
     Vector = model_from_fiona(datalayer)
     intersection_geometry = (
-        Vector.objects.annotate(area=Area("geometry"))
-        .filter(geometry__intersects=bounding_poly)
-        .filter(area__gt=0)
-        .values("geometry")
+        Vector.objects.filter(geometry__intersects=bounding_poly)
+        .annotate(area=Area(Transform("geometry", transform_srid)))
+        .filter(area__gt=A(sq_m=0))
         .aggregate(collect=Collect("geometry"))["collect"]
     )
     if intersection_geometry and not intersection_geometry.empty:
