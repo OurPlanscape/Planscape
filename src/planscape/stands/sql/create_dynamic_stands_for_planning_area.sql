@@ -38,27 +38,22 @@ BEGIN
   );
 
   WITH hexes AS (
-    SELECT geom FROM ST_HexagonGrid(side_m, snapped_env) AS g(geom)
+    SELECT geom, ST_PointOnSurface(geom) as "point" FROM ST_HexagonGrid(side_m, snapped_env) AS g(geom)
   ),
   inside AS (
-    SELECT h.geom
+    SELECT h.geom, h.point
     FROM hexes h
-    WHERE ST_Within(ST_PointOnSurface(h.geom), pa_5070)
+    WHERE ST_Within(h.point, pa_5070)
   ),
   to_add AS (
     SELECT i.geom,
+           i.point,
+           ST_Transform(i.point, 4269) as point_4269,
            (lbl || ':' ||
             round(ST_X(ST_PointOnSurface(i.geom))::numeric, 3)::text || ':' ||
             round(ST_Y(ST_PointOnSurface(i.geom))::numeric, 3)::text
            ) AS key
     FROM inside i
-    LEFT JOIN public.stands_stand s0
-      ON s0.size = lbl
-     AND ST_Contains(
-           s0.geometry,
-           ST_Transform(ST_PointOnSurface(i.geom), 4269)
-         )
-    WHERE s0.id IS NULL
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
   SELECT now(),
