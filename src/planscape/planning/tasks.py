@@ -10,9 +10,8 @@ from django.db import connection
 from django.conf import settings
 from django.core.paginator import Paginator
 from gis.core import get_storage_session
-from planning.models import Scenario, ScenarioResultStatus
+from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from planning.services import (
-    get_datalayer_thresholds,
     get_min_project_area,
     get_max_treatable_area,
 )
@@ -177,14 +176,16 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         scenario.get_stand_size(),
     ).values_list("id", flat=True)
 
-    datalayers = {
-        datalayer.id: {
-            "metric": get_datalayer_metric(datalayer),
-            "thresholds": get_datalayer_thresholds(datalayer, tx_goal),
-            "name": datalayer.name,
+    datalayers = [
+        {
+            "id": tgudl.datalayer.id,
+            "name": tgudl.datalayer.name,
+            "metric": get_datalayer_metric(tgudl.datalayer),
+            "threshold": tgudl.threshold,
+            "usage_type": tgudl.usage_type,
         }
-        for datalayer in tx_goal.datalayers.all()
-    }
+        for tgudl in tx_goal.datalayer_usages.all()
+    ]
 
     min_area_project = get_min_project_area(scenario)
     max_area_project = get_max_treatable_area(scenario.configuration)

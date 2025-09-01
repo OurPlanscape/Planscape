@@ -956,21 +956,6 @@ def get_available_stands(
     }
 
 
-def get_datalayer_thresholds(datalayer: DataLayer, tx_goal: TreatmentGoal) -> Any:
-    try:
-        tgud = TreatmentGoalUsesDataLayer.objects.get(
-            treatment_goal=tx_goal,
-            datalayer=datalayer,
-            usage_type=TreatmentGoalUsageType.THRESHOLD,
-        )
-        return tgud.threshold
-    except TreatmentGoalUsesDataLayer.DoesNotExist:
-        logger.warning(
-            f"Thresholds for datalayer {datalayer.name} and treatment goal {tx_goal.name} not configured."
-        )
-        return None
-
-
 def get_min_project_area(scenario: Scenario) -> float:
     stand_size = scenario.get_stand_size()
     match stand_size:
