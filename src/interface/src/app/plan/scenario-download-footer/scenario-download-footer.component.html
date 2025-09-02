@@ -28,6 +28,6 @@
     class="footer-button"
     [disabled]="downloadingScenario || geoPackageStatus === 'PENDING'"
     (click)="handleButton()">
-    {{ buttonLabels[geoPackageStatus] }}
+    {{ buttonLabels[geoPackageStatus] || 'Generating GeoPackage' }}
   </button>
 </div>

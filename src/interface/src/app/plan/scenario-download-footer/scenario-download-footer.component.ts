@@ -50,6 +50,7 @@ export class ScenarioDownloadFooterComponent {
     FAILED: 'GeoPackage Failed',
     SUCCEEDED: 'Download GeoPackage',
     PENDING: 'Generating GeoPackage',
+    PROCESSING: 'Generating GeoPackage',
   };
 
   handleButton() {
