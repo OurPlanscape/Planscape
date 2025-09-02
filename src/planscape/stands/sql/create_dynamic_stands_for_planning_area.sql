@@ -11,6 +11,7 @@ DECLARE
   side_m float8;
   inserted integer := 0;
   stand_size text := upper(size_label);
+  envelope geometry;
 BEGIN
   side_m := CASE stand_size
               WHEN 'SMALL'  THEN 124.0806483
@@ -22,14 +23,15 @@ BEGIN
     RAISE EXCEPTION USING MESSAGE = 'Unknown size ' || lbl;
   END IF;
 
-  pa_5070 := ST_Envelope(ST_Transform(planning_area, 5070));
+  pa_5070 := ST_Transform(planning_area, 5070);
+  envelope := ST_Envelope(pa_5070);
 
   WITH hexes AS (
     SELECT 
       geom, 
-      ST_Centroid(geom) as "point", 
+      ST_Centroid(geom) as "point",
       ST_Transform(ST_Centroid(geom), 4326) as "point_4326" 
-    FROM ST_HexagonGrid(side_m, snapped_env) AS g(geom)
+    FROM ST_HexagonGrid(side_m, envelope) AS g(geom)
   ),
   inside AS (
     SELECT h.geom, h.point
