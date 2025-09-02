@@ -1,3 +1,4 @@
+from celery import shared_task
 from planning.models import SharedLink, Scenario, GeoPackageStatus, ScenarioResultStatus
 from planning.tasks import async_generate_scenario_geopackage
 from django.utils import timezone
@@ -17,6 +18,7 @@ def delete_old_shared_links(interval=settings.SHARED_LINKS_NUM_DAYS_VALID):
         logger.error("Could not delete links from shared links table.")
 
 
+@shared_task
 def trigger_geopackage_generation():
     scenarios = Scenario.objects.filter(
         result_status=ScenarioResultStatus.SUCCESS,
