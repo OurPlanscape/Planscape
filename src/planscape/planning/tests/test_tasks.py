@@ -6,12 +6,12 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
-from stands.models import Stand, StandMetric, StandSizeChoices
-from stands.tests.factories import StandFactory
-
 from planning.models import ScenarioResultStatus
 from planning.tasks import async_calculate_stand_metrics, async_forsys_run
 from planning.tests.factories import ScenarioFactory
+from stands.models import Stand, StandMetric, StandSizeChoices
+from stands.tests.factories import StandFactory
+
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 
@@ -64,7 +64,7 @@ class AsyncCalculateStandMetricsTest(TestCase):
 
         self.assertNotEqual(StandMetric.objects.count(), Stand.objects.count())
 
-    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS")
+    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
     def test_async_calculate_stand_metrics_paginated(self):
         self.assertEqual(StandMetric.objects.count(), 0)
 
@@ -82,7 +82,7 @@ class AsyncCalculateStandMetricsTest(TestCase):
 
         self.assertEqual(StandMetric.objects.count(), 0)
 
-    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS")
+    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
     def test_async_calculate_stand_metrics_no_stands_paginated(self):
         self.assertEqual(StandMetric.objects.count(), 0)
 
@@ -99,7 +99,7 @@ class AsyncCalculateStandMetricsTest(TestCase):
 
         self.assertEqual(StandMetric.objects.count(), 0)
 
-    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS")
+    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
     def test_async_calculate_stand_metrics_no_datalayer_paginated(self):
         self.assertEqual(StandMetric.objects.count(), 0)
         async_calculate_stand_metrics(self.scenario.pk, "foo_bar")
