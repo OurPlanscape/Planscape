@@ -150,6 +150,18 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
 
 
 @app.task()
+def trigger_geopackage_generation():
+    scenarios = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS,
+        geopackage_status=GeoPackageStatus.PENDING,
+    ).values_list("id", flat=True)
+    log.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
+    for scenario_id in scenarios:
+        async_generate_scenario_geopackage.delay(scenario_id)
+        log.info(f"Triggered geopackage generation for scenario {scenario_id}.")
+
+
+@app.task()
 def async_generate_scenario_geopackage(scenario_id: int) -> None:
     from planning.services import export_to_geopackage
 

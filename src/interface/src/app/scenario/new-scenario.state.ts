@@ -11,6 +11,7 @@ import {
   tap,
 } from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
+import { FeatureService } from '../features/feature.service';
 
 @Injectable({
   providedIn: 'root',
@@ -64,13 +65,18 @@ export class NewScenarioState {
   public slopeId = 0;
   public distanceToRoadsId = 0;
 
-  constructor(private dataLayersService: DataLayersService) {
-    this.dataLayersService.getMaxSlopeLayerId().subscribe((s) => {
-      this.slopeId = s;
-    });
-    this.dataLayersService.getDistanceToRoadsLayerId().subscribe((s) => {
-      this.distanceToRoadsId = s;
-    });
+  constructor(
+    private dataLayersService: DataLayersService,
+    private featureService: FeatureService
+  ) {
+    if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
+      this.dataLayersService.getMaxSlopeLayerId().subscribe((s) => {
+        this.slopeId = s;
+      });
+      this.dataLayersService.getDistanceToRoadsLayerId().subscribe((s) => {
+        this.distanceToRoadsId = s;
+      });
+    }
   }
 
   setLoading(isLoading: boolean) {
