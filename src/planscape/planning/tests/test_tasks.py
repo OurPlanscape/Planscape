@@ -6,8 +6,12 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
-from planning.models import ScenarioResultStatus
-from planning.tasks import async_calculate_stand_metrics, async_forsys_run
+from planning.models import ScenarioResultStatus, GeoPackageStatus
+from planning.tasks import (
+    async_calculate_stand_metrics,
+    async_forsys_run,
+    trigger_geopackage_generation,
+)
 from planning.tests.factories import ScenarioFactory
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
@@ -201,3 +205,58 @@ class AsyncCallForsysViaAPI(TestCase):
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
         self.assertFalse(mock_geopackage.called)
+
+
+class TriggerGeopackageGenerationTestCase(TestCase):
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation(self, mock_async_generate):
+        scenario = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+
+        trigger_geopackage_generation()
+
+        mock_async_generate.assert_called_once_with(scenario.pk)
+
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation_no_pending(self, mock_async_generate):
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.PROCESSING,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.FAILED,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=None,
+        )
+
+        trigger_geopackage_generation()
+        mock_async_generate.assert_not_called()
+
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation_result_status_not_success(
+        self, mock_async_generate
+    ):
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.PENDING,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.RUNNING,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.FAILURE,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+
+        trigger_geopackage_generation()
+        mock_async_generate.assert_not_called()

@@ -12,8 +12,8 @@ app.autodiscover_tasks()
 
 beat_schedule = {
     "trigger-geopackage-generation": {
-        "task": "planning.cron.trigger_geopackage_generation",
-        "schedule": crontab(minute="*"),  # runs every minute
+        "task": "planning.tasks.trigger_geopackage_generation",
+        "schedule": 10.0,  # runs every 10 seconds
     },
 }
 
