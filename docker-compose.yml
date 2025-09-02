@@ -50,7 +50,7 @@ services:
     extends:
       service: _planscape
     working_dir: /usr/src/app/src/planscape
-    command: celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,default
+    command: celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,default,impacts
     deploy:
       replicas: 1
     env_file:
@@ -59,6 +59,23 @@ services:
       - web
       - db
       - redis
+    volumes:
+      - .:/usr/src/app
+  celery_beat:
+    image: planscape
+    extends:
+      service: _planscape
+    working_dir: /usr/src/app/src/planscape
+    command: celery -A planscape beat --loglevel INFO
+    deploy:
+      replicas: 1
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - db
+      - redis
+      - celery_worker
     volumes:
       - .:/usr/src/app
   db:
