@@ -33,7 +33,7 @@ const AVAILABLE_COLORS: string[] = [
   '#0000CD',
 ];
 @Injectable({
-  providedIn: 'root', // TODO: probably just this module...
+  providedIn: 'root',
 })
 export class ScenarioResultsChartsService {
   public selectedColors: Map<string, string> = new Map();
