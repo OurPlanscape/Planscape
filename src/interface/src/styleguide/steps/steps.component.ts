@@ -98,8 +98,8 @@ export class StepsComponent<T> extends CdkStepper {
           .pipe(take(1))
           .subscribe({
             next: () => {
-              this.moveNextOrFinish();
               this.savingStep = false;
+              this.moveNextOrFinish();
             },
             error: (err) => {
               control.setErrors({
@@ -123,6 +123,7 @@ export class StepsComponent<T> extends CdkStepper {
     }
 
     if (this.isLastStep) {
+      this.savingStep = true;
       this.finished.emit();
     } else {
       this.next();
