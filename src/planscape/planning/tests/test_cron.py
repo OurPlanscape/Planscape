@@ -7,7 +7,7 @@ from planning.cron import trigger_geopackage_generation
 
 
 class TriggerGeopackageGenerationCronJobTestCase(TestCase):
-    @mock.patch("planning.cron.async_generate_scenario_geopackage.apply_async")
+    @mock.patch("planning.cron.async_generate_scenario_geopackage.delay")
     def test_trigger_geopackage_generation_cron_job(self, mock_async_generate):
         scenario = ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
@@ -18,7 +18,7 @@ class TriggerGeopackageGenerationCronJobTestCase(TestCase):
 
         mock_async_generate.assert_called_once_with(scenario.pk)
 
-    @mock.patch("planning.cron.async_generate_scenario_geopackage.apply_async")
+    @mock.patch("planning.cron.async_generate_scenario_geopackage.delay")
     def test_trigger_geopackage_generation_no_pending(self, mock_async_generate):
         ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
@@ -40,7 +40,7 @@ class TriggerGeopackageGenerationCronJobTestCase(TestCase):
         trigger_geopackage_generation()
         mock_async_generate.assert_not_called()
 
-    @mock.patch("planning.cron.async_generate_scenario_geopackage.apply_async")
+    @mock.patch("planning.cron.async_generate_scenario_geopackage.delay")
     def test_trigger_geopackage_generation_result_status_not_success(
         self, mock_async_generate
     ):
