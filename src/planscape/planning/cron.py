@@ -22,6 +22,7 @@ def trigger_geopackage_generation():
         result_status=ScenarioResultStatus.SUCCESS,
         geopackage_status=GeoPackageStatus.PENDING,
     ).values_list("id", flat=True)
-    for scenario in scenarios:
-        async_generate_scenario_geopackage.apply_async(scenario)
-        logger.info(f"Triggered geopackage generation for scenario {scenario}.")
+    logger.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
+    for scenario_id in scenarios:
+        async_generate_scenario_geopackage.delay(scenario_id)
+        logger.info(f"Triggered geopackage generation for scenario {scenario_id}.")
