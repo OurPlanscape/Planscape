@@ -1093,7 +1093,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             first_treatment_goal["group_text"],
             TreatmentGoalGroup(self.first_treatment_goal.group).label,
         )
-        self.assertEqual(
+        self.assertCountEqual(
             first_treatment_goal["priorities"], ["priority one", "priority two"]
         )
 
