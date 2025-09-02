@@ -1,7 +1,9 @@
+from django.contrib.postgres.operations import AddIndexConcurrently
 from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    atomic = False
     dependencies = [
         ("stands", "0009_auto_20250902_1749"),
     ]
@@ -12,14 +14,16 @@ class Migration(migrations.Migration):
             new_name="majority_standmetric_idx",
             old_name="standmetrics_majority_partial_index",
         ),
-        migrations.AddIndexConcurrently(
+        AddIndexConcurrently(
             model_name="stand",
-            constraint=models.UniqueConstraint(
-                fields=("size", "grid_key"), name="unique_stand_gridkey_size"
+            index=models.Index(
+                fields=("size", "grid_key"), name="unique_stand_gridkey_size_idx"
             ),
         ),
         migrations.AddConstraint(
             model_name="stand",
-            constraint=models.UniqueConstraint(fields=["size", "grid_key"]),
+            constraint=models.UniqueConstraint(
+                name="unique_stand_gridkey_size_cst", fields=["size", "grid_key"]
+            ),
         ),
     ]
