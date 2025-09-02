@@ -10,11 +10,11 @@ DECLARE
   pa_5070 geometry;
   side_m float8;
   inserted integer := 0;
-  lbl text := upper(size_label);
+  stand_size text := upper(size_label);
   xmin float8; ymin float8; xmax float8; ymax float8;
   snapped_env geometry;
 BEGIN
-  side_m := CASE lbl
+  side_m := CASE stand_size
               WHEN 'SMALL'  THEN 124.0806483
               WHEN 'MEDIUM' THEN 392.377463
               WHEN 'LARGE'  THEN 877.38267558
@@ -38,7 +38,11 @@ BEGIN
   );
 
   WITH hexes AS (
-    SELECT geom, ST_PointOnSurface(geom) as "point" FROM ST_HexagonGrid(side_m, snapped_env) AS g(geom)
+    SELECT 
+      geom, 
+      ST_Centroid(geom) as "point", 
+      ST_Transform(ST_Centroid(geom), 4326) as "point_4326" 
+    FROM ST_HexagonGrid(side_m, snapped_env) AS g(geom)
   ),
   inside AS (
     SELECT h.geom, h.point
@@ -47,12 +51,8 @@ BEGIN
   ),
   to_add AS (
     SELECT i.geom,
-           i.point,
-           ST_Transform(i.point, 4269) as point_4269,
-           (lbl || ':' ||
-            round(ST_X(ST_PointOnSurface(i.geom))::numeric, 3)::text || ':' ||
-            round(ST_Y(ST_PointOnSurface(i.geom))::numeric, 3)::text
-           ) AS key
+           i.point_4326,
+           ST_GeoHash(i.point_4326, 8) AS key
     FROM inside i
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
