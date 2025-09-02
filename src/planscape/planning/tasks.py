@@ -6,6 +6,12 @@ from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.core.paginator import Paginator
 from gis.core import get_storage_session
+from planning.models import (
+    GeoPackageStatus,
+    PlanningArea,
+    Scenario,
+    ScenarioResultStatus,
+)
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats,
@@ -14,12 +20,6 @@ from stands.services import (
 )
 from utils.cli_utils import call_forsys
 
-from planning.models import (
-    PlanningArea,
-    Scenario,
-    ScenarioResultStatus,
-    GeoPackageStatus,
-)
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -28,14 +28,15 @@ log = logging.getLogger(__name__)
 
 @app.task()
 def async_create_stands(planning_area_id: int) -> None:
-    try:
-        planning_area = PlanningArea.objects.get(id=planning_area_id)
-    except PlanningArea.DoesNotExist:
-        log.warning(f"Planning Area with {planning_area_id} does not exist.")
-        raise
-    for i in StandSizeChoices:
-        log.info(f"Creating stands for {planning_area_id} for stand size {i}")
-        create_stands_for_geometry(planning_area.geometry, i)
+    if feature_enabled("AUTO_CREATE_STANDS"):
+        try:
+            planning_area = PlanningArea.objects.get(id=planning_area_id)
+        except PlanningArea.DoesNotExist:
+            log.warning(f"Planning Area with {planning_area_id} does not exist.")
+            raise
+        for i in StandSizeChoices:
+            log.info(f"Creating stands for {planning_area_id} for stand size {i}")
+            create_stands_for_geometry(planning_area.geometry, i)
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -113,11 +114,12 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
 
 @app.task()
 def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> None:
-    planning_area = PlanningArea.objects.get(id=planning_area_id)
-    datalayer = DataLayer.objects.get(id=datalayer_id)
-    for i in StandSizeChoices:
-        stands = planning_area.get_stands(i)
-        calculate_stand_vector_stats(stands=stands, datalayer=datalayer)
+    if feature_enabled("AUTO_CREATE_STANDS"):
+        planning_area = PlanningArea.objects.get(id=planning_area_id)
+        datalayer = DataLayer.objects.get(id=datalayer_id)
+        for i in StandSizeChoices:
+            stands = planning_area.get_stands(i)
+            calculate_stand_vector_stats(stands=stands, datalayer=datalayer)
 
 
 @app.task(max_retries=3, retry_backoff=True)

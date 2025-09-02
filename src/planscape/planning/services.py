@@ -13,6 +13,7 @@ import fiona
 from actstream import action
 from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
@@ -24,11 +25,6 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -47,6 +43,11 @@ from planning.tasks import (
     async_create_stands,
     async_forsys_run,
 )
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -97,7 +98,8 @@ def create_planning_area(
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
-    transaction.on_commit(lambda: job.apply_async())
+    if feature_enabled("AUTO_CREATE_STANDS"):
+        transaction.on_commit(lambda: job.apply_async())
     return planning_area
 
 
