@@ -57,10 +57,9 @@ export class StepsComponent<T> extends CdkStepper {
   // event that emits after saving the last step
   @Output() finished = new EventEmitter();
 
-  @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
+  @Input() savingStep = false;
 
-  // flag to show loader
-  savingStep = false;
+  @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
   constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef) {
     super(dir, cdr, el);
@@ -93,19 +92,17 @@ export class StepsComponent<T> extends CdkStepper {
           currentStep instanceof StepComponent
             ? currentStep.getData()
             : control.value;
-        this.savingStep = true;
+
         this.save(data)
           .pipe(take(1))
           .subscribe({
             next: () => {
-              this.savingStep = false;
               this.moveNextOrFinish();
             },
             error: (err) => {
               control.setErrors({
                 [this.errorKey]: err?.message || this.genericErrorMsg,
               });
-              this.savingStep = false;
             },
           });
       } else {
@@ -123,7 +120,6 @@ export class StepsComponent<T> extends CdkStepper {
     }
 
     if (this.isLastStep) {
-      this.savingStep = true;
       this.finished.emit();
     } else {
       this.next();
