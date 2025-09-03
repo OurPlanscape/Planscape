@@ -2,14 +2,16 @@
 @import "colors";
 
 :host {
+    width: 325px;
     display: flex;
     flex-direction: column;
     padding: 16px;
     align-items: flex-start;
-    gap: 24px;
     align-self: stretch;
     border: 1px solid $color-soft-gray;
     background: $color-light-gray;
+    gap: 4px;
+    padding-left: 8px;
 }
 
 .title {
@@ -17,30 +19,47 @@
     color: $color-md-gray;
     font-weight: 700;
     line-height: 14px;
-    text-transform: uppercase;
+    padding-left: 8px;
 }
 
 .legend-box {
     display: flex;
-    gap: 15px;
     width: 100%;
     flex-direction: column;
+}
+
+.chart-legend-selection {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    
 }
 
 .legend-line {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    gap: 4px;
 }
 
 .legend-name {
     color: $color-black;
-    @include standard-label();
+    @include xs-label();
     font-size: 14px;
+    line-height: normal;
 }
 
 .legend-color {
     width: 16px;
     height: 16px;
     border-radius: 4px;
+    flex-shrink: 0;
+}
+
+::ng-deep .chart-legend-selection .mdc-form-field {
+    width: 100%;
+}
+
+::ng-deep .chart-legend-selection .mdc-label {
+    width: 100%;
 }
