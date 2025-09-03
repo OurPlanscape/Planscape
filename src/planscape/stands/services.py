@@ -213,6 +213,7 @@ def calculate_stand_vector_stats(
                 coverage=Coalesce(F("inter_area"), Value(0.0))
                 / NullIf(F("stand_area"), 0.0)
             )
+            .filter(stand_geometry__intersects=intersection_geometry)
         )
     results = []
     for stand in stands:
