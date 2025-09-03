@@ -20,3 +20,5 @@ The name and value of the flag will be shared by frontend and backend.
 `DYNAMIC_SCENARIO_MAP`: Shows stands on new scenario configuration steps"
 
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool
+
+`AUTO_CREATE_STANDS`: Enables the creation of stands during the creation of new planning areas

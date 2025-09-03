@@ -14,7 +14,7 @@ from planning.models import (
 )
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
-    calculate_stand_vector_stats,
+    calculate_stand_vector_stats2,
     calculate_stand_zonal_stats,
     create_stands_for_geometry,
 )
@@ -119,7 +119,7 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
         datalayer = DataLayer.objects.get(id=datalayer_id)
         for i in StandSizeChoices:
             stands = planning_area.get_stands(i)
-            calculate_stand_vector_stats(stands=stands, datalayer=datalayer)
+            calculate_stand_vector_stats2(stands=stands, datalayer=datalayer)
 
 
 @app.task(max_retries=3, retry_backoff=True)

@@ -7,6 +7,7 @@ from core.flags import feature_enabled
 from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
+from django.contrib.gis.db.models import Collect
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
@@ -19,7 +20,6 @@ from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
 from shapely import total_bounds
 from shapely.geometry import shape
-
 from stands.models import Stand, StandMetric, StandSizeChoices
 
 log = logging.getLogger(__name__)
@@ -98,6 +98,56 @@ AGGREGATION_MODEL_MAP = {
     "minority": "minority",
 }
 MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.items()}
+
+
+def calculate_stand_vector_stats2(
+    stands: QuerySet[Stand],
+    datalayer: DataLayer,
+    transform_srid: int = 5070,
+):
+    if datalayer.type == DataLayerType.RASTER:
+        raise ValueError("Cannot calculate vector stats for raster layers.")
+    transformation = Transform("geometry", transform_srid)
+    bounding_poly = get_bounding_polygon(
+        [s for s in stands.all().values_list("geometry", flat=True)]
+    )
+    Vector = model_from_fiona(datalayer)
+    stands = stands.annotate(planar_geometry=transformation)
+    planar_intersection = (
+        Vector.objects.filter(geometry__intersects=bounding_poly)
+        .annotate(planar_geometry=transformation)
+        .aggregate(collect=Collect("planar_geometry"))["collect"]
+    )
+
+    results = []
+    for stand in stands:
+        remainder = stand.planar_geometry.difference(planar_intersection)  # type: ignore
+        if remainder.empty:
+            # if the entire stand becomes empty, it means it's fully covered by the geometry
+            majority = 1
+        else:
+            area_percentage = remainder.area / stand.planar_geometry.area
+            if area_percentage > 0.5:
+                majority = 1
+            else:
+                majority = 0
+
+        stand_metric = to_stand_metric(
+            stats_result={"id": stand.pk, "properties": {"majority": majority}},
+            datalayer=datalayer,
+            aggregations=["majority"],
+        )
+        results.append(stand_metric)
+    log.info(
+        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+    )
+    return StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields=["majority"],
+    )
 
 
 def calculate_stand_vector_stats(
