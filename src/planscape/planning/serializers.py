@@ -691,18 +691,19 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
             )
 
     def _derive_coverage(self, layer_objs):
-        ids = [dl.id for dl in layer_objs]
+        ids = list({dl.id for dl in layer_objs})
         qs = DataLayer.objects.filter(id__in=ids)
         coverage = qs.geometric_intersection(geometry_field="outline")  # type: ignore
         return coverage
 
     def validate(self, attrs):
+        existing_cfg = (
+            getattr(self.instance, "configuration", {})
+            if getattr(self, "instance", None)
+            else {}
+        )
+
         if attrs.get("one_off") is True:
-            existing_cfg = (
-                getattr(self.instance, "configuration", {})
-                if getattr(self, "instance", None)
-                else {}
-            )
             has_existing = bool(existing_cfg.get("one_off_config"))
             if not attrs.get("one_off_config") and not has_existing:
                 raise serializers.ValidationError(
@@ -710,6 +711,13 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
                 )
 
         ooc = attrs.get("one_off_config")
+
+        effective_one_off = bool(attrs.get("one_off", existing_cfg.get("one_off")))
+        if ooc and not effective_one_off:
+            raise serializers.ValidationError(
+                {"one_off": ["Must be true when providing one_off_config."]}
+            )
+
         if ooc:
             layer_objs = []
             for item in ooc["datalayers"]:
@@ -744,6 +752,10 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
 
         if one_off_flag is not None:
             cfg["one_off"] = bool(one_off_flag)
+
+        if one_off_flag is False:
+            cfg.pop("one_off_config", None)
+            cfg.pop("coverage", None)
 
         if ooc:
             datalayers_compact = []
