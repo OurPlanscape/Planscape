@@ -111,10 +111,9 @@
     [geoPackageURL]="geoPackageURL"
     [geoPackageStatus]="geoPackageStatus"
     *ngIf="
-      scenarioImprovementsFeature &&
+      scenarioFooterFeatureFlags &&
       selectedTab !== SCENARIO_TABS.TREATMENTS &&
       selectedTab !== SCENARIO_TABS.DATA_LAYERS &&
-      scenarioResults?.status === 'SUCCESS' &&
-      geoPackageStatus !== null
+      scenarioResults?.status === 'SUCCESS'
     "></app-scenario-download-footer>
 </div>
