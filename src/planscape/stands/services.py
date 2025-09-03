@@ -139,12 +139,12 @@ def calculate_stand_vector_stats2(
                 else:
                     majority = 1
 
-            stand_metric = to_stand_metric(
-                stats_result={"id": stand.pk, "properties": {"majority": majority}},
-                datalayer=datalayer,
-                aggregations=["majority"],
-            )
-            results.append(stand_metric)
+        stand_metric = to_stand_metric(
+            stats_result={"id": stand.pk, "properties": {"majority": majority}},
+            datalayer=datalayer,
+            aggregations=["majority"],
+        )
+        results.append(stand_metric)
     log.info(
         f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
     )
