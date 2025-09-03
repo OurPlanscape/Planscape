@@ -125,8 +125,11 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
                     f"Calculating new page for planning area {planning_area_id} and datalayer {datalayer_id}"
                 )
                 paginated_stands = paginator.page(page)
+                stands = Stand.objects.filter(
+                    id__in=[stand.pk for stand in paginated_stands.object_list]
+                )
                 calculate_stand_vector_stats(
-                    stands=paginated_stands.object_list,
+                    stands=stands,
                     datalayer=datalayer,
                     planning_area_geometry=planning_area.geometry,
                 )
