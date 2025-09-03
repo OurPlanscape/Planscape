@@ -407,9 +407,10 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
+    "planning.tasks.trigger_geopackage_generation": {"queue": "default"},
+    "planning.tasks.async_generate_scenario_geopackage": {"queue": "default"},
     "impacts.tasks.*": {"queue": "impacts"},
     "e2e.tasks.*": {"queue": "default"},
-    "planning.cron.*": {"queue": "default"},
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
