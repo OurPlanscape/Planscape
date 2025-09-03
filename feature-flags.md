@@ -22,3 +22,5 @@ The name and value of the flag will be shared by frontend and backend.
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool
 
 `AUTO_CREATE_STANDS`: Enables the creation of stands during the creation of new planning areas
+
+`SCENARIO_DRAFTS`: Enable the scenario drafts
