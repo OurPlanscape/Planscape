@@ -112,7 +112,10 @@ def calculate_stand_vector_stats2(
     results = []
     for stand in stands:
         intersection_geometry = (
-            Vector.objects.filter(geometry__intersects=stand.geometry)
+            Vector.objects.filter(
+                geometry__intersects=stand.geometry,
+                geometry__isvalid=True,
+            )
             .annotate(planar_geometry=transformation)
             .aggregate(union=UnionOp("planar_geometry"))["union"]
         )
