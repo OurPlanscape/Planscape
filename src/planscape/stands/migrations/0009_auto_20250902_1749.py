@@ -50,5 +50,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(DROP_INDEX),
-        migrations.RunPython(forwards),
+        # migrations.RunPython(forwards),
     ]
