@@ -107,9 +107,20 @@ def calculate_stand_vector_stats2(
 ):
     if datalayer.type == DataLayerType.RASTER:
         raise ValueError("Cannot calculate vector stats for raster layers.")
-    transformation = Transform(SimplifyPreserveTopology("geometry", 50), transform_srid)
+    transformation = SimplifyPreserveTopology(
+        Transform(
+            "geometry",
+            transform_srid,
+        ),
+        50,
+    )
     Vector = model_from_fiona(datalayer)
-    stands = stands.annotate(planar_geometry=transformation)
+    stands = stands.annotate(
+        planar_geometry=Transform(
+            "geometry",
+            transform_srid,
+        ),
+    )
     results = []
     for stand in stands:
         intersection_geometry = (
