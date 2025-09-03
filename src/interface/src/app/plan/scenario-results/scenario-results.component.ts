@@ -1,10 +1,11 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
-import { ScenarioResult } from '@types';
+import { ScenarioGoal, ScenarioResult } from '@types';
 import { hasAnalytics, parseResultsToProjectAreas } from '../plan-helpers';
-import { FileSaverService, ScenarioService } from '@services';
+import { FileSaverService, ScenarioService, TreatmentGoalsService } from '@services';
 import { getSafeFileName } from '../../shared/files';
 import { FeatureService } from '../../features/feature.service';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-scenario-results',
@@ -17,19 +18,41 @@ export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
   @Input() priorities: string[] = [];
+  @Input() treatmentGoal: any;
 
   areas: ProjectAreaReport[] = [];
+
+  goalPriorities: string[] = [];
 
   constructor(
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
-    private featureService: FeatureService
-  ) {}
+    private featureService: FeatureService,
+    private treatmentGoalsService: TreatmentGoalsService
+  ) { 
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
+      this.getPriorities();
+    }
+  }
+
+
+  getPriorities() {
+    console.log('are we calling getPriorities? ');
+    if (this.treatmentGoal) {
+      console.log('we have a goal?', this.treatmentGoal);
+      this.treatmentGoalsService
+        .getTreatmentGoal(
+          this.treatmentGoal.id
+        ).pipe(
+          map((goal: ScenarioGoal) => {
+            console.log('goal?', goal);
+          }),
+        );
     }
   }
 

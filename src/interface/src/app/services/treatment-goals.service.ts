@@ -7,11 +7,18 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class TreatmentGoalsService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getTreatmentGoals(planning_area?: number) {
     return this.http.get<ScenarioGoal[]>(
       `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${planning_area ? '?planning_area=' + planning_area : ''}`
     );
   }
+
+  getTreatmentGoal(goal_id?: number) {
+    return this.http.get<ScenarioGoal>(
+      `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${goal_id}`
+    );
+  }
+
 }
