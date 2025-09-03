@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import A
 from django.db import connection
 from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
@@ -19,6 +20,7 @@ from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
 from shapely import total_bounds
 from shapely.geometry import shape
+
 from stands.models import Stand, StandMetric, StandSizeChoices
 
 log = logging.getLogger(__name__)
@@ -183,23 +185,24 @@ def calculate_stand_vector_stats(
         raise ValueError("Cannot calculate vector stats for raster layers.")
 
     stand_geom = "geometry"
-    if transform_srid:
-        stand_geom = Transform("geometry", transform_srid)
+    transformation = Transform("geometry", transform_srid)
     Vector = model_from_fiona(datalayer)
-    intersection_geometry = Vector.objects.filter(
-        geometry__isvalid=True,
-        geometry__intersects=planning_area_geometry,
-    ).aggregate(union=UnionOp("geometry"))["union"]
+    intersection_geometry = (
+        Vector.objects.filter(
+            geometry__isvalid=True,
+            geometry__intersects=planning_area_geometry,
+        )
+        .annotate(planar_geometry=transformation)
+        .annotate(area=Area("planar_geometry"))
+        .filter(area__gte=A(10000))
+        .aggregate(union=UnionOp("planar_geometry"))["union"]
+    )
     if intersection_geometry and not intersection_geometry.empty:
         # tolerance in meters
-        intersection_geometry = (
-            intersection_geometry.transform(transform_srid, clone=True)
-            .simplify(
-                tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
-                preserve_topology=True,
-            )
-            .buffer(0)
-        )
+        intersection_geometry = intersection_geometry.simplify(
+            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
+            preserve_topology=True,
+        ).buffer(0)
         stands = (
             stands.annotate(stand_geometry=Transform("geometry", transform_srid))
             .annotate(stand_area=Area(stand_geom))
@@ -217,7 +220,6 @@ def calculate_stand_vector_stats(
                 coverage=Coalesce(F("inter_area"), Value(0.0))
                 / NullIf(F("stand_area"), 0.0)
             )
-            .filter(stand_geometry__intersects=intersection_geometry)
         )
     results = []
     for stand in stands:
