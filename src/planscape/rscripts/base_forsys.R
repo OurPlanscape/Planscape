@@ -290,7 +290,7 @@ to_properties <- function(
     mutate(stand_count = project_stand_count) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
-    mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
+    mutate(pct_area = round(100 * ETrt_area_acres / scenario$planning_area_acres, 2)) %>%
     mutate(attainment = attainment) %>%
     mutate(text_geometry = text_geometry) %>%
     rename_with(.fn = rename_col)
@@ -311,6 +311,7 @@ to_project_data <- function(
     filter(
       forsys_outputs$stand_output,
       proj_id == project_id,
+      DoTreat == 1
     ),
     stand_id
   )

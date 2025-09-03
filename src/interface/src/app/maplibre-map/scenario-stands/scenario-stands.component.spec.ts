@@ -1,16 +1,18 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { ScenarioStandsComponent } from './scenario-stands.component';
-import { ScenarioState } from '../../scenario/scenario.state';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import {
+  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { MockDeclaration } from 'ng-mocks';
+import { MockDeclarations, MockProvider } from 'ng-mocks';
+import { NewScenarioState } from '../../scenario/new-scenario.state';
+import { AvailableStands } from '@types';
 
 describe('ScenarioStandsComponent', () => {
   const planId = 456;
@@ -29,18 +31,19 @@ describe('ScenarioStandsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ScenarioStandsComponent],
       declarations: [
-        MockDeclaration(LayerComponent),
-        MockDeclaration(VectorSourceComponent),
+        MockDeclarations(LayerComponent, VectorSourceComponent, ImageComponent),
       ],
       providers: [
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { data: { scenarioId, planId } } },
         },
-        {
-          provide: ScenarioState,
-          useValue: { scenarioConfig$ },
-        },
+
+        MockProvider(NewScenarioState, {
+          scenarioConfig$: scenarioConfig$,
+          availableStands$: of({} as AvailableStands),
+          excludedStands: of([]),
+        }),
       ],
     }).compileComponents();
   });

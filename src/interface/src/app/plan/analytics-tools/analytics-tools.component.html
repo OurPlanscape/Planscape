@@ -1,0 +1,14 @@
+<div class="analytics-tools-container" *ngIf="hasEnabledTools">
+  <h3 class="section-title">Planning Area Analytics Tools</h3>
+  <div class="tools-grid">
+    <ng-container *ngFor="let tool of analyticsTools">
+      <sg-tile-button
+        *ngIf="tool.enabled"
+        [backgroundImage]="tool.backgroundImage"
+        [title]="tool.title"
+        [subtitle]="tool.subtitle"
+        (tileClick)="onToolClick(tool.id)">
+      </sg-tile-button>
+    </ng-container>
+  </div>
+</div>
