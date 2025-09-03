@@ -34,27 +34,23 @@ BEGIN
     FROM ST_HexagonGrid(side_m, envelope) AS g(geom)
   ),
   inside AS (
-    SELECT h.geom, h.point
+    SELECT 
+      h.geom,
+      ST_GeoHash(h.point_4326, 8) as "geohash"
     FROM hexes h
     WHERE ST_Within(h.point, pa_5070)
-  ),
-  to_add AS (
-    SELECT i.geom,
-           i.point_4326,
-           ST_GeoHash(i.point_4326, 8) AS key
-    FROM inside i
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
-  SELECT now(),
-         lbl,
-         ST_Transform(t.geom, 4269),
-         ROUND(ST_Area(t.geom)::numeric, 2),
-         t.key
-  FROM to_add t
-  ON CONFLICT (grid_key) DO NOTHING;
+  SELECT 
+    now(),
+    stand_size,
+    ST_Transform(t.geom, 4269),
+    ROUND(ST_Area(t.geom)::numeric, 2),
+    t.geohash
+  FROM inside t
+  ON CONFLICT ("size", "grid_key") DO NOTHING;
 
   GET DIAGNOSTICS inserted = ROW_COUNT;
   RETURN inserted;
 END;
 $$;
-
