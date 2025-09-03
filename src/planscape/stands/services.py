@@ -162,7 +162,7 @@ def calculate_stand_vector_stats2(
         )
         results.append(stand_metric)
     log.info(
-        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+        f"Created/Updated {len(results)} stand metrics for datalayer {datalayer.id}."
     )
     return StandMetric.objects.bulk_create(
         results,
@@ -236,7 +236,7 @@ def calculate_stand_vector_stats(
         results.append(stand_metric)
 
     log.info(
-        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+        f"Created/Updated {len(results)} stand metrics for datalayer {datalayer.id}."
     )
     return StandMetric.objects.bulk_create(
         results,

@@ -121,6 +121,9 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
             stands = planning_area.get_stands(i).order_by("geohash")
             paginator = Paginator(stands, 500)
             for page in paginator.page_range:
+                log.info(
+                    f"Calculating new page for planning area {planning_area_id} and datalayer {datalayer_id}"
+                )
                 paginated_stands = paginator.page(page)
                 calculate_stand_vector_stats(
                     stands=paginated_stands.object_list,
