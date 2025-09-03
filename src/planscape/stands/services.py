@@ -10,7 +10,6 @@ from django.conf import settings
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.measure import A
 from django.db import connection
 from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
@@ -187,24 +186,18 @@ def calculate_stand_vector_stats(
     stand_geom = "geometry"
     transformation = Transform("geometry", transform_srid)
     Vector = model_from_fiona(datalayer)
-    intersection_geometry = (
-        Vector.objects.filter(
-            geometry__isvalid=True,
-            geometry__intersects=planning_area_geometry,
-        )
-        .annotate(planar_geometry=transformation)
-        .annotate(area=Area("planar_geometry"))
-        .filter(area__gte=A(10000))
-        .aggregate(union=UnionOp("planar_geometry"))["union"]
-    )
+    intersection_geometry = Vector.objects.filter(
+        geometry__isvalid=True,
+        geometry__intersects=planning_area_geometry,
+    ).aggregate(union=UnionOp("geometry"))["union"]
     if intersection_geometry and not intersection_geometry.empty:
         # tolerance in meters
-        intersection_geometry = intersection_geometry.simplify(
-            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
-            preserve_topology=True,
-        ).buffer(0)
+        intersection_geometry = Vector.objects.filter(
+            geometry__isvalid=True,
+            geometry__intersects=planning_area_geometry,
+        ).aggregate(union=UnionOp("geometry"))["union"]
         stands = (
-            stands.annotate(stand_geometry=Transform("geometry", transform_srid))
+            stands.annotate(stand_geometry=transformation)
             .annotate(stand_area=Area(stand_geom))
             .annotate(
                 inter_area=Area(
