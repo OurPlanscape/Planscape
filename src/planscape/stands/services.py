@@ -126,11 +126,12 @@ def calculate_stand_vector_stats2(
             # if the entire stand becomes empty, it means it's fully covered by the geometry
             majority = 1
         else:
-            area_percentage = remainder.area / stand.planar_geometry.area
-            if area_percentage > 0.5:
-                majority = 1
-            else:
+            remaining_area_percentage = remainder.area / stand.planar_geometry.area
+            # if what is missing is LARGER than 0.5, it means it does not cover over half of it.
+            if remaining_area_percentage > 0.5:
                 majority = 0
+            else:
+                majority = 1
 
         stand_metric = to_stand_metric(
             stats_result={"id": stand.pk, "properties": {"majority": majority}},
