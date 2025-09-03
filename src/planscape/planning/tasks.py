@@ -118,7 +118,7 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
         planning_area = PlanningArea.objects.get(id=planning_area_id)
         datalayer = DataLayer.objects.get(id=datalayer_id)
         for i in StandSizeChoices:
-            stands = planning_area.get_stands(i).order_by("geohash")
+            stands = planning_area.get_stands(i).order_by("grid_key")
             paginator = Paginator(stands, 500)
             for page in paginator.page_range:
                 log.info(
