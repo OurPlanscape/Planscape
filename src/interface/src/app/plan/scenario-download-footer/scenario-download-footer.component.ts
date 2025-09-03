@@ -40,8 +40,8 @@ export class ScenarioDownloadFooterComponent {
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
-  @Input() geoPackageURL!: string | null;
-  @Input() geoPackageStatus!: string;
+  @Input() geoPackageURL?: string | null;
+  @Input() geoPackageStatus?: string | null;
 
   downloadingScenario = false;
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
