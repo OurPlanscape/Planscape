@@ -194,7 +194,7 @@ def calculate_stand_vector_stats(
         )
         .annotate(planar_geometry=transformation)
         .annotate(area=Area("planar_geometry"))
-        .filter(area__gte=A(50000))
+        .filter(area__gte=A(10000))
         .aggregate(union=UnionOp("planar_geometry"))["union"]
     )
     if intersection_geometry and not intersection_geometry.empty:
