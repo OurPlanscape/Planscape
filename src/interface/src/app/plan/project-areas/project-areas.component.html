@@ -16,9 +16,7 @@
         {{ area.rank }}
       </td>
       <td data-id="acres">{{ area.acres | number: '1.0-0' }}</td>
-      <td data-id="percentTotal">
-        {{ area.percentTotal | percent: '1.0-2' }}
-      </td>
+      <td data-id="percentTotal">{{ area.percentTotal | number: '1.0-2' }}%</td>
       <td data-id="estimatedCost">{{ area.estimatedCost | currencyInK }}</td>
       <td data-id="score" class="score">{{ area.score | number: '1.0-2' }}</td>
     </tr>
@@ -26,7 +24,7 @@
       <td></td>
       <td data-id="total-acres">{{ total.acres | number: '1.0-0' }}</td>
       <td data-id="total-percent">
-        {{ total.percentTotal | percent: '1.0-2' }}
+        {{ total.percentTotal | number: '1.0-2' }}%
       </td>
       <td data-id="total-estimatedCost">
         {{ total.estimatedCost | currencyInK }}

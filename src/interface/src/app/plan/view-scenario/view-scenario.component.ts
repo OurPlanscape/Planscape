@@ -107,7 +107,10 @@ export class ViewScenarioComponent {
   private shouldPollForGeoPackage(scenario: Scenario) {
     const geoPackageStatus = scenario.geopackage_status;
 
-    if (!geoPackageStatus || !this.scenarioImprovementsFeature) {
+    if (
+      !geoPackageStatus ||
+      !this.featureService.isFeatureEnabled('SCENARIO_IMPROVEMENTS')
+    ) {
       return false; // if this is null, we can assume there will be no geopackage, ever
     }
     return geoPackageStatus === 'PENDING' || geoPackageStatus === 'PROCESSING';
@@ -145,7 +148,7 @@ export class ViewScenarioComponent {
     return this.selectedTab === ScenarioTabs.RESULTS;
   }
 
-  scenarioImprovementsFeature = this.featureService.isFeatureEnabled(
-    'SCENARIO_IMPROVEMENTS'
-  );
+  scenarioFooterFeatureFlags =
+    this.featureService.isFeatureEnabled('SCENARIO_IMPROVEMENTS') ||
+    this.featureService.isFeatureEnabled('SCENARIO_CONFIGURATION_STEPS');
 }

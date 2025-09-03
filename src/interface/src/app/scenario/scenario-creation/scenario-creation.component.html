@@ -35,7 +35,8 @@
       [save]="saveStep.bind(this)"
       (selectedIndexChange)="stepChanged()"
       (finished)="onFinish()"
-      [outerForm]="form">
+      [outerForm]="form"
+      [savingStep]="creatingScenario">
       <sg-step>
         <app-step1 #step1></app-step1>
       </sg-step>

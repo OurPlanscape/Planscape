@@ -3,6 +3,9 @@ import { Step3Component } from './step3.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxMaskModule } from 'ngx-mask';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MockProvider } from 'ng-mocks';
+import { NewScenarioState } from '../new-scenario.state';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('Step3Component', () => {
   let component: Step3Component;
@@ -15,7 +18,9 @@ describe('Step3Component', () => {
         BrowserAnimationsModule,
         ReactiveFormsModule,
         NgxMaskModule.forRoot(),
+        FeaturesModule,
       ],
+      providers: [MockProvider(NewScenarioState)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Step3Component);

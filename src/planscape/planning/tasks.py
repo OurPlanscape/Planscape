@@ -1,21 +1,42 @@
 import logging
 
 import rasterio
-from django.conf import settings
-from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
-from django.db import connection
+from django.conf import settings
+from django.core.paginator import Paginator
 from gis.core import get_storage_session
-from planning.models import Scenario, ScenarioResultStatus
-from stands.models import Stand
-from stands.services import calculate_stand_zonal_stats
+from planning.models import (
+    GeoPackageStatus,
+    PlanningArea,
+    Scenario,
+    ScenarioResultStatus,
+)
+from stands.models import Stand, StandSizeChoices
+from stands.services import (
+    calculate_stand_vector_stats,
+    calculate_stand_zonal_stats,
+    create_stands_for_geometry,
+)
 from utils.cli_utils import call_forsys
 
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
+
+
+@app.task()
+def async_create_stands(planning_area_id: int) -> None:
+    if feature_enabled("AUTO_CREATE_STANDS"):
+        try:
+            planning_area = PlanningArea.objects.get(id=planning_area_id)
+        except PlanningArea.DoesNotExist:
+            log.warning(f"Planning Area with {planning_area_id} does not exist.")
+            raise
+        for i in StandSizeChoices:
+            log.info(f"Creating stands for {planning_area_id} for stand size {i}")
+            create_stands_for_geometry(planning_area.geometry, i)
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -29,43 +50,14 @@ def async_forsys_run(scenario_id: int) -> None:
         log.info(f"Running scenario {scenario_id}")
         scenario.result_status = ScenarioResultStatus.RUNNING
         scenario.save()
-        stand_size = scenario.get_stand_size()
-        planning_area_geom = scenario.planning_area.geometry
-
-        with connection.cursor() as cur:
-            cur.execute(
-                """
-                SELECT public.generate_stands_for_planning_area(
-                    ST_GeomFromText(%s, %s),
-                    %s,
-                    %s, %s
-                );
-                """,
-                [
-                    planning_area_geom.wkt,
-                    planning_area_geom.srid or 4269,
-                    stand_size,
-                    settings.HEX_GRID_ORIGIN_X,
-                    settings.HEX_GRID_ORIGIN_Y,
-                ],
-            )
-            inserted = cur.fetchone()[0]
-
-        log.info(
-            "generate_stands_for_planning_area inserted %s stands (size=%s) for scenario %s",
-            inserted,
-            stand_size,
-            scenario_id,
-        )
-
         call_forsys(scenario.pk)
 
         if not feature_enabled("FORSYS_VIA_API"):
             scenario.result_status = ScenarioResultStatus.SUCCESS
         scenario.save()
         async_generate_scenario_geopackage.apply_async(
-            args=(scenario.id,),
-            countdown=120,
+            args=(scenario.pk,),
+            countdown=30 if feature_enabled("FORSYS_VIA_API") else 0,
         )
     except ForsysTimeoutException:
         # this case should not happen as is, as the default parameter
@@ -120,6 +112,29 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
         return
 
 
+@app.task()
+def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> None:
+    if feature_enabled("AUTO_CREATE_STANDS"):
+        planning_area = PlanningArea.objects.get(id=planning_area_id)
+        datalayer = DataLayer.objects.get(id=datalayer_id)
+        for i in StandSizeChoices:
+            stands = planning_area.get_stands(i).order_by("grid_key")
+            paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
+            for page in paginator.page_range:
+                log.info(
+                    f"Calculating new page for planning area {planning_area_id} and datalayer {datalayer_id}"
+                )
+                paginated_stands = paginator.page(page)
+                stands = Stand.objects.filter(
+                    id__in=[stand.pk for stand in paginated_stands.object_list]
+                )
+                calculate_stand_vector_stats(
+                    stands=stands,
+                    datalayer=datalayer,
+                    planning_area_geometry=planning_area.geometry,
+                )
+
+
 @app.task(max_retries=3, retry_backoff=True)
 def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
@@ -147,7 +162,19 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
         return
 
 
-@app.task(max_retries=10, retry_backoff=True, default_retry_delay=120)
+@app.task()
+def trigger_geopackage_generation():
+    scenarios = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS,
+        geopackage_status=GeoPackageStatus.PENDING,
+    ).values_list("id", flat=True)
+    log.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
+    for scenario_id in scenarios:
+        async_generate_scenario_geopackage.delay(scenario_id)
+        log.info(f"Triggered geopackage generation for scenario {scenario_id}.")
+
+
+@app.task()
 def async_generate_scenario_geopackage(scenario_id: int) -> None:
     from planning.services import export_to_geopackage
 
@@ -161,9 +188,14 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
         log.warning(
             f"Scenario {scenario_id} is not in a successful state. Current status: {scenario.result_status}"
         )
-        raise ValueError(
-            f"Scenario {scenario_id} is not ready for geopackage generation."
+        return
+
+    if scenario.geopackage_status != GeoPackageStatus.PENDING:
+        log.warning(
+            f"Geopackage status for scenario {scenario_id} is {scenario.geopackage_status}. Will not generate geopackage."
         )
+        return
 
     geopackage_path = export_to_geopackage(scenario)
     log.info(f"Geopackage generated at {geopackage_path}")
+    return
