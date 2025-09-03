@@ -38,7 +38,7 @@ from planning.tests.factories import (
     TreatmentGoalFactory,
 )
 from stands.models import Stand, StandSizeChoices
-from stands.services import calculate_stand_vector_stats2
+from stands.services import calculate_stand_vector_stats
 from stands.tests.factories import StandFactory
 
 from planscape.tests.factories import UserFactory
@@ -600,7 +600,7 @@ class TestRemoveExcludes(TransactionTestCase):
         pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.metrics = calculate_stand_vector_stats2(stands, self.datalayer)
+        self.metrics = calculate_stand_vector_stats(stands, self.datalayer)
 
     def tearDown(self):
         with connection.cursor() as cur:

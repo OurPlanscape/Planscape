@@ -14,7 +14,6 @@ from django.db import connection
 from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
 from gis.database import SimplifyPreserveTopology
-from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
@@ -177,6 +176,7 @@ def calculate_stand_vector_stats2(
 def calculate_stand_vector_stats(
     stands: QuerySet[Stand],
     datalayer: DataLayer,
+    planning_area_geometry: GEOSGeometry,
     transform_srid: int = 5070,
 ):
     if datalayer.type == DataLayerType.RASTER:
@@ -185,13 +185,10 @@ def calculate_stand_vector_stats(
     stand_geom = "geometry"
     if transform_srid:
         stand_geom = Transform("geometry", transform_srid)
-
-    bounding_poly = get_bounding_polygon(
-        [s for s in stands.all().values_list("geometry", flat=True)]
-    )
     Vector = model_from_fiona(datalayer)
     intersection_geometry = Vector.objects.filter(
-        geometry__intersects=bounding_poly
+        geometry__isvalid=True,
+        geometry__intersects=planning_area_geometry,
     ).aggregate(union=UnionOp("geometry"))["union"]
     if intersection_geometry and not intersection_geometry.empty:
         # tolerance in meters
