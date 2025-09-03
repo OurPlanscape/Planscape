@@ -7,7 +7,6 @@ from core.flags import feature_enabled
 from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
-from django.contrib.gis.db.models import Collect
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
@@ -108,37 +107,44 @@ def calculate_stand_vector_stats2(
     if datalayer.type == DataLayerType.RASTER:
         raise ValueError("Cannot calculate vector stats for raster layers.")
     transformation = Transform("geometry", transform_srid)
-    bounding_poly = get_bounding_polygon(
-        [s for s in stands.all().values_list("geometry", flat=True)]
-    )
     Vector = model_from_fiona(datalayer)
     stands = stands.annotate(planar_geometry=transformation)
-    planar_intersection = (
-        Vector.objects.filter(geometry__intersects=bounding_poly)
-        .annotate(planar_geometry=transformation)
-        .aggregate(collect=Collect("planar_geometry"))["collect"]
-    )
-
     results = []
     for stand in stands:
-        remainder = stand.planar_geometry.difference(planar_intersection)  # type: ignore
-        if remainder.empty:
-            # if the entire stand becomes empty, it means it's fully covered by the geometry
-            majority = 1
+        intersection_geometry = (
+            Vector.objects.filter(
+                geometry__intersects=stand.geometry,
+                geometry__isvalid=True,
+            )
+            .annotate(planar_geometry=transformation)
+            .aggregate(union=UnionOp("planar_geometry"))["union"]
+        )
+        if not intersection_geometry or intersection_geometry.empty:
+            majority = 0
         else:
-            remaining_area_percentage = remainder.area / stand.planar_geometry.area
-            # if what is missing is LARGER than 0.5, it means it does not cover over half of it.
-            if remaining_area_percentage > 0.5:
-                majority = 0
-            else:
+            intersection_geometry = intersection_geometry.buffer(0).make_valid()
+            remainder = stand.planar_geometry.difference(intersection_geometry)  # type: ignore
+
+            if not remainder:
                 majority = 1
 
-        stand_metric = to_stand_metric(
-            stats_result={"id": stand.pk, "properties": {"majority": majority}},
-            datalayer=datalayer,
-            aggregations=["majority"],
-        )
-        results.append(stand_metric)
+            if remainder.empty:
+                # if the entire stand becomes empty, it means it's fully covered by the geometry
+                majority = 1
+            else:
+                remaining_area_percentage = remainder.area / stand.planar_geometry.area
+                # if what is missing is LARGER than 0.5, it means it does not cover over half of it.
+                if remaining_area_percentage > 0.5:
+                    majority = 0
+                else:
+                    majority = 1
+
+            stand_metric = to_stand_metric(
+                stats_result={"id": stand.pk, "properties": {"majority": majority}},
+                datalayer=datalayer,
+                aggregations=["majority"],
+            )
+            results.append(stand_metric)
     log.info(
         f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
     )
