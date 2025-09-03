@@ -185,7 +185,3 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
 
     geopackage_path = export_to_geopackage(scenario)
     log.info(f"Geopackage generated at {geopackage_path}")
-        return
-
-    geopackage_path = export_to_geopackage(scenario)
-    log.info(f"Geopackage generated at {geopackage_path}")
