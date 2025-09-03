@@ -1,16 +1,14 @@
-<app-nav-bar [area]="(area$ | async) || 'SCENARIOS'">
-  <ng-container *ngIf="(area$ | async) === 'SCENARIOS'">
-    <app-planning-area-titlebar-menu
-      *ngIf="currentPlan$ | async; let currentPlan"
-      [plan]="currentPlan"></app-planning-area-titlebar-menu>
-  </ng-container>
+<app-nav-bar area="SCENARIOS">
+  <app-planning-area-titlebar-menu
+    *ngIf="currentPlan$ | async; let currentPlan"
+    [plan]="currentPlan"></app-planning-area-titlebar-menu>
 </app-nav-bar>
-<div class="root-container" [ngClass]="{ overview: (showOverview$ | async) }">
+<div class="root-container overview">
   <app-resource-unavailable
     *ngIf="planNotFound"
     resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
-    <div class="plan-summary-panel full-height" *ngIf="showOverview$ | async">
+    <div class="plan-summary-panel full-height">
       <sg-notes-sidebar
         [showHeader]="true"
         [notes]="sidebarNotes"
@@ -23,22 +21,9 @@
       <app-analytics-tools></app-analytics-tools>
     </div>
 
-    <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
-    <div
-      class="plan-content"
-      [ngClass]="{ 'with-overview': showOverview$ | async }">
-      <app-plan-overview
-        [plan$]="currentPlan$"
-        *ngIf="showOverview$ | async"></app-plan-overview>
-      <ng-container *ngIf="(showOverview$ | async) === false">
-        <div class="plan-content-panel">
-          <router-outlet #outlet="outlet"></router-outlet>
-        </div>
-        <div class="plan-map-container">
-          <app-goal-overlay></app-goal-overlay>
-          <app-scenario-map></app-scenario-map>
-        </div>
-      </ng-container>
+    <mat-divider [vertical]="true"></mat-divider>
+    <div class="plan-content with-overview">
+      <app-plan-overview [plan$]="currentPlan$"></app-plan-overview>
     </div>
   </ng-container>
 </div>
