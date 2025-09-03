@@ -235,7 +235,7 @@ def calculate_stand_vector_stats(
     )
     return StandMetric.objects.bulk_create(
         results,
-        batch_size=100,
+        batch_size=settings.STAND_METRICS_PAGE_SIZE,
         update_conflicts=True,
         unique_fields=["stand_id", "datalayer_id"],
         update_fields=["majority"],
