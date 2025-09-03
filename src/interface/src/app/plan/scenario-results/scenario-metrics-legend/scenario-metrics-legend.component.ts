@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { NgFor, NgIf} from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { CHART_COLORS } from '@shared';
 import { getGroupedAttainment } from 'src/app/chart-helper';
 import { ScenarioResult } from '@types';
@@ -28,6 +28,8 @@ export class ScenarioMetricsLegendComponent implements OnInit {
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)
     );
+    console.log('what are the metrics we have?', this.metrics);
+    console.log('what are the scenario results we have?', this.scenarioResult);
   }
 
   isSelected(metric: string) {

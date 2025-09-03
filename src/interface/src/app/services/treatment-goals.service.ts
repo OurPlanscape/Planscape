@@ -14,4 +14,12 @@ export class TreatmentGoalsService {
       `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${planning_area ? '?planning_area=' + planning_area : ''}`
     );
   }
+
+  getTreatmentGoal(goal_id?: number) {
+    console.log('we are calling the endppint with goalId:', goal_id);
+    return this.http.get<ScenarioGoal>(
+      `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${goal_id}`
+    );
+  }
 }
+

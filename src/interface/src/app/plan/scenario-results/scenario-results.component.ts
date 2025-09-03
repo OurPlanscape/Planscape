@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
-import { ScenarioResult } from '@types';
+import { ScenarioGoal, ScenarioResult } from '@types';
 import { hasAnalytics, parseResultsToProjectAreas } from '../plan-helpers';
-import { FileSaverService, ScenarioService } from '@services';
+import { FileSaverService, ScenarioService, TreatmentGoalsService } from '@services';
 import { getSafeFileName } from '../../shared/files';
 import { FeatureService } from '../../features/feature.service';
 
@@ -16,20 +16,38 @@ export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioVersion!: string;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
-  @Input() priorities: string[] = [];
+  @Input() priorities: string[] = []; // TODO: is this just for old scenarios? can we use this?
+  @Input() treatmentGoal: any | null = null; // TODO: type
 
+
+  goalPriorities : string[] | null = null;
   areas: ProjectAreaReport[] = [];
 
   constructor(
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private treatmentGoalService: TreatmentGoalsService
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
+      this.loadGoalPriorities();
+    }
+  }
+
+  // TODO: 
+  loadGoalPriorities() {
+    console.log('called LoadGoalPriorities?');
+     console.log('we have some priorities already?', this.goalPriorities);
+    if (this.treatmentGoal && this.goalPriorities === null) {
+      console.log('calling tx goal endpoint...');
+      this.treatmentGoalService.getTreatmentGoal(this.treatmentGoal.id).subscribe((goal : ScenarioGoal) => {
+        this.goalPriorities = goal.priorities;
+        console.log('here are the priorities:', goal.priorities);
+      })
     }
   }
 
