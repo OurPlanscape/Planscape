@@ -123,6 +123,10 @@ export class CreateScenariosComponent implements OnInit {
     'SCENARIO_IMPROVEMENTS'
   );
 
+  scenarioFooterFeatureFlags =
+    this.scenarioImprovementsFeature ||
+    this.featureService.isFeatureEnabled('SCENARIO_CONFIGURATION_STEPS');
+
   constructor(
     private fb: FormBuilder,
     private scenarioService: ScenarioService,

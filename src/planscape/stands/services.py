@@ -13,13 +13,13 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
+from gis.database import SimplifyPreserveTopology
 from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
 from shapely import total_bounds
 from shapely.geometry import shape
-
 from stands.models import Stand, StandMetric, StandSizeChoices
 
 log = logging.getLogger(__name__)
@@ -98,6 +98,80 @@ AGGREGATION_MODEL_MAP = {
     "minority": "minority",
 }
 MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.items()}
+
+
+def calculate_stand_vector_stats2(
+    stands: QuerySet[Stand],
+    datalayer: DataLayer,
+    transform_srid: int = 5070,
+):
+    if datalayer.type == DataLayerType.RASTER:
+        raise ValueError("Cannot calculate vector stats for raster layers.")
+    transformation = SimplifyPreserveTopology(
+        Transform(
+            "geometry",
+            transform_srid,
+        ),
+        50,
+    )
+    Vector = model_from_fiona(datalayer)
+    stands = stands.annotate(
+        planar_geometry=Transform(
+            "geometry",
+            transform_srid,
+        ),
+    )
+    results = []
+    for stand in stands:
+        intersection_geometry = (
+            Vector.objects.annotate(planar_geometry=transformation)
+            .filter(
+                planar_geometry__isvalid=True,
+                planar_geometry__intersects=stand.planar_geometry,
+            )
+            .aggregate(union=UnionOp("planar_geometry"))["union"]
+        )
+        log.info("Found intersecting geometry")
+        if not intersection_geometry or intersection_geometry.empty:
+            log.info("Empty geometry")
+            majority = 0
+        else:
+            intersection_geometry = intersection_geometry.buffer(0).make_valid()
+            log.info("Making intersection_geometry valid")
+            remainder = stand.planar_geometry.difference(intersection_geometry)  # type: ignore
+
+            if not remainder:
+                majority = 1
+
+            if remainder.empty:
+                # if the entire stand becomes empty, it means it's fully covered by the geometry
+                majority = 1
+            else:
+                remainder = remainder.buffer(0).make_valid()
+                log.info("Making remainder geometry valid")
+                remaining_area_percentage = remainder.area / stand.planar_geometry.area
+                # if what is missing is LARGER than 0.5, it means it does not cover over half of it.
+                if remaining_area_percentage > 0.5:
+                    majority = 0
+                else:
+                    majority = 1
+
+        stand_metric = to_stand_metric(
+            stats_result={"id": stand.pk, "properties": {"majority": majority}},
+            datalayer=datalayer,
+            aggregations=["majority"],
+        )
+        results.append(stand_metric)
+    log.info(
+        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+    )
+    return StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields=["majority"],
+    )
 
 
 def calculate_stand_vector_stats(

@@ -14,7 +14,7 @@ from planning.models import (
 )
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
-    calculate_stand_vector_stats,
+    calculate_stand_vector_stats2,
     calculate_stand_zonal_stats,
     create_stands_for_geometry,
 )
@@ -119,7 +119,7 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
         datalayer = DataLayer.objects.get(id=datalayer_id)
         for i in StandSizeChoices:
             stands = planning_area.get_stands(i)
-            calculate_stand_vector_stats(stands=stands, datalayer=datalayer)
+            calculate_stand_vector_stats2(stands=stands, datalayer=datalayer)
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -147,6 +147,18 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
+
+
+@app.task()
+def trigger_geopackage_generation():
+    scenarios = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS,
+        geopackage_status=GeoPackageStatus.PENDING,
+    ).values_list("id", flat=True)
+    log.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
+    for scenario_id in scenarios:
+        async_generate_scenario_geopackage.delay(scenario_id)
+        log.info(f"Triggered geopackage generation for scenario {scenario_id}.")
 
 
 @app.task()

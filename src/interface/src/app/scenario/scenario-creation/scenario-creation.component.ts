@@ -83,6 +83,8 @@ export class ScenarioCreationComponent
     scenarioName: new FormControl('', [Validators.required]),
   });
 
+  creatingScenario = false;
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.finished) {
@@ -144,7 +146,7 @@ export class ScenarioCreationComponent
       name: this.form.getRawValue().scenarioName || '',
       planning_area: this.planId,
     });
-
+    this.creatingScenario = true;
     // Firing scenario name validation before finish
     const validated = await this.refreshScenarioNameValidator();
 
@@ -157,7 +159,12 @@ export class ScenarioCreationComponent
         error: () => {
           this.dialog.open(SavingErrorModalComponent);
         },
+        complete: () => {
+          this.creatingScenario = false;
+        },
       });
+    } else {
+      this.creatingScenario = false;
     }
   }
 
