@@ -10,6 +10,7 @@ from planning.models import ScenarioResultStatus, GeoPackageStatus
 from planning.tasks import (
     async_calculate_stand_metrics,
     async_forsys_run,
+    async_pre_forsys_process,
     trigger_geopackage_generation,
 )
 from stands.models import Stand, StandMetric, StandSizeChoices
