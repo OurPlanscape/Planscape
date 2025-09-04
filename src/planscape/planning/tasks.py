@@ -180,6 +180,8 @@ def async_pre_forsys_process(scenario_id: int) -> None:
             "id": tgudl.datalayer.id,
             "name": tgudl.datalayer.name,
             "metric": get_datalayer_metric(tgudl.datalayer),
+            "type": tgudl.datalayer.type,
+            "geometry_type": tgudl.datalayer.geometry_type,
             "threshold": tgudl.threshold,
             "usage_type": tgudl.usage_type,
         }
