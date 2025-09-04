@@ -78,9 +78,11 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     if (
       event.sourceId === this.sourceName &&
       event.isSourceLoaded &&
+      event.type === 'sourcedata' &&
       !event.sourceDataType
     ) {
       this.zone.run(() => {
+        this.newScenarioState.setBaseStandsLoaded(true);
         this.newScenarioState.setLoading(false);
       });
     }
@@ -109,12 +111,10 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   }
 
   standPaint = {
-    'fill-color': [
-      'case',
-      ['boolean', ['feature-state', 'excluded'], false],
+    'fill-color': this.featureStatePaint(
       BASE_COLORS.black,
-      BASE_COLORS.dark_magenta,
-    ],
+      BASE_COLORS.dark_magenta
+    ),
     'fill-opacity': this.featureStatePaint(0.3, 0.1),
   } as any;
 
@@ -129,7 +129,10 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     'fill-opacity': this.featureStatePaint(1, 0),
   } as any;
 
-  private featureStatePaint(valueOn: number, valueOff: number) {
+  private featureStatePaint(
+    valueOn: number | string,
+    valueOff: number | string
+  ) {
     return [
       'case',
       ['boolean', ['feature-state', this.excludedKey], false],
