@@ -159,7 +159,7 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
         return
 
 
-@app.task(max_retries=3, retry_backoff=True)
+@app.task()
 def async_pre_forsys_process(scenario_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
     planning_area = scenario.planning_area

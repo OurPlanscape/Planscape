@@ -963,5 +963,5 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_SMALL
         case StandSizeChoices.MEDIUM:
             return settings.MIN_AREA_PROJECT_MEDIUM
-        case StandSizeChoices.LARGE:
+        case _:
             return settings.MIN_AREA_PROJECT_LARGE
