@@ -599,9 +599,9 @@ class TestRemoveExcludes(TransactionTestCase):
         }
         pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
-        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.metrics = calculate_stand_vector_stats3(
-            stands, self.datalayer, self.planning_area.geometry
+            self.datalayer, self.planning_area.geometry
         )
 
     def tearDown(self):
