@@ -174,7 +174,8 @@ export class ScenarioCreationComponent
     }
   }
 
-  stepChanged() {
+  stepChanged(i: number) {
+    this.newScenarioState.setStepIndex(i);
     this.goalOverlayService.close();
   }
 
