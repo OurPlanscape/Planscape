@@ -118,21 +118,10 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
         planning_area = PlanningArea.objects.get(id=planning_area_id)
         datalayer = DataLayer.objects.get(id=datalayer_id)
         for i in StandSizeChoices:
-            stands = planning_area.get_stands(i).order_by("grid_key")
-            paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-            for page in paginator.page_range:
-                log.info(
-                    f"Calculating new page for planning area {planning_area_id} and datalayer {datalayer_id}"
-                )
-                paginated_stands = paginator.page(page)
-                stands = Stand.objects.filter(
-                    id__in=[stand.pk for stand in paginated_stands.object_list]
-                )
-                calculate_stand_vector_stats3(
-                    stands=stands,
-                    datalayer=datalayer,
-                    planning_area_geometry=planning_area.geometry,
-                )
+            calculate_stand_vector_stats3(
+                datalayer=datalayer,
+                planning_area_geometry=planning_area.geometry,
+            )
 
 
 @app.task(max_retries=3, retry_backoff=True)

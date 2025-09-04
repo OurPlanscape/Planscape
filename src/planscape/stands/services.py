@@ -4,20 +4,14 @@ from typing import Any, Collection, Dict
 
 import rasterio
 from core.flags import feature_enabled
-from datasets.dynamic_models import model_from_fiona
+from datasets.dynamic_models import model_from_fiona, qualify_for_django
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
-from django.contrib.gis.db.models import Collect
 from django.contrib.gis.db.models import Union as UnionOp
-from django.contrib.gis.db.models.functions import (
-    Area,
-    Centroid,
-    Intersection,
-    Transform,
-)
+from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import connection, models
-from django.db.models import F, Q, QuerySet, Value, expressions
+from django.db import connection
+from django.db.models import F, QuerySet, Value
 from django.db.models.functions import Coalesce, NullIf
 from gis.database import SimplifyPreserveTopology
 from gis.info import get_gdal_env
@@ -107,57 +101,36 @@ MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.item
 
 
 def calculate_stand_vector_stats3(
-    stands: QuerySet[Stand],
     datalayer: DataLayer,
     planning_area_geometry: GEOSGeometry,
 ):
     if datalayer.type == DataLayerType.RASTER:
         raise ValueError("Cannot calculate vector stats for raster layers.")
-    transformation = Centroid("geometry")
-    Vector = model_from_fiona(datalayer)
-    intersection_geometry = Vector.objects.filter(
-        geometry__isvalid=True,
-        geometry__intersects=planning_area_geometry,
-    ).aggregate(collect=Collect("geometry"))["collect"]
-    if intersection_geometry and not intersection_geometry.empty:
-        output = (
-            stands.annotate(stand_geometry=transformation)
-            .annotate(
-                does_intersect=expressions.ExpressionWrapper(
-                    Q(stand_geometry__intersects=intersection_geometry),
-                    output_field=models.BooleanField(),
-                )
-            )
-            .values("id", "does_intersect")
-        )
-    else:
-        output = stands.annotate(does_intersect=Value(False)).values(
-            "id", "does_intersect"
-        )
-
-    results = []
-    for stand in output:
-        does_intersect = stand.get("does_intersect", False) or False
-        majority = 1 if does_intersect else 0
-        stats_result = {"id": stand.get("id"), "properties": {"majority": majority}}
-
-        stand_metric = to_stand_metric(
-            stats_result=stats_result,
-            datalayer=datalayer,
-            aggregations=["majority"],
-        )
-        results.append(stand_metric)
-
-    log.info(
-        f"Created/Updated {len(results)} stand metrics for datalayer {datalayer.id}."
+    quali_name = qualify_for_django(datalayer.table)
+    query = f"""
+    WITH centroid AS (
+        SELECT
+            id,
+            ST_Centroid(geometry) as "geometry"
+        FROM stands_stand s
+        WHERE
+            ST_GeomFromText(%s, 4269) && s.geometry  AND
+            ST_Intersects(ST_GeomFromText(%s, 4269), s.geometry)
     )
-    return StandMetric.objects.bulk_create(
-        results,
-        batch_size=settings.STAND_METRICS_PAGE_SIZE,
-        update_conflicts=True,
-        unique_fields=["stand_id", "datalayer_id"],
-        update_fields=["majority"],
-    )
+    INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
+    SELECT
+        now(),
+        c.id,
+        %s,
+        1
+    FROM centroid c, {quali_name} poly
+    WHERE
+        c.geometry && poly.geometry AND
+        ST_Intersects(c.geometry, poly.geometry)
+    """.strip()
+    wkt = planning_area_geometry.wkt
+    with connection.cursor() as cursor:
+        cursor.execute(query, [wkt, wkt, datalayer.pk])
 
 
 def calculate_stand_vector_stats2(
