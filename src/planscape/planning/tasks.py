@@ -117,11 +117,10 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
     if feature_enabled("AUTO_CREATE_STANDS"):
         planning_area = PlanningArea.objects.get(id=planning_area_id)
         datalayer = DataLayer.objects.get(id=datalayer_id)
-        for i in StandSizeChoices:
-            calculate_stand_vector_stats3(
-                datalayer=datalayer,
-                planning_area_geometry=planning_area.geometry,
-            )
+        calculate_stand_vector_stats3(
+            datalayer=datalayer,
+            planning_area_geometry=planning_area.geometry,
+        )
 
 
 @app.task(max_retries=3, retry_backoff=True)
