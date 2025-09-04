@@ -17,6 +17,10 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
+from stands.models import Stand, StandSizeChoices
+from stands.services import calculate_stand_vector_stats3
+from stands.tests.factories import StandFactory
+
 from planning.models import PlanningArea, ScenarioResultStatus
 from planning.services import (
     export_planning_area_to_geopackage,
@@ -37,10 +41,6 @@ from planning.tests.factories import (
     ScenarioResultFactory,
     TreatmentGoalFactory,
 )
-from stands.models import Stand, StandSizeChoices
-from stands.services import calculate_stand_vector_stats
-from stands.tests.factories import StandFactory
-
 from planscape.tests.factories import UserFactory
 
 
@@ -600,7 +600,7 @@ class TestRemoveExcludes(TransactionTestCase):
         pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.metrics = calculate_stand_vector_stats(
+        self.metrics = calculate_stand_vector_stats3(
             stands, self.datalayer, self.planning_area.geometry
         )
 

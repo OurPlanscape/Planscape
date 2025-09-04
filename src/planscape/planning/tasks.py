@@ -6,20 +6,20 @@ from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.core.paginator import Paginator
 from gis.core import get_storage_session
+from stands.models import Stand, StandSizeChoices
+from stands.services import (
+    calculate_stand_vector_stats3,
+    calculate_stand_zonal_stats,
+    create_stands_for_geometry,
+)
+from utils.cli_utils import call_forsys
+
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
     Scenario,
     ScenarioResultStatus,
 )
-from stands.models import Stand, StandSizeChoices
-from stands.services import (
-    calculate_stand_vector_stats,
-    calculate_stand_zonal_stats,
-    create_stands_for_geometry,
-)
-from utils.cli_utils import call_forsys
-
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -128,7 +128,7 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
                 stands = Stand.objects.filter(
                     id__in=[stand.pk for stand in paginated_stands.object_list]
                 )
-                calculate_stand_vector_stats(
+                calculate_stand_vector_stats3(
                     stands=stands,
                     datalayer=datalayer,
                     planning_area_geometry=planning_area.geometry,
