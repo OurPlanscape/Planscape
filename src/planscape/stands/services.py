@@ -100,38 +100,38 @@ AGGREGATION_MODEL_MAP = {
 MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.items()}
 
 
-    def calculate_stand_vector_stats3(
-        datalayer: DataLayer,
-        planning_area_geometry: GEOSGeometry,
-    ):
-        if datalayer.type == DataLayerType.RASTER:
-            raise ValueError("Cannot calculate vector stats for raster layers.")
-        quali_name = qualify_for_django(datalayer.table)
-        query = f"""
-        WITH centroid AS (
-            SELECT
-                id,
-                ST_Centroid(geometry) as "geometry"
-            FROM stands_stand s
-            WHERE
-                ST_GeomFromText(%s, 4269) && s.geometry  AND
-                ST_Intersects(ST_GeomFromText(%s, 4269), s.geometry)
-        )
-        INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
+def calculate_stand_vector_stats3(
+    datalayer: DataLayer,
+    planning_area_geometry: GEOSGeometry,
+):
+    if datalayer.type == DataLayerType.RASTER:
+        raise ValueError("Cannot calculate vector stats for raster layers.")
+    quali_name = qualify_for_django(datalayer.table)
+    query = f"""
+    WITH centroid AS (
         SELECT
-            now(),
-            c.id,
-            %s,
-            1
-        FROM centroid c, {quali_name} poly
+            id,
+            ST_Centroid(geometry) as "geometry"
+        FROM stands_stand s
         WHERE
-            c.geometry && poly.geometry AND
-            ST_Intersects(c.geometry, poly.geometry)
-        ON CONFLICT ("stand_id", "datalayer_id") DO NOTHING;
-        """.strip()
-        wkt = planning_area_geometry.wkt
-        with connection.cursor() as cursor:
-            cursor.execute(query, [wkt, wkt, datalayer.pk])
+            ST_GeomFromText(%s, 4269) && s.geometry  AND
+            ST_Intersects(ST_GeomFromText(%s, 4269), s.geometry)
+    )
+    INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
+    SELECT
+        now(),
+        c.id,
+        %s,
+        1
+    FROM centroid c, {quali_name} poly
+    WHERE
+        c.geometry && poly.geometry AND
+        ST_Intersects(c.geometry, poly.geometry)
+    ON CONFLICT ("stand_id", "datalayer_id") DO NOTHING;
+    """.strip()
+    wkt = planning_area_geometry.wkt
+    with connection.cursor() as cursor:
+        cursor.execute(query, [wkt, wkt, datalayer.pk])
 
 
 def calculate_stand_vector_stats2(
