@@ -39,6 +39,7 @@ import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
 import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
+import { FeatureService } from 'src/app/features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -85,6 +86,10 @@ export class ScenarioCreationComponent
 
   creatingScenario = false;
 
+  continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
+    ? 'Save & Continue'
+    : 'Next';
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.finished) {
@@ -108,7 +113,8 @@ export class ScenarioCreationComponent
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {
     this.newScenarioState.setPlanId(this.planId);
 
