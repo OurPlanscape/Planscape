@@ -19,7 +19,7 @@
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="standPaint">
+    [paint]="standPaint$ | async">
   </mgl-layer>
 
   <mgl-layer

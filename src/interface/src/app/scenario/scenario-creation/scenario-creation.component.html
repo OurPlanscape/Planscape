@@ -33,7 +33,7 @@
       finishLabel="Save & Run Scenario"
       [continueLabel]="continueLabel"
       [save]="saveStep.bind(this)"
-      (selectedIndexChange)="stepChanged()"
+      (selectedIndexChange)="stepChanged($event)"
       (finished)="onFinish()"
       [outerForm]="form"
       [savingStep]="creatingScenario">

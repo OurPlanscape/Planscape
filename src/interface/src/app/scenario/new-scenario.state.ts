@@ -6,12 +6,16 @@ import {
   combineLatest,
   filter,
   map,
+  mapTo,
+  merge,
   shareReplay,
+  startWith,
   switchMap,
   tap,
 } from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
 import { FeatureService } from '../features/feature.service';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -33,17 +37,34 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
+  // flag to track if the base stands are loaded
+  public baseStandsReady$ = new BehaviorSubject(false);
+
+  // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
     map((c) => c.stand_size!)
   );
+
+  // trigger to get available stands
+  private _baseStandsLoaded$ = merge(
+    this.standSize$.pipe(mapTo(false)), // flip to false on size change
+    this.baseStandsReady$.asObservable() // flip to true when loading completes
+  ).pipe(
+    startWith(false),
+    distinctUntilChanged(),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+
   public availableStands$ = combineLatest([
+    this._baseStandsLoaded$,
     this.standSize$,
     this.excludedAreas$,
     this.constraints$,
   ]).pipe(
+    filter(([standsLoaded]) => !!standsLoaded),
     tap(() => this.setLoading(true)),
-    switchMap(([standSize, excludedAreas, constraints]) =>
+    switchMap(([standsLoaded, standSize, excludedAreas, constraints]) =>
       this.scenarioService.getExcludedStands(
         this.planId,
         standSize,
@@ -62,8 +83,11 @@ export class NewScenarioState {
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
-  public slopeId = 0;
-  public distanceToRoadsId = 0;
+  private slopeId = 0;
+  private distanceToRoadsId = 0;
+
+  private _stepIndex$ = new BehaviorSubject(0);
+  public stepIndex$ = this._stepIndex$.asObservable();
 
   constructor(
     private dataLayersService: DataLayersService,
@@ -99,6 +123,10 @@ export class NewScenarioState {
     this._constraints$.next(constraints);
   }
 
+  setStepIndex(i: number) {
+    this._stepIndex$.next(i);
+  }
+
   // TODO - remove and use setConstraints when we implement dynamic constraints
   setNamedConstraints(namedConstraints: NamedConstraint[]) {
     const constraints: Constraint[] = namedConstraints.map((c) => {
@@ -113,10 +141,16 @@ export class NewScenarioState {
     this.setConstraints(constraints);
   }
 
+  setBaseStandsLoaded(loaded: boolean) {
+    this.baseStandsReady$.next(loaded);
+  }
+
   reset() {
     this._scenarioConfig$.next({});
     this._excludedAreas$.next([]);
     this._constraints$.next([]);
+    this.baseStandsReady$.next(false);
     this.setPlanId(0);
+    this.setLoading(false);
   }
 }
