@@ -20,6 +20,7 @@ import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confi
 import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeatureService } from 'src/app/features/feature.service';
+import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -61,7 +62,7 @@ export class SavedScenariosComponent implements OnInit {
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
     private featureService: FeatureService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.fetchScenarios();
@@ -117,15 +118,33 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
-  openConfig(configId?: number): void {
-    if (!configId) {
-      this.router.navigate([this.scenarioPath], {
-        relativeTo: this.route,
-      });
+  private openScenarioSetupDialog() {
+    return this.dialog.open(ScenarioSetupModalComponent, {
+      maxWidth: '560px',
+    });
+  }
+
+  handleNewScenarioButton(configId?: number): void {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      this.openScenarioSetupDialog();
     } else {
-      this.router.navigate([this.scenarioPath, configId], {
-        relativeTo: this.route,
-      });
+      this.openConfig(configId);
+    }
+  }
+
+  openConfig(configId?: number): void {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      this.openScenarioSetupDialog();
+    } else {
+      if (!configId) {
+        this.router.navigate([this.scenarioPath], {
+          relativeTo: this.route,
+        });
+      } else {
+        this.router.navigate([this.scenarioPath, configId], {
+          relativeTo: this.route,
+        });
+      }
     }
   }
 

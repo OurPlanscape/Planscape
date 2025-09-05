@@ -1,0 +1,36 @@
+<sg-modal
+  title="Scenario Setup"
+  [shortHeader]="false"
+  [showBorders]="true"
+  [centerFooter]="false"
+  primaryButtonText="Create"
+  secondaryButtonText="Cancel"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="handleSubmit()"
+  [primaryButtonDisabled]="scenarioNameForm.get('scenarioName')?.hasError('required') === true"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting">
+  <div modalBodyContent>
+    <form [formGroup]="scenarioNameForm" class="scenario-name-form">
+      <div class="field-row">
+        <div class="field-label-required">
+          Name Your Scenario
+          <div class="required-star">*</div>
+        </div>
+        <sg-input-field
+          [disabled]="false"
+          class="scenario-input"
+          showSupportMessage="on-error">
+          <input
+            sgInput
+            placeholder="e.g., High Severity Fire"
+            name="scenarioName"
+            cdkFocusInitial
+            formControlName="scenarioName"
+            class="name-field" />
+        </sg-input-field>
+      </div>
+    </form>
+  </div>
+</sg-modal>
