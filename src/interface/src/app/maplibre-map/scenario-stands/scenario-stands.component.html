@@ -1,25 +1,33 @@
+<mgl-image
+  id="stripes-pattern"
+  [url]="'/assets/png/patterns/stripes-black.png'"></mgl-image>
+
 <ng-container *ngIf="tilesUrl$ | async as tilesUrl">
-  <mgl-vector-source [id]="sourceName" [tiles]="[tilesUrl]"></mgl-vector-source>
+  <mgl-vector-source
+    [id]="sourceName"
+    [tiles]="[tilesUrl]"
+    promoteId="id"></mgl-vector-source>
   <mgl-layer
-    id="scenario-stands-polygon"
+    id="scenario-stands-line"
     type="line"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="{
-      'line-color': COLORS.dark_magenta,
-      'line-width': 2,
-    }">
+    [paint]="standLinePaint">
   </mgl-layer>
   <mgl-layer
     id="scenario-stands-fill"
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="{
-      'fill-color': COLORS.dark_magenta,
-      'fill-opacity': 0.1,
-    }"
-    before="scenario-stands-polygon">
+    [paint]="standPaint">
+  </mgl-layer>
+
+  <mgl-layer
+    id="scenario-stands-excluded"
+    type="fill"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [paint]="standExcludedPaint">
   </mgl-layer>
 </ng-container>
 <div class="loader"></div>

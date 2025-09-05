@@ -1057,6 +1057,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             category=TreatmentGoalCategory.BIODIVERSITY,
             geometry=MultiPolygon([self.poly1.intersection(self.poly2)]),
             group=ca_group,
+            priorities=["priority one", "priority two"],
         )
         self.treatment_goals = TreatmentGoalFactory.create_batch(
             10,
@@ -1091,6 +1092,9 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(
             first_treatment_goal["group_text"],
             TreatmentGoalGroup(self.first_treatment_goal.group).label,
+        )
+        self.assertCountEqual(
+            first_treatment_goal["priorities"], ["priority one", "priority two"]
         )
 
     def test_detail_treatment_goal(self):

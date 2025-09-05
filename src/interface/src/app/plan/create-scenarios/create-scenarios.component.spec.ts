@@ -237,6 +237,7 @@ describe('CreateScenariosComponent', () => {
       });
       mockScenarioId$.next(1001);
       component.geoPackageURL = 'http://localhost/someurl';
+      component.scenarioFooterFeatureFlags = true;
       component.scenarioImprovementsFeature = true;
     });
 

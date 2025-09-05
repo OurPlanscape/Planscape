@@ -20,14 +20,15 @@
   </mat-menu>
 </ng-container>
 
-<div class="download-container">
+<div class="download-container" *appFeatureFlag="'SCENARIO_IMPROVEMENTS'">
   <mat-spinner diameter="24" *ngIf="downloadingScenario"></mat-spinner>
   <button
     sg-button
+    *ngIf="geoPackageStatus"
     variant="primary"
     class="footer-button"
     [disabled]="downloadingScenario || geoPackageStatus === 'PENDING'"
     (click)="handleButton()">
-    {{ buttonLabels[geoPackageStatus] }}
+    {{ buttonLabels[geoPackageStatus] || 'Generating GeoPackage' }}
   </button>
 </div>

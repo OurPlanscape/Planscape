@@ -1,3 +1,4 @@
+import { AnalyticsToolsComponent } from './analytics-tools/analytics-tools.component';
 import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
@@ -103,6 +104,7 @@ import { ViewScenarioComponent } from '../plan/view-scenario/view-scenario.compo
     PlanRoutingModule,
     RouterModule,
     SharedModule,
+    AnalyticsToolsComponent,
     ButtonComponent,
     DeleteDialogComponent,
     UploadProjectAreasModalComponent,

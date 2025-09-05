@@ -1,0 +1,22 @@
+@import 'colors';
+@import 'mixins';
+
+.analytics-tools-container {
+  background-color: white;
+  border-top: 1px solid $color-soft-gray;
+  padding: 16px;
+}
+
+.section-title {
+  @include h4();
+  color: $color-text-dark;
+  margin: 0 0 16px 0;
+}
+
+.tools-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}

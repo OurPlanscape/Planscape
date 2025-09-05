@@ -40,8 +40,8 @@ export class ScenarioDownloadFooterComponent {
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
-  @Input() geoPackageURL!: string | null;
-  @Input() geoPackageStatus!: string;
+  @Input() geoPackageURL?: string | null;
+  @Input() geoPackageStatus?: string | null;
 
   downloadingScenario = false;
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
@@ -50,6 +50,7 @@ export class ScenarioDownloadFooterComponent {
     FAILED: 'GeoPackage Failed',
     SUCCEEDED: 'Download GeoPackage',
     PENDING: 'Generating GeoPackage',
+    PROCESSING: 'Generating GeoPackage',
   };
 
   handleButton() {

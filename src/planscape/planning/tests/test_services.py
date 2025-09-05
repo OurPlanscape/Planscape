@@ -1,41 +1,47 @@
+import csv
+import json
 import shutil
 from datetime import date, datetime
-
-import csv
-import fiona
-import json
-import shapely
+from pathlib import Path
 from unittest import mock
+
+import fiona
+import shapely
 from cacheops import invalidate_all
+from datasets.dynamic_models import qualify_for_django
+from datasets.models import DataLayerType, GeometryType
+from datasets.tasks import datalayer_uploaded
+from datasets.tests.factories import DataLayerFactory
+from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.db import connection
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
-from stands.models import StandSizeChoices
+from stands.models import Stand, StandSizeChoices
+from stands.services import calculate_stand_vector_stats3
+from stands.tests.factories import StandFactory
 
-from planning.models import (
-    PlanningArea,
-    ScenarioResultStatus,
-)
+from planning.models import PlanningArea, ScenarioResultStatus
 from planning.services import (
-    export_to_shapefile,
+    export_planning_area_to_geopackage,
     export_to_geopackage,
+    export_to_shapefile,
+    get_acreage,
+    get_excluded_stands,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
-    get_acreage,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
-    ScenarioFactory,
     ProjectAreaFactory,
+    ScenarioFactory,
     ScenarioResultFactory,
     TreatmentGoalFactory,
 )
 from planscape.tests.factories import UserFactory
-from stands.tests.factories import StandFactory
-from datasets.tests.factories import DataLayerFactory
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -383,6 +389,8 @@ class TestExportToGeopackage(TestCase):
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
+        self.output_path = Path("test_planning_area.gpkg")
+
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage(self, upload_mock):
         invalidate_all()
@@ -401,6 +409,21 @@ class TestExportToGeopackage(TestCase):
         self.assertIsNotNone(output)
         self.assertEqual(self.scenario.geopackage_url, output)
         self.assertFalse(upload_mock.called)
+
+    def test_export_planning_area_to_geopackage(self):
+        export_planning_area_to_geopackage(self.planning, self.output_path)
+        layers = fiona.listlayers(self.output_path)
+        self.assertIn("planning_area", layers)
+        with fiona.open(self.output_path, layer="planning_area") as src:
+            self.assertEqual(1, len(src))
+            self.assertEqual(
+                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+            )
+            feature = next(iter(src))
+            self.assertEqual(feature["properties"]["name"], self.planning.name)
+
+    def tearDown(self) -> None:
+        self.output_path.unlink(missing_ok=True)
 
 
 class TestPlanningAreaCovers(TestCase):
@@ -517,3 +540,81 @@ class TestAcreageCalculation(TestCase):
         self.assertAlmostEqual(
             get_acreage(ca_geom), expected_ca_acres, delta=tolerance_delta
         )
+
+
+class TestRemoveExcludes(TransactionTestCase):
+    def load_stands(self):
+        with open("stands/tests/test_data/stands_over_ocean.geojson") as fp:
+            geojson = json.loads(fp.read())
+
+        features = geojson.get("features")
+        stands = []
+        for i, feature in enumerate(features):
+            geometry = GEOSGeometry(json.dumps(feature.get("geometry")))
+            stands.append(
+                Stand.objects.create(
+                    geometry=geometry,
+                    size="LARGE",
+                    area_m2=2_000_000,
+                )
+            )
+        return stands
+
+    def setUp(self):
+        self.datalayer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+            url="planning/tests/test_data/exclude-layer.geojson",
+            info={
+                "state_parks": {
+                    "crs": "EPSG:4269",
+                    "name": "exclusion",
+                    "count": 2,
+                    "bounds": [
+                        -13832099.2129,
+                        3833702.5637999997,
+                        -12756178.018199999,
+                        5160093.5471,
+                    ],
+                    "driver": "ESRI Shapefile",
+                    "schema": {"geometry": "Polygon", "properties": {}},
+                    "crs_wkt": 'PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs"],AUTHORITY["EPSG","3857"]]',
+                }
+            },
+        )
+        datalayer_uploaded(self.datalayer.pk)
+        self.datalayer.refresh_from_db()
+        stands = self.load_stands()
+        json_geom = {
+            "coordinates": [
+                [
+                    [-43.06525647059419, 20.40383387788934],
+                    [-43.06525647059419, 18.945128930084522],
+                    [-41.18944136364237, 18.945128930084522],
+                    [-41.18944136364237, 20.40383387788934],
+                    [-43.06525647059419, 20.40383387788934],
+                ]
+            ],
+            "type": "Polygon",
+        }
+        pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
+        self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
+        self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.metrics = calculate_stand_vector_stats3(
+            self.datalayer, self.planning_area.geometry
+        )
+
+    def tearDown(self):
+        with connection.cursor() as cur:
+            qual_name = qualify_for_django(self.datalayer.table)
+            cur.execute(f"DROP TABLE IF EXISTS {qual_name} CASCADE;")
+
+    def test_filter_by_datalayer_removes_stands(self):
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.assertEquals(17, len(stands))
+        excluded_stands = get_excluded_stands(
+            stands,
+            self.datalayer,
+        )
+
+        self.assertEqual(11, len(excluded_stands))
