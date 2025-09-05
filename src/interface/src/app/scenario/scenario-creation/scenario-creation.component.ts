@@ -45,6 +45,7 @@ import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.c
 enum ScenarioTabs {
   CONFIG,
   DATA_LAYERS,
+  BASE_LAYERS,
 }
 
 @UntilDestroy()
