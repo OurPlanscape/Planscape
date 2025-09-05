@@ -764,7 +764,7 @@ call_forsys_v4 <- function(
   # this is needed because we have layers that can be inputs, but are not part
   # of solving our equations - such as slope and distance from roads
   weights <- get_weights(priorities, configuration)
-  fields <- paste0("datalayer_", datalayers[["id"]])
+  fields <- paste0("datalayer_", data_inputs[["id"]])
   spm_fields <- paste0(fields, "_SPM")
   stand_data <- stand_data %>%
     forsys::calculate_spm(fields=fields) %>% 
