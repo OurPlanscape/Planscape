@@ -4,7 +4,7 @@ from datasets.models import DataLayer
 from django.db.models import QuerySet
 
 
-def get_forsys(**kwargs):
+def get_forsys(**kwargs) -> Dict[str, Any]:
     inclusions = get_forsys_layer_by_capability("inclusion")
     exclusions = get_forsys_layer_by_capability("exclusion")
     slope = get_forsys_layer_by_name("slope")
@@ -30,7 +30,7 @@ def get_forsys_layer_by_name(name: str) -> QuerySet[DataLayer]:
 
 
 def get_module(module_name: str, **kwargs) -> Dict[str, Any]:
-    return MODULE_HANDLERS[module_name](**kwargs)
+    return MODULE_HANDLERS[module_name]()
 
 
 MODULE_HANDLERS = {
