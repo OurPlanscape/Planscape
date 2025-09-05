@@ -37,4 +37,7 @@
       </div>
     </div>
   </div>
+  <div *ngIf="(stepIndex$ | async) === 1">
+    <div class="legend icon pattern-gray">Excluded Area</div>
+  </div>
 </ng-container>

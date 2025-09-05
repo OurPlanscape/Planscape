@@ -69,6 +69,13 @@
       background-image: url('/assets/png/patterns/stripes-black.png');
     }
   }
+
+  &.pattern-gray {
+    &:before {
+      background-color: $color-text-gray;
+      background-image: url('/assets/png/patterns/stripes-black.png');
+    }
+  }
 }
 
 ::ng-deep .legend-tooltip {

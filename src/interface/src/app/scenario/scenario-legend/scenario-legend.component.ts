@@ -20,6 +20,7 @@ export class ScenarioLegendComponent {
 
   summary$ = this.newScenarioState.availableStands$.pipe(map((s) => s.summary));
 
+  stepIndex$ = this.newScenarioState.stepIndex$;
   constructor(
     private planState: PlanState,
     private newScenarioState: NewScenarioState
