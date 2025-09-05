@@ -26,7 +26,7 @@ def get_forsys_layer_by_capability(capability: str) -> QuerySet[DataLayer]:
 
 def get_forsys_layer_by_name(name: str) -> QuerySet[DataLayer]:
     query = {"modules": {"forsys": {"name": name}}}
-    return DataLayer.objects.filter(query).first()
+    return DataLayer.objects.filter(metadata__contains=query).first()
 
 
 def get_module(module_name: str, **kwargs) -> Dict[str, Any]:
