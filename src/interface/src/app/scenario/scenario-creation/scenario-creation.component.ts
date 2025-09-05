@@ -40,10 +40,12 @@ import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
 import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 enum ScenarioTabs {
   CONFIG,
   DATA_LAYERS,
+  BASE_LAYERS,
 }
 
 @UntilDestroy()
@@ -64,6 +66,7 @@ enum ScenarioTabs {
     Step2Component,
     Step3Component,
     Step4Component,
+    BaseLayersComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',

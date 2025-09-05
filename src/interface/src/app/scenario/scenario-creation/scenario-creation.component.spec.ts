@@ -14,6 +14,7 @@ import { Step3Component } from '../step3/step3.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxMaskModule } from 'ngx-mask';
 import { NewScenarioState } from '../new-scenario.state';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -40,7 +41,12 @@ describe('ScenarioCreationComponent', () => {
         MockProvider(NewScenarioState),
       ],
       declarations: [
-        MockDeclarations(DataLayersComponent, Step1Component, Step3Component),
+        MockDeclarations(
+          DataLayersComponent,
+          Step1Component,
+          Step3Component,
+          BaseLayersComponent
+        ),
       ],
     }).compileComponents();
 
