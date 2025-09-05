@@ -21,7 +21,7 @@ def get_forsys(**kwargs) -> Dict[str, Any]:
 
 def get_forsys_layer_by_capability(capability: str) -> QuerySet[DataLayer]:
     query = {"modules": {"forsys": {"capabilities": [capability]}}}
-    return DataLayer.objects.filter(query)
+    return DataLayer.objects.filter(metadata__contains=query)
 
 
 def get_forsys_layer_by_name(name: str) -> QuerySet[DataLayer]:
@@ -30,7 +30,7 @@ def get_forsys_layer_by_name(name: str) -> QuerySet[DataLayer]:
 
 
 def get_module(module_name: str, **kwargs) -> Dict[str, Any]:
-    return MODULE_HANDLERS[module_name]()
+    return MODULE_HANDLERS[module_name](**kwargs)
 
 
 MODULE_HANDLERS = {
