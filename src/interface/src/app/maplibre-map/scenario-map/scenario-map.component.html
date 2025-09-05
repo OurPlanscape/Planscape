@@ -1,6 +1,6 @@
 <app-map-nav-bar>
   <sg-opacity-slider
-    *ngIf="isScenarioSuccessful$ | async"
+    *ngIf="showOpacitySlider$ | async"
     class="navbar-slider"
     [minValue]="0"
     [maxValue]="1"

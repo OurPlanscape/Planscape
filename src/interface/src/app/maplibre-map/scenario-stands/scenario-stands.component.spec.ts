@@ -13,6 +13,7 @@ import {
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
 import { AvailableStands } from '@types';
+import { MapConfigState } from '../map-config.state';
 
 describe('ScenarioStandsComponent', () => {
   const planId = 456;
@@ -43,6 +44,9 @@ describe('ScenarioStandsComponent', () => {
           scenarioConfig$: scenarioConfig$,
           availableStands$: of({} as AvailableStands),
           excludedStands: of([]),
+        }),
+        MockProvider(MapConfigState, {
+          projectAreasOpacity$: of(0),
         }),
       ],
     }).compileComponents();

@@ -86,6 +86,9 @@ export class NewScenarioState {
   private slopeId = 0;
   private distanceToRoadsId = 0;
 
+  private _stepIndex$ = new BehaviorSubject(0);
+  public stepIndex$ = this._stepIndex$.asObservable();
+
   constructor(
     private dataLayersService: DataLayersService,
     private featureService: FeatureService
@@ -118,6 +121,10 @@ export class NewScenarioState {
 
   setConstraints(constraints: Constraint[]) {
     this._constraints$.next(constraints);
+  }
+
+  setStepIndex(i: number) {
+    this._stepIndex$.next(i);
   }
 
   // TODO - remove and use setConstraints when we implement dynamic constraints
