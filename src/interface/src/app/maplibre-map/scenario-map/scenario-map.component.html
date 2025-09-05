@@ -51,6 +51,10 @@
     <app-data-layer-name></app-data-layer-name>
   </mgl-control>
 
+  <app-map-base-layers
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-base-layers>
+
   <ng-container *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'">
     <app-scenario-stands
       *ngIf="mapLibreMap"

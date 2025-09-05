@@ -32,6 +32,7 @@ import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.comp
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
 import { FeatureService } from '../../features/feature.service';
+import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -53,6 +54,7 @@ import { FeatureService } from '../../features/feature.service';
     FeaturesModule,
     ScenarioStandsComponent,
     MatProgressSpinnerModule,
+    MapBaseLayersComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
