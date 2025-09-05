@@ -8,7 +8,9 @@
   (clickedSecondary)="cancel()"
   (clickedClose)="cancel()"
   (clickedPrimary)="handleSubmit()"
-  [primaryButtonDisabled]="scenarioNameForm.get('scenarioName')?.hasError('required') === true"
+  [primaryButtonDisabled]="
+    scenarioNameForm.get('scenarioName')?.hasError('required') === true
+  "
   [hasPrimarySpinner]="true"
   [isInSpinState]="submitting">
   <div modalBodyContent>

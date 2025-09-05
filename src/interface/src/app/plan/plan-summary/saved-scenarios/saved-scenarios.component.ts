@@ -62,7 +62,7 @@ export class SavedScenariosComponent implements OnInit {
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
     private featureService: FeatureService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.fetchScenarios();

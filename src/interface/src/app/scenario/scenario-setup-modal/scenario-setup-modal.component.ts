@@ -27,7 +27,7 @@ import { ScenarioService } from '@services';
     ModalInfoComponent,
   ],
   templateUrl: './scenario-setup-modal.component.html',
-  styleUrl: './scenario-setup-modal.component.scss'
+  styleUrl: './scenario-setup-modal.component.scss',
 })
 export class ScenarioSetupModalComponent {
   readonly dialogRef = inject(MatDialogRef<ScenarioSetupModalComponent>);
@@ -39,7 +39,7 @@ export class ScenarioSetupModalComponent {
   constructor(
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService
-  ) { }
+  ) {}
 
   cancel(): void {
     this.dialogRef.close(false);
@@ -50,9 +50,8 @@ export class ScenarioSetupModalComponent {
       this.submitting = true;
       //TODO: check against existing names
 
-      const scenarioName = this.scenarioNameForm.get('scenarioName')?.value || '';
-      console.log('you are saving: ', scenarioName);
-
+      const scenarioName =
+        this.scenarioNameForm.get('scenarioName')?.value || '';
       //TODO: create scenario record
       //TODO: on success or failure...
       this.createScenario(scenarioName);
@@ -61,10 +60,11 @@ export class ScenarioSetupModalComponent {
 
   private createScenario(name: string) {
     // TODO: cannot submit without required values yet
-    this.scenarioService.createScenario({
-      name: name,
-      config: {}
-    })
+    this.scenarioService
+      .createScenario({
+        name: name,
+        config: {},
+      })
       .subscribe({
         next: (result) => {
           this.dialogRef.close(result);
@@ -81,5 +81,4 @@ export class ScenarioSetupModalComponent {
         },
       });
   }
-
 }
