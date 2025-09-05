@@ -19,7 +19,8 @@ class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
         return {**base, "module_name": self.kwargs.get(self.lookup_field)}
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> BaseSerializer:
-        return super().get_serializer(*args, **kwargs)
+        module_name = str(self.kwargs.get(self.lookup_field))
+        return super().get_serializer(*args, {**kwargs, "module_name": module_name})
 
     def get_object(self) -> Dict[str, Any]:
         pk = str(self.kwargs.get(self.lookup_field))
