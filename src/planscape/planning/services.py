@@ -386,13 +386,24 @@ def zip_directory(file_obj, source_dir):
                 )
 
 
-def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
+def get_max_treatable_area(
+    configuration: Dict[str, Any],
+    min_project_area: Optional[float] = None,
+    number_of_projects: Optional[int] = None,
+) -> Optional[float]:
     max_budget = configuration.get("max_budget") or None
     cost_per_acre = configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
     if max_budget:
         return max_budget / cost_per_acre
 
-    return float(configuration.get("max_treatment_area_ratio"))
+    max_treatable_area_ratio = configuration.get("max_treatment_area_ratio")
+    if max_treatable_area_ratio:
+        return float(max_treatable_area_ratio)
+
+    if min_project_area and number_of_projects:
+        return min_project_area / number_of_projects
+
+    return None
 
 
 def get_max_treatable_stand_count(

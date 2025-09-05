@@ -189,9 +189,13 @@ def async_pre_forsys_process(scenario_id: int) -> None:
     ]
 
     min_area_project = get_min_project_area(scenario)
-    max_area_project = get_max_treatable_area(scenario.configuration)
     number_of_projects = scenario.configuration.get(
         "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+    )
+    max_area_project = get_max_treatable_area(
+        configuration=scenario.configuration,
+        min_project_area=min_area_project,
+        number_of_projects=number_of_projects,
     )
     sdw = settings.FORSYS_SDW
     epw = settings.FORSYS_EPW
