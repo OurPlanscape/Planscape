@@ -6,6 +6,7 @@ import { CurrencyPipe } from '@angular/common';
  * Update tests and name accordingly
  */
 @Pipe({
+  standalone: true,
   name: 'currencyInK',
 })
 export class CurrencyInKPipe implements PipeTransform {
