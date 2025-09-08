@@ -15,7 +15,7 @@ from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -25,7 +25,7 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
-from modules.services import get_forsys_layer_by_capability
+from modules.services import get_forsys_layer_by_capability, get_forsys_layer_by_name
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -49,6 +49,19 @@ from planscape.openpanel import track_openpanel
 logger = logging.getLogger(__name__)
 
 
+def create_metrics_task(planning_area: PlanningArea, datalayer: DataLayer):
+    from planning.tasks import (
+        async_calculate_stand_metrics_v3,
+        async_calculate_vector_metrics,
+    )
+
+    match datalayer.type:
+        case DataLayerType.VECTOR:
+            return async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+        case _:
+            return async_calculate_stand_metrics_v3.si(planning_area.pk, datalayer.pk)
+
+
 @transaction.atomic()
 def create_planning_area(
     user: User,
@@ -57,7 +70,7 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
-    from planning.tasks import async_calculate_vector_metrics, async_create_stands
+    from planning.tasks import async_create_stands
 
     """Canonical method to create a new planning area."""
 
@@ -74,14 +87,19 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
-    datalayers = get_forsys_layer_by_capability("exclusion")
-    vector_metrics_jobs = group(
-        [
-            async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
-            for datalayer in datalayers
-        ]
+    slope = get_forsys_layer_by_name("slope")
+    distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
+    datalayers = list(get_forsys_layer_by_capability("exclusion")) + [
+        slope,
+        distance_from_roads,
+    ]
+    datalayers = list(filter(None, datalayers))
+    precalculation_jobs = group(
+        [create_metrics_task(planning_area, datalayer) for datalayer in datalayers]
     )
-    job = chain(async_create_stands.si(planning_area.pk), vector_metrics_jobs)
+    create_stands_job = chain(
+        async_create_stands.si(planning_area.pk), precalculation_jobs
+    )
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -93,7 +111,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: job.apply_async())
+        transaction.on_commit(lambda: create_stands_job.apply_async())
     return planning_area
 
 
