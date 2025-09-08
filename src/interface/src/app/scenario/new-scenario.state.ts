@@ -13,9 +13,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayersService } from '@services/data-layers.service';
 import { FeatureService } from '../features/feature.service';
 import { distinctUntilChanged } from 'rxjs/operators';
+import { ModuleService } from '@services/module.service';
 
 @Injectable({
   providedIn: 'root',
@@ -43,18 +43,15 @@ export class NewScenarioState {
   // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
-    map((c) => c.stand_size!)
+    map((c) => c.stand_size!),
+    distinctUntilChanged()
   );
 
   // trigger to get available stands
   private _baseStandsLoaded$ = merge(
     this.standSize$.pipe(mapTo(false)), // flip to false on size change
     this.baseStandsReady$.asObservable() // flip to true when loading completes
-  ).pipe(
-    startWith(false),
-    distinctUntilChanged(),
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
+  ).pipe(startWith(false), shareReplay({ bufferSize: 1, refCount: true }));
 
   public availableStands$ = combineLatest([
     this._baseStandsLoaded$,
@@ -90,15 +87,14 @@ export class NewScenarioState {
   public stepIndex$ = this._stepIndex$.asObservable();
 
   constructor(
-    private dataLayersService: DataLayersService,
+    private moduleService: ModuleService,
     private featureService: FeatureService
   ) {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      this.dataLayersService.getMaxSlopeLayerId().subscribe((s) => {
-        this.slopeId = s;
-      });
-      this.dataLayersService.getDistanceToRoadsLayerId().subscribe((s) => {
-        this.distanceToRoadsId = s;
+      this.moduleService.getForsysModule().subscribe((forsys) => {
+        this.slopeId = forsys.options.thresholds.slope.id;
+        this.distanceToRoadsId =
+          forsys.options.thresholds.distance_from_roads.id;
       });
     }
   }
