@@ -43,18 +43,15 @@ export class NewScenarioState {
   // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
-    map((c) => c.stand_size!)
+    map((c) => c.stand_size!),
+    distinctUntilChanged()
   );
 
   // trigger to get available stands
   private _baseStandsLoaded$ = merge(
     this.standSize$.pipe(mapTo(false)), // flip to false on size change
     this.baseStandsReady$.asObservable() // flip to true when loading completes
-  ).pipe(
-    startWith(false),
-    distinctUntilChanged(),
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
+  ).pipe(startWith(false), shareReplay({ bufferSize: 1, refCount: true }));
 
   public availableStands$ = combineLatest([
     this._baseStandsLoaded$,
@@ -94,7 +91,11 @@ export class NewScenarioState {
     private featureService: FeatureService
   ) {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      this.moduleService.getForsysModule().subscribe((s) => console.log(s));
+      this.moduleService.getForsysModule().subscribe((forsys) => {
+        this.slopeId = forsys.options.thresholds.slope.id;
+        this.distanceToRoadsId =
+          forsys.options.thresholds.distance_from_roads.id;
+      });
     }
   }
 
@@ -115,6 +116,7 @@ export class NewScenarioState {
   }
 
   setConstraints(constraints: Constraint[]) {
+    console.log('changinging constraints', constraints);
     this._constraints$.next(constraints);
   }
 
@@ -137,6 +139,7 @@ export class NewScenarioState {
   }
 
   setBaseStandsLoaded(loaded: boolean) {
+    console.log('setting base stands loaded', loaded);
     this.baseStandsReady$.next(loaded);
   }
 
