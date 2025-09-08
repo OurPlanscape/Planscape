@@ -1,3 +1,4 @@
+from datasets.models import DataLayer
 from rest_framework import serializers
 
 
@@ -8,11 +9,11 @@ class OptionDataLayerSerializer(serializers.ModelSerializer):
             "name",
             "info",
         )
+        model = DataLayer
 
 
 class OptionThresholdsSerializer(serializers.Serializer):
     slope = OptionDataLayerSerializer()
-
     distance_from_roads = OptionDataLayerSerializer()
 
 
