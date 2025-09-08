@@ -1,21 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
 import { environment } from '../../environments/environment';
-
-interface Module<T> {
-  name: string;
-  options: T;
-}
-
-interface ForsysData {
-  includes: number[];
-  excludes: number[];
-  thresholds: {
-    slope: { id: number };
-    distance_from_roads: { id: number };
-  };
-}
+import { ApiModule, ForsysData } from '../types/module.types';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +13,7 @@ export class ModuleService {
    * Returns module data for forsys
    */
   public getForsysModule() {
-    return this.getModule<Module<ForsysData>>('forsys');
+    return this.getModule<ApiModule<ForsysData>>('forsys');
   }
 
   private getModule<T>(id: string) {

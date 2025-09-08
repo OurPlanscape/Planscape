@@ -116,7 +116,6 @@ export class NewScenarioState {
   }
 
   setConstraints(constraints: Constraint[]) {
-    console.log('changinging constraints', constraints);
     this._constraints$.next(constraints);
   }
 
@@ -139,7 +138,6 @@ export class NewScenarioState {
   }
 
   setBaseStandsLoaded(loaded: boolean) {
-    console.log('setting base stands loaded', loaded);
     this.baseStandsReady$.next(loaded);
   }
 
