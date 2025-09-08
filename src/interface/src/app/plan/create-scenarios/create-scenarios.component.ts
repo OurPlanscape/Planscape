@@ -123,6 +123,10 @@ export class CreateScenariosComponent implements OnInit {
     'SCENARIO_IMPROVEMENTS'
   );
 
+  scenarioFooterFeatureFlags =
+    this.scenarioImprovementsFeature ||
+    this.featureService.isFeatureEnabled('SCENARIO_CONFIGURATION_STEPS');
+
   constructor(
     private fb: FormBuilder,
     private scenarioService: ScenarioService,
@@ -263,13 +267,6 @@ export class CreateScenariosComponent implements OnInit {
 
         if (scenario.geopackage_status) {
           this.geoPackageStatus = scenario.geopackage_status ?? null;
-          if (this.geoPackageStatus === 'FAILED') {
-            this.matSnackBar.open(
-              `Error: GeoPackage generation failed.`,
-              'Dismiss',
-              SNACK_ERROR_CONFIG
-            );
-          }
         }
 
         if (scenario.geopackage_url) {

@@ -31,25 +31,32 @@
     <sg-steps
       linear
       finishLabel="Save & Run Scenario"
+      [continueLabel]="continueLabel"
       [save]="saveStep.bind(this)"
-      (selectedIndexChange)="stepChanged()"
+      (selectedIndexChange)="stepChanged($event)"
       (finished)="onFinish()"
-      [outerForm]="form">
+      [outerForm]="form"
+      [savingStep]="creatingScenario">
       <sg-step>
         <app-step1 #step1></app-step1>
       </sg-step>
-      <sg-step><app-step2 #step2></app-step2></sg-step>
+      <sg-step>
+        <app-step2 #step2></app-step2>
+      </sg-step>
       <sg-step>
         <app-step3 #step3></app-step3>
       </sg-step>
-      <sg-step
-        ><app-step4
+      <sg-step>
+        <app-step4
           #step4
-          [planningAreaAcres]="(acres$ | async) ?? 0"></app-step4
-      ></sg-step>
+          [planningAreaAcres]="(acres$ | async) ?? 0"></app-step4>
+      </sg-step>
     </sg-steps>
   </mat-tab>
   <mat-tab label="Data Layers">
     <app-data-layers class="white-background"></app-data-layers>
+  </mat-tab>
+  <mat-tab label="Base Layers">
+    <app-base-layers class="white-background"></app-base-layers>
   </mat-tab>
 </mat-tab-group>

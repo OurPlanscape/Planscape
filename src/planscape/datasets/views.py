@@ -2,17 +2,6 @@ from typing import Any, Dict, Optional
 
 from cacheops import cached
 from core.serializers import MultiSerializerMixin
-from django.conf import settings
-from django.contrib.postgres.search import SearchQuery, SearchVector
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
-
 from datasets.filters import DataLayerFilterSet
 from datasets.models import (
     DataLayer,
@@ -31,6 +20,17 @@ from datasets.serializers import (
     SearchResultsSerializer,
 )
 from datasets.services import find_anything
+from django.conf import settings
+from django.contrib.postgres.search import SearchQuery, SearchVector
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
 from planscape.openpanel import track_openpanel
 
 
@@ -74,10 +74,16 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             type=serializer.validated_data.get("type"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
+        email = (
+            request.user.email
+            if request.user and hasattr(request.user, "email")
+            else None
+        )
         track_openpanel(
             name="datasets.dataset.browse",
             properties={
                 "dataset_id": dataset.pk,
+                "email": email,
             },
             user_id=request.user.pk,
         )
@@ -150,6 +156,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             properties={
                 "term": term,
                 "type": type,
+                "email": request.user.email if request.user else None,
             },
             user_id=request.user.pk,
         )

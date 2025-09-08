@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map, Observable } from 'rxjs';
-import { Scenario, ScenarioConfig } from '@types';
+import {
+  AvailableStands,
+  Constraint,
+  Scenario,
+  ScenarioConfig,
+  ScenarioCreationPayload,
+} from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
 
@@ -38,11 +44,32 @@ export class ScenarioService {
   }
 
   /** Creates a scenario in the backend. Returns scenario ID. */
+  // TODO: Remove once SCENARIO_CONFIGURATION_STEPS be approved
   createScenario(scenarioParameters: any): Observable<Scenario> {
     scenarioParameters['configuration'] = this.convertConfigToScenario(
       scenarioParameters['configuration']
     );
 
+    return this.http
+      .post<Scenario>(this.v2Path, scenarioParameters, {
+        withCredentials: true,
+      })
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.global?.[0] ||
+            'Please change your settings and try again.';
+          throw new CreateScenarioError(
+            'Your scenario config is invalid. ' + message
+          );
+        })
+      );
+  }
+
+  /** Creates a scenario in the backend with stepper Returns scenario ID. */
+  createScenarioFromSteps(
+    scenarioParameters: ScenarioCreationPayload
+  ): Observable<Scenario> {
     return this.http
       .post<Scenario>(this.v2Path, scenarioParameters, {
         withCredentials: true,
@@ -108,6 +135,28 @@ export class ScenarioService {
         });
         return excludedAreas;
       })
+    );
+  }
+
+  getExcludedStands(
+    planId: number,
+    stand_size: string,
+    excludes?: number[],
+    constraints?: Constraint[]
+  ) {
+    const url =
+      environment.backend_endpoint +
+      `/v2/planningareas/${planId}/available_stands/`;
+    return this.http.post<AvailableStands>(
+      url,
+      {
+        stand_size,
+        excludes,
+        constraints,
+      },
+      {
+        withCredentials: true,
+      }
     );
   }
 

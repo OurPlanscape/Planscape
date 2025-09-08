@@ -95,16 +95,27 @@ class Stand(CreatedAtMixin, models.Model):
 
     area_m2 = models.FloatField()
 
+    grid_key = models.CharField(max_length=64, null=True, blank=True)
+
     objects: StandManager = StandManager.from_queryset(StandQuerySet)()
 
     class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "size",
+                    "grid_key",
+                ],
+                name="unique_stand_gridkey_size",
+            )
+        ]
         indexes = [
             models.Index(
                 fields=[
                     "size",
                 ],
                 name="stand_size_index",
-            )
+            ),
         ]
 
 
@@ -135,6 +146,13 @@ class StandMetric(CreatedAtMixin, models.Model):
     minority = models.FloatField(null=True)
 
     class Meta:
+        indexes = [
+            models.Index(
+                name="majority_standmetric_idx",
+                fields=["datalayer", "stand"],
+                condition=models.Q(majority=1),
+            ),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=[

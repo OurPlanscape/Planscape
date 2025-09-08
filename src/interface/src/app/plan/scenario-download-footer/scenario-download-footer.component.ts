@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '@styleguide';
 import { ScenarioService } from '@services';
@@ -7,25 +7,59 @@ import { FileSaverService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { getSafeFileName } from '../../shared/files';
 import { SNACK_ERROR_CONFIG } from '@shared';
+import { ScenarioState } from 'src/app/scenario/scenario.state';
+import { FeaturesModule } from 'src/app/features/features.module';
+import { ScenarioConfigOverlayComponent } from 'src/app/scenario/scenario-config-overlay/scenario-config-overlay.component';
+import { MatMenuModule } from '@angular/material/menu';
+import { GeopackageFailureModalComponent } from 'src/app/scenario/geopackage-failure-modal/geopackage-failure-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-scenario-download-footer',
   standalone: true,
-  imports: [NgIf, MatProgressSpinnerModule, ButtonComponent],
+  imports: [
+    NgIf,
+    AsyncPipe,
+    MatProgressSpinnerModule,
+    ButtonComponent,
+    FeaturesModule,
+    MatMenuModule,
+    ScenarioConfigOverlayComponent,
+  ],
   templateUrl: './scenario-download-footer.component.html',
   styleUrl: './scenario-download-footer.component.scss',
 })
 export class ScenarioDownloadFooterComponent {
   constructor(
     private scenarioService: ScenarioService,
+    private scenarioState: ScenarioState,
     private fileServerService: FileSaverService,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
-  @Input() geoPackageURL!: string | null;
+  @Input() geoPackageURL?: string | null;
+  @Input() geoPackageStatus?: string | null;
+
   downloadingScenario = false;
+  displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
+
+  buttonLabels: { [key: string]: string } = {
+    FAILED: 'GeoPackage Failed',
+    SUCCEEDED: 'Download GeoPackage',
+    PENDING: 'Generating GeoPackage',
+    PROCESSING: 'Generating GeoPackage',
+  };
+
+  handleButton() {
+    if (this.geoPackageStatus === 'SUCCEEDED') {
+      this.handleDownload();
+    } else {
+      this.displayFailureModal();
+    }
+  }
 
   handleDownload() {
     this.downloadingScenario = true;
@@ -51,5 +85,14 @@ export class ScenarioDownloadFooterComponent {
         },
       });
     }
+  }
+
+  displayFailureModal() {
+    const dialogRef = this.dialog.open(GeopackageFailureModalComponent);
+    return dialogRef.afterClosed();
+  }
+
+  setDisplayOverlay(display: boolean) {
+    this.scenarioState.setDisplayOverlay(display);
   }
 }

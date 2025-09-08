@@ -1,0 +1,33 @@
+<mgl-image
+  id="stripes-pattern"
+  [url]="'/assets/png/patterns/stripes-black.png'"></mgl-image>
+
+<ng-container *ngIf="tilesUrl$ | async as tilesUrl">
+  <mgl-vector-source
+    [id]="sourceName"
+    [tiles]="[tilesUrl]"
+    promoteId="id"></mgl-vector-source>
+  <mgl-layer
+    id="scenario-stands-line"
+    type="line"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [paint]="standLinePaint">
+  </mgl-layer>
+  <mgl-layer
+    id="scenario-stands-fill"
+    type="fill"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [paint]="standPaint$ | async">
+  </mgl-layer>
+
+  <mgl-layer
+    id="scenario-stands-excluded"
+    type="fill"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [paint]="standExcludedPaint">
+  </mgl-layer>
+</ng-container>
+<div class="loader"></div>

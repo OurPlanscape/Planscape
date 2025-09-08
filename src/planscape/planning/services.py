@@ -7,20 +7,22 @@ import zipfile
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
+from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
-from cacheops import redis_client
-from celery import chord
+from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
+from datasets.models import DataLayer
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
@@ -35,8 +37,9 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalUsesDataLayer,
+    TreatmentGoalUsageType,
 )
-from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -56,6 +59,11 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
+    from planning.tasks import (
+        async_calculate_vector_metrics,
+        async_create_stands,
+    )
+
     """Canonical method to create a new planning area."""
 
     # FIXME: this code path is temporary. once we migrate to v2
@@ -71,12 +79,29 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
+    datalayers = DataLayer.objects.filter(
+        dataset_id=998,
+        type=DataLayerType.VECTOR,
+    )
+    vector_metrics_jobs = group(
+        [
+            async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+            for datalayer in datalayers
+        ]
+    )
+    job = chain(async_create_stands.si(planning_area.pk), vector_metrics_jobs)
+
     track_openpanel(
         name="planning.planning_area.created",
-        properties={"region": region_name},
+        properties={
+            "region": region_name,
+            "email": user.email if user else None,
+        },
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
+    if feature_enabled("AUTO_CREATE_STANDS"):
+        transaction.on_commit(lambda: job.apply_async())
     return planning_area
 
 
@@ -106,7 +131,10 @@ def delete_planning_area(
     )
     track_openpanel(
         name="planning.planning_area.deleted",
-        properties={"soft": True},
+        properties={
+            "soft": True,
+            "email": user.email if user else None,
+        },
         user_id=user.pk,
     )
     return (True, "deleted")
@@ -132,6 +160,12 @@ def get_treatment_goal_from_configuration(
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
+    from planning.tasks import (
+        async_calculate_stand_metrics_v2,
+        async_pre_forsys_process,
+        async_forsys_run,
+    )
+
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
     treatment_goal = kwargs.pop("treatment_goal", None)
@@ -161,6 +195,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
         for d in datalayers
     ]
+    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
 
     track_openpanel(
         name="planning.scenario.created",
@@ -171,6 +206,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 treatment_goal.category if treatment_goal else None
             ),
             "treatment_goal_name": treatment_goal.name if treatment_goal else None,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
@@ -298,6 +334,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             "treatment_goal_id": None,
             "treatment_goal_category": None,
             "treatment_goal_name": None,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
@@ -330,6 +367,7 @@ def delete_scenario(
         name="planning.scenario.deleted",
         properties={
             "soft": True,
+            "email": user.email if user else None,
         },
         user_id=user.pk,
     )
@@ -348,13 +386,24 @@ def zip_directory(file_obj, source_dir):
                 )
 
 
-def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
+def get_max_treatable_area(
+    configuration: Dict[str, Any],
+    min_project_area: Optional[float] = None,
+    number_of_projects: Optional[int] = None,
+) -> Optional[float]:
     max_budget = configuration.get("max_budget") or None
     cost_per_acre = configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
     if max_budget:
         return max_budget / cost_per_acre
 
-    return float(configuration.get("max_treatment_area_ratio"))
+    max_treatable_area_ratio = configuration.get("max_treatment_area_ratio")
+    if max_treatable_area_ratio:
+        return float(max_treatable_area_ratio)
+
+    if min_project_area and number_of_projects:
+        return min_project_area / number_of_projects
+
+    return None
 
 
 def get_max_treatable_stand_count(
@@ -453,6 +502,18 @@ def get_schema(
     return schema
 
 
+def _get_datalayers_id_lookup_table(scenario):
+    # Lookup table to rename datalayer fields to their names
+    # e.g. datalayer_1 -> datalaye_Elevation
+    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    dl_lookup = dict()
+    for dl in datalayers:
+        dl_lookup[f"datalayer_{dl.pk}"] = f"datalayer_{dl.name}"
+        dl_lookup[f"datalayer_{dl.pk}_SMP"] = f"datalayer_{dl.name}_SMP"
+        dl_lookup[f"datalayer_{dl.pk}_PCP"] = f"datalayer_{dl.name}_PCP"
+    return dl_lookup
+
+
 def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     """
     Get the geojson result of a scenario.
@@ -460,6 +521,7 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     to flatten nested dictionaries by appending the keys.
     """
     geojson = scenario.get_geojson_result()
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
     features = geojson.get("features", [])
     for feature in features:
         properties = feature.get("properties", {})
@@ -473,7 +535,8 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
             else:
                 if isinstance(value, float):
                     value = truncate_result(value, quantize=".001")
-                new_properties[prop] = value
+                key = dl_lookup.get(prop, prop)
+                new_properties[key] = value
         feature["properties"] = new_properties
     return geojson
 
@@ -514,56 +577,59 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     return shapefile_folder
 
 
-def export_scenario_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+def export_scenario_stand_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict]
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
     stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
     scenario_outputs = {}
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
+    stand_size = scenario.get_stand_size()
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            properties = {}
             for key, value in row.items():
                 match key:
                     case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        row[key] = int(value)
+                        properties[key] = int(value)
                     case "DoTreat", "selected":
-                        row[key] = bool(int(value))
+                        properties[key] = bool(int(value))
                     case _:
-                        f = float(value)
-                        row[key] = truncate_result(f, quantize=".001")
+                        try:
+                            f = float(value)
+                            f = truncate_result(f, quantize=".001")
+                        except ValueError:
+                            logger.warning(
+                                "Value %s for key %s in scenario %s is not a float.",
+                                value,
+                                key,
+                                scenario.pk,
+                            )
+                            f = None
+                        prop = dl_lookup.get(key, key)
+                        properties[prop] = f
             stand_id = int(row.get("stand_id"))  # type: ignore
-            scenario_outputs[stand_id] = row
-
-    # injecting geometry from inputs.csv
-    inputs_file = forsys_folder / "inputs.csv"
-    with open(inputs_file, "r") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            stand_id = int(row.get("stand_id"))  # type: ignore
-            if stand_id not in scenario_outputs:
-                continue
-            wkt = row.get("WKT")
-            try:
-                geom = GEOSGeometry(wkt, srid=settings.AREA_SRID)
-                geom_json = geom.transform(
-                    settings.CRS_GEOPACKAGE_EXPORT, clone=True
-                ).json
-                geom_json = json.loads(geom_json)
-                scenario_outputs[stand_id]["geometry"] = to_multi(geom_json)
-            except Exception as e:
-                logger.error("Invalid WKT for scenario %s: %s", scenario.pk, e)
-                raise InvalidGeometry(f"Invalid WKT: {wkt}")
+            geometry = stand_inputs.get(stand_id, {}).get("WKT")
+            properties["WKT"] = geometry
+            properties["stand_size"] = stand_size
+            scenario_outputs[stand_id] = properties
 
     features = []
     for stand_id, properties in scenario_outputs.items():
-        geometry = properties.pop("geometry", None)
+        geometry = properties.pop("WKT", None)
         if geometry:
             feature = {
                 "geometry": geometry,
                 "properties": properties,
             }
             features.append(feature)
+        else:
+            logger.warning(
+                "Stand %s in scenario %s has no geometry. Skipping.",
+                stand_id,
+                scenario.pk,
+            )
 
     properties = features[0].get("properties", {})
     field_type_pairs = list(map(map_property, properties.items()))
@@ -578,7 +644,7 @@ def export_scenario_outputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}_outputs",
+                layer="stand_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -595,17 +661,20 @@ def export_scenario_outputs_to_geopackage(
 
 def export_scenario_inputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path
-) -> None:
+) -> Dict[int, Dict]:
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
-    scenario_inputs = []
+    scenario_inputs = dict()
+    dl_lookup = _get_datalayers_id_lookup_table(scenario)
+    stand_size = scenario.get_stand_size()
     with open(inputs_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            properties = {}
             for key, value in row.items():
                 match key:
                     case "stand_id":
-                        row[key] = int(value)
+                        properties[key] = int(value)
                     case "WKT":
                         try:
                             geom = GEOSGeometry(value, srid=settings.AREA_SRID)
@@ -613,18 +682,32 @@ def export_scenario_inputs_to_geopackage(
                                 settings.CRS_GEOPACKAGE_EXPORT, clone=True
                             ).json
                             geom_json = json.loads(geom_json)
-                            row[key] = to_multi(geom_json)
+                            properties[key] = to_multi(geom_json)
                         except Exception as e:
                             logger.error(
                                 "Invalid WKT for scenario %s: %s", scenario.pk, e
                             )
                             raise InvalidGeometry(f"Invalid WKT: {value}")
                     case _:
-                        f = float(value)
-                        row[key] = truncate_result(f, quantize=".001")
-            scenario_inputs.append(row)
+                        try:
+                            f = float(value)
+                            f = truncate_result(f, quantize=".001")
+                        except ValueError:
+                            logger.warning(
+                                "Value %s for key %s in scenario %s is not a float.",
+                                value,
+                                key,
+                                scenario.pk,
+                            )
+                            f = None
+                        prop_key = dl_lookup.get(key, key)
+                        properties[prop_key] = f
+            properties["stand_size"] = stand_size
+            stand_id = int(row.get("stand_id"))  # type: ignore
+            scenario_inputs[stand_id] = properties
 
-    feature = scenario_inputs[0].copy()  # Copy the first feature to modify
+    stand_id = next(iter(scenario_inputs))
+    feature = scenario_inputs[stand_id].copy()
     feature.pop("WKT", None)  # Remove WKT if present
     field_type_pairs = list(map(map_property, feature.items()))
     schema = {
@@ -637,25 +720,32 @@ def export_scenario_inputs_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}_inputs",
+                layer="stand_inputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
                 allow_unsupported_drivers=True,
             ) as out:
-                for feature in scenario_inputs:
-                    geometry = feature.pop("WKT", None)
-                    feature = {"properties": feature, "geometry": geometry}
-                    out.write(feature)
+                for stand_id, feature in scenario_inputs.items():
+                    copyed_feature = feature.copy()
+                    geometry = copyed_feature.pop("WKT", None)
+                    copyed_feature = {
+                        "properties": copyed_feature,
+                        "geometry": geometry,
+                    }
+                    out.write(copyed_feature)
 
     except Exception as e:
         logger.exception(
             "Error exporting scenario %s to geopackage: %s", scenario.pk, e
         )
         raise e
+    return scenario_inputs
 
 
-def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> None:
+def export_scenario_project_areas_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
     geojson = get_flatten_geojson(scenario)
     schema = get_schema(geojson)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
@@ -664,7 +754,7 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer=f"scenario_{scenario.pk}",
+                layer="project_areas_outputs",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
@@ -681,14 +771,52 @@ def export_scenario_to_geopackage(scenario: Scenario, geopackage_path: Path) -> 
         raise e
 
 
-def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
-    try:
-        is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
-        if is_exporting:
-            raise ValueError(
-                f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
-            )
+def export_planning_area_to_geopackage(
+    planning_area: PlanningArea, geopackage_path: Path
+) -> None:
+    """Given a planning area, export it to geopackage"""
 
+    geometry = planning_area.geometry
+    if not geometry:
+        raise ValueError("Planning area has no geometry")
+
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": [("id", "int"), ("name", "str:128"), ("region_name", "str:128")],
+    }
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer="planning_area",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                geometry_json = json.loads(
+                    geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+                )
+                feature = {
+                    "geometry": to_multi(geometry_json),
+                    "properties": {
+                        "id": planning_area.pk,
+                        "name": planning_area.name,
+                        "region_name": planning_area.region_name or "",
+                    },
+                }
+                out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting planning area %s to geopackage: %s", planning_area.pk, e
+        )
+        raise e
+
+
+def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
+    try:
         if not regenerate and scenario.geopackage_url:
             logger.info(
                 "Scenario %s already has a geopackage URL: %s",
@@ -697,7 +825,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
             )
             return scenario.geopackage_url
 
-        redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
             temp_folder.mkdir(parents=True)
@@ -706,11 +833,12 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
             temp_file.unlink()
 
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
-        scenario.save()
+        scenario.save(update_fields=["geopackage_status", "updated_at"])
 
-        export_scenario_to_geopackage(scenario, temp_file)
-        export_scenario_inputs_to_geopackage(scenario, temp_file)
-        export_scenario_outputs_to_geopackage(scenario, temp_file)
+        export_planning_area_to_geopackage(scenario.planning_area, temp_file)
+        export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+        stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
+        export_scenario_stand_outputs_to_geopackage(scenario, temp_file, stand_inputs)
 
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
@@ -733,8 +861,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str:
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-
-        redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
         return str(geopackage_path)
     except Exception:
@@ -799,3 +925,54 @@ def planning_area_covers(
         )
         return True
     return False
+
+
+def get_excluded_stands(
+    stands_qs,
+    datalayer,
+):
+    return stands_qs.filter(
+        metrics__datalayer_id=datalayer.pk,
+        metrics__majority=1,
+    )
+
+
+def get_available_stands(
+    planning_area: PlanningArea,
+    *,
+    stand_size: str = "LARGE",
+    includes: Optional[List[DataLayer]] = None,
+    excludes: Optional[List[DataLayer]] = None,
+    constraints: Optional[List[Dict[str, Any]]] = None,
+    **kwargs,
+):
+    stands = planning_area.get_stands(stand_size)
+    excluded_ids = []
+    for exclude in excludes:
+        stands_queryset = stands.all()
+        excluded_stands = get_excluded_stands(stands_queryset, exclude)
+        excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+
+    return {
+        "unavailable": {
+            "by_inclusions": [],
+            "by_exclusions": list(set(excluded_ids)),
+            "by_thresholds": [],
+        },
+        "summary": {
+            "total_area": 0,
+            "available_area": 0,
+            "unavailable_area": 0,
+        },
+    }
+
+
+def get_min_project_area(scenario: Scenario) -> float:
+    stand_size = scenario.get_stand_size()
+    match stand_size:
+        case StandSizeChoices.SMALL:
+            return settings.MIN_AREA_PROJECT_SMALL
+        case StandSizeChoices.MEDIUM:
+            return settings.MIN_AREA_PROJECT_MEDIUM
+        case _:
+            return settings.MIN_AREA_PROJECT_LARGE

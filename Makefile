@@ -1,4 +1,4 @@
-# Authors: 
+# Authors:
 # - RJ Sheperd (rsheperd@sig-gis.com)
 # - George Silva (gsilva@sig-gis.com)
 
@@ -58,7 +58,7 @@ remove-local-sourcemaps:
 	rm -rf ./src/interface/dist/out/**.map ; \
 	rm -rf ./src/interface/dist/interface/**.map
 
-# This command uploads sourcemaps to Sentry and injects a sourceId reference. 
+# This command uploads sourcemaps to Sentry and injects a sourceId reference.
 # if we have a tagged release, we associate it with the sourcemaps,
 # otherwise we use the SHA as the 'release' for dev builds.
 # Note that this relies on .sentryclirc for Sentry configs
@@ -76,7 +76,7 @@ deploy-frontend-with-sentry: install-dependencies-frontend compile-angular handl
 deploy-frontend: install-dependencies-frontend compile-angular remove-local-sourcemaps
 	@echo "Copying build to web directory..."; \
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
-	
+
 deploy-storybook: install-dependencies-frontend build-storybook
 	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
 
@@ -90,6 +90,7 @@ migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
 	cd src/planscape && python3 manage.py collectstatic --no-input
 	cd src/planscape && python3 manage.py install_layers
+	cd src/planscape && python3 manage.py install_layers --folder stands/sql
 
 load-conditions:
 	cd src/planscape && python3 manage.py load_conditions
@@ -185,6 +186,19 @@ docker-test:
 docker-run: docker-build
 	docker compose up
 
+docker-run-deps:
+	docker compose -f docker/docker-compose.deps.yml up -d
+
+docker-stop-deps:
+	docker compose -f docker/docker-compose.deps.yml down
+
+docker-clean-deps:
+	docker compose -f docker/docker-compose.deps.yml down --volumes
+	docker container prune -f
+
+docker-logs-deps:
+	docker compose -f docker/docker-compose.deps.yml logs -f
+
 docker-shell:
 	./src/planscape/bin/run.sh bash
 
@@ -200,5 +214,14 @@ docker-migrate:
 load-dev-data:
 	./src/planscape/bin/run.sh python manage.py reset_dev_data
 	./src/planscape/bin/run.sh python manage.py loaddata datasets/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json
+
+dev:
+	make -j2 dev-frontend dev-backend
+
+dev-frontend:
+	cd src/interface && npm start
+
+dev-backend:
+	cd src/planscape && poetry run sh -c "./bin/run_gunicorn.sh"
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate load-dev-data

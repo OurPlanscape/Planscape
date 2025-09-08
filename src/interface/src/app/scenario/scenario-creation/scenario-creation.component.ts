@@ -1,23 +1,28 @@
-import { Component, HostListener, ViewChild } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { NgIf, AsyncPipe } from '@angular/common';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { map, of, skip } from 'rxjs';
+import { firstValueFrom, map, Observable, of, skip } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
-  AsyncValidatorFn,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { ScenarioService } from '@services';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { ScenarioCreation } from '@types';
@@ -26,16 +31,21 @@ import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs';
 import { StepComponent } from '../../../styleguide/steps/step.component';
 import { Step2Component } from '../step2/step2.component';
 import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
+import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
+import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
+import { NewScenarioState } from '../new-scenario.state';
+import { FeatureService } from 'src/app/features/feature.service';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 enum ScenarioTabs {
   CONFIG,
   DATA_LAYERS,
+  BASE_LAYERS,
 }
 
 @UntilDestroy()
@@ -46,7 +56,6 @@ enum ScenarioTabs {
     AsyncPipe,
     MatTabsModule,
     ReactiveFormsModule,
-    MatLegacyButtonModule,
     NgIf,
     DataLayersComponent,
     StepsComponent,
@@ -57,11 +66,14 @@ enum ScenarioTabs {
     Step2Component,
     Step3Component,
     Step4Component,
+    BaseLayersComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
-export class ScenarioCreationComponent implements CanComponentDeactivate {
+export class ScenarioCreationComponent
+  implements OnInit, CanComponentDeactivate, OnDestroy
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -69,23 +81,26 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
   planId = this.route.snapshot.data['planId'];
   plan$ = this.planState.currentPlan$;
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
+  finished = false;
 
   form = new FormGroup({
-    scenarioName: new FormControl(
-      '',
-      [Validators.required],
-      [this.scenarioNameMustBeUnique(this.scenarioService, this.planId)]
-    ),
+    scenarioName: new FormControl('', [Validators.required]),
   });
+
+  creatingScenario = false;
+
+  continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
+    ? 'Save & Continue'
+    : 'Next';
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.finished) {
-      /* Most browsers will display their own default dialog to confirm navigation away 
+      /* Most browsers will display their own default dialog to confirm navigation away
         from a window or URL. e.g, "Changes that you made may not be saved"
-        
-        Older browsers will display the message in the string below. 
-        
+
+        Older browsers will display the message in the string below.
+
         All browsers require this string to be non-empty, in order to display anything.
       */
       $event.returnValue =
@@ -96,11 +111,16 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
+    private newScenarioState: NewScenarioState,
     private route: ActivatedRoute,
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router,
+    private featureService: FeatureService
   ) {
+    this.newScenarioState.setPlanId(this.planId);
+
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
@@ -108,6 +128,11 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
           this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
         }
       });
+  }
+
+  ngOnInit(): void {
+    // Adding scenario name validator
+    this.refreshScenarioNameValidator();
   }
 
   canDeactivate(): Observable<boolean> | boolean {
@@ -118,42 +143,81 @@ export class ScenarioCreationComponent implements CanComponentDeactivate {
     return dialogRef.afterClosed();
   }
 
-  // Async validator
-  scenarioNameMustBeUnique(
-    scenarioService: ScenarioService,
-    planId: number
-  ): AsyncValidatorFn {
-    return (control: AbstractControl) => {
-      const name = control.value;
-
-      if (!name) {
-        return of(null);
-      }
-
-      return scenarioService.getScenariosForPlan(planId).pipe(
-        map((scenarios) => {
-          const names = scenarios.map((s) => s.name);
-          return nameMustBeNew(control, names);
-        })
-      );
-    };
-  }
-
   saveStep(data: Partial<ScenarioCreation>) {
     this.config = { ...this.config, ...data };
+    this.newScenarioState.setScenarioConfig(this.config);
     return of(true);
   }
 
-  // dummy flag to test/debug. Remove once we implement running/saving the scenario
-  finished = false;
+  async onFinish() {
+    const payload = getScenarioCreationPayloadScenarioCreation({
+      ...this.config,
+      name: this.form.getRawValue().scenarioName || '',
+      planning_area: this.planId,
+    });
+    this.creatingScenario = true;
+    // Firing scenario name validation before finish
+    const validated = await this.refreshScenarioNameValidator();
 
-  onFinish() {
-    // TODO: Onfinish convert the config to scenarioPayload using the following line and send to backend:
-    // const body = getScenarioCreationPayloadScenarioCreation({...this.config, name: this.form.get(name).value, planning_area: this.planId})
-    this.finished = true;
+    if (validated && this.form.valid) {
+      this.scenarioService.createScenarioFromSteps(payload).subscribe({
+        next: (result) => {
+          this.finished = true;
+          this.router.navigate([result.id], { relativeTo: this.route });
+        },
+        error: () => {
+          this.dialog.open(SavingErrorModalComponent);
+        },
+        complete: () => {
+          this.creatingScenario = false;
+        },
+      });
+    } else {
+      this.creatingScenario = false;
+    }
   }
 
-  stepChanged() {
+  stepChanged(i: number) {
+    this.newScenarioState.setStepIndex(i);
     this.goalOverlayService.close();
+  }
+
+  scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {
+    return (control: AbstractControl) => {
+      const name = control.value;
+
+      if (!name || names.length === 0) {
+        return null;
+      }
+
+      return nameMustBeNew(control, names);
+    };
+  }
+
+  // Adds the name validator and return true or returns false in case there is an error getting scenarios
+  async refreshScenarioNameValidator(): Promise<boolean> {
+    try {
+      const scenarios = await firstValueFrom(
+        this.scenarioService.getScenariosForPlan(this.planId)
+      );
+
+      const names = scenarios.map((s) => s.name);
+      const ctrl = this.form.get('scenarioName')!;
+
+      ctrl.setValidators([
+        Validators.required,
+        this.scenarioNameMustBeUnique(names),
+      ]);
+
+      ctrl.updateValueAndValidity({ emitEvent: false });
+      return true;
+    } catch {
+      this.dialog.open(SavingErrorModalComponent);
+      return false;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.newScenarioState.reset();
   }
 }

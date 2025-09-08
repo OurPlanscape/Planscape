@@ -6,12 +6,20 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
+from planning.models import ScenarioResultStatus, GeoPackageStatus
+from planning.tasks import (
+    async_calculate_stand_metrics,
+    async_forsys_run,
+    async_pre_forsys_process,
+    trigger_geopackage_generation,
+)
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
-
-from planning.models import ScenarioResultStatus
-from planning.tasks import async_calculate_stand_metrics, async_forsys_run
-from planning.tests.factories import ScenarioFactory
+from planning.tests.factories import (
+    ScenarioFactory,
+    TreatmentGoalFactory,
+    PlanningAreaFactory,
+)
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 
@@ -64,7 +72,26 @@ class AsyncCalculateStandMetricsTest(TestCase):
 
         self.assertNotEqual(StandMetric.objects.count(), Stand.objects.count())
 
+    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
+    def test_async_calculate_stand_metrics_paginated(self):
+        self.assertEqual(StandMetric.objects.count(), 0)
+
+        async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
+
+        self.assertNotEqual(StandMetric.objects.count(), Stand.objects.count())
+
     def test_async_calculate_stand_metrics_no_stands(self):
+        self.assertEqual(StandMetric.objects.count(), 0)
+
+        self.scenario.planning_area.geometry = MultiPolygon()
+        self.scenario.planning_area.save()
+
+        async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
+
+        self.assertEqual(StandMetric.objects.count(), 0)
+
+    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
+    def test_async_calculate_stand_metrics_no_stands_paginated(self):
         self.assertEqual(StandMetric.objects.count(), 0)
 
         self.scenario.planning_area.geometry = MultiPolygon()
@@ -79,6 +106,51 @@ class AsyncCalculateStandMetricsTest(TestCase):
         async_calculate_stand_metrics(self.scenario.pk, "foo_bar")
 
         self.assertEqual(StandMetric.objects.count(), 0)
+
+    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
+    def test_async_calculate_stand_metrics_no_datalayer_paginated(self):
+        self.assertEqual(StandMetric.objects.count(), 0)
+        async_calculate_stand_metrics(self.scenario.pk, "foo_bar")
+
+        self.assertEqual(StandMetric.objects.count(), 0)
+
+
+class AsyncPreForsysProcessTest(TestCase):
+    def setUp(self):
+        configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "max_treatment_area_ratio": 0.3,
+            "max_project_count": 10,
+            "seed": 42,
+        }
+        self.planning_area = PlanningAreaFactory.create(with_stands=True)
+        self.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
+        self.scenario = ScenarioFactory.create(
+            treatment_goal=self.treatment_goal, configuration=configuration
+        )
+
+    def test_async_pre_forsys_process(self):
+        async_pre_forsys_process(self.scenario.pk)
+
+        self.scenario.refresh_from_db()
+        self.assertIsNotNone(self.scenario.forsys_input)
+
+        self.assertEqual(type(self.scenario.forsys_input["stand_ids"]), list)
+        self.assertGreater(len(self.scenario.forsys_input["stand_ids"]), 0)
+
+        self.assertEqual(type(self.scenario.forsys_input["datalayers"]), list)
+        datalayers = self.scenario.forsys_input["datalayers"]
+        for dl in datalayers:
+            self.assertIn("metric", dl.keys())
+            self.assertIn("threshold", dl.keys())
+            self.assertIn("name", dl.keys())
+            self.assertIn("usage_type", dl.keys())
+            self.assertIn("id", dl.keys())
+
+        self.assertEqual(type(self.scenario.forsys_input["variables"]), dict)
+        variables = self.scenario.forsys_input["variables"]
+        self.assertEqual(variables["max_area_project"], 0.3)
+        self.assertEqual(variables["min_area_project"], 500)
 
 
 @override_settings(FEATURE_FLAGS="")
@@ -175,3 +247,58 @@ class AsyncCallForsysViaAPI(TestCase):
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
         self.assertFalse(mock_geopackage.called)
+
+
+class TriggerGeopackageGenerationTestCase(TestCase):
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation(self, mock_async_generate):
+        scenario = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+
+        trigger_geopackage_generation()
+
+        mock_async_generate.assert_called_once_with(scenario.pk)
+
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation_no_pending(self, mock_async_generate):
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.PROCESSING,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=GeoPackageStatus.FAILED,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            geopackage_status=None,
+        )
+
+        trigger_geopackage_generation()
+        mock_async_generate.assert_not_called()
+
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation_result_status_not_success(
+        self, mock_async_generate
+    ):
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.PENDING,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.RUNNING,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.FAILURE,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+
+        trigger_geopackage_generation()
+        mock_async_generate.assert_not_called()

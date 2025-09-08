@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import { LoadedResult, Resource, Scenario } from '@types';
+import { AvailableStands, LoadedResult, Resource, Scenario } from '@types';
 import {
   BehaviorSubject,
   catchError,
@@ -12,6 +12,7 @@ import {
   Observable,
   of,
   shareReplay,
+  Subject,
   switchMap,
 } from 'rxjs';
 
@@ -30,6 +31,11 @@ export class ScenarioState {
 
   // Observable that we are going to use to get the excluded_areas
   excludedAreas$ = this.scenarioService.getExcludedAreas().pipe(shareReplay(1));
+
+  private _excludedStands$ = new Subject<AvailableStands>();
+  public excludedStands$ = this._excludedStands$
+    .asObservable()
+    .pipe(shareReplay(1));
 
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
@@ -54,6 +60,12 @@ export class ScenarioState {
     // ensure each new subscriber gets the cached result immediately without re-fetching
     shareReplay(1)
   );
+
+  /**
+   * Flag to turn on or off the visibility of the config overlay
+   */
+  private _displayConfigOverlay$ = new BehaviorSubject<boolean>(false);
+  public displayConfigOverlay$ = this._displayConfigOverlay$.asObservable();
 
   /**
    * This observable filter currentScenarioResource$ to only emit when we have a scenario,
@@ -94,5 +106,9 @@ export class ScenarioState {
   // Reload the current scenario manually
   reloadScenario() {
     this._reloadScenario$.next();
+  }
+
+  setDisplayOverlay(display: boolean) {
+    this._displayConfigOverlay$.next(display);
   }
 }

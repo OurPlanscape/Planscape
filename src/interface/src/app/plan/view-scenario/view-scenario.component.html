@@ -29,6 +29,9 @@
     <mat-tab label="Data Layers">
       <app-data-layers class="white-background"></app-data-layers>
     </mat-tab>
+    <mat-tab label="Base Layers">
+      <app-base-layers class="white-background"></app-base-layers>
+    </mat-tab>
     <mat-tab label="Treatment Plans" *ngIf="scenarioHasResults(scenario)">
       <app-treatments-tab
         [scenarioId]="scenarioId"
@@ -45,9 +48,8 @@
     [scenarioId]="scenarioId || undefined"
     [scenarioName]="scenario.name"
     [geoPackageURL]="scenario.geopackage_url"
+    [geoPackageStatus]="scenario.geopackage_status"
     *ngIf="
-      onResultsTab &&
-      scenarioImprovementsFeature &&
-      scenario.geopackage_status !== null
+      onResultsTab && scenarioFooterFeatureFlags
     "></app-scenario-download-footer>
 </ng-container>

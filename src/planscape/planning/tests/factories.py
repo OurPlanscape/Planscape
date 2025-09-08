@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.db import connection
+
 import factory
 import factory.fuzzy
 from collaboration.models import Role
@@ -14,8 +17,11 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalGroup,
+    TreatmentGoalUsesDataLayer,
+    TreatmentGoalUsageType,
 )
-
+from datasets.tests.factories import DataLayerFactory
 from planscape.tests.factories import UserFactory
 
 
@@ -77,6 +83,30 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
                 associated_model=self,
             )
 
+    @factory.post_generation
+    def with_stands(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted == True:
+            with connection.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT public.generate_stands_for_planning_area(
+                        ST_GeomFromText(%s, %s),
+                        %s,
+                        %s, %s
+                    );
+                    """,
+                    [
+                        self.geometry.wkt,
+                        self.geometry.srid or 4269,
+                        "LARGE",
+                        settings.HEX_GRID_ORIGIN_X,
+                        settings.HEX_GRID_ORIGIN_Y,
+                    ],
+                )
+
 
 class TreatmentGoalFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -89,6 +119,48 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
     category = factory.fuzzy.FuzzyChoice(TreatmentGoalCategory.values)
     created_by = factory.SubFactory(UserFactory)
     group = factory.fuzzy.FuzzyChoice(TreatmentGoalGroup.values)
+
+    @factory.post_generation
+    def with_datalayers(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted == True:
+            TreatmentGoalUsesDataLayerFactory.create(
+                treatment_goal=self, usage_type=TreatmentGoalUsageType.PRIORITY
+            )
+            TreatmentGoalUsesDataLayerFactory.create(
+                treatment_goal=self,
+                usage_type=TreatmentGoalUsageType.THRESHOLD,
+                threshold="value < 1",
+            )
+            TreatmentGoalUsesDataLayerFactory.create(
+                treatment_goal=self,
+                usage_type=TreatmentGoalUsageType.SECONDARY_METRIC,
+                threshold="value == 1",
+            )
+
+    @factory.post_generation
+    def datalayers(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        for datalayer in extracted:
+            TreatmentGoalUsesDataLayerFactory(
+                treatment_goal=self,
+                datalayer=datalayer,
+                usage_type=TreatmentGoalUsageType.PRIORITY,
+            )
+
+
+class TreatmentGoalUsesDataLayerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TreatmentGoalUsesDataLayer
+
+    treatment_goal = factory.SubFactory(TreatmentGoalFactory)
+    datalayer = factory.SubFactory(DataLayerFactory)
+    usage_type = TreatmentGoalUsageType.PRIORITY
+    threshold = None
 
 
 class ScenarioFactory(factory.django.DjangoModelFactory):

@@ -19,6 +19,7 @@ import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
 import { FeatureService } from '../features/feature.service';
 import flatten from '@turf/flatten';
+import { flattenMultipolygons } from '../plan/plan-helpers';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -285,6 +286,8 @@ export class DrawService {
     })
     const storeValidation = this._terraDraw?.addFeatures(justPolygons);
     console.log('here is the validation:', storeValidation);
+    const flatFeatures = flattenMultipolygons(featuresArray);
+    this._terraDraw?.addFeatures(flatFeatures);
     this.updateTotalAcreage();
     this._terraDraw?.setMode('select'); // should be in select mode to add
   }

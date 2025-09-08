@@ -1,5 +1,5 @@
-@import "colors";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
 
 :host {
   @include public-sans();
@@ -14,13 +14,25 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 240px;
+  max-width: 260px;
   box-sizing: border-box;
 }
 
 .legend {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
 
+  &-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    .info-icon {
+      color: $color-white;
+      font-size: 18px;
+      cursor: default;
+    }
+  }
 
   & + div {
     margin-top: 6px;
@@ -34,7 +46,6 @@
       background-color: $color-dark-gray;
       margin-right: 10px;
       flex-shrink: 0;
-      margin-top: 4px;
     }
   }
 
@@ -58,7 +69,16 @@
       background-image: url('/assets/png/patterns/stripes-black.png');
     }
   }
+
+  &.pattern-gray {
+    &:before {
+      background-color: $color-text-gray;
+      background-image: url('/assets/png/patterns/stripes-black.png');
+    }
+  }
 }
 
-
-
+::ng-deep .legend-tooltip {
+  --mdc-plain-tooltip-container-color: rgba(0, 0, 0, 0.7);
+  --mdc-plain-tooltip-supporting-text-color: #fff;
+}

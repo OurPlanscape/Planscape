@@ -18,7 +18,7 @@ class TestHostComponent {
   areas = [
     {
       rank: 1,
-      percentTotal: 0.2234,
+      percentTotal: 22.34,
       score: 2,
       estimatedCost: 1231.22,
       acres: 120.23,
@@ -43,7 +43,7 @@ describe('ProjectAreasComponent', () => {
     component.areas = [
       {
         rank: 1,
-        percentTotal: 0.2234,
+        percentTotal: 22.34,
         score: 2.1223123123,
         estimatedCost: 1231.22,
         acres: 120.23,
@@ -102,21 +102,21 @@ describe('ProjectAreasComponent', () => {
     component.areas = [
       {
         rank: 1,
-        percentTotal: 0.2,
+        percentTotal: 20,
         score: 1,
         estimatedCost: 100,
         acres: 4,
       },
       {
         rank: 1,
-        percentTotal: 0.2,
+        percentTotal: 20,
         score: 2,
         estimatedCost: 100,
         acres: 4,
       },
       {
         rank: 1,
-        percentTotal: 0.2,
+        percentTotal: 20,
         score: 3,
         estimatedCost: 200,
         acres: 4,

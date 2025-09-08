@@ -21,6 +21,7 @@ import { TreatmentsTabComponent } from '../create-scenarios/treatments-tab/treat
 import { ScenarioResultsComponent } from '../scenario-results/scenario-results.component';
 import { FeatureService } from '../../features/feature.service';
 import { POLLING_INTERVAL } from '../plan-helpers';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 describe('ViewScenarioComponent (polling)', () => {
   let fixture: ComponentFixture<ViewScenarioComponent>;
@@ -55,7 +56,8 @@ describe('ViewScenarioComponent (polling)', () => {
           DataLayersComponent,
           TreatmentsTabComponent,
           ScenarioResultsComponent,
-          MatTab
+          MatTab,
+          BaseLayersComponent
         ),
       ],
       imports: [RouterTestingModule],

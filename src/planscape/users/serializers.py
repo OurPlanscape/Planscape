@@ -13,9 +13,9 @@ from django.template.loader import get_template
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from planning.models import Scenario, ProjectArea
+from planning.models import Scenario, ProjectArea, PlanningArea
 from impacts.models import TreatmentPlan
-from collaboration.permissions import ScenarioPermission
+from collaboration.permissions import ScenarioPermission, PlanningAreaPermission
 
 from users.forms import CustomAllAuthPasswordResetForm
 
@@ -116,6 +116,12 @@ class MartinResourceSerializer(serializers.Serializer):
         required=False,
     )
 
+    planning_area_id = PrimaryKeyRelatedField(
+        queryset=PlanningArea.objects.all(),
+        help_text="Planning Area ID.",
+        required=False,
+    )
+
     def validate_scenario_id(self, scenario):
         user = self.context.get("user")
         if not ScenarioPermission.can_view(user, scenario):
@@ -135,4 +141,11 @@ class MartinResourceSerializer(serializers.Serializer):
         if not ScenarioPermission.can_view(user, treatment_plan.scenario):
             raise serializers.ValidationError(
                 "User does not have permission to view scenario of given treatment plan"
+            )
+
+    def validate_planning_area_id(self, planning_area):
+        user = self.context.get("user")
+        if not PlanningAreaPermission.can_view(user, planning_area):
+            raise serializers.ValidationError(
+                "User does not have permission to view planning area"
             )

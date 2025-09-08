@@ -2,13 +2,42 @@
   <div class="legend icon blue">Total Planning Area Acres:</div>
   <div>{{ $acres | async | number: '1.0-0' }} ac</div>
 </div>
-<div>
-  <div class="legend icon magenta">Placeholder 1</div>
-  <div>12332 units</div>
-</div>
-<div>
-  <div class="legend icon pattern">Does not meet Stand-level Constraint</div>
-</div>
-<div>
-  <div class="legend">% Treatable</div>
-</div>
+<ng-container *ngIf="summary$ | async as summary">
+  <div>
+    <div class="legend icon magenta">
+      <div class="legend-text">
+        Potential Treatable Area:
+        <button
+          sg-button
+          matTooltip="Potential Treatable Area = Included Areas - Excluded Areas"
+          matTooltipClass="legend-tooltip"
+          variant="icon-only"
+          icon="info"
+          class="info-icon"
+          [outlined]="true"></button>
+      </div>
+    </div>
+    <div>{{ summary.available_area }}</div>
+  </div>
+  <div>
+    <div class="legend icon pattern">Does not meet Stand-level Constraint</div>
+  </div>
+  <div>
+    <div class="legend">
+      <div class="legend-text">
+        % Treatable:
+        <button
+          sg-button
+          matTooltip="The percentage of the Potential Treatable Area that meets thresholds"
+          matTooltipClass="legend-tooltip"
+          variant="icon-only"
+          icon="info"
+          class="info-icon"
+          [outlined]="true"></button>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="(stepIndex$ | async) === 1">
+    <div class="legend icon pattern-gray">Excluded Area</div>
+  </div>
+</ng-container>

@@ -1,6 +1,6 @@
 <app-map-nav-bar>
   <sg-opacity-slider
-    *ngIf="isScenarioSuccessful$ | async"
+    *ngIf="showOpacitySlider$ | async"
     class="navbar-slider"
     [minValue]="0"
     [maxValue]="1"
@@ -32,6 +32,10 @@
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-data-layer>
 
+  <app-map-base-layers
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-base-layers>
+
   <mgl-layer
     type="background"
     id="bottom-layer"
@@ -43,12 +47,19 @@
       *ngIf="projectAreaCount$ | async as projectAreasCount"
       [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
-      [mapLibreMap]="mapLibreMap">
+      [mapLibreMap]="mapLibreMap"
+      [labelField]="'rank'">
     </app-map-project-areas>
   </ng-container>
   <mgl-control position="bottom-left">
     <app-data-layer-name></app-data-layer-name>
   </mgl-control>
+
+  <ng-container *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'">
+    <app-scenario-stands
+      *ngIf="mapLibreMap"
+      [mapLibreMap]="mapLibreMap"></app-scenario-stands>
+  </ng-container>
 
   <mgl-control position="top-left">
     <app-map-layer-color-legend></app-map-layer-color-legend>
@@ -58,3 +69,12 @@
     <app-scenario-legend></app-scenario-legend>
   </mgl-control>
 </mgl-map>
+
+<div
+  class="loader"
+  [class.visible]="loading$ | async"
+  [attr.aria-hidden]="
+    (loading$ | async) === false || (loading$ | async) === null
+  ">
+  <mat-spinner diameter="32"></mat-spinner>
+</div>

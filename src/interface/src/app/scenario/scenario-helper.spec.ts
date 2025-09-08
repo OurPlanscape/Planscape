@@ -27,11 +27,14 @@ describe('getScenarioCreationPayloadScenarioCreation', () => {
     expect(result.name).toBe(mockScenario.name);
     expect(result.planning_area).toBe(mockScenario.planning_area);
     expect(result.treatment_goal).toBe(mockScenario.treatment_goal);
-    expect(result.status).toBe('NOT_STARTED');
     expect(result.configuration).toEqual({
       stand_size: mockScenario.stand_size,
       max_slope: mockScenario.max_slope,
       min_distance_from_road: mockScenario.min_distance_from_road,
+      estimated_cost: mockScenario.estimated_cost,
+      excluded_areas: mockScenario.excluded_areas,
+      max_area: mockScenario.max_area,
+      max_budget: mockScenario.max_budget,
     } as any);
   });
 

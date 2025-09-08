@@ -13,7 +13,7 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { map, of, switchMap } from 'rxjs';
+import { combineLatest, map, of, switchMap } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
@@ -28,6 +28,11 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { FrontendConstants } from '../../map/map.constants';
 import { ScenarioLegendComponent } from '../../scenario/scenario-legend/scenario-legend.component';
 import { FeaturesModule } from '../../features/features.module';
+import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NewScenarioState } from '../../scenario/new-scenario.state';
+import { FeatureService } from '../../features/feature.service';
+import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -47,6 +52,9 @@ import { FeaturesModule } from '../../features/features.module';
     DataLayerNameComponent,
     ScenarioLegendComponent,
     FeaturesModule,
+    ScenarioStandsComponent,
+    MatProgressSpinnerModule,
+    MapBaseLayersComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -57,7 +65,9 @@ export class ScenarioMapComponent {
     private authService: AuthService,
     private planState: PlanState,
     private scenarioState: ScenarioState,
-    private mapConfigService: MapConfigService
+    private mapConfigService: MapConfigService,
+    private newScenarioState: NewScenarioState,
+    private featureService: FeatureService
   ) {
     this.mapConfigService.initialize();
   }
@@ -68,6 +78,17 @@ export class ScenarioMapComponent {
   mapLibreMap!: MapLibreMap;
 
   isScenarioSuccessful$ = this.scenarioState.isScenarioSuccessful$;
+
+  showOpacitySlider$ = combineLatest([
+    this.isScenarioSuccessful$,
+    this.newScenarioState.stepIndex$,
+  ]).pipe(
+    map(
+      ([isScenarioSuccessful, stepIndex]) =>
+        this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP') &&
+        (isScenarioSuccessful || stepIndex > 0)
+    )
+  );
 
   /**
    * Maplibre defaults
@@ -106,6 +127,8 @@ export class ScenarioMapComponent {
       );
     })
   );
+
+  loading$ = this.newScenarioState.loading$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

@@ -45,7 +45,7 @@
     [sourceLayer]="layers.projectAreaLabels.sourceLayer"
     [layout]="{
       visibility: visible ? 'visible' : 'none',
-      'text-field': ['get', 'name'],
+      'text-field': ['get', labelField],
       'text-size': ['interpolate', ['linear'], ['zoom'], 7, 14, 14, 32],
       'text-anchor': 'center',
       'text-justify': 'center',

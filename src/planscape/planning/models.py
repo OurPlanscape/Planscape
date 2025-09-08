@@ -96,6 +96,11 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
     def creator_name(self) -> str:
         return self.user.get_full_name()
 
+    def get_stands(self, stand_size) -> QuerySet[Stand]:
+        """
+        Returns the list of stands inside that planning area."""
+        return Stand.objects.within_polygon(self.geometry, stand_size)
+
     objects: PlanningAreaManager = PlanningAreaManager()
 
     class Meta(TypedModelMeta):
@@ -369,6 +374,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     notes = models.TextField(null=True, help_text="Scenario notes.")
 
     configuration = models.JSONField(default=dict, help_text="Scenario configuration.")
+
+    forsys_input = models.JSONField(
+        null=True,
+        help_text="Forsys input data for the Scenario.",
+        encoder=DjangoJSONEncoder,
+    )
 
     uuid = models.UUIDField(
         default=uuid.uuid4,

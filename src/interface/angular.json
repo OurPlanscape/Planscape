@@ -28,16 +28,10 @@
             },
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "node_modules/leaflet/dist/images/",
-                "output": "./assets"
-              }
+              "src/assets"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "./node_modules/leaflet/dist/leaflet.css",
               "./node_modules/maplibre-gl/dist/maplibre-gl.css",
               "src/styles.scss"
             ],
@@ -55,7 +49,6 @@
               "file-saver",
               "geojson-rbush",
               "jspdf-autotable",
-              "leaflet",
               "mapbox-gl-arcgis-featureserver",
               "maplibre-gl",
               "polylabel",
@@ -142,7 +135,6 @@
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "./node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {
@@ -167,12 +159,7 @@
           "options": {
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "node_modules/leaflet/dist/images/",
-                "output": "./assets"
-              }
+              "src/assets"
             ],
             "configDir": ".storybook",
             "compodoc": true,

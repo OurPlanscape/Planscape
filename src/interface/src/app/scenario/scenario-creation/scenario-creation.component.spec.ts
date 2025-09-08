@@ -1,11 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ScenarioCreationComponent } from './scenario-creation.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { firstValueFrom, Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
@@ -14,6 +13,8 @@ import { ScenarioState } from '../scenario.state';
 import { Step3Component } from '../step3/step3.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxMaskModule } from 'ngx-mask';
+import { NewScenarioState } from '../new-scenario.state';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -29,22 +30,23 @@ describe('ScenarioCreationComponent', () => {
       ],
       providers: [
         MockProvider(ActivatedRoute, {
-          snapshot: {
-            data: {
-              planId: 24,
-            },
-          } as any,
+          snapshot: { data: { planId: 24 } } as any,
         }),
-        MockProvider(ScenarioService),
-        MockProvider(ScenarioState, {
-          excludedAreas$: of([]),
+        MockProvider(ScenarioService, {
+          getScenariosForPlan: () =>
+            of([{ name: 'Scenario A' }, { name: 'Scenario B' }] as any),
         }),
-        MockProvider(DataLayersStateService, {
-          paths$: of([]),
-        }),
+        MockProvider(ScenarioState, { excludedAreas$: of([]) }),
+        MockProvider(DataLayersStateService, { paths$: of([]) }),
+        MockProvider(NewScenarioState),
       ],
       declarations: [
-        MockDeclarations(DataLayersComponent, Step1Component, Step3Component),
+        MockDeclarations(
+          DataLayersComponent,
+          Step1Component,
+          Step3Component,
+          BaseLayersComponent
+        ),
       ],
     }).compileComponents();
 
@@ -57,91 +59,46 @@ describe('ScenarioCreationComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('scenarioNameMustBeUnique (async validator)', () => {
-    let mockScenarioService: any;
-
-    beforeEach(() => {
-      mockScenarioService = {
-        getScenariosForPlan: jasmine.createSpy(),
-      };
-    });
-
-    it('should return null if name is not provided', async () => {
-      const validator = component.scenarioNameMustBeUnique(
-        mockScenarioService,
-        1
-      );
+  describe('scenarioNameMustBeUnique (sync validator)', () => {
+    it('returns null if name is not provided', () => {
+      const validator = component.scenarioNameMustBeUnique(['Scenario A']);
       const control = new FormControl('');
-      const result = await firstValueFrom(
-        validator(control) as Observable<ValidationErrors | null>
-      );
+      const result = validator(control) as ValidationErrors | null;
       expect(result).toBeNull();
     });
 
-    it('should return null if name is unique', async () => {
-      mockScenarioService.getScenariosForPlan.and.returnValue(
-        of([{ name: 'Scenario A' }, { name: 'Scenario B' }])
-      );
-
-      const validator = component.scenarioNameMustBeUnique(
-        mockScenarioService,
-        1
-      );
-      const control = new FormControl('Scenario C');
-
-      const result = await firstValueFrom(
-        validator(control) as Observable<ValidationErrors | null>
-      );
-      expect(result).toBeNull();
-    });
-
-    it('should return duplicate error if name already exists (case insensitive)', async () => {
-      mockScenarioService.getScenariosForPlan.and.returnValue(
-        of([{ name: 'Scenario A' }, { name: 'Scenario B' }])
-      );
-
-      const validator = component.scenarioNameMustBeUnique(
-        mockScenarioService,
-        1
-      );
-      const control = new FormControl('scenario a');
-
-      const result = await firstValueFrom(
-        validator(control) as Observable<ValidationErrors | null>
-      );
-      expect(result).toEqual({ duplicate: true });
-    });
-
-    it('should return duplicate error with extra whitespace in name', async () => {
-      mockScenarioService.getScenariosForPlan.and.returnValue(
-        of([{ name: 'Scenario A' }])
-      );
-
-      const validator = component.scenarioNameMustBeUnique(
-        mockScenarioService,
-        1
-      );
-      const control = new FormControl('   Scenario A   ');
-
-      const result = await firstValueFrom(
-        validator(control) as Observable<ValidationErrors | null>
-      );
-      expect(result).toEqual({ duplicate: true });
-    });
-
-    it('should return null if the scenario list is empty', async () => {
-      mockScenarioService.getScenariosForPlan.and.returnValue(of([]));
-
-      const validator = component.scenarioNameMustBeUnique(
-        mockScenarioService,
-        1
-      );
+    it('returns null if list is empty', () => {
+      const validator = component.scenarioNameMustBeUnique([]);
       const control = new FormControl('Any name');
-
-      const result = await firstValueFrom(
-        validator(control) as Observable<ValidationErrors | null>
-      );
+      const result = validator(control) as ValidationErrors | null;
       expect(result).toBeNull();
+    });
+
+    it('returns null if name is unique', () => {
+      const validator = component.scenarioNameMustBeUnique([
+        'Scenario A',
+        'Scenario B',
+      ]);
+      const control = new FormControl('Scenario C');
+      const result = validator(control) as ValidationErrors | null;
+      expect(result).toBeNull();
+    });
+
+    it('returns duplicate error if name already exists (case-insensitive)', () => {
+      const validator = component.scenarioNameMustBeUnique([
+        'Scenario A',
+        'Scenario B',
+      ]);
+      const control = new FormControl('scenario a');
+      const result = validator(control) as ValidationErrors | null;
+      expect(result).toEqual({ duplicate: true });
+    });
+
+    it('returns duplicate error even with extra whitespace', () => {
+      const validator = component.scenarioNameMustBeUnique(['Scenario A']);
+      const control = new FormControl('   Scenario A   ');
+      const result = validator(control) as ValidationErrors | null;
+      expect(result).toEqual({ duplicate: true });
     });
   });
 });
