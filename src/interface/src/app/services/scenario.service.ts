@@ -5,6 +5,7 @@ import {
   AvailableStands,
   Constraint,
   Scenario,
+  ScenarioCreation,
   ScenarioCreationPayload,
 } from '@types';
 import { CreateScenarioError } from './errors';
@@ -57,6 +58,26 @@ export class ScenarioService {
             'Please change your settings and try again.';
           throw new CreateScenarioError(
             'Your scenario config is invalid. ' + message
+          );
+        })
+      );
+  }
+
+  //sends a partial scenario configuration using PATCH
+  // returns success or failure, based on backend results
+  // TODO: assumes the scenario endpoint, so review
+  patchScenarioConfig(configPayload : Partial<ScenarioCreation>) {
+  return this.http
+      .patch<Scenario>(this.v2Path, configPayload, {
+        withCredentials: true,
+      })
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.global?.[0] ||
+            'Failed to save configuration';
+          throw new CreateScenarioError(
+            'Scenario Config is invalid. ' + message
           );
         })
       );

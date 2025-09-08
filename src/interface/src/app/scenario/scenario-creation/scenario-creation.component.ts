@@ -43,6 +43,7 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
+import { take } from 'rxjs';
 
 enum ScenarioTabs {
   CONFIG,
@@ -74,8 +75,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate, OnDestroy
-{
+  implements OnInit, CanComponentDeactivate, OnDestroy {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -154,6 +154,17 @@ export class ScenarioCreationComponent
   saveStep(data: Partial<ScenarioCreation>) {
     this.config = { ...this.config, ...data };
     this.newScenarioState.setScenarioConfig(this.config);
+    this.scenarioService.patchScenarioConfig(this.config).pipe(take(1))
+      .subscribe(
+        (_) => {
+          console.log('somehow this was successful');
+        },
+        (err) => {
+          console.error('here is an error');
+        }
+      );
+
+    // TODO: return result of call
     return of(true);
   }
 
