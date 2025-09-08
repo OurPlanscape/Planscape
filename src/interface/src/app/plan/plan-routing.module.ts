@@ -28,6 +28,18 @@ const routes: Routes = [
       },
     ],
   },
+  {
+    path: ':planId/climate-foresight',
+    title: 'Climate Foresight',
+    loadComponent: () =>
+      import('./climate-foresight/climate-foresight.component').then(
+        (m) => m.ClimateForesightComponent
+      ),
+    canActivate: [AuthGuard],
+    resolve: {
+      planId: planLoaderResolver,
+    },
+  },
 ];
 
 @NgModule({

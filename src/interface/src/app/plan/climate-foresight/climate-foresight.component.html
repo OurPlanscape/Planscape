@@ -1,0 +1,100 @@
+<app-nav-bar [area]="'SCENARIOS'">
+  <div class="climate-foresight-header">
+    <button mat-icon-button (click)="navigateBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h2 class="page-title">Climate Foresight</h2>
+  </div>
+</app-nav-bar>
+
+<div class="climate-foresight-container">
+  <div class="left-panel">
+    <div class="left-panel-card">
+      <div class="tool-header">
+        <div class="tool-title">
+          <div class="tool-icon">
+            <img
+              src="/assets/svg/climate-foresight.svg"
+              alt="Climate Foresight" />
+          </div>
+          <h2>Climate Foresight</h2>
+        </div>
+        <div class="tool-metadata">
+          <span class="developed-by">
+            Developed by:
+            <span class="logo-text"
+              ><img src="assets/svg/icons/usfs.svg" alt="USFS" /> USFS</span
+            >
+          </span>
+          <button mat-icon-button class="info-button">
+            <mat-icon
+              matTooltip="This tool integrates projections of landscape conditions under mid-21st century climate to help identify areas where specific management actions can mitigate risks, enhance future resilience, and achieve or hold favorable conditions over time. The tool offers actionable guidance for land management toward future sustainability, supporting scenario planning and long-term decision-making.">
+              help_outline
+            </mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="tool-description">
+        <p>
+          This tool integrates projections of landscape conditions under
+          mid-21st century climate to help identify areas where specific
+          management actions can mitigate risks, enhance future resilience, and
+          achieve or hold favorable conditions over time. The tool offers
+          actionable guidance for land management toward future sustainability,
+          supporting scenario planning and long-term decision-making
+        </p>
+      </div>
+    </div>
+
+    <div class="left-panel-card">
+      <div class="planning-area-section">
+        <div class="planning-area-name">{{ planName }}</div>
+      </div>
+
+      <div class="map-container">
+        <div class="map-legend">
+          <div class="legend-item">
+            <span class="legend-symbol planning-area"></span>
+            <span class="acres-info">{{ planAcres }}</span>
+          </div>
+        </div>
+        <div class="map-preview">
+          <app-scenario-map></app-scenario-map>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="analysis-header">
+      <h3>Analyses</h3>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="startAnalysis()"
+        class="start-analysis-btn">
+        <mat-icon>play_arrow</mat-icon>
+        Start Analysis
+      </button>
+    </div>
+
+    <div class="analysis-content">
+      <div *ngIf="!hasAnalyses" class="no-analyses">
+        <div class="empty-state-icon">
+          <mat-icon>bar_chart</mat-icon>
+        </div>
+        <h4>No Analyses Yet</h4>
+        <p>
+          You haven't run any analyses yet. Kick things off by clicking the
+          "Start Analysis" button to explore insights and make data-driven
+          decisions.
+        </p>
+      </div>
+
+      <div *ngIf="hasAnalyses" class="analyses-list">
+        <!-- Analysis results will be displayed here -->
+      </div>
+    </div>
+  </div>
+</div>
