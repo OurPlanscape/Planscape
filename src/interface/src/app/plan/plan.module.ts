@@ -57,6 +57,7 @@ import { ScenarioDownloadFooterComponent } from './scenario-download-footer/scen
 import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart/cumulative-attainment-chart.component';
 import { ScenarioCreationComponent } from '../scenario/scenario-creation/scenario-creation.component';
 import { ViewScenarioComponent } from '../plan/view-scenario/view-scenario.component';
+import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -124,6 +125,7 @@ import { ViewScenarioComponent } from '../plan/view-scenario/view-scenario.compo
     ScenarioDownloadFooterComponent,
     CumulativeAttainmentChartComponent,
     ScenarioCreationComponent,
+    BaseLayersComponent,
   ],
 })
 export class PlanModule {}

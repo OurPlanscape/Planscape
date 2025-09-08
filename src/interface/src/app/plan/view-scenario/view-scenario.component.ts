@@ -26,6 +26,7 @@ import { FeatureService } from '../../features/feature.service';
 enum ScenarioTabs {
   RESULTS,
   DATA_LAYERS,
+  BASE_LAYERS,
   TREATMENTS,
 }
 
