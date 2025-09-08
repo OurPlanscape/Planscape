@@ -18,7 +18,6 @@ library("stringi")
 library("stringr")
 library("tidyr")
 library("uuid")
-library("featureflag")
 # do not use spherical geometries
 sf_use_s2(FALSE)
 
@@ -46,8 +45,8 @@ if (is.null(scenario_id)) {
   stop("You need to specify one scenario id.")
 }
 
-if (is_enabled("FORSYS_V3")) {
-  main_v3(scenario_id)
+if (stri_detect_fixed(Sys.getenv("FEATURE_FLAGS"), "FORSYS_PREPROCESSED")) {
+  main_pre_processed(scenario_id)
 } else {
   main_v2(scenario_id)
 }
