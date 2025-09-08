@@ -1047,8 +1047,8 @@ call_forsys_v3 <- function(
   return(out)
 }
 
-
-main_v3 <- function(scenario_id) {
+# Forsys execution with pre-processed stand data
+main_pre_processed <- function(scenario_id) {
   now <- now_utc()
   connection <- get_connection()
   scenario <- get_scenario_by_id(connection, scenario_id)
