@@ -1,4 +1,5 @@
 import { Geometry } from 'geojson';
+import { IdNamePair } from './general';
 
 export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
 
@@ -13,11 +14,6 @@ export interface DataSet {
   description: string | null;
   visibility: string;
   version: string;
-}
-
-export interface IdNamePair {
-  id: number;
-  name: string;
 }
 
 export interface InfoStats {
