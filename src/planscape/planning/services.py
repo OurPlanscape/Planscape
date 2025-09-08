@@ -15,17 +15,22 @@ from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
-from datasets.models import DataLayer, DataLayerType
+from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
-from datasets.models import DataLayer
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
+from modules.services import get_forsys_layer_by_capability
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -37,14 +42,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
-    TreatmentGoalUsesDataLayer,
-    TreatmentGoalUsageType,
 )
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -59,10 +57,7 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
-    from planning.tasks import (
-        async_calculate_vector_metrics,
-        async_create_stands,
-    )
+    from planning.tasks import async_calculate_vector_metrics, async_create_stands
 
     """Canonical method to create a new planning area."""
 
@@ -79,10 +74,7 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
-    datalayers = DataLayer.objects.filter(
-        dataset_id=998,
-        type=DataLayerType.VECTOR,
-    )
+    datalayers = get_forsys_layer_by_capability("exclusion")
     vector_metrics_jobs = group(
         [
             async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
@@ -162,8 +154,8 @@ def get_treatment_goal_from_configuration(
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import (
         async_calculate_stand_metrics_v2,
-        async_pre_forsys_process,
         async_forsys_run,
+        async_pre_forsys_process,
     )
 
     # precedence here to the `kwargs`. if you supply `origin` here
