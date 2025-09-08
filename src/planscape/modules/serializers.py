@@ -32,6 +32,7 @@ class ModuleSerializer(serializers.Serializer):
         return OPTIONS_SERIALIZERS[module_name]()
 
     def __init__(self, *args, module_name: str, **kwargs):
+        super().__init__(*args, **kwargs)
         self.fields["options"] = self.get_options_serializer(module_name)
 
     name = serializers.CharField()
