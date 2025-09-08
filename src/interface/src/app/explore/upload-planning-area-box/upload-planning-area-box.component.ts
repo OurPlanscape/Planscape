@@ -63,18 +63,19 @@ export class UploadPlanningAreaBoxComponent {
   }
 
   validateGeoJSONFeatures(geoJSON: GeoJSON.GeoJSON): boolean {
+    const ix: any[] = [];
     if (geoJSON.type === 'FeatureCollection') {
       console.log('this is a featurecollection...');
-      
 
-      return geoJSON.features.every((f) => {
+
+      const res :boolean = geoJSON.features.every((f) => {
         console.log('inspecting feature:', f);
         console.log('what kind of feature is this supposed to be?', f.geometry.type);
-        if (f.geometry.type === 'MultiPolygon'){
+        if (f.geometry.type === 'MultiPolygon') {
           const flattenedThings = flatten(f);
           console.log('here is the flattened things:', flattenedThings);
         }
-      
+
         if (
           f.geometry.type === 'Polygon'
         ) {
@@ -82,15 +83,20 @@ export class UploadPlanningAreaBoxComponent {
           const ks = kinks(f.geometry);
           console.log('what is the ks?', ks);
           if (ks.features.length > 0) {
-            throw new Error('Self-intersection detected.');
+            console.error('Self-intersection detected.', ks);
+            ix.push(ks);
           }
           return true;
         }
 
         return booleanValid(f);
       });
+
+      console.log('intersections: ', ix);
+      return res;
     }
     //TODO: handle non featurecollections
+    console.log('intersections: ', ix);
     return true;
   }
 
