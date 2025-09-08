@@ -23,6 +23,5 @@ class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = str(self.kwargs.get(self.lookup_field))
         payload = self.get_object()
-        # this is passed as SerializerClass(data=payload)
         serializer = ModuleSerializer(instance=payload, module_name=pk)
         return Response(serializer.data)
