@@ -1,11 +1,4 @@
-<app-nav-bar [area]="'SCENARIOS'">
-  <div class="climate-foresight-header">
-    <button mat-icon-button (click)="navigateBack()" class="back-button">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <h2 class="page-title">Climate Foresight</h2>
-  </div>
-</app-nav-bar>
+<app-nav-bar [area]="'SCENARIOS'"> </app-nav-bar>
 
 <div class="climate-foresight-container">
   <div class="left-panel">
@@ -60,7 +53,20 @@
           </div>
         </div>
         <div class="map-preview">
-          <app-scenario-map></app-scenario-map>
+          <mgl-map
+            *ngIf="bounds$ | async as bounds"
+            [style]="(baseLayerUrl$ | async) || ''"
+            [transformRequest]="transformRequest"
+            [maxZoom]="maxZoom"
+            [minZoom]="minZoom"
+            [dragRotate]="false"
+            [fitBoundsOptions]="{ padding: 20 }"
+            [fitBounds]="bounds"
+            [interactive]="false"
+            (mapLoad)="mapLoaded($event)">
+            <app-planning-area-layer
+              *ngIf="mapLibreMap"></app-planning-area-layer>
+          </mgl-map>
         </div>
       </div>
     </div>

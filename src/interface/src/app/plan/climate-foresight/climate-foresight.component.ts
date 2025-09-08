@@ -6,9 +6,23 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { SharedModule } from '../../shared/shared.module';
-import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
 import { Plan } from '@types';
-import { take } from 'rxjs/operators';
+import { take, map } from 'rxjs/operators';
+import { MapComponent } from '@maplibre/ngx-maplibre-gl';
+import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
+import {
+  Map as MapLibreMap,
+  RequestTransformFunction,
+  ResourceType,
+} from 'maplibre-gl';
+import { AuthService } from '@services';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
+import {
+  addRequestHeaders,
+  getBoundsFromGeometry,
+} from '../../maplibre-map/maplibre.helper';
+import { FrontendConstants } from '../../map/map.constants';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @Component({
   selector: 'app-climate-foresight',
@@ -19,7 +33,8 @@ import { take } from 'rxjs/operators';
     MatIconModule,
     MatTooltipModule,
     SharedModule,
-    ScenarioMapComponent,
+    MapComponent,
+    PlanningAreaLayerComponent,
   ],
   templateUrl: './climate-foresight.component.html',
   styleUrls: ['./climate-foresight.component.scss'],
@@ -29,10 +44,23 @@ export class ClimateForesightComponent implements OnInit {
   planAcres = '';
   hasAnalyses = false;
   currentPlan: Plan | null = null;
+  mapLibreMap?: MapLibreMap;
+
+  minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
+
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+
+  bounds$ = this.planState.planningAreaGeometry$.pipe(
+    map((geometry) => getBoundsFromGeometry(geometry))
+  );
 
   constructor(
+    private breadcrumbService: BreadcrumbService,
     private router: Router,
-    private planState: PlanState
+    private planState: PlanState,
+    private authService: AuthService,
+    private mapConfigState: MapConfigState
   ) {}
 
   ngOnInit(): void {
@@ -43,9 +71,38 @@ export class ClimateForesightComponent implements OnInit {
         this.planAcres = plan.area_acres
           ? `Acres: ${plan.area_acres.toLocaleString()}`
           : '';
+
+        this.breadcrumbService.breadcrumb$
+          .pipe(take(1))
+          .subscribe((breadcrumb) => {
+            if (breadcrumb?.label !== 'Climate Foresight') {
+              this.breadcrumbService.updateBreadCrumb({
+                label: 'Climate Foresight',
+                backUrl: `/plan/${this.currentPlan?.id}`,
+              });
+            }
+          });
       }
     });
   }
+
+  mapLoaded(map: MapLibreMap): void {
+    this.mapLibreMap = map;
+  }
+
+  /**
+   * Add authorization headers to map tile requests
+   */
+  transformRequest: RequestTransformFunction = (
+    url: string,
+    resourceType?: ResourceType
+  ) => {
+    return addRequestHeaders(
+      url,
+      resourceType,
+      this.authService.getAuthCookie()
+    );
+  };
 
   navigateBack(): void {
     if (this.currentPlan?.id) {
