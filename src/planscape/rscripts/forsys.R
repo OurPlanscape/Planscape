@@ -29,9 +29,6 @@ import::from("rscripts/constants.R", .all = TRUE)
 import::from("rscripts/base_forsys.R", .all = TRUE)
 import::from("rscripts/postprocessing.R", .all = TRUE)
 
-# Feature flag to use forsys v4 (default is v2)
-forsys_v4 <- as.logical(Sys.getenv("FORSYS_V4", "false"))
-
 options <- list(
   make_option(
     c("-s", "--scenario",
@@ -48,8 +45,4 @@ if (is.null(scenario_id)) {
   stop("You need to specify one scenario id.")
 }
 
-if (forsys_v4) {
-  main_v4(scenario_id)
-} else {
-  main_v2(scenario_id)
-}
+main_v2(scenario_id)
