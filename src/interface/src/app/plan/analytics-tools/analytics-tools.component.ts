@@ -5,6 +5,7 @@ import { TileButtonComponent } from '../../../styleguide';
 import { FeatureService } from '../../features/feature.service';
 import { PlanState } from '../plan.state';
 import { take } from 'rxjs/operators';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 interface AnalyticTool {
   id: string;
@@ -37,6 +38,7 @@ export class AnalyticsToolsComponent implements OnInit {
   hasEnabledTools: boolean = false;
 
   constructor(
+    private breadcrumbService: BreadcrumbService,
     private featureService: FeatureService,
     private router: Router,
     private planState: PlanState
@@ -58,6 +60,10 @@ export class AnalyticsToolsComponent implements OnInit {
     if (toolId === 'climate-foresight') {
       this.planState.currentPlan$.pipe(take(1)).subscribe((plan) => {
         if (plan?.id) {
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Climate Foresight',
+            backUrl: `/plan/${plan.id}`,
+          });
           this.router.navigate(['/plan', plan.id, 'climate-foresight']);
         }
       });
