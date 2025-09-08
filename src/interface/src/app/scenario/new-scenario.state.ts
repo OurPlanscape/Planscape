@@ -13,9 +13,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayersService } from '@services/data-layers.service';
 import { FeatureService } from '../features/feature.service';
 import { distinctUntilChanged } from 'rxjs/operators';
+import { ModuleService } from '@services/module.service';
 
 @Injectable({
   providedIn: 'root',
@@ -90,16 +90,11 @@ export class NewScenarioState {
   public stepIndex$ = this._stepIndex$.asObservable();
 
   constructor(
-    private dataLayersService: DataLayersService,
+    private moduleService: ModuleService,
     private featureService: FeatureService
   ) {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      this.dataLayersService.getMaxSlopeLayerId().subscribe((s) => {
-        this.slopeId = s;
-      });
-      this.dataLayersService.getDistanceToRoadsLayerId().subscribe((s) => {
-        this.distanceToRoadsId = s;
-      });
+      this.moduleService.getForsysModule().subscribe((s) => console.log(s));
     }
   }
 
