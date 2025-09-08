@@ -7,7 +7,6 @@ class OptionDataLayerSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "info",
         )
         model = DataLayer
 
