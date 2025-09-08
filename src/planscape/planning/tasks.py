@@ -1,19 +1,12 @@
 import logging
 
 import rasterio
-from django.conf import settings
-from django.db import transaction
-from django.core.paginator import Paginator
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.db import transaction
 from gis.core import get_storage_session
-from planning.models import PlanningArea, Scenario, ScenarioResultStatus
-from planning.services import (
-    get_min_project_area,
-    get_max_treatable_area,
-)
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats3,
@@ -29,6 +22,7 @@ from planning.models import (
     Scenario,
     ScenarioResultStatus,
 )
+from planning.services import get_max_treatable_area, get_min_project_area
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -130,6 +124,36 @@ def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> 
             datalayer=datalayer,
             planning_area_geometry=planning_area.geometry,
         )
+
+
+@app.task(max_retries=3, retry_backoff=True)
+def async_calculate_stand_metrics_v3(planning_area_id: int, datalayer_id: int) -> None:
+    """
+    Calculates stand metrics based on planning area. Calculates for all stand sizes.
+    """
+    try:
+        planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
+        datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
+        for i in StandSizeChoices:
+            stands = planning_area.get_stands(i)
+            with rasterio.Env(get_storage_session()):
+                if feature_enabled("PAGINATED_STAND_METRICS"):
+                    paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
+                    for page in paginator.page_range:
+                        paginated_stands = paginator.page(page)
+                        log.info(f"Processing page {page} of stands")
+
+                        calculate_stand_zonal_stats(
+                            paginated_stands.object_list, datalayer
+                        )
+                else:
+                    calculate_stand_zonal_stats(stands, datalayer)
+    except PlanningArea.DoesNotExist:
+        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
+        return
+    except DataLayer.DoesNotExist:
+        log.warning(f"DataLayer with id {datalayer_id} does not exist.")
+        return
 
 
 @app.task(max_retries=3, retry_backoff=True)

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from datasets.models import DataLayer
 from django.db.models import QuerySet
@@ -24,7 +24,7 @@ def get_forsys_layer_by_capability(capability: str) -> QuerySet[DataLayer]:
     return DataLayer.objects.filter(metadata__contains=query)
 
 
-def get_forsys_layer_by_name(name: str) -> QuerySet[DataLayer]:
+def get_forsys_layer_by_name(name: str) -> Optional[DataLayer]:
     query = {"modules": {"forsys": {"name": name}}}
     return DataLayer.objects.filter(metadata__contains=query).first()
 
