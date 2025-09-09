@@ -49,7 +49,9 @@ from planscape.openpanel import track_openpanel
 logger = logging.getLogger(__name__)
 
 
-def create_metrics_task(planning_area: PlanningArea, datalayer: DataLayer):
+def create_metrics_task(
+    planning_area: PlanningArea, datalayer: DataLayer, stand_size: StandSizeChoices
+):
     from planning.tasks import (
         async_calculate_stand_metrics_v3,
         async_calculate_vector_metrics,
@@ -57,9 +59,13 @@ def create_metrics_task(planning_area: PlanningArea, datalayer: DataLayer):
 
     match datalayer.type:
         case DataLayerType.VECTOR:
-            return async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+            return async_calculate_vector_metrics.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
         case _:
-            return async_calculate_stand_metrics_v3.si(planning_area.pk, datalayer.pk)
+            return async_calculate_stand_metrics_v3.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
 
 
 @transaction.atomic()
@@ -95,7 +101,11 @@ def create_planning_area(
     ]
     datalayers = list(filter(None, datalayers))
     precalculation_jobs = group(
-        [create_metrics_task(planning_area, datalayer) for datalayer in datalayers]
+        [
+            create_metrics_task(planning_area, datalayer, stand_size=stand_size)
+            for datalayer in datalayers
+            for stand_size in StandSizeChoices
+        ]
     )
     create_stands_job = chain(
         async_create_stands.si(planning_area.pk), precalculation_jobs
