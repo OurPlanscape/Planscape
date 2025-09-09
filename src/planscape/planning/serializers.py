@@ -17,6 +17,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsageType,
     User,
     UserPrefs,
     TreatmentGoalUsageType,
@@ -659,42 +660,36 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
     one_off = serializers.BooleanField(required=False)
     one_off_config = OneOffConfigV2Serializer(required=False)
 
-    def _has_canonical_raster(self, layer_objs, name: str) -> bool:
-        for dl in layer_objs:
-            if (
-                getattr(dl, "_usage_type", None)
-                == TreatmentGoalUsageType.EXCLUSION_ZONE
-            ):
-                continue
-            if dl.type != DataLayerType.RASTER:
-                continue
-            md = getattr(dl, "metadata", {}) or {}
-            if (
-                isinstance(md, dict)
-                and md.get("modules", {}).get("forsys", {}).get("name") == name
-            ):
-                return True
-        return False
+    REQUIRED_CANONICAL = ("slope", "distance_from_roads")
 
-    def _validate_canonical_rasters(self, layer_objs):
-        missing = []
-        for required in ("slope", "distance_from_roads"):
-            if not self._has_canonical_raster(layer_objs, required):
-                missing.append(required)
-        if missing:
-            raise serializers.ValidationError(
-                {
-                    "one_off_config": [
-                        f"Missing required rasters in datalayers: {', '.join(missing)}."
-                    ]
-                }
+    def _collect_raster_datalayers(self, selected_items):
+        include_ids = {
+            (item["id"].pk if hasattr(item["id"], "pk") else int(item["id"]))
+            for item in selected_items
+            if item["usage_type"] != TreatmentGoalUsageType.EXCLUSION_ZONE
+        }
+
+        base_qs = DataLayer.objects.filter(
+            id__in=list(include_ids), type=DataLayerType.RASTER
+        )
+        all_ids = set(base_qs.values_list("id", flat=True))
+
+        for name in self.REQUIRED_CANONICAL:
+            query = {"modules": {"forsys": {"name": name}}}
+            canonical_id = (
+                DataLayer.objects.filter(
+                    type=DataLayerType.RASTER, metadata__contains=query
+                )
+                .values_list("id", flat=True)
+                .first()
             )
+            if canonical_id:
+                all_ids.add(canonical_id)
 
-    def _derive_coverage(self, layer_objs):
-        ids = list({dl.id for dl in layer_objs})
-        qs = DataLayer.objects.filter(id__in=ids)
-        coverage = qs.geometric_intersection(geometry_field="outline")  # type: ignore
-        return coverage
+        if not all_ids:
+            return DataLayer.objects.none()
+
+        return DataLayer.objects.filter(id__in=list(all_ids))
 
     def validate(self, attrs):
         existing_cfg = (
@@ -703,6 +698,7 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
             else {}
         )
 
+        # If turning one_off on, must provide config at least once
         if attrs.get("one_off") is True:
             has_existing = bool(existing_cfg.get("one_off_config"))
             if not attrs.get("one_off_config") and not has_existing:
@@ -710,30 +706,22 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
                     {"one_off_config": ["Required when one_off is true."]}
                 )
 
-        ooc = attrs.get("one_off_config")
-
+        one_off_config = attrs.get("one_off_config")
         effective_one_off = bool(attrs.get("one_off", existing_cfg.get("one_off")))
-        if ooc and not effective_one_off:
+
+        if one_off_config and not effective_one_off:
             raise serializers.ValidationError(
                 {"one_off": ["Must be true when providing one_off_config."]}
             )
 
-        if ooc:
-            layer_objs = []
-            for item in ooc["datalayers"]:
-                dl = item["id"]
-                dl._usage_type = item["usage_type"]
-                dl._threshold = item.get("threshold")
-                layer_objs.append(dl)
-
-            self._validate_canonical_rasters(layer_objs)
-
-            coverage = self._derive_coverage(layer_objs)
+        if one_off_config:
+            raster_qs = self._collect_raster_datalayers(one_off_config["datalayers"])
+            coverage = raster_qs.geometric_intersection(geometry_field="geometry")
             if not coverage or coverage.empty:
                 raise serializers.ValidationError(
                     {
                         "one_off_config": [
-                            "Unable to derive coverage from selected datalayers."
+                            "Derived coverage is empty for the selected layers."
                         ]
                     }
                 )
@@ -742,13 +730,13 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
         return super().validate(attrs)
 
     def update(self, instance: Scenario, validated_data):
-        ooc = validated_data.pop("one_off_config", None)
+        one_off_config = validated_data.pop("one_off_config", None)
         one_off_flag = validated_data.pop("one_off", None)
         derived_cov = validated_data.pop("_derived_coverage", None)
 
-        super().update(instance, validated_data)
-
-        cfg = instance.configuration or {}
+        # Call super().update first to merge core config fields and enforce existing validation (e.g. max_budget vs max_area) before applying one_off changes
+        instance = super().update(instance, validated_data)
+        cfg = (instance.configuration or {}).copy()
 
         if one_off_flag is not None:
             cfg["one_off"] = bool(one_off_flag)
@@ -757,9 +745,9 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
             cfg.pop("one_off_config", None)
             cfg.pop("coverage", None)
 
-        if ooc:
+        if one_off_config and one_off_flag is not False:
             datalayers_compact = []
-            for item in ooc["datalayers"]:
+            for item in one_off_config["datalayers"]:
                 _id = item["id"].pk if hasattr(item["id"], "pk") else int(item["id"])
                 row = {"id": _id, "usage_type": item["usage_type"]}
                 if item.get("threshold") not in (None, ""):
@@ -769,13 +757,15 @@ class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
             cfg["one_off_config"] = {
                 **(cfg.get("one_off_config") or {}),
                 **{
-                    k: v for k in ooc.items() if k in ("priorities", "stand_thresholds")
+                    k: v
+                    for k, v in one_off_config.items()
+                    if k in ("priorities", "stand_thresholds")
                 },
                 "datalayers": datalayers_compact,
             }
 
-            if derived_cov:
-                cfg["coverage"] = json.loads(derived_cov.geojson)
+        if derived_cov and cfg.get("one_off"):
+            cfg["coverage"] = json.loads(derived_cov.geojson)
 
         instance.configuration = cfg
         instance.save(update_fields=["configuration"])

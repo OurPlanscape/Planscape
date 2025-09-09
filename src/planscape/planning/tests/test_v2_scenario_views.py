@@ -1,7 +1,7 @@
 import copy
 from unittest import mock
 
-from datasets.models import DataLayerType, GeometryType
+from datasets.models import DataLayer, DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
 from django.urls import reverse
 from rest_framework import status
@@ -702,10 +702,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
             user=self.user,
             planning_area=self.planning_area,
             treatment_goal=self.treatment_goal,
-            configuration={
-                "stand_size": "LARGE",
-                "max_budget": 1000,
-            },
+            configuration={"stand_size": "LARGE", "max_budget": 1000},
         )
 
         self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
@@ -739,11 +736,8 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
         payload = {"max_budget": 100000}
 
-        # Authenticate as a user who does not own the scenario
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
-
-        # Expect 404 since get_object() hides unauthorized scenarios
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
@@ -775,16 +769,16 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.scenario.refresh_from_db()
         self.assertTrue(self.scenario.configuration.get("one_off"))
 
-    def test_patch_one_off_config_missing_required_rasters(self):
-        # Provide a non-canonical layer (e.g., vector) so validation fails before coverage
-        non_canonical = DataLayerFactory(
+    def test_patch_one_off_config_no_rasters_yields_empty_coverage(self):
+        # Provide a non-raster layer so final raster set is empty (unless canonicals exist)
+        non_raster = DataLayerFactory(
             type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
         )
 
         payload = {
             "one_off": True,
             "one_off_config": {
-                "datalayers": [{"id": non_canonical.pk, "usage_type": "PRIORITY"}]
+                "datalayers": [{"id": non_raster.pk, "usage_type": "PRIORITY"}]
             },
         }
 
@@ -793,18 +787,18 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         body = resp.json()
         self.assertIn("one_off_config", body)
-        # Error message should mention missing canonical rasters
         self.assertTrue(
-            any("Missing required rasters" in msg for msg in body["one_off_config"])
+            any("Derived coverage is empty" in msg for msg in body["one_off_config"])
         )
 
-    @mock.patch(
-        "planning.serializers.PatchScenarioConfigurationV2Serializer._derive_coverage",
-        return_value=GEOSGeometry(
-            "GEOMETRYCOLLECTION EMPTY", srid=settings.DEFAULT_CRS
-        ),
-    )
-    def test_patch_one_off_config_coverage_empty_is_rejected(self, _mock_cov):
+    # to return an object with geometric_intersection that yields EMPTY geometry.
+    def test_patch_one_off_config_coverage_empty_is_rejected(self):
+        class DummyQS:
+            def geometric_intersection(self, geometry_field="geometry"):
+                return GEOSGeometry(
+                    "GEOMETRYCOLLECTION EMPTY", srid=settings.DEFAULT_CRS
+                )
+
         slope = DataLayerFactory(
             type=DataLayerType.RASTER,
             geometry_type=GeometryType.RASTER,
@@ -827,32 +821,30 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         }
 
         self.client.force_authenticate(self.user)
-        resp = self.client.patch(self.url, payload, format="json")
+        with mock.patch(
+            "planning.serializers.PatchScenarioConfigurationV2Serializer._collect_raster_datalayers",
+            return_value=DummyQS(),
+        ):
+            resp = self.client.patch(self.url, payload, format="json")
+
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         body = resp.json()
         self.assertIn("one_off_config", body)
         self.assertTrue(
-            any("Unable to derive coverage" in msg for msg in body["one_off_config"])
+            any("Derived coverage is empty" in msg for msg in body["one_off_config"])
         )
 
-    @mock.patch(
-        "planning.serializers.PatchScenarioConfigurationV2Serializer._derive_coverage",
-        return_value=Polygon(
-            ((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=settings.DEFAULT_CRS
-        ),
-    )
-    def test_patch_one_off_config_success_persists_compact_and_coverage(
-        self, _mock_cov
-    ):
-        slope = DataLayerFactory(
+    def test_patch_one_off_config_success_persists_compact_and_coverage(self):
+        class DummyQS:
+            def geometric_intersection(self, geometry_field="geometry"):
+                return Polygon(
+                    ((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=settings.DEFAULT_CRS
+                )
+
+        raster = DataLayerFactory(
             type=DataLayerType.RASTER,
             geometry_type=GeometryType.RASTER,
             metadata={"modules": {"forsys": {"name": "slope"}}},
-        )
-        roads = DataLayerFactory(
-            type=DataLayerType.RASTER,
-            geometry_type=GeometryType.RASTER,
-            metadata={"modules": {"forsys": {"name": "distance_from_roads"}}},
         )
 
         payload = {
@@ -861,14 +853,18 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
                 "priorities": ["p1", "p2"],
                 "stand_thresholds": ["t1"],
                 "datalayers": [
-                    {"id": slope.pk, "usage_type": "PRIORITY", "threshold": ">=3"},
-                    {"id": roads.pk, "usage_type": "SECONDARY_METRIC"},
+                    {"id": raster.pk, "usage_type": "PRIORITY", "threshold": ">=3"},
                 ],
             },
         }
 
         self.client.force_authenticate(self.user)
-        resp = self.client.patch(self.url, payload, format="json")
+        with mock.patch(
+            "planning.serializers.PatchScenarioConfigurationV2Serializer._collect_raster_datalayers",
+            return_value=DummyQS(),
+        ):
+            resp = self.client.patch(self.url, payload, format="json")
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
         # Reload from DB to inspect full saved configuration (the response serializer hides one_off fields)
@@ -885,10 +881,9 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         # datalayers saved in compact form (id + usage_type [+ threshold if provided])
         ooc = cfg.get("one_off_config", {})
         saved = sorted(ooc.get("datalayers", []), key=lambda d: d["id"])
-        self.assertEqual(len(saved), 2)
-        self.assertEqual(saved[0]["id"], min(slope.pk, roads.pk))
+        self.assertEqual(len(saved), 1)
+        self.assertEqual(saved[0]["id"], raster.pk)
         self.assertIn("usage_type", saved[0])
-        # threshold only present when passed
         thresholds = [d for d in saved if d.get("threshold")]
         self.assertEqual(len(thresholds), 1)
         self.assertEqual(thresholds[0]["threshold"], ">=3")
