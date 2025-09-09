@@ -19,7 +19,7 @@ from planning.models import (
     ScenarioResult,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
-    TreatmentGoalUsesDataLayer
+    TreatmentGoalUsesDataLayer,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -1070,14 +1070,14 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             group=ca_group,
         )
         self.usage1 = TreatmentGoalUsesDataLayer.objects.create(
-            usage_type="PRIORITY", 
+            usage_type="PRIORITY",
             datalayer=self.dl1,
-            treatment_goal=self.first_treatment_goal
+            treatment_goal=self.first_treatment_goal,
         )
         self.usage2 = TreatmentGoalUsesDataLayer.objects.create(
-            usage_type="THRESHOLD", 
+            usage_type="THRESHOLD",
             datalayer=self.dl2,
-            treatment_goal=self.first_treatment_goal
+            treatment_goal=self.first_treatment_goal,
         )
 
     def test_list_treatment_goals(self):
@@ -1105,7 +1105,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             TreatmentGoalGroup(self.first_treatment_goal.group).label,
         )
         self.assertCountEqual(
-            first_treatment_goal["usage_types"], [{'usage_type': 'PRIORITY', 'datalayer': 'Layer 1'}, {'usage_type': 'THRESHOLD', 'datalayer': 'Layer 2'}]
+            first_treatment_goal["usage_types"],
+            [
+                {"usage_type": "PRIORITY", "datalayer": "Layer 1"},
+                {"usage_type": "THRESHOLD", "datalayer": "Layer 2"},
+            ],
         )
 
     def test_detail_treatment_goal(self):
