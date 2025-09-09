@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { SharedModule } from '../../shared/shared.module';
 import { Plan } from '@types';
@@ -52,12 +52,22 @@ export class ClimateForesightComponent implements OnInit {
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
-    map((geometry) => getBoundsFromGeometry(geometry))
+    map((geometry) => {
+      if (!geometry) {
+        return null;
+      }
+      const bounds = getBoundsFromGeometry(geometry);
+      if (bounds?.every((coord) => isFinite(coord))) {
+        return bounds;
+      }
+      return null;
+    })
   );
 
   constructor(
     private breadcrumbService: BreadcrumbService,
     private router: Router,
+    private route: ActivatedRoute,
     private planState: PlanState,
     private authService: AuthService,
     private mapConfigState: MapConfigState
@@ -105,8 +115,9 @@ export class ClimateForesightComponent implements OnInit {
   };
 
   navigateBack(): void {
-    if (this.currentPlan?.id) {
-      this.router.navigate(['/plan', this.currentPlan.id]);
+    const planId = this.route.snapshot.data['planId'];
+    if (planId) {
+      this.router.navigate(['/plan', planId]);
     } else {
       this.router.navigate(['/']);
     }

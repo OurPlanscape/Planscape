@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TileButtonComponent } from '../../../styleguide';
 import { FeatureService } from '../../features/feature.service';
-import { PlanState } from '../plan.state';
-import { take } from 'rxjs/operators';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 
 interface AnalyticTool {
@@ -41,7 +39,7 @@ export class AnalyticsToolsComponent implements OnInit {
     private breadcrumbService: BreadcrumbService,
     private featureService: FeatureService,
     private router: Router,
-    private planState: PlanState
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -58,15 +56,14 @@ export class AnalyticsToolsComponent implements OnInit {
 
   onToolClick(toolId: string): void {
     if (toolId === 'climate-foresight') {
-      this.planState.currentPlan$.pipe(take(1)).subscribe((plan) => {
-        if (plan?.id) {
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Climate Foresight',
-            backUrl: `/plan/${plan.id}`,
-          });
-          this.router.navigate(['/plan', plan.id, 'climate-foresight']);
-        }
-      });
+      const planId = this.route.snapshot.data['planId'];
+      if (planId) {
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Climate Foresight',
+          backUrl: `/plan/${planId}`,
+        });
+        this.router.navigate(['/plan', planId, 'climate-foresight']);
+      }
     }
   }
 }
