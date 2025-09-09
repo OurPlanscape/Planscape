@@ -17,6 +17,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsesDataLayer,
     User,
     UserPrefs,
 )
@@ -432,6 +433,14 @@ class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
         return instance
 
 
+class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
+    datalayer = serializers.CharField(source='datalayer.name', read_only=True)
+    
+    class Meta:
+        model = TreatmentGoalUsesDataLayer
+        fields = ('usage_type', 'datalayer')
+
+
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
         help_text="Description of the Treatment Goal on HTML format.",
@@ -443,6 +452,7 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text="Text format of Treatment Goal Group.",
     )
+    usage_types = TreatmentGoalUsageSerializer(source='datalayer_usages', many=True, read_only=True)
 
     class Meta:
         model = TreatmentGoal
@@ -454,7 +464,7 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             "category_text",
             "group",
             "group_text",
-            "priorities",
+            "usage_types"
         )
 
     def get_description(self, instance):
@@ -473,7 +483,6 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             group = TreatmentGoalGroup(instance.group)
             return group.label
         return None
-
 
 class TreatmentGoalSimpleSerializer(serializers.ModelSerializer):
     class Meta:
