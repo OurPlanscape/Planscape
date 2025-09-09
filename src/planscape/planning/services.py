@@ -959,12 +959,11 @@ def get_excluded_stands(
 
 def get_constrained_stands(stands_qs, datalayer, operator, value):
     # TODO: get metric to be used for this layer
-    filter = {f"metrics__avg__{operator}": value}
-    return (
-        stands_qs.filter(metrics__datalayer_id=datalayer.pk)
-        .filter(**filter)
-        .values_list("id", flat=True)
-    )
+    filter = {
+        f"metrics__avg__{operator}": value,
+        "metrics__datalayer_id": datalayer.pk,
+    }
+    return stands_qs.filter(**filter).values_list("id", flat=True)
 
 
 def get_available_stands(
