@@ -403,7 +403,7 @@ get_metric_data <- function(connection, stands, datalayer) {
 }
 
 
-get_stand_data_from_list <- function(connection, stand_ids, datalayers) {
+get_stand_data_from_list <- function(connection, stand_ids, datalayers, configuration) {
   query <- glue_sql(
     "SELECT
       id AS stand_id,
@@ -421,6 +421,16 @@ get_stand_data_from_list <- function(connection, stand_ids, datalayers) {
     geometry_column = "geometry",
     crs = st_crs(5070)
   )
+  if (!is.null(configuration$max_slope)) {
+    datalayer <- get_datalayer_by_forsys_name(connection, "slope")
+    metric <- get_metric_data(connection, stand_data, datalayer)
+    stand_data <- merge_data(stands, metric)
+  }
+  if (!is.null(configuration$min_distance_from_road)) {
+    datalayer <- get_datalayer_by_forsys_name(connection, "distance_from_roads")
+    metric <- get_metric_data(connection, stand_data, datalayer)
+    stand_data <- merge_data(stands, metric)
+  }
   datalayers <- remove_duplicates_v2(datalayers)
   for (row in seq_len(nrow(datalayers))) {
     datalayer <- datalayers[row, ]
@@ -1058,6 +1068,7 @@ main_pre_processed <- function(scenario_id) {
   now <- now_utc()
   connection <- get_connection()
   scenario <- get_scenario_by_id(connection, scenario_id)
+  configuration <- get_configuration(scenario)
   forsys_input <- get_forsys_input(scenario)
 
   datalayers <- data.table::rbindlist(forsys_input$datalayers)
@@ -1066,7 +1077,7 @@ main_pre_processed <- function(scenario_id) {
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
 
   stand_ids <- forsys_input$stands
-  stand_data <- get_stand_data_from_list(connection, stand_ids, datalayers)
+  stand_data <- get_stand_data_from_list(connection, stand_ids, datalayers, configuration)
 
   variables <- forsys_input$variables
 
