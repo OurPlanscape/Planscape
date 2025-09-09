@@ -1,11 +1,13 @@
 import copy
 from unittest import mock
 
-from datasets.models import DataLayerType, GeometryType
+from datasets.models import DataLayer, DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
+from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 
 from planning.models import Scenario, ScenarioResult, ScenarioVersion
 from planning.tests.factories import (
@@ -659,6 +661,34 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(data.get("geopackage_url"))
 
+    def test_detail_includes_one_off_fields_when_present(self):
+        # seed config with the new read-only fields
+        self.scenario.configuration = {
+            **self.scenario.configuration,
+            "one_off": True,
+            "one_off_config": {
+                "priorities": ["p1"],
+                "stand_thresholds": ["t1"],
+                "datalayers": [{"id": 123, "usage_type": "PRIORITY"}],
+            },
+            "coverage": {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+        }
+        self.scenario.save(update_fields=["configuration"])
+
+        self.client.force_authenticate(self.owner_user)
+        resp = self.client.get(
+            reverse("api:planning:scenarios-detail", kwargs={"pk": self.scenario.pk}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        cfg = resp.json().get("configuration", {})
+        self.assertTrue(cfg.get("one_off"))
+        self.assertIsInstance(cfg.get("one_off_config"), dict)
+        self.assertEqual(cfg.get("coverage", {}).get("type"), "Polygon")
+
 
 class PatchScenarioConfigurationTest(APITransactionTestCase):
     def setUp(self):
@@ -672,10 +702,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
             user=self.user,
             planning_area=self.planning_area,
             treatment_goal=self.treatment_goal,
-            configuration={
-                "stand_size": "LARGE",
-                "max_budget": 1000,
-            },
+            configuration={"stand_size": "LARGE", "max_budget": 1000},
         )
 
         self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
@@ -690,7 +717,6 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.url, payload, format="json")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         config = response.data.get("configuration", {})
@@ -709,11 +735,8 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
         payload = {"max_budget": 100000}
 
-        # Authenticate as a user who does not own the scenario
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
-
-        # Expect 404 since get_object() hides unauthorized scenarios
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
@@ -723,3 +746,71 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_one_off_config_persists_compact(self):
+        vec = DataLayerFactory(
+            type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
+        rast = DataLayerFactory(
+            type=DataLayerType.RASTER, geometry_type=GeometryType.RASTER
+        )
+
+        payload = {
+            "one_off_config": {
+                "priorities": ["p1", "p2"],
+                "stand_thresholds": ["t1"],
+                "datalayers": [
+                    {"id": vec.pk, "usage_type": "PRIORITY"},
+                    {"id": rast.pk, "usage_type": "THRESHOLD", "threshold": ">=3"},
+                    {"id": rast.pk, "usage_type": "EXCLUSION_ZONE"},
+                ],
+            },
+        }
+
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # Reload to inspect saved config
+        self.scenario.refresh_from_db()
+        cfg = self.scenario.configuration
+
+        ooc = cfg.get("one_off_config", {})
+        self.assertEqual(ooc.get("priorities"), ["p1", "p2"])
+        self.assertEqual(ooc.get("stand_thresholds"), ["t1"])
+
+        saved = sorted(
+            ooc.get("datalayers", []), key=lambda d: (d["id"], d["usage_type"])
+        )
+        self.assertGreaterEqual(len(saved), 2)
+
+        thresholds = [d for d in saved if d.get("threshold")]
+        self.assertTrue(any(t.get("threshold") == ">=3" for t in thresholds))
+
+    def test_patch_omitting_one_off_config_clears_existing(self):
+        # seed existing one_off_config
+        self.scenario.configuration = {
+            **self.scenario.configuration,
+            "one_off_config": {"datalayers": [{"id": 123, "usage_type": "PRIORITY"}]},
+        }
+        self.scenario.save(update_fields=["configuration"])
+
+        self.client.force_authenticate(self.user)
+        # send a PATCH without one_off_config -> should clear it
+        resp = self.client.patch(self.url, {"max_budget": 42}, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.scenario.refresh_from_db()
+        cfg = self.scenario.configuration
+        self.assertIsNone(cfg.get("one_off_config"))
+
+    def test_patch_one_off_config_invalid_pk_returns_400(self):
+        # providing an invalid datalayer id should 400 via nested serializer
+        payload = {
+            "one_off_config": {
+                "datalayers": [{"id": 999999, "usage_type": "PRIORITY"}],
+            }
+        }
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)

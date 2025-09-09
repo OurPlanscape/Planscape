@@ -17,6 +17,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsageType,
     User,
     UserPrefs,
 )
@@ -408,6 +409,12 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
+    one_off_config = serializers.JSONField(
+        read_only=True,
+        required=False,
+        help_text="TreatmentGoal-like bindings used for a one-off run.",
+    )
+
 
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
@@ -618,6 +625,68 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "configuration",
             "treatment_goal",
         )
+
+
+class OneOffDataLayerUsageV2Serializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+    usage_type = serializers.ChoiceField(choices=TreatmentGoalUsageType.choices)
+    threshold = serializers.CharField(
+        max_length=256, required=False, allow_blank=True, allow_null=True
+    )
+
+
+class OneOffConfigV2Serializer(serializers.Serializer):
+    priorities = serializers.ListField(
+        child=serializers.CharField(max_length=256), required=False, allow_empty=True
+    )
+    stand_thresholds = serializers.ListField(
+        child=serializers.CharField(max_length=512), required=False, allow_empty=True
+    )
+    datalayers = OneOffDataLayerUsageV2Serializer(
+        many=True,
+        required=True,
+        allow_empty=False,
+        help_text="treatmentgoal-like bindings: datalayer id + usage_type + optional threshold",
+    )
+
+
+class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
+    one_off_config = OneOffConfigV2Serializer(required=False)
+
+    def update(self, instance: Scenario, validated_data):
+        one_off_config = validated_data.pop("one_off_config", None)
+
+        # Merge core config first (handles max_budget vs max_area, etc.)
+        instance = super().update(instance, validated_data)
+        cfg = dict(instance.configuration or {})
+
+        if one_off_config:
+            datalayers_compact = [
+                {
+                    "id": getattr(d["id"], "pk", d["id"]),
+                    "usage_type": d["usage_type"],
+                    **(
+                        {"threshold": d["threshold"]}
+                        if d.get("threshold") not in (None, "")
+                        else {}
+                    ),
+                }
+                for d in one_off_config["datalayers"]
+            ]
+            cfg["one_off_config"] = {
+                **{
+                    k: one_off_config[k]
+                    for k in ("priorities", "stand_thresholds")
+                    if k in one_off_config
+                },
+                "datalayers": datalayers_compact,
+            }
+        else:
+            cfg.pop("one_off_config", None)
+
+        instance.configuration = cfg
+        instance.save(update_fields=["configuration"])
+        return instance
 
 
 class CreateScenarioSerializer(serializers.ModelSerializer):
