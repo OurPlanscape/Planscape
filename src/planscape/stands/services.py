@@ -103,6 +103,7 @@ MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.item
 def calculate_stand_vector_stats3(
     datalayer: DataLayer,
     planning_area_geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
 ):
     if datalayer.type == DataLayerType.RASTER:
         raise ValueError("Cannot calculate vector stats for raster layers.")
@@ -115,7 +116,8 @@ def calculate_stand_vector_stats3(
         FROM stands_stand s
         WHERE
             ST_GeomFromText(%s, 4269) && s.geometry  AND
-            ST_Intersects(ST_GeomFromText(%s, 4269), s.geometry)
+            ST_Intersects(ST_GeomFromText(%s, 4269), s.geometry) AND
+            "size" = %s
     )
     INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
     SELECT
@@ -131,7 +133,15 @@ def calculate_stand_vector_stats3(
     """.strip()
     wkt = planning_area_geometry.wkt
     with connection.cursor() as cursor:
-        cursor.execute(query, [wkt, wkt, datalayer.pk])
+        cursor.execute(
+            query,
+            [
+                wkt,
+                wkt,
+                stand_size,
+                datalayer.pk,
+            ],
+        )
 
 
 def calculate_stand_vector_stats2(

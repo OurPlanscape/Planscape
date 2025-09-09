@@ -601,7 +601,9 @@ class TestRemoveExcludes(TransactionTestCase):
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.metrics = calculate_stand_vector_stats3(
-            self.datalayer, self.planning_area.geometry
+            self.datalayer,
+            self.planning_area.geometry,
+            stand_size=StandSizeChoices.LARGE,
         )
 
     def tearDown(self):
