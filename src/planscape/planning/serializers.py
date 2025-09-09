@@ -409,16 +409,10 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
-    one_off = serializers.BooleanField(read_only=True, required=False)
     one_off_config = serializers.JSONField(
         read_only=True,
         required=False,
         help_text="TreatmentGoal-like bindings used for a one-off run.",
-    )
-    coverage = serializers.JSONField(
-        read_only=True,
-        required=False,
-        help_text="Derived GeoJSON coverage from selected one-off datalayers.",
     )
 
 
@@ -656,66 +650,38 @@ class OneOffConfigV2Serializer(serializers.Serializer):
 
 
 class PatchScenarioConfigurationV2Serializer(UpsertConfigurationV2Serializer):
-    one_off = serializers.BooleanField(required=False)
     one_off_config = OneOffConfigV2Serializer(required=False)
-
-    def validate(self, attrs):
-        existing_cfg = (
-            getattr(self.instance, "configuration", {})
-            if getattr(self, "instance", None)
-            else {}
-        )
-
-        # If turning one_off on, must provide config at least once
-        if attrs.get("one_off") is True:
-            has_existing = bool(existing_cfg.get("one_off_config"))
-            if not attrs.get("one_off_config") and not has_existing:
-                raise serializers.ValidationError(
-                    {"one_off_config": ["Required when one_off is true."]}
-                )
-
-        one_off_config = attrs.get("one_off_config")
-        effective_one_off = bool(attrs.get("one_off", existing_cfg.get("one_off")))
-
-        if one_off_config and not effective_one_off:
-            raise serializers.ValidationError(
-                {"one_off": ["Must be true when providing one_off_config."]}
-            )
-
-        return super().validate(attrs)
 
     def update(self, instance: Scenario, validated_data):
         one_off_config = validated_data.pop("one_off_config", None)
-        one_off_flag = validated_data.pop("one_off", None)
 
         # Merge core config first (handles max_budget vs max_area, etc.)
         instance = super().update(instance, validated_data)
-        cfg = (instance.configuration or {}).copy()
+        cfg = dict(instance.configuration or {})
 
-        if one_off_flag is not None:
-            cfg["one_off"] = bool(one_off_flag)
-
-        if one_off_flag is False:
-            cfg.pop("one_off_config", None)
-
-        if one_off_config and one_off_flag is not False:
-            datalayers_compact = []
-            for item in one_off_config["datalayers"]:
-                _id = item["id"].pk if hasattr(item["id"], "pk") else int(item["id"])
-                row = {"id": _id, "usage_type": item["usage_type"]}
-                if item.get("threshold") not in (None, ""):
-                    row["threshold"] = item["threshold"]
-                datalayers_compact.append(row)
-
+        if one_off_config:
+            datalayers_compact = [
+                {
+                    "id": getattr(d["id"], "pk", d["id"]),
+                    "usage_type": d["usage_type"],
+                    **(
+                        {"threshold": d["threshold"]}
+                        if d.get("threshold") not in (None, "")
+                        else {}
+                    ),
+                }
+                for d in one_off_config["datalayers"]
+            ]
             cfg["one_off_config"] = {
-                **(cfg.get("one_off_config") or {}),
                 **{
-                    k: v
-                    for k, v in one_off_config.items()
-                    if k in ("priorities", "stand_thresholds")
+                    k: one_off_config[k]
+                    for k in ("priorities", "stand_thresholds")
+                    if k in one_off_config
                 },
                 "datalayers": datalayers_compact,
             }
+        else:
+            cfg.pop("one_off_config", None)
 
         instance.configuration = cfg
         instance.save(update_fields=["configuration"])

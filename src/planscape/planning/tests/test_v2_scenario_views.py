@@ -717,7 +717,6 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.url, payload, format="json")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         config = response.data.get("configuration", {})
@@ -748,55 +747,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_patch_one_off_requires_config_when_true_and_no_existing(self):
-        self.client.force_authenticate(self.user)
-        resp = self.client.patch(self.url, {"one_off": True}, format="json")
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("one_off_config", resp.json())
-
-    def test_patch_one_off_true_allowed_when_existing_config_present(self):
-        self.scenario.configuration = {
-            **self.scenario.configuration,
-            "one_off_config": {"datalayers": [{"id": 123, "usage_type": "PRIORITY"}]},
-        }
-        self.scenario.save(update_fields=["configuration"])
-
-        self.client.force_authenticate(self.user)
-        resp = self.client.patch(self.url, {"one_off": True}, format="json")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-
-        self.scenario.refresh_from_db()
-        self.assertTrue(self.scenario.configuration.get("one_off"))
-
-    def test_patch_one_off_config_requires_one_off_true(self):
-        payload = {
-            "one_off_config": {
-                "datalayers": [{"id": 999, "usage_type": "PRIORITY"}],
-            }
-        }
-        self.client.force_authenticate(self.user)
-        resp = self.client.patch(self.url, payload, format="json")
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("one_off", resp.json())
-
-    def test_patch_one_off_toggle_off_clears_config(self):
-        self.scenario.configuration = {
-            **self.scenario.configuration,
-            "one_off": True,
-            "one_off_config": {"datalayers": [{"id": 123, "usage_type": "PRIORITY"}]},
-        }
-        self.scenario.save(update_fields=["configuration"])
-
-        self.client.force_authenticate(self.user)
-        resp = self.client.patch(self.url, {"one_off": False}, format="json")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-
-        self.scenario.refresh_from_db()
-        cfg = self.scenario.configuration
-        self.assertFalse(cfg.get("one_off"))
-        self.assertIsNone(cfg.get("one_off_config"))
-
-    def test_patch_one_off_config_success_persists_compact(self):
+    def test_patch_one_off_config_persists_compact(self):
         vec = DataLayerFactory(
             type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
         )
@@ -805,7 +756,6 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         )
 
         payload = {
-            "one_off": True,
             "one_off_config": {
                 "priorities": ["p1", "p2"],
                 "stand_thresholds": ["t1"],
@@ -821,21 +771,46 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         resp = self.client.patch(self.url, payload, format="json")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-        # Reload to inspect saved config (response hides 1-off internals)
+        # Reload to inspect saved config
         self.scenario.refresh_from_db()
         cfg = self.scenario.configuration
-
-        self.assertTrue(cfg.get("one_off"))
 
         ooc = cfg.get("one_off_config", {})
         self.assertEqual(ooc.get("priorities"), ["p1", "p2"])
         self.assertEqual(ooc.get("stand_thresholds"), ["t1"])
 
-        # datalayers saved compactly (id, usage_type, optional threshold)
         saved = sorted(
             ooc.get("datalayers", []), key=lambda d: (d["id"], d["usage_type"])
         )
         self.assertGreaterEqual(len(saved), 2)
-        # ensure threshold persisted for the THRESHOLD usage
+
         thresholds = [d for d in saved if d.get("threshold")]
         self.assertTrue(any(t.get("threshold") == ">=3" for t in thresholds))
+
+    def test_patch_omitting_one_off_config_clears_existing(self):
+        # seed existing one_off_config
+        self.scenario.configuration = {
+            **self.scenario.configuration,
+            "one_off_config": {"datalayers": [{"id": 123, "usage_type": "PRIORITY"}]},
+        }
+        self.scenario.save(update_fields=["configuration"])
+
+        self.client.force_authenticate(self.user)
+        # send a PATCH without one_off_config -> should clear it
+        resp = self.client.patch(self.url, {"max_budget": 42}, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.scenario.refresh_from_db()
+        cfg = self.scenario.configuration
+        self.assertIsNone(cfg.get("one_off_config"))
+
+    def test_patch_one_off_config_invalid_pk_returns_400(self):
+        # providing an invalid datalayer id should 400 via nested serializer
+        payload = {
+            "one_off_config": {
+                "datalayers": [{"id": 999999, "usage_type": "PRIORITY"}],
+            }
+        }
+        self.client.force_authenticate(self.user)
+        resp = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
