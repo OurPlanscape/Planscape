@@ -957,6 +957,16 @@ def get_excluded_stands(
     )
 
 
+def get_constrained_stands(stands_qs, datalayer, operator, value):
+    # TODO: get metric to be used for this layer
+    filter = {f"metrics__avg__{operator}": value}
+    return (
+        stands_qs.filter(metrics__datalayer_id=datalayer.pk)
+        .filter(**filter)
+        .values_list("id", flat=True)
+    )
+
+
 def get_available_stands(
     planning_area: PlanningArea,
     *,
@@ -968,16 +978,27 @@ def get_available_stands(
 ):
     stands = planning_area.get_stands(stand_size)
     excluded_ids = []
+    constrained_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
+    for constraint in constraints:
+        stands_queryset = stands.all()
+        constrained_stands = get_constrained_stands(
+            stands_queryset,
+            constraint.get("datalayer"),
+            constraint.get("operator"),
+            constraint.get("value"),
+        )
+        constrained_ids.extend(list(constrained_stands))
+
     return {
         "unavailable": {
             "by_inclusions": [],
             "by_exclusions": list(set(excluded_ids)),
-            "by_thresholds": [],
+            "by_thresholds": list(set(constrained_ids)),
         },
         "summary": {
             "total_area": 0,
