@@ -138,10 +138,6 @@ DATABASES = {
     }
 }
 CONN_MAX_AGE = 60
-
-# Password validation
-# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -407,6 +403,8 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
+    "planning.tasks.trigger_geopackage_generation": {"queue": "default"},
+    "planning.tasks.async_generate_scenario_geopackage": {"queue": "default"},
     "impacts.tasks.*": {"queue": "impacts"},
     "e2e.tasks.*": {"queue": "default"},
 }
@@ -517,3 +515,5 @@ STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=i
 AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
     "AVAILABLE_STANDS_SIMPLIFY_TOLERANCE", default=100, cast=int
 )
+
+E2E_TESTS_ENABLED = config("E2E_TESTS_ENABLED", default=False, cast=bool)

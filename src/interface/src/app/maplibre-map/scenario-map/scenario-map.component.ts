@@ -30,7 +30,7 @@ import { ScenarioLegendComponent } from '../../scenario/scenario-legend/scenario
 import { FeaturesModule } from '../../features/features.module';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ScenarioMapService } from '../scenario-map.service';
+import { NewScenarioState } from '../../scenario/new-scenario.state';
 
 @Component({
   selector: 'app-scenario-map',
@@ -63,7 +63,7 @@ export class ScenarioMapComponent {
     private planState: PlanState,
     private scenarioState: ScenarioState,
     private mapConfigService: MapConfigService,
-    private scenarioMapService: ScenarioMapService
+    private newScenarioState: NewScenarioState
   ) {
     this.mapConfigService.initialize();
   }
@@ -113,7 +113,7 @@ export class ScenarioMapComponent {
     })
   );
 
-  loading$ = this.scenarioMapService.loading$;
+  loading$ = this.newScenarioState.loading$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

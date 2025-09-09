@@ -4,16 +4,51 @@ from typing import Any, Collection, Dict
 
 import rasterio
 from core.flags import feature_enabled
+from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
-from django.db.models import QuerySet
+from django.conf import settings
+from django.contrib.gis.db.models import Collect
+from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.functions import Area, Intersection, Transform
+from django.contrib.gis.geos import GEOSGeometry
+from django.db import connection
+from django.db.models import F, QuerySet, Value
+from django.db.models.functions import Coalesce, NullIf
+from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
 from shapely import total_bounds
 from shapely.geometry import shape
-from stands.models import Stand, StandMetric
+from stands.models import Stand, StandMetric, StandSizeChoices
 
 log = logging.getLogger(__name__)
+
+
+def create_stands_for_geometry(
+    geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
+):
+    with connection.cursor() as cur:
+        cur.execute(
+            """
+            SELECT public.generate_stands_for_planning_area(
+                ST_GeomFromText(%s, %s),
+                %s,
+                %s, %s
+            );
+            """,
+            [
+                geometry.wkt,
+                settings.DEFAULT_CRS,
+                stand_size,
+                settings.HEX_GRID_ORIGIN_X,
+                settings.HEX_GRID_ORIGIN_Y,
+            ],
+        )
+        inserted = cur.fetchone()[0]
+        log.info(f"Created {inserted} stands.")
+        return inserted
 
 
 def to_geojson(stand: Stand) -> Dict[str, Any]:
@@ -63,6 +98,131 @@ AGGREGATION_MODEL_MAP = {
     "minority": "minority",
 }
 MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.items()}
+
+
+def calculate_stand_vector_stats2(
+    stands: QuerySet[Stand],
+    datalayer: DataLayer,
+    transform_srid: int = 5070,
+):
+    if datalayer.type == DataLayerType.RASTER:
+        raise ValueError("Cannot calculate vector stats for raster layers.")
+    transformation = Transform("geometry", transform_srid)
+    bounding_poly = get_bounding_polygon(
+        [s for s in stands.all().values_list("geometry", flat=True)]
+    )
+    Vector = model_from_fiona(datalayer)
+    stands = stands.annotate(planar_geometry=transformation)
+    planar_intersection = (
+        Vector.objects.filter(geometry__intersects=bounding_poly)
+        .annotate(planar_geometry=transformation)
+        .aggregate(collect=Collect("planar_geometry"))["collect"]
+    )
+
+    results = []
+    for stand in stands:
+        remainder = stand.planar_geometry.difference(planar_intersection)  # type: ignore
+        if remainder.empty:
+            # if the entire stand becomes empty, it means it's fully covered by the geometry
+            majority = 1
+        else:
+            area_percentage = remainder.area / stand.planar_geometry.area
+            if area_percentage > 0.5:
+                majority = 1
+            else:
+                majority = 0
+
+        stand_metric = to_stand_metric(
+            stats_result={"id": stand.pk, "properties": {"majority": majority}},
+            datalayer=datalayer,
+            aggregations=["majority"],
+        )
+        results.append(stand_metric)
+    log.info(
+        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+    )
+    return StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields=["majority"],
+    )
+
+
+def calculate_stand_vector_stats(
+    stands: QuerySet[Stand],
+    datalayer: DataLayer,
+    transform_srid: int = 5070,
+):
+    if datalayer.type == DataLayerType.RASTER:
+        raise ValueError("Cannot calculate vector stats for raster layers.")
+
+    stand_geom = "geometry"
+    if transform_srid:
+        stand_geom = Transform("geometry", transform_srid)
+
+    bounding_poly = get_bounding_polygon(
+        [s for s in stands.all().values_list("geometry", flat=True)]
+    )
+    Vector = model_from_fiona(datalayer)
+    intersection_geometry = Vector.objects.filter(
+        geometry__intersects=bounding_poly
+    ).aggregate(union=UnionOp("geometry"))["union"]
+    if intersection_geometry and not intersection_geometry.empty:
+        # tolerance in meters
+        intersection_geometry = (
+            intersection_geometry.transform(transform_srid, clone=True)
+            .simplify(
+                tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
+                preserve_topology=True,
+            )
+            .buffer(0)
+        )
+        stands = (
+            stands.annotate(stand_geometry=Transform("geometry", transform_srid))
+            .annotate(stand_area=Area(stand_geom))
+            .annotate(
+                inter_area=Area(
+                    Intersection(
+                        stand_geom,
+                        Value(
+                            intersection_geometry,
+                        ),
+                    )
+                )
+            )
+            .annotate(
+                coverage=Coalesce(F("inter_area"), Value(0.0))
+                / NullIf(F("stand_area"), 0.0)
+            )
+        )
+    results = []
+    for stand in stands:
+        majority = getattr(stand, "coverage", 0)
+        if majority > 0.5:
+            majority = 1
+        else:
+            majority = 0
+        stats_result = {"id": stand.pk, "properties": {"majority": majority}}
+
+        stand_metric = to_stand_metric(
+            stats_result=stats_result,
+            datalayer=datalayer,
+            aggregations=["majority"],
+        )
+        results.append(stand_metric)
+
+    log.info(
+        f"Created/Updated {len(results)} stand metrics for datalayer{datalayer.id}."
+    )
+    return StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields=["majority"],
+    )
 
 
 def calculate_stand_zonal_stats(

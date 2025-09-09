@@ -8,7 +8,7 @@ from unittest import mock
 import fiona
 import shapely
 from cacheops import invalidate_all
-from datasets.dynamic_models import model_from_fiona, qualify_for_django
+from datasets.dynamic_models import qualify_for_django
 from datasets.models import DataLayerType, GeometryType
 from datasets.tasks import datalayer_uploaded
 from datasets.tests.factories import DataLayerFactory
@@ -17,9 +17,6 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
-from stands.models import Stand, StandSizeChoices
-from stands.tests.factories import StandFactory
-
 from planning.models import PlanningArea, ScenarioResultStatus
 from planning.services import (
     export_planning_area_to_geopackage,
@@ -40,6 +37,10 @@ from planning.tests.factories import (
     ScenarioResultFactory,
     TreatmentGoalFactory,
 )
+from stands.models import Stand, StandSizeChoices
+from stands.services import calculate_stand_vector_stats2
+from stands.tests.factories import StandFactory
+
 from planscape.tests.factories import UserFactory
 
 
@@ -583,7 +584,7 @@ class TestRemoveExcludes(TransactionTestCase):
         )
         datalayer_uploaded(self.datalayer.pk)
         self.datalayer.refresh_from_db()
-        self.load_stands()
+        stands = self.load_stands()
         json_geom = {
             "coordinates": [
                 [
@@ -598,6 +599,8 @@ class TestRemoveExcludes(TransactionTestCase):
         }
         pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.metrics = calculate_stand_vector_stats2(stands, self.datalayer)
 
     def tearDown(self):
         with connection.cursor() as cur:
@@ -607,10 +610,9 @@ class TestRemoveExcludes(TransactionTestCase):
     def test_filter_by_datalayer_removes_stands(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
-        MyModel = model_from_fiona(self.datalayer)
         excluded_stands = get_excluded_stands(
             stands,
-            MyModel,
+            self.datalayer,
         )
 
         self.assertEqual(11, len(excluded_stands))

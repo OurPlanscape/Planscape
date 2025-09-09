@@ -11,30 +11,20 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
-from cacheops import redis_client
-from celery import chord
+from celery import chain, chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
-from datasets.dynamic_models import model_from_fiona
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
-from django.contrib.gis.db.models.functions import Area, Intersection, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
-from django.db.models import F, Value
-from django.db.models.functions import Coalesce, NullIf
 from django.utils.timezone import now
 from fiona.crs import from_epsg
-from gis.geometry import get_bounding_polygon
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -47,7 +37,17 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import async_calculate_stand_metrics_v2, async_forsys_run
+from planning.tasks import (
+    async_calculate_stand_metrics_v2,
+    async_calculate_vector_metrics,
+    async_create_stands,
+    async_forsys_run,
+)
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -77,6 +77,18 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
+    datalayers = DataLayer.objects.filter(
+        dataset_id=998,
+        type=DataLayerType.VECTOR,
+    )
+    vector_metrics_jobs = group(
+        [
+            async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+            for datalayer in datalayers
+        ]
+    )
+    job = chain(async_create_stands.si(planning_area.pk), vector_metrics_jobs)
+
     track_openpanel(
         name="planning.planning_area.created",
         properties={
@@ -86,6 +98,8 @@ def create_planning_area(
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
+    if feature_enabled("AUTO_CREATE_STANDS"):
+        transaction.on_commit(lambda: job.apply_async())
     return planning_area
 
 
@@ -783,12 +797,6 @@ def export_planning_area_to_geopackage(
 
 def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
     try:
-        is_exporting = redis_client.get(f"exporting_scenario_package:{scenario.pk}")
-        if is_exporting:
-            raise ValueError(
-                f"Scenario {scenario.pk} is already being exported. Please wait for the current export to finish."
-            )
-
         if not regenerate and scenario.geopackage_url:
             logger.info(
                 "Scenario %s already has a geopackage URL: %s",
@@ -797,7 +805,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             )
             return scenario.geopackage_url
 
-        redis_client.set(f"exporting_scenario_package:{scenario.pk}", 1, ex=60 * 5)
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
             temp_folder.mkdir(parents=True)
@@ -806,7 +813,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             temp_file.unlink()
 
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
-        scenario.save()
+        scenario.save(update_fields=["geopackage_status", "updated_at"])
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
@@ -834,8 +841,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-
-        redis_client.delete(f"exporting_scenario_package:{scenario.pk}")
 
         return str(geopackage_path)
     except Exception:
@@ -904,58 +909,11 @@ def planning_area_covers(
 
 def get_excluded_stands(
     stands_qs,
-    exclude_model,
-    min_coverage: float = 0.51,
-    transform_srid: int | None = 5070,
+    datalayer,
 ):
-    """
-    Return stands_qs with any stand removed if some exclude_model geometry covers
-    >= min_coverage of that stand's area.
-    """
-    stand_geom = "geometry"
-    if transform_srid:
-        stand_geom = Transform("geometry", transform_srid)
-
-    bounding_poly = get_bounding_polygon(
-        [s for s in stands_qs.all().values_list("geometry", flat=True)]
-    )
-    intersection_geometry = (
-        exclude_model.objects.filter(geometry__intersects=bounding_poly)
-        .values("geometry")
-        .aggregate(union=UnionOp("geometry"))["union"]
-    )
-    if not intersection_geometry or intersection_geometry.empty:
-        return stands_qs.all()
-
-    # tolerance in meters
-    intersection_geometry = (
-        intersection_geometry.transform(transform_srid, clone=True)
-        .simplify(
-            tolerance=settings.AVAILABLE_STANDS_SIMPLIFY_TOLERANCE,
-            preserve_topology=True,
-        )
-        .buffer(0)
-    )
-    stands_qs = (
-        stands_qs.annotate(stand_geometry=Transform("geometry", transform_srid))
-        .annotate(stand_area=Area(stand_geom))
-        .annotate(
-            inter_area=Area(
-                Intersection(
-                    stand_geom,
-                    Value(
-                        intersection_geometry,
-                    ),
-                )
-            )
-        )
-        .annotate(
-            coverage=Coalesce(F("inter_area"), Value(0.0))
-            / NullIf(F("stand_area"), 0.0)
-        )
-    )
-    return stands_qs.filter(stand_geometry__intersects=intersection_geometry).filter(
-        coverage__gte=min_coverage
+    return stands_qs.filter(
+        metrics__datalayer_id=datalayer.pk,
+        metrics__majority=1,
     )
 
 
@@ -972,8 +930,7 @@ def get_available_stands(
     excluded_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
-        ExcludeModel = model_from_fiona(exclude)
-        excluded_stands = get_excluded_stands(stands, ExcludeModel)
+        excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     return {

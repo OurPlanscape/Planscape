@@ -13,6 +13,7 @@ import { ScenarioState } from '../scenario.state';
 import { Step3Component } from '../step3/step3.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxMaskModule } from 'ngx-mask';
+import { NewScenarioState } from '../new-scenario.state';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -36,6 +37,7 @@ describe('ScenarioCreationComponent', () => {
         }),
         MockProvider(ScenarioState, { excludedAreas$: of([]) }),
         MockProvider(DataLayersStateService, { paths$: of([]) }),
+        MockProvider(NewScenarioState),
       ],
       declarations: [
         MockDeclarations(DataLayersComponent, Step1Component, Step3Component),

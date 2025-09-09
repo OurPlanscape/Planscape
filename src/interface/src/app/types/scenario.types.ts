@@ -166,3 +166,29 @@ export interface ScenarioGoal {
 export interface CategorizedScenarioGoals {
   [key: string]: ScenarioGoal[];
 }
+
+export interface Constraint {
+  datalayer: number;
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
+  value: number; // be supports string
+}
+
+// TODO - remove this and use `Constraint` when we implement dynamic constraints
+export interface NamedConstraint {
+  name: string;
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
+  value: number; // be supports string
+}
+
+export interface AvailableStands {
+  unavailable: {
+    by_inclusions: number[];
+    by_exclusions: number[];
+    by_thresholds: number[];
+  };
+  summary: {
+    total_area: number;
+    available_area: number;
+    unavailable_area: number;
+  };
+}
