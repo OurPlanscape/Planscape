@@ -124,11 +124,19 @@ def calculate_stand_vector_stats3(
         now(),
         c.id,
         %s,
-        1
-    FROM centroid c, {quali_name} poly
-    WHERE
-        c.geometry && poly.geometry AND
-        ST_Intersects(c.geometry, poly.geometry)
+        CASE
+            WHEN EXISTS (
+                SELECT
+                    1
+                FROM {quali_name} as poly
+                WHERE
+                    c.geometry && poly.geometry AND
+                    ST_Intersects(c.geometry, poly.geometry)
+            )
+            THEN 1
+            ELSE 0
+        END AS majority
+    FROM centroid c
     ON CONFLICT ("stand_id", "datalayer_id") DO NOTHING;
     """.strip()
     wkt = planning_area_geometry.wkt
