@@ -975,6 +975,12 @@ def get_available_stands(
     constraints: Optional[List[Dict[str, Any]]] = None,
     **kwargs,
 ):
+    if not includes:
+        includes = list()
+    if not excludes:
+        excludes = list()
+    if not constraints:
+        constraints = list()
     stands = planning_area.get_stands(stand_size)
     excluded_ids = []
     constrained_ids = []
