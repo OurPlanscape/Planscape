@@ -112,7 +112,7 @@ def calculate_stand_vector_stats3(
     WITH centroid AS (
         SELECT
             id,
-            ST_Centroid(geometry) as "geometry",
+            ST_Centroid(geometry) as "geometry"
         FROM stands_stand s
         WHERE
             ST_GeomFromText(%s, 4269) && s.geometry  AND
