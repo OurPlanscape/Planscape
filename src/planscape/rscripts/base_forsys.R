@@ -678,6 +678,15 @@ export_input <- function(scenario, stand_data) {
   st_write(stand_data, output_file, layer_options = layer_options, append = FALSE, delete_dsn = TRUE)
 }
 
+get_datalayers_as_df <- function(datalayers) {
+  # transform list of datalayers into a dataframe
+  df <- data.frame(matrix(unlist(datalayers),
+                  ncol = length(datalayers[[1]]), byrow = TRUE),
+                  stringsAsFactors = FALSE)
+  names(df) <- names(datalayers[[1]])
+  return(df)
+}
+
 call_forsys <- function(
     connection,
     scenario,
@@ -1057,7 +1066,7 @@ main_pre_processed <- function(scenario_id) {
   stand_ids <- forsys_input$stands
   stand_data <- get_stand_data_from_list(connection, stand_ids)
 
-  datalayers <- forsys_input$datalayers
+  datalayers <- get_datalayers_as_df(forsys_input$datalayers)
   priorities <- filter(datalayers, type == "RASTER", usage_type == "PRIORITY")
   secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
