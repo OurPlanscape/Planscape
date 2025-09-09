@@ -20,7 +20,6 @@ from planning.models import (
     TreatmentGoalUsageType,
     User,
     UserPrefs,
-    TreatmentGoalUsageType,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
 from rest_framework import serializers
