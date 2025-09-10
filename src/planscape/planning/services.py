@@ -950,16 +950,6 @@ def planning_area_covers(
     return False
 
 
-def get_excluded_stands(
-    stands_qs,
-    datalayer,
-):
-    return stands_qs.filter(
-        metrics__datalayer_id=datalayer.pk,
-        metrics__majority=1,
-    )
-
-
 def get_constrained_stands(
     stands_qs,
     datalayer: DataLayer,
