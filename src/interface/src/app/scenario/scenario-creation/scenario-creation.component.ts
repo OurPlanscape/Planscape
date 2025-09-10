@@ -41,6 +41,8 @@ import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-mo
 import { NewScenarioState } from '../new-scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { getPlanPath } from 'src/app/plan/plan-helpers';
 
 enum ScenarioTabs {
   CONFIG,
@@ -117,7 +119,8 @@ export class ScenarioCreationComponent
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
     private router: Router,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private breadcrumbService: BreadcrumbService
   ) {
     this.newScenarioState.setPlanId(this.planId);
 
@@ -131,6 +134,11 @@ export class ScenarioCreationComponent
   }
 
   ngOnInit(): void {
+    // Setting up the breadcrumb
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Scenario: New Scenario',
+      backUrl: getPlanPath(this.planId),
+    });
     // Adding scenario name validator
     this.refreshScenarioNameValidator();
   }

@@ -29,8 +29,9 @@ import { ScenarioResultsComponent } from '../scenario-results/scenario-results.c
 import { ScenarioPendingComponent } from '../scenario-pending/scenario-pending.component';
 import { canAddTreatmentPlan } from 'src/app/plan/permissions';
 import { PlanState } from 'src/app/plan/plan.state';
-import { POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
+import { getPlanPath, POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -85,7 +86,8 @@ export class ViewScenarioComponent {
     private scenarioState: ScenarioState,
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private breadcrumbService: BreadcrumbService
   ) {
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
@@ -100,7 +102,14 @@ export class ViewScenarioComponent {
     this.scenario$
       .pipe(
         untilDestroyed(this),
-        switchMap((s) => (this.shouldPoll(s) ? this.startPolling() : EMPTY))
+        switchMap((s) => {
+          // On specific scenario
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Scenario: ' + s.name,
+            backUrl: getPlanPath(this.planId),
+          });
+          return this.shouldPoll(s) ? this.startPolling() : EMPTY;
+        })
       )
       .subscribe();
   }
