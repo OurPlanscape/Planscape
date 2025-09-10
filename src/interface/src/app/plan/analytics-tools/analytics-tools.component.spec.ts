@@ -126,8 +126,12 @@ describe('AnalyticsToolsComponent', () => {
 
     const firstTool = fixture.nativeElement.querySelector('sg-tile-button');
     expect(firstTool).toBeTruthy();
-    expect(firstTool.getAttribute('ng-reflect-title')).toBe('Climate Foresight');
-    expect(firstTool.getAttribute('ng-reflect-subtitle')).toBe('Integrate climate data...');
+    expect(firstTool.getAttribute('ng-reflect-title')).toBe(
+      'Climate Foresight'
+    );
+    expect(firstTool.getAttribute('ng-reflect-subtitle')).toBe(
+      'Integrate climate data...'
+    );
   });
 
   it('should navigate to climate-foresight when climate tool is clicked', () => {
@@ -168,7 +172,9 @@ describe('AnalyticsToolsComponent', () => {
 
     const toolCard = fixture.nativeElement.querySelector('sg-tile-button');
     expect(toolCard).toBeTruthy();
-    expect(toolCard.getAttribute('ng-reflect-subtitle')).toContain('Integrate climate data');
+    expect(toolCard.getAttribute('ng-reflect-subtitle')).toContain(
+      'Integrate climate data'
+    );
   });
 
   it('should handle missing planId gracefully', () => {
