@@ -1,5 +1,4 @@
 import logging
-import multiprocessing
 import os
 import sys
 from datetime import timedelta
@@ -47,6 +46,7 @@ PLANSCAPE_APPS = [
     "e2e",
     "impacts",
     "martin",
+    "modules",
     "organizations",
     "planning",
     "restrictions",
@@ -361,16 +361,24 @@ if SENTRY_DSN is not None:
         traces_sample_rate=0.05,
     )
 
-GDAL_NUM_THREADS = config(
-    "GDAL_NUM_THREADS", default=multiprocessing.cpu_count(), cast=int
-)
+# Scenario planning settings
+DEFAULT_MAX_PROJECT_COUNT = config("DEFAULT_MAX_PROJECT_COUNT", 10, cast=int)
+MIN_AREA_PROJECT_SMALL = config("MIN_AREA_PROJECT_SMALL", 10, cast=int)
+MIN_AREA_PROJECT_MEDIUM = config("MIN_AREA_PROJECT_MEDIUM", 100, cast=int)
+MIN_AREA_PROJECT_LARGE = config("MIN_AREA_PROJECT_LARGE", 500, cast=int)
 
+# Forsys settings
 FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
+FORSYS_SDW = config("FORSYS_SDW", 0.5, cast=float)
+FORSYS_EPW = config("FORSYS_EPW", 0.5, cast=float)
+FORSYS_EXCLUSION_LIMIT = config("FORSYS_EXCLUSION_LIMIT", 0.5, cast=float)
+FORSYS_SAMPLE_FRACTION = config("FORSYS_SAMPLE_FRAC", 0.1, cast=float)
 
 # FORSYS API
 FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8001/")
 FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600, cast=int)  # 10m
 FORSYS_VIA_API = config("FORSYS_VIA_API", False, cast=bool)
+
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output")

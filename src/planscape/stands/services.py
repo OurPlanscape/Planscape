@@ -4,22 +4,12 @@ from typing import Any, Collection, Dict
 
 import rasterio
 from core.flags import feature_enabled
-from datasets.dynamic_models import model_from_fiona
+from datasets.dynamic_models import qualify_for_django
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
-from django.contrib.gis.db.models import Collect
-from django.contrib.gis.db.models import Union as UnionOp
-from django.contrib.gis.db.models.functions import (
-    Area,
-    Centroid,
-    Intersection,
-    Transform,
-)
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import connection, models
-from django.db.models import F, Q, QuerySet, Value, expressions
-from django.db.models.functions import Coalesce, NullIf
-from gis.database import SimplifyPreserveTopology
+from django.db import connection
+from django.db.models import QuerySet
 from gis.info import get_gdal_env
 from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
@@ -107,196 +97,59 @@ MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.item
 
 
 def calculate_stand_vector_stats3(
-    stands: QuerySet[Stand],
     datalayer: DataLayer,
     planning_area_geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
 ):
+    stands = Stand.objects.all().within_polygon(planning_area_geometry, stand_size)
+    stand_ids = set(stands.all().values_list("id", flat=True))
+    existing_metrics = StandMetric.objects.filter(
+        stand_id__in=stand_ids, datalayer_id=datalayer.pk
+    )
+    existing_stand_ids = set(existing_metrics.all().values_list("id", flat=True))
+    missing_stand_ids = stand_ids - existing_stand_ids
+
+    if len(missing_stand_ids) <= 0:
+        log.info("There are no missing stands. Early return.")
+        return
+
     if datalayer.type == DataLayerType.RASTER:
         raise ValueError("Cannot calculate vector stats for raster layers.")
-    transformation = Centroid("geometry")
-    Vector = model_from_fiona(datalayer)
-    intersection_geometry = Vector.objects.filter(
-        geometry__isvalid=True,
-        geometry__intersects=planning_area_geometry,
-    ).aggregate(collect=Collect("geometry"))["collect"]
-    if intersection_geometry and not intersection_geometry.empty:
-        output = (
-            stands.annotate(stand_geometry=transformation)
-            .annotate(
-                does_intersect=expressions.ExpressionWrapper(
-                    Q(stand_geometry__intersects=intersection_geometry),
-                    output_field=models.BooleanField(),
-                )
+    quali_name = qualify_for_django(datalayer.table)
+    query = f"""
+    WITH centroid AS (
+        SELECT
+            id,
+            ST_Centroid(geometry) as "geometry"
+        FROM stands_stand s
+        WHERE
+            s.id IN %s
+    )
+    INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
+    SELECT
+        now(),
+        c.id,
+        %s,
+        CASE
+            WHEN EXISTS (
+                SELECT
+                    1
+                FROM {quali_name} as poly
+                WHERE
+                    c.geometry && poly.geometry AND
+                    ST_Intersects(c.geometry, poly.geometry)
             )
-            .values("id", "does_intersect")
+            THEN 1
+            ELSE 0
+        END AS majority
+    FROM centroid c
+    ON CONFLICT ("stand_id", "datalayer_id") DO NOTHING;
+    """.strip()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            [tuple(missing_stand_ids), datalayer.pk],
         )
-    else:
-        output = stands.annotate(does_intersect=Value(False)).values(
-            "id", "does_intersect"
-        )
-
-    results = []
-    for stand in output:
-        does_intersect = stand.get("does_intersect", False) or False
-        majority = 1 if does_intersect else 0
-        stats_result = {"id": stand.get("id"), "properties": {"majority": majority}}
-
-        stand_metric = to_stand_metric(
-            stats_result=stats_result,
-            datalayer=datalayer,
-            aggregations=["majority"],
-        )
-        results.append(stand_metric)
-
-    log.info(
-        f"Created/Updated {len(results)} stand metrics for datalayer {datalayer.id}."
-    )
-    return StandMetric.objects.bulk_create(
-        results,
-        batch_size=settings.STAND_METRICS_PAGE_SIZE,
-        update_conflicts=True,
-        unique_fields=["stand_id", "datalayer_id"],
-        update_fields=["majority"],
-    )
-
-
-def calculate_stand_vector_stats2(
-    stands: QuerySet[Stand],
-    datalayer: DataLayer,
-    transform_srid: int = 5070,
-):
-    if datalayer.type == DataLayerType.RASTER:
-        raise ValueError("Cannot calculate vector stats for raster layers.")
-    transformation = SimplifyPreserveTopology(
-        Transform(
-            "geometry",
-            transform_srid,
-        ),
-        50,
-    )
-    Vector = model_from_fiona(datalayer)
-    stands = stands.annotate(
-        planar_geometry=Transform(
-            "geometry",
-            transform_srid,
-        ),
-    )
-    results = []
-    for stand in stands:
-        intersection_geometry = (
-            Vector.objects.annotate(planar_geometry=transformation)
-            .filter(
-                planar_geometry__isvalid=True,
-                planar_geometry__intersects=stand.planar_geometry,
-            )
-            .aggregate(union=UnionOp("planar_geometry"))["union"]
-        )
-        log.info("Found intersecting geometry")
-        if not intersection_geometry or intersection_geometry.empty:
-            log.info("Empty geometry")
-            majority = 0
-        else:
-            intersection_geometry = intersection_geometry.buffer(0).make_valid()
-            log.info("Making intersection_geometry valid")
-            remainder = stand.planar_geometry.difference(intersection_geometry)  # type: ignore
-
-            if not remainder:
-                majority = 1
-
-            if remainder.empty:
-                # if the entire stand becomes empty, it means it's fully covered by the geometry
-                majority = 1
-            else:
-                remainder = remainder.buffer(0).make_valid()
-                log.info("Making remainder geometry valid")
-                remaining_area_percentage = remainder.area / stand.planar_geometry.area
-                # if what is missing is LARGER than 0.5, it means it does not cover over half of it.
-                if remaining_area_percentage > 0.5:
-                    majority = 0
-                else:
-                    majority = 1
-
-        stand_metric = to_stand_metric(
-            stats_result={"id": stand.pk, "properties": {"majority": majority}},
-            datalayer=datalayer,
-            aggregations=["majority"],
-        )
-        results.append(stand_metric)
-    log.info(
-        f"Created/Updated {len(results)} stand metrics for datalayer {datalayer.id}."
-    )
-    return StandMetric.objects.bulk_create(
-        results,
-        batch_size=100,
-        update_conflicts=True,
-        unique_fields=["stand_id", "datalayer_id"],
-        update_fields=["majority"],
-    )
-
-
-def calculate_stand_vector_stats(
-    stands: QuerySet[Stand],
-    datalayer: DataLayer,
-    planning_area_geometry: GEOSGeometry,
-    transform_srid: int = 5070,
-):
-    if datalayer.type == DataLayerType.RASTER:
-        raise ValueError("Cannot calculate vector stats for raster layers.")
-
-    stand_geom = "geometry"
-    transformation = Transform("geometry", transform_srid)
-    Vector = model_from_fiona(datalayer)
-    intersection_geometry = Vector.objects.filter(
-        geometry__isvalid=True,
-        geometry__intersects=planning_area_geometry,
-    ).aggregate(union=UnionOp("geometry"))["union"]
-    if intersection_geometry and not intersection_geometry.empty:
-        # tolerance in meters
-        stands = (
-            stands.annotate(stand_geometry=transformation)
-            .annotate(stand_area=Area(stand_geom))
-            .annotate(
-                inter_area=Area(
-                    Intersection(
-                        stand_geom,
-                        Value(
-                            intersection_geometry,
-                        ),
-                    )
-                )
-            )
-            .annotate(
-                coverage=Coalesce(F("inter_area"), Value(0.0))
-                / NullIf(F("stand_area"), 0.0)
-            )
-            .filter(stand_geometry__intersects=intersection_geometry)
-        )
-    results = []
-    for stand in stands:
-        majority = getattr(stand, "coverage", 0)
-        if majority > 0.5:
-            majority = 1
-        else:
-            majority = 0
-        stats_result = {"id": stand.pk, "properties": {"majority": majority}}
-
-        stand_metric = to_stand_metric(
-            stats_result=stats_result,
-            datalayer=datalayer,
-            aggregations=["majority"],
-        )
-        results.append(stand_metric)
-
-    log.info(
-        f"Created/Updated {len(results)} stand metrics for datalayer {datalayer.id}."
-    )
-    return StandMetric.objects.bulk_create(
-        results,
-        batch_size=settings.STAND_METRICS_PAGE_SIZE,
-        update_conflicts=True,
-        unique_fields=["stand_id", "datalayer_id"],
-        update_fields=["majority"],
-    )
 
 
 def calculate_stand_zonal_stats(
@@ -317,7 +170,7 @@ def calculate_stand_zonal_stats(
         raise ValueError("Cannot calculate zonal stats for empty urls.")
     stand_ids = set(stands.all().values_list("id", flat=True))
     existing_metrics = StandMetric.objects.filter(
-        stand_id__in=stands,
+        stand_id__in=stand_ids,
         datalayer_id=datalayer.pk,
     )
     existing_stand_ids = set(existing_metrics.all().values_list("stand_id", flat=True))
@@ -382,3 +235,12 @@ def calculate_stand_zonal_stats(
         stand_id__in=stand_ids,
         datalayer=datalayer,
     )
+
+
+def get_datalayer_metric(datalayer: DataLayer) -> str:
+    if not datalayer.metadata:
+        return "avg"
+    metric = datalayer.metadata.get("forsys", {}).get("metric", "avg")
+    if metric not in MODEL_AGGREGATION_MAP:
+        return "avg"
+    return metric

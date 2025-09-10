@@ -15,10 +15,10 @@ The name and value of the flag will be shared by frontend and backend.
 
 `CONUS_WIDE_SCENARIOS` : Enable CONUS wide scenarios
 
-`SCENARIO_CONFIGURATION_STEPS` : Shows the new scenario configuration steps
-
 `DYNAMIC_SCENARIO_MAP`: Shows stands on new scenario configuration steps"
 
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool
 
 `AUTO_CREATE_STANDS`: Enables the creation of stands during the creation of new planning areas
+
+`SCENARIO_DRAFTS`: Enable the scenario drafts

@@ -33,6 +33,7 @@ get_scenario_by_id <- function(connection, scenario_id) {
               s.name,
               s.uuid,
               s.configuration,
+              s.forsys_input,
               pa.region_name as \"region_name\",
               pa.name as \"planning_area_name\",
               ST_Area(pa.geometry::geography, TRUE) / 4047 as \"planning_area_acres\"

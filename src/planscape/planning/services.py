@@ -19,12 +19,21 @@ from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.functions import Area, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.measure import A
 from django.db import transaction
+from django.db.models.aggregates import Sum
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
+from modules.services import get_forsys_layer_by_capability, get_forsys_layer_by_name
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -37,21 +46,29 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import (
-    async_calculate_stand_metrics_v2,
-    async_calculate_vector_metrics,
-    async_create_stands,
-    async_forsys_run,
-)
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
 logger = logging.getLogger(__name__)
+
+
+def create_metrics_task(
+    planning_area: PlanningArea, datalayer: DataLayer, stand_size: StandSizeChoices
+):
+    from planning.tasks import (
+        async_calculate_stand_metrics_v3,
+        async_calculate_vector_metrics,
+    )
+
+    match datalayer.type:
+        case DataLayerType.VECTOR:
+            return async_calculate_vector_metrics.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
+        case _:
+            return async_calculate_stand_metrics_v3.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
 
 
 @transaction.atomic()
@@ -62,6 +79,8 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
+    from planning.tasks import async_create_stands
+
     """Canonical method to create a new planning area."""
 
     # FIXME: this code path is temporary. once we migrate to v2
@@ -77,17 +96,23 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
-    datalayers = DataLayer.objects.filter(
-        dataset_id=998,
-        type=DataLayerType.VECTOR,
-    )
-    vector_metrics_jobs = group(
+    slope = get_forsys_layer_by_name("slope")
+    distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
+    datalayers = list(get_forsys_layer_by_capability("exclusion")) + [
+        slope,
+        distance_from_roads,
+    ]
+    datalayers = list(filter(None, datalayers))
+    precalculation_jobs = group(
         [
-            async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+            create_metrics_task(planning_area, datalayer, stand_size=stand_size)
             for datalayer in datalayers
+            for stand_size in StandSizeChoices
         ]
     )
-    job = chain(async_create_stands.si(planning_area.pk), vector_metrics_jobs)
+    create_stands_job = chain(
+        async_create_stands.si(planning_area.pk), precalculation_jobs
+    )
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -99,7 +124,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: job.apply_async())
+        transaction.on_commit(lambda: create_stands_job.apply_async())
     return planning_area
 
 
@@ -158,6 +183,12 @@ def get_treatment_goal_from_configuration(
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
+    from planning.tasks import (
+        async_calculate_stand_metrics_v2,
+        async_forsys_run,
+        async_pre_forsys_process,
+    )
+
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
     treatment_goal = kwargs.pop("treatment_goal", None)
@@ -187,6 +218,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
         for d in datalayers
     ]
+    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
 
     track_openpanel(
         name="planning.scenario.created",
@@ -377,13 +409,24 @@ def zip_directory(file_obj, source_dir):
                 )
 
 
-def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
+def get_max_treatable_area(
+    configuration: Dict[str, Any],
+    min_project_area: Optional[float] = None,
+    number_of_projects: Optional[int] = None,
+) -> Optional[float]:
     max_budget = configuration.get("max_budget") or None
     cost_per_acre = configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
     if max_budget:
         return max_budget / cost_per_acre
 
-    return float(configuration.get("max_treatment_area_ratio"))
+    max_treatable_area_ratio = configuration.get("max_treatment_area_ratio")
+    if max_treatable_area_ratio:
+        return float(max_treatable_area_ratio)
+
+    if min_project_area and number_of_projects:
+        return min_project_area / number_of_projects
+
+    return None
 
 
 def get_max_treatable_stand_count(
@@ -917,6 +960,15 @@ def get_excluded_stands(
     )
 
 
+def get_constrained_stands(stands_qs, datalayer, operator, value):
+    # TODO: get metric to be used for this layer
+    filter = {
+        f"metrics__avg__{operator}": value,
+        "metrics__datalayer_id": datalayer.pk,
+    }
+    return stands_qs.filter(**filter).values_list("id", flat=True)
+
+
 def get_available_stands(
     planning_area: PlanningArea,
     *,
@@ -926,22 +978,67 @@ def get_available_stands(
     constraints: Optional[List[Dict[str, Any]]] = None,
     **kwargs,
 ):
-    stands = planning_area.get_stands(stand_size)
+    if not includes:
+        includes = list()
+    if not excludes:
+        excludes = list()
+    if not constraints:
+        constraints = list()
+    area_transform = Area(Transform("geometry", settings.AREA_SRID))
+    stands = planning_area.get_stands(stand_size).annotate(area=area_transform)
+    total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
     excluded_ids = []
+    constrained_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
+    for constraint in constraints:
+        stands_queryset = stands.all()
+        constrained_stands = get_constrained_stands(
+            stands_queryset,
+            constraint.get("datalayer"),
+            constraint.get("operator"),
+            constraint.get("value"),
+        )
+        constrained_ids.extend(list(constrained_stands))
+    excluded_ids = set(excluded_ids)
+    constrained_ids = set(constrained_ids)
+    total_excluded_ids = excluded_ids | constrained_ids
+    total_excluded_area = (
+        Stand.objects.filter(id__in=total_excluded_ids)
+        .annotate(area=area_transform)
+        .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    )
+    if not total_area:
+        total_area = A(sq_m=0)
+    if not total_excluded_area:
+        total_excluded_area = A(sq_m=0)
+
     return {
         "unavailable": {
             "by_inclusions": [],
-            "by_exclusions": list(set(excluded_ids)),
-            "by_thresholds": [],
+            "by_exclusions": excluded_ids,
+            "by_thresholds": constrained_ids,
         },
         "summary": {
-            "total_area": 0,
-            "available_area": 0,
-            "unavailable_area": 0,
+            "total_area": total_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "available_area": (total_area.sq_m - total_excluded_area.sq_m)
+            / settings.CONVERSION_SQM_ACRES,
+            "unavailable_area": total_excluded_area.sq_m
+            / settings.CONVERSION_SQM_ACRES,
         },
     }
+
+
+def get_min_project_area(scenario: Scenario) -> float:
+    stand_size = scenario.get_stand_size()
+    match stand_size:
+        case StandSizeChoices.SMALL:
+            return settings.MIN_AREA_PROJECT_SMALL
+        case StandSizeChoices.MEDIUM:
+            return settings.MIN_AREA_PROJECT_MEDIUM
+        case _:
+            return settings.MIN_AREA_PROJECT_LARGE

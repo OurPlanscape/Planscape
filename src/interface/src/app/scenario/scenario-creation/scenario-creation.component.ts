@@ -26,7 +26,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { ScenarioCreation } from '@types';
-import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
+import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
@@ -39,10 +39,13 @@ import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
 import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
+import { FeatureService } from 'src/app/features/feature.service';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 enum ScenarioTabs {
   CONFIG,
   DATA_LAYERS,
+  BASE_LAYERS,
 }
 
 @UntilDestroy()
@@ -63,6 +66,7 @@ enum ScenarioTabs {
     Step2Component,
     Step3Component,
     Step4Component,
+    BaseLayersComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -84,6 +88,10 @@ export class ScenarioCreationComponent
   });
 
   creatingScenario = false;
+
+  continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
+    ? 'Save & Continue'
+    : 'Next';
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -108,7 +116,8 @@ export class ScenarioCreationComponent
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {
     this.newScenarioState.setPlanId(this.planId);
 
@@ -168,7 +177,8 @@ export class ScenarioCreationComponent
     }
   }
 
-  stepChanged() {
+  stepChanged(i: number) {
+    this.newScenarioState.setStepIndex(i);
     this.goalOverlayService.close();
   }
 

@@ -20,7 +20,6 @@ import {
   planResetResolver,
 } from './resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
-import { createFeatureGuard } from './features/feature.guard';
 
 const routes: Routes = [
   {
@@ -144,34 +143,8 @@ const routes: Routes = [
       },
       {
         // follow the route structure of plan, but without nesting modules and components
-        path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({
-            featureName: 'SCENARIO_CONFIGURATION_STEPS',
-            inverted: true,
-          }),
-        ],
-        resolve: {
-          planInit: planLoaderResolver,
-          treatmentId: numberResolver('treatmentId', ''),
-          scenarioInit: scenarioLoaderResolver,
-        },
-        loadChildren: () =>
-          import('./treatments/treatments.module').then(
-            (m) => m.TreatmentsModule
-          ),
-      },
-      {
-        // follow the route structure of plan, but without nesting modules and components
         path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({
-            featureName: 'SCENARIO_CONFIGURATION_STEPS',
-            inverted: false,
-          }),
-        ],
+        canActivate: [AuthGuard],
         resolve: {
           planInit: planLoaderResolver,
           treatmentId: numberResolver('treatmentId', ''),

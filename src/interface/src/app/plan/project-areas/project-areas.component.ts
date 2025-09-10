@@ -3,7 +3,8 @@ import {
   getColorForProjectPosition,
   parseResultsToTotals,
 } from '../plan-helpers';
-import { PROJECT_AREA_COLORS } from '@shared';
+import { CurrencyInKPipe, PROJECT_AREA_COLORS } from '@shared';
+import { DecimalPipe, NgFor } from '@angular/common';
 
 export interface ProjectAreaReport {
   rank: number;
@@ -20,6 +21,8 @@ export interface ProjectTotalReport {
 }
 
 @Component({
+  standalone: true,
+  imports: [NgFor, DecimalPipe, CurrencyInKPipe],
   selector: 'app-project-areas',
   templateUrl: './project-areas.component.html',
   styleUrls: ['./project-areas.component.scss'],

@@ -19,6 +19,7 @@ from planning.models import (
     ScenarioResult,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsesDataLayer,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -1035,6 +1036,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             geometry=self.poly3,
             outline=self.mpoly3,
         )
+
         self.markdown_description = (
             "# This is a h1\n"
             "## This is a h2\n"
@@ -1057,7 +1059,6 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             category=TreatmentGoalCategory.BIODIVERSITY,
             geometry=MultiPolygon([self.poly1.intersection(self.poly2)]),
             group=ca_group,
-            priorities=["priority one", "priority two"],
         )
         self.treatment_goals = TreatmentGoalFactory.create_batch(
             10,
@@ -1067,6 +1068,16 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.inactive_treatment_goal = TreatmentGoalFactory.create(
             active=False,
             group=ca_group,
+        )
+        self.usage1 = TreatmentGoalUsesDataLayer.objects.create(
+            usage_type="PRIORITY",
+            datalayer=self.dl1,
+            treatment_goal=self.first_treatment_goal,
+        )
+        self.usage2 = TreatmentGoalUsesDataLayer.objects.create(
+            usage_type="THRESHOLD",
+            datalayer=self.dl2,
+            treatment_goal=self.first_treatment_goal,
         )
 
     def test_list_treatment_goals(self):
@@ -1094,7 +1105,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             TreatmentGoalGroup(self.first_treatment_goal.group).label,
         )
         self.assertCountEqual(
-            first_treatment_goal["priorities"], ["priority one", "priority two"]
+            first_treatment_goal["usage_types"],
+            [
+                {"usage_type": "PRIORITY", "datalayer": "Layer 1"},
+                {"usage_type": "THRESHOLD", "datalayer": "Layer 2"},
+            ],
         )
 
     def test_detail_treatment_goal(self):
