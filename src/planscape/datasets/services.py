@@ -461,3 +461,15 @@ def find_anything(
                 results[key] = search_result
 
     return results
+
+
+def get_datalayer_by_module_atribute(
+    module: str,
+    attribute: str,
+    value: Any,
+) -> DataLayer:
+    return DataLayer.objects.get(
+        metadata__has_key="modules",
+        metadata__contains={"modules": {module: {attribute: value}}},
+        status=DataLayerStatus.READY,
+    )

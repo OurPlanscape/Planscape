@@ -605,6 +605,25 @@ get_max_slope <- function(configuration, datalayer) {
   glue("datalayer_{datalayer$id} <= {max_slope}")
 }
 
+get_stand_thresholds_v3 <- function(connection, datalayers) {
+  # max_slope and distance_from_roads are already included in datalayers
+  all_thresholds <- c()
+
+  for (i in seq_len(nrow(datalayers))) {
+    datalayer <- datalayers[i, ]
+    if (is.null(datalayer$threshold)) {
+      next
+    }
+    curr_threshold <- gsub("value", paste0("datalayer_", datalayer$id), datalayer$threshold)
+    all_thresholds <- c(all_thresholds, curr_threshold)
+  }
+
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
+}
+
 get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -637,6 +656,7 @@ get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   }
   return(NULL)
 }
+
 get_stand_thresholds <- function(scenario) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -1020,7 +1040,7 @@ call_forsys_v3 <- function(
   exclusion_limit <- variables$exclusion_limit
   seed <- variables$seed
   
-  stand_thresholds <- get_stand_thresholds_v2(connection, scenario, thresholds)
+  stand_thresholds <- get_stand_thresholds_v3(connection, thresholds)
   output_tmp <- data.table::rbindlist(list(priorities, secondary_metrics, thresholds)) %>%
     remove_duplicates_v2() %>%
     select(id)
