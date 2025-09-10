@@ -1017,9 +1017,13 @@ def get_available_stands(
         constrained_ids.extend(list(constrained_stands))
     excluded_ids = set(excluded_ids)
     constrained_ids = set(constrained_ids)
-    total_excluded_ids = excluded_ids | constrained_ids
     total_excluded_area = (
-        Stand.objects.filter(id__in=total_excluded_ids)
+        Stand.objects.filter(id__in=excluded_ids)
+        .annotate(area=area_transform)
+        .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    )
+    total_constrained_area = (
+        Stand.objects.filter(id__in=constrained_ids)
         .annotate(area=area_transform)
         .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
     )
@@ -1027,7 +1031,12 @@ def get_available_stands(
         total_area = A(sq_m=0)
     if not total_excluded_area:
         total_excluded_area = A(sq_m=0)
+    if not total_constrained_area:
+        total_constrained_area = A(sq_m=0)
 
+    available_area = total_area - total_excluded_area
+    treatable_area = available_area - total_constrained_area
+    total_unavailable_area = total_excluded_area + total_constrained_area
     return {
         "unavailable": {
             "by_inclusions": [],
@@ -1036,9 +1045,9 @@ def get_available_stands(
         },
         "summary": {
             "total_area": total_area.sq_m / settings.CONVERSION_SQM_ACRES,
-            "available_area": (total_area.sq_m - total_excluded_area.sq_m)
-            / settings.CONVERSION_SQM_ACRES,
-            "unavailable_area": total_excluded_area.sq_m
+            "available_area": available_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "treatable_area": treatable_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "unavailable_area": total_unavailable_area.sq_m
             / settings.CONVERSION_SQM_ACRES,
         },
     }
