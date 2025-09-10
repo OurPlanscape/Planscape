@@ -2,6 +2,10 @@
   id="stripes-pattern"
   [url]="'/assets/png/patterns/stripes-black.png'"></mgl-image>
 
+<mgl-image
+  id="stripes-pattern-purple"
+  [url]="'/assets/png/patterns/stripes-purple.png'"></mgl-image>
+
 <ng-container *ngIf="tilesUrl$ | async as tilesUrl">
   <mgl-vector-source
     [id]="sourceName"
@@ -12,6 +16,7 @@
     type="line"
     [source]="sourceName"
     [sourceLayer]="sourceName"
+    [filter]="(filteredStands$ | async) || undefined"
     [paint]="standLinePaint">
   </mgl-layer>
   <mgl-layer
@@ -19,6 +24,7 @@
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
+    [filter]="(filteredStands$ | async) || undefined"
     [paint]="standPaint$ | async">
   </mgl-layer>
 
@@ -27,7 +33,17 @@
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
+    [filter]="(filteredStands$ | async) || undefined"
     [paint]="standExcludedPaint">
+  </mgl-layer>
+
+  <mgl-layer
+    id="scenario-stands-constrained"
+    type="fill"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [filter]="(filteredStands$ | async) || undefined"
+    [paint]="standConstrainedPaint">
   </mgl-layer>
 </ng-container>
 <div class="loader"></div>

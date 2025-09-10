@@ -51,7 +51,12 @@ export class NewScenarioState {
   private _baseStandsLoaded$ = merge(
     this.standSize$.pipe(mapTo(false)), // flip to false on size change
     this.baseStandsReady$.asObservable() // flip to true when loading completes
-  ).pipe(startWith(false), shareReplay({ bufferSize: 1, refCount: true }));
+  ).pipe(
+    startWith(false),
+    shareReplay({ bufferSize: 1, refCount: true }),
+    distinctUntilChanged(),
+    tap((s) => console.log('chainge base stands loaded'))
+  );
 
   public availableStands$ = combineLatest([
     this._baseStandsLoaded$,
@@ -80,7 +85,7 @@ export class NewScenarioState {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  public excludedStands = this.availableStands$.pipe(
+  public excludedStands$ = this.availableStands$.pipe(
     map((c) => c.unavailable.by_exclusions)
   );
 
@@ -88,12 +93,16 @@ export class NewScenarioState {
     map((c) => c.unavailable.by_thresholds)
   );
 
-  hasExcludedStands$ = this.excludedStands.pipe(
+  hasExcludedStands$ = this.excludedStands$.pipe(
     map((stands) => stands.length > 0)
   );
 
   hasConstrainedStands$ = this.constraintStands$.pipe(
     map((stands) => stands.length > 0)
+  );
+
+  public doesNotMeetConstraintsStands$ = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_thresholds)
   );
 
   private _loading$ = new BehaviorSubject(false);

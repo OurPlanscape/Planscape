@@ -43,7 +43,7 @@ describe('ScenarioStandsComponent', () => {
         MockProvider(NewScenarioState, {
           scenarioConfig$: scenarioConfig$,
           availableStands$: of({} as AvailableStands),
-          excludedStands: of([]),
+          excludedStands$: of([]),
         }),
         MockProvider(MapConfigState, {
           projectAreasOpacity$: of(0),
