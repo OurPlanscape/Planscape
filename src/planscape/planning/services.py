@@ -1026,7 +1026,7 @@ def get_available_stands(
         "summary": {
             "total_area": total_area / settings.CONVERSION_SQM_ACRES,
             "available_area": (total_area - total_excluded_area)
-            / settings.CCONVERSION_SQM_ACRES,
+            / settings.CONVERSION_SQM_ACRES,
             "unavailable_area": total_excluded_area / settings.CONVERSION_SQM_ACRES,
         },
     }
