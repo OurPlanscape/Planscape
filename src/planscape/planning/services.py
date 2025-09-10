@@ -1000,7 +1000,6 @@ def get_available_stands(
         excluded_stands = get_constrained_stands(
             stands_queryset,
             exclude,
-            "eq",
             metric_column="majority",
             value=1,
         )
