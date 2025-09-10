@@ -793,7 +793,7 @@ call_forsys <- function(
   summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
   attain_cols <- grep("^attain_", names(out$project_output), value = TRUE)
   out$project_output <- out$project_output[, setdiff(names(out$project_output), attain_cols), drop = FALSE]
-  out$project_output <- merge(out$project_output, summarized_metrics, by = "proj_id", all.x = TRUE, sort = FALSE)
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by = "proj_id")
   return(out)
 }
 
