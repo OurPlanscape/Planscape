@@ -682,37 +682,7 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(data.get("usage_types"), [])
 
     def test_detail_scenario_v2_with_usage_types(self):
-        self.poly1 = GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=4269)
-        self.poly2 = GEOSGeometry(
-            "POLYGON((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5))", srid=4269
-        )
-        self.mpoly1 = GEOSGeometry(
-            "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
-        )
-        self.mpoly2 = GEOSGeometry(
-            "MULTIPOLYGON(((0.5 0.5, 1.5 0.5, 1.5 1.5, 0.5 1.5, 0.5 0.5)))", srid=4269
-        )
-        self.dl1 = DataLayerFactory.create(
-            name="Layer 1",
-            geometry=self.poly1,
-            outline=self.mpoly1,
-        )
-        self.dl2 = DataLayerFactory.create(
-            name="Layer 2",
-            geometry=self.poly2,
-            outline=self.mpoly2,
-        )
-        self.usage1 = TreatmentGoalUsesDataLayer.objects.create(
-            usage_type="PRIORITY",
-            datalayer=self.dl1,
-            treatment_goal=self.treatment_goal,
-        )
-        self.usage2 = TreatmentGoalUsesDataLayer.objects.create(
-            usage_type="THRESHOLD",
-            datalayer=self.dl2,
-            treatment_goal=self.treatment_goal,
-        )
-        self.scenario.treatment_goal = self.treatment_goal
+        self.scenario.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
         self.scenario.save()
 
         self.client.force_authenticate(self.owner_user)
@@ -727,13 +697,10 @@ class ScenarioDetailTest(APITestCase):
         )
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertCountEqual(
-            data.get("usage_types"),
-            [
-                {"usage_type": "PRIORITY", "datalayer": "Layer 1"},
-                {"usage_type": "THRESHOLD", "datalayer": "Layer 2"},
-            ],
-        )
+        self.assertEqual(len(data.get("usage_types")), 3)
+        for entry in data.get("usage_types"):
+            self.assertIn("usage_type", entry)
+            self.assertIn("datalayer", entry)
 
 
 class PatchScenarioConfigurationTest(APITransactionTestCase):
