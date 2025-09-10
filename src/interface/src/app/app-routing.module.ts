@@ -144,7 +144,7 @@ const routes: Routes = [
       {
         path: 'plan/:planId/scenario',
         resolve: {
-          planId: planLoaderResolver, // There is no planId for the scenario map, that is why I included this.
+          planId: planLoaderResolver,
         },
 
         loadChildren: () =>
