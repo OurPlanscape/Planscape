@@ -208,6 +208,18 @@ class Command(PlanscapeCommand):
             choices=[c.name for c in DataLayerType],
             help=f"Layer type, required if using --url. One of: {[c.name for c in DataLayerType]}",
         )
+        create_parser.add_argument(
+            "--no-outline",
+            action="store_true",
+            default=False,
+            help="Skip computing raster outline polygon (avoids huge reads).",
+        )
+        create_parser.add_argument(
+            "--use-original",
+            action="store_true",
+            default=False,
+            help="Use the input raster as-is; do not reprocess/convert it (avoids huge reads).",
+        )
         import_parser.add_argument(
             "--dataset",
             type=int,
@@ -430,7 +442,9 @@ class Command(PlanscapeCommand):
             return {"info": str(datalayer_exists)}
 
         if layer_type == DataLayerType.RASTER:
-            outline = data_mask(original_file_path)
+            outline = (
+                None if kwargs.get("no_outline") else data_mask(original_file_path)
+            )
         else:
             outline = None
 
@@ -457,9 +471,12 @@ class Command(PlanscapeCommand):
 
         match layer_type:
             case DataLayerType.RASTER:
-                processed_files = to_planscape_raster(
-                    input_file=input_file,
+                processed_files = (
+                    [input_file]
+                    if kwargs.get("use_original")
+                    else to_planscape_raster(input_file=input_file)
                 )
+
             case _:
                 if len(layer_info.keys()) > 1:
                     # multi-layer vector file
