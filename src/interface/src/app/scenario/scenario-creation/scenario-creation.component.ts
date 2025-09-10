@@ -1,10 +1,4 @@
-import {
-  Component,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
@@ -74,7 +68,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate, OnDestroy
+  implements OnInit, CanComponentDeactivate
 {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
@@ -122,8 +116,6 @@ export class ScenarioCreationComponent
     private featureService: FeatureService,
     private breadcrumbService: BreadcrumbService
   ) {
-    this.newScenarioState.setPlanId(this.planId);
-
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
@@ -223,9 +215,5 @@ export class ScenarioCreationComponent
       this.dialog.open(SavingErrorModalComponent);
       return false;
     }
-  }
-
-  ngOnDestroy(): void {
-    this.newScenarioState.reset();
   }
 }
