@@ -19,8 +19,11 @@ from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.functions import Area, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.measure import A
 from django.db import transaction
+from django.db.models.aggregates import Sum
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
@@ -981,7 +984,10 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
-    stands = planning_area.get_stands(stand_size)
+    area_transform = Area(Transform("geometry", settings.AREA_SRID))
+    stands = planning_area.get_stands(stand_size).annotate(area=area_transform)
+    total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
     excluded_ids = []
     constrained_ids = []
     for exclude in excludes:
@@ -998,17 +1004,31 @@ def get_available_stands(
             constraint.get("value"),
         )
         constrained_ids.extend(list(constrained_stands))
+    excluded_ids = set(excluded_ids)
+    constrained_ids = set(constrained_ids)
+    total_excluded_ids = excluded_ids | constrained_ids
+    total_excluded_area = (
+        Stand.objects.filter(id__in=total_excluded_ids)
+        .annotate(area=area_transform)
+        .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    )
+    if not total_area:
+        total_area = A(sq_m=0)
+    if not total_excluded_area:
+        total_excluded_area = A(sq_m=0)
 
     return {
         "unavailable": {
             "by_inclusions": [],
-            "by_exclusions": list(set(excluded_ids)),
-            "by_thresholds": list(set(constrained_ids)),
+            "by_exclusions": excluded_ids,
+            "by_thresholds": constrained_ids,
         },
         "summary": {
-            "total_area": 0,
-            "available_area": 0,
-            "unavailable_area": 0,
+            "total_area": total_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "available_area": (total_area.sq_m - total_excluded_area.sq_m)
+            / settings.CONVERSION_SQM_ACRES,
+            "unavailable_area": total_excluded_area.sq_m
+            / settings.CONVERSION_SQM_ACRES,
         },
     }
 

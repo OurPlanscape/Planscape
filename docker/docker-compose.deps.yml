@@ -29,7 +29,7 @@ services:
       - db
       - redis
     volumes:
-      - .:/usr/src/app
+      - ..:/usr/src/app
   db:
     image: postgis/postgis:15-3.4
     environment:
@@ -54,7 +54,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db/postgres
     command: --config /usr/src/app/martin.yaml
     volumes:
-      - .:/usr/src/app
+      - ../:/usr/src/app
   forsys:
     build:
       context: ..

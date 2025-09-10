@@ -34,7 +34,6 @@ import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-t
 import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
-import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
 import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
@@ -83,7 +82,6 @@ import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.comp
     NotesSidebarComponent,
     OpacitySliderComponent,
     MatTabsModule,
-    ScenarioMapComponent, // TODO: Remove after refactoring scenario routes
     DataLayersComponent,
     SectionComponent,
     ResourceUnavailableComponent,

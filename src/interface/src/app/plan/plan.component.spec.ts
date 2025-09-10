@@ -1,13 +1,8 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  ActivatedRoute,
-  convertToParamMap,
-  NavigationEnd,
-  Router,
-} from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of, Subject } from 'rxjs';
+import { of } from 'rxjs';
 import { Plan } from '@types';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
@@ -27,7 +22,6 @@ describe('PlanComponent', () => {
   let fixture: ComponentFixture<PlanComponent>;
   let mockAuthService: Partial<AuthService>;
   let mockNotesService: PlanningAreaNotesService;
-  let mockRouterEvents$: Subject<any>;
   const fakeGeoJson: GeoJSON.GeoJSON = {
     type: 'FeatureCollection',
     features: [
@@ -55,7 +49,6 @@ describe('PlanComponent', () => {
   const fakePlan: Plan = { ...MOCK_PLAN, id: 24, geometry: fakeGeoJson };
 
   beforeEach(async () => {
-    mockRouterEvents$ = new Subject();
     const mockChildRoute = {
       snapshot: {
         params: { id: 'scenario-99' },
@@ -134,14 +127,5 @@ describe('PlanComponent', () => {
       'plan',
       fakePlan.id.toString(),
     ]);
-  });
-
-  it('should emit true from showOverview$ when showOverview is true in route data', (done) => {
-    component.showOverview$.subscribe((value) => {
-      expect(value).toBe(true);
-      done();
-    });
-
-    mockRouterEvents$.next(new NavigationEnd(1, '/dummy', '/dummy'));
   });
 });

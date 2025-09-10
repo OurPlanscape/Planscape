@@ -17,7 +17,9 @@
       height: 100%;
 
       .maplibregl-ctrl {
-        max-height: calc(100% - ($map-nav-bar-height + $map-bottom-name-height));
+        max-height: calc(
+          100% - ($map-nav-bar-height + $map-bottom-name-height)
+        );
         margin: 10px;
         height: calc(100% - ($map-nav-bar-height + $map-bottom-name-height));
       }
@@ -46,17 +48,31 @@
   mat-spinner {
     --mdc-circular-progress-active-indicator-color: white;
   }
-
-
 }
 
 .loader.visible {
   opacity: 1;
   transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
-
 }
 
 mgl-map {
   flex: 1;
 }
 
+@media print {
+  :host {
+    ::ng-deep {
+      .maplibregl-map,
+      .maplibregl-canvas-container,
+      .maplibregl-canvas {
+        width: 100%;
+        height: 100%;
+        position: static;
+      }
+
+      .maplibregl-ctrl-bottom-right {
+        display: none;
+      }
+    }
+  }
+}
