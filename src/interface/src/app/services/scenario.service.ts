@@ -43,6 +43,13 @@ export class ScenarioService {
     });
   }
 
+  createScenarioFromName(name: string) {
+    const scenarioParameters = { name: name };
+    return this.http.post<Scenario>(this.v2Path, scenarioParameters, {
+      withCredentials: true,
+    });
+  }
+
   /** Creates a scenario in the backend. Returns scenario ID. */
   // TODO: Remove once SCENARIO_CONFIGURATION_STEPS be approved
   createScenario(scenarioParameters: any): Observable<Scenario> {

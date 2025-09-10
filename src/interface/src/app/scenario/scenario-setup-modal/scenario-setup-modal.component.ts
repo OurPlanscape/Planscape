@@ -15,6 +15,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -38,7 +39,8 @@ export class ScenarioSetupModalComponent {
 
   constructor(
     private matSnackBar: MatSnackBar,
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private router: Router
   ) {}
 
   cancel(): void {
@@ -60,25 +62,29 @@ export class ScenarioSetupModalComponent {
 
   private createScenario(name: string) {
     // TODO: cannot submit without required values yet
-    this.scenarioService
-      .createScenario({
-        name: name,
-        config: {},
-      })
-      .subscribe({
-        next: (result) => {
-          this.dialogRef.close(result);
-          this.submitting = false;
-        },
-        error: (e) => {
-          this.matSnackBar.open(
-            '[Error] Unable to create scenario...',
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-          this.submitting = false;
-          this.dialogRef.close(false);
-        },
-      });
+    this.scenarioService.createScenarioFromName(name).subscribe({
+      next: (result) => {
+        this.dialogRef.close(result);
+        this.submitting = false;
+        // TODO: proceed to step 1 page, with new scenario ID...
+        if (result) {
+          this.router.navigate([
+            '/plan/',
+            result.planning_area,
+            '/scenario/',
+            result.id,
+          ]);
+        }
+      },
+      error: (e) => {
+        this.matSnackBar.open(
+          '[Error] Unable to create scenario...',
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+        this.submitting = false;
+        this.dialogRef.close(false);
+      },
+    });
   }
 }
