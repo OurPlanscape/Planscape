@@ -290,9 +290,7 @@ to_properties <- function(
     mutate(stand_count = project_stand_count) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
-    rename_with(.fn = rename_col) %>%
-    mutate(area_acres = coalesce(EAll_area_acres, area_acres)) %>%
-    mutate(pct_area = round(100 * area_acres / scenario$planning_area_acres, 2)) %>%
+    mutate(pct_area = round(100 * ETrt_area_acres / scenario$planning_area_acres, 2)) %>%
     mutate(attainment = attainment) %>%
     mutate(text_geometry = text_geometry) %>%
     rename_with(.fn = rename_col)
@@ -772,13 +770,9 @@ call_forsys <- function(
     patchmax_sample_frac = sample_frac,
     patchmax_sample_seed = configuration$seed,
   )
-  all_area <- data.table::as.data.table(out$stand_output)[
-    , .(EAll_area_acres = sum(area_acres, na.rm = TRUE)), by = proj_id
-  ]
   summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
-  out$project_output <- out$project_output |>
-    left_join(summarized_metrics, by = "proj_id") |>
-    left_join(all_area,          by = "proj_id")
+  attain_cols <- grep("^attain_", names(out$project_output), value = TRUE)
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by="proj_id")
   return(out)
 }
 
