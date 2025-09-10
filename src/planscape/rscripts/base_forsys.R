@@ -403,7 +403,7 @@ get_metric_data <- function(connection, stands, datalayer) {
 }
 
 
-get_stand_data_from_list <- function(connection, stand_ids) {
+get_stand_data_from_list <- function(connection, stand_ids, datalayers) {
   query <- glue_sql(
     "SELECT
       id AS stand_id,
@@ -414,14 +414,20 @@ get_stand_data_from_list <- function(connection, stand_ids) {
     stand_ids = stand_ids,
     .con = connection
   )
-  result <- st_read(
+  stand_data <- st_read(
     dsn = connection,
     layer = NULL,
     query = query,
     geometry_column = "geometry",
     crs = st_crs(5070)
   )
-  return(result)
+  datalayers <- remove_duplicates_v2(datalayers)
+  for (row in seq_len(nrow(datalayers))) {
+    datalayer <- datalayers[row, ]
+    metric <- get_metric_data(connection, stand_data, datalayer)
+    stand_data <- merge_data(stand_data, metric)
+  }  
+  return(stand_data)
 }
 
 
@@ -1054,13 +1060,13 @@ main_pre_processed <- function(scenario_id) {
   scenario <- get_scenario_by_id(connection, scenario_id)
   forsys_input <- get_forsys_input(scenario)
 
-  stand_ids <- forsys_input$stands
-  stand_data <- get_stand_data_from_list(connection, stand_ids)
-
-  datalayers <- forsys_input$datalayers
+  datalayers <- data.table::rbindlist(forsys_input$datalayers)
   priorities <- filter(datalayers, type == "RASTER", usage_type == "PRIORITY")
   secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
+
+  stand_ids <- forsys_input$stands
+  stand_data <- get_stand_data_from_list(connection, stand_ids, datalayers)
 
   variables <- forsys_input$variables
 

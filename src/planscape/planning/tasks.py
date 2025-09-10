@@ -116,38 +116,42 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
 
 
 @app.task()
-def async_calculate_vector_metrics(planning_area_id: int, datalayer_id: int) -> None:
+def async_calculate_vector_metrics(
+    planning_area_id: int,
+    datalayer_id: int,
+    stand_size: StandSizeChoices,
+) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
         planning_area = PlanningArea.objects.get(id=planning_area_id)
         datalayer = DataLayer.objects.get(id=datalayer_id)
         calculate_stand_vector_stats3(
             datalayer=datalayer,
             planning_area_geometry=planning_area.geometry,
+            stand_size=stand_size,
         )
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics_v3(planning_area_id: int, datalayer_id: int) -> None:
+def async_calculate_stand_metrics_v3(
+    planning_area_id: int, datalayer_id: int, stand_size: StandSizeChoices
+) -> None:
     """
     Calculates stand metrics based on planning area. Calculates for all stand sizes.
     """
     try:
         planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
         datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
-        for i in StandSizeChoices:
-            stands = planning_area.get_stands(i)
-            with rasterio.Env(get_storage_session()):
-                if feature_enabled("PAGINATED_STAND_METRICS"):
-                    paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-                    for page in paginator.page_range:
-                        paginated_stands = paginator.page(page)
-                        log.info(f"Processing page {page} of stands")
+        stands = planning_area.get_stands(stand_size=stand_size).order_by("grid_key")
+        with rasterio.Env(get_storage_session()):
+            if feature_enabled("PAGINATED_STAND_METRICS"):
+                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
+                for page in paginator.page_range:
+                    paginated_stands = paginator.page(page)
+                    log.info(f"Processing page {page} of stands")
 
-                        calculate_stand_zonal_stats(
-                            paginated_stands.object_list, datalayer
-                        )
-                else:
-                    calculate_stand_zonal_stats(stands, datalayer)
+                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
+            else:
+                calculate_stand_zonal_stats(stands, datalayer)
     except PlanningArea.DoesNotExist:
         log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
         return
@@ -162,7 +166,11 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
     stand_size = scenario.get_stand_size()
     geometry = scenario.planning_area.geometry
 
-    stands = Stand.objects.within_polygon(geometry, stand_size).with_webmercator()
+    stands = (
+        Stand.objects.within_polygon(geometry, stand_size)
+        .with_webmercator()
+        .order_by("grid_key")
+    )
 
     try:
         with rasterio.Env(get_storage_session()):

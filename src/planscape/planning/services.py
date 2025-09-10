@@ -49,7 +49,9 @@ from planscape.openpanel import track_openpanel
 logger = logging.getLogger(__name__)
 
 
-def create_metrics_task(planning_area: PlanningArea, datalayer: DataLayer):
+def create_metrics_task(
+    planning_area: PlanningArea, datalayer: DataLayer, stand_size: StandSizeChoices
+):
     from planning.tasks import (
         async_calculate_stand_metrics_v3,
         async_calculate_vector_metrics,
@@ -57,9 +59,13 @@ def create_metrics_task(planning_area: PlanningArea, datalayer: DataLayer):
 
     match datalayer.type:
         case DataLayerType.VECTOR:
-            return async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+            return async_calculate_vector_metrics.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
         case _:
-            return async_calculate_stand_metrics_v3.si(planning_area.pk, datalayer.pk)
+            return async_calculate_stand_metrics_v3.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
 
 
 @transaction.atomic()
@@ -95,7 +101,11 @@ def create_planning_area(
     ]
     datalayers = list(filter(None, datalayers))
     precalculation_jobs = group(
-        [create_metrics_task(planning_area, datalayer) for datalayer in datalayers]
+        [
+            create_metrics_task(planning_area, datalayer, stand_size=stand_size)
+            for datalayer in datalayers
+            for stand_size in StandSizeChoices
+        ]
     )
     create_stands_job = chain(
         async_create_stands.si(planning_area.pk), precalculation_jobs
@@ -947,6 +957,15 @@ def get_excluded_stands(
     )
 
 
+def get_constrained_stands(stands_qs, datalayer, operator, value):
+    # TODO: get metric to be used for this layer
+    filter = {
+        f"metrics__avg__{operator}": value,
+        "metrics__datalayer_id": datalayer.pk,
+    }
+    return stands_qs.filter(**filter).values_list("id", flat=True)
+
+
 def get_available_stands(
     planning_area: PlanningArea,
     *,
@@ -956,18 +975,35 @@ def get_available_stands(
     constraints: Optional[List[Dict[str, Any]]] = None,
     **kwargs,
 ):
+    if not includes:
+        includes = list()
+    if not excludes:
+        excludes = list()
+    if not constraints:
+        constraints = list()
     stands = planning_area.get_stands(stand_size)
     excluded_ids = []
+    constrained_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
+    for constraint in constraints:
+        stands_queryset = stands.all()
+        constrained_stands = get_constrained_stands(
+            stands_queryset,
+            constraint.get("datalayer"),
+            constraint.get("operator"),
+            constraint.get("value"),
+        )
+        constrained_ids.extend(list(constrained_stands))
+
     return {
         "unavailable": {
             "by_inclusions": [],
             "by_exclusions": list(set(excluded_ids)),
-            "by_thresholds": [],
+            "by_thresholds": list(set(constrained_ids)),
         },
         "summary": {
             "total_area": 0,
