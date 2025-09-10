@@ -1071,7 +1071,9 @@ call_forsys_v3 <- function(
     patchmax_sample_seed = seed
   )
   summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
-  out$project_output <- out$project_output |> left_join(summarized_metrics, by="proj_id")
+  attain_cols <- grep("^attain_", names(out$project_output), value = TRUE)
+  out$project_output <- out$project_output[, setdiff(names(out$project_output), attain_cols), drop = FALSE]
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by = "proj_id")
   return(out)
 }
 
