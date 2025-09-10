@@ -1089,7 +1089,7 @@ main_pre_processed <- function(scenario_id) {
   secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
 
-  stand_ids <- forsys_input$stands
+  stand_ids <- forsys_input$stand_ids
   stand_data <- get_stand_data_from_list(connection, stand_ids, datalayers)
 
   variables <- forsys_input$variables
