@@ -21,6 +21,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.db.models.functions import Area, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.measure import A
 from django.db import transaction
 from django.db.models.aggregates import Sum
 from django.utils.timezone import now
@@ -1011,6 +1012,10 @@ def get_available_stands(
         .annotate(area=area_transform)
         .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
     )
+    if not total_area:
+        total_area = A(sq_m=0)
+    if not total_excluded_area:
+        total_excluded_area = A(sq_m=0)
 
     return {
         "unavailable": {
