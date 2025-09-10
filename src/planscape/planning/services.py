@@ -960,10 +960,25 @@ def get_excluded_stands(
     )
 
 
-def get_constrained_stands(stands_qs, datalayer, operator, value):
-    # TODO: get metric to be used for this layer
+def get_constrained_stands(
+    stands_qs,
+    datalayer: DataLayer,
+    operator: Optional[str] = None,
+    value: Union[str, float] = 1.0,
+    metric_column: Optional[str] = None,
+):
+    if not metric_column:
+        metric_column = (
+            datalayer.metadata.get("modules", {})
+            .get("forsys", {})
+            .get("metric_column", "avg")
+        )
+    if not operator:
+        metric_filter = f"metrics__{metric_column}"
+    else:
+        metric_filter = f"metrics__{metric_column}__{operator}"
     filter = {
-        f"metrics__avg__{operator}": value,
+        metric_filter: value,
         "metrics__datalayer_id": datalayer.pk,
     }
     return stands_qs.filter(**filter).values_list("id", flat=True)
@@ -992,7 +1007,13 @@ def get_available_stands(
     constrained_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
-        excluded_stands = get_excluded_stands(stands_queryset, exclude)
+        excluded_stands = get_constrained_stands(
+            stands_queryset,
+            exclude,
+            "eq",
+            metric_column="majority",
+            value=1,
+        )
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     for constraint in constraints:
