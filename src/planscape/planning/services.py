@@ -1024,10 +1024,11 @@ def get_available_stands(
             "by_thresholds": constrained_ids,
         },
         "summary": {
-            "total_area": total_area / settings.CONVERSION_SQM_ACRES,
-            "available_area": (total_area - total_excluded_area)
+            "total_area": total_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "available_area": (total_area.sq_m - total_excluded_area.sq_m)
             / settings.CONVERSION_SQM_ACRES,
-            "unavailable_area": total_excluded_area / settings.CONVERSION_SQM_ACRES,
+            "unavailable_area": total_excluded_area.sq_m
+            / settings.CONVERSION_SQM_ACRES,
         },
     }
 
