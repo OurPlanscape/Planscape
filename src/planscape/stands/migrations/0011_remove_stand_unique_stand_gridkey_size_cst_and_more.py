@@ -18,11 +18,6 @@ class Migration(migrations.Migration):
             model_name="stand",
             name="unique_stand_gridkey_size_idx",
         ),
-        migrations.AddField(
-            model_name="standmetric",
-            name="median",
-            field=models.FloatField(null=True),
-        ),
         migrations.AddConstraint(
             model_name="stand",
             constraint=models.UniqueConstraint(
