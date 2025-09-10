@@ -580,6 +580,9 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     geopackage_url = serializers.SerializerMethodField(
         help_text="URL to download the scenario's geopackage file.",
     )
+    usage_types = TreatmentGoalUsageSerializer(
+        source="treatment_goal.datalayer_usages", many=True, read_only=True
+    )
 
     def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
         """
@@ -599,6 +602,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "notes",
             "configuration",
             "treatment_goal",
+            "usage_types",
             "scenario_result",
             "user",
             "creator",
