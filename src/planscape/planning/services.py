@@ -1015,8 +1015,8 @@ def get_available_stands(
     return {
         "unavailable": {
             "by_inclusions": [],
-            "by_exclusions": list(set(excluded_ids)),
-            "by_thresholds": list(set(constrained_ids)),
+            "by_exclusions": excluded_ids,
+            "by_thresholds": constrained_ids,
         },
         "summary": {
             "total_area": total_area / settings.CONVERSION_SQM_ACRES,
