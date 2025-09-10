@@ -950,20 +950,25 @@ def planning_area_covers(
     return False
 
 
-def get_excluded_stands(
+def get_constrained_stands(
     stands_qs,
-    datalayer,
+    datalayer: DataLayer,
+    operator: Optional[str] = None,
+    value: Union[str, float] = 1.0,
+    metric_column: Optional[str] = None,
 ):
-    return stands_qs.filter(
-        metrics__datalayer_id=datalayer.pk,
-        metrics__majority=1,
-    )
-
-
-def get_constrained_stands(stands_qs, datalayer, operator, value):
-    # TODO: get metric to be used for this layer
+    if not metric_column:
+        metric_column = (
+            datalayer.metadata.get("modules", {})
+            .get("forsys", {})
+            .get("metric_column", "avg")
+        )
+    if not operator:
+        metric_filter = f"metrics__{metric_column}"
+    else:
+        metric_filter = f"metrics__{metric_column}__{operator}"
     filter = {
-        f"metrics__avg__{operator}": value,
+        metric_filter: value,
         "metrics__datalayer_id": datalayer.pk,
     }
     return stands_qs.filter(**filter).values_list("id", flat=True)
@@ -992,7 +997,13 @@ def get_available_stands(
     constrained_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
-        excluded_stands = get_excluded_stands(stands_queryset, exclude)
+        excluded_stands = get_constrained_stands(
+            stands_queryset,
+            exclude,
+            "eq",
+            metric_column="majority",
+            value=1,
+        )
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     for constraint in constraints:
@@ -1006,9 +1017,13 @@ def get_available_stands(
         constrained_ids.extend(list(constrained_stands))
     excluded_ids = set(excluded_ids)
     constrained_ids = set(constrained_ids)
-    total_excluded_ids = excluded_ids | constrained_ids
     total_excluded_area = (
-        Stand.objects.filter(id__in=total_excluded_ids)
+        Stand.objects.filter(id__in=excluded_ids)
+        .annotate(area=area_transform)
+        .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    )
+    total_constrained_area = (
+        Stand.objects.filter(id__in=constrained_ids)
         .annotate(area=area_transform)
         .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
     )
@@ -1016,7 +1031,12 @@ def get_available_stands(
         total_area = A(sq_m=0)
     if not total_excluded_area:
         total_excluded_area = A(sq_m=0)
+    if not total_constrained_area:
+        total_constrained_area = A(sq_m=0)
 
+    available_area = total_area - total_excluded_area
+    treatable_area = available_area - total_constrained_area
+    total_unavailable_area = total_excluded_area + total_constrained_area
     return {
         "unavailable": {
             "by_inclusions": [],
@@ -1025,9 +1045,9 @@ def get_available_stands(
         },
         "summary": {
             "total_area": total_area.sq_m / settings.CONVERSION_SQM_ACRES,
-            "available_area": (total_area.sq_m - total_excluded_area.sq_m)
-            / settings.CONVERSION_SQM_ACRES,
-            "unavailable_area": total_excluded_area.sq_m
+            "available_area": available_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "treatable_area": treatable_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "unavailable_area": total_unavailable_area.sq_m
             / settings.CONVERSION_SQM_ACRES,
         },
     }
