@@ -983,7 +983,7 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
-    area_transform = Transform(Area("geometry"), settings.AREA_SRID)
+    area_transform = Area(Transform("geometry", settings.AREA_SRID))
     stands = planning_area.get_stands(stand_size).annotate(area=area_transform)
     total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
