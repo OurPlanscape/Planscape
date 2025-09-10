@@ -3,6 +3,7 @@ import logging
 import rasterio
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -219,6 +220,41 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         }
         for tgudl in tx_goal.datalayer_usages.all()
     ]
+
+    max_slope = scenario.configuration.get("max_slope")
+    if max_slope:
+        datalayer = get_datalayer_by_module_atribute("forsys", "name", "slope")
+        datalayers.append(
+            {
+                "id": datalayer.pk,
+                "name": datalayer.name,
+                "metric": get_datalayer_metric(datalayer),
+                "type": datalayer.type,
+                "geometry_type": datalayer.geometry_type,
+                "threshold": f"value <= {max_slope}",
+                "usage_type": "THRESHOLD",
+            }
+        )
+
+    distance_from_roads = scenario.configuration.get("min_distance_from_road")
+    if distance_from_roads:
+        datalayer = get_datalayer_by_module_atribute(
+            "forsys", "name", "distance_from_roads"
+        )
+        distance_from_roads_meters = (
+            distance_from_roads / 1.094
+        )  # convert yards to meters
+        datalayers.append(
+            {
+                "id": datalayer.pk,
+                "name": datalayer.name,
+                "metric": get_datalayer_metric(datalayer),
+                "type": datalayer.type,
+                "geometry_type": datalayer.geometry_type,
+                "threshold": f"value <= {distance_from_roads_meters}",
+                "usage_type": "THRESHOLD",
+            }
+        )
 
     min_area_project = get_min_project_area(scenario)
     number_of_projects = scenario.configuration.get(
