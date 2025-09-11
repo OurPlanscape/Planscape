@@ -2,6 +2,10 @@
 @import 'mixins';
 
 :host {
+  display: block;
+}
+
+section {
   @include public-sans();
   font-size: 14px;
   font-style: normal;
@@ -17,6 +21,7 @@
   max-width: 260px;
   box-sizing: border-box;
 }
+
 
 .legend {
   display: inline-flex;

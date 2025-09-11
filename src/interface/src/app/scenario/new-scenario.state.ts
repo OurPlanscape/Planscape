@@ -77,6 +77,18 @@ export class NewScenarioState {
     map((c) => c.unavailable.by_exclusions)
   );
 
+  public constraintStands$ = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_thresholds)
+  );
+
+  hasExcludedStands$ = this.excludedStands.pipe(
+    map((stands) => stands.length > 0)
+  );
+
+  hasConstrainedStands$ = this.constraintStands$.pipe(
+    map((stands) => stands.length > 0)
+  );
+
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 

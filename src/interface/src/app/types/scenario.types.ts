@@ -188,8 +188,9 @@ export interface AvailableStands {
     by_thresholds: number[];
   };
   summary: {
-    total_area: number;
-    available_area: number;
-    unavailable_area: number;
+    total_area: number; // total PA stands area
+    available_area: number; // total area - exclusions
+    treatable_area: number; // available area - thresholds
+    unavailable_area: number; // unavailable area
   };
 }
