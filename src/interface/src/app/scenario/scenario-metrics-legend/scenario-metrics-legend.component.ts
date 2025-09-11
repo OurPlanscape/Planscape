@@ -1,22 +1,39 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { NgFor } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { NgFor, NgIf } from '@angular/common';
 import { getGroupedAttainment } from 'src/app/chart-helper';
-import { ScenarioResult } from '@types';
+import { ScenarioResult, UsageType } from '@types';
+import {
+  MatCheckboxModule,
+  MatCheckboxChange,
+} from '@angular/material/checkbox';
 import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
+import { ScenarioService } from '@services';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-scenario-metrics-legend',
   standalone: true,
-  imports: [NgFor],
+  imports: [NgFor, NgIf, MatCheckboxModule],
   templateUrl: './scenario-metrics-legend.component.html',
   styleUrl: './scenario-metrics-legend.component.scss',
 })
 export class ScenarioMetricsLegendComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
-  metrics: string[] = [];
-  assignedColors: { [name: string]: string } = {};
+  @Input() scenarioId!: number;
 
-  constructor(private chartService: ScenarioResultsChartsService) {}
+  @Input() selectedMetrics!: Set<string>;
+  @Output() handleCheckbox = new EventEmitter<MatCheckboxChange>();
+  assignedColors: { [name: string]: string } = {};
+  metrics: string[] = [];
+
+  priorities: string[] = [];
+  cobenefits: string[] = [];
+
+  constructor(
+    private chartService: ScenarioResultsChartsService,
+    private scenarioService: ScenarioService
+  ) {}
 
   ngOnInit() {
     this.assignedColors = this.chartService.getAssignedColors();
@@ -24,5 +41,43 @@ export class ScenarioMetricsLegendComponent implements OnInit {
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)
     );
+    if (this.scenarioId) {
+      this.scenarioService
+        .getScenario(this.scenarioId)
+        .pipe(untilDestroyed(this))
+        .subscribe((scenario) => {
+          if (scenario.usage_types) {
+            this.divideMetricsIntoUsageTypes(scenario.usage_types);
+          }
+        });
+    }
+  }
+
+  // divide metrics into priorities and cobenefits,
+  // based on usage types for scenario treatment goal
+  divideMetricsIntoUsageTypes(usageTypes: UsageType[]) {
+    this.priorities = [];
+    this.cobenefits = [];
+    const priorityLayers = usageTypes
+      ?.filter((ut) => ut.usage_type === 'PRIORITY')
+      .map((m) => m.datalayer);
+    this.metrics.forEach((m: string) => {
+      if (priorityLayers?.includes(m)) {
+        this.priorities.push(m);
+      } else {
+        this.cobenefits.push(m);
+      }
+    });
+  }
+
+  isSelected(metric: string) {
+    if (this.selectedMetrics) {
+      return this.selectedMetrics.has(metric);
+    }
+    return false;
+  }
+
+  metricSelected(event: MatCheckboxChange) {
+    this.handleCheckbox.emit(event);
   }
 }
