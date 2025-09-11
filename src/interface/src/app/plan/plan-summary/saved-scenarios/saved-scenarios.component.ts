@@ -56,8 +56,8 @@ export class SavedScenariosComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService,
-  ) { }
+    private featureService: FeatureService
+  ) {}
 
   ngOnInit(): void {
     this.fetchScenarios();
