@@ -38,8 +38,10 @@ export class ScenarioLegendComponent {
   showConstrainedStands$ = this.newScenarioState.hasConstrainedStands$;
 
   treatablePercent$ = this.newScenarioState.availableStands$.pipe(
-    map((s) => s.summary.available_area / s.summary.total_area)
+    map((s) => s.summary.treatable_area / s.summary.available_area)
   );
+
+  showAvailablePercent$ = this.stepIndex$.pipe(map((s) => s > 1));
 
   constructor(private newScenarioState: NewScenarioState) {}
 }

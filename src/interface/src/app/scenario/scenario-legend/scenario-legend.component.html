@@ -25,7 +25,7 @@
   <div *ngIf="showConstrainedStands$ | async">
     <div class="legend icon pattern">Does not meet Stand-level Constraint</div>
   </div>
-  <div>
+  <div *ngIf="showAvailablePercent$ | async">
     <div class="legend">
       <div class="legend-text">
         % Treatable:
@@ -39,6 +39,9 @@
           [outlined]="true"></button>
       </div>
     </div>
-    <div>{{ treatablePercent$ | async | percent }}</div>
+    <div>
+      {{ treatablePercent$ | async | percent }} of
+      {{ summary.available_area | number: '1.0-0' }} ac
+    </div>
   </div>
 </section>
