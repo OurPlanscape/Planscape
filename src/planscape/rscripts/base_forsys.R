@@ -1039,7 +1039,8 @@ call_forsys_v3 <- function(
   seed <- variables$seed
   
   stand_thresholds <- get_stand_thresholds_v3(connection, thresholds)
-  output_tmp <- data.table::rbindlist(list(priorities, secondary_metrics, thresholds)) %>%
+  forsys_inputs <- data.table::rbindlist(list(priorities, secondary_metrics, thresholds))
+  output_tmp <- forsys_inputs %>%
     remove_duplicates_v2() %>%
     select(id)
   output_tmp <- paste0("datalayer_", output_tmp$id)
@@ -1088,6 +1089,7 @@ main_pre_processed <- function(scenario_id) {
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
 
   stand_ids <- forsys_input$stand_ids
+  datalayers <- remove_duplicates_v2(datalayers)
   stand_data <- get_stand_data_from_list(connection, stand_ids, datalayers)
 
   variables <- forsys_input$variables
