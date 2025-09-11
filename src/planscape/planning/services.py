@@ -1134,7 +1134,7 @@ def get_available_stands(
         total_constrained_area = A(sq_m=0)
 
     available_area = total_area - total_excluded_area
-    treatable_area = available_area - total_constrained_area
+    treatable_area = min(available_area - total_constrained_area, 0)
     total_unavailable_area = total_excluded_area + total_constrained_area
     return {
         "unavailable": {
