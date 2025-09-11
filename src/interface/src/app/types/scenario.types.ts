@@ -96,7 +96,8 @@ export type ScenarioResultStatus =
   | 'SUCCESS' // Run completed successfully
   | 'FAILURE' // Run failed;
   | 'PANIC' // Run failed; panic
-  | 'TIMED_OUT'; // Run failed; timed out
+  | 'TIMED_OUT'
+  | 'DRAFT'; // Creating a scenario but not completed the steps yet.
 
 export type GeoPackageStatus =
   | 'PENDING'

@@ -2,7 +2,12 @@ import { Component, HostBinding, Input } from '@angular/core';
 import { NgIf, NgSwitch } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 
-export type StatusChipStatus = 'inProgress' | 'success' | 'failed' | 'running';
+export type StatusChipStatus =
+  | 'inProgress'
+  | 'success'
+  | 'failed'
+  | 'running'
+  | 'draft';
 
 /**
  * Status chip to display status inline.
@@ -35,6 +40,7 @@ export class StatusChipComponent {
     success: 'Success',
     failed: 'Failed',
     running: 'Running',
+    draft: 'Draft',
   };
 
   @HostBinding('class.in-progress')
@@ -55,5 +61,10 @@ export class StatusChipComponent {
   @HostBinding('class.running')
   get isRunning() {
     return this.status === 'running';
+  }
+
+  @HostBinding('class.draft')
+  get isDraft() {
+    return this.status === 'draft';
   }
 }
