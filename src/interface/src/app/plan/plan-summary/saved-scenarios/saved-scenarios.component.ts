@@ -57,7 +57,7 @@ export class SavedScenariosComponent implements OnInit {
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
     private featureService: FeatureService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.fetchScenarios();
@@ -132,15 +132,18 @@ export class SavedScenariosComponent implements OnInit {
       this.openScenarioSetupDialog();
     } else {
       if (!configId) {
-      this.router.navigate(['scenario'], {
-        relativeTo: this.route,
-      });
-    } else {
-      this.router.navigate(['scenario', configId], {
-        relativeTo: this.route,
-      });
+        if (!configId) {
+          this.router.navigate(['scenario'], {
+            relativeTo: this.route,
+          });
+        } else {
+          this.router.navigate(['scenario', configId], {
+            relativeTo: this.route,
+          });
+        }
+      }
     }
-  }}
+  }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
     this.breadcrumbService.updateBreadCrumb({
