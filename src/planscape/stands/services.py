@@ -77,6 +77,7 @@ def to_stand_metric(
 DEFAULT_AGGREGATIONS = (
     "min",
     "mean",
+    "median",
     "max",
     "sum",
     "count",
@@ -87,6 +88,7 @@ DEFAULT_AGGREGATIONS = (
 AGGREGATION_MODEL_MAP = {
     "min": "min",
     "mean": "avg",
+    "median": "median",
     "max": "max",
     "sum": "sum",
     "count": "count",
