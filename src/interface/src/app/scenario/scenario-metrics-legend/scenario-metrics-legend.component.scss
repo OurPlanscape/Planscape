@@ -48,6 +48,7 @@
     justify-content: space-between;
     width: 100%;
     gap: 4px;
+    align-items: center;
 }
 
 
@@ -58,6 +59,11 @@
     line-height: normal;
 }
 
+.legend-color-box {
+    height: 48px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
 
 .legend-color {
     width: 16px;
