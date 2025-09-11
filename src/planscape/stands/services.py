@@ -77,6 +77,7 @@ def to_stand_metric(
 DEFAULT_AGGREGATIONS = (
     "min",
     "mean",
+    "median",
     "max",
     "sum",
     "count",
@@ -87,6 +88,7 @@ DEFAULT_AGGREGATIONS = (
 AGGREGATION_MODEL_MAP = {
     "min": "min",
     "mean": "avg",
+    "median": "median",
     "max": "max",
     "sum": "sum",
     "count": "count",
@@ -240,7 +242,11 @@ def calculate_stand_zonal_stats(
 def get_datalayer_metric(datalayer: DataLayer) -> str:
     if not datalayer.metadata:
         return "avg"
-    metric = datalayer.metadata.get("forsys", {}).get("metric", "avg")
+    metric = (
+        datalayer.metadata.get("modules", {})
+        .get("forsys", {})
+        .get("metric_column", "avg")
+    )
     if metric not in MODEL_AGGREGATION_MAP:
         return "avg"
     return metric

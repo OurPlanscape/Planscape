@@ -62,7 +62,7 @@ enum ScenarioTabs {
   styleUrl: './view-scenario.component.scss',
 })
 export class ViewScenarioComponent {
-  planId = this.route.snapshot.data['planId'];
+  planId = this.route.snapshot.parent?.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
 
   selectedTab = ScenarioTabs.RESULTS;

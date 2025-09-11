@@ -1,5 +1,5 @@
-@import "mixins";
-@import "colors";
+@import 'mixins';
+@import 'colors';
 
 :host {
   @include xs-label();
@@ -11,7 +11,6 @@
   height: 32px;
   min-width: 0;
   max-width: 100%;
-
 
   &.in-progress {
     color: $color-main-blue;
@@ -25,12 +24,17 @@
 
   &.failed {
     color: $color-dark-red;
-    background-color: $color-light-red
+    background-color: $color-light-red;
   }
 
   &.running {
     color: $color-dark-yellow;
     background-color: $color-brand-soft-yellow;
+  }
+
+  &.draft {
+    color: $color-main-blue;
+    background-color: $color-soft-light-blue;
   }
 
   mat-icon {

@@ -6,6 +6,10 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+from stands.models import StandSizeChoices
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -22,10 +26,6 @@ from planning.models import (
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
-from stands.models import StandSizeChoices
-
 from planscape.exceptions import InvalidGeometry
 
 
@@ -988,6 +988,8 @@ class AvailableStandsSummarySerializer(serializers.Serializer):
     total_area = serializers.FloatField()
 
     available_area = serializers.FloatField()
+
+    treatable_area = serializers.FloatField()
 
     unavailable_area = serializers.FloatField()
 
