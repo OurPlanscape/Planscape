@@ -30,3 +30,9 @@
   flex-direction: row;
   align-items: center;
 }
+
+@media print {
+  :host {
+    display: none;
+  }
+}

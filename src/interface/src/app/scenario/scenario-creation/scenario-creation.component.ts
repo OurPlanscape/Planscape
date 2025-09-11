@@ -1,10 +1,4 @@
-import {
-  Component,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
@@ -41,6 +35,8 @@ import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-mo
 import { NewScenarioState } from '../new-scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { getPlanPath } from 'src/app/plan/plan-helpers';
 
 enum ScenarioTabs {
   CONFIG,
@@ -72,7 +68,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate, OnDestroy
+  implements OnInit, CanComponentDeactivate
 {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
@@ -117,10 +113,9 @@ export class ScenarioCreationComponent
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
     private router: Router,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private breadcrumbService: BreadcrumbService
   ) {
-    this.newScenarioState.setPlanId(this.planId);
-
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
@@ -131,6 +126,11 @@ export class ScenarioCreationComponent
   }
 
   ngOnInit(): void {
+    // Setting up the breadcrumb
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Scenario: New Scenario',
+      backUrl: getPlanPath(this.planId),
+    });
     // Adding scenario name validator
     this.refreshScenarioNameValidator();
   }
@@ -215,9 +215,5 @@ export class ScenarioCreationComponent
       this.dialog.open(SavingErrorModalComponent);
       return false;
     }
-  }
-
-  ngOnDestroy(): void {
-    this.newScenarioState.reset();
   }
 }

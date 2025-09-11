@@ -142,6 +142,15 @@ const routes: Routes = [
           import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
+        path: 'plan/:planId/scenario',
+        resolve: {
+          planId: planLoaderResolver,
+        },
+
+        loadChildren: () =>
+          import('./scenario/scenario.module').then((m) => m.ScenarioModule),
+      },
+      {
         // follow the route structure of plan, but without nesting modules and components
         path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
         canActivate: [AuthGuard],

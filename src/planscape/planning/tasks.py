@@ -3,6 +3,7 @@ import logging
 import rasterio
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
+from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -22,7 +23,7 @@ from planning.models import (
     Scenario,
     ScenarioResultStatus,
 )
-from planning.services import get_max_treatable_area, get_min_project_area
+from planning.services import build_run_configuration
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -207,47 +208,12 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         stand_size=scenario.get_stand_size()
     ).values_list("id", flat=True)
 
-    datalayers = [
-        {
-            "id": tgudl.datalayer.id,
-            "name": tgudl.datalayer.name,
-            "metric": get_datalayer_metric(tgudl.datalayer),
-            "type": tgudl.datalayer.type,
-            "geometry_type": tgudl.datalayer.geometry_type,
-            "threshold": tgudl.threshold,
-            "usage_type": tgudl.usage_type,
-        }
-        for tgudl in tx_goal.datalayer_usages.all()
-    ]
-
-    min_area_project = get_min_project_area(scenario)
-    number_of_projects = scenario.configuration.get(
-        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
-    )
-    max_area_project = get_max_treatable_area(
-        configuration=scenario.configuration,
-        min_project_area=min_area_project,
-        number_of_projects=number_of_projects,
-    )
-    sdw = settings.FORSYS_SDW
-    epw = settings.FORSYS_EPW
-    exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
-    sample_fraction = settings.FORSYS_SAMPLE_FRACTION
-    seed = scenario.configuration.get("seed")
+    run_config = build_run_configuration(scenario)
 
     forsys_input = {
         "stand_ids": list(stand_ids),
-        "datalayers": datalayers,
-        "variables": {
-            "min_area_project": min_area_project,
-            "max_area_project": max_area_project,
-            "number_of_projects": number_of_projects,
-            "spatial_distribution_weight": sdw,
-            "edge_proximity_weight": epw,
-            "exclusion_limit": exclusion_limit,
-            "sample_fraction": sample_fraction,
-            "seed": seed,
-        },
+        "datalayers": run_config["datalayers"],
+        "variables": run_config["variables"],
     }
 
     with transaction.atomic():

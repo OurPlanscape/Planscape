@@ -27,7 +27,7 @@ from planning.services import (
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
-    get_excluded_stands,
+    get_constrained_stands,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
@@ -614,9 +614,11 @@ class TestRemoveExcludes(TransactionTestCase):
     def test_filter_by_datalayer_removes_stands(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
-        excluded_stands = get_excluded_stands(
+        excluded_stands = get_constrained_stands(
             stands,
             self.datalayer,
+            metric_column="majority",
+            value=1,
         )
 
         self.assertEqual(11, len(excluded_stands))

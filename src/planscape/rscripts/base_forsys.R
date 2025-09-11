@@ -605,6 +605,25 @@ get_max_slope <- function(configuration, datalayer) {
   glue("datalayer_{datalayer$id} <= {max_slope}")
 }
 
+get_stand_thresholds_v3 <- function(connection, datalayers) {
+  # max_slope and distance_from_roads are already included in datalayers
+  all_thresholds <- c()
+
+  for (i in seq_len(nrow(datalayers))) {
+    datalayer <- datalayers[i, ]
+    if (is.null(datalayer$threshold)) {
+      next
+    }
+    curr_threshold <- gsub("value", paste0("datalayer_", datalayer$id), datalayer$threshold)
+    all_thresholds <- c(all_thresholds, curr_threshold)
+  }
+
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
+}
+
 get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -637,6 +656,7 @@ get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   }
   return(NULL)
 }
+
 get_stand_thresholds <- function(scenario) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -771,7 +791,9 @@ call_forsys <- function(
     patchmax_sample_seed = configuration$seed,
   )
   summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
-  out$project_output <- out$project_output |> left_join(summarized_metrics, by="proj_id")
+  attain_cols <- grep("^attain_", names(out$project_output), value = TRUE)
+  out$project_output <- out$project_output[, setdiff(names(out$project_output), attain_cols), drop = FALSE]
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by = "proj_id")
   return(out)
 }
 
@@ -1018,7 +1040,7 @@ call_forsys_v3 <- function(
   exclusion_limit <- variables$exclusion_limit
   seed <- variables$seed
   
-  stand_thresholds <- get_stand_thresholds_v2(connection, scenario, thresholds)
+  stand_thresholds <- get_stand_thresholds_v3(connection, thresholds)
   output_tmp <- data.table::rbindlist(list(priorities, secondary_metrics, thresholds)) %>%
     remove_duplicates_v2() %>%
     select(id)
@@ -1049,7 +1071,9 @@ call_forsys_v3 <- function(
     patchmax_sample_seed = seed
   )
   summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
-  out$project_output <- out$project_output |> left_join(summarized_metrics, by="proj_id")
+  attain_cols <- grep("^attain_", names(out$project_output), value = TRUE)
+  out$project_output <- out$project_output[, setdiff(names(out$project_output), attain_cols), drop = FALSE]
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by = "proj_id")
   return(out)
 }
 
@@ -1065,7 +1089,7 @@ main_pre_processed <- function(scenario_id) {
   secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
 
-  stand_ids <- forsys_input$stands
+  stand_ids <- forsys_input$stand_ids
   stand_data <- get_stand_data_from_list(connection, stand_ids, datalayers)
 
   variables <- forsys_input$variables
