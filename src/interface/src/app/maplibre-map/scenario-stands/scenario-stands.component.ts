@@ -31,10 +31,12 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 export class ScenarioStandsComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
 
-  protected readonly COLORS = BASE_COLORS;
-  sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
+  readonly COLORS = BASE_COLORS;
+  readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
+  readonly excludedKey = 'excluded';
+  readonly planId = this.route.snapshot.data['planId'];
 
-  planId = this.route.snapshot.data['planId'];
+  private standsLoaded = false;
 
   tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
@@ -46,15 +48,15 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     distinctUntilChanged(),
     tap((s) => {
       this.newScenarioState.setLoading(true);
+      this.standsLoaded = false;
     })
   );
 
-  // local copy to reset feature state
-  excludedStands: number[] = [];
-  constrainedStands: number[] = [];
+  opacity$ = this.mapConfigState.projectAreasOpacity$;
 
-  readonly excludedKey = 'excluded';
-  readonly constrainedKey = 'constrained';
+  // local copies to reset feature state
+  private excludedStands: number[] = [];
+  private constrainedStands: number[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -62,63 +64,25 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private mapConfigState: MapConfigState
   ) {
-    this.newScenarioState.stepIndex$
+    this.newScenarioState.doesNotMeetConstraintsStands$
       .pipe(untilDestroyed(this))
-      .subscribe((step) => {
-        console.log('step?', step);
-        // remove
+      .subscribe((ids) => {
+        this.constrainedStands.forEach((id) =>
+          this.removeMarkStandAsExcluded(id)
+        );
+        ids.forEach((id) => this.markStandAsExcluded(id));
+
+        this.constrainedStands = ids;
       });
 
     this.newScenarioState.excludedStands$
       .pipe(untilDestroyed(this))
       .subscribe((ids) => {
-        const toRemove = this.excludedStands.filter((id) => !ids.includes(id));
-        const toAdd = ids.filter((id) => !this.excludedStands.includes(id));
-
-        toRemove.forEach((id) => this.removeMarkStandAsExcluded(id));
-        toAdd.forEach((id) => this.markStandAsExcluded(id));
-
+        this.excludedStands.forEach((id) => this.removeMarkStandAsExcluded(id));
+        ids.forEach((id) => this.markStandAsExcluded(id));
         this.excludedStands = ids;
       });
-
-    this.newScenarioState.doesNotMeetConstraintsStands$
-      .pipe(untilDestroyed(this))
-      .subscribe((ids) => {
-        const toRemove = this.constrainedStands.filter(
-          (id) => !ids.includes(id)
-        );
-        const toAdd = ids.filter((id) => !this.constrainedStands.includes(id));
-
-        toRemove.forEach((id) => this.removeMarkStandAsExcluded(id));
-        toAdd.forEach((id) => this.markStandAsExcluded(id));
-
-        this.constrainedStands = ids;
-      });
   }
-
-  ngOnInit(): void {
-    this.mapLibreMap.on('sourcedata', this.onDataListener);
-  }
-
-  ngOnDestroy(): void {
-    this.mapLibreMap.off('sourcedata', this.onDataListener);
-  }
-
-  private onDataListener = (event: any) => {
-    if (
-      event.sourceId === this.sourceName &&
-      event.isSourceLoaded &&
-      event.type === 'sourcedata' &&
-      !event.sourceDataType
-    ) {
-      this.zone.run(() => {
-        this.newScenarioState.setBaseStandsLoaded(true);
-        this.newScenarioState.setLoading(false);
-      });
-    }
-  };
-
-  opacity$ = this.mapConfigState.projectAreasOpacity$;
 
   filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
     this.newScenarioState.stepIndex$,
@@ -160,10 +124,29 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     'fill-opacity': this.featureStatePaint(1, 0, this.excludedKey),
   } as any;
 
-  standConstrainedPaint = {
-    'fill-pattern': 'stripes-pattern', // constant pattern
-    'fill-opacity': this.featureStatePaint(1, 0, this.constrainedKey),
-  } as any;
+  ngOnInit(): void {
+    this.mapLibreMap.on('sourcedata', this.onDataListener);
+  }
+
+  ngOnDestroy(): void {
+    this.mapLibreMap.off('sourcedata', this.onDataListener);
+  }
+
+  private onDataListener = (event: any) => {
+    if (
+      event.sourceId === this.sourceName &&
+      event.isSourceLoaded &&
+      event.type === 'sourcedata' &&
+      !event.sourceDataType &&
+      !this.standsLoaded
+    ) {
+      this.zone.run(() => {
+        this.newScenarioState.setBaseStandsLoaded(true);
+        this.newScenarioState.setLoading(false);
+        this.standsLoaded = true;
+      });
+    }
+  };
 
   private markStandAsExcluded(id: number) {
     this.mapLibreMap.setFeatureState(

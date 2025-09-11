@@ -37,8 +37,11 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
+  private _stepIndex$ = new BehaviorSubject(0);
+  public stepIndex$ = this._stepIndex$.asObservable();
+
   // flag to track if the base stands are loaded
-  public baseStandsReady$ = new BehaviorSubject(false);
+  private baseStandsReady$ = new BehaviorSubject(false);
 
   // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
@@ -46,9 +49,6 @@ export class NewScenarioState {
     map((c) => c.stand_size!),
     distinctUntilChanged()
   );
-
-  private _stepIndex$ = new BehaviorSubject(0);
-  public stepIndex$ = this._stepIndex$.asObservable();
 
   // trigger to get available stands
   private _baseStandsLoaded$ = merge(
