@@ -29,6 +29,8 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.services import get_forsys_layer_by_capability, get_forsys_layer_by_name
+from datasets.services import get_datalayer_by_module_atribute
+from stands.services import get_datalayer_metric
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -407,6 +409,96 @@ def zip_directory(file_obj, source_dir):
                         os.path.join(root, file), os.path.join(source_dir, "..")
                     ),
                 )
+
+
+def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
+    tx_goal = scenario.treatment_goal
+
+    datalayers = []
+    if tx_goal:
+        datalayers = [
+            {
+                "id": tgudl.datalayer.id,
+                "name": tgudl.datalayer.name,
+                "metric": get_datalayer_metric(tgudl.datalayer),
+                "type": tgudl.datalayer.type,
+                "geometry_type": tgudl.datalayer.geometry_type,
+                "threshold": tgudl.threshold,
+                "usage_type": tgudl.usage_type,
+            }
+            for tgudl in tx_goal.datalayer_usages.all()
+        ]
+
+    merged_cfg = dict(getattr(scenario, "configuration", {}) or {})
+    one_off_cfg = getattr(scenario, "one_off_config", None)
+    if isinstance(one_off_cfg, dict) and one_off_cfg:
+        merged_cfg.update(one_off_cfg)
+
+    max_slope = merged_cfg.get("max_slope")
+    if max_slope:
+        slope = get_datalayer_by_module_atribute("forsys", "name", "slope")
+        datalayers.append(
+            {
+                "id": slope.pk,
+                "name": slope.name,
+                "metric": get_datalayer_metric(slope),
+                "type": slope.type,
+                "geometry_type": slope.geometry_type,
+                "threshold": f"value <= {max_slope}",
+                "usage_type": "THRESHOLD",
+            }
+        )
+
+    distance_from_roads = merged_cfg.get("min_distance_from_road")
+    if distance_from_roads:
+        roads = get_datalayer_by_module_atribute(
+            "forsys", "name", "distance_from_roads"
+        )
+        distance_from_roads_meters = distance_from_roads / 1.094
+        datalayers.append(
+            {
+                "id": roads.pk,
+                "name": roads.name,
+                "metric": get_datalayer_metric(roads),
+                "type": roads.type,
+                "geometry_type": roads.geometry_type,
+                "threshold": f"value <= {distance_from_roads_meters}",
+                "usage_type": "THRESHOLD",
+            }
+        )
+
+    min_area_project = get_min_project_area(scenario)
+    number_of_projects = merged_cfg.get(
+        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+    )
+    max_area_project = get_max_treatable_area(
+        configuration=merged_cfg,
+        min_project_area=min_area_project,
+        number_of_projects=number_of_projects,
+    )
+
+    sdw = settings.FORSYS_SDW
+    epw = settings.FORSYS_EPW
+    exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
+    sample_fraction = settings.FORSYS_SAMPLE_FRACTION
+    seed = merged_cfg.get("seed")
+
+    variables = {
+        "min_area_project": min_area_project,
+        "max_area_project": max_area_project,
+        "number_of_projects": number_of_projects,
+        "spatial_distribution_weight": sdw,
+        "edge_proximity_weight": epw,
+        "exclusion_limit": exclusion_limit,
+        "sample_fraction": sample_fraction,
+        "seed": seed,
+    }
+
+    return {
+        "stand_size": scenario.get_stand_size(),
+        "datalayers": datalayers,
+        "variables": variables,
+    }
 
 
 def get_max_treatable_area(
