@@ -37,10 +37,15 @@ export class ScenarioMetricsLegendComponent implements OnInit {
 
   ngOnInit() {
     this.assignedColors = this.chartService.getAssignedColors();
+    console.log('here are the assigned colors:', this.assignedColors);
 
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)
     );
+    console.log('here are the metrics:', this.metrics);
+    this.chartService.initDisplayedMetrics(this.metrics);
+    this.metrics.forEach((m) => this.chartService.getOrAddColor(m));
+    console.log('here are the assigned colors:', this.assignedColors);
     if (this.scenarioId) {
       this.scenarioService
         .getScenario(this.scenarioId)
@@ -78,6 +83,7 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   }
 
   metricSelected(event: MatCheckboxChange) {
-    this.handleCheckbox.emit(event);
+    this.chartService.updateDisplayedMetrics(event.checked, event.source.value);
+    // this.handleCheckbox.emit(event);
   }
 }

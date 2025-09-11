@@ -1,13 +1,5 @@
 :host {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  gap:8px
-}
-
-sg-chart {
-  width: 50%;
-  flex-shrink: 0;
+  display: block;
 }
 
 @media print {

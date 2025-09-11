@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
 
 const AVAILABLE_COLORS: string[] = [
   '#483D78',
@@ -37,6 +38,30 @@ const AVAILABLE_COLORS: string[] = [
 })
 export class ScenarioResultsChartsService {
   public selectedColors: Map<string, string> = new Map();
+
+  private _displayedMetrics$ = new BehaviorSubject<Set<string>>(
+    new Set<string>()
+  );
+  public displayedMetrics$ = this._displayedMetrics$
+    .asObservable()
+    .pipe(distinctUntilChanged());
+
+  initDisplayedMetrics(metrics: string[]) {
+    console.log('we called this?');
+    const metricSet = new Set(metrics);
+    this._displayedMetrics$.next(metricSet);
+  }
+
+  updateDisplayedMetrics(selected: boolean, metric: string) {
+    const currentSet = this._displayedMetrics$.value;
+    if (selected) {
+      currentSet.add(metric);
+    } else {
+      currentSet.delete(metric);
+    }
+    this._displayedMetrics$.next(currentSet);
+    console.log('displayed metrics is:', this._displayedMetrics$.value);
+  }
 
   getOrAddColor(name: string): string {
     if (this.selectedColors.has(name)) {

@@ -3,7 +3,6 @@
 
 
 :host {
-    width: 325px;
     display: flex;
     flex-direction: column;
     padding: 16px;
@@ -28,7 +27,6 @@
 
 .legend-box {
     display: flex;
-
     width: 100%;
     flex-direction: column;
 }
@@ -38,8 +36,6 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
-
-
 }
 
 

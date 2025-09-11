@@ -14,26 +14,18 @@ import {
 } from 'src/app/chart-helper';
 import { ChartComponent } from '@styleguide';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
-import { ScenarioMetricsLegendComponent } from '../scenario-metrics-legend/scenario-metrics-legend.component';
-import { MatCheckboxChange } from '@angular/material/checkbox';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    NgChartsModule,
-    ChartComponent,
-    ScenarioMetricsLegendComponent,
-  ],
+  imports: [AsyncPipe, NgChartsModule, ChartComponent],
   templateUrl: './treatment-opportunity-chart.component.html',
   styleUrl: './treatment-opportunity-chart.component.scss',
 })
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
-  @Input() scenarioId!: number;
-  selectedMetrics: Set<string> = new Set<string>();
+  @Input() selectedMetrics!: Set<string>;
 
   public barChartType: 'bar' = 'bar';
 
@@ -111,6 +103,10 @@ export class TreatmentOpportunityChartComponent implements OnInit {
   constructor(private chartService: ScenarioResultsChartsService) {}
 
   ngOnInit(): void {
+    this.chartService.displayedMetrics$.subscribe((metrics) => {
+      console.log('in the tx chart, here are the metrics:', metrics);
+    });
+
     const chartDatasets = getChartDatasetsFromFeatures(
       this.scenarioResult.result.features
     );
@@ -130,15 +126,17 @@ export class TreatmentOpportunityChartComponent implements OnInit {
       }
     });
 
-    this.selectedData$.next(structuredClone(this.barChartData));
+    const selectedData = {
+      ...this.barChartData,
+      datasets: this.barChartData.datasets.filter(
+        (d: CustomChartDataset) =>
+          d.extraInfo && this.selectedMetrics.has(d.extraInfo)
+      ),
+    };
+    this.selectedData$.next(selectedData);
   }
 
-  onMetricChange(event: MatCheckboxChange) {
-    if (event.checked) {
-      this.selectedMetrics.add(event.source.value);
-    } else {
-      this.selectedMetrics.delete(event.source.value);
-    }
+  updateDisplayedMetrics() {
     const selectedData = {
       ...this.barChartData,
       datasets: this.barChartData.datasets.filter(

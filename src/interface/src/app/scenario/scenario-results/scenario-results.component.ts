@@ -1,4 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { ScenarioResult } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
@@ -17,10 +18,12 @@ import {
   hasAnalytics,
   parseResultsToProjectAreas,
 } from 'src/app/plan/plan-helpers';
+import { getGroupedAttainment } from 'src/app/chart-helper';
 
 @Component({
   standalone: true,
   imports: [
+    AsyncPipe,
     NgIf,
     SectionComponent,
     TreatmentOpportunityChartComponent,
@@ -54,6 +57,10 @@ export class ScenarioResultsComponent implements OnChanges {
     // parse ScenarioResult
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
+      const metrics = Object.keys(
+        getGroupedAttainment(this.results.result.features)
+      );
+      metrics.forEach((m) => this.chartService.getOrAddColor(m));
     }
   }
 
@@ -96,4 +103,14 @@ export class ScenarioResultsComponent implements OnChanges {
 
     return isFlagEnabled && analytics;
   }
+
+  // onMetricChange(event: MatCheckboxChange) {
+  //   if (event.checked) {
+  //     this.selectedMetrics.add(event.source.value);
+  //   } else {
+  //     this.selectedMetrics.delete(event.source.value);
+  //   }
+  //   console.log('selected data is now:', this.selectedMetrics);
+  //   this.selectedData$.next(this.selectedMetrics);
+  // }
 }
