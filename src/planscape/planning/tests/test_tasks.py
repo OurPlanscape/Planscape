@@ -166,8 +166,9 @@ class AsyncPreForsysProcessTest(TestCase):
 
         self.assertEqual(type(self.scenario.forsys_input["variables"]), dict)
         variables = self.scenario.forsys_input["variables"]
-        self.assertEqual(variables["max_area_project"], 0.3)
+        self.assertEqual(variables["number_of_projects"], 10)
         self.assertEqual(variables["min_area_project"], 500)
+        self.assertEqual(variables["max_area_project"], 500 * 10)
 
 
 @override_settings(FEATURE_FLAGS="")
