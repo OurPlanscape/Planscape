@@ -54,8 +54,6 @@ export class ScenarioSetupModalComponent {
 
       const scenarioName =
         this.scenarioNameForm.get('scenarioName')?.value || '';
-      //TODO: create scenario record
-      //TODO: on success or failure...
       this.createScenario(scenarioName);
     }
   }
@@ -66,7 +64,6 @@ export class ScenarioSetupModalComponent {
       next: (result) => {
         this.dialogRef.close(result);
         this.submitting = false;
-        // TODO: proceed to step 1 page, with new scenario ID...
         if (result) {
           this.router.navigate([
             '/plan/',

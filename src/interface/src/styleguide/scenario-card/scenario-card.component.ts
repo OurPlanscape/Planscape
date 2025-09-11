@@ -24,7 +24,7 @@ import {
 } from '../status-chip/status-chip.component';
 import { ButtonComponent } from '../button/button.component';
 
-export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
+export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
 
 /**
  * Scenario Card for displaying scenario data in a results list
@@ -83,6 +83,7 @@ export class ScenarioCardComponent {
     RUNNING: { status: 'running', label: 'Running' },
     SUCCESS: { status: 'success', label: 'Done' },
     TIMED_OUT: { status: 'failed', label: 'Failed' },
+    DRAFT: { status: 'draft', label: 'Draft' },
   };
 
   hasFailed(): boolean {

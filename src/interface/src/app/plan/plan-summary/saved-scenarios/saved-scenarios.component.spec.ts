@@ -24,7 +24,6 @@ import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { FeaturesModule } from '../../../features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
-import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
 import { ButtonComponent } from '@styleguide';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-card-list.component';
@@ -85,7 +84,6 @@ describe('SavedScenariosComponent', () => {
         SavedScenariosComponent,
         TypeSafeMatCellDef,
         MockComponent(SectionLoaderComponent),
-        MockComponent(ScenariosTableListComponent),
         MockComponent(ScenariosCardListComponent),
       ],
       providers: [
@@ -126,7 +124,7 @@ describe('SavedScenariosComponent', () => {
       By.css('[data-id="new-scenario"]')
     );
     button.nativeElement.click();
-    expect(router.navigate).toHaveBeenCalledOnceWith(['config'], {
+    expect(router.navigate).toHaveBeenCalledOnceWith(['scenario'], {
       relativeTo: route,
     });
     flush();

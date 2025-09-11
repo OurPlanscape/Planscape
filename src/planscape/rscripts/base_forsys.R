@@ -402,6 +402,35 @@ get_metric_data <- function(connection, stands, datalayer) {
   metric
 }
 
+
+get_stand_data_from_list <- function(connection, stand_ids, datalayers) {
+  query <- glue_sql(
+    "SELECT
+      id AS stand_id,
+      ST_Transform(geometry, 5070) AS geometry,
+      ST_Area(geometry::geography, TRUE) / 4047 AS area_acres
+     FROM stands_stand
+     WHERE id IN ({stand_ids*})",
+    stand_ids = stand_ids,
+    .con = connection
+  )
+  stand_data <- st_read(
+    dsn = connection,
+    layer = NULL,
+    query = query,
+    geometry_column = "geometry",
+    crs = st_crs(5070)
+  )
+  datalayers <- remove_duplicates_v2(datalayers)
+  for (row in seq_len(nrow(datalayers))) {
+    datalayer <- datalayers[row, ]
+    metric <- get_metric_data(connection, stand_data, datalayer)
+    stand_data <- merge_data(stand_data, metric)
+  }  
+  return(stand_data)
+}
+
+
 get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
   stand_size <- get_stand_size(configuration)
   stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas_ids))
@@ -471,6 +500,11 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
 get_configuration <- function(scenario) {
   configuration <- fromJSON(toString(scenario[["configuration"]]))
   return(configuration)
+}
+
+get_forsys_input <- function(scenario) {
+  forsys_input <- fromJSON(toString(scenario[["forsys_input"]]))
+  return(forsys_input)
 }
 
 get_stand_size <- function(configuration) {
@@ -571,6 +605,25 @@ get_max_slope <- function(configuration, datalayer) {
   glue("datalayer_{datalayer$id} <= {max_slope}")
 }
 
+get_stand_thresholds_v3 <- function(connection, datalayers) {
+  # max_slope and distance_from_roads are already included in datalayers
+  all_thresholds <- c()
+
+  for (i in seq_len(nrow(datalayers))) {
+    datalayer <- datalayers[i, ]
+    if (is.null(datalayer$threshold)) {
+      next
+    }
+    curr_threshold <- gsub("value", paste0("datalayer_", datalayer$id), datalayer$threshold)
+    all_thresholds <- c(all_thresholds, curr_threshold)
+  }
+
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
+}
+
 get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -603,6 +656,7 @@ get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   }
   return(NULL)
 }
+
 get_stand_thresholds <- function(scenario) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -903,6 +957,174 @@ main_v2 <- function(scenario_id) {
         scenario,
         forsys_output,
         new_column_for_postprocessing = new_column_for_postprocessing
+      )
+
+      upsert_scenario_result(
+        connection,
+        now,
+        started_at = now,
+        completed_at = completed_at,
+        scenario_id,
+        "SUCCESS",
+        result
+      )
+
+      upsert_result_status(
+        connection,
+        scenario_id,
+        "SUCCESS"
+      )
+
+      delete_project_areas(connection, scenario)
+
+      project_areas <- lapply(result$features, function(project) {
+        return(upsert_project_area(connection, now, scenario, project))
+      })
+
+      print(paste("[OK] Forsys succeeeded for scenario", scenario_id))
+    },
+    error = function(e) {
+      completed_at <- now_utc()
+      upsert_scenario_result(
+        connection,
+        now,
+        started_at = now,
+        completed_at = completed_at,
+        scenario_id,
+        "FAILURE",
+        list(type = "FeatureCollection", features = list())
+      )
+      upsert_result_status(
+        connection,
+        scenario_id,
+        "FAILURE"
+      )
+      stop(e)
+    },
+    finally = {
+      print("[DONE]")
+    }
+  )
+}
+
+
+call_forsys_v3 <- function(
+  connection, 
+  scenario, 
+  stand_data, 
+  variables, 
+  priorities, 
+  secondary_metrics, 
+  thresholds) {
+  data_inputs <- data.table::rbindlist(list(priorities, secondary_metrics))
+  weights <- get_weights(priorities, get_configuration(scenario))
+  fields <- paste0("datalayer_", priorities[["id"]])
+  spm_fields <- paste0(fields, "_SPM")
+  stand_data <- stand_data %>%
+    forsys::calculate_spm(fields=fields) %>% 
+    forsys::calculate_pcp(fields=fields) %>% 
+    forsys::combine_priorities(
+      fields=spm_fields,
+      weights=weights,
+      new_field="priority"
+    )
+  scenario_priorities <- c("priority")
+
+  number_of_projects <- variables$number_of_projects
+  min_area_project <- variables$min_area_project
+  max_area_project <- variables$max_area_project
+  sdw <- variables$spatial_distribution_weight
+  epw <- variables$edge_proximity_weight
+  sample_frac <- variables$sample_frac
+  exclusion_limit <- variables$exclusion_limit
+  seed <- variables$seed
+  print(
+    paste0(
+      "variables fields | ",
+      "number_of_projects: ", number_of_projects, 
+      " min_area_project: ", min_area_project,
+      " max_area_project: ", max_area_project, 
+      " sdw: ", sdw, 
+      " epw: ", epw, 
+      " sample_frac: ", sample_frac, 
+      " exclusion_limit: ", exclusion_limit, 
+      " seed:", seed
+    )
+  )
+  
+  stand_thresholds <- get_stand_thresholds_v3(connection, thresholds)
+  forsys_inputs <- data.table::rbindlist(list(priorities, secondary_metrics, thresholds))
+  output_tmp <- forsys_inputs %>%
+    remove_duplicates_v2() %>%
+    select(id)
+  output_tmp <- paste0("datalayer_", output_tmp$id)
+  output_fields <- c(output_tmp, "area_acres")
+
+  export_input(scenario, stand_data)
+
+  out <- forsys::run(
+    return_outputs = TRUE,
+    write_outputs = TRUE,
+    overwrite_output = FALSE,
+    scenario_name = scenario$uuid, # using UUID here instead of name
+    scenario_output_fields = output_fields,
+    scenario_priorities = scenario_priorities,
+    stand_data = stand_data,
+    stand_area_field = "area_acres",
+    stand_id_field = "stand_id",
+    stand_threshold = stand_thresholds,
+    run_with_patchmax = TRUE,
+    patchmax_proj_size_min = min_area_project,
+    patchmax_proj_size = max_area_project,
+    patchmax_proj_number = number_of_projects,
+    patchmax_SDW = sdw,
+    patchmax_EPW = epw,
+    patchmax_exclusion_limit = exclusion_limit,
+    patchmax_sample_frac = sample_frac,
+    patchmax_sample_seed = seed
+  )
+  summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
+  attain_cols <- grep("^attain_", names(out$project_output), value = TRUE)
+  out$project_output <- out$project_output[, setdiff(names(out$project_output), attain_cols), drop = FALSE]
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by = "proj_id")
+  return(out)
+}
+
+# Forsys execution with pre-processed stand data
+main_pre_processed <- function(scenario_id) {
+  now <- now_utc()
+  connection <- get_connection()
+  scenario <- get_scenario_by_id(connection, scenario_id)
+  forsys_input <- get_forsys_input(scenario)
+
+  datalayers <- data.table::rbindlist(forsys_input$datalayers)
+  priorities <- filter(datalayers, type == "RASTER", usage_type == "PRIORITY")
+  secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
+  thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
+
+  stand_ids <- forsys_input$stand_ids
+  datalayers <- remove_duplicates_v2(datalayers)
+  stand_data <- get_stand_data_from_list(connection, stand_ids, datalayers)
+
+  variables <- forsys_input$variables
+
+  tryCatch(
+    expr = {
+      forsys_output <- call_forsys_v3(
+        connection,
+        scenario,
+        stand_data,
+        variables,
+        priorities,
+        secondary_metrics,
+        thresholds
+      )
+
+      completed_at <- now_utc()
+      result <- to_projects(
+        connection,
+        scenario,
+        forsys_output
       )
 
       upsert_scenario_result(

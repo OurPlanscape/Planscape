@@ -1,5 +1,4 @@
 import logging
-import multiprocessing
 import os
 import sys
 from datetime import timedelta
@@ -47,6 +46,7 @@ PLANSCAPE_APPS = [
     "e2e",
     "impacts",
     "martin",
+    "modules",
     "organizations",
     "planning",
     "restrictions",

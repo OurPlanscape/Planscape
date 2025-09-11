@@ -1,26 +1,30 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
 import { Constraint, NamedConstraint, ScenarioCreation } from '@types';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
+  EMPTY,
   filter,
   map,
+  mapTo,
+  merge,
   shareReplay,
+  startWith,
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayersService } from '@services/data-layers.service';
 import { FeatureService } from '../features/feature.service';
+import { distinctUntilChanged } from 'rxjs/operators';
+import { ModuleService } from '@services/module.service';
+import { ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@shared';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class NewScenarioState {
-  private scenarioService: ScenarioService = inject(ScenarioService);
-
-  // todo set this via injection token once we split plan and scenario components
-  public planId = 0;
+  planId = this.route.snapshot.data['planId'];
 
   private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioCreation>>({});
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
@@ -33,58 +37,92 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
+  // flag to track if the base stands are loaded
+  public baseStandsReady$ = new BehaviorSubject(false);
+
+  // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
-    map((c) => c.stand_size!)
+    map((c) => c.stand_size!),
+    distinctUntilChanged()
   );
+
+  // trigger to get available stands
+  private _baseStandsLoaded$ = merge(
+    this.standSize$.pipe(mapTo(false)), // flip to false on size change
+    this.baseStandsReady$.asObservable() // flip to true when loading completes
+  ).pipe(startWith(false), shareReplay({ bufferSize: 1, refCount: true }));
+
   public availableStands$ = combineLatest([
+    this._baseStandsLoaded$,
     this.standSize$,
     this.excludedAreas$,
     this.constraints$,
   ]).pipe(
+    filter(([standsLoaded]) => !!standsLoaded),
     tap(() => this.setLoading(true)),
-    switchMap(([standSize, excludedAreas, constraints]) =>
-      this.scenarioService.getExcludedStands(
-        this.planId,
-        standSize,
-        excludedAreas,
-        constraints
-      )
+    switchMap(([_, standSize, excludedAreas, constraints]) =>
+      this.scenarioService
+        .getExcludedStands(this.planId, standSize, excludedAreas, constraints)
+        .pipe(
+          tap(() => this.setLoading(false)),
+          catchError(() => {
+            this.snackbar.open(
+              '[Error] Cannot load map data',
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+            this.setLoading(false);
+            return EMPTY;
+          })
+        )
     ),
-    tap(() => this.setLoading(false)),
-    shareReplay(1)
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   public excludedStands = this.availableStands$.pipe(
     map((c) => c.unavailable.by_exclusions)
   );
 
+  public constraintStands$ = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_thresholds)
+  );
+
+  hasExcludedStands$ = this.excludedStands.pipe(
+    map((stands) => stands.length > 0)
+  );
+
+  hasConstrainedStands$ = this.constraintStands$.pipe(
+    map((stands) => stands.length > 0)
+  );
+
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
-  public slopeId = 0;
-  public distanceToRoadsId = 0;
+  private slopeId = 0;
+  private distanceToRoadsId = 0;
+
+  private _stepIndex$ = new BehaviorSubject(0);
+  public stepIndex$ = this._stepIndex$.asObservable();
 
   constructor(
-    private dataLayersService: DataLayersService,
-    private featureService: FeatureService
+    private moduleService: ModuleService,
+    private featureService: FeatureService,
+    private scenarioService: ScenarioService,
+    private route: ActivatedRoute,
+    private snackbar: MatSnackBar
   ) {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      this.dataLayersService.getMaxSlopeLayerId().subscribe((s) => {
-        this.slopeId = s;
-      });
-      this.dataLayersService.getDistanceToRoadsLayerId().subscribe((s) => {
-        this.distanceToRoadsId = s;
+      this.moduleService.getForsysModule().subscribe((forsys) => {
+        this.slopeId = forsys.options.thresholds.slope.id;
+        this.distanceToRoadsId =
+          forsys.options.thresholds.distance_from_roads.id;
       });
     }
   }
 
   setLoading(isLoading: boolean) {
     this._loading$.next(isLoading);
-  }
-
-  setPlanId(val: number) {
-    this.planId = val;
   }
 
   setExcludedAreas(value: number[]) {
@@ -97,6 +135,10 @@ export class NewScenarioState {
 
   setConstraints(constraints: Constraint[]) {
     this._constraints$.next(constraints);
+  }
+
+  setStepIndex(i: number) {
+    this._stepIndex$.next(i);
   }
 
   // TODO - remove and use setConstraints when we implement dynamic constraints
@@ -113,10 +155,7 @@ export class NewScenarioState {
     this.setConstraints(constraints);
   }
 
-  reset() {
-    this._scenarioConfig$.next({});
-    this._excludedAreas$.next([]);
-    this._constraints$.next([]);
-    this.setPlanId(0);
+  setBaseStandsLoaded(loaded: boolean) {
+    this.baseStandsReady$.next(loaded);
   }
 }

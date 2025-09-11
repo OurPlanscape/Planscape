@@ -33,7 +33,7 @@
       finishLabel="Save & Run Scenario"
       [continueLabel]="continueLabel"
       [save]="saveStep.bind(this)"
-      (selectedIndexChange)="stepChanged()"
+      (selectedIndexChange)="stepChanged($event)"
       (finished)="onFinish()"
       [outerForm]="form"
       [savingStep]="creatingScenario">
@@ -55,5 +55,8 @@
   </mat-tab>
   <mat-tab label="Data Layers">
     <app-data-layers class="white-background"></app-data-layers>
+  </mat-tab>
+  <mat-tab label="Base Layers">
+    <app-base-layers class="white-background"></app-base-layers>
   </mat-tab>
 </mat-tab-group>

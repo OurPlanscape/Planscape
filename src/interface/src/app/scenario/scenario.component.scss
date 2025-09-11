@@ -1,0 +1,74 @@
+@import 'variables';
+
+.scenario-content {
+  width: 100%;
+  height: calc(100% - $navbar-height);
+  display: flex;
+  flex-direction: row;
+}
+
+.scenario-content-panel {
+  height: 100%;
+  width: 45%;
+  min-width: 450px;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scenario-map-container {
+  height: 100%;
+  flex: 1;
+  z-index: 1;
+  position: relative;
+}
+
+@media print {
+  .scenario-content {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-template-columns: 1fr;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .scenario-map-container {
+    grid-row: 1;
+    width: 100%;
+    height: 8in;
+    position: static;
+    overflow: visible;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .scenario-content-panel {
+    display: block;
+    grid-row: 2;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  // Graphs
+  ::ng-deep {
+    app-cumulative-attainment-chart {
+      .y-axis-label {
+        display: block;
+        position: relative;
+        top: -200px;
+      }
+    }
+
+    .mat-mdc-tab-group {
+      display: block !important;
+      overflow: visible !important;
+    }
+
+    .mat-mdc-tab-body-wrapper {
+      display: block !important;
+      overflow: visible !important;
+    }
+  }
+}

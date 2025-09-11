@@ -1,0 +1,53 @@
+<ng-container *ngIf="scenario$ | async as scenario">
+  <mat-tab-group
+    mat-stretch-tabs="false"
+    mat-align-tabs="start"
+    class="scenario-tabs"
+    [(selectedIndex)]="selectedTab">
+    <mat-tab label="Results">
+      <div class="results-container">
+        <app-scenario-pending
+          *ngIf="scenarioIsPending(scenario)"></app-scenario-pending>
+
+        <app-scenario-results
+          *ngIf="scenarioHasResults(scenario)"
+          [scenarioVersion]="scenario.version || ''"
+          [results]="scenario.scenario_result || null"
+          [priorities]="scenarioPriorities(scenario)"
+          [scenarioName]="scenario.name"
+          [scenarioId]="scenarioId!">
+        </app-scenario-results>
+        <app-scenario-failure
+          *ngIf="scenarioHasFailed(scenario)"
+          (tryAgain)="goToConfig()"
+          (goBack)="goToPlan()"
+          [scenarioName]="scenario.name"
+          [scenarioId]="scenarioId!"
+          [scenarioState]="scenarioStatus(scenario)"></app-scenario-failure>
+      </div>
+    </mat-tab>
+    <mat-tab label="Data Layers">
+      <app-data-layers class="white-background"></app-data-layers>
+    </mat-tab>
+    <mat-tab label="Base Layers">
+      <app-base-layers class="white-background"></app-base-layers>
+    </mat-tab>
+    <mat-tab label="Treatment Plans" *ngIf="scenarioHasResults(scenario)">
+      <app-treatments-tab
+        [scenarioId]="scenarioId"
+        [planningArea]="plan$ | async"></app-treatments-tab>
+    </mat-tab>
+  </mat-tab-group>
+  <app-new-treatment-footer
+    [scenarioId]="scenarioId || undefined"
+    *ngIf="
+      onTreatmentsTab && (showTreatmentFooter$ | async)
+    "></app-new-treatment-footer>
+
+  <app-scenario-download-footer
+    [scenarioId]="scenarioId || undefined"
+    [scenarioName]="scenario.name"
+    [geoPackageURL]="scenario.geopackage_url"
+    [geoPackageStatus]="scenario.geopackage_status"
+    *ngIf="onResultsTab"></app-scenario-download-footer>
+</ng-container>

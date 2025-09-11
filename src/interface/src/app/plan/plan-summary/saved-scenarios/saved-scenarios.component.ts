@@ -46,11 +46,6 @@ export class SavedScenariosComponent implements OnInit {
   selectedTabIndex = 0;
   totalScenarios = 0;
   sortSelection = '-created_at';
-  scenarioPath = this.featureService.isFeatureEnabled(
-    'SCENARIO_CONFIGURATION_STEPS'
-  )
-    ? 'scenario'
-    : 'config';
 
   constructor(
     private route: ActivatedRoute,
@@ -61,7 +56,7 @@ export class SavedScenariosComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
   ) {}
 
   ngOnInit(): void {
@@ -137,16 +132,15 @@ export class SavedScenariosComponent implements OnInit {
       this.openScenarioSetupDialog();
     } else {
       if (!configId) {
-        this.router.navigate([this.scenarioPath], {
-          relativeTo: this.route,
-        });
-      } else {
-        this.router.navigate([this.scenarioPath, configId], {
-          relativeTo: this.route,
-        });
-      }
+      this.router.navigate(['scenario'], {
+        relativeTo: this.route,
+      });
+    } else {
+      this.router.navigate(['scenario', configId], {
+        relativeTo: this.route,
+      });
     }
-  }
+  }}
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
     this.breadcrumbService.updateBreadCrumb({
@@ -154,7 +148,7 @@ export class SavedScenariosComponent implements OnInit {
       backUrl: getPlanPath(clickedScenario.planning_area),
     });
 
-    this.router.navigate([this.scenarioPath, clickedScenario.id], {
+    this.router.navigate(['scenario', clickedScenario.id], {
       relativeTo: this.route,
     });
   }
@@ -191,7 +185,7 @@ export class SavedScenariosComponent implements OnInit {
       .subscribe({
         next: (result) => {
           this.router.navigate(
-            [this.scenarioPath, scenarioId, 'treatment', result.id],
+            ['scenario', scenarioId, 'treatment', result.id],
             {
               relativeTo: this.route,
             }

@@ -19,7 +19,6 @@ import { ButtonComponent } from '@styleguide';
   declarations: [
     FileUploaderComponent,
     NavBarComponent,
-    CurrencyInKPipe,
     TypeSafeMatCellDef,
     FieldAlertComponent,
     CreditsBlurbComponent,
@@ -46,6 +45,7 @@ import { ButtonComponent } from '@styleguide';
     FeaturesModule,
     RouterLink,
     ButtonComponent,
+    CurrencyInKPipe,
   ],
 })
 export class SharedModule {}

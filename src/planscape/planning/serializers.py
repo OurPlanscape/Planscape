@@ -6,6 +6,10 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+from stands.models import StandSizeChoices
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -17,14 +21,11 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsesDataLayer,
     User,
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
-from stands.models import StandSizeChoices
-
 from planscape.exceptions import InvalidGeometry
 
 
@@ -432,6 +433,14 @@ class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
         return instance
 
 
+class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
+    datalayer = serializers.CharField(source="datalayer.name", read_only=True)
+
+    class Meta:
+        model = TreatmentGoalUsesDataLayer
+        fields = ("usage_type", "datalayer")
+
+
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
         help_text="Description of the Treatment Goal on HTML format.",
@@ -442,6 +451,9 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
     group_text = serializers.SerializerMethodField(
         read_only=True,
         help_text="Text format of Treatment Goal Group.",
+    )
+    usage_types = TreatmentGoalUsageSerializer(
+        source="datalayer_usages", many=True, read_only=True
     )
 
     class Meta:
@@ -454,7 +466,7 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             "category_text",
             "group",
             "group_text",
-            "priorities",
+            "usage_types",
         )
 
     def get_description(self, instance):
@@ -568,6 +580,9 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     geopackage_url = serializers.SerializerMethodField(
         help_text="URL to download the scenario's geopackage file.",
     )
+    usage_types = TreatmentGoalUsageSerializer(
+        source="treatment_goal.datalayer_usages", many=True, read_only=True
+    )
 
     def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
         """
@@ -587,6 +602,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "notes",
             "configuration",
             "treatment_goal",
+            "usage_types",
             "scenario_result",
             "user",
             "creator",
@@ -972,6 +988,8 @@ class AvailableStandsSummarySerializer(serializers.Serializer):
     total_area = serializers.FloatField()
 
     available_area = serializers.FloatField()
+
+    treatable_area = serializers.FloatField()
 
     unavailable_area = serializers.FloatField()
 
