@@ -51,10 +51,7 @@ export class ScenarioResultsComponent implements OnChanges {
     private chartService: ScenarioResultsChartsService
   ) {
     this.chartService.resetColors();
-    this.chartService.initDisplayedMetrics([]);
   }
-
-  displayedMetrics$ = this.chartService.displayedMetrics$;
 
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult
@@ -106,14 +103,4 @@ export class ScenarioResultsComponent implements OnChanges {
 
     return isFlagEnabled && analytics;
   }
-
-  // onMetricChange(event: MatCheckboxChange) {
-  //   if (event.checked) {
-  //     this.selectedMetrics.add(event.source.value);
-  //   } else {
-  //     this.selectedMetrics.delete(event.source.value);
-  //   }
-  //   console.log('selected data is now:', this.selectedMetrics);
-  //   this.selectedData$.next(this.selectedMetrics);
-  // }
 }

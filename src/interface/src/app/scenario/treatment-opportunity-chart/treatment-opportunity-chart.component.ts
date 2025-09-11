@@ -25,7 +25,6 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
-  // @Input() selectedMetrics!: Set<string> | null;
 
   public barChartType: 'bar' = 'bar';
 
@@ -116,15 +115,10 @@ export class TreatmentOpportunityChartComponent implements OnInit {
       ),
       datasets: chartDatasets,
     };
-    // this.barChartData.datasets.forEach((dataset: CustomChartDataset) => {
-    //   if (dataset.extraInfo) {
-    //     // this.selectedMetrics.add(dataset.extraInfo);
-    //   }
-    // });
 
     const selectedData = {
       ...this.barChartData,
-      datasets: this.barChartData.datasets.filter((d: CustomChartDataset) => d),
+      datasets: this.barChartData.datasets,
     };
     this.selectedData$.next(selectedData);
 
