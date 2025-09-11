@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
 import { Constraint, NamedConstraint, ScenarioCreation } from '@types';
 import {
@@ -16,15 +16,11 @@ import {
 import { FeatureService } from '../features/feature.service';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ModuleService } from '@services/module.service';
+import { ActivatedRoute } from '@angular/router';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class NewScenarioState {
-  private scenarioService: ScenarioService = inject(ScenarioService);
-
-  // todo set this via injection token once we split plan and scenario components
-  public planId = 0;
+  planId = this.route.snapshot.data['planId'];
 
   private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioCreation>>({});
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
@@ -77,6 +73,18 @@ export class NewScenarioState {
     map((c) => c.unavailable.by_exclusions)
   );
 
+  public constraintStands$ = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_thresholds)
+  );
+
+  hasExcludedStands$ = this.excludedStands.pipe(
+    map((stands) => stands.length > 0)
+  );
+
+  hasConstrainedStands$ = this.constraintStands$.pipe(
+    map((stands) => stands.length > 0)
+  );
+
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
@@ -88,7 +96,9 @@ export class NewScenarioState {
 
   constructor(
     private moduleService: ModuleService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private scenarioService: ScenarioService,
+    private route: ActivatedRoute
   ) {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
       this.moduleService.getForsysModule().subscribe((forsys) => {
@@ -101,10 +111,6 @@ export class NewScenarioState {
 
   setLoading(isLoading: boolean) {
     this._loading$.next(isLoading);
-  }
-
-  setPlanId(val: number) {
-    this.planId = val;
   }
 
   setExcludedAreas(value: number[]) {
@@ -139,14 +145,5 @@ export class NewScenarioState {
 
   setBaseStandsLoaded(loaded: boolean) {
     this.baseStandsReady$.next(loaded);
-  }
-
-  reset() {
-    this._scenarioConfig$.next({});
-    this._excludedAreas$.next([]);
-    this._constraints$.next([]);
-    this.baseStandsReady$.next(false);
-    this.setPlanId(0);
-    this.setLoading(false);
   }
 }
