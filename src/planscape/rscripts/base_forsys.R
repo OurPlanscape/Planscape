@@ -1016,6 +1016,7 @@ call_forsys_v3 <- function(
   priorities, 
   secondary_metrics, 
   thresholds) {
+  data_inputs <- data.table::rbindlist(list(priorities, secondary_metrics))
   weights <- get_weights(priorities, get_configuration(scenario))
   fields <- paste0("datalayer_", priorities[["id"]])
   spm_fields <- paste0(fields, "_SPM")
@@ -1029,35 +1030,25 @@ call_forsys_v3 <- function(
     )
   scenario_priorities <- c("priority")
 
-  #number_of_projects <- variables$max_project_count
-  #min_area_project <- variables$min_area_project
-  #max_area_project <- variables$max_area_project
-  #sdw <- variables$sdw
-  #epw <- variables$epw
-  #sample_frac <- variables$sample_frac
-  #exclusion_limit <- variables$exclusion_limit
-  #seed <- variables$seed
-  print(paste0("forsys input variables: ", variables))
-
-  # temporary: checking if some variable is impacting forsys execution
-  max_treatment_area <- get_max_treatment_area(scenario)
-  number_of_projects <- get_number_of_projects(scenario)
-  min_area_project <- get_min_project_area(scenario)
-  if ((max_treatment_area / number_of_projects) < min_area_project) {
-    number_of_projects <- floor(max_treatment_area / min_area_project)
-  }
-  max_area_project <- max_treatment_area / number_of_projects
-  sdw <- get_sdw()
-  epw <- get_epw()
-  sample_frac <- get_sample_frac()
-  exclusion_limit <- get_exclusion_limit()
-  configuration <- get_configuration(scenario)
-  seed <- configuration$seed
-
+  number_of_projects <- variables$number_of_projects
+  min_area_project <- variables$min_area_project
+  max_area_project <- variables$max_area_project
+  sdw <- variables$spatial_distribution_weight
+  epw <- variables$edge_proximity_weight
+  sample_frac <- variables$sample_frac
+  exclusion_limit <- variables$exclusion_limit
+  seed <- variables$seed
   print(
     paste0(
-      "legacy variables: ", number_of_projects, min_area_project,
-      max_area_project, sdw, epw, sample_frac, exclusion_limit, seed
+      "variables fields | ",
+      "number_of_projects: ", number_of_projects, 
+      " min_area_project: ", min_area_project,
+      " max_area_project: ", max_area_project, 
+      " sdw: ", sdw, 
+      " epw: ", epw, 
+      " sample_frac: ", sample_frac, 
+      " exclusion_limit: ", exclusion_limit, 
+      " seed:", seed
     )
   )
   
