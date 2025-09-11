@@ -50,8 +50,6 @@ export class ScenarioSetupModalComponent {
   handleSubmit(): void {
     if (this.scenarioNameForm.valid) {
       this.submitting = true;
-      //TODO: check against existing names
-
       const scenarioName =
         this.scenarioNameForm.get('scenarioName')?.value || '';
       this.createScenario(scenarioName);

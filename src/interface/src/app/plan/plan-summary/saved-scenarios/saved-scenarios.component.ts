@@ -128,20 +128,14 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   openConfig(configId?: number): void {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      this.openScenarioSetupDialog();
+    if (!configId) {
+      this.router.navigate(['scenario'], {
+        relativeTo: this.route,
+      });
     } else {
-      if (!configId) {
-        if (!configId) {
-          this.router.navigate(['scenario'], {
-            relativeTo: this.route,
-          });
-        } else {
-          this.router.navigate(['scenario', configId], {
-            relativeTo: this.route,
-          });
-        }
-      }
+      this.router.navigate(['scenario', configId], {
+        relativeTo: this.route,
+      });
     }
   }
 
