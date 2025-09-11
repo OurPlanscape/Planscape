@@ -471,9 +471,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     number_of_projects = merged_cfg.get(
         "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
     )
-    max_area_project = get_max_treatable_area(
-        configuration=merged_cfg,
-        min_project_area=min_area_project,
+    max_area_project = get_max_area_project(
+        scenario=scenario,
         number_of_projects=number_of_projects,
     )
 
@@ -501,24 +500,32 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
 
 
-def get_max_treatable_area(
-    configuration: Dict[str, Any],
-    min_project_area: Optional[float] = None,
-    number_of_projects: Optional[int] = None,
-) -> Optional[float]:
+def get_cost_per_acre(configuration: dict) -> float:
+    return configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
+
+
+def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
     max_budget = configuration.get("max_budget") or None
-    cost_per_acre = configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
+    cost_per_acre = get_cost_per_acre(configuration=configuration)
     if max_budget:
         return max_budget / cost_per_acre
 
-    max_treatable_area_ratio = configuration.get("max_treatment_area_ratio")
-    if max_treatable_area_ratio:
-        return float(max_treatable_area_ratio)
+    return float(configuration.get("max_treatment_area_ratio"))
 
-    if min_project_area and number_of_projects:
-        return min_project_area / number_of_projects
 
-    return None
+def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
+    configuration = scenario.configuration
+    max_budget = configuration.get("max_budget")
+    cost_per_acre = get_cost_per_acre(configuration=configuration)
+    if max_budget and cost_per_acre > 0:
+        return max_budget / cost_per_acre
+
+    max_area = configuration.get("max_area")
+    if max_area:
+        return float(max_area)
+
+    max_acres = get_min_project_area(scenario) * number_of_projects
+    return float(max_acres)
 
 
 def get_max_treatable_stand_count(
