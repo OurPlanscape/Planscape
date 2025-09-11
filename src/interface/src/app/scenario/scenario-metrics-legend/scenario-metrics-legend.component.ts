@@ -22,9 +22,11 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
   @Input() scenarioId!: number;
 
-  @Input() selectedMetrics!: Set<string>;
   @Output() handleCheckbox = new EventEmitter<MatCheckboxChange>();
   assignedColors: { [name: string]: string } = {};
+
+  selectedMetrics!: Set<string> | null;
+
   metrics: string[] = [];
 
   priorities: string[] = [];
@@ -37,15 +39,17 @@ export class ScenarioMetricsLegendComponent implements OnInit {
 
   ngOnInit() {
     this.assignedColors = this.chartService.getAssignedColors();
-    console.log('here are the assigned colors:', this.assignedColors);
 
     this.metrics = Object.keys(
       getGroupedAttainment(this.scenarioResult.result.features)
     );
-    console.log('here are the metrics:', this.metrics);
     this.chartService.initDisplayedMetrics(this.metrics);
     this.metrics.forEach((m) => this.chartService.getOrAddColor(m));
-    console.log('here are the assigned colors:', this.assignedColors);
+
+    this.chartService.displayedMetrics$.subscribe((m) => {
+      this.selectedMetrics = m;
+    });
+
     if (this.scenarioId) {
       this.scenarioService
         .getScenario(this.scenarioId)
@@ -82,8 +86,7 @@ export class ScenarioMetricsLegendComponent implements OnInit {
     return false;
   }
 
-  metricSelected(event: MatCheckboxChange) {
+  handleCheckboxChange(event: MatCheckboxChange) {
     this.chartService.updateDisplayedMetrics(event.checked, event.source.value);
-    // this.handleCheckbox.emit(event);
   }
 }

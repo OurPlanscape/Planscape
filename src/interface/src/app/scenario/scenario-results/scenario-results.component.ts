@@ -51,7 +51,10 @@ export class ScenarioResultsComponent implements OnChanges {
     private chartService: ScenarioResultsChartsService
   ) {
     this.chartService.resetColors();
+    this.chartService.initDisplayedMetrics([]);
   }
+
+  displayedMetrics$ = this.chartService.displayedMetrics$;
 
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult

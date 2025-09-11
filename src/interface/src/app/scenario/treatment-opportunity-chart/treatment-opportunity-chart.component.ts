@@ -25,7 +25,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
-  @Input() selectedMetrics!: Set<string>;
+  // @Input() selectedMetrics!: Set<string> | null;
 
   public barChartType: 'bar' = 'bar';
 
@@ -103,10 +103,6 @@ export class TreatmentOpportunityChartComponent implements OnInit {
   constructor(private chartService: ScenarioResultsChartsService) {}
 
   ngOnInit(): void {
-    this.chartService.displayedMetrics$.subscribe((metrics) => {
-      console.log('in the tx chart, here are the metrics:', metrics);
-    });
-
     const chartDatasets = getChartDatasetsFromFeatures(
       this.scenarioResult.result.features
     );
@@ -120,28 +116,28 @@ export class TreatmentOpportunityChartComponent implements OnInit {
       ),
       datasets: chartDatasets,
     };
-    this.barChartData.datasets.forEach((dataset: CustomChartDataset) => {
-      if (dataset.extraInfo) {
-        this.selectedMetrics.add(dataset.extraInfo);
-      }
-    });
+    // this.barChartData.datasets.forEach((dataset: CustomChartDataset) => {
+    //   if (dataset.extraInfo) {
+    //     // this.selectedMetrics.add(dataset.extraInfo);
+    //   }
+    // });
 
     const selectedData = {
       ...this.barChartData,
-      datasets: this.barChartData.datasets.filter(
-        (d: CustomChartDataset) =>
-          d.extraInfo && this.selectedMetrics.has(d.extraInfo)
-      ),
+      datasets: this.barChartData.datasets.filter((d: CustomChartDataset) => d),
     };
     this.selectedData$.next(selectedData);
+
+    this.chartService.displayedMetrics$.subscribe((metrics: Set<string>) => {
+      this.updateDisplayedMetrics(metrics);
+    });
   }
 
-  updateDisplayedMetrics() {
+  updateDisplayedMetrics(metrics: Set<string>) {
     const selectedData = {
       ...this.barChartData,
       datasets: this.barChartData.datasets.filter(
-        (d: CustomChartDataset) =>
-          d.extraInfo && this.selectedMetrics.has(d.extraInfo)
+        (d: CustomChartDataset) => d.extraInfo && metrics.has(d.extraInfo)
       ),
     };
     this.selectedData$.next(selectedData);

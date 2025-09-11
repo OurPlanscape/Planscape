@@ -28,9 +28,13 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class CumulativeAttainmentChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
-  @Input() selectedMetrics!: Set<string>;
+  @Input() selectedMetrics!: Set<string> | null;
 
-  constructor(private chartService: ScenarioResultsChartsService) {}
+  constructor(private chartService: ScenarioResultsChartsService) {
+    this.chartService.displayedMetrics$.subscribe((metrics: Set<string>) => {
+      this.updateDisplayedMetrics(metrics);
+    });
+  }
   options: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -112,9 +116,6 @@ export class CumulativeAttainmentChartComponent implements OnInit {
         pointRadius: 0, // Hides the circles
       };
     });
-    this.allData.datasets.map((data: ChartDataset) => {
-      this.selectedMetrics.add(data.label ?? '');
-    });
     this.selectedData$.next(structuredClone(this.allData));
   }
 
@@ -125,5 +126,15 @@ export class CumulativeAttainmentChartComponent implements OnInit {
       pointBackgroundColor: this.chartService.getOrAddColor(label),
       pointBorderColor: this.chartService.getOrAddColor(label),
     };
+  }
+
+  updateDisplayedMetrics(metrics: Set<string>) {
+    const selectedData = {
+      ...this.allData,
+      datasets: this.allData.datasets.filter(
+        (d: ChartDataset) => d.label && metrics.has(d.label)
+      ),
+    };
+    this.selectedData$.next(selectedData);
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 const AVAILABLE_COLORS: string[] = [
   '#483D78',
@@ -42,12 +42,9 @@ export class ScenarioResultsChartsService {
   private _displayedMetrics$ = new BehaviorSubject<Set<string>>(
     new Set<string>()
   );
-  public displayedMetrics$ = this._displayedMetrics$
-    .asObservable()
-    .pipe(distinctUntilChanged());
+  public displayedMetrics$ = this._displayedMetrics$.asObservable();
 
   initDisplayedMetrics(metrics: string[]) {
-    console.log('we called this?');
     const metricSet = new Set(metrics);
     this._displayedMetrics$.next(metricSet);
   }
@@ -60,7 +57,6 @@ export class ScenarioResultsChartsService {
       currentSet.delete(metric);
     }
     this._displayedMetrics$.next(currentSet);
-    console.log('displayed metrics is:', this._displayedMetrics$.value);
   }
 
   getOrAddColor(name: string): string {

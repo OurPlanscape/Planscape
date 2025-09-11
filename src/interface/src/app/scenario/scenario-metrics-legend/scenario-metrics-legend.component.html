@@ -4,7 +4,7 @@
     [value]="metric"
     [checked]="isSelected(metric)"
     class="chart-legend-selection"
-    (change)="metricSelected($event)">
+    (change)="handleCheckboxChange($event)">
     <div class="legend-line">
       <div class="legend-name">{{ metric }}</div>
       <div
@@ -19,7 +19,7 @@
     [value]="metric"
     [checked]="isSelected(metric)"
     class="chart-legend-selection"
-    (change)="metricSelected($event)">
+    (change)="handleCheckboxChange($event)">
     <div class="legend-line">
       <div class="legend-name">{{ metric }}</div>
       <div
