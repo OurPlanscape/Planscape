@@ -1,0 +1,267 @@
+@import '../../../styles/variables';
+@import '../../../styles/colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+.climate-foresight-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .back-button {
+    color: white;
+  }
+
+  .page-title {
+    margin: 0;
+    color: white;
+    font-size: 20px;
+    font-weight: 500;
+  }
+}
+
+.climate-foresight-container {
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 0;
+  background: #f5f5f5;
+}
+
+.left-panel {
+  width: 592px;
+  padding: 16px;
+  padding-right: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .left-panel-card {
+    background: $color-white;
+    border: 1px solid $color-fields-gray;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
+
+    &:first-child {
+      flex: 1;
+    }
+  }
+
+  .tool-header {
+    margin-bottom: 20px;
+
+    .tool-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100px;
+      gap: 12px;
+      margin-bottom: 8px;
+      border: 1px solid $color-fields-gray;
+      border-radius: 8px;
+
+
+      .tool-icon {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 500;
+      }
+    }
+
+    .tool-metadata {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+
+      .developed-by {
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+
+        .logo-text {
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
+    }
+  }
+
+  .tool-description {
+    margin-bottom: 24px;
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: $color-dark-gray;
+      margin: 0;
+    }
+  }
+
+  .planning-area-section {
+
+    .planning-area-name {
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+
+  .map-container {
+    margin-bottom: 20px;
+
+    .map-legend {
+      padding: 8px;
+      padding-left: 0;
+      background: white;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .legend-symbol {
+          width: 16px;
+          height: 16px;
+          border-radius: 2px;
+          flex-shrink: 0;
+
+          &.planning-area {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid $color-standard-blue;
+          }
+        }
+
+        .acres-info {
+          font-size: 13px;
+          color: $color-dark-gray;
+        }
+      }
+    }
+
+    .map-preview {
+      height: 300px;
+      border-radius: 0 0 4px 4px;
+      overflow: hidden;
+      position: relative;
+
+      app-scenario-map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+    }
+  }
+
+  mgl-map {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.right-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  margin: 16px;
+  border-radius: 4px;
+  box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+
+  .analysis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    height: 40px;
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .start-analysis-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .analysis-content {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .no-analyses {
+      text-align: center;
+      padding: 16px;
+
+      .empty-state-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          color: $color-md-gray;
+        }
+      }
+
+      h4 {
+        font-size: 18px;
+        font-weight: 500;
+        margin: 0 0 12px;
+      }
+
+      p {
+        font-size: 16px;
+        line-height: 1.6;
+        color: $color-dark-gray;
+        margin: 0;
+      }
+    }
+
+    .analyses-list {
+      width: 100%;
+    }
+  }
+}

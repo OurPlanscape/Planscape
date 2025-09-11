@@ -3,11 +3,17 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
 
-from planning.models import Scenario, ScenarioResult, ScenarioVersion
+from planning.models import (
+    Scenario,
+    ScenarioResult,
+    ScenarioVersion,
+    TreatmentGoalUsesDataLayer,
+)
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -658,6 +664,43 @@ class ScenarioDetailTest(APITestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(data.get("geopackage_url"))
+
+    def test_detail_scenario_v2_no_usage_types(self):
+        self.scenario.save()
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("usage_types"), [])
+
+    def test_detail_scenario_v2_with_usage_types(self):
+        self.scenario.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data.get("usage_types")), 3)
+        for entry in data.get("usage_types"):
+            self.assertIn("usage_type", entry)
+            self.assertIn("datalayer", entry)
 
 
 class PatchScenarioConfigurationTest(APITransactionTestCase):

@@ -122,11 +122,25 @@ class AsyncPreForsysProcessTest(TestCase):
             "max_treatment_area_ratio": 0.3,
             "max_project_count": 10,
             "seed": 42,
+            "max_slope": 25,
+            "min_distance_from_road": 50,
         }
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
         self.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
         self.scenario = ScenarioFactory.create(
             treatment_goal=self.treatment_goal, configuration=configuration
+        )
+        self.slop_datalayer = DataLayerFactory.create(
+            name="Slope",
+            metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
+        )
+        self.distance_from_road_datalayer = DataLayerFactory.create(
+            name="Distance from road",
+            metadata={
+                "modules": {
+                    "forsys": {"name": "distance_from_roads", "metric_column": "min"}
+                }
+            },
         )
 
     def test_async_pre_forsys_process(self):
@@ -140,6 +154,9 @@ class AsyncPreForsysProcessTest(TestCase):
 
         self.assertEqual(type(self.scenario.forsys_input["datalayers"]), list)
         datalayers = self.scenario.forsys_input["datalayers"]
+        self.assertEqual(
+            len(datalayers), 5
+        )  # 3 datalayers from Tx Goal + slope + distance from roads
         for dl in datalayers:
             self.assertIn("metric", dl.keys())
             self.assertIn("threshold", dl.keys())

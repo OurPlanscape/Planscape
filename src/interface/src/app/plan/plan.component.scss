@@ -68,27 +68,6 @@
   flex-direction: column;
 }
 
-.plan-map-container {
-  height: 100%;
-  flex: 1;
-  z-index: 1;
-  position: relative;
-}
-
-.plan-content-panel {
-  height: 100%;
-  width: 45%;
-  min-width: 450px;
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
-}
-
-.scenario-details {
-  height: 100%;
-  width: 100%;
-}
-
 @media print {
   app-nav-bar {
     display: none;

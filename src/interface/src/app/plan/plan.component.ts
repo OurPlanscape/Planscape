@@ -1,16 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import {
-  combineLatest,
-  concatMap,
-  filter,
-  map,
-  Observable,
-  of,
-  startWith,
-  switchMap,
-  take,
-} from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { concatMap, Observable, take } from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
 import { NotesSidebarState } from '@styleguide';
@@ -18,10 +8,8 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { ScenarioState } from '../scenario/scenario.state';
-import { getPlanPath } from './plan-helpers';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';
 
@@ -41,7 +29,6 @@ export class PlanComponent implements OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private scenarioState: ScenarioState,
     private planState: PlanState
   ) {
     if (this.planId === null) {
@@ -51,6 +38,13 @@ export class PlanComponent implements OnInit {
     const plan$ = this.planState.currentPlan$.pipe(take(1));
 
     plan$.subscribe({
+      next: (plan) => {
+        // Setting up breadcrumbs
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Planning Area: ' + plan.name,
+          backUrl: '/home',
+        });
+      },
       error: () => {
         this.planNotFound = true;
       },
@@ -61,52 +55,7 @@ export class PlanComponent implements OnInit {
         return this.authService.getUser(plan.user);
       })
     );
-
-    this.router.events
-      .pipe(
-        filter(
-          (event): event is NavigationEnd => event instanceof NavigationEnd
-        ),
-        switchMap(() =>
-          combineLatest([
-            this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-            this.scenario$,
-          ])
-        ),
-        untilDestroyed(this)
-      )
-      .subscribe(([plan, scenario]) => {
-        const deepestRoute = this.getDeepestChild(this.route);
-        const path = deepestRoute?.routeConfig?.path ?? null;
-        const scenarioId = deepestRoute.snapshot.data['scenarioId'];
-
-        if (!path && scenarioId === undefined) {
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Planning Area: ' + plan.name,
-            backUrl: '/home',
-          });
-        } else if (scenarioId && scenario) {
-          // On specific scenario
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Scenario: ' + scenario.name,
-            backUrl: getPlanPath(plan.id),
-          });
-        } else {
-          // Creating new scenario
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Scenario: New Scenario',
-            backUrl: getPlanPath(plan.id),
-          });
-        }
-      });
   }
-
-  scenario$ = this.scenarioState.currentScenarioId$.pipe(
-    untilDestroyed(this),
-    switchMap((id) => {
-      return !id ? of(null) : this.scenarioState.currentScenario$;
-    })
-  );
 
   currentPlan$ = this.planState.currentPlan$;
   planOwner$ = new Observable<User | null>();
@@ -116,18 +65,6 @@ export class PlanComponent implements OnInit {
 
   sidebarNotes: Note[] = [];
   notesSidebarState: NotesSidebarState = 'READY';
-
-  showOverview$ = this.router.events.pipe(
-    filter((event) => event instanceof NavigationEnd),
-    startWith(null), // trigger on initial load
-    map(() => this.getDeepestChild(this.route)),
-    switchMap((route) => route.data),
-    map((data) => data['showOverview'] === true)
-  );
-
-  area$ = this.showOverview$.pipe(
-    map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
-  );
 
   ngOnInit() {
     this.loadNotes();
@@ -197,12 +134,5 @@ export class PlanComponent implements OnInit {
 
   canAddScenario(plan: Plan) {
     return canAddScenario(plan) || false;
-  }
-
-  private getDeepestChild(route: ActivatedRoute): ActivatedRoute {
-    while (route.firstChild) {
-      route = route.firstChild;
-    }
-    return route;
   }
 }

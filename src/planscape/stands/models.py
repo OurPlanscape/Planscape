@@ -135,6 +135,8 @@ class StandMetric(CreatedAtMixin, models.Model):
 
     avg = models.FloatField(null=True)
 
+    median = models.FloatField(null=True)
+
     max = models.FloatField(null=True)
 
     sum = models.FloatField(null=True)
