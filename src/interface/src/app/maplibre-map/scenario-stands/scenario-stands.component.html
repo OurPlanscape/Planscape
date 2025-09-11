@@ -36,14 +36,5 @@
     [filter]="(filteredStands$ | async) || undefined"
     [paint]="standExcludedPaint">
   </mgl-layer>
-
-  <mgl-layer
-    id="scenario-stands-constrained"
-    type="fill"
-    [source]="sourceName"
-    [sourceLayer]="sourceName"
-    [filter]="(filteredStands$ | async) || undefined"
-    [paint]="standConstrainedPaint">
-  </mgl-layer>
 </ng-container>
 <div class="loader"></div>

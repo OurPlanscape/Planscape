@@ -62,6 +62,13 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private mapConfigState: MapConfigState
   ) {
+    this.newScenarioState.stepIndex$
+      .pipe(untilDestroyed(this))
+      .subscribe((step) => {
+        console.log('step?', step);
+        // remove
+      });
+
     this.newScenarioState.excludedStands$
       .pipe(untilDestroyed(this))
       .subscribe((ids) => {
@@ -82,8 +89,8 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
         );
         const toAdd = ids.filter((id) => !this.constrainedStands.includes(id));
 
-        toRemove.forEach((id) => this.removeMarkStandAsConstrained(id));
-        toAdd.forEach((id) => this.markStandAsConstrained(id));
+        toRemove.forEach((id) => this.removeMarkStandAsExcluded(id));
+        toAdd.forEach((id) => this.markStandAsExcluded(id));
 
         this.constrainedStands = ids;
       });
@@ -177,28 +184,6 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
         id: id,
       },
       this.excludedKey
-    );
-  }
-
-  private markStandAsConstrained(id: number) {
-    this.mapLibreMap.setFeatureState(
-      {
-        source: this.sourceName,
-        sourceLayer: this.sourceName,
-        id: id,
-      },
-      { [this.constrainedKey]: true }
-    );
-  }
-
-  private removeMarkStandAsConstrained(id: number) {
-    this.mapLibreMap.removeFeatureState(
-      {
-        source: this.sourceName,
-        sourceLayer: this.sourceName,
-        id: id,
-      },
-      this.constrainedKey
     );
   }
 
