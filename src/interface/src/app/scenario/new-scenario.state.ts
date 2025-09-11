@@ -3,7 +3,9 @@ import { ScenarioService } from '@services';
 import { Constraint, NamedConstraint, ScenarioCreation } from '@types';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
+  EMPTY,
   filter,
   map,
   mapTo,
@@ -17,6 +19,8 @@ import { FeatureService } from '../features/feature.service';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ModuleService } from '@services/module.service';
 import { ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@shared';
 
 @Injectable()
 export class NewScenarioState {
@@ -57,16 +61,23 @@ export class NewScenarioState {
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     tap(() => this.setLoading(true)),
-    switchMap(([standsLoaded, standSize, excludedAreas, constraints]) =>
-      this.scenarioService.getExcludedStands(
-        this.planId,
-        standSize,
-        excludedAreas,
-        constraints
-      )
+    switchMap(([_, standSize, excludedAreas, constraints]) =>
+      this.scenarioService
+        .getExcludedStands(this.planId, standSize, excludedAreas, constraints)
+        .pipe(
+          tap(() => this.setLoading(false)),
+          catchError(() => {
+            this.snackbar.open(
+              '[Error] Cannot load map data',
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+            this.setLoading(false);
+            return EMPTY;
+          })
+        )
     ),
-    tap(() => this.setLoading(false)),
-    shareReplay(1)
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   public excludedStands = this.availableStands$.pipe(
@@ -98,7 +109,8 @@ export class NewScenarioState {
     private moduleService: ModuleService,
     private featureService: FeatureService,
     private scenarioService: ScenarioService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackbar: MatSnackBar
   ) {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
       this.moduleService.getForsysModule().subscribe((forsys) => {
