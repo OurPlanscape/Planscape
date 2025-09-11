@@ -1059,6 +1059,7 @@ def get_constrained_stands(
         metric_filter = f"metrics__{metric_column}"
     else:
         metric_filter = f"metrics__{metric_column}__{operator}"
+    logger.info(f"processing metric_filter {metric_filter} with value {value}")
     filter = {
         metric_filter: value,
         "metrics__datalayer_id": datalayer.pk,
@@ -1137,7 +1138,8 @@ def get_available_stands(
         "summary": {
             "total_area": total_area.sq_m / settings.CONVERSION_SQM_ACRES,
             "available_area": available_area.sq_m / settings.CONVERSION_SQM_ACRES,
-            "treatable_area": treatable_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "treatable_area": max(treatable_area.sq_m, 0)
+            / settings.CONVERSION_SQM_ACRES,
             "unavailable_area": total_unavailable_area.sq_m
             / settings.CONVERSION_SQM_ACRES,
         },
