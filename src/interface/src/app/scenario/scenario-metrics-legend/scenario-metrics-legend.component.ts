@@ -52,16 +52,14 @@ export class ScenarioMetricsLegendComponent implements OnInit {
         this.selectedMetrics = m;
       });
 
-    if (this.scenarioId) {
-      this.scenarioService
-        .getScenario(this.scenarioId)
-        .pipe(untilDestroyed(this))
-        .subscribe((scenario) => {
-          if (scenario.usage_types) {
-            this.divideMetricsIntoUsageTypes(scenario.usage_types);
-          }
-        });
-    }
+    this.scenarioService
+      .getScenario(this.scenarioId)
+      .pipe(untilDestroyed(this))
+      .subscribe((scenario) => {
+        if (scenario.usage_types) {
+          this.divideMetricsIntoUsageTypes(scenario.usage_types);
+        }
+      });
   }
 
   // divide metrics into priorities and cobenefits,
