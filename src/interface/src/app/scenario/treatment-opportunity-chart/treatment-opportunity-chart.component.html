@@ -1,5 +1,5 @@
 <sg-chart
-  [data]="barChartData"
+  [data]="selectedData$ | async"
   [options]="barChartOptions"
   [type]="barChartType"
   xAxisLabel="Project Areas"
