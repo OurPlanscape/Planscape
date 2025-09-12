@@ -518,13 +518,13 @@ def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
     max_budget = configuration.get("max_budget")
     cost_per_acre = get_cost_per_acre(configuration=configuration)
     if max_budget and cost_per_acre > 0:
-        return max_budget / cost_per_acre
+        return (max_budget / cost_per_acre) / number_of_projects
 
     max_area = configuration.get("max_area")
     if max_area:
         return max_area / number_of_projects
 
-    max_acres = get_min_project_area(scenario) * number_of_projects
+    max_acres = get_min_project_area(scenario)
     return float(max_acres)
 
 
