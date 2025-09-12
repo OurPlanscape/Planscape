@@ -347,6 +347,11 @@ class GeoPackageStatus(models.TextChoices):
     FAILED = ("FAILED", "Failed")
 
 
+class ScenarioCapabilityScope(models.TextChoices):
+    CA = "CA", "California"
+    CONUS = "CONUS", "Continental US"
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     planning_area_id: int
