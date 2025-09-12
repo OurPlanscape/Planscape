@@ -52,6 +52,8 @@ from planning.services import (
     delete_scenario,
     get_available_stands,
     toggle_scenario_status,
+    validate_scenario_configuration,
+    trigger_scenario_run,
 )
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -282,6 +284,21 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         self.perform_update(serializer)
         response_serializer = ScenarioV2Serializer(instance)
         return Response(response_serializer.data)
+
+    @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
+    @action(methods=["post"], detail=True, url_path="run")
+    def run(self, request, pk=None):
+        scenario = self.get_object()
+
+        errors = validate_scenario_configuration(scenario)
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        # trigger
+        trigger_scenario_run(scenario, request.user)
+
+        serializer = ScenarioV2Serializer(instance=scenario)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
 # TODO: migrate this to an action inside the planning area viewset
