@@ -1,5 +1,6 @@
 import copy
 from unittest import mock
+from unittest.mock import patch
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
@@ -12,8 +13,12 @@ from planning.models import (
     Scenario,
     ScenarioResult,
     ScenarioVersion,
+    TreatmentGoalGroup,
     TreatmentGoalUsesDataLayer,
 )
+
+from planning.services import compute_scenario_capabilities
+
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -766,3 +771,36 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class ScenarioCapabilitiesViewTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.tg_conus = TreatmentGoalFactory.create(
+            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
+        )
+
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=self.tg_conus,
+            configuration={"stand_size": "LARGE"},
+            name="caps-view",
+        )
+
+    @patch("planning.services.feature_enabled", return_value=True)
+    def test_capabilities_present_in_detail(self, _mock_flag):
+        self.scenario.capabilities = compute_scenario_capabilities(self.scenario)
+        self.scenario.save(update_fields=["capabilities"])
+
+        self.client.force_authenticate(self.user)
+        url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        caps = resp.data.get("capabilities")
+        self.assertIsInstance(caps, dict)
+        self.assertEqual(caps.get("scope"), "CONUS")
+        self.assertTrue(caps.get("conus_feature_enabled"))
+        self.assertTrue(caps.get("can_request_conus_run"))

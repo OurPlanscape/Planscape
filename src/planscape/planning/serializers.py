@@ -526,6 +526,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     )
 
     bbox = serializers.SerializerMethodField()
+    capabilities = serializers.JSONField(read_only=True)
 
     def get_bbox(self, instance) -> Optional[List[float]]:
         geometries = list(
@@ -571,6 +572,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "bbox",
             "origin",
             "version",
+            "capabilities",
         )
         model = Scenario
 
@@ -583,6 +585,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     usage_types = TreatmentGoalUsageSerializer(
         source="treatment_goal.datalayer_usages", many=True, read_only=True
     )
+    capabilities = serializers.JSONField(read_only=True)
 
     def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
         """
@@ -610,6 +613,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "version",
             "geopackage_url",
             "geopackage_status",
+            "capabilities",
         )
         model = Scenario
 
@@ -685,6 +689,7 @@ class ScenarioSerializer(
     geopackage_url = serializers.SerializerMethodField(
         help_text="URL to download the scenario's geopackage file.",
     )
+    capabilities = serializers.JSONField(read_only=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -733,6 +738,7 @@ class ScenarioSerializer(
             "status",
             "version",
             "geopackage_url",
+            "capabilities",
         )
         model = Scenario
 
@@ -752,6 +758,7 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
 
 class ScenarioAndProjectAreasSerializer(serializers.ModelSerializer):
     project_areas = ProjectAreaSerializer(many=True, read_only=True)
+    capabilities = serializers.JSONField(read_only=True)
 
     class Meta:
         fields = (
@@ -765,6 +772,7 @@ class ScenarioAndProjectAreasSerializer(serializers.ModelSerializer):
             "user",
             "status",
             "project_areas",
+            "capabilities",
         )
         model = Scenario
 
