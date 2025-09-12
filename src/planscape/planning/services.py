@@ -522,7 +522,7 @@ def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
 
     max_area = configuration.get("max_area")
     if max_area:
-        return float(max_area)
+        return max_area / number_of_projects
 
     max_acres = get_min_project_area(scenario) * number_of_projects
     return float(max_acres)

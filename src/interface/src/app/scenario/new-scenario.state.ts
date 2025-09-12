@@ -37,8 +37,11 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
+  private _stepIndex$ = new BehaviorSubject(0);
+  public stepIndex$ = this._stepIndex$.asObservable();
+
   // flag to track if the base stands are loaded
-  public baseStandsReady$ = new BehaviorSubject(false);
+  private baseStandsReady$ = new BehaviorSubject(false);
 
   // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
@@ -51,19 +54,31 @@ export class NewScenarioState {
   private _baseStandsLoaded$ = merge(
     this.standSize$.pipe(mapTo(false)), // flip to false on size change
     this.baseStandsReady$.asObservable() // flip to true when loading completes
-  ).pipe(startWith(false), shareReplay({ bufferSize: 1, refCount: true }));
+  ).pipe(
+    startWith(false),
+    shareReplay({ bufferSize: 1, refCount: true }),
+    distinctUntilChanged()
+  );
 
   public availableStands$ = combineLatest([
     this._baseStandsLoaded$,
+    this.stepIndex$,
     this.standSize$,
     this.excludedAreas$,
     this.constraints$,
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
+    // only trigger/refresh on the steps that interact with the map
+    filter(([standsLoaded, stepIndex]) => stepIndex < 3),
     tap(() => this.setLoading(true)),
-    switchMap(([_, standSize, excludedAreas, constraints]) =>
+    switchMap(([_, step, standSize, excludedAreas, constraints]) =>
       this.scenarioService
-        .getExcludedStands(this.planId, standSize, excludedAreas, constraints)
+        .getExcludedStands(
+          this.planId,
+          standSize,
+          step > 0 ? excludedAreas : undefined,
+          step > 1 ? constraints : undefined
+        )
         .pipe(
           tap(() => this.setLoading(false)),
           catchError(() => {
@@ -80,7 +95,7 @@ export class NewScenarioState {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  public excludedStands = this.availableStands$.pipe(
+  public excludedStands$ = this.availableStands$.pipe(
     map((c) => c.unavailable.by_exclusions)
   );
 
@@ -88,7 +103,7 @@ export class NewScenarioState {
     map((c) => c.unavailable.by_thresholds)
   );
 
-  hasExcludedStands$ = this.excludedStands.pipe(
+  hasExcludedStands$ = this.excludedStands$.pipe(
     map((stands) => stands.length > 0)
   );
 
@@ -96,14 +111,15 @@ export class NewScenarioState {
     map((stands) => stands.length > 0)
   );
 
+  public doesNotMeetConstraintsStands$ = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_thresholds)
+  );
+
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
   private slopeId = 0;
   private distanceToRoadsId = 0;
-
-  private _stepIndex$ = new BehaviorSubject(0);
-  public stepIndex$ = this._stepIndex$.asObservable();
 
   constructor(
     private moduleService: ModuleService,

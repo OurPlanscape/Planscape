@@ -65,17 +65,25 @@ export class Step3Component
   ngOnInit(): void {
     this.form.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe((form) => {
-        if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
+      .subscribe((form: any) => {
+        if (
+          this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP') &&
+          this.form.valid
+        ) {
           const constraints: NamedConstraint[] = [];
-          if (form.max_slope != null) {
+          if (!(form.max_slope === null || form.max_slope === '')) {
             constraints.push({
               name: 'maxSlope',
               operator: 'lte',
               value: form.max_slope,
             });
           }
-          if (form.min_distance_from_road != null) {
+          if (
+            !(
+              form.min_distance_from_road === null ||
+              form.min_distance_from_road === ''
+            )
+          ) {
             constraints.push({
               name: 'distanceToRoads',
               operator: 'lte',
