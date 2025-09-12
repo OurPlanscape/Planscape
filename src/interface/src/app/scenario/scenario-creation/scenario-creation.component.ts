@@ -85,9 +85,17 @@ export class ScenarioCreationComponent
 
   creatingScenario = false;
 
+  isDynamicMapEnabled = this.featureService.isFeatureEnabled(
+    'DYNAMIC_SCENARIO_MAP'
+  );
+
   continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
     ? 'Save & Continue'
     : 'Next';
+
+  treatable_area$ = this.newScenarioState.availableStands$.pipe(
+    map((s) => s.summary.treatable_area)
+  );
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {

@@ -1,5 +1,5 @@
 <sg-chart
-  [data]="data"
+  [data]="selectedData$ | async"
   [options]="options"
   [type]="'line'"
   xAxisLabel="Cumulative Area treated (Acres)"

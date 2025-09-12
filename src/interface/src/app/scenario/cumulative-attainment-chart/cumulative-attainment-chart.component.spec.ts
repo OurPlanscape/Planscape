@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart.component';
 import { ScenarioResult } from '@types';
 import { TooltipItem, TooltipModel } from 'chart.js';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('CumulativeAttainmentChartComponent', () => {
   let component: CumulativeAttainmentChartComponent;
@@ -31,7 +32,7 @@ describe('CumulativeAttainmentChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CumulativeAttainmentChartComponent],
+      imports: [CumulativeAttainmentChartComponent, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CumulativeAttainmentChartComponent);
@@ -45,8 +46,7 @@ describe('CumulativeAttainmentChartComponent', () => {
   });
 
   it('should process input data and initialize chart data', () => {
-    expect(component.data.labels.length).toBe(2);
-    expect(component.data.datasets.length).toBe(2);
+    expect(component.allData.labels.length).toBe(2);
   });
 
   it('should apply correct colors from colorForLabel()', () => {
@@ -82,7 +82,7 @@ describe('CumulativeAttainmentChartComponent', () => {
   });
 
   it('should round the labels', () => {
-    const original = component.data.labels;
+    const original = component.allData.labels;
     expect(original.every((l: number) => Number.isInteger(l))).toBeTrue();
   });
 });

@@ -32,6 +32,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
+import { FeatureService } from 'src/app/features/feature.service';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
@@ -63,7 +64,7 @@ export class Step4Component
   extends StepDirective<ScenarioCreation>
   implements OnChanges
 {
-  @Input() planningAreaAcres = 0;
+  @Input() maxAreaValue: number = 0;
 
   form = new FormGroup(
     {
@@ -79,26 +80,32 @@ export class Step4Component
     { validators: this.budgetOrAreaRequiredValidator }
   );
 
+  constructor(private featureService: FeatureService) {
+    super();
+  }
+
   focusedSelection = ''; // string to identify which selection is focused
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
 
   get minBudgetValue(): number {
     const estCostPerAcre =
       this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
-    return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
+    return calculateMinBudget(this.maxAreaValue, estCostPerAcre);
   }
 
   get minMaxAreaValue() {
-    return calculateMinArea(this.planningAreaAcres);
+    return calculateMinArea(this.maxAreaValue);
   }
 
   get maxMaxAreaValue() {
-    return calculateMaxArea(this.planningAreaAcres);
+    return this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')
+      ? this.maxAreaValue
+      : calculateMaxArea(this.maxAreaValue);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // update the form when the planningAreaAcres is updated
-    if (changes['planningAreaAcres'] && this.form) {
+    // update the form when the maxAreaValue  is updated
+    if (changes['maxAreaValue'] && this.form) {
       const maxArea = this.form.get('max_area') as FormControl;
       maxArea?.clearValidators();
       maxArea?.addValidators([
@@ -109,7 +116,7 @@ export class Step4Component
       this.form.clearValidators();
       this.form.addValidators([
         this.budgetOrAreaRequiredValidator,
-        this.totalBudgetedValidator(this.planningAreaAcres),
+        this.totalBudgetedValidator(this.maxAreaValue),
       ]);
 
       // refresh form
@@ -133,10 +140,10 @@ export class Step4Component
 
   /**
    * Checks that the maxBudget is enough for the selected estimatedCost per acre
-   * @param planningAreaAcres
+   * @param maxAreaValue
    * @private
    */
-  private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
+  private totalBudgetedValidator(maxAreaValue: number): ValidatorFn {
     return (form): ValidationErrors | null => {
       const maxBudget = form.get('max_budget')?.value;
       const estCostPerAcre =
@@ -144,7 +151,7 @@ export class Step4Component
 
       if (!!maxBudget) {
         const hasBudget = hasEnoughBudget(
-          planningAreaAcres,
+          maxAreaValue,
           estCostPerAcre,
           maxBudget
         );
@@ -153,7 +160,7 @@ export class Step4Component
           ? null
           : {
               [customErrors.notEnoughBudget]: calculateMinBudget(
-                planningAreaAcres,
+                maxAreaValue,
                 estCostPerAcre
               ),
             };

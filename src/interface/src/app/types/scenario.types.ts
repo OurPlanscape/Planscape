@@ -22,6 +22,7 @@ export interface Scenario {
     id: string;
     name: string;
   };
+  usage_types?: UsageType[];
   version?: string;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
@@ -151,6 +152,11 @@ export interface PriorityRow {
   filepath: string;
   children: PriorityRow[];
   level: number;
+}
+
+export interface UsageType {
+  usage_type: string;
+  datalayer: string;
 }
 
 export interface ScenarioGoal {

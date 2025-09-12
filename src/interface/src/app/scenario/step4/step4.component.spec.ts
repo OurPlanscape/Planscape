@@ -8,6 +8,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Step4Component } from './step4.component';
+import { FeaturesModule } from 'src/app/features/features.module';
 
 describe('Step4Component', () => {
   let component: Step4Component;
@@ -20,6 +21,7 @@ describe('Step4Component', () => {
         BrowserAnimationsModule,
         NgxMaskModule.forRoot(),
         Step4Component,
+        FeaturesModule,
       ],
     }).compileComponents();
 
@@ -45,7 +47,7 @@ describe('Step4Component', () => {
   });
 
   it('should have invalid max_area if less than 20% of planning area', fakeAsync(() => {
-    component.planningAreaAcres = 1000;
+    component.maxAreaValue = 1000;
     const control = component.form.get('max_area');
     control?.setValue(100);
     fixture.detectChanges();
@@ -54,7 +56,7 @@ describe('Step4Component', () => {
   }));
 
   it('should have invalid max_area if more than 80% of planning area', fakeAsync(() => {
-    component.planningAreaAcres = 1000;
+    component.maxAreaValue = 1000;
     const control = component.form.get('max_area');
     control?.setValue(900);
     fixture.detectChanges();
@@ -63,7 +65,7 @@ describe('Step4Component', () => {
   }));
 
   it('should show an error if the form is touched but fields are empty', fakeAsync(() => {
-    component.planningAreaAcres = 1000;
+    component.maxAreaValue = 1000;
     const control = component.form.get('max_area');
     control?.setValue(900);
     fixture.detectChanges();

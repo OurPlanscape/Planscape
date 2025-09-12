@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart.component';
 import { MOCK_SCENARIO } from '@services/mocks';
 import { ScenarioResult } from '@types';
@@ -10,7 +10,7 @@ describe('TreatmentOpportunityChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentOpportunityChartComponent],
+      imports: [HttpClientTestingModule, TreatmentOpportunityChartComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentOpportunityChartComponent);

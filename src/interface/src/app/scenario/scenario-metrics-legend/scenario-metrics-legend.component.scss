@@ -1,48 +1,79 @@
 @import 'mixins';
 @import 'colors';
 
+
 :host {
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  align-items: flex-start;
-  gap: 24px;
-  align-self: stretch;
-  border: 1px solid $color-soft-gray;
-  background: $color-light-gray;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    align-items: flex-start;
+
+    align-self: stretch;
+    border: 1px solid $color-soft-gray;
+    background: $color-light-gray;
+    gap: 4px;
+    padding-left: 8px;
 }
+
 
 .title {
-  @include public-sans();
-  color: $color-md-gray;
-  font-weight: 700;
-  line-height: 14px;
-  text-transform: uppercase;
+    @include public-sans();
+    color: $color-md-gray;
+    font-weight: 700;
+    line-height: 14px;
+    padding-left: 8px;
 }
+
 
 .legend-box {
-  display: flex;
-  gap: 15px;
-  width: 100%;
-  flex-direction: column;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
 }
+
+
+.chart-legend-selection {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
 
 .legend-line {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 4px;
+    align-items: center;
 }
 
+
 .legend-name {
-  color: $color-black;
-  @include standard-label();
-  font-size: 14px;
+    color: $color-black;
+    @include xs-label();
+    font-size: 14px;
+    line-height: normal;
+}
+
+.legend-color-box {
+    height: 48px;
+    padding-top: 16px;
+    padding-bottom: 16px;
 }
 
 .legend-color {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+::ng-deep .chart-legend-selection .mdc-form-field {
+    width: 100%;
+}
+
+::ng-deep .chart-legend-selection .mdc-label {
+    width: 100%;
 }
 
 @media print {
