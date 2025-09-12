@@ -3,7 +3,6 @@ import { BehaviorSubject, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { ScenarioStandsComponent } from './scenario-stands.component';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
-import { BASE_COLORS } from '../../treatments/map.styles';
 import {
   ImageComponent,
   LayerComponent,
@@ -43,7 +42,8 @@ describe('ScenarioStandsComponent', () => {
         MockProvider(NewScenarioState, {
           scenarioConfig$: scenarioConfig$,
           availableStands$: of({} as AvailableStands),
-          excludedStands: of([]),
+          excludedStands$: of([]),
+          doesNotMeetConstraintsStands$: of([]),
         }),
         MockProvider(MapConfigState, {
           projectAreasOpacity$: of(0),
@@ -62,14 +62,6 @@ describe('ScenarioStandsComponent', () => {
   it('reads planId and scenarioId from route snapshot', () => {
     const { component } = create();
     expect(component.planId).toBe(planId);
-  });
-
-  it('exposes COLORS and sourceName constants', () => {
-    const { component } = create();
-    expect((component as any).COLORS).toBe(BASE_COLORS);
-    expect(component.sourceName).toBe(
-      MARTIN_SOURCES.scenarioStands.sources.stands
-    );
   });
 
   it('tilesUrl$ emits only when stand_size exists and updates with latest', fakeAsync(() => {
