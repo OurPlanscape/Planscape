@@ -15,6 +15,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxMaskModule } from 'ngx-mask';
 import { NewScenarioState } from '../new-scenario.state';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { AvailableStands } from '@types';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -38,7 +39,9 @@ describe('ScenarioCreationComponent', () => {
         }),
         MockProvider(ScenarioState, { excludedAreas$: of([]) }),
         MockProvider(DataLayersStateService, { paths$: of([]) }),
-        MockProvider(NewScenarioState),
+        MockProvider(NewScenarioState, {
+          availableStands$: of({ summary: {} } as AvailableStands),
+        }),
       ],
       declarations: [
         MockDeclarations(
