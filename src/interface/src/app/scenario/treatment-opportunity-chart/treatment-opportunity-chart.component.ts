@@ -124,9 +124,11 @@ export class TreatmentOpportunityChartComponent implements OnInit {
     };
     this.selectedData$.next(selectedData);
 
-    this.chartService.displayedMetrics$.pipe(untilDestroyed(this)).subscribe((metrics: Set<string>) => {
-      this.updateDisplayedMetrics(metrics);
-    });
+    this.chartService.displayedMetrics$
+      .pipe(untilDestroyed(this))
+      .subscribe((metrics: Set<string>) => {
+        this.updateDisplayedMetrics(metrics);
+      });
   }
 
   updateDisplayedMetrics(metrics: Set<string>) {

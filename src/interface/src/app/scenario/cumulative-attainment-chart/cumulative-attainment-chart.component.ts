@@ -33,9 +33,11 @@ export class CumulativeAttainmentChartComponent implements OnInit {
   @Input() selectedMetrics!: Set<string> | null;
 
   constructor(private chartService: ScenarioResultsChartsService) {
-    this.chartService.displayedMetrics$.pipe(untilDestroyed(this)).subscribe((metrics: Set<string>) => {
-      this.updateDisplayedMetrics(metrics);
-    });
+    this.chartService.displayedMetrics$
+      .pipe(untilDestroyed(this))
+      .subscribe((metrics: Set<string>) => {
+        this.updateDisplayedMetrics(metrics);
+      });
   }
   options: ChartOptions<'line'> = {
     responsive: true,
