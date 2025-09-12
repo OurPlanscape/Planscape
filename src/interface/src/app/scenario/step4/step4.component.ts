@@ -105,7 +105,7 @@ export class Step4Component
 
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the maxAreaValue  is updated
-    if (changes['maxAreaValue '] && this.form) {
+    if (changes['maxAreaValue'] && this.form) {
       const maxArea = this.form.get('max_area') as FormControl;
       maxArea?.clearValidators();
       maxArea?.addValidators([
