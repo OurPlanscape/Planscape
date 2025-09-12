@@ -42,11 +42,13 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioCapabilityScope,
     ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalGroup,
 )
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
@@ -207,6 +209,8 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         **kwargs,
     }
     scenario = Scenario.objects.create(**data)
+    scenario.capabilities = compute_scenario_capabilities(scenario)
+    scenario.save(update_fields=["capabilities"])
     ScenarioResult.objects.create(scenario=scenario)
     # george created scenario 1234 on planning area XYZ
     action.send(
@@ -317,6 +321,9 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         configuration={"stand_size": validated_data["stand_size"]},
         origin=ScenarioOrigin.USER,
     )
+    scenario.capabilities = compute_scenario_capabilities(scenario)
+    scenario.save(update_fields=["capabilities"])
+
     transaction.on_commit(
         partial(
             action.send,
@@ -1162,3 +1169,21 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_MEDIUM
         case _:
             return settings.MIN_AREA_PROJECT_LARGE
+
+
+def compute_scenario_capabilities(scenario: Scenario) -> Dict[str, object]:
+    tg = scenario.treatment_goal
+    group = getattr(tg, "group", None)
+    scope = (
+        ScenarioCapabilityScope.CA
+        if group == TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
+        else ScenarioCapabilityScope.CONUS
+    )
+    conus_enabled = feature_enabled("CONUS_WIDE_SCENARIOS")
+    can_request_conus_run = (scope == ScenarioCapabilityScope.CONUS) and conus_enabled
+
+    return {
+        "scope": scope.value,
+        "conus_feature_enabled": conus_enabled,
+        "can_request_conus_run": can_request_conus_run,
+    }
