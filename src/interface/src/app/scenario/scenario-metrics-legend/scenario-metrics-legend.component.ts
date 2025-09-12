@@ -46,7 +46,7 @@ export class ScenarioMetricsLegendComponent implements OnInit {
     this.chartService.initDisplayedMetrics(this.metrics);
     this.metrics.forEach((m) => this.chartService.getOrAddColor(m));
 
-    this.chartService.displayedMetrics$.subscribe((m) => {
+    this.chartService.displayedMetrics$.pipe(untilDestroyed(this)).subscribe((m) => {
       this.selectedMetrics = m;
     });
 

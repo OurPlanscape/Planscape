@@ -15,7 +15,9 @@ import {
 import { ChartComponent } from '@styleguide';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
 import { BehaviorSubject } from 'rxjs';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-treatment-opportunity-chart',
   standalone: true,
@@ -122,7 +124,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
     };
     this.selectedData$.next(selectedData);
 
-    this.chartService.displayedMetrics$.subscribe((metrics: Set<string>) => {
+    this.chartService.displayedMetrics$.pipe(untilDestroyed(this)).subscribe((metrics: Set<string>) => {
       this.updateDisplayedMetrics(metrics);
     });
   }

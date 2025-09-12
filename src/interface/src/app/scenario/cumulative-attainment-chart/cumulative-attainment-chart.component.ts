@@ -17,8 +17,10 @@ import {
 } from '../../chart-helper';
 import { ChartComponent } from '@styleguide';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BehaviorSubject } from 'rxjs';
 
+@UntilDestroy()
 @Component({
   selector: 'app-cumulative-attainment-chart',
   standalone: true,
@@ -31,7 +33,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
   @Input() selectedMetrics!: Set<string> | null;
 
   constructor(private chartService: ScenarioResultsChartsService) {
-    this.chartService.displayedMetrics$.subscribe((metrics: Set<string>) => {
+    this.chartService.displayedMetrics$.pipe(untilDestroyed(this)).subscribe((metrics: Set<string>) => {
       this.updateDisplayedMetrics(metrics);
     });
   }
