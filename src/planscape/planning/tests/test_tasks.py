@@ -124,6 +124,7 @@ class AsyncPreForsysProcessTest(TestCase):
             "seed": 42,
             "max_slope": 25,
             "min_distance_from_road": 50,
+            "max_area": 40000,
         }
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
         self.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
@@ -168,7 +169,7 @@ class AsyncPreForsysProcessTest(TestCase):
         variables = self.scenario.forsys_input["variables"]
         self.assertEqual(variables["number_of_projects"], 10)
         self.assertEqual(variables["min_area_project"], 500)
-        self.assertEqual(variables["max_area_project"], 500 * 10)
+        self.assertEqual(variables["max_area_project"], 40000 / 10)
 
 
 @override_settings(FEATURE_FLAGS="")
