@@ -84,7 +84,7 @@ class MaxAreaProjectTest(TestCase):
         max_project_area = get_max_area_project(
             scenario=scenario, number_of_projects=10
         )
-        self.assertAlmostEqual(max_project_area, 4048.58, places=2)
+        self.assertAlmostEqual(max_project_area, 404.858, places=3)
 
     def test_get_max_area_project__max_area_and_number_of_projects(self):
         scenario = ScenarioFactory.create(
@@ -107,7 +107,7 @@ class MaxAreaProjectTest(TestCase):
         max_project_area = get_max_area_project(
             scenario=scenario, number_of_projects=10
         )
-        self.assertEqual(max_project_area, 500 * 10)
+        self.assertEqual(max_project_area, 500)
 
 
 class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
