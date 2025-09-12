@@ -42,6 +42,13 @@ export class ScenarioService {
     });
   }
 
+  createScenarioFromName(name: string) {
+    const scenarioParameters = { name: name };
+    return this.http.post<Scenario>(this.v2Path, scenarioParameters, {
+      withCredentials: true,
+    });
+  }
+
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
   createScenarioFromSteps(
     scenarioParameters: ScenarioCreationPayload

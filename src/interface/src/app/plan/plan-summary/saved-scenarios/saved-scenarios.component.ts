@@ -19,6 +19,8 @@ import { UploadProjectAreasModalComponent } from '../../upload-project-areas-mod
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { FeatureService } from 'src/app/features/feature.service';
+import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -53,7 +55,8 @@ export class SavedScenariosComponent implements OnInit {
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -108,6 +111,20 @@ export class SavedScenariosComponent implements OnInit {
       return false;
     }
     return canAddScenario(this.plan);
+  }
+
+  private openScenarioSetupDialog() {
+    return this.dialog.open(ScenarioSetupModalComponent, {
+      maxWidth: '560px',
+    });
+  }
+
+  handleNewScenarioButton(configId?: number): void {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      this.openScenarioSetupDialog();
+    } else {
+      this.openConfig(configId);
+    }
   }
 
   openConfig(configId?: number): void {
