@@ -4,6 +4,7 @@ import {
   ScenarioCreation,
   ScenarioCreationPayload,
   ScenarioGoal,
+  Scenario
 } from '@types';
 
 /**
@@ -78,4 +79,22 @@ export function legacyGetCategorizedGoals(
     acc[category].push(goal);
     return acc;
   }, {});
+}
+
+/***
+ * This function contains the business logic for whether a particular scenario can
+ * create a treatment plan.
+ * 
+ * e.g., For now, that logic means the scope is not CONUS, but this may change, so 
+ * that logic is encapsulated here. 
+ * 
+ * TODO: This version assumes no backfill, so allows 
+ * treatment plan options if the capabilities scope is not present
+ */
+export function scenarioCanHaveTreatmentPlans(scenario : Scenario) : boolean {
+  // scenario must exist AND (scenario either does NOT have a capabilities value OR it does, AND scope is NOT CONUS)
+  if (scenario && (!scenario.capabilities.scope || scenario.capabilities?.scope !== 'CONUS')) {
+    return true;
+  }
+  return false;
 }

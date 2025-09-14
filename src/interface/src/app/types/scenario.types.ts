@@ -26,6 +26,7 @@ export interface Scenario {
   version?: string;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
+  capabilities: ScenarioCapabilities;
 }
 
 /**
@@ -63,6 +64,12 @@ export interface ScenarioResult {
     features: FeatureCollection[]; // TODO this is actually Features[]
     type: string;
   };
+}
+
+export interface ScenarioCapabilities { 
+  scope: string;
+  conus_feature_enabled: boolean;
+  can_request_conus_run: boolean;
 }
 
 export interface ScenarioCreation extends ScenarioConfigPayload {
