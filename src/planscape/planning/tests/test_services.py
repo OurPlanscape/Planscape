@@ -4,7 +4,6 @@ import shutil
 from datetime import date, datetime
 from pathlib import Path
 from unittest import mock
-from unittest.mock import patch
 
 import fiona
 import shapely
@@ -16,13 +15,19 @@ from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase, override_settings
 from fiona.crs import to_string
 from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats3
 from stands.tests.factories import StandFactory
 
-from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalGroup
+from planning.models import (
+    PlanningArea,
+    ScenarioResultStatus,
+    TreatmentGoalGroup,
+    ScenarioCapability,
+)
+
 from planning.services import (
     export_planning_area_to_geopackage,
     export_to_geopackage,
@@ -690,13 +695,21 @@ class CapabilitiesServiceTest(TestCase):
             name="caps-ca",
         )
         caps = compute_scenario_capabilities(scenario)
-        self.assertEqual(caps["scope"], "CA")
-        self.assertIn("conus_feature_enabled", caps)
         self.assertIn("can_request_conus_run", caps)
         self.assertFalse(caps["can_request_conus_run"])
+        self.assertIn("modules", caps)
+        modules = caps["modules"]
+        self.assertTrue(modules[ScenarioCapability.FORSYS.value])
+        self.assertTrue(modules[ScenarioCapability.TREATMENT_GOALS.value])
+        self.assertIn(ScenarioCapability.IMPACTS.value, modules)
+        self.assertIn(ScenarioCapability.TREATMENT_PLANS.value, modules)
 
-    @patch("planning.services.feature_enabled", return_value=True)
-    def test_conus_scope_with_flag(self, _mock_flag):
+    @override_settings(
+        FEATURE_FLAGS={
+            "CONUS_WIDE_SCENARIOS": True,
+        }
+    )
+    def test_conus_scope_with_flag(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             user=self.user,
@@ -705,6 +718,7 @@ class CapabilitiesServiceTest(TestCase):
             name="caps-conus",
         )
         caps = compute_scenario_capabilities(scenario)
-        self.assertEqual(caps["scope"], "CONUS")
-        self.assertTrue(caps["conus_feature_enabled"])
         self.assertTrue(caps["can_request_conus_run"])
+        modules = caps["modules"]
+        self.assertTrue(modules[ScenarioCapability.FORSYS.value])
+        self.assertTrue(modules[ScenarioCapability.TREATMENT_GOALS.value])

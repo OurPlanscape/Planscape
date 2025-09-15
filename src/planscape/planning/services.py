@@ -42,7 +42,7 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
-    ScenarioCapabilityScope,
+    ScenarioCapability,
     ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
@@ -1174,16 +1174,22 @@ def get_min_project_area(scenario: Scenario) -> float:
 def compute_scenario_capabilities(scenario: Scenario) -> Dict[str, object]:
     tg = scenario.treatment_goal
     group = getattr(tg, "group", None)
-    scope = (
-        ScenarioCapabilityScope.CA
-        if group == TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
-        else ScenarioCapabilityScope.CONUS
+
+    modules = {
+        ScenarioCapability.FORSYS.value: True,
+        ScenarioCapability.TREATMENT_GOALS.value: tg is not None,
+    }
+
+    modules[ScenarioCapability.IMPACTS.value] = feature_enabled("IMPACTS")
+    modules[ScenarioCapability.TREATMENT_PLANS.value] = feature_enabled(
+        "TREATMENT_PLANS"
     )
+
+    is_conus_goal = group != TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
     conus_enabled = feature_enabled("CONUS_WIDE_SCENARIOS")
-    can_request_conus_run = (scope == ScenarioCapabilityScope.CONUS) and conus_enabled
+    can_request_conus_run = is_conus_goal and conus_enabled
 
     return {
-        "scope": scope.value,
-        "conus_feature_enabled": conus_enabled,
+        "modules": modules,
         "can_request_conus_run": can_request_conus_run,
     }

@@ -347,9 +347,11 @@ class GeoPackageStatus(models.TextChoices):
     FAILED = ("FAILED", "Failed")
 
 
-class ScenarioCapabilityScope(models.TextChoices):
-    CA = "CA", "California"
-    CONUS = "CONUS", "Continental US"
+class ScenarioCapability(models.TextChoices):
+    FORSYS = "FORSYS", "Forsys"
+    TREATMENT_GOALS = "TREATMENT_GOALS", "Treatment Goals"
+    IMPACTS = "IMPACTS", "Impacts"
+    TREATMENT_PLANS = "TREATMENT_PLANS", "Treatment Plans"
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):

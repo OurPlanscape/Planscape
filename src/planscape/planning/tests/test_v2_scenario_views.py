@@ -5,6 +5,8 @@ from unittest.mock import patch
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.conf import settings
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
@@ -15,6 +17,7 @@ from planning.models import (
     ScenarioVersion,
     TreatmentGoalGroup,
     TreatmentGoalUsesDataLayer,
+    ScenarioCapability,
 )
 
 from planning.services import compute_scenario_capabilities
@@ -789,8 +792,14 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             name="caps-view",
         )
 
-    @patch("planning.services.feature_enabled", return_value=True)
-    def test_capabilities_present_in_detail(self, _mock_flag):
+    @override_settings(
+        FEATURE_FLAGS={
+            "CONUS_WIDE_SCENARIOS": True,
+            "IMPACTS": False,
+            "TREATMENT_PLANS": False,
+        }
+    )
+    def test_capabilities_present_in_detail(self):
         self.scenario.capabilities = compute_scenario_capabilities(self.scenario)
         self.scenario.save(update_fields=["capabilities"])
 
@@ -801,6 +810,13 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, dict)
-        self.assertEqual(caps.get("scope"), "CONUS")
-        self.assertTrue(caps.get("conus_feature_enabled"))
+
+        self.assertIn("modules", caps)
+        modules = caps["modules"]
+
+        self.assertTrue(modules[ScenarioCapability.FORSYS.value])
+        self.assertTrue(modules[ScenarioCapability.TREATMENT_GOALS.value])
+        self.assertIn(ScenarioCapability.IMPACTS.value, modules)
+        self.assertIn(ScenarioCapability.TREATMENT_PLANS.value, modules)
+
         self.assertTrue(caps.get("can_request_conus_run"))
