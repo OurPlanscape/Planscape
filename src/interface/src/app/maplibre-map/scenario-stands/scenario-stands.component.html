@@ -13,7 +13,7 @@
     [source]="sourceName"
     [sourceLayer]="sourceName"
     [filter]="(filteredStands$ | async) || undefined"
-    [paint]="standLinePaint">
+    [paint]="standLinePaint$ | async">
   </mgl-layer>
   <mgl-layer
     id="scenario-stands-fill"
@@ -30,7 +30,7 @@
     [source]="sourceName"
     [sourceLayer]="sourceName"
     [filter]="(filteredStands$ | async) || undefined"
-    [paint]="standExcludedPaint">
+    [paint]="standExcludedPaint$ | async">
   </mgl-layer>
 </ng-container>
 <div class="loader"></div>
