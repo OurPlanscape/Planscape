@@ -57,10 +57,12 @@ export class ScenarioResultsComponent implements OnChanges {
     // parse ScenarioResult
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
-      const metrics = Object.keys(
-        getGroupedAttainment(this.results.result.features)
-      );
-      metrics.forEach((m) => this.chartService.getOrAddColor(m));
+      if (hasAnalytics(this.results)) {
+        const metrics = Object.keys(
+          getGroupedAttainment(this.results.result.features)
+        );
+        metrics.forEach((m) => this.chartService.getOrAddColor(m));
+      }
     }
   }
 
