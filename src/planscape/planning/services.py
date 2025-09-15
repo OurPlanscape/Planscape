@@ -501,6 +501,80 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
 
 
+def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
+    errors: List[str] = []
+
+    if scenario.result_status != ScenarioResultStatus.PENDING:
+        return [f"Scenario cannot be run on status {scenario.result_status}."]
+
+    if scenario.status == ScenarioStatus.ARCHIVED:
+        errors.append("Archived scenarios cannot be run.")
+
+    if not scenario.treatment_goal:
+        errors.append("Scenario has no Treatment Goal assigned.")
+
+    if (
+        scenario.planning_area.get_stands(stand_size=scenario.get_stand_size()).count()
+        == 0
+    ):
+        errors.append(
+            "No stands are available in this Planning Area for the selected `stand_size`."
+        )
+
+    cfg = dict(getattr(scenario, "configuration", {}) or {})
+    max_budget = cfg.get("max_budget")
+    max_area = cfg.get("max_area")
+
+    has_budget = (max_budget is not None) and (max_budget > 0)
+    has_area = (max_area is not None) and (max_area > 0)
+
+    if not has_budget and not has_area:
+        errors.append("Provide either `max_budget` or `max_area`.")
+    if has_budget and has_area:
+        errors.append("Provide only one of `max_budget` or `max_area` (not both).")
+
+    return errors
+
+
+@transaction.atomic()
+def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
+    from planning.tasks import (
+        async_calculate_stand_metrics_v2,
+        async_pre_forsys_process,
+        async_forsys_run,
+    )
+
+    # schedule: metrics → pre-forsys → forsys
+    tx_goal = scenario.treatment_goal
+    datalayers = tx_goal.get_raster_datalayers() if tx_goal else []
+    tasks = [
+        async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
+        for d in datalayers
+    ]
+    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
+
+    track_openpanel(
+        name="planning.scenario.triggered",
+        properties={
+            "origin": scenario.origin,
+            "treatment_goal_id": tx_goal.pk if tx_goal else None,
+            "treatment_goal_category": (tx_goal.category if tx_goal else None),
+            "treatment_goal_name": (tx_goal.name if tx_goal else None),
+            "email": user.email if user else None,
+        },
+        user_id=user.pk,
+    )
+
+    action.send(
+        user, verb="triggered", action_object=scenario, target=scenario.planning_area
+    )
+
+    transaction.on_commit(
+        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    )
+    return scenario
+
+
 def get_cost_per_acre(configuration: dict) -> float:
     return configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
 
