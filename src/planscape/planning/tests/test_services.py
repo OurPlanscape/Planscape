@@ -21,13 +21,14 @@ from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats3
 from stands.tests.factories import StandFactory
 
-from planning.models import PlanningArea, ScenarioResultStatus
+from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType
 from planning.services import (
     export_planning_area_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
-    get_excluded_stands,
+    get_constrained_stands,
+    get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
@@ -65,6 +66,48 @@ class MaxTreatableAreaTest(TestCase):
         stand_size = StandSizeChoices.LARGE
         stand_count = get_max_treatable_stand_count(max_area, stand_size)
         self.assertEqual(2, stand_count)
+
+
+class MaxAreaProjectTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create(with_stands=True)
+
+    def test_get_max_area_project__max_budget_and_cost_per_acre(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={
+                "max_budget": 10000000,
+                "est_cost": 2470,
+                "max_project_count": 10,
+            },
+        )
+        max_project_area = get_max_area_project(
+            scenario=scenario, number_of_projects=10
+        )
+        self.assertAlmostEqual(max_project_area, 404.858, places=3)
+
+    def test_get_max_area_project__max_area_and_number_of_projects(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={"max_area": 40000, "max_project_count": 10},
+        )
+        max_project_area = get_max_area_project(
+            scenario=scenario, number_of_projects=10
+        )
+        self.assertEqual(max_project_area, 4000)
+
+    def test_get_max_area_project__min_project_area_and_number_of_projects(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "max_project_count": 10,
+            },
+        )
+        max_project_area = get_max_area_project(
+            scenario=scenario, number_of_projects=10
+        )
+        self.assertEqual(max_project_area, 500)
 
 
 class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
@@ -601,7 +644,9 @@ class TestRemoveExcludes(TransactionTestCase):
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.metrics = calculate_stand_vector_stats3(
-            self.datalayer, self.planning_area.geometry
+            self.datalayer,
+            self.planning_area.geometry,
+            stand_size=StandSizeChoices.LARGE,
         )
 
     def tearDown(self):
@@ -609,12 +654,30 @@ class TestRemoveExcludes(TransactionTestCase):
             qual_name = qualify_for_django(self.datalayer.table)
             cur.execute(f"DROP TABLE IF EXISTS {qual_name} CASCADE;")
 
-    def test_filter_by_datalayer_removes_stands(self):
+    def test_get_constrained_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
-        excluded_stands = get_excluded_stands(
+        excluded_stands = get_constrained_stands(
             stands,
             self.datalayer,
+            metric_column="majority",
+            value=1,
+            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
         )
 
         self.assertEqual(11, len(excluded_stands))
+
+    def test_get_constrained_stands_thresholds(self):
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.assertEquals(17, len(stands))
+        # in this scenario, without operator and with THRESHOLD usagetype
+        # we are getting all the stands that are NOT equals 1
+        excluded_stands = get_constrained_stands(
+            stands,
+            self.datalayer,
+            metric_column="majority",
+            value=1,
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
+        )
+
+        self.assertEqual(6, len(excluded_stands))

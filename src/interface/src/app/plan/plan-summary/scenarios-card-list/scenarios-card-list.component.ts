@@ -18,7 +18,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { OverlayLoaderService } from '@services/overlay-loader.service';
-import { CreateTreatmentDialogComponent } from '../../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
+import { CreateTreatmentDialogComponent } from '../../../scenario/create-treatment-dialog/create-treatment-dialog.component';
 import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';

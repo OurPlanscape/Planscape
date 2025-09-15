@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TileButtonComponent } from '../../../styleguide';
 import { FeatureService } from '../../features/feature.service';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 interface AnalyticTool {
   id: string;
@@ -33,7 +35,12 @@ export class AnalyticsToolsComponent implements OnInit {
 
   hasEnabledTools: boolean = false;
 
-  constructor(private featureService: FeatureService) {}
+  constructor(
+    private breadcrumbService: BreadcrumbService,
+    private featureService: FeatureService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.checkEnabledTools();
@@ -48,6 +55,15 @@ export class AnalyticsToolsComponent implements OnInit {
   }
 
   onToolClick(toolId: string): void {
-    // TODO: Implement analytics tool click handler
+    if (toolId === 'climate-foresight') {
+      const planId = this.route.snapshot.data['planId'];
+      if (planId) {
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Climate Foresight',
+          backUrl: `/plan/${planId}`,
+        });
+        this.router.navigate(['/plan', planId, 'climate-foresight']);
+      }
+    }
   }
 }

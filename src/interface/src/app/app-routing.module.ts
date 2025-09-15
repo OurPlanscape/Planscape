@@ -20,7 +20,6 @@ import {
   planResetResolver,
 } from './resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
-import { createFeatureGuard } from './features/feature.guard';
 
 const routes: Routes = [
   {
@@ -143,35 +142,18 @@ const routes: Routes = [
           import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
-        // follow the route structure of plan, but without nesting modules and components
-        path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({
-            featureName: 'SCENARIO_CONFIGURATION_STEPS',
-            inverted: true,
-          }),
-        ],
+        path: 'plan/:planId/scenario',
         resolve: {
-          planInit: planLoaderResolver,
-          treatmentId: numberResolver('treatmentId', ''),
-          scenarioInit: scenarioLoaderResolver,
+          planId: planLoaderResolver,
         },
+
         loadChildren: () =>
-          import('./treatments/treatments.module').then(
-            (m) => m.TreatmentsModule
-          ),
+          import('./scenario/scenario.module').then((m) => m.ScenarioModule),
       },
       {
         // follow the route structure of plan, but without nesting modules and components
         path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({
-            featureName: 'SCENARIO_CONFIGURATION_STEPS',
-            inverted: false,
-          }),
-        ],
+        canActivate: [AuthGuard],
         resolve: {
           planInit: planLoaderResolver,
           treatmentId: numberResolver('treatmentId', ''),

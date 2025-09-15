@@ -1,31 +1,22 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ScenarioCreationComponent } from './scenario-creation/scenario-creation.component';
-import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
 import { resetDatalayerResolver } from '../resolvers/reset-datalayer.resolver';
-import { createFeatureGuard } from '../features/feature.guard';
-import { CreateScenariosComponent } from '../plan/create-scenarios/create-scenarios.component';
-import { ScenarioRoutePlaceholderComponent } from '../plan/scenario-route-placeholder/scenario-route-placeholder';
-import { canDeactivateGuard } from '../../app/services/can-deactivate.guard';
+import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
+import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
+import { ScenarioComponent } from './scenario.component';
+import { ScenarioCreationComponent } from './scenario-creation/scenario-creation.component';
+import { canDeactivateGuard } from '@services/can-deactivate.guard';
 
 const routes: Routes = [
   {
-    path: 'scenario',
+    path: '',
+    component: ScenarioComponent,
+    title: 'Scenario Configuration',
     children: [
       {
         path: '',
         component: ScenarioCreationComponent,
         title: 'Scenario Configuration',
-        data: {
-          showOverview: false,
-          showProjectAreas: false,
-        },
-        canActivate: [
-          createFeatureGuard({
-            featureName: 'SCENARIO_CONFIGURATION_STEPS',
-            fallback: 'config',
-          }),
-        ],
         canDeactivate: [canDeactivateGuard],
         resolve: {
           scenarioId: scenarioLoaderResolver,
@@ -36,62 +27,12 @@ const routes: Routes = [
         path: ':scenarioId',
         component: ScenarioRoutePlaceholderComponent,
         title: 'Scenario Configuration',
-        data: {
-          showOverview: false,
-          showProjectAreas: true,
-        },
-        canActivate: [
-          createFeatureGuard({
-            featureName: 'SCENARIO_CONFIGURATION_STEPS',
-            fallback: 'config/:scenarioId',
-          }),
-        ],
         resolve: {
           scenarioId: scenarioLoaderResolver,
           dataLayerInit: resetDatalayerResolver,
         },
       },
     ],
-  },
-  {
-    path: 'config',
-    component: CreateScenariosComponent,
-    title: 'Scenario Configuration',
-    data: {
-      showOverview: false,
-      showProjectAreas: false,
-    },
-    canActivate: [
-      createFeatureGuard({
-        featureName: 'SCENARIO_CONFIGURATION_STEPS',
-        fallback: 'scenario',
-        inverted: true,
-      }),
-    ],
-    resolve: {
-      scenarioId: scenarioLoaderResolver,
-      dataLayerInit: resetDatalayerResolver,
-    },
-  },
-  {
-    path: 'config/:scenarioId',
-    component: ScenarioRoutePlaceholderComponent,
-    title: 'Scenario Configuration',
-    data: {
-      showOverview: false,
-      showProjectAreas: true,
-    },
-    canActivate: [
-      createFeatureGuard({
-        featureName: 'SCENARIO_CONFIGURATION_STEPS',
-        fallback: 'scenario/:scenarioId',
-        inverted: true,
-      }),
-    ],
-    resolve: {
-      scenarioId: scenarioLoaderResolver,
-      dataLayerInit: resetDatalayerResolver,
-    },
   },
 ];
 

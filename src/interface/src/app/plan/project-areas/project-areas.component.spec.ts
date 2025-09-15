@@ -32,9 +32,9 @@ describe('ProjectAreasComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ProjectAreasComponent, CurrencyInKPipe, TestHostComponent],
+      declarations: [TestHostComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [LegacyMaterialModule],
+      imports: [LegacyMaterialModule, ProjectAreasComponent, CurrencyInKPipe],
       providers: [CurrencyPipe],
     }).compileComponents();
 

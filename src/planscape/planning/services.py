@@ -16,16 +16,26 @@ from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
+from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.db.models.functions import Area, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.measure import A
 from django.db import transaction
+from django.db.models.aggregates import Sum
 from django.utils.timezone import now
-from datasets.models import DataLayer
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
+from modules.services import get_forsys_layer_by_capability, get_forsys_layer_by_name
+from pyproj import Geod
+from shapely import wkt
+from stands.models import Stand, StandSizeChoices, area_from_size
+from stands.services import get_datalayer_metric
+from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -37,18 +47,31 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
-    TreatmentGoalUsesDataLayer,
     TreatmentGoalUsageType,
 )
-from pyproj import Geod
-from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
 logger = logging.getLogger(__name__)
+
+
+def create_metrics_task(
+    planning_area: PlanningArea, datalayer: DataLayer, stand_size: StandSizeChoices
+):
+    from planning.tasks import (
+        async_calculate_stand_metrics_v3,
+        async_calculate_vector_metrics,
+    )
+
+    match datalayer.type:
+        case DataLayerType.VECTOR:
+            return async_calculate_vector_metrics.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
+        case _:
+            return async_calculate_stand_metrics_v3.si(
+                planning_area.pk, datalayer.pk, stand_size
+            )
 
 
 @transaction.atomic()
@@ -59,10 +82,7 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
-    from planning.tasks import (
-        async_calculate_vector_metrics,
-        async_create_stands,
-    )
+    from planning.tasks import async_create_stands
 
     """Canonical method to create a new planning area."""
 
@@ -79,17 +99,23 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
-    datalayers = DataLayer.objects.filter(
-        dataset_id=998,
-        type=DataLayerType.VECTOR,
-    )
-    vector_metrics_jobs = group(
+    slope = get_forsys_layer_by_name("slope")
+    distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
+    datalayers = list(get_forsys_layer_by_capability("exclusion")) + [
+        slope,
+        distance_from_roads,
+    ]
+    datalayers = list(filter(None, datalayers))
+    precalculation_jobs = group(
         [
-            async_calculate_vector_metrics.si(planning_area.pk, datalayer.pk)
+            create_metrics_task(planning_area, datalayer, stand_size=stand_size)
             for datalayer in datalayers
+            for stand_size in StandSizeChoices
         ]
     )
-    job = chain(async_create_stands.si(planning_area.pk), vector_metrics_jobs)
+    create_stands_job = chain(
+        async_create_stands.si(planning_area.pk), precalculation_jobs
+    )
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -101,7 +127,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: job.apply_async())
+        transaction.on_commit(lambda: create_stands_job.apply_async())
     return planning_area
 
 
@@ -162,8 +188,8 @@ def get_treatment_goal_from_configuration(
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import (
         async_calculate_stand_metrics_v2,
-        async_pre_forsys_process,
         async_forsys_run,
+        async_pre_forsys_process,
     )
 
     # precedence here to the `kwargs`. if you supply `origin` here
@@ -386,13 +412,121 @@ def zip_directory(file_obj, source_dir):
                 )
 
 
+def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
+    tx_goal = scenario.treatment_goal
+
+    datalayers = []
+    if tx_goal:
+        datalayers = [
+            {
+                "id": tgudl.datalayer.id,
+                "name": tgudl.datalayer.name,
+                "metric": get_datalayer_metric(tgudl.datalayer),
+                "type": tgudl.datalayer.type,
+                "geometry_type": tgudl.datalayer.geometry_type,
+                "threshold": tgudl.threshold,
+                "usage_type": tgudl.usage_type,
+            }
+            for tgudl in tx_goal.datalayer_usages.all()
+        ]
+
+    merged_cfg = dict(getattr(scenario, "configuration", {}) or {})
+    one_off_cfg = getattr(scenario, "one_off_config", None)
+    if isinstance(one_off_cfg, dict) and one_off_cfg:
+        merged_cfg.update(one_off_cfg)
+
+    max_slope = merged_cfg.get("max_slope")
+    if max_slope:
+        slope = get_datalayer_by_module_atribute("forsys", "name", "slope")
+        datalayers.append(
+            {
+                "id": slope.pk,
+                "name": slope.name,
+                "metric": get_datalayer_metric(slope),
+                "type": slope.type,
+                "geometry_type": slope.geometry_type,
+                "threshold": f"value <= {max_slope}",
+                "usage_type": "THRESHOLD",
+            }
+        )
+
+    distance_from_roads = merged_cfg.get("min_distance_from_road")
+    if distance_from_roads:
+        roads = get_datalayer_by_module_atribute(
+            "forsys", "name", "distance_from_roads"
+        )
+        distance_from_roads_meters = distance_from_roads / 1.094
+        datalayers.append(
+            {
+                "id": roads.pk,
+                "name": roads.name,
+                "metric": get_datalayer_metric(roads),
+                "type": roads.type,
+                "geometry_type": roads.geometry_type,
+                "threshold": f"value <= {distance_from_roads_meters}",
+                "usage_type": "THRESHOLD",
+            }
+        )
+
+    min_area_project = get_min_project_area(scenario)
+    number_of_projects = merged_cfg.get(
+        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+    )
+    max_area_project = get_max_area_project(
+        scenario=scenario,
+        number_of_projects=number_of_projects,
+    )
+
+    sdw = settings.FORSYS_SDW
+    epw = settings.FORSYS_EPW
+    exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
+    sample_fraction = settings.FORSYS_SAMPLE_FRACTION
+    seed = merged_cfg.get("seed")
+
+    variables = {
+        "min_area_project": min_area_project,
+        "max_area_project": max_area_project,
+        "number_of_projects": number_of_projects,
+        "spatial_distribution_weight": sdw,
+        "edge_proximity_weight": epw,
+        "exclusion_limit": exclusion_limit,
+        "sample_fraction": sample_fraction,
+        "seed": seed,
+    }
+
+    return {
+        "stand_size": scenario.get_stand_size(),
+        "datalayers": datalayers,
+        "variables": variables,
+    }
+
+
+def get_cost_per_acre(configuration: dict) -> float:
+    return configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
+
+
 def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
     max_budget = configuration.get("max_budget") or None
-    cost_per_acre = configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
+    cost_per_acre = get_cost_per_acre(configuration=configuration)
     if max_budget:
         return max_budget / cost_per_acre
 
     return float(configuration.get("max_treatment_area_ratio"))
+
+
+def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
+    configuration = scenario.configuration
+    max_budget = configuration.get("max_budget")
+    cost_per_acre = get_cost_per_acre(configuration=configuration)
+    if max_budget and cost_per_acre > 0:
+        return (max_budget / cost_per_acre) / number_of_projects
+
+    max_area = configuration.get("max_area")
+    if max_area:
+        return max_area / number_of_projects
+
+    max_acres = get_min_project_area(scenario)
+    return float(max_acres)
 
 
 def get_max_treatable_stand_count(
@@ -916,14 +1050,36 @@ def planning_area_covers(
     return False
 
 
-def get_excluded_stands(
+def get_constrained_stands(
     stands_qs,
-    datalayer,
+    datalayer: DataLayer,
+    operator: Optional[str] = None,
+    value: Union[str, float] = 1.0,
+    metric_column: Optional[str] = None,
+    usage_type: TreatmentGoalUsageType = TreatmentGoalUsageType.THRESHOLD,
 ):
-    return stands_qs.filter(
-        metrics__datalayer_id=datalayer.pk,
-        metrics__majority=1,
-    )
+    if not metric_column:
+        metric_column = (
+            datalayer.metadata.get("modules", {})
+            .get("forsys", {})
+            .get("metric_column", "avg")
+        )
+    if not operator:
+        metric_filter = f"metrics__{metric_column}"
+    else:
+        metric_filter = f"metrics__{metric_column}__{operator}"
+    logger.info(f"processing metric_filter {metric_filter} with value {value}")
+
+    stands_qs = stands_qs.filter(metrics__datalayer_id=datalayer.pk)
+    match usage_type:
+        case TreatmentGoalUsageType.THRESHOLD:
+            stands_qs = stands_qs.exclude(**{metric_filter: value})
+        case TreatmentGoalUsageType.EXCLUSION_ZONE:
+            stands_qs = stands_qs.filter(**{metric_filter: value})
+        case _:
+            raise ValueError("Invalid usage_type for get_constrainted_stands.")
+
+    return stands_qs.values_list("id", flat=True)
 
 
 def get_available_stands(
@@ -935,23 +1091,74 @@ def get_available_stands(
     constraints: Optional[List[Dict[str, Any]]] = None,
     **kwargs,
 ):
-    stands = planning_area.get_stands(stand_size)
+    if not includes:
+        includes = list()
+    if not excludes:
+        excludes = list()
+    if not constraints:
+        constraints = list()
+    area_transform = Area(Transform("geometry", settings.AREA_SRID))
+    stands = planning_area.get_stands(stand_size).annotate(area=area_transform)
+    total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
     excluded_ids = []
+    constrained_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
-        excluded_stands = get_excluded_stands(stands_queryset, exclude)
+        excluded_stands = get_constrained_stands(
+            stands_queryset,
+            exclude,
+            metric_column="majority",
+            value=1,
+            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
+        )
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
+    for constraint in constraints:
+        stands_queryset = stands.all()
+        constrained_stands = get_constrained_stands(
+            stands_queryset,
+            constraint.get("datalayer"),
+            constraint.get("operator"),
+            constraint.get("value"),
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
+        )
+        constrained_ids.extend(list(constrained_stands))
+    excluded_ids = set(excluded_ids)
+    constrained_ids = set(constrained_ids)
+    total_excluded_area = (
+        Stand.objects.filter(id__in=excluded_ids)
+        .annotate(area=area_transform)
+        .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    )
+    total_constrained_area = (
+        Stand.objects.filter(id__in=constrained_ids)
+        .annotate(area=area_transform)
+        .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    )
+    if not total_area:
+        total_area = A(sq_m=0)
+    if not total_excluded_area:
+        total_excluded_area = A(sq_m=0)
+    if not total_constrained_area:
+        total_constrained_area = A(sq_m=0)
+
+    available_area = total_area - total_excluded_area
+    treatable_area = available_area - total_constrained_area
+    total_unavailable_area = total_excluded_area + total_constrained_area
     return {
         "unavailable": {
             "by_inclusions": [],
-            "by_exclusions": list(set(excluded_ids)),
-            "by_thresholds": [],
+            "by_exclusions": excluded_ids,
+            "by_thresholds": constrained_ids,
         },
         "summary": {
-            "total_area": 0,
-            "available_area": 0,
-            "unavailable_area": 0,
+            "total_area": total_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "available_area": available_area.sq_m / settings.CONVERSION_SQM_ACRES,
+            "treatable_area": max(treatable_area.sq_m, 0)
+            / settings.CONVERSION_SQM_ACRES,
+            "unavailable_area": total_unavailable_area.sq_m
+            / settings.CONVERSION_SQM_ACRES,
         },
     }
 

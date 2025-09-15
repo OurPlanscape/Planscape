@@ -20,6 +20,7 @@ describe('ScenarioLegendComponent', () => {
         }),
         MockProvider(NewScenarioState, {
           availableStands$: of({} as AvailableStands),
+          stepIndex$: of(0),
         }),
       ],
     }).compileComponents();

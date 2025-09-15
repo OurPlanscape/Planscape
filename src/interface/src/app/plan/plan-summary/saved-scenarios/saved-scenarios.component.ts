@@ -20,6 +20,7 @@ import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confi
 import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeatureService } from 'src/app/features/feature.service';
+import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -45,11 +46,6 @@ export class SavedScenariosComponent implements OnInit {
   selectedTabIndex = 0;
   totalScenarios = 0;
   sortSelection = '-created_at';
-  scenarioPath = this.featureService.isFeatureEnabled(
-    'SCENARIO_CONFIGURATION_STEPS'
-  )
-    ? 'scenario'
-    : 'config';
 
   constructor(
     private route: ActivatedRoute,
@@ -117,13 +113,27 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
+  private openScenarioSetupDialog() {
+    return this.dialog.open(ScenarioSetupModalComponent, {
+      maxWidth: '560px',
+    });
+  }
+
+  handleNewScenarioButton(configId?: number): void {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      this.openScenarioSetupDialog();
+    } else {
+      this.openConfig(configId);
+    }
+  }
+
   openConfig(configId?: number): void {
     if (!configId) {
-      this.router.navigate([this.scenarioPath], {
+      this.router.navigate(['scenario'], {
         relativeTo: this.route,
       });
     } else {
-      this.router.navigate([this.scenarioPath, configId], {
+      this.router.navigate(['scenario', configId], {
         relativeTo: this.route,
       });
     }
@@ -135,7 +145,7 @@ export class SavedScenariosComponent implements OnInit {
       backUrl: getPlanPath(clickedScenario.planning_area),
     });
 
-    this.router.navigate([this.scenarioPath, clickedScenario.id], {
+    this.router.navigate(['scenario', clickedScenario.id], {
       relativeTo: this.route,
     });
   }
@@ -172,7 +182,7 @@ export class SavedScenariosComponent implements OnInit {
       .subscribe({
         next: (result) => {
           this.router.navigate(
-            [this.scenarioPath, scenarioId, 'treatment', result.id],
+            ['scenario', scenarioId, 'treatment', result.id],
             {
               relativeTo: this.route,
             }

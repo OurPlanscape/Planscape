@@ -12,6 +12,7 @@
     type="line"
     [source]="sourceName"
     [sourceLayer]="sourceName"
+    [filter]="(filteredStands$ | async) || undefined"
     [paint]="standLinePaint">
   </mgl-layer>
   <mgl-layer
@@ -19,7 +20,8 @@
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="standPaint">
+    [filter]="(filteredStands$ | async) || undefined"
+    [paint]="standPaint$ | async">
   </mgl-layer>
 
   <mgl-layer
@@ -27,6 +29,7 @@
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
+    [filter]="(filteredStands$ | async) || undefined"
     [paint]="standExcludedPaint">
   </mgl-layer>
 </ng-container>

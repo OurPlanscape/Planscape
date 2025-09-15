@@ -5,7 +5,6 @@ import {
   AvailableStands,
   Constraint,
   Scenario,
-  ScenarioConfig,
   ScenarioCreationPayload,
 } from '@types';
 import { CreateScenarioError } from './errors';
@@ -43,27 +42,11 @@ export class ScenarioService {
     });
   }
 
-  /** Creates a scenario in the backend. Returns scenario ID. */
-  // TODO: Remove once SCENARIO_CONFIGURATION_STEPS be approved
-  createScenario(scenarioParameters: any): Observable<Scenario> {
-    scenarioParameters['configuration'] = this.convertConfigToScenario(
-      scenarioParameters['configuration']
-    );
-
-    return this.http
-      .post<Scenario>(this.v2Path, scenarioParameters, {
-        withCredentials: true,
-      })
-      .pipe(
-        catchError((error) => {
-          const message =
-            error.error?.global?.[0] ||
-            'Please change your settings and try again.';
-          throw new CreateScenarioError(
-            'Your scenario config is invalid. ' + message
-          );
-        })
-      );
+  createScenarioFromName(name: string) {
+    const scenarioParameters = { name: name };
+    return this.http.post<Scenario>(this.v2Path, scenarioParameters, {
+      withCredentials: true,
+    });
   }
 
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
@@ -158,19 +141,5 @@ export class ScenarioService {
         withCredentials: true,
       }
     );
-  }
-
-  private convertConfigToScenario(config: ScenarioConfig): ScenarioConfig {
-    return {
-      stand_size: config.stand_size,
-      estimated_cost: config.estimated_cost,
-      max_budget: config.max_budget, // We should send max_budget OR max_area just 1 of both
-      max_area: !config.max_budget && config.max_area ? config.max_area : null, // We should send max_budget OR max_area just 1 of both
-      max_project_count: config.max_project_count,
-      max_slope: config.max_slope,
-      min_distance_from_road: config.min_distance_from_road,
-      excluded_areas: config.excluded_areas,
-      seed: config.seed,
-    };
   }
 }

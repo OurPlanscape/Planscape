@@ -1,10 +1,4 @@
-import {
-  Component,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
@@ -26,7 +20,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import { ScenarioCreation } from '@types';
-import { GoalOverlayService } from '../../plan/create-scenarios/goal-overlay/goal-overlay.service';
+import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
@@ -39,10 +33,15 @@ import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
 import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
+import { FeatureService } from 'src/app/features/feature.service';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { getPlanPath } from 'src/app/plan/plan-helpers';
 
 enum ScenarioTabs {
   CONFIG,
   DATA_LAYERS,
+  BASE_LAYERS,
 }
 
 @UntilDestroy()
@@ -63,12 +62,13 @@ enum ScenarioTabs {
     Step2Component,
     Step3Component,
     Step4Component,
+    BaseLayersComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate, OnDestroy
+  implements OnInit, CanComponentDeactivate
 {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
@@ -84,6 +84,18 @@ export class ScenarioCreationComponent
   });
 
   creatingScenario = false;
+
+  isDynamicMapEnabled = this.featureService.isFeatureEnabled(
+    'DYNAMIC_SCENARIO_MAP'
+  );
+
+  continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
+    ? 'Save & Continue'
+    : 'Next';
+
+  treatable_area$ = this.newScenarioState.availableStands$.pipe(
+    map((s) => s.summary.treatable_area)
+  );
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -108,10 +120,10 @@ export class ScenarioCreationComponent
     private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService,
+    private breadcrumbService: BreadcrumbService
   ) {
-    this.newScenarioState.setPlanId(this.planId);
-
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
@@ -122,6 +134,11 @@ export class ScenarioCreationComponent
   }
 
   ngOnInit(): void {
+    // Setting up the breadcrumb
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Scenario: New Scenario',
+      backUrl: getPlanPath(this.planId),
+    });
     // Adding scenario name validator
     this.refreshScenarioNameValidator();
   }
@@ -168,7 +185,8 @@ export class ScenarioCreationComponent
     }
   }
 
-  stepChanged() {
+  stepChanged(i: number) {
+    this.newScenarioState.setStepIndex(i);
     this.goalOverlayService.close();
   }
 
@@ -205,9 +223,5 @@ export class ScenarioCreationComponent
       this.dialog.open(SavingErrorModalComponent);
       return false;
     }
-  }
-
-  ngOnDestroy(): void {
-    this.newScenarioState.reset();
   }
 }

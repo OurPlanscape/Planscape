@@ -1,8 +1,8 @@
-<div>
-  <div class="legend icon blue">Total Planning Area Acres:</div>
-  <div>{{ $acres | async | number: '1.0-0' }} ac</div>
-</div>
-<ng-container *ngIf="summary$ | async as summary">
+<section *ngIf="summary$ | async as summary">
+  <div>
+    <div class="legend icon blue">Total Planning Area Acres:</div>
+    <div>{{ summary.total_area | number: '1.0-0' }} ac</div>
+  </div>
   <div>
     <div class="legend icon magenta">
       <div class="legend-text">
@@ -17,12 +17,15 @@
           [outlined]="true"></button>
       </div>
     </div>
-    <div>{{ summary.available_area }}</div>
+    <div>{{ summary.available_area | number: '1.0-0' }} ac</div>
   </div>
-  <div>
+  <div *ngIf="showExcludedStands$ | async">
+    <div class="legend icon pattern-gray">Excluded Area</div>
+  </div>
+  <div *ngIf="showConstrainedStands$ | async">
     <div class="legend icon pattern">Does not meet Stand-level Constraint</div>
   </div>
-  <div>
+  <div *ngIf="showAvailablePercent$ | async">
     <div class="legend">
       <div class="legend-text">
         % Treatable:
@@ -36,5 +39,9 @@
           [outlined]="true"></button>
       </div>
     </div>
+    <div>
+      {{ treatablePercent$ | async | percent }} of
+      {{ summary.available_area | number: '1.0-0' }} ac
+    </div>
   </div>
-</ng-container>
+</section>

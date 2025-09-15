@@ -381,6 +381,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         encoder=DjangoJSONEncoder,
     )
 
+    capabilities = models.JSONField(
+        null=True,
+        help_text="Computed feature flags/capabilities for this Scenario.",
+        encoder=DjangoJSONEncoder,
+    )
+
     uuid = models.UUIDField(
         default=uuid.uuid4,
         unique=True,

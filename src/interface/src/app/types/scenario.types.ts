@@ -22,6 +22,7 @@ export interface Scenario {
     id: string;
     name: string;
   };
+  usage_types?: UsageType[];
   version?: string;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
@@ -96,7 +97,8 @@ export type ScenarioResultStatus =
   | 'SUCCESS' // Run completed successfully
   | 'FAILURE' // Run failed;
   | 'PANIC' // Run failed; panic
-  | 'TIMED_OUT'; // Run failed; timed out
+  | 'TIMED_OUT'
+  | 'DRAFT'; // Creating a scenario but not completed the steps yet.
 
 export type GeoPackageStatus =
   | 'PENDING'
@@ -152,6 +154,11 @@ export interface PriorityRow {
   level: number;
 }
 
+export interface UsageType {
+  usage_type: string;
+  datalayer: string;
+}
+
 export interface ScenarioGoal {
   id: number;
   name: string;
@@ -187,8 +194,9 @@ export interface AvailableStands {
     by_thresholds: number[];
   };
   summary: {
-    total_area: number;
-    available_area: number;
-    unavailable_area: number;
+    total_area: number; // total PA stands area
+    available_area: number; // total area - exclusions
+    treatable_area: number; // available area - thresholds
+    unavailable_area: number; // unavailable area
   };
 }

@@ -15,7 +15,7 @@ import { TreatmentGoalsService } from '@services';
 import { ScenarioCreation, ScenarioGoal } from '@types';
 import { map, shareReplay } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
-import { GoalOverlayService } from 'src/app/plan/create-scenarios/goal-overlay/goal-overlay.service';
+import { GoalOverlayService } from 'src/app/plan/goal-overlay/goal-overlay.service';
 import { SectionComponent } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 import { StepDirective } from '../../../styleguide/steps/step.component';
