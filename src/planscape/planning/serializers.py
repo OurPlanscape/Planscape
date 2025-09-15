@@ -409,20 +409,6 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
-    def validate(self, attrs):
-        budget = attrs.get("max_budget")
-        area = attrs.get("max_area")
-
-        if budget and area:
-            raise serializers.ValidationError(
-                "You should only provide `max_budget` or `max_area`."
-            )
-        if not budget and not area:
-            raise serializers.ValidationError(
-                "You should provide one of `max_budget` or `max_area`."
-            )
-        return attrs
-
 
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
@@ -440,36 +426,6 @@ class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
 
     def validate_excluded_areas(self, excluded_areas):
         return [excluded_area.pk for excluded_area in excluded_areas]
-
-    def validate(self, attrs):
-        budget = attrs.get("max_budget", serializers.empty)
-        area = attrs.get("max_area", serializers.empty)
-
-        # If neither field is being patched, nothing to validate here.
-        if budget is serializers.empty and area is serializers.empty:
-            return attrs
-
-        # Reject if both provided and both non-null in the same PATCH.
-        if (budget is not serializers.empty and budget is not None) and (
-            area is not serializers.empty and area is not None
-        ):
-            raise serializers.ValidationError(
-                "You should only provide `max_budget` or `max_area`."
-            )
-
-        # Validate merged result still has at least one of them set.
-        current = getattr(self.instance, "configuration", {}) if self.instance else {}
-        final_budget = (
-            current.get("max_budget") if budget is serializers.empty else budget
-        )
-        final_area = current.get("max_area") if area is serializers.empty else area
-
-        if final_budget is None and final_area is None:
-            raise serializers.ValidationError(
-                "You should provide one of `max_budget` or `max_area`."
-            )
-
-        return attrs
 
     def update(self, instance, validated_data):
         instance.configuration = {**(instance.configuration or {}), **validated_data}
