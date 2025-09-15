@@ -1126,13 +1126,14 @@ def get_available_stands(
         constrained_ids.extend(list(constrained_stands))
     excluded_ids = set(excluded_ids)
     constrained_ids = set(constrained_ids)
+    only_constrained_ids = constrained_ids - excluded_ids
     total_excluded_area = (
         Stand.objects.filter(id__in=excluded_ids)
         .annotate(area=area_transform)
         .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
     )
     total_constrained_area = (
-        Stand.objects.filter(id__in=constrained_ids)
+        Stand.objects.filter(id__in=only_constrained_ids)
         .annotate(area=area_transform)
         .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
     )
