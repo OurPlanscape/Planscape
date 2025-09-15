@@ -21,16 +21,16 @@ from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats3
 from stands.tests.factories import StandFactory
 
-from planning.models import PlanningArea, ScenarioResultStatus
+from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType
 from planning.services import (
     export_planning_area_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
     get_constrained_stands,
+    get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
-    get_max_area_project,
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
@@ -654,7 +654,7 @@ class TestRemoveExcludes(TransactionTestCase):
             qual_name = qualify_for_django(self.datalayer.table)
             cur.execute(f"DROP TABLE IF EXISTS {qual_name} CASCADE;")
 
-    def test_filter_by_datalayer_removes_stands(self):
+    def test_get_constrained_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
         excluded_stands = get_constrained_stands(
@@ -662,6 +662,22 @@ class TestRemoveExcludes(TransactionTestCase):
             self.datalayer,
             metric_column="majority",
             value=1,
+            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
         )
 
         self.assertEqual(11, len(excluded_stands))
+
+    def test_get_constrained_stands_thresholds(self):
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.assertEquals(17, len(stands))
+        # in this scenario, without operator and with THRESHOLD usagetype
+        # we are getting all the stands that are NOT equals 1
+        excluded_stands = get_constrained_stands(
+            stands,
+            self.datalayer,
+            metric_column="majority",
+            value=1,
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
+        )
+
+        self.assertEqual(6, len(excluded_stands))

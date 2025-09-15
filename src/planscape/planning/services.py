@@ -16,6 +16,7 @@ from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
+from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -29,11 +30,10 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.services import get_forsys_layer_by_capability, get_forsys_layer_by_name
-from datasets.services import get_datalayer_by_module_atribute
-from stands.services import get_datalayer_metric
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
+from stands.services import get_datalayer_metric
 from utils.geometry import to_multi
 
 from planning.geometry import coerce_geojson, coerce_geometry
@@ -47,6 +47,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalUsageType,
 )
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
@@ -1055,6 +1056,7 @@ def get_constrained_stands(
     operator: Optional[str] = None,
     value: Union[str, float] = 1.0,
     metric_column: Optional[str] = None,
+    usage_type: TreatmentGoalUsageType = TreatmentGoalUsageType.THRESHOLD,
 ):
     if not metric_column:
         metric_column = (
@@ -1067,11 +1069,17 @@ def get_constrained_stands(
     else:
         metric_filter = f"metrics__{metric_column}__{operator}"
     logger.info(f"processing metric_filter {metric_filter} with value {value}")
-    filter = {
-        metric_filter: value,
-        "metrics__datalayer_id": datalayer.pk,
-    }
-    return stands_qs.filter(**filter).values_list("id", flat=True)
+
+    stands_qs = stands_qs.filter(metrics__datalayer_id=datalayer.pk)
+    match usage_type:
+        case TreatmentGoalUsageType.THRESHOLD:
+            stands_qs = stands_qs.exclude(**{metric_filter: value})
+        case TreatmentGoalUsageType.EXCLUSION_ZONE:
+            stands_qs = stands_qs.filter(**{metric_filter: value})
+        case _:
+            raise ValueError("Invalid usage_type for get_constrainted_stands.")
+
+    return stands_qs.values_list("id", flat=True)
 
 
 def get_available_stands(
@@ -1102,6 +1110,7 @@ def get_available_stands(
             exclude,
             metric_column="majority",
             value=1,
+            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
         )
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
@@ -1112,6 +1121,7 @@ def get_available_stands(
             constraint.get("datalayer"),
             constraint.get("operator"),
             constraint.get("value"),
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
         )
         constrained_ids.extend(list(constrained_stands))
     excluded_ids = set(excluded_ids)
@@ -1134,7 +1144,7 @@ def get_available_stands(
         total_constrained_area = A(sq_m=0)
 
     available_area = total_area - total_excluded_area
-    treatable_area = available_area - total_constrained_area
+    treatable_area = min(available_area - total_constrained_area, 0)
     total_unavailable_area = total_excluded_area + total_constrained_area
     return {
         "unavailable": {
