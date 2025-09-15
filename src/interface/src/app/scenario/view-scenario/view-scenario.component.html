@@ -32,7 +32,11 @@
     <mat-tab label="Base Layers">
       <app-base-layers class="white-background"></app-base-layers>
     </mat-tab>
-    <mat-tab label="Treatment Plans" *ngIf="scenarioHasResults(scenario) && scenarioCanHaveTreatmentPlans(scenario)">
+    <mat-tab
+      label="Treatment Plans"
+      *ngIf="
+        scenarioHasResults(scenario) && scenarioCanHaveTreatmentPlans(scenario)
+      ">
       <app-treatments-tab
         [scenarioId]="scenarioId"
         [planningArea]="plan$ | async"></app-treatments-tab>

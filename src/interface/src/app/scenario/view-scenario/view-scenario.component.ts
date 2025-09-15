@@ -75,7 +75,10 @@ export class ViewScenarioComponent {
   showTreatmentFooter$ = combineLatest([this.plan$, this.scenario$]).pipe(
     map(
       ([plan, scenario]) =>
-        this.scenarioHasResults(scenario) && !!plan && userCanAddTreatmentPlan(plan) && this.scenarioCanHaveTreatmentPlans(scenario)
+        this.scenarioHasResults(scenario) &&
+        !!plan &&
+        userCanAddTreatmentPlan(plan) &&
+        this.scenarioCanHaveTreatmentPlans(scenario)
     )
   );
 

@@ -15,7 +15,11 @@
       class="new-treatment-btn"
       [disabled]="!isDone()"
       type="button"
-      *ngIf="!hasFailed() && userCanCreateTreatmentPlans && hasTreatmentPlanCapability"
+      *ngIf="
+        !hasFailed() &&
+        userCanCreateTreatmentPlans &&
+        hasTreatmentPlanCapability
+      "
       (click)="openNewTreatment.emit($event)">
       New Treatment Plan
     </button>

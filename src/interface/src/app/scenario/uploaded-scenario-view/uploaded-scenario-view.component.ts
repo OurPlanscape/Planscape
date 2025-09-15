@@ -23,7 +23,7 @@ import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
   styleUrl: './uploaded-scenario-view.component.scss',
 })
 export class UploadedScenarioViewComponent {
-  constructor(private planState: PlanState) { }
+  constructor(private planState: PlanState) {}
 
   @Input() scenario?: Scenario;
 
@@ -31,13 +31,12 @@ export class UploadedScenarioViewComponent {
 
   scenarioCanHaveTreatmentPlans(scenario: Scenario | undefined) {
     if (scenario) {
-    return scenarioCanHaveTreatmentPlans(scenario);
+      return scenarioCanHaveTreatmentPlans(scenario);
     }
     return false;
   }
 
   showTreatmentFooter$ = this.plan$.pipe(
-    map((plan) =>
-      userCanAddTreatmentPlan(plan)
-    ))
+    map((plan) => userCanAddTreatmentPlan(plan))
+  );
 }

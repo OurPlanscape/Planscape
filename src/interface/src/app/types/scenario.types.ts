@@ -26,7 +26,7 @@ export interface Scenario {
   version?: string;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
-  capabilities: ScenarioCapabilities;
+  capabilities?: ScenarioCapabilities;
 }
 
 /**
@@ -66,7 +66,7 @@ export interface ScenarioResult {
   };
 }
 
-export interface ScenarioCapabilities { 
+export interface ScenarioCapabilities {
   scope: string;
   conus_feature_enabled: boolean;
   can_request_conus_run: boolean;
