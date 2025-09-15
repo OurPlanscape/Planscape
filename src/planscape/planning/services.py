@@ -40,6 +40,7 @@ from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
+    PlanningAreaMapStatus,
     ProjectArea,
     Scenario,
     ScenarioOrigin,
@@ -98,6 +99,7 @@ def create_planning_area(
         region_name=region_name,
         geometry=geometry,
         notes=notes,
+        map_status=PlanningAreaMapStatus.PENDING,
     )
     slope = get_forsys_layer_by_name("slope")
     distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
