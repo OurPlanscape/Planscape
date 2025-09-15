@@ -504,8 +504,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
 def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     errors: List[str] = []
 
-    if scenario.result_status == ScenarioResultStatus.RUNNING:
-        return ["Scenario is already running."]
+    if scenario.result_status != ScenarioResultStatus.PENDING:
+        return [f"Scenario cannot be run on status {scenario.result_status}."]
 
     if scenario.status == ScenarioStatus.ARCHIVED:
         errors.append("Archived scenarios cannot be run.")
