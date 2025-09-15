@@ -102,6 +102,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
     map_status = models.CharField(
         choices=PlanningAreaMapStatus.choices,
         null=True,
+        help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
     )
 
     def creator_name(self) -> str:
