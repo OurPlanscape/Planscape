@@ -675,6 +675,7 @@ class TestRemoveExcludes(TransactionTestCase):
 
         self.assertEqual(11, len(excluded_stands))
 
+
 class CapabilitiesServiceTest(TestCase):
     def setUp(self):
         self.user = UserFactory.create()

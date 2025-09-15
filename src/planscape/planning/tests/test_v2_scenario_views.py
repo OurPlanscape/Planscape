@@ -775,6 +775,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create()
@@ -819,6 +820,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.assertIn(ScenarioCapability.TREATMENT_PLANS.value, modules)
 
         self.assertTrue(caps.get("can_request_conus_run"))
+
 
 class RunScenarioEndpointTest(APITestCase):
     def setUp(self):
