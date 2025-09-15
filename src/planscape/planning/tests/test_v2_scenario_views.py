@@ -775,7 +775,6 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create()
@@ -820,3 +819,64 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.assertIn(ScenarioCapability.TREATMENT_PLANS.value, modules)
 
         self.assertTrue(caps.get("can_request_conus_run"))
+
+class RunScenarioEndpointTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.other_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.treatment_goal = TreatmentGoalFactory.create()
+
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            treatment_goal=self.treatment_goal,
+            configuration={"stand_size": "LARGE", "max_budget": 1000},
+        )
+        self.url = reverse("api:planning:scenarios-run", args=[self.scenario.pk])
+
+    def test_run_success_returns_202_and_triggers_run(self):
+        self.client.force_authenticate(self.user)
+        with (
+            mock.patch(
+                "planning.views_v2.validate_scenario_configuration", return_value=[]
+            ) as validate_mock,
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
+        ):
+            response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        trigger_mock.assert_called_once()
+        args, _ = trigger_mock.call_args
+        self.assertEqual(args[0].pk, self.scenario.pk)
+        self.assertEqual(args[1], self.user)
+
+        data = response.json()
+        self.assertEqual(data.get("id"), self.scenario.pk)
+
+    def test_run_validation_errors_return_400(self):
+        self.client.force_authenticate(self.user)
+        with (
+            mock.patch(
+                "planning.views_v2.validate_scenario_configuration",
+                return_value=["Provide either `max_budget` or `max_area`."],
+            ) as validate_mock,
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
+        ):
+            response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json(), {"errors": ["Provide either `max_budget` or `max_area`."]}
+        )
+        trigger_mock.assert_not_called()
+
+    def test_run_unauthenticated_returns_401(self):
+        response = self.client.post(self.url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_run_forbidden_for_other_user_returns_404(self):
+        self.client.force_authenticate(self.other_user)
+        response = self.client.post(self.url, format="json")
+        # get_object() hides unauthorized scenarios as 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

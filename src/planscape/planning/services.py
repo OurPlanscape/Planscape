@@ -16,6 +16,7 @@ from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
+from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -29,17 +30,17 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.services import get_forsys_layer_by_capability, get_forsys_layer_by_name
-from datasets.services import get_datalayer_by_module_atribute
-from stands.services import get_datalayer_metric
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
+from stands.services import get_datalayer_metric
 from utils.geometry import to_multi
 
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
+    PlanningAreaMapStatus,
     ProjectArea,
     Scenario,
     ScenarioCapability,
@@ -49,6 +50,7 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
     TreatmentGoalGroup,
+    TreatmentGoalUsageType,
 )
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
@@ -99,6 +101,7 @@ def create_planning_area(
         region_name=region_name,
         geometry=geometry,
         notes=notes,
+        map_status=PlanningAreaMapStatus.PENDING,
     )
     slope = get_forsys_layer_by_name("slope")
     distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
@@ -505,6 +508,80 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         "datalayers": datalayers,
         "variables": variables,
     }
+
+
+def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
+    errors: List[str] = []
+
+    if scenario.result_status != ScenarioResultStatus.PENDING:
+        return [f"Scenario cannot be run on status {scenario.result_status}."]
+
+    if scenario.status == ScenarioStatus.ARCHIVED:
+        errors.append("Archived scenarios cannot be run.")
+
+    if not scenario.treatment_goal:
+        errors.append("Scenario has no Treatment Goal assigned.")
+
+    if (
+        scenario.planning_area.get_stands(stand_size=scenario.get_stand_size()).count()
+        == 0
+    ):
+        errors.append(
+            "No stands are available in this Planning Area for the selected `stand_size`."
+        )
+
+    cfg = dict(getattr(scenario, "configuration", {}) or {})
+    max_budget = cfg.get("max_budget")
+    max_area = cfg.get("max_area")
+
+    has_budget = (max_budget is not None) and (max_budget > 0)
+    has_area = (max_area is not None) and (max_area > 0)
+
+    if not has_budget and not has_area:
+        errors.append("Provide either `max_budget` or `max_area`.")
+    if has_budget and has_area:
+        errors.append("Provide only one of `max_budget` or `max_area` (not both).")
+
+    return errors
+
+
+@transaction.atomic()
+def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
+    from planning.tasks import (
+        async_calculate_stand_metrics_v2,
+        async_pre_forsys_process,
+        async_forsys_run,
+    )
+
+    # schedule: metrics → pre-forsys → forsys
+    tx_goal = scenario.treatment_goal
+    datalayers = tx_goal.get_raster_datalayers() if tx_goal else []
+    tasks = [
+        async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
+        for d in datalayers
+    ]
+    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
+
+    track_openpanel(
+        name="planning.scenario.triggered",
+        properties={
+            "origin": scenario.origin,
+            "treatment_goal_id": tx_goal.pk if tx_goal else None,
+            "treatment_goal_category": (tx_goal.category if tx_goal else None),
+            "treatment_goal_name": (tx_goal.name if tx_goal else None),
+            "email": user.email if user else None,
+        },
+        user_id=user.pk,
+    )
+
+    action.send(
+        user, verb="triggered", action_object=scenario, target=scenario.planning_area
+    )
+
+    transaction.on_commit(
+        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    )
+    return scenario
 
 
 def get_cost_per_acre(configuration: dict) -> float:
@@ -1062,6 +1139,7 @@ def get_constrained_stands(
     operator: Optional[str] = None,
     value: Union[str, float] = 1.0,
     metric_column: Optional[str] = None,
+    usage_type: TreatmentGoalUsageType = TreatmentGoalUsageType.THRESHOLD,
 ):
     if not metric_column:
         metric_column = (
@@ -1074,11 +1152,17 @@ def get_constrained_stands(
     else:
         metric_filter = f"metrics__{metric_column}__{operator}"
     logger.info(f"processing metric_filter {metric_filter} with value {value}")
-    filter = {
-        metric_filter: value,
-        "metrics__datalayer_id": datalayer.pk,
-    }
-    return stands_qs.filter(**filter).values_list("id", flat=True)
+
+    stands_qs = stands_qs.filter(metrics__datalayer_id=datalayer.pk)
+    match usage_type:
+        case TreatmentGoalUsageType.THRESHOLD:
+            stands_qs = stands_qs.exclude(**{metric_filter: value})
+        case TreatmentGoalUsageType.EXCLUSION_ZONE:
+            stands_qs = stands_qs.filter(**{metric_filter: value})
+        case _:
+            raise ValueError("Invalid usage_type for get_constrainted_stands.")
+
+    return stands_qs.values_list("id", flat=True)
 
 
 def get_available_stands(
@@ -1109,6 +1193,7 @@ def get_available_stands(
             exclude,
             metric_column="majority",
             value=1,
+            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
         )
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
@@ -1119,17 +1204,19 @@ def get_available_stands(
             constraint.get("datalayer"),
             constraint.get("operator"),
             constraint.get("value"),
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
         )
         constrained_ids.extend(list(constrained_stands))
     excluded_ids = set(excluded_ids)
     constrained_ids = set(constrained_ids)
+    only_constrained_ids = constrained_ids - excluded_ids
     total_excluded_area = (
         Stand.objects.filter(id__in=excluded_ids)
         .annotate(area=area_transform)
         .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
     )
     total_constrained_area = (
-        Stand.objects.filter(id__in=constrained_ids)
+        Stand.objects.filter(id__in=only_constrained_ids)
         .annotate(area=area_transform)
         .aggregate(total_area_m2=Sum("area"))["total_area_m2"]
     )

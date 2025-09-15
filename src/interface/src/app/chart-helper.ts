@@ -146,15 +146,17 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
   const groupedAttainment: { [key: string]: number[] } = {};
 
   features.forEach((feature) => {
-    const attainment = feature.properties.attainment;
-    for (const [key, value] of Object.entries(attainment)) {
-      if (!groupedAttainment[key]) {
-        groupedAttainment[key] = [];
-      }
-      const _value = Number(value);
-      // Preventing "NaN"
-      if (_value) {
-        groupedAttainment[key].push(convertTo2DecimalsNumbers(_value));
+    const attainment = feature.properties?.attainment;
+    if (attainment && typeof attainment === 'object') {
+      for (const [key, value] of Object.entries(attainment)) {
+        if (!groupedAttainment[key]) {
+          groupedAttainment[key] = [];
+        }
+        const _value = Number(value);
+        // Preventing "NaN"
+        if (_value) {
+          groupedAttainment[key].push(convertTo2DecimalsNumbers(_value));
+        }
       }
     }
   });
