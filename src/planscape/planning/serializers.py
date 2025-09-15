@@ -458,7 +458,7 @@ class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
             )
 
         # Validate merged result still has at least one of them set.
-        current = self.instance.configuration or {}
+        current = getattr(self.instance, "configuration", {}) if self.instance else {}
         final_budget = (
             current.get("max_budget") if budget is serializers.empty else budget
         )
