@@ -22,3 +22,11 @@ The name and value of the flag will be shared by frontend and backend.
 `AUTO_CREATE_STANDS`: Enables the creation of stands during the creation of new planning areas
 
 `SCENARIO_DRAFTS`: Enable the scenario drafts
+
+`FORSYS_VIA_API`: Enable Forsys execution on stand alone R server
+
+`PAGINATED_STAND_METRICS`: Enable pagination on stand metric calculation during Scenario creation
+
+`RASTERIO_WINDOWED_READ`: Enable windowed read of raster files (unstable)
+
+`FORSYS_PREPROCESSED`: Enable Forsys execution with pre-processed data (forsys_input field)
