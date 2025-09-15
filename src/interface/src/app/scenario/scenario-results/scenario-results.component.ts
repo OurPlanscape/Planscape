@@ -94,15 +94,23 @@ export class ScenarioResultsComponent implements OnChanges {
     }
   }
 
-  isScenarioImprovementsEnabled() {
-    let analytics = false;
+  isScenarioImprovementsFlagEnabled() {
     const isFlagEnabled = this.featureService.isFeatureEnabled(
       'SCENARIO_IMPROVEMENTS'
     );
+
+    return isFlagEnabled;
+  }
+
+  hasAnalytics() {
+    let analytics = false;
     if (this.results) {
       analytics = hasAnalytics(this.results);
     }
+    return analytics;
+  }
 
-    return isFlagEnabled && analytics;
+  shouldShowAnalyticsImprovements() {
+    return this.isScenarioImprovementsFlagEnabled() && this.hasAnalytics();
   }
 }
