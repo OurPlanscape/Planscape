@@ -712,20 +712,14 @@ class CapabilitiesServiceTest(TestCase):
             name="caps-ca",
         )
         caps = compute_scenario_capabilities(scenario)
-        self.assertIn("can_request_conus_run", caps)
-        self.assertFalse(caps["can_request_conus_run"])
-        self.assertIn("modules", caps)
-        modules = caps["modules"]
-        self.assertTrue(modules[ScenarioCapability.FORSYS.value])
-        self.assertTrue(modules[ScenarioCapability.TREATMENT_GOALS.value])
-        self.assertIn(ScenarioCapability.IMPACTS.value, modules)
-        self.assertIn(ScenarioCapability.TREATMENT_PLANS.value, modules)
+        self.assertEqual(
+            set(caps),
+            {
+                ScenarioCapability.TREATMENT_GOALS.value,
+                ScenarioCapability.TREATMENT_PLANS.value,
+            },
+        )
 
-    @override_settings(
-        FEATURE_FLAGS={
-            "CONUS_WIDE_SCENARIOS": True,
-        }
-    )
     def test_conus_scope_with_flag(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
@@ -735,7 +729,7 @@ class CapabilitiesServiceTest(TestCase):
             name="caps-conus",
         )
         caps = compute_scenario_capabilities(scenario)
-        self.assertTrue(caps["can_request_conus_run"])
-        modules = caps["modules"]
-        self.assertTrue(modules[ScenarioCapability.FORSYS.value])
-        self.assertTrue(modules[ScenarioCapability.TREATMENT_GOALS.value])
+        self.assertEqual(
+            set(caps),
+            {ScenarioCapability.FORSYS.value, ScenarioCapability.IMPACTS.value},
+        )

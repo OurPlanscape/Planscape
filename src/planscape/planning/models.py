@@ -20,6 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
@@ -360,10 +361,10 @@ class GeoPackageStatus(models.TextChoices):
 
 
 class ScenarioCapability(models.TextChoices):
-    FORSYS = "FORSYS", "Forsys"
-    TREATMENT_GOALS = "TREATMENT_GOALS", "Treatment Goals"
-    IMPACTS = "IMPACTS", "Impacts"
-    TREATMENT_PLANS = "TREATMENT_PLANS", "Treatment Plans"
+    FORSYS = ("FORSYS", "Forsys")
+    TREATMENT_GOALS = ("TREATMENT_GOALS", "Treatment Goals")
+    IMPACTS = ("IMPACTS", "Impacts")
+    TREATMENT_PLANS = ("TREATMENT_PLANS", "Treatment Plans")
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
@@ -400,10 +401,11 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         encoder=DjangoJSONEncoder,
     )
 
-    capabilities = models.JSONField(
-        null=True,
-        help_text="Computed feature flags/capabilities for this Scenario.",
-        encoder=DjangoJSONEncoder,
+    capabilities = ArrayField(
+        base_field=models.CharField(max_length=32, choices=ScenarioCapability.choices),
+        default=list,
+        blank=True,
+        help_text="List of enabled capabilities for this Scenario.",
     )
 
     uuid = models.UUIDField(

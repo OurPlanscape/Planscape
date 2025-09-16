@@ -1258,25 +1258,14 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_LARGE
 
 
-def compute_scenario_capabilities(scenario: Scenario) -> Dict[str, object]:
-    tg = scenario.treatment_goal
-    group = getattr(tg, "group", None)
-
-    modules = {
-        ScenarioCapability.FORSYS.value: True,
-        ScenarioCapability.TREATMENT_GOALS.value: tg is not None,
-    }
-
-    modules[ScenarioCapability.IMPACTS.value] = feature_enabled("IMPACTS")
-    modules[ScenarioCapability.TREATMENT_PLANS.value] = feature_enabled(
-        "TREATMENT_PLANS"
-    )
-
-    is_conus_goal = group != TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
-    conus_enabled = feature_enabled("CONUS_WIDE_SCENARIOS")
-    can_request_conus_run = is_conus_goal and conus_enabled
-
-    return {
-        "modules": modules,
-        "can_request_conus_run": can_request_conus_run,
-    }
+def compute_scenario_capabilities(scenario: "Scenario") -> list[str]:
+    if (
+        scenario.treatment_goal
+        and scenario.treatment_goal.group
+        == TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
+    ):
+        return [
+            ScenarioCapability.TREATMENT_GOALS.value,
+            ScenarioCapability.TREATMENT_PLANS.value,
+        ]
+    return [ScenarioCapability.FORSYS.value, ScenarioCapability.IMPACTS.value]

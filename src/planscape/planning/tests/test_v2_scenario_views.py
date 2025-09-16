@@ -792,13 +792,6 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             name="caps-view",
         )
 
-    @override_settings(
-        FEATURE_FLAGS={
-            "CONUS_WIDE_SCENARIOS": True,
-            "IMPACTS": False,
-            "TREATMENT_PLANS": False,
-        }
-    )
     def test_capabilities_present_in_detail(self):
         self.scenario.capabilities = compute_scenario_capabilities(self.scenario)
         self.scenario.save(update_fields=["capabilities"])
@@ -809,17 +802,11 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
         caps = resp.data.get("capabilities")
-        self.assertIsInstance(caps, dict)
-
-        self.assertIn("modules", caps)
-        modules = caps["modules"]
-
-        self.assertTrue(modules[ScenarioCapability.FORSYS.value])
-        self.assertTrue(modules[ScenarioCapability.TREATMENT_GOALS.value])
-        self.assertIn(ScenarioCapability.IMPACTS.value, modules)
-        self.assertIn(ScenarioCapability.TREATMENT_PLANS.value, modules)
-
-        self.assertTrue(caps.get("can_request_conus_run"))
+        self.assertIsInstance(caps, list)
+        self.assertEqual(
+            set(caps),
+            {ScenarioCapability.FORSYS.value, ScenarioCapability.IMPACTS.value},
+        )
 
 
 class RunScenarioEndpointTest(APITestCase):
