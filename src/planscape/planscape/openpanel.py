@@ -1,22 +1,19 @@
+import logging
 from typing import Any, Dict, Optional, Union
 
 from django.contrib.auth.models import User
 from openpanel import OpenPanel
 
+log = logging.getLogger(__name__)
 
-def get_openpanel(user_id: Optional[str] = None) -> Optional[OpenPanel]:
+
+def get_openpanel(user_id: Optional[Union[str, int]] = None) -> Optional[OpenPanel]:
     from django.conf import settings
 
-    if settings.TESTING_MODE:
-        return None
-    if not settings.OPENPANEL_URL:
-        return None
-    if not settings.OPENPANEL_CLIENT:
-        return None
     op = settings.OPENPANEL_CLIENT
-
+    log.info(f"We have OpenPanel client {op}")
     if user_id is not None:
-        op.profile_id = user_id
+        op.profile_id = str(user_id)
     return op
 
 
@@ -30,13 +27,16 @@ def track_openpanel(
     properties: Optional[Dict[str, Any]] = None,
     user_id: Optional[Union[str, int]] = None,
 ) -> None:
-    op = get_openpanel(user_id=str(user_id))
+    op = get_openpanel(user_id=user_id)
     if op:
+        log.info("openpanel client available for tracking.")
         if properties:
             email = properties.pop("email", None) or None
             if email:
                 domain = get_domain(email)
                 properties["domain"] = domain
+
+        log.info("tracking openpanel.")
         op.track(name=name, properties=properties)
 
 
@@ -44,6 +44,7 @@ def identify_openpanel(user: User) -> None:
     profile_id = str(user.pk)
     op = get_openpanel()
     if op:
+        log.info("openpanel client available for identify.")
         traits = {
             "firstName": user.first_name,
             "lastName": user.last_name,
