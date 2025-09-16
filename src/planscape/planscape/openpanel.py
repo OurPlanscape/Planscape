@@ -28,17 +28,20 @@ def track_openpanel(
     user_id: Optional[Union[str, int]] = None,
 ) -> None:
     op = get_openpanel(user_id=user_id)
-    if op:
-        log.info("openpanel client available for tracking.")
-        if properties:
-            email = properties.pop("email", None) or None
-            if email:
-                domain = get_domain(email)
-                properties["domain"] = domain
+    if not op:
+        log.info("openpanel client not available for tracking.")
+        return
 
-        log.info(f"tracking openpanel event {name} {properties}.")
-        log.info(f"openpanel {op.disabled} {op.filter}.")
-        op.track(name=name, properties=properties)
+    log.info("openpanel client available for tracking.")
+    if properties:
+        email = properties.pop("email", None) or None
+        if email:
+            domain = get_domain(email)
+            properties["domain"] = domain
+
+    log.info(f"tracking openpanel event {name} {properties}.")
+    log.info(f"openpanel {op.disabled} {op.filter}.")
+    op.track(name=name, properties=properties)
 
 
 def identify_openpanel(user: User) -> None:
