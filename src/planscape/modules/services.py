@@ -12,8 +12,8 @@ def get_forsys(**kwargs) -> Dict[str, Any]:
     return {
         "name": "forsys",
         "options": {
-            "exclusions": list(inclusions),
-            "inclusions": list(exclusions),
+            "exclusions": list(exclusions),
+            "inclusions": list(inclusions),
             "thresholds": {"slope": slope, "distance_from_roads": distance_from_roads},
         },
     }

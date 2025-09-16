@@ -509,7 +509,7 @@ FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
 
-if not TESTING_MODE and not OPENPANEL_URL:
+if not TESTING_MODE and OPENPANEL_URL is not None:
     OPENPANEL_CLIENT = OpenPanel(
         client_id=OPENPANEL_CLIENT_ID,  # type: ignore
         client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
