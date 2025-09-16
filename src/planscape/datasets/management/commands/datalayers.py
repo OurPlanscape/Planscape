@@ -24,7 +24,6 @@ from gis.core import (
     with_vsi_prefix,
 )
 from gis.io import detect_mimetype
-from gis.rasters import data_mask
 from gis.rasters import to_planscape as to_planscape_raster
 from gis.vectors import to_planscape_multi_layer
 from requests import Response
@@ -358,7 +357,6 @@ class Command(PlanscapeCommand):
         category = kwargs.get("category")
         metadata = metadata or {}
         style = kwargs.get("style", None) or None
-        geometry = kwargs.get("outline", None) or None
         input_data = {
             "organization": org,
             "name": name,
@@ -373,7 +371,6 @@ class Command(PlanscapeCommand):
             "style": style,
             "map_service_type": map_service_type,
             "url": url,
-            "outline": geometry,
         }
 
         response = requests.post(
@@ -429,11 +426,6 @@ class Command(PlanscapeCommand):
         except DataLayerAlreadyExists as datalayer_exists:
             return {"info": str(datalayer_exists)}
 
-        if layer_type == DataLayerType.RASTER:
-            outline = data_mask(original_file_path)
-        else:
-            outline = None
-
         if url:
             response = self._create_datalayer_request(
                 name=name,
@@ -447,7 +439,6 @@ class Command(PlanscapeCommand):
                 url=url,
                 mimetype=None,
                 original_name=None,
-                outline=outline,
                 **kwargs,
             )
             try:
@@ -460,6 +451,7 @@ class Command(PlanscapeCommand):
                 processed_files = to_planscape_raster(
                     input_file=input_file,
                 )
+
             case _:
                 if len(layer_info.keys()) > 1:
                     # multi-layer vector file
@@ -502,7 +494,6 @@ class Command(PlanscapeCommand):
                 org=org,
                 layer_type=layer_type,
                 geometry_type=geometry_type,
-                outline=outline,
                 layer_info=layer_info,
                 mimetype=mimetype,
                 original_name=original_name,

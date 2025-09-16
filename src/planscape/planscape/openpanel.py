@@ -20,6 +20,11 @@ def get_openpanel(user_id: Optional[str] = None) -> Optional[OpenPanel]:
     return op
 
 
+def get_domain(email: str) -> str:
+    handle, domain = email.split("@")
+    return domain
+
+
 def track_openpanel(
     name: str,
     properties: Optional[Dict[str, Any]] = None,
@@ -27,6 +32,11 @@ def track_openpanel(
 ) -> None:
     op = get_openpanel(user_id=str(user_id))
     if op:
+        if properties:
+            email = properties.pop("email", None) or None
+            if email:
+                domain = get_domain(email)
+                properties["domain"] = domain
         op.track(name=name, properties=properties)
 
 

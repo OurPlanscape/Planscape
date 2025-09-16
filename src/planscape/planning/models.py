@@ -65,6 +65,12 @@ class RegionChoices(models.TextChoices):
     NORTHERN_CALIFORNIA = "northern-california", "Northern California"
 
 
+class PlanningAreaMapStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    IN_PROGRESS = "IN_PROGRESS", "In Progress"
+    DONE = "DONE", "Done"
+
+
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     user_id: int
@@ -91,6 +97,12 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         srid=settings.DEFAULT_CRS,
         null=True,
         help_text="Geometry of the Planning Area represented by polygons.",
+    )
+
+    map_status = models.CharField(
+        choices=PlanningAreaMapStatus.choices,
+        null=True,
+        help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
     )
 
     def creator_name(self) -> str:
