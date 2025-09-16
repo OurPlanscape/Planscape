@@ -486,9 +486,11 @@ ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
 # OPENPANEL config
-OPENPANEL_URL = config("OPENPANEL_URL", None)
-OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", None)
-OPENPANEL_CLIENT_SECRET = config("OPENPANEL_CLIENT_SECRET", None)
+OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
+OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
+OPENPANEL_CLIENT_SECRET = config(
+    "OPENPANEL_CLIENT_SECRET", "fake-openpanel-client-secret"
+)
 
 # MARTOR (ADMIN MARKDOWN EDITOR)
 MARTOR_TOOLBAR_BUTTONS = [
@@ -509,16 +511,13 @@ FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
 
-if OPENPANEL_URL is not None:
-    OPENPANEL_CLIENT = OpenPanel(
-        client_id=OPENPANEL_CLIENT_ID,  # type: ignore
-        client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
-        api_url=OPENPANEL_URL,  # type: ignore
-        disabled=TESTING_MODE,
-    )
-    OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
-else:
-    OPENPANEL_CLIENT = None
+OPENPANEL_CLIENT = OpenPanel(
+    client_id=OPENPANEL_CLIENT_ID,  # type: ignore
+    client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
+    api_url=OPENPANEL_URL,  # type: ignore
+    disabled=TESTING_MODE,
+)
+OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
 
 STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=int)
 AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
