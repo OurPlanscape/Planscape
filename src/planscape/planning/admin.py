@@ -34,9 +34,12 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
 
     def save_form(self, request, form, change):
         instace = form.instance
-        db_instance = TreatmentGoal.objects.get(pk=instace.pk)
-        instace.geometry = db_instance.geometry
-        form.instance = instace
+        try:
+            db_instance = TreatmentGoal.objects.get(pk=instace.pk)
+            instace.geometry = db_instance.geometry
+            form.instance = instace
+        except TreatmentGoal.DoesNotExist:
+            pass
         return super().save_form(request, form, change)
 
 
