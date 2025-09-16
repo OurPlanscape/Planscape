@@ -6,10 +6,11 @@ from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.conf import settings
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
+from django.test import TestCase
+
 
 from planning.models import (
     Scenario,
@@ -20,6 +21,7 @@ from planning.models import (
     ScenarioCapability,
 )
 
+from planning.serializers import ScenarioV2Serializer, ListScenarioSerializer
 from planning.services import compute_scenario_capabilities
 
 from planning.tests.factories import (
@@ -28,8 +30,8 @@ from planning.tests.factories import (
     ScenarioFactory,
     ScenarioResultFactory,
     TreatmentGoalFactory,
+    UserFactory,
 )
-from planscape.tests.factories import UserFactory
 
 
 class CreateScenarioTest(APITransactionTestCase):
@@ -783,7 +785,6 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.tg_conus = TreatmentGoalFactory.create(
             group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
         )
-
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             user=self.user,
@@ -803,10 +804,25 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
-        self.assertEqual(
-            set(caps),
-            {ScenarioCapability.FORSYS.value, ScenarioCapability.IMPACTS.value},
-        )
+        self.assertSetEqual(set(caps), {"FORSYS", "IMPACTS"})
+
+
+class ScenarioCapabilitiesSerializerTest(TestCase):
+    def test_v2_serializer_includes_capabilities(self):
+        s = ScenarioFactory.create()
+        s.capabilities = [ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS]
+        s.save(update_fields=["capabilities"])
+
+        data = ScenarioV2Serializer(s).data
+        self.assertSetEqual(set(data["capabilities"]), {"FORSYS", "IMPACTS"})
+
+    def test_list_serializer_includes_capabilities(self):
+        s = ScenarioFactory.create()
+        s.capabilities = [ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS]
+        s.save(update_fields=["capabilities"])
+
+        data = ListScenarioSerializer(s).data
+        self.assertSetEqual(set(data["capabilities"]), {"FORSYS", "IMPACTS"})
 
 
 class RunScenarioEndpointTest(APITestCase):

@@ -15,7 +15,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
-from django.test import TestCase, TransactionTestCase, override_settings
+from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
 from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats3

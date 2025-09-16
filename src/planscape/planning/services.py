@@ -1260,3 +1260,9 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 def compute_scenario_capabilities(scenario: "Scenario") -> list[str]:
     return [ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS]
+
+
+def scenario_is_in_california(scenario: "Scenario") -> bool:
+    treatment_goal = getattr(scenario, "treatment_goal", None)
+    group_name = getattr(treatment_goal, "group", None)
+    return group_name == TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
