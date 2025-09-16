@@ -36,7 +36,7 @@ def track_openpanel(
                 domain = get_domain(email)
                 properties["domain"] = domain
 
-        log.info("tracking openpanel.")
+        log.info(f"tracking openpanel event {name} {properties}.")
         op.track(name=name, properties=properties)
 
 
