@@ -19,9 +19,6 @@
       </dd>
       <dt>Excluded Areas:</dt>
       <dd>
-        <ng-container *ngIf="(loadingExcludedAreas$ | async) === true">
-          <mat-spinner diameter="16"></mat-spinner>
-        </ng-container>
         {{ selectedExcludedAreas$ | async }}
       </dd>
       <dt>Stand Level Constraints:</dt>

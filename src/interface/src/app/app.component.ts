@@ -5,6 +5,7 @@ import { OverlayLoaderService } from '@services/overlay-loader.service';
 
 import { environment } from '../environments/environment';
 import { OpenPanel } from '@openpanel/web';
+import { ForsysService } from '@services/forsys.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private overlayLoaderService: OverlayLoaderService
+    private overlayLoaderService: OverlayLoaderService,
+    private forsysService: ForsysService
   ) {}
 
   isLoading$ = this.overlayLoaderService.isLoading$;
@@ -26,6 +28,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // load initial forsys data
+    this.forsysService.loadForsysData();
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
     if (environment.open_panel_enabled) {
