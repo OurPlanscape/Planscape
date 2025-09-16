@@ -509,13 +509,13 @@ FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
 
-if OPENPANEL_URL is not None:
+if not TESTING_MODE and OPENPANEL_URL is not None:
     OPENPANEL_CLIENT = OpenPanel(
         client_id=OPENPANEL_CLIENT_ID,  # type: ignore
         client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
         api_url=OPENPANEL_URL,  # type: ignore
     )
-    OPENPANEL_CLIENT.set_global_properties({"environment": ENV, "test": TESTING_MODE})
+    OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
 
 STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=int)
 AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
