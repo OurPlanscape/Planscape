@@ -19,10 +19,8 @@ export class ForsysService {
   constructor(private moduleService: ModuleService) {}
 
   loadForsysData() {
-    if (!this._forsysData$.value) {
-      this.moduleService
-        .getModule<ApiModule<ForsysData>>('forsys')
-        .subscribe((data) => this._forsysData$.next(data.options));
-    }
+    this.moduleService
+      .getModule<ApiModule<ForsysData>>('forsys')
+      .subscribe((data) => this._forsysData$.next(data.options));
   }
 }

@@ -4,8 +4,9 @@ import { ScenarioConfigOverlayComponent } from './scenario-config-overlay.compon
 import { MockProvider } from 'ng-mocks';
 import { ScenarioService } from '@services';
 import { ScenarioState } from '../scenario.state';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { MOCK_SCENARIO } from '@services/mocks';
+import { ForsysService } from '@services/forsys.service';
 
 describe('ScenarioConfigOverlayComponent', () => {
   let component: ScenarioConfigOverlayComponent;
@@ -16,6 +17,7 @@ describe('ScenarioConfigOverlayComponent', () => {
       imports: [ScenarioConfigOverlayComponent],
       providers: [
         MockProvider(ScenarioService),
+        MockProvider(ForsysService, { excludedAreas$: of([]) }),
         MockProvider(ScenarioState, {
           displayConfigOverlay$: new BehaviorSubject(false),
           currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
