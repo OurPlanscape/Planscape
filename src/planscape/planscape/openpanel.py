@@ -37,6 +37,7 @@ def track_openpanel(
                 properties["domain"] = domain
 
         log.info(f"tracking openpanel event {name} {properties}.")
+        log.info(f"openpanel {op.disabled} {op.filter}.")
         op.track(name=name, properties=properties)
 
 
