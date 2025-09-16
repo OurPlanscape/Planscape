@@ -713,11 +713,7 @@ class CapabilitiesServiceTest(TestCase):
         )
         caps = compute_scenario_capabilities(scenario)
         self.assertEqual(
-            set(caps),
-            {
-                ScenarioCapability.TREATMENT_GOALS.value,
-                ScenarioCapability.TREATMENT_PLANS.value,
-            },
+            set(caps), {ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS}
         )
 
     def test_conus_scope_with_flag(self):
@@ -730,6 +726,5 @@ class CapabilitiesServiceTest(TestCase):
         )
         caps = compute_scenario_capabilities(scenario)
         self.assertEqual(
-            set(caps),
-            {ScenarioCapability.FORSYS.value, ScenarioCapability.IMPACTS.value},
+            set(caps), {ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS}
         )

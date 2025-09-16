@@ -21,9 +21,7 @@ class Migration(migrations.Migration):
                 base_field=models.CharField(
                     choices=[
                         ("FORSYS", "Forsys"),
-                        ("TREATMENT_GOALS", "Treatment Goals"),
                         ("IMPACTS", "Impacts"),
-                        ("TREATMENT_PLANS", "Treatment Plans"),
                     ],
                     max_length=32,
                 ),

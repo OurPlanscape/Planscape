@@ -1259,13 +1259,4 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 def compute_scenario_capabilities(scenario: "Scenario") -> list[str]:
-    if (
-        scenario.treatment_goal
-        and scenario.treatment_goal.group
-        == TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
-    ):
-        return [
-            ScenarioCapability.TREATMENT_GOALS.value,
-            ScenarioCapability.TREATMENT_PLANS.value,
-        ]
-    return [ScenarioCapability.FORSYS.value, ScenarioCapability.IMPACTS.value]
+    return [ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS]

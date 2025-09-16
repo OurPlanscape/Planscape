@@ -362,9 +362,7 @@ class GeoPackageStatus(models.TextChoices):
 
 class ScenarioCapability(models.TextChoices):
     FORSYS = ("FORSYS", "Forsys")
-    TREATMENT_GOALS = ("TREATMENT_GOALS", "Treatment Goals")
     IMPACTS = ("IMPACTS", "Impacts")
-    TREATMENT_PLANS = ("TREATMENT_PLANS", "Treatment Plans")
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
