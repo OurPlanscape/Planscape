@@ -113,16 +113,34 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     )
   );
 
-  standLinePaint = {
-    'line-width': 1,
-    'line-color': BASE_COLORS.dark_magenta,
-    'line-opacity': this.featureStatePaint(0.2, 1, this.excludedKey),
-  } as any;
+  standLinePaint$ = this.opacity$.pipe(
+    map(
+      (opacity) =>
+        ({
+          'line-width': 1,
+          'line-color': BASE_COLORS.dark_magenta,
+          'line-opacity': this.featureStatePaint(
+            opacity * 0.2,
+            opacity,
+            this.excludedKey
+          ),
+        }) as any
+    )
+  );
 
-  standExcludedPaint = {
-    'fill-pattern': 'stripes-pattern', // constant pattern
-    'fill-opacity': this.featureStatePaint(1, 0, this.excludedKey),
-  } as any;
+  standExcludedPaint$ = this.opacity$.pipe(
+    map(
+      (opacity) =>
+        ({
+          'fill-pattern': 'stripes-pattern', // constant pattern
+          'fill-opacity': this.featureStatePaint(
+            opacity * 2,
+            0,
+            this.excludedKey
+          ),
+        }) as any
+    )
+  );
 
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);

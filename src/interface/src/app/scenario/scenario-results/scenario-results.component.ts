@@ -1,12 +1,11 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { ScenarioResult } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
 import { FeatureService } from '../../features/feature.service';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
 import { TreatmentOpportunityChartComponent } from '../treatment-opportunity-chart/treatment-opportunity-chart.component';
-import { NgIf } from '@angular/common';
 import { SectionComponent } from '@styleguide';
 import { CumulativeAttainmentChartComponent } from '../cumulative-attainment-chart/cumulative-attainment-chart.component';
 import {

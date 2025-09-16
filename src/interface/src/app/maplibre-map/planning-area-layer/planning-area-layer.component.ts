@@ -10,6 +10,8 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { PlanState } from '../../plan/plan.state';
 import { map } from 'rxjs';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { MapConfigState } from '../map-config.state';
+import { FeatureService } from '../../features/feature.service';
 
 @Component({
   selector: 'app-planning-area-layer',
@@ -27,7 +29,15 @@ import { MARTIN_SOURCES } from '../../treatments/map.sources';
 export class PlanningAreaLayerComponent {
   @Input() before = '';
 
-  constructor(private planState: PlanState) {}
+  opacity$ = this.mapConfigState.projectAreasOpacity$;
+
+  fillOpacity$ = this.opacity$.pipe(map((opacity) => opacity * 0.2));
+
+  constructor(
+    private planState: PlanState,
+    private mapConfigState: MapConfigState,
+    private featureService: FeatureService
+  ) {}
 
   tilesUrl$ = this.planState.currentPlanId$.pipe(
     map((id) => {
@@ -36,5 +46,16 @@ export class PlanningAreaLayerComponent {
   );
 
   readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
-  readonly COLORS = BASE_COLORS;
+
+  readonly backgroundColor = this.featureService.isFeatureEnabled(
+    'DYNAMIC_SCENARIO_MAP'
+  )
+    ? BASE_COLORS.blue
+    : BASE_COLORS.white_light_blue;
+
+  readonly lineColor = this.featureService.isFeatureEnabled(
+    'DYNAMIC_SCENARIO_MAP'
+  )
+    ? BASE_COLORS.blue
+    : BASE_COLORS.md_gray;
 }
