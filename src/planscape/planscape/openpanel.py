@@ -38,7 +38,7 @@ def track_openpanel(
     payload = {
         "type": "track",
         "payload": {
-            "name": "name",
+            "name": name,
             "profileId": str(user_id) if user_id else None,
             "properties": properties,
         },
