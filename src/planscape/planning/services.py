@@ -50,6 +50,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalUsageType,
 )
+from planning.tasks import async_set_planning_area_status
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -115,9 +116,12 @@ def create_planning_area(
             for stand_size in StandSizeChoices
         ]
     )
-    create_stands_job = chain(
-        async_create_stands.si(planning_area.pk), precalculation_jobs
+    callback = async_set_planning_area_status.si(
+        planning_area.pk, PlanningAreaMapStatus.DONE
     )
+    create_stands_job = chord(
+        chain(async_create_stands.si(planning_area.pk), precalculation_jobs)
+    )(callback)
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -542,8 +546,8 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     from planning.tasks import (
         async_calculate_stand_metrics_v2,
-        async_pre_forsys_process,
         async_forsys_run,
+        async_pre_forsys_process,
     )
 
     # schedule: metrics → pre-forsys → forsys

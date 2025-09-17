@@ -3,7 +3,6 @@ import logging
 import rasterio
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
-from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -13,17 +12,16 @@ from stands.services import (
     calculate_stand_vector_stats3,
     calculate_stand_zonal_stats,
     create_stands_for_geometry,
-    get_datalayer_metric,
 )
 from utils.cli_utils import call_forsys
 
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
+    PlanningAreaMapStatus,
     Scenario,
     ScenarioResultStatus,
 )
-from planning.services import build_run_configuration
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -34,13 +32,17 @@ log = logging.getLogger(__name__)
 def async_create_stands(planning_area_id: int) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
         try:
-            planning_area = PlanningArea.objects.get(id=planning_area_id)
+            planning_area: PlanningArea = PlanningArea.objects.select_for_update().get(
+                id=planning_area_id
+            )
+            planning_area.map_status = PlanningAreaMapStatus.IN_PROGRESS
+            planning_area.save()
+            for i in StandSizeChoices:
+                log.info(f"Creating stands for {planning_area_id} for stand size {i}")
+                create_stands_for_geometry(planning_area.geometry, i)
         except PlanningArea.DoesNotExist:
             log.warning(f"Planning Area with {planning_area_id} does not exist.")
             raise
-        for i in StandSizeChoices:
-            log.info(f"Creating stands for {planning_area_id} for stand size {i}")
-            create_stands_for_geometry(planning_area.geometry, i)
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -85,6 +87,20 @@ def async_forsys_run(scenario_id: int) -> None:
         log.error(
             f"A panic error happened while trying to call forsys for {scenario_id}"
         )
+
+
+@app.task()
+def async_set_planning_area_status(
+    planning_area_id: int, status: PlanningAreaMapStatus
+) -> None:
+    try:
+        planning_area: PlanningArea = PlanningArea.objects.select_for_update().get(
+            pk=planning_area_id
+        )
+        planning_area.map_status = status
+        planning_area.save()
+    except PlanningArea.DoesNotExist:
+        log.exception("Planning Area %s does not exist", planning_area_id)
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -194,6 +210,8 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
 
 @app.task()
 def async_pre_forsys_process(scenario_id: int) -> None:
+    from planning.services import build_run_configuration
+
     scenario = Scenario.objects.get(id=scenario_id)
     planning_area = scenario.planning_area
 
