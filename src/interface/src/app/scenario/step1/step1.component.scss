@@ -1,5 +1,6 @@
 @import 'colors';
 @import 'mixins';
+@import 'variables';
 
 .mat-radio-group {
   display: flex;
@@ -10,7 +11,7 @@
 
 :host {
   ::ng-deep .mat-radio-label {
-    padding-left: 20px;
+    padding-left: 10px;
   }
 
   ::ng-deep .mat-radio-label-content {
@@ -33,7 +34,7 @@
   display: flex;
   flex-direction: row;
   width: auto;
-  margin: 5px;
+  margin: 0px;
   background: $color-white;
 }
 
@@ -83,7 +84,7 @@
 }
 
 sg-section {
-  margin-top: 16px;
+  margin-bottom: 10px;
 }
 
 .error-message {
@@ -122,10 +123,6 @@ sg-section {
   color: $color-error;
 }
 
-.stand-size ::ng-deep .mdc-floating-label {
-  height: 100%;
-}
-
 .stand-label {
   margin: 0 0 8px 0;
   display: flex;
@@ -141,7 +138,7 @@ sg-section {
 
   // add a smaller layer on top to simulate fill
   &::after {
-    content: "hexagon";
+    content: 'hexagon';
     display: block;
     color: $color-light-magenta;
     position: absolute;
@@ -151,5 +148,19 @@ sg-section {
     top: 2px;
     font-size: 20px;
     left: 2px;
+  }
+}
+
+.goal-control-container ::ng-deep .mat-expansion-panel-header {
+  padding: 0 4px;
+}
+
+::ng-deep .stand-step {
+  .mdc-text-field--outlined {
+    padding: 0;
+  }
+
+  .mat-mdc-select-trigger {
+    padding: $steps-padding;
   }
 }

@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'variables';
 
 .stand-label {
   margin: 0 0 16px 0;
@@ -27,4 +28,24 @@
 
 .stand-level-input ::ng-deep .mat-mdc-form-field-error-wrapper {
   padding: 0;
+}
+
+.stand-level-input ::ng-deep .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .constraints-step {
+  .mdc-text-field--outlined {
+    padding: 0;
+  }
+
+  .mdc-text-field__input {
+    padding: $steps-padding 0 $steps-padding $steps-padding;
+    margin-right: 2px;
+  }
+
+  .suffix[_ngcontent-ng-c1011767879] {
+    padding-right: $steps-padding;
+  }
 }
