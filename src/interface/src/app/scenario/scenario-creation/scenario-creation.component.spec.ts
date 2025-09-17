@@ -37,7 +37,7 @@ describe('ScenarioCreationComponent', () => {
           getScenariosForPlan: () =>
             of([{ name: 'Scenario A' }, { name: 'Scenario B' }] as any),
         }),
-        MockProvider(ScenarioState, { excludedAreas$: of([]) }),
+        MockProvider(ScenarioState),
         MockProvider(DataLayersStateService, { paths$: of([]) }),
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),

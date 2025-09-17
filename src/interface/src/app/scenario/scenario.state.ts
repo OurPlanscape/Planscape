@@ -29,9 +29,6 @@ export class ScenarioState {
   // BehaviorSubject that we are going to use to manually reload the scenario
   private _reloadScenario$ = new BehaviorSubject<void>(undefined);
 
-  // Observable that we are going to use to get the excluded_areas
-  excludedAreas$ = this.scenarioService.getExcludedAreas().pipe(shareReplay(1));
-
   private _excludedStands$ = new Subject<AvailableStands>();
   public excludedStands$ = this._excludedStands$
     .asObservable()
