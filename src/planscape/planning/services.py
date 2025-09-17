@@ -124,6 +124,10 @@ def create_planning_area(
         planning_area.pk,
         PlanningAreaMapStatus.IN_PROGRESS,
     )
+    set_map_status_failed = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.FAILED,
+    )
     create_stands_job = chord(
         chain(
             async_create_stands.si(planning_area.pk),
@@ -142,7 +146,9 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: create_stands_job.apply_async())
+        transaction.on_commit(
+            lambda: create_stands_job.apply_async(link_error=set_map_status_failed)
+        )
     return planning_area
 
 
