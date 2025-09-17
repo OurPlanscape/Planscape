@@ -32,11 +32,7 @@ log = logging.getLogger(__name__)
 def async_create_stands(planning_area_id: int) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
         try:
-            planning_area: PlanningArea = PlanningArea.objects.select_for_update().get(
-                id=planning_area_id
-            )
-            planning_area.map_status = PlanningAreaMapStatus.IN_PROGRESS
-            planning_area.save()
+            planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
             for i in StandSizeChoices:
                 log.info(f"Creating stands for {planning_area_id} for stand size {i}")
                 create_stands_for_geometry(planning_area.geometry, i)
@@ -99,6 +95,7 @@ def async_set_planning_area_status(
         )
         planning_area.map_status = status
         planning_area.save()
+        log.info("Planning Area %s map status set to %s", planning_area_id, status)
     except PlanningArea.DoesNotExist:
         log.exception("Planning Area %s does not exist", planning_area_id)
 
