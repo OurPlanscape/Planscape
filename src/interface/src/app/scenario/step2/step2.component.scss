@@ -1,11 +1,17 @@
-
-
 .checkbox-column {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .exclude-checkbox {
-    height: 30px;
+  height: 30px;
 }
 
+/*
+  Shift checkboxes left to offset the extra padding reserved by material 
+  for the checkbox ripple (hover circle), so the list aligns consistently 
+*/
+.area-selection {
+  position: relative;
+  left: -8px;
+}
