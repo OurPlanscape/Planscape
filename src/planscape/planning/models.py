@@ -273,13 +273,17 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
 
+    @cached_property
+    def active_datalayers(self) -> Collection[DataLayer]:
+        return self.datalayers.filter(used_by_treatment_goals__deleted_at__isnull=True)
+
     def get_coverage(self) -> GEOSGeometry:
-        return self.datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
+        return self.active_datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(
-            self.datalayers.exclude(
-                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
+            self.active_datalayers.exclude(
+                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
             ).filter(type=DataLayerType.RASTER)
         )
 
