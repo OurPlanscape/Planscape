@@ -4,6 +4,7 @@
   matTooltipPosition="below"
   (click)="openOverlay($event)"
   class="base-map-icon"
+  draggable="false"
   *ngIf="selectedBaseMap$ | async as selectedBaseMap"
   [src]="'assets/png/baseMaps/' + selectedBaseMap + '.png'" />
 
@@ -32,6 +33,7 @@
       <img
         (click)="updateBaseMap(baseMap)"
         class="base-map-icon"
+        draggable="false"
         *ngIf="selectedBaseMap$ | async as selectedLayer"
         [src]="'assets/png/baseMaps/' + baseMap + '.png'" />
       <span class="base-map-label">

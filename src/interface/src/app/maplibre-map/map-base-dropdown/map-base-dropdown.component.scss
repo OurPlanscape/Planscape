@@ -7,6 +7,8 @@
 
 .base-map {
   &-icon {
+    user-select: none;
+    
     height: 38px;
     width: 38px;
     border: 1px solid $color-soft-gray;
