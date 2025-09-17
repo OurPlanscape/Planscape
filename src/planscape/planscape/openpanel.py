@@ -48,7 +48,7 @@ def identify_openpanel(user: User) -> None:
                 "email": user.email,
             },
             "properties": {
-                "organizatio": None,
+                "organization": None,
                 "last_login": user.last_login,
             },
         },
