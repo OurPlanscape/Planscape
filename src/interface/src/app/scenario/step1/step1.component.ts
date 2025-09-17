@@ -50,7 +50,7 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
     stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
       Validators.required,
     ]),
-    treatment_goal: new FormControl<number | undefined>(undefined, [
+    treatment_goal: new FormControl<number | undefined>(1, [
       Validators.required,
     ]),
   });

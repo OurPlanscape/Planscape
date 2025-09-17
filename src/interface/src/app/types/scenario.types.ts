@@ -66,21 +66,31 @@ export interface ScenarioResult {
   };
 }
 
+
 export interface ScenarioCreation extends ScenarioConfigPayload {
   treatment_goal: number;
   excluded_areas: number[];
   name: string;
   planning_area: number;
+
+
 }
 
 export interface ScenarioConfigPayload {
+  stand_size: STAND_SIZE;
+
   estimated_cost: number;
   excluded_areas: number[];
   max_area: number;
   max_slope: number | null;
   min_distance_from_road: number | null;
-  stand_size: STAND_SIZE;
   max_budget?: number;
+
+  // newer elements
+  excludes: number[];
+  includes: number[];
+  constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads 
+  target: NamedConstraint[]; //  (max acres treated, max budget, etc)
 }
 
 export interface ScenarioCreationPayload {
@@ -179,15 +189,15 @@ export interface CategorizedScenarioGoals {
 
 export interface Constraint {
   datalayer: number;
-  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
-  value: number; // be supports string
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'in' | 'neq'
+  value: number; // backend supports string
 }
 
 // TODO - remove this and use `Constraint` when we implement dynamic constraints
 export interface NamedConstraint {
   name: string;
-  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
-  value: number; // be supports string
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'in' | 'neq'
+  value: number; // backend supports string
 }
 
 export interface AvailableStands {
