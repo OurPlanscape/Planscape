@@ -133,8 +133,9 @@ def create_planning_area(
             async_create_stands.si(planning_area.pk),
             set_map_status_in_progress,
             precalculation_jobs,
-        )
-    )(set_map_status_done)
+        ),
+        set_map_status_done,
+    ).on_error(set_map_status_failed)
 
     track_openpanel(
         name="planning.planning_area.created",
