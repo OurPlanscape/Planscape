@@ -15,12 +15,11 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { FeatureService } from '../features/feature.service';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { ModuleService } from '@services/module.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
+import { ForsysService } from '@services/forsys.service';
 
 @Injectable()
 export class NewScenarioState {
@@ -122,19 +121,15 @@ export class NewScenarioState {
   private distanceToRoadsId = 0;
 
   constructor(
-    private moduleService: ModuleService,
-    private featureService: FeatureService,
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private forsysService: ForsysService
   ) {
-    if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      this.moduleService.getForsysModule().subscribe((forsys) => {
-        this.slopeId = forsys.options.thresholds.slope.id;
-        this.distanceToRoadsId =
-          forsys.options.thresholds.distance_from_roads.id;
-      });
-    }
+    this.forsysService.forsysData$.subscribe((forsys) => {
+      this.slopeId = forsys.thresholds.slope.id;
+      this.distanceToRoadsId = forsys.thresholds.distance_from_roads.id;
+    });
   }
 
   setLoading(isLoading: boolean) {

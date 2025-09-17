@@ -96,6 +96,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "creator",
             "role",
             "permissions",
+            "map_status",
         )
         model = PlanningArea
 
@@ -178,6 +179,7 @@ class PlanningAreaSerializer(
             "role",
             "permissions",
             "geometry",
+            "map_status",
         )
         model = PlanningArea
         geo_field = "geometry"

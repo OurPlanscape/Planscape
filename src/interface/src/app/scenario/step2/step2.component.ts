@@ -8,16 +8,10 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ScenarioState } from '../scenario.state';
 import { StepDirective } from '../../../styleguide/steps/step.component';
-import { ScenarioCreation } from '@types';
+import { IdNamePair, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
-
-interface ExcludedArea {
-  key: number;
-  label: string;
-  id: number;
-}
+import { ForsysService } from '@services/forsys.service';
 
 @Component({
   selector: 'app-step2',
@@ -37,8 +31,8 @@ export class Step2Component
   implements OnInit
 {
   constructor(
-    private scenarioState: ScenarioState,
-    private newScenarioState: NewScenarioState
+    private newScenarioState: NewScenarioState,
+    private forsysService: ForsysService
   ) {
     super();
   }
@@ -46,11 +40,11 @@ export class Step2Component
   form = new FormGroup({
     excluded_areas: new FormArray([]),
   });
-  excludedAreas$ = this.scenarioState.excludedAreas$;
-  excludedAreas: ExcludedArea[] = [];
+  excludedAreas$ = this.forsysService.excludedAreas$;
+  excludedAreas: IdNamePair[] = [];
 
   ngOnInit() {
-    this.excludedAreas$.subscribe((areas: ExcludedArea[]) => {
+    this.excludedAreas$.subscribe((areas) => {
       this.excludedAreas = areas;
       this.createFormControls();
       this.form.get('excluded_areas')?.valueChanges.subscribe(() => {
@@ -71,7 +65,7 @@ export class Step2Component
     const selectedKeys: number[] = [];
     excludedAreasFormArray.controls.forEach((control, index) => {
       if (control.value) {
-        selectedKeys.push(this.excludedAreas[index].key);
+        selectedKeys.push(this.excludedAreas[index].id);
       }
     });
     return selectedKeys;

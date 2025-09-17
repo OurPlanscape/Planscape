@@ -6,8 +6,8 @@ export interface ApiModule<T> {
 }
 
 export interface ForsysData {
-  includes: IdNamePair[];
-  excludes: IdNamePair[];
+  inclusions: IdNamePair[];
+  exclusions: IdNamePair[];
   thresholds: {
     slope: { id: number };
     distance_from_roads: { id: number };

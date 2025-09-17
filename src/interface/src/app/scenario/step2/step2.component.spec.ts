@@ -3,7 +3,6 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Step2Component } from './step2.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MockProvider } from 'ng-mocks';
-import { ScenarioState } from '../scenario.state';
 import { NewScenarioState } from '../new-scenario.state';
 import { of } from 'rxjs';
 
@@ -15,10 +14,9 @@ describe('Step2Component', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, NoopAnimationsModule, Step2Component],
       providers: [
-        MockProvider(ScenarioState, {
+        MockProvider(NewScenarioState, {
           excludedAreas$: of([]),
         }),
-        MockProvider(NewScenarioState),
       ],
     }).compileComponents();
 

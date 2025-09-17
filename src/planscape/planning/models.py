@@ -69,6 +69,7 @@ class PlanningAreaMapStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     IN_PROGRESS = "IN_PROGRESS", "In Progress"
     DONE = "DONE", "Done"
+    FAILED = "FAILED", "Failed"
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
