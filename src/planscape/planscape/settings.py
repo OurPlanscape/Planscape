@@ -9,7 +9,6 @@ import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEnv
-from openpanel import OpenPanel
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
@@ -510,14 +509,6 @@ DEFAULT_BASELAYERS_DATASET_ID = 999
 FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
-
-OPENPANEL_CLIENT = OpenPanel(
-    client_id=OPENPANEL_CLIENT_ID,  # type: ignore
-    client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
-    api_url=OPENPANEL_URL,  # type: ignore
-    disabled=TESTING_MODE,
-)
-OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
 
 STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=int)
 AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(

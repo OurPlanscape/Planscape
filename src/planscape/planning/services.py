@@ -50,6 +50,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalUsageType,
 )
+from planning.tasks import async_set_planning_area_status
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -115,9 +116,25 @@ def create_planning_area(
             for stand_size in StandSizeChoices
         ]
     )
-    create_stands_job = chain(
-        async_create_stands.si(planning_area.pk), precalculation_jobs
+    set_map_status_done = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.DONE,
     )
+    set_map_status_in_progress = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.IN_PROGRESS,
+    )
+    set_map_status_failed = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.FAILED,
+    )
+    create_stands_job = chord(
+        chain(
+            async_create_stands.si(planning_area.pk),
+            set_map_status_in_progress,
+            precalculation_jobs,
+        )
+    )(set_map_status_done)
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -129,7 +146,9 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: create_stands_job.apply_async())
+        transaction.on_commit(
+            lambda: create_stands_job.apply_async(link_error=set_map_status_failed)
+        )
     return planning_area
 
 
@@ -542,8 +561,8 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     from planning.tasks import (
         async_calculate_stand_metrics_v2,
-        async_pre_forsys_process,
         async_forsys_run,
+        async_pre_forsys_process,
     )
 
     # schedule: metrics → pre-forsys → forsys

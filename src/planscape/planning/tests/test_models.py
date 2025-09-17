@@ -1,8 +1,13 @@
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
+from datasets.tests.factories import DataLayerFactory
 from planning.models import PlanningArea, RegionChoices
-from planning.tests.factories import PlanningAreaFactory
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    TreatmentGoalFactory,
+    TreatmentGoalUsesDataLayerFactory,
+)
 from planscape.tests.factories import UserFactory
 
 
@@ -31,3 +36,32 @@ class PlanningAreaModelTest(TestCase):
             )
         except Exception as e:
             self.fail(f"Test failed {e}.")
+
+
+class TreatmentGoalUsesDataLayerTest(TestCase):
+    def test_treatment_goal_with_datalayers(self):
+        tx_goal = TreatmentGoalFactory.create()
+        for _ in range(5):
+            datalayer = DataLayerFactory.create()
+            TreatmentGoalUsesDataLayerFactory.create(
+                treatment_goal=tx_goal, datalayer=datalayer
+            )
+
+        tx_goal.refresh_from_db()
+
+        self.assertEqual(tx_goal.datalayers.count(), 5)
+        self.assertEqual(tx_goal.active_datalayers.count(), 5)
+
+    def test_treatment_goal_with_datalayers_soft_deleted(self):
+        tx_goal = TreatmentGoalFactory.create()
+        for _ in range(5):
+            datalayer = DataLayerFactory.create()
+            tgudl = TreatmentGoalUsesDataLayerFactory.create(
+                treatment_goal=tx_goal, datalayer=datalayer
+            )
+            tgudl.delete()
+
+        tx_goal.refresh_from_db()
+
+        self.assertEqual(tx_goal.datalayers.count(), 5)
+        self.assertEqual(tx_goal.active_datalayers.count(), 0)
