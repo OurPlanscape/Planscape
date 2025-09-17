@@ -1,10 +1,12 @@
 @import 'colors';
 @import 'mixins';
+@import 'variables';
 
 .flex-row {
   align-items: center;
   display: flex;
   gap: 20px;
+  justify-content: space-between;
 }
 
 .section-label {
@@ -13,7 +15,7 @@
 
 .input-field {
   padding-top: 4px;
-  width: 180px;
+  width: 100%;
   border: black;
 
   &.disabled {
@@ -64,13 +66,33 @@
     display: none;
   }
 
-  .mat-mdc-form-field-icon-suffix {
-    width: 80px;
+  .mdc-text-field__input {
+    padding: $steps-padding;
+    margin-right: 2px;
   }
 
-  .mdc-text-field__input {
-    padding-top: 12px;
-  margin-right: 2px;
-  padding-bottom: 12px;
+  .mdc-text-field--outlined {
+    padding: 0;
   }
+
+  .prefix {
+    padding-left: $steps-padding;
+  }
+
+  .suffix {
+    padding-right: $steps-padding;
+  }
+
+  .max-budget.mdc-text-field__input {
+    padding: $steps-padding $steps-padding $steps-padding 0;
+  }
+
+  .treatment-cost.mdc-text-field__input {
+    padding: $steps-padding 0 $steps-padding $steps-padding;
+  }
+}
+
+.treatment-step ::ng-deep .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
 }

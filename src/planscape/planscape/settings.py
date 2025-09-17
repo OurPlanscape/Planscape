@@ -9,7 +9,6 @@ import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEnv
-from openpanel import OpenPanel
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
@@ -486,9 +485,11 @@ ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
 # OPENPANEL config
-OPENPANEL_URL = config("OPENPANEL_URL", None)
-OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", None)
-OPENPANEL_CLIENT_SECRET = config("OPENPANEL_CLIENT_SECRET", None)
+OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
+OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
+OPENPANEL_CLIENT_SECRET = config(
+    "OPENPANEL_CLIENT_SECRET", "fake-openpanel-client-secret"
+)
 
 # MARTOR (ADMIN MARKDOWN EDITOR)
 MARTOR_TOOLBAR_BUTTONS = [
@@ -508,16 +509,6 @@ DEFAULT_BASELAYERS_DATASET_ID = 999
 FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
-
-if not TESTING_MODE and not OPENPANEL_URL:
-    OPENPANEL_CLIENT = OpenPanel(
-        client_id=OPENPANEL_CLIENT_ID,  # type: ignore
-        client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
-        api_url=OPENPANEL_URL,  # type: ignore
-    )
-    OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
-else:
-    OPENPANEL_CLIENT = None
 
 STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=int)
 AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
