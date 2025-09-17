@@ -1144,6 +1144,12 @@ def planning_area_covers(
     return False
 
 
+def get_excluded_stands(stands_qs, datalayer: DataLayer):
+    return stands_qs.filter(
+        metrics__datalayer_id=datalayer.pk, metrics__majority=1
+    ).values_list("id", flat=True)
+
+
 def get_constrained_stands(
     stands_qs,
     datalayer: DataLayer,
@@ -1168,8 +1174,6 @@ def get_constrained_stands(
     match usage_type:
         case TreatmentGoalUsageType.THRESHOLD:
             stands_qs = stands_qs.exclude(**{metric_filter: value})
-        case TreatmentGoalUsageType.EXCLUSION_ZONE:
-            stands_qs = stands_qs.filter(**{metric_filter: value})
         case _:
             raise ValueError("Invalid usage_type for get_constrainted_stands.")
 
@@ -1199,13 +1203,7 @@ def get_available_stands(
     constrained_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
-        excluded_stands = get_constrained_stands(
-            stands_queryset,
-            exclude,
-            metric_column="majority",
-            value=1,
-            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
-        )
+        excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     for constraint in constraints:
