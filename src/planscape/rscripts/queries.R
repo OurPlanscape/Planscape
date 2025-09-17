@@ -72,7 +72,8 @@ get_treatment_goal_datalayers <- function(connection, treatment_goal_id) {
     LEFT JOIN
       planning_treatmentgoalusesdatalayer udt ON (udt.datalayer_id = d.id)
     WHERE
-      udt.treatment_goal_id = {treatment_goal_id}
+      udt.treatment_goal_id = {treatment_goal_id} AND
+      udt.deleted_at IS NULL
   "
 
   query <- glue_sql(query_text, treatment_goal_id = treatment_goal_id, .con = connection)
