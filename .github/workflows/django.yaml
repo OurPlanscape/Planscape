@@ -107,4 +107,4 @@ jobs:
           echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .env
           echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .env
           cd src/planscape
-          poetry run python manage.py test .
+          poetry run python manage.py test . --parallel 4
