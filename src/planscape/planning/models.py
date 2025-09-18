@@ -308,6 +308,7 @@ class TreatmentGoalUsageType(models.TextChoices):
     SECONDARY_METRIC = "SECONDARY_METRIC", "Secondary Metric"
     THRESHOLD = "THRESHOLD", "Threshold"
     EXCLUSION_ZONE = "EXCLUSION_ZONE", "Exclusion Zone"
+    INCLUSION_ZONE = "INCLUSION_ZONE", "Inclusion Zone"
 
 
 class TreatmentGoalUsesDataLayer(

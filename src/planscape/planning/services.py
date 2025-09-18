@@ -106,7 +106,9 @@ def create_planning_area(
     )
     slope = get_forsys_layer_by_name("slope")
     distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
-    datalayers = list(get_forsys_layer_by_capability("exclusion")) + [
+    datalayers = list(
+        get_forsys_layer_by_capability(TreatmentGoalUsageType.EXCLUSION_ZONE)
+    ) + [
         slope,
         distance_from_roads,
     ]
