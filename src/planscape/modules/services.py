@@ -2,11 +2,12 @@ from typing import Any, Dict, Optional
 
 from datasets.models import DataLayer
 from django.db.models import QuerySet
+from planning.models import TreatmentGoalUsageType
 
 
 def get_forsys(**kwargs) -> Dict[str, Any]:
-    inclusions = get_forsys_layer_by_capability("inclusion")
-    exclusions = get_forsys_layer_by_capability("exclusion")
+    inclusions = get_forsys_layer_by_capability(TreatmentGoalUsageType.INCLUSION_ZONE)
+    exclusions = get_forsys_layer_by_capability(TreatmentGoalUsageType.EXCLUSION_ZONE)
     slope = get_forsys_layer_by_name("slope")
     distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
     return {
