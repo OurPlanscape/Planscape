@@ -16,7 +16,8 @@
   [selected]="isSelected(s)"
   (openNewTreatment)="openNewTreatmentDialog($event, s)"
   [userCanArchiveScenario]="userCanArchiveScenario(s)"
-  [userCanCreateTreatmentPlans]="userCanCreateTreatmentPlan()"
-  [hasTreatmentPlanCapability]="hasTreatmentPlanCapability(s)"
+  [showTreatmentPlanButton]="
+    userCanCreateTreatmentPlan() && hasTreatmentPlanCapability(s)
+  "
   (toggleArchiveStatus)="toggleScenarioStatus(s)">
 </sg-scenario-card>
