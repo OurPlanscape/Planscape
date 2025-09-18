@@ -11,6 +11,7 @@ import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '../../plan-helpers';
+import { scenarioCanHaveTreatmentPlans } from 'src/app/scenario/scenario-helper';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,7 +23,7 @@ import { CreateTreatmentDialogComponent } from '../../../scenario/create-treatme
 import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
-import { canAddTreatmentPlan } from '../../permissions';
+import { userCanAddTreatmentPlan } from '../../permissions';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -93,7 +94,11 @@ export class ScenariosCardListComponent {
     if (!this.plan) {
       return false;
     }
-    return canAddTreatmentPlan(this.plan) || false;
+    return userCanAddTreatmentPlan(this.plan) || false;
+  }
+
+  hasTreatmentPlanCapability(scenario: Scenario) {
+    return scenarioCanHaveTreatmentPlans(scenario);
   }
 
   toggleScenarioStatus(scenario: Scenario) {
