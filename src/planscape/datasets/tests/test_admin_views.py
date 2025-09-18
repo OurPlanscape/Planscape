@@ -129,4 +129,4 @@ class TestAdminDatasetViewSet(APITransactionTestCase):
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(1, Dataset.objects.all().count())
+        self.assertEqual(1, Dataset.objects.filter(created_by=self.admin).count())
