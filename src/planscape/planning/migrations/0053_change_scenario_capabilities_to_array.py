@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning", "0051_planningarea_map_status"),
+        ("planning", "0052_alter_planningarea_map_status"),
     ]
 
     operations = [
