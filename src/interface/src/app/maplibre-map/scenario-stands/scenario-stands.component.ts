@@ -100,7 +100,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       (opacity) =>
         ({
           'fill-color': this.featureStatePaint(
-            BASE_COLORS.black,
+            'transparent',
             BASE_COLORS.dark_magenta,
             this.excludedKey
           ),
@@ -118,12 +118,12 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       (opacity) =>
         ({
           'line-width': 1,
-          'line-color': BASE_COLORS.dark_magenta,
-          'line-opacity': this.featureStatePaint(
-            opacity * 0.2,
-            opacity,
+          'line-color': this.featureStatePaint(
+            BASE_COLORS.dark,
+            BASE_COLORS.dark_magenta,
             this.excludedKey
           ),
+          'line-opacity': opacity,
         }) as any
     )
   );
@@ -132,12 +132,8 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     map(
       (opacity) =>
         ({
-          'fill-pattern': 'stripes-pattern', // constant pattern
-          'fill-opacity': this.featureStatePaint(
-            opacity * 2,
-            0,
-            this.excludedKey
-          ),
+          'fill-pattern': 'exclude-pattern', // constant pattern
+          'fill-opacity': this.featureStatePaint(opacity, 0, this.excludedKey),
         }) as any
     )
   );
