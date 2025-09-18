@@ -1,12 +1,11 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { ScenarioResult } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
 import { FeatureService } from '../../features/feature.service';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
 import { TreatmentOpportunityChartComponent } from '../treatment-opportunity-chart/treatment-opportunity-chart.component';
-import { NgIf } from '@angular/common';
 import { SectionComponent } from '@styleguide';
 import { CumulativeAttainmentChartComponent } from '../cumulative-attainment-chart/cumulative-attainment-chart.component';
 import {
@@ -57,10 +56,12 @@ export class ScenarioResultsComponent implements OnChanges {
     // parse ScenarioResult
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
-      const metrics = Object.keys(
-        getGroupedAttainment(this.results.result.features)
-      );
-      metrics.forEach((m) => this.chartService.getOrAddColor(m));
+      if (hasAnalytics(this.results)) {
+        const metrics = Object.keys(
+          getGroupedAttainment(this.results.result.features)
+        );
+        metrics.forEach((m) => this.chartService.getOrAddColor(m));
+      }
     }
   }
 
@@ -92,15 +93,23 @@ export class ScenarioResultsComponent implements OnChanges {
     }
   }
 
-  isScenarioImprovementsEnabled() {
-    let analytics = false;
+  isScenarioImprovementsFlagEnabled() {
     const isFlagEnabled = this.featureService.isFeatureEnabled(
       'SCENARIO_IMPROVEMENTS'
     );
+
+    return isFlagEnabled;
+  }
+
+  hasAnalytics() {
+    let analytics = false;
     if (this.results) {
       analytics = hasAnalytics(this.results);
     }
+    return analytics;
+  }
 
-    return isFlagEnabled && analytics;
+  shouldShowAnalyticsImprovements() {
+    return this.isScenarioImprovementsFlagEnabled() && this.hasAnalytics();
   }
 }

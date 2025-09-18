@@ -6,7 +6,7 @@ import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { AuthService, ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Scenario } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
@@ -36,7 +36,6 @@ describe('ScenarioMapComponent', () => {
                 },
               },
             } as Scenario),
-          getExcludedAreas: () => new BehaviorSubject([]),
         }),
         MockProviders(
           MapConfigState,

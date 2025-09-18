@@ -20,6 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
@@ -65,6 +66,13 @@ class RegionChoices(models.TextChoices):
     NORTHERN_CALIFORNIA = "northern-california", "Northern California"
 
 
+class PlanningAreaMapStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    IN_PROGRESS = "IN_PROGRESS", "In Progress"
+    DONE = "DONE", "Done"
+    FAILED = "FAILED", "Failed"
+
+
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     user_id: int
@@ -91,6 +99,12 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         srid=settings.DEFAULT_CRS,
         null=True,
         help_text="Geometry of the Planning Area represented by polygons.",
+    )
+
+    map_status = models.CharField(
+        choices=PlanningAreaMapStatus.choices,
+        null=True,
+        help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
     )
 
     def creator_name(self) -> str:
@@ -261,13 +275,17 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
 
+    @cached_property
+    def active_datalayers(self) -> Collection[DataLayer]:
+        return self.datalayers.filter(used_by_treatment_goals__deleted_at__isnull=True)
+
     def get_coverage(self) -> GEOSGeometry:
-        return self.datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
+        return self.active_datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(
-            self.datalayers.exclude(
-                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
+            self.active_datalayers.exclude(
+                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
             ).filter(type=DataLayerType.RASTER)
         )
 
@@ -347,6 +365,11 @@ class GeoPackageStatus(models.TextChoices):
     FAILED = ("FAILED", "Failed")
 
 
+class ScenarioCapability(models.TextChoices):
+    FORSYS = ("FORSYS", "Forsys")
+    IMPACTS = ("IMPACTS", "Impacts")
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     planning_area_id: int
@@ -381,10 +404,11 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         encoder=DjangoJSONEncoder,
     )
 
-    capabilities = models.JSONField(
-        null=True,
-        help_text="Computed feature flags/capabilities for this Scenario.",
-        encoder=DjangoJSONEncoder,
+    capabilities = ArrayField(
+        base_field=models.CharField(max_length=32, choices=ScenarioCapability.choices),
+        default=list,
+        blank=True,
+        help_text="List of enabled capabilities for this Scenario.",
     )
 
     uuid = models.UUIDField(

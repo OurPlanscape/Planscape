@@ -21,19 +21,28 @@ from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats3
 from stands.tests.factories import StandFactory
 
-from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType
+from planning.models import (
+    PlanningArea,
+    ScenarioResultStatus,
+    TreatmentGoalGroup,
+    ScenarioCapability,
+    TreatmentGoalUsageType,
+)
+
 from planning.services import (
     export_planning_area_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
     get_constrained_stands,
+    get_excluded_stands,
     get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
+    compute_scenario_capabilities,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -654,15 +663,12 @@ class TestRemoveExcludes(TransactionTestCase):
             qual_name = qualify_for_django(self.datalayer.table)
             cur.execute(f"DROP TABLE IF EXISTS {qual_name} CASCADE;")
 
-    def test_get_constrained_stands_excluded_zones(self):
+    def test_get_excluded_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
-        excluded_stands = get_constrained_stands(
+        excluded_stands = get_excluded_stands(
             stands,
             self.datalayer,
-            metric_column="majority",
-            value=1,
-            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
         )
 
         self.assertEqual(11, len(excluded_stands))
@@ -681,3 +687,42 @@ class TestRemoveExcludes(TransactionTestCase):
         )
 
         self.assertEqual(6, len(excluded_stands))
+
+
+class CapabilitiesServiceTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+
+        self.tg_ca = TreatmentGoalFactory.create(
+            group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
+        )
+        self.tg_conus = TreatmentGoalFactory.create(
+            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
+        )
+
+    def test_ca_scope_defaults(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=self.tg_ca,
+            configuration={"stand_size": "LARGE"},
+            name="caps-ca",
+        )
+        caps = compute_scenario_capabilities(scenario)
+        self.assertEqual(
+            set(caps), {ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS}
+        )
+
+    def test_conus_scope_with_flag(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=self.tg_conus,
+            configuration={"stand_size": "LARGE"},
+            name="caps-conus",
+        )
+        caps = compute_scenario_capabilities(scenario)
+        self.assertEqual(
+            set(caps), {ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS}
+        )

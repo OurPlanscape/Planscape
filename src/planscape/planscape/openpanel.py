@@ -1,23 +1,16 @@
+import logging
 from typing import Any, Dict, Optional, Union
 
+from core.tasks import track
+from django.conf import settings
 from django.contrib.auth.models import User
-from openpanel import OpenPanel
+
+log = logging.getLogger(__name__)
 
 
-def get_openpanel(user_id: Optional[str] = None) -> Optional[OpenPanel]:
-    from django.conf import settings
-
-    if settings.TESTING_MODE:
-        return None
-    if not settings.OPENPANEL_URL:
-        return None
-    if not settings.OPENPANEL_CLIENT:
-        return None
-    op = settings.OPENPANEL_CLIENT
-
-    if user_id is not None:
-        op.profile_id = user_id
-    return op
+def get_domain(email: str) -> str:
+    handle, domain = email.split("@")
+    return domain
 
 
 def track_openpanel(
@@ -25,22 +18,40 @@ def track_openpanel(
     properties: Optional[Dict[str, Any]] = None,
     user_id: Optional[Union[str, int]] = None,
 ) -> None:
-    op = get_openpanel(user_id=str(user_id))
-    if op:
-        op.track(name=name, properties=properties)
+    properties = properties or {}
+    email = properties.pop("email", None) or None
+    if email:
+        domain = get_domain(email)
+        properties["domain"] = domain
+
+    payload = {
+        "type": "track",
+        "payload": {
+            "name": name,
+            "profileId": str(user_id) if user_id else None,
+            "properties": properties,
+        },
+    }
+    log.info(f"tracking openpanel event {name}")
+    if not settings.TESTING_MODE:
+        track.delay(payload=payload)  # type: ignore
 
 
 def identify_openpanel(user: User) -> None:
-    profile_id = str(user.pk)
-    op = get_openpanel()
-    if op:
-        traits = {
-            "firstName": user.first_name,
-            "lastName": user.last_name,
-            "email": user.email,
+    payload = {
+        "type": "identify",
+        "payload": {
+            "profileId": str(user.pk),
+            "traits": {
+                "firstName": user.first_name,
+                "lastName": user.last_name,
+                "email": user.email,
+            },
             "properties": {
                 "organization": None,
                 "last_login": user.last_login,
             },
-        }
-        op.identify(profile_id=profile_id, traits=traits)
+        },
+    }
+    if not settings.TESTING_MODE:
+        track.delay(payload=payload)

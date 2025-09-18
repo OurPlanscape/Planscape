@@ -1,7 +1,8 @@
 <sg-section
   headline="Exclude Areas (OPTIONAL)"
-  tooltipContent="Exclude areas are types of land that you can choose to exclude from your planning scenarios.
-   If you choose to exclude these areas, project areas will not be assigned on these lands.">
+  tooltipContent="Choose to exclude areas from your planning scenarios based on Protected Area Status. If you choose to exclude these areas, project areas will not be assigned on these lands.
+  
+For more information regarding Protected Areas, click <a href='https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-statistics-dashboard' target='_blank'>here</a>.">
   <div>
     Select areas you want to exclude from your Potential Treatable Area.
   </div>
@@ -13,7 +14,7 @@
             [color]="'primary'"
             class="exclude-checkbox"
             [formControlName]="i"
-            >{{ area.label }}</mat-checkbox
+            >{{ area.name }}</mat-checkbox
           >
         </div>
       </div>
