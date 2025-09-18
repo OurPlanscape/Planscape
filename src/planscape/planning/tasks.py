@@ -90,12 +90,13 @@ def async_set_planning_area_status(
     planning_area_id: int, status: PlanningAreaMapStatus
 ) -> None:
     try:
-        planning_area: PlanningArea = PlanningArea.objects.select_for_update().get(
-            pk=planning_area_id
-        )
-        planning_area.map_status = status
-        planning_area.save()
-        log.info("Planning Area %s map status set to %s", planning_area_id, status)
+        with transaction.atomic():
+            planning_area: PlanningArea = PlanningArea.objects.select_for_update().get(
+                pk=planning_area_id
+            )
+            planning_area.map_status = status
+            planning_area.save()
+            log.info("Planning Area %s map status set to %s", planning_area_id, status)
     except PlanningArea.DoesNotExist:
         log.exception("Planning Area %s does not exist", planning_area_id)
 

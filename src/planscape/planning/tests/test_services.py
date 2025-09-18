@@ -35,6 +35,7 @@ from planning.services import (
     export_to_shapefile,
     get_acreage,
     get_constrained_stands,
+    get_excluded_stands,
     get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
@@ -662,15 +663,12 @@ class TestRemoveExcludes(TransactionTestCase):
             qual_name = qualify_for_django(self.datalayer.table)
             cur.execute(f"DROP TABLE IF EXISTS {qual_name} CASCADE;")
 
-    def test_get_constrained_stands_excluded_zones(self):
+    def test_get_excluded_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
-        excluded_stands = get_constrained_stands(
+        excluded_stands = get_excluded_stands(
             stands,
             self.datalayer,
-            metric_column="majority",
-            value=1,
-            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
         )
 
         self.assertEqual(11, len(excluded_stands))
