@@ -43,11 +43,13 @@ from planning.models import (
     PlanningAreaMapStatus,
     ProjectArea,
     Scenario,
+    ScenarioCapability,
     ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalGroup,
     TreatmentGoalUsageType,
 )
 from planning.tasks import async_set_planning_area_status
@@ -228,6 +230,8 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         **kwargs,
     }
     scenario = Scenario.objects.create(**data)
+    scenario.capabilities = compute_scenario_capabilities(scenario)
+    scenario.save(update_fields=["capabilities"])
     ScenarioResult.objects.create(scenario=scenario)
     # george created scenario 1234 on planning area XYZ
     action.send(
@@ -338,6 +342,9 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         configuration={"stand_size": validated_data["stand_size"]},
         origin=ScenarioOrigin.USER,
     )
+    scenario.capabilities = compute_scenario_capabilities(scenario)
+    scenario.save(update_fields=["capabilities"])
+
     transaction.on_commit(
         partial(
             action.send,
@@ -1265,3 +1272,13 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_MEDIUM
         case _:
             return settings.MIN_AREA_PROJECT_LARGE
+
+
+def compute_scenario_capabilities(scenario: "Scenario") -> list[str]:
+    return [ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS]
+
+
+def scenario_is_in_california(scenario: "Scenario") -> bool:
+    treatment_goal = getattr(scenario, "treatment_goal", None)
+    group_name = getattr(treatment_goal, "group", None)
+    return group_name == TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
