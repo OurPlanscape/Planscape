@@ -1008,6 +1008,37 @@ main_v2 <- function(scenario_id) {
 }
 
 
+upsert_scenario_result_statuses <- function(
+  connection,
+  scenario_id,
+  start_time,
+  finish_time,
+  status,
+  result = NULL
+) {
+  if (result = NULL) {
+    result = list(type = "FeatureCollection", features = list())
+  }
+
+  upsert_scenario_result(
+    connection,
+    now,
+    started_at = now,
+    completed_at = completed_at,
+    scenario_id,
+    status,
+    result
+  )
+
+  upsert_result_status(
+    connection,
+    scenario_id,
+    status
+  )
+}
+
+
+
 call_forsys_v3 <- function(
   connection, 
   scenario, 
