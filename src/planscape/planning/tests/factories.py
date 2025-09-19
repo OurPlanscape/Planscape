@@ -200,6 +200,52 @@ class ScenarioResultFactory(factory.django.DjangoModelFactory):
 
     scenario = factory.SubFactory(ScenarioFactory)
 
+    result = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "crs": {"type": "name", "properties": {"name": "EPSG:4269"}},
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [1, 1],
+                            [1, 2],
+                            [2, 2],
+                            [1, 1],
+                        ]
+                    ],
+                },
+                "properties": {
+                    "YR": 1,
+                    "proj_id": 1,
+                    "pct_area": 3.45,
+                    "area_acres": 12345.987,
+                    "attainment": {
+                        "Foo Bar": 5.12345,
+                        "Bar Baz": 4.12345,
+                        "Baz Foo": 3.12345,
+                        "Foo Baz": 2.12345,
+                        "Baz Bar": 1.12345,
+                    },
+                    "total_cost": 12345.987,
+                    "stand_count": 123,
+                    "pct_excluded": 0,
+                    "cost_per_acre": 2470,
+                    "text_geometry": "POLYGON((1 1, 1 2, 2 2, 1 1))",
+                    "datalayer_1": 12345.987,
+                    "datalayer_2": 987.12345,
+                    "datalayer_3": 12345.987,
+                    "datalayer_4": 987.12345,
+                    "datalayer_5": 12345.987,
+                    "treatment_rank": 1,
+                    "weightedPriority": 12345.987,
+                },
+            }
+        ],
+    }
+
 
 class ProjectAreaFactory(factory.django.DjangoModelFactory):
     created_by = factory.SelfAttribute("scenario.user")
