@@ -12,6 +12,7 @@ import { map } from 'rxjs';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { MapConfigState } from '../map-config.state';
 import { FeatureService } from '../../features/feature.service';
+import { transition } from '@angular/animations';
 
 @Component({
   selector: 'app-planning-area-layer',
@@ -31,7 +32,28 @@ export class PlanningAreaLayerComponent {
 
   opacity$ = this.mapConfigState.projectAreasOpacity$;
 
-  fillOpacity$ = this.opacity$.pipe(map((opacity) => opacity * 0.2));
+  linePaint$ = this.opacity$.pipe(
+    map(
+      (opacity) =>
+        ({
+          'line-color': this.lineColor,
+          'line-width': 2,
+          'line-opacity': opacity,
+          'line-opacity-transition': { duration: 0 },
+        }) as any
+    )
+  );
+
+  fillPaint$ = this.opacity$.pipe(
+    map(
+      (opacity) =>
+        ({
+          'fill-color': this.backgroundColor,
+          'fill-opacity': opacity * 0.2,
+          'fill-opacity-transition': { duration: 0 },
+        }) as any
+    )
+  );
 
   constructor(
     private planState: PlanState,
@@ -58,4 +80,5 @@ export class PlanningAreaLayerComponent {
   )
     ? BASE_COLORS.blue
     : BASE_COLORS.md_gray;
+  protected readonly transition = transition;
 }

@@ -69,9 +69,9 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       .pipe(untilDestroyed(this))
       .subscribe((ids) => {
         this.constrainedStands.forEach((id) =>
-          this.removeMarkStandAsConstrained(id)
+          this.removeFeatureState(id, this.constrainedKey)
         );
-        ids.forEach((id) => this.markStandAsConstrained(id));
+        ids.forEach((id) => this.setFeatureState(id, this.constrainedKey));
 
         this.constrainedStands = ids;
       });
@@ -79,8 +79,10 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     this.newScenarioState.excludedStands$
       .pipe(untilDestroyed(this))
       .subscribe((ids) => {
-        this.excludedStands.forEach((id) => this.removeMarkStandAsExcluded(id));
-        ids.forEach((id) => this.markStandAsExcluded(id));
+        this.excludedStands.forEach((id) =>
+          this.removeFeatureState(id, this.excludedKey)
+        );
+        ids.forEach((id) => this.setFeatureState(id, this.excludedKey));
         this.excludedStands = ids;
       });
   }
@@ -105,6 +107,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       ] as const;
 
       return {
+        'fill-opacity-transition': { duration: 0 },
         'fill-color': [
           'case',
           hidden,
@@ -127,6 +130,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
             this.excludedKey
           ),
           'line-opacity': opacity,
+          'line-opacity-transition': { duration: 0 },
         }) as any
     )
   );
@@ -135,6 +139,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     map(
       (opacity) =>
         ({
+          'fill-opacity-transition': { duration: 0 },
           'fill-pattern': 'exclude-pattern', // constant pattern
           'fill-opacity': this.featureStatePaint(opacity, 0, this.excludedKey),
         }) as any
@@ -145,6 +150,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     map(
       (opacity) =>
         ({
+          'fill-opacity-transition': { duration: 0 },
           'fill-pattern': 'thresholds-pattern', // constant pattern
           'fill-opacity': this.featureStatePaint(
             opacity,
@@ -183,47 +189,25 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     }
   };
 
-  private markStandAsConstrained(id: number) {
+  private setFeatureState(id: number, key: string) {
     this.mapLibreMap.setFeatureState(
       {
         source: this.sourceName,
         sourceLayer: this.sourceName,
         id: id,
       },
-      { [this.constrainedKey]: true }
+      { [key]: true }
     );
   }
 
-  private removeMarkStandAsConstrained(id: number) {
+  private removeFeatureState(id: number, key: string) {
     this.mapLibreMap.removeFeatureState(
       {
         source: this.sourceName,
         sourceLayer: this.sourceName,
         id: id,
       },
-      this.constrainedKey
-    );
-  }
-
-  private markStandAsExcluded(id: number) {
-    this.mapLibreMap.setFeatureState(
-      {
-        source: this.sourceName,
-        sourceLayer: this.sourceName,
-        id: id,
-      },
-      { [this.excludedKey]: true }
-    );
-  }
-
-  private removeMarkStandAsExcluded(id: number) {
-    this.mapLibreMap.removeFeatureState(
-      {
-        source: this.sourceName,
-        sourceLayer: this.sourceName,
-        id: id,
-      },
-      this.excludedKey
+      key
     );
   }
 
