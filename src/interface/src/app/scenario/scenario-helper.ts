@@ -86,7 +86,9 @@ export function legacyGetCategorizedGoals(
  * create a treatment plan.
  *
  */
-export function scenarioCanHaveTreatmentPlans(scenario: Scenario): boolean {
+export function scenarioCanHaveTreatmentPlans(
+  scenario: Scenario | undefined
+): boolean {
   // scenario must exist AND (scenario either does NOT have a capabilities value OR it does, AND scope is NOT CONUS)
   if (scenario && scenario.can_create_treatment_plans === true) {
     return true;

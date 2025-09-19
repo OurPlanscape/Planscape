@@ -24,6 +24,7 @@ import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
 import { userCanAddTreatmentPlan } from '../../permissions';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -49,7 +50,8 @@ export class ScenariosCardListComponent {
     private route: ActivatedRoute,
     private overlayLoaderService: OverlayLoaderService,
     private dialog: MatDialog,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private featureService: FeatureService
   ) {}
 
   numberOfAreas(scenario: Scenario) {
@@ -98,6 +100,9 @@ export class ScenariosCardListComponent {
   }
 
   hasTreatmentPlanCapability(scenario: Scenario) {
+    if (!this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
+      return true;
+    }
     return scenarioCanHaveTreatmentPlans(scenario);
   }
 
