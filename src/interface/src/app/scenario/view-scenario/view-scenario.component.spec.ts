@@ -168,25 +168,6 @@ describe('ViewScenarioComponent (polling)', () => {
     } catch {}
   }));
 
-  it('does NOT poll for geopackage when the feature flag is OFF', fakeAsync(() => {
-    featureSpy.isFeatureEnabled.and.returnValue(false);
-    scenario$.next(makeScenario('SUCCESS'));
-    createComponent();
-
-    scenario$.next({
-      ...makeScenario('SUCCESS'),
-      geopackage_status: 'PENDING',
-    } as Scenario);
-
-    tick(POLLING_INTERVAL);
-    tick(POLLING_INTERVAL);
-    expect(scenarioStateSpy.reloadScenario).not.toHaveBeenCalled();
-
-    try {
-      discardPeriodicTasks();
-    } catch {}
-  }));
-
   it('cleans up polling on component destroy', fakeAsync(() => {
     // ensure only main polling exists (no geopackage)
 

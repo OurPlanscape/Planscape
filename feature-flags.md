@@ -11,8 +11,6 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
-`SCENARIO_IMPROVEMENTS` : Shows Scenario Analytics and other improvements
-
 `CONUS_WIDE_SCENARIOS` : Enable CONUS wide scenarios
 
 `DYNAMIC_SCENARIO_MAP`: Shows stands on new scenario configuration steps"

@@ -1,5 +1,5 @@
 <sg-section
-  [isCollapsible]="shouldShowAnalyticsImprovements()"
+  [isCollapsible]="hasAnalytics()"
   headline="Project Areas"
   tooltipContent="Project areas are treatment locations created to maximize your treatment goals given restrictions on where you cannot treat and limits to total area that can be treated.
   You can have up to 10 project areas per scenario.
@@ -14,7 +14,7 @@
   tooltipContent="This section helps you interpret how well projects perform in your selected scenario based on priority metrics and co-benefits.
 Treatment Opportunity x Project Areas compares each project's potential to deliver treatment benefits.
 Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects, showing the cumulative opportunity if all projects were sequentially implemented to achieve treatment goals."
-  *ngIf="shouldShowAnalyticsImprovements()">
+  *ngIf="hasAnalytics()">
   <app-scenario-metrics-legend
     *ngIf="results"
     [scenarioResult]="results"
@@ -32,15 +32,12 @@ Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up
     [scenarioResult]="results"></app-cumulative-attainment-chart>
 </sg-section>
 
-<div class="actions" *ngIf="!isScenarioImprovementsFlagEnabled()">
-  <button
-    mat-raised-button
-    (click)="downloadShapeFiles()"
-    data-id="downloadShapeFiles">
+<div class="actions" *ngIf="!hasAnalytics()">
+  <button sg-button (click)="downloadShapeFiles()" data-id="downloadShapeFiles">
     Download Shape Files
   </button>
 
-  <button mat-raised-button (click)="downloadCsv()" data-id="downloadCsv">
+  <button sg-button (click)="downloadCsv()" data-id="downloadCsv">
     Download CSV data
   </button>
 </div>
