@@ -154,9 +154,12 @@ export class ScenariosCardListComponent {
       .subscribe({
         next: (result) => {
           this.overlayLoaderService.hideLoader();
-          this.router.navigate(['config', scenarioId, 'treatment', result.id], {
-            relativeTo: this.route,
-          });
+          this.router.navigate(
+            ['scenario', scenarioId, 'treatment', result.id],
+            {
+              relativeTo: this.route,
+            }
+          );
         },
         error: () => {
           this.snackbar.open(

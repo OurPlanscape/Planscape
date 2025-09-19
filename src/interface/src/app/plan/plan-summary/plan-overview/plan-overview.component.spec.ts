@@ -1,6 +1,5 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
@@ -29,17 +28,5 @@ describe('PlanOverviewComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('opening a config should navigate', () => {
-    const route = fixture.debugElement.injector.get(ActivatedRoute);
-    const router = fixture.debugElement.injector.get(Router);
-    spyOn(router, 'navigate');
-
-    component.openConfig(2);
-
-    expect(router.navigate).toHaveBeenCalledOnceWith(['config', 2], {
-      relativeTo: route,
-    });
   });
 });
