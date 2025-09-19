@@ -179,6 +179,9 @@ export class ViewScenarioComponent {
   }
 
   scenarioCanHaveTreatmentPlans(s: Scenario) {
+    if (!this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
+      return true;
+    }
     return scenarioCanHaveTreatmentPlans(s);
   }
 
