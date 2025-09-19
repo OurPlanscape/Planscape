@@ -31,12 +31,23 @@
   </mgl-layer>
 
   <mgl-layer
+    *ngIf="(step$ | async) === 1"
     id="scenario-stands-excluded"
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [filter]="(filteredStands$ | async) || undefined"
     [paint]="standExcludedPaint$ | async"
+    before="scenario-stands-line">
+  </mgl-layer>
+
+  <mgl-layer
+    *ngIf="showThresholdStands$ | async"
+    id="scenario-stands-thresholds"
+    type="fill"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
+    [filter]="(filteredStands$ | async) || undefined"
+    [paint]="standThresholdPaint$ | async"
     before="scenario-stands-line">
   </mgl-layer>
 </ng-container>
