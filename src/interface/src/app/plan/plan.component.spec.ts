@@ -53,7 +53,7 @@ describe('PlanComponent', () => {
       snapshot: {
         params: { id: 'scenario-99' },
         data: { showOverview: true },
-        url: [{ path: 'config' }],
+        url: [{ path: 'scenario' }],
         paramMap: convertToParamMap({
           scenarioId: 'scenario-99',
         }),
