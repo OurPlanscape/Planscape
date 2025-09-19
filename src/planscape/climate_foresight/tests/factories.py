@@ -12,4 +12,4 @@ class ClimateForesightFactory(factory.django.DjangoModelFactory):
     planning_area = factory.SubFactory(PlanningAreaFactory)
     name = factory.Sequence(lambda n: "Climate Analysis %s" % n)
     user = factory.SubFactory(UserFactory)
-    status = factory.fuzzy.FuzzyChoice(['draft', 'running', 'done'])
+    status = factory.fuzzy.FuzzyChoice(["draft", "running", "done"])
