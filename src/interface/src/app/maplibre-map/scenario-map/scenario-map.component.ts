@@ -85,8 +85,9 @@ export class ScenarioMapComponent {
   ]).pipe(
     map(
       ([isScenarioSuccessful, stepIndex]) =>
-        this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP') &&
-        (isScenarioSuccessful || stepIndex > 0)
+        isScenarioSuccessful ||
+        (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP') &&
+          (isScenarioSuccessful || stepIndex > 0))
     )
   );
 
