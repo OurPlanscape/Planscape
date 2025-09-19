@@ -34,6 +34,7 @@ from planning.services import (
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
+    get_available_stand_ids,
     get_constrained_stands,
     get_excluded_stands,
     get_max_area_project,
@@ -687,6 +688,20 @@ class TestRemoveExcludes(TransactionTestCase):
         )
 
         self.assertEqual(6, len(excluded_stands))
+
+    def test_get_available_stands_ids(self):
+        stand_ids = get_available_stand_ids(self.planning_area, StandSizeChoices.LARGE)
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.assertEquals(17, len(stands))
+        self.assertEquals(len(stand_ids), len(stands))
+
+    def test_get_available_stands_ids_with_excluded_area(self):
+        stand_ids = get_available_stand_ids(
+            self.planning_area, StandSizeChoices.LARGE, [self.datalayer]
+        )
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.assertEquals(17, len(stands))
+        self.assertLess(len(stand_ids), len(stands))
 
 
 class CapabilitiesServiceTest(TestCase):

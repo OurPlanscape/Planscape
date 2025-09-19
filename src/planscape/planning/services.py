@@ -52,7 +52,6 @@ from planning.models import (
     TreatmentGoalGroup,
     TreatmentGoalUsageType,
 )
-from planning.tasks import async_set_planning_area_status
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -86,7 +85,7 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
-    from planning.tasks import async_create_stands
+    from planning.tasks import async_create_stands, async_set_planning_area_status
 
     """Canonical method to create a new planning area."""
 
@@ -1263,6 +1262,28 @@ def get_available_stands(
             / settings.CONVERSION_SQM_ACRES,
         },
     }
+
+
+def get_available_stand_ids(
+    planning_area: PlanningArea,
+    stand_size: str = "LARGE",
+    excludes: Optional[List[DataLayer]] = None,
+) -> List[int]:
+    if not excludes:
+        excludes = list()
+
+    stands = planning_area.get_stands(stand_size=stand_size)
+
+    excluded_ids = []
+    for exclude in excludes:
+        stands_queryset = stands.all()
+        excluded_stands = get_excluded_stands(stands_queryset, exclude)
+        excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+
+    stand_ids = stands.values_list("id", flat=True)
+
+    stand_ids = set(stand_ids) - set(excluded_ids)
+    return list(stand_ids)
 
 
 def get_min_project_area(scenario: Scenario) -> float:

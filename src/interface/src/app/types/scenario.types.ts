@@ -26,6 +26,7 @@ export interface Scenario {
   version?: string;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
+  can_create_treatment_plans?: boolean;
 }
 
 /**

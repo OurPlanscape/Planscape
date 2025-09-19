@@ -6,7 +6,8 @@ import { TreatmentsTabComponent } from 'src/app/scenario/treatments-tab/treatmen
 import { NewTreatmentFooterComponent } from 'src/app/scenario/new-treatment-footer/new-treatment-footer.component';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { PlanState } from 'src/app/plan/plan.state';
-import { canAddTreatmentPlan } from 'src/app/plan/permissions';
+import { userCanAddTreatmentPlan } from 'src/app/plan/permissions';
+import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
 
 @UntilDestroy()
 @Component({
@@ -28,7 +29,14 @@ export class UploadedScenarioViewComponent {
 
   plan$ = this.planState.currentPlan$;
 
+  scenarioCanHaveTreatmentPlans(scenario: Scenario | undefined) {
+    if (scenario) {
+      return scenarioCanHaveTreatmentPlans(scenario);
+    }
+    return false;
+  }
+
   showTreatmentFooter$ = this.plan$.pipe(
-    map((plan) => canAddTreatmentPlan(plan))
+    map((plan) => userCanAddTreatmentPlan(plan))
   );
 }

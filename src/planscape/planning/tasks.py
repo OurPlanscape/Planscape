@@ -13,6 +13,11 @@ from stands.services import (
     calculate_stand_zonal_stats,
     create_stands_for_geometry,
 )
+from planning.services import (
+    build_run_configuration,
+    get_available_stand_ids,
+    export_to_geopackage,
+)
 from utils.cli_utils import call_forsys
 
 from planning.models import (
@@ -208,26 +213,27 @@ def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> Non
 
 @app.task()
 def async_pre_forsys_process(scenario_id: int) -> None:
-    from planning.services import build_run_configuration
-
     scenario = Scenario.objects.get(id=scenario_id)
-    planning_area = scenario.planning_area
 
     tx_goal = scenario.treatment_goal
+    planning_area = scenario.planning_area
     if not tx_goal:
         log.warning(
             f"Scenario {scenario_id} does not have an associated TreatmentGoal."
         )
         return
 
-    stand_ids = planning_area.get_stands(
-        stand_size=scenario.get_stand_size()
-    ).values_list("id", flat=True)
-
+    excluded_datalayers = None
+    excluded_areas_ids = scenario.configuration.get("excluded_areas_ids")
+    if excluded_areas_ids:
+        excluded_datalayers = DataLayer.objects.filter(pk__in=excluded_areas_ids)
+    stand_ids = get_available_stand_ids(
+        planning_area, scenario.get_stand_size(), excluded_datalayers
+    )
     run_config = build_run_configuration(scenario)
 
     forsys_input = {
-        "stand_ids": list(stand_ids),
+        "stand_ids": stand_ids,
         "datalayers": run_config["datalayers"],
         "variables": run_config["variables"],
     }
@@ -252,8 +258,6 @@ def trigger_geopackage_generation():
 
 @app.task()
 def async_generate_scenario_geopackage(scenario_id: int) -> None:
-    from planning.services import export_to_geopackage
-
     """
     This function is a placeholder for the actual implementation of generating
     a scenario geopackage. It should be implemented in the future.

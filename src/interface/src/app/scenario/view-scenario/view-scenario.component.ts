@@ -27,11 +27,12 @@ import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers
 import { ScenarioFailureComponent } from '../scenario-failure/scenario-failure.component';
 import { ScenarioResultsComponent } from '../scenario-results/scenario-results.component';
 import { ScenarioPendingComponent } from '../scenario-pending/scenario-pending.component';
-import { canAddTreatmentPlan } from 'src/app/plan/permissions';
+import { userCanAddTreatmentPlan } from 'src/app/plan/permissions';
 import { PlanState } from 'src/app/plan/plan.state';
 import { getPlanPath, POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
 
 enum ScenarioTabs {
   RESULTS,
@@ -74,7 +75,10 @@ export class ViewScenarioComponent {
   showTreatmentFooter$ = combineLatest([this.plan$, this.scenario$]).pipe(
     map(
       ([plan, scenario]) =>
-        this.scenarioHasResults(scenario) && !!plan && canAddTreatmentPlan(plan)
+        this.scenarioHasResults(scenario) &&
+        !!plan &&
+        userCanAddTreatmentPlan(plan) &&
+        this.scenarioCanHaveTreatmentPlans(scenario)
     )
   );
 
@@ -172,6 +176,10 @@ export class ViewScenarioComponent {
 
   scenarioPriorities(s: Scenario) {
     return s.configuration.treatment_question?.scenario_priorities || [];
+  }
+
+  scenarioCanHaveTreatmentPlans(s: Scenario) {
+    return scenarioCanHaveTreatmentPlans(s);
   }
 
   get onTreatmentsTab() {
