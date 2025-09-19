@@ -2,26 +2,39 @@
 
 from django.db import migrations
 from django.db.models import Q
-from itertools import batched
 
 ROW_FETCH_CHUNK_SIZE = 10_000
 ROW_UPDATE_BATCH_SIZE = 5_000
 DEFAULT_CAPABILITIES_VALUE = ["FORSYS", "IMPACTS"]
 
 
+def _batch_iterable(items, batch_size):
+    current_batch = []
+    for item in items:
+        current_batch.append(item)
+        if len(current_batch) == batch_size:
+            yield current_batch
+            current_batch = []
+    if current_batch:
+        yield current_batch
+
+
 def backfill_capabilities(apps, schema_editor):
     Scenario = apps.get_model("planning", "Scenario")
 
-    scenario_id_iterator = (
-        Scenario.dead_or_alive
-        .filter(Q(capabilities__isnull=True) | Q(capabilities=[]))
+    all_rows_manager = (
+        getattr(Scenario, "dead_or_alive", None) or Scenario._base_manager
+    )
+
+    scenario_id_stream = (
+        all_rows_manager.filter(Q(capabilities__isnull=True) | Q(capabilities=[]))
         .order_by("pk")
         .values_list("pk", flat=True)
         .iterator(chunk_size=ROW_FETCH_CHUNK_SIZE)
     )
 
-    for scenario_id_batch in batched(scenario_id_iterator, ROW_UPDATE_BATCH_SIZE):
-        Scenario.dead_or_alive.filter(pk__in=scenario_id_batch).update(
+    for scenario_id_batch in _batch_iterable(scenario_id_stream, ROW_UPDATE_BATCH_SIZE):
+        all_rows_manager.filter(pk__in=scenario_id_batch).update(
             capabilities=DEFAULT_CAPABILITIES_VALUE
         )
 
