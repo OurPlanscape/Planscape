@@ -707,6 +707,25 @@ class ScenarioDetailTest(APITestCase):
             self.assertIn("usage_type", entry)
             self.assertIn("datalayer", entry)
 
+    def test_detail_scenario_v2_scenario_result(self):
+        ScenarioResultFactory(scenario=self.scenario)
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(
+            "text_geometry",
+            data["scenario_result"]["result"]["features"][0]["properties"].keys(),
+        )
+
 
 class PatchScenarioConfigurationTest(APITransactionTestCase):
     def setUp(self):
