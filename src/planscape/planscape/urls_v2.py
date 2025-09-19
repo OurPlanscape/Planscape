@@ -16,7 +16,13 @@ urlpatterns = [
     path("", include((core_router.urls, "core"), namespace="core")),
     path("", include((datasets_router.urls, "datasets"), namespace="datasets")),
     path("", include((modules_router.urls, "modules"), namespace="modules")),
-    path("", include((climate_foresight_router.urls, "climate_foresight"), namespace="climate_foresight")),
+    path(
+        "",
+        include(
+            (climate_foresight_router.urls, "climate_foresight"),
+            namespace="climate_foresight",
+        ),
+    ),
     path(
         "admin/",
         include((datasets_admin_router.urls, "datasets"), namespace="admin-datasets"),

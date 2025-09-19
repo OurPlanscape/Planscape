@@ -17,55 +17,49 @@ class ClimateForesightModelTest(TestCase):
             planning_area=self.planning_area,
             name="Test Analysis",
             user=self.user,
-            status='draft'
+            status="draft",
         )
 
         self.assertEqual(analysis.name, "Test Analysis")
         self.assertEqual(analysis.planning_area, self.planning_area)
         self.assertEqual(analysis.user, self.user)
-        self.assertEqual(analysis.status, 'draft')
+        self.assertEqual(analysis.status, "draft")
         self.assertIsNotNone(analysis.created_at)
 
     def test_string_representation(self):
         analysis = ClimateForesightFactory(
-            name="Climate Impact Study",
-            planning_area=self.planning_area
+            name="Climate Impact Study", planning_area=self.planning_area
         )
         expected = f"Climate Impact Study - {self.planning_area.name}"
         self.assertEqual(str(analysis), expected)
 
     def test_default_status(self):
         analysis = ClimateForesight.objects.create(
-            planning_area=self.planning_area,
-            name="Test Analysis",
-            user=self.user
+            planning_area=self.planning_area, name="Test Analysis", user=self.user
         )
-        self.assertEqual(analysis.status, 'draft')
+        self.assertEqual(analysis.status, "draft")
 
     def test_status_choices(self):
-        valid_statuses = ['draft', 'running', 'done']
+        valid_statuses = ["draft", "running", "done"]
 
         for status in valid_statuses:
             analysis = ClimateForesight.objects.create(
                 planning_area=self.planning_area,
                 name=f"Analysis {status}",
                 user=self.user,
-                status=status
+                status=status,
             )
             self.assertEqual(analysis.status, status)
 
     def test_ordering_by_created_at(self):
         analysis1 = ClimateForesightFactory(
-            planning_area=self.planning_area,
-            user=self.user
+            planning_area=self.planning_area, user=self.user
         )
         analysis2 = ClimateForesightFactory(
-            planning_area=self.planning_area,
-            user=self.user
+            planning_area=self.planning_area, user=self.user
         )
         analysis3 = ClimateForesightFactory(
-            planning_area=self.planning_area,
-            user=self.user
+            planning_area=self.planning_area, user=self.user
         )
 
         analyses = ClimateForesight.objects.all()
@@ -76,8 +70,7 @@ class ClimateForesightModelTest(TestCase):
     def test_soft_delete_planning_area_keeps_analysis(self):
         """Test that soft deleting a planning area does not delete the analysis."""
         analysis = ClimateForesightFactory(
-            planning_area=self.planning_area,
-            user=self.user
+            planning_area=self.planning_area, user=self.user
         )
         analysis_id = analysis.id
 
@@ -85,9 +78,7 @@ class ClimateForesightModelTest(TestCase):
         self.planning_area.delete()
 
         # Analysis should still exist since planning area was soft deleted
-        self.assertTrue(
-            ClimateForesight.objects.filter(id=analysis_id).exists()
-        )
+        self.assertTrue(ClimateForesight.objects.filter(id=analysis_id).exists())
 
         # But the planning area is marked as deleted
         self.planning_area.refresh_from_db()
@@ -96,16 +87,13 @@ class ClimateForesightModelTest(TestCase):
     def test_cascade_delete_with_user(self):
         test_user = UserFactory()
         analysis = ClimateForesightFactory(
-            planning_area=self.planning_area,
-            user=test_user
+            planning_area=self.planning_area, user=test_user
         )
         analysis_id = analysis.id
 
         test_user.delete()
 
-        self.assertFalse(
-            ClimateForesight.objects.filter(id=analysis_id).exists()
-        )
+        self.assertFalse(ClimateForesight.objects.filter(id=analysis_id).exists())
 
 
 class ClimateForesightManagerTest(TestCase):
@@ -117,24 +105,16 @@ class ClimateForesightManagerTest(TestCase):
         self.planning_area3 = PlanningAreaFactory(user=self.user2)
 
         self.analysis1 = ClimateForesightFactory(
-            planning_area=self.planning_area1,
-            user=self.user1,
-            name="Analysis 1"
+            planning_area=self.planning_area1, user=self.user1, name="Analysis 1"
         )
         self.analysis2 = ClimateForesightFactory(
-            planning_area=self.planning_area1,
-            user=self.user1,
-            name="Analysis 2"
+            planning_area=self.planning_area1, user=self.user1, name="Analysis 2"
         )
         self.analysis3 = ClimateForesightFactory(
-            planning_area=self.planning_area2,
-            user=self.user1,
-            name="Analysis 3"
+            planning_area=self.planning_area2, user=self.user1, name="Analysis 3"
         )
         self.analysis4 = ClimateForesightFactory(
-            planning_area=self.planning_area3,
-            user=self.user2,
-            name="Analysis 4"
+            planning_area=self.planning_area3, user=self.user2, name="Analysis 4"
         )
 
     def test_list_by_user(self):

@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 from climate_foresight.models import ClimateForesight
 from climate_foresight.serializers import (
     ClimateForesightSerializer,
-    ClimateForesightListSerializer
+    ClimateForesightListSerializer,
 )
 from climate_foresight.tests.factories import ClimateForesightFactory
 from planning.tests.factories import PlanningAreaFactory
@@ -15,14 +15,10 @@ class ClimateForesightSerializerTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = UserFactory(
-            username="testuser",
-            first_name="Test",
-            last_name="User"
+            username="testuser", first_name="Test", last_name="User"
         )
         self.other_user = UserFactory(
-            username="otheruser",
-            first_name="Other",
-            last_name="Person"
+            username="otheruser", first_name="Other", last_name="Person"
         )
         self.planning_area = PlanningAreaFactory(user=self.user)
         self.other_planning_area = PlanningAreaFactory(user=self.other_user)
@@ -32,131 +28,111 @@ class ClimateForesightSerializerTest(TestCase):
             planning_area=self.planning_area,
             user=self.user,
             name="Test Analysis",
-            status='running'
+            status="running",
         )
 
-        request = self.factory.get('/')
+        request = self.factory.get("/")
         request.user = self.user
 
-        serializer = ClimateForesightSerializer(analysis, context={'request': request})
+        serializer = ClimateForesightSerializer(analysis, context={"request": request})
         data = serializer.data
 
-        self.assertEqual(data['name'], "Test Analysis")
-        self.assertEqual(data['planning_area'], self.planning_area.id)
-        self.assertEqual(data['planning_area_name'], self.planning_area.name)
-        self.assertEqual(data['status'], 'running')
-        self.assertEqual(data['creator'], 'Test User')
-        self.assertIn('created_at', data)
-        self.assertIn('id', data)
+        self.assertEqual(data["name"], "Test Analysis")
+        self.assertEqual(data["planning_area"], self.planning_area.id)
+        self.assertEqual(data["planning_area_name"], self.planning_area.name)
+        self.assertEqual(data["status"], "running")
+        self.assertEqual(data["creator"], "Test User")
+        self.assertIn("created_at", data)
+        self.assertIn("id", data)
 
     def test_creator_field_with_full_name(self):
         user_with_name = UserFactory(
-            username="fullnameuser",
-            first_name="John",
-            last_name="Doe"
+            username="fullnameuser", first_name="John", last_name="Doe"
         )
         analysis = ClimateForesightFactory(
-            user=user_with_name,
-            planning_area=self.planning_area
+            user=user_with_name, planning_area=self.planning_area
         )
 
-        request = self.factory.get('/')
+        request = self.factory.get("/")
         request.user = user_with_name
 
-        serializer = ClimateForesightSerializer(analysis, context={'request': request})
-        self.assertEqual(serializer.data['creator'], 'John Doe')
+        serializer = ClimateForesightSerializer(analysis, context={"request": request})
+        self.assertEqual(serializer.data["creator"], "John Doe")
 
     def test_creator_field_without_full_name(self):
-        user_no_name = UserFactory(
-            username="noname",
-            first_name="",
-            last_name=""
-        )
+        user_no_name = UserFactory(username="noname", first_name="", last_name="")
         analysis = ClimateForesightFactory(
-            user=user_no_name,
-            planning_area=self.planning_area
+            user=user_no_name, planning_area=self.planning_area
         )
 
-        request = self.factory.get('/')
+        request = self.factory.get("/")
         request.user = user_no_name
 
-        serializer = ClimateForesightSerializer(analysis, context={'request': request})
-        self.assertEqual(serializer.data['creator'], 'noname')
+        serializer = ClimateForesightSerializer(analysis, context={"request": request})
+        self.assertEqual(serializer.data["creator"], "noname")
 
     def test_creator_field_with_partial_name(self):
         user_partial = UserFactory(
-            username="partialuser",
-            first_name="Jane",
-            last_name=""
+            username="partialuser", first_name="Jane", last_name=""
         )
         analysis = ClimateForesightFactory(
-            user=user_partial,
-            planning_area=self.planning_area
+            user=user_partial, planning_area=self.planning_area
         )
 
-        request = self.factory.get('/')
+        request = self.factory.get("/")
         request.user = user_partial
 
-        serializer = ClimateForesightSerializer(analysis, context={'request': request})
-        self.assertEqual(serializer.data['creator'], 'partialuser')
+        serializer = ClimateForesightSerializer(analysis, context={"request": request})
+        self.assertEqual(serializer.data["creator"], "partialuser")
 
     def test_validate_planning_area_access(self):
-        request = self.factory.post('/')
+        request = self.factory.post("/")
         request.user = self.user
 
         data = {
-            'name': 'New Analysis',
-            'planning_area': self.planning_area.id,
-            'status': 'draft'
+            "name": "New Analysis",
+            "planning_area": self.planning_area.id,
+            "status": "draft",
         }
 
-        serializer = ClimateForesightSerializer(
-            data=data,
-            context={'request': request}
-        )
+        serializer = ClimateForesightSerializer(data=data, context={"request": request})
 
         self.assertTrue(serializer.is_valid())
 
     def test_validate_planning_area_no_access(self):
-        request = self.factory.post('/')
+        request = self.factory.post("/")
         request.user = self.user
 
         data = {
-            'name': 'New Analysis',
-            'planning_area': self.other_planning_area.id,
-            'status': 'draft'
+            "name": "New Analysis",
+            "planning_area": self.other_planning_area.id,
+            "status": "draft",
         }
 
-        serializer = ClimateForesightSerializer(
-            data=data,
-            context={'request': request}
-        )
+        serializer = ClimateForesightSerializer(data=data, context={"request": request})
 
         self.assertFalse(serializer.is_valid())
-        self.assertIn('planning_area', serializer.errors)
+        self.assertIn("planning_area", serializer.errors)
         self.assertEqual(
-            serializer.errors['planning_area'][0],
-            "You don't have access to this planning area."
+            serializer.errors["planning_area"][0],
+            "You don't have access to this planning area.",
         )
 
     def test_read_only_fields(self):
-        request = self.factory.post('/')
+        request = self.factory.post("/")
         request.user = self.user
 
         data = {
-            'name': 'New Analysis',
-            'planning_area': self.planning_area.id,
-            'status': 'draft',
-            'id': 999,
-            'created_at': '2024-01-01T00:00:00Z',
-            'planning_area_name': 'Should be ignored',
-            'creator': 'Should be ignored'
+            "name": "New Analysis",
+            "planning_area": self.planning_area.id,
+            "status": "draft",
+            "id": 999,
+            "created_at": "2024-01-01T00:00:00Z",
+            "planning_area_name": "Should be ignored",
+            "creator": "Should be ignored",
         }
 
-        serializer = ClimateForesightSerializer(
-            data=data,
-            context={'request': request}
-        )
+        serializer = ClimateForesightSerializer(data=data, context={"request": request})
 
         self.assertTrue(serializer.is_valid())
         instance = serializer.save()
@@ -166,19 +142,16 @@ class ClimateForesightSerializerTest(TestCase):
         self.assertEqual(instance.user, self.user)
 
     def test_hidden_user_field(self):
-        request = self.factory.post('/')
+        request = self.factory.post("/")
         request.user = self.user
 
         data = {
-            'name': 'New Analysis',
-            'planning_area': self.planning_area.id,
-            'status': 'draft'
+            "name": "New Analysis",
+            "planning_area": self.planning_area.id,
+            "status": "draft",
         }
 
-        serializer = ClimateForesightSerializer(
-            data=data,
-            context={'request': request}
-        )
+        serializer = ClimateForesightSerializer(data=data, context={"request": request})
 
         self.assertTrue(serializer.is_valid())
         instance = serializer.save()
@@ -189,9 +162,7 @@ class ClimateForesightListSerializerTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = UserFactory(
-            username="testuser",
-            first_name="Test",
-            last_name="User"
+            username="testuser", first_name="Test", last_name="User"
         )
         self.planning_area = PlanningAreaFactory(user=self.user)
 
@@ -200,42 +171,43 @@ class ClimateForesightListSerializerTest(TestCase):
             planning_area=self.planning_area,
             user=self.user,
             name="List Test",
-            status='done'
+            status="done",
         )
 
         serializer = ClimateForesightListSerializer(analysis)
         data = serializer.data
 
         expected_fields = [
-            'id', 'name', 'planning_area', 'planning_area_name',
-            'creator', 'status', 'created_at'
+            "id",
+            "name",
+            "planning_area",
+            "planning_area_name",
+            "creator",
+            "status",
+            "created_at",
         ]
 
         for field in expected_fields:
             self.assertIn(field, data)
 
-        self.assertEqual(data['name'], 'List Test')
-        self.assertEqual(data['status'], 'done')
-        self.assertEqual(data['planning_area_name'], self.planning_area.name)
-        self.assertEqual(data['creator'], 'Test User')
+        self.assertEqual(data["name"], "List Test")
+        self.assertEqual(data["status"], "done")
+        self.assertEqual(data["planning_area_name"], self.planning_area.name)
+        self.assertEqual(data["creator"], "Test User")
 
     def test_list_serializer_read_only(self):
         serializer = ClimateForesightListSerializer()
-        read_only_fields = [
-            'id', 'created_at', 'planning_area_name', 'creator'
-        ]
+        read_only_fields = ["id", "created_at", "planning_area_name", "creator"]
 
         for field_name in read_only_fields:
             self.assertTrue(
                 serializer.fields[field_name].read_only,
-                f"Field {field_name} should be read-only"
+                f"Field {field_name} should be read-only",
             )
 
     def test_list_serializer_multiple_items(self):
         analyses = ClimateForesightFactory.create_batch(
-            3,
-            planning_area=self.planning_area,
-            user=self.user
+            3, planning_area=self.planning_area, user=self.user
         )
 
         serializer = ClimateForesightListSerializer(analyses, many=True)
@@ -243,6 +215,6 @@ class ClimateForesightListSerializerTest(TestCase):
 
         self.assertEqual(len(data), 3)
         for item in data:
-            self.assertIn('id', item)
-            self.assertIn('name', item)
-            self.assertIn('status', item)
+            self.assertIn("id", item)
+            self.assertIn("name", item)
+            self.assertIn("status", item)
