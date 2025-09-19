@@ -270,6 +270,8 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
 
     def get_result(self, instance):
         result = instance.result
+        if not result:
+            return None
         features = result.get("features")
         for feature in features:
             feature["properties"].pop("text_geometry")
