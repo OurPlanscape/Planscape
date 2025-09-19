@@ -1016,7 +1016,7 @@ upsert_scenario_result_statuses <- function(
   status,
   result = NULL
 ) {
-  if (result = NULL) {
+  if (is.null(result)) {
     result = list(type = "FeatureCollection", features = list())
   }
 
