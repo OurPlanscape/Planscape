@@ -33,25 +33,18 @@ class CreateScenarioTest(APITransactionTestCase):
         self.planning_area = PlanningAreaFactory(user=self.user)
         self.treatment_goal = TreatmentGoalFactory.create()
         self.configuration = {
-            "question_id": self.treatment_goal.pk,
-            "weights": [],
-            "est_cost": 2000,
-            "max_budget": None,
-            "max_slope": None,
-            "min_distance_from_road": None,
             "stand_size": "LARGE",
+            "included_areas": [],
             "excluded_areas": [],
-            "stand_thresholds": [],
-            "global_thresholds": [],
-            "scenario_priorities": ["prio1"],
-            "scenario_output_fields": ["out1"],
-            "max_treatment_area_ratio": 40000,
+            "constraints": [],
+            "targets": [
+                {"name": "max_budget", "operator": "eq", "value": "2000"},
+            ],
         }
 
     @mock.patch("planning.services.chord", autospec=True)
     def test_create_with_explicit_treatment_goal(self, chord_mock):
         configuration = self.configuration.copy()
-        configuration.pop("question_id")
         payload = {
             "name": "my dear scenario",
             "planning_area": self.planning_area.pk,
@@ -81,7 +74,9 @@ class CreateScenarioTest(APITransactionTestCase):
             "stand_size": "LARGE",
             "treatment_goal": 123456789,
             "configuration": {
-                "max_budget": 2000,
+                "targets": [
+                    {"name": "max_budget", "operator": "eq", "value": "2000"},
+                ],
             },
         }
         self.client.force_authenticate(self.user)
@@ -104,8 +99,9 @@ class CreateScenarioTest(APITransactionTestCase):
             "planning_area": self.planning_area.pk,
             "stand_size": "LARGE",
             "configuration": {
-                "question_id": 123456789,
-                "max_budget": 2000,
+                "targets": [
+                    {"name": "max_budget", "operator": "eq", "value": "2000"},
+                ],
             },
         }
         self.client.force_authenticate(self.user)
@@ -128,7 +124,9 @@ class CreateScenarioTest(APITransactionTestCase):
             "planning_area": self.planning_area.pk,
             "stand_size": "LARGE",
             "configuration": {
-                "max_budget": 2000,
+                "targets": [
+                    {"name": "max_budget", "operator": "eq", "value": "2000"},
+                ],
             },
         }
         self.client.force_authenticate(self.user)
@@ -144,19 +142,6 @@ class CreateScenarioTest(APITransactionTestCase):
             response.content,
         )
 
-    def test_create_without_max_budged_or_area(self):
-        self.client.force_authenticate(self.user)
-        data = {
-            "planning_area": self.planning_area.pk,
-            "name": "Hello Scenario!",
-            "origin": "SYSTEM",
-            "configuration": {},
-        }
-        response = self.client.post(
-            reverse("api:planning:scenarios-list"), data, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_create_v2_serializer(self):
         excluded_areas = DataLayerFactory.create_batch(
             2, type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
@@ -169,8 +154,10 @@ class CreateScenarioTest(APITransactionTestCase):
             "treatment_goal": self.treatment_goal.pk,
             "configuration": {
                 "stand_size": "LARGE",
-                "est_cost": 2000,
                 "excluded_areas": excluded_areas,
+                "targets": [
+                    {"name": "max_budget", "operator": "eq", "value": "2000"},
+                ],
             },
         }
         self.client.force_authenticate(self.user)
@@ -190,6 +177,8 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(
             response_data.get("configuration").get("excluded_areas"), excluded_areas
         )
+        targets = scenario.configuration.get("targets", [])
+        self.assertTrue(any(t["name"] == "max_budget" for t in targets))
 
     def test_create_v2_serializer__invalid_excluded_area(self):
         invalid_excluded_areas = DataLayerFactory.create_batch(
@@ -206,8 +195,10 @@ class CreateScenarioTest(APITransactionTestCase):
             "treatment_goal": self.treatment_goal.pk,
             "configuration": {
                 "stand_size": "LARGE",
-                "est_cost": 2000,
                 "excluded_areas": invalid_excluded_areas,
+                "targets": [
+                    {"name": "max_budget", "operator": "eq", "value": "2000"},
+                ],
             },
         }
         self.client.force_authenticate(self.user)
@@ -246,18 +237,13 @@ class ListScenariosForPlanningAreaTest(APITestCase):
 
         self.configuration = {
             "question_id": 1,
-            "weights": [],
-            "est_cost": 2000,
-            "max_budget": None,
-            "max_slope": None,
-            "min_distance_from_road": None,
             "stand_size": "LARGE",
+            "included_areas": [],
             "excluded_areas": [],
-            "stand_thresholds": [],
-            "global_thresholds": [],
-            "scenario_priorities": ["prio1"],
-            "scenario_output_fields": ["out1"],
-            "max_treatment_area_ratio": 40000,
+            "constraints": [],
+            "targets": [
+                {"name": "max_area", "operator": "eq", "value": "40000"},
+            ],
         }
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
@@ -421,8 +407,10 @@ class ListScenariosForPlanningAreaTest(APITestCase):
 
     def test_sort_scenario_by_reverse_acres(self):
         for acres in range(100, 105):
-            budget_conf = copy.copy(self.configuration)
-            budget_conf["max_treatment_area_ratio"] = acres
+            budget_conf = copy.deepcopy(self.configuration)
+            budget_conf["targets"] = [
+                {"name": "max_area", "operator": "eq", "value": str(acres)}
+            ]
             ScenarioFactory.create(
                 planning_area=self.planning_area,
                 name=f"scenario {acres}",
@@ -447,8 +435,10 @@ class ListScenariosForPlanningAreaTest(APITestCase):
 
     def test_sort_scenario_by_reverse_budget(self):
         for b in range(100, 105):
-            budget_conf = copy.copy(self.configuration)
-            budget_conf["max_budget"] = b
+            budget_conf = copy.deepcopy(self.configuration)
+            budget_conf["targets"] = [
+                {"name": "max_budget", "operator": "eq", "value": str(b)}
+            ]
             ScenarioFactory.create(
                 planning_area=self.planning_area,
                 name=f"scenario {b}",
@@ -476,8 +466,10 @@ class ListScenariosForPlanningAreaTest(APITestCase):
             for b in range(100, 104):
                 for n in ["aaaa", "bbbb", "cccc"]:
                     budget_conf = copy.copy(self.configuration)
-                    budget_conf["max_budget"] = b
-                    budget_conf["max_treatment_area_ratio"] = a
+                    budget_conf["targets"] = [
+                        {"name": "max_budget", "operator": "eq", "value": str(b)},
+                        {"name": "max_area", "operator": "eq", "value": str(a)},
+                    ]
                     ScenarioFactory.create(
                         planning_area=self.planning_area,
                         name=f"{n} scenario,a{a}-b{b}",
@@ -607,19 +599,11 @@ class ScenarioDetailTest(APITestCase):
         self.planning_area = PlanningAreaFactory.create(user=self.owner_user)
         self.treatment_goal = TreatmentGoalFactory.create()
         self.configuration = {
-            "question_id": self.treatment_goal.pk,
-            "weights": [],
-            "est_cost": 2000,
-            "max_budget": None,
-            "max_slope": None,
-            "min_distance_from_road": None,
             "stand_size": "LARGE",
             "excluded_areas": [],
-            "stand_thresholds": [],
-            "global_thresholds": [],
-            "scenario_priorities": ["prio1"],
-            "scenario_output_fields": ["out1"],
-            "max_treatment_area_ratio": 40000,
+            "targets": [
+                {"name": "max_budget", "operator": "eq", "value": "2000"},
+            ],
         }
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
@@ -720,18 +704,33 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
             treatment_goal=self.treatment_goal,
             configuration={
                 "stand_size": "LARGE",
-                "max_budget": 1000,
+                "targets": [
+                    {"name": "max_budget", "operator": "eq", "value": "2000"},
+                ],
             },
         )
 
         self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
 
     def test_patch_scenario_configuration_success(self):
+        datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            geometry_type=GeometryType.RASTER,
+        )
+
         payload = {
-            "max_budget": 20000,
-            "min_distance_from_road": 100,
             "stand_size": "SMALL",
-            "max_project_count": 5,
+            "constraints": [
+                {
+                    "datalayer": datalayer.pk,  # valid DataLayer id for distance-from-road
+                    "operator": "eq",
+                    "value": "100",
+                }
+            ],
+            "targets": [
+                {"name": "max_budget", "operator": "eq", "value": "20000"},
+                {"name": "max_project_count", "operator": "eq", "value": "5"},
+            ],
         }
 
         self.client.force_authenticate(self.user)
@@ -740,21 +739,45 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         config = response.data.get("configuration", {})
-        self.assertEqual(config.get("max_budget"), 20000)
-        self.assertEqual(config.get("min_distance_from_road"), 100)
         self.assertEqual(config.get("stand_size"), "SMALL")
-        self.assertEqual(config.get("max_project_count"), 5)
+
+        constraints = config.get("constraints", [])
+        self.assertTrue(
+            any(
+                c["datalayer"] == datalayer.pk
+                and c["operator"] == "eq"
+                and c["value"] == "100"
+                for c in constraints
+            )
+        )
+
+        targets = config.get("targets", [])
+        self.assertIn(
+            {"name": "max_budget", "operator": "eq", "value": "20000"},
+            targets,
+        )
+        self.assertIn(
+            {"name": "max_project_count", "operator": "eq", "value": "5"},
+            targets,
+        )
 
     def test_patch_scenario_configuration_unauthenticated(self):
-        payload = {"max_budget": 5000}
+        payload = {
+            "targets": [
+                {"name": "max_budget", "operator": "eq", "value": "5000"},
+            ],
+        }
         response = self.client.patch(self.url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_patch_scenario_configuration_forbidden_for_other_user(self):
         scenario = ScenarioFactory(user=self.other_user)
         url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
-        payload = {"max_budget": 100000}
-
+        payload = {
+            "targets": [
+                {"name": "max_budget", "operator": "eq", "value": "100000"},
+            ],
+        }
         # Authenticate as a user who does not own the scenario
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
@@ -765,8 +788,11 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
     def test_patch_scenario_configuration_invalid_scenario_id(self):
         invalid_url = reverse("api:planning:scenarios-detail", args=[999999])
         self.client.force_authenticate(self.user)
-        payload = {"max_budget": 5000}
-
+        payload = {
+            "targets": [
+                {"name": "max_budget", "operator": "eq", "value": "100000"},
+            ],
+        }
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -852,7 +878,13 @@ class RunScenarioEndpointTest(APITestCase):
             user=self.user,
             planning_area=self.planning_area,
             treatment_goal=self.treatment_goal,
-            configuration={"stand_size": "LARGE", "max_budget": 1000},
+            configuration={
+                "stand_size": "LARGE",
+                "targets": [
+                    {"name": "max_budget", "operator": "eq", "value": "1000"},
+                ],
+            },
+            name="runnable scenario",
         )
         self.url = reverse("api:planning:scenarios-run", args=[self.scenario.pk])
 

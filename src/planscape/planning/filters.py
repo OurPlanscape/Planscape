@@ -12,6 +12,7 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce
+from django.db.models.expressions import RawSQL, OrderBy
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.request import Request
@@ -97,22 +98,42 @@ def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
 
 class ScenarioOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
-        ordering_dict = {
-            "budget": "configuration__max_budget",
-            "acres": "configuration__max_treatment_area_ratio",
+        ordering_map = {
+            "budget": "budget_val",
+            "acres": "acres_val",
             "completed_at": "results__completed_at",
         }
         ordering = self.get_ordering(request, queryset, view)
         if not ordering:
             return super().filter_queryset(request, queryset, view)
 
-        def get_custom_ordering(order):
-            direction = "-" if order.startswith("-") else ""
-            field = order.lstrip("-")
-            return f"{direction}{ordering_dict.get(field, field)}"
+        if any(o.lstrip("-") in {"budget", "acres"} for o in ordering):
+            queryset = queryset.annotate(
+                budget_val=RawSQL(
+                    "CAST(jsonb_path_query_first(configuration, "
+                    "'$.targets[*] ? (@.name == \"max_budget\").value') #>> '{}' AS INTEGER)",
+                    [],
+                ),
+                acres_val=RawSQL(
+                    "CAST(jsonb_path_query_first(configuration, "
+                    "'$.targets[*] ? (@.name == \"max_area\").value') #>> '{}' AS INTEGER)",
+                    [],
+                ),
+            )
 
-        custom_ordering = map(get_custom_ordering, ordering)
-        return queryset.order_by(*custom_ordering)
+        orderings = []
+        for o in ordering:
+            desc = o.startswith("-")
+            field = o.lstrip("-")
+            mapped = ordering_map.get(field, field)
+
+            # For annotated numeric fields, ensure NULLs LAST even on DESC (refer test test_sort_scenario_by_reverse_budget)
+            if mapped in {"budget_val", "acres_val"}:
+                orderings.append(OrderBy(F(mapped), descending=desc, nulls_last=True))
+            else:
+                orderings.append(f"{'-' if desc else ''}{mapped}")
+
+        return queryset.order_by(*orderings)
 
 
 class ScenarioFilter(filters.FilterSet):
