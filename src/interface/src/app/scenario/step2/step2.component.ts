@@ -71,6 +71,10 @@ export class Step2Component
     return selectedKeys;
   }
 
+  getPatchData() {
+    return { excluded: this.getSelectedExcludedAreas() };
+  }
+
   getData() {
     return { excluded_areas: this.getSelectedExcludedAreas() };
   }

@@ -5,8 +5,8 @@ import {
   AvailableStands,
   Constraint,
   Scenario,
-  ScenarioCreation,
   ScenarioCreationPayload,
+  ScenarioDraftPayload,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -73,7 +73,7 @@ export class ScenarioService {
   //sends a partial scenario configuration using PATCH
   // returns success or failure, based on backend results
   // TODO: assumes the scenario endpoint, so review
-  patchScenarioConfig(configPayload : Partial<ScenarioCreation>) {
+  patchScenarioConfig(configPayload : Partial<ScenarioDraftPayload>) {
     const temporaryEndpoint = 'http://localhost:8000/update';
     // was using this: this.v2Path
   return this.http

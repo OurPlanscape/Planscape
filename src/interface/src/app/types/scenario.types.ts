@@ -72,25 +72,30 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   excluded_areas: number[];
   name: string;
   planning_area: number;
+}
 
+export interface ScenarioDraftPayload {
+  excludes: number[];
+  includes: number[];
+  constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads 
+  target: NamedConstraint[]; //  (max acres treated, max budget, etc)
+}
 
+export interface ScenarioDraftPayload {
+  excludes: number[];
+  includes: number[];
+  constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads 
+  target: NamedConstraint[]; //  (max acres treated, max budget, etc)
 }
 
 export interface ScenarioConfigPayload {
   stand_size: STAND_SIZE;
-
   estimated_cost: number;
   excluded_areas: number[];
   max_area: number;
   max_slope: number | null;
   min_distance_from_road: number | null;
   max_budget?: number;
-
-  // newer elements
-  excludes: number[];
-  includes: number[];
-  constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads 
-  target: NamedConstraint[]; //  (max acres treated, max budget, etc)
 }
 
 export interface ScenarioCreationPayload {

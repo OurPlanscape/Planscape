@@ -19,7 +19,7 @@ import { ScenarioService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
-import { ScenarioCreation } from '@types';
+import { ScenarioCreation, ScenarioDraftPayload } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
@@ -72,6 +72,7 @@ export class ScenarioCreationComponent
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
+  draftConfig: Partial<ScenarioDraftPayload> = {};
 
   planId = this.route.snapshot.data['planId'];
   plan$ = this.planState.currentPlan$;
@@ -151,23 +152,24 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    this.config = { ...this.config, ...data };
-    console.log('saving the step...with config:', this.config);
-    this.newScenarioState.setScenarioConfig(this.config);
-    
 
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      this.draftConfig = { ...this.draftConfig, ...data }
+      return this.savePatch(this.draftConfig);
+    } else {
+      this.config = { ...this.config, ...data };
+      console.log('saving the step...with config:', this.config);
+      this.newScenarioState.setScenarioConfig(this.config);
 
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')){
-      return this.savePatch(this.config);
-    }else {
       return of(true);
     }
   }
 
 
-  savePatch(data: Partial<ScenarioCreation>) {
-let success = false;
-    this.scenarioService.patchScenarioConfig(this.config).subscribe({
+  savePatch(data: Partial<ScenarioDraftPayload>) {
+    let success = false;
+    //TODO: save with transformation
+    this.scenarioService.patchScenarioConfig(this.draftConfig).subscribe({
       next: (result) => {
         if (result) {
           success = true;
@@ -175,8 +177,9 @@ let success = false;
       },
       error: (e) => {
         console.error('patch error:', e);
-      }});
-      return of(success);
+      }
+    });
+    return of(success);
   }
 
   async onFinish() {
