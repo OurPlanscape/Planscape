@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from climate_foresight.models import ClimateForesight
+from climate_foresight.models import ClimateForesightRun
 from planning.models import PlanningArea
 
 
-class ClimateForesightSerializer(serializers.ModelSerializer):
-    """Serializer for ClimateForesight model."""
+class ClimateForesightRunSerializer(serializers.ModelSerializer):
+    """Serializer for ClimateForesightRun model."""
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     created_at = serializers.DateTimeField(read_only=True)
@@ -14,7 +14,7 @@ class ClimateForesightSerializer(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
 
     class Meta:
-        model = ClimateForesight
+        model = ClimateForesightRun
         fields = [
             "id",
             "name",
@@ -43,8 +43,8 @@ class ClimateForesightSerializer(serializers.ModelSerializer):
         return value
 
 
-class ClimateForesightListSerializer(serializers.ModelSerializer):
-    """Serializer for listing ClimateForesight analyses."""
+class ClimateForesightRunListSerializer(serializers.ModelSerializer):
+    """Serializer for listing ClimateForesightRun runs."""
 
     planning_area_name = serializers.CharField(
         source="planning_area.name", read_only=True
@@ -52,7 +52,7 @@ class ClimateForesightListSerializer(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
 
     class Meta:
-        model = ClimateForesight
+        model = ClimateForesightRun
         fields = [
             "id",
             "name",

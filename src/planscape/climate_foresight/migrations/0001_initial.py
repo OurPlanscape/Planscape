@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="ClimateForesight",
+            name="ClimateForesightRun",
             fields=[
                 (
                     "id",
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
                 (
                     "name",
                     models.CharField(
-                        help_text="Name of the climate foresight analysis",
+                        help_text="Name of the climate foresight run",
                         max_length=255,
                     ),
                 ),
@@ -43,32 +43,32 @@ class Migration(migrations.Migration):
                             ("done", "Done"),
                         ],
                         default="draft",
-                        help_text="Current status of the analysis",
+                        help_text="Current status of the run",
                         max_length=20,
                     ),
                 ),
                 (
                     "planning_area",
                     models.ForeignKey(
-                        help_text="Planning area this analysis belongs to",
+                        help_text="Planning area this run belongs to",
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="climate_foresight_analyses",
+                        related_name="climate_foresight_runs",
                         to="planning.planningarea",
                     ),
                 ),
                 (
                     "user",
                     models.ForeignKey(
-                        help_text="User who created this analysis",
+                        help_text="User who created this run",
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="climate_foresight_analyses",
+                        related_name="climate_foresight_runs",
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],
             options={
-                "verbose_name": "Climate Foresight Analysis",
-                "verbose_name_plural": "Climate Foresight Analyses",
+                "verbose_name": "Climate Foresight Run",
+                "verbose_name_plural": "Climate Foresight Runs",
                 "ordering": ["-created_at"],
             },
         ),
