@@ -15,9 +15,7 @@ import { ResourceUnavailableComponent } from '../shared/resource-unavailable/res
 import { RouterModule } from '@angular/router';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { SharedModule } from '@shared';
-
 import { WINDOW_PROVIDERS } from '@services';
-import { GoalOverlayComponent } from './goal-overlay/goal-overlay.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
 import {
@@ -44,7 +42,6 @@ import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.comp
   declarations: [
     AreaNotesComponent,
     DeleteNoteDialogComponent,
-    GoalOverlayComponent,
     PlanComponent,
     PlanOverviewComponent,
     SavedScenariosComponent,

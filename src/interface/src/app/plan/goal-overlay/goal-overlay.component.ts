@@ -4,14 +4,26 @@ import { map } from 'rxjs';
 import { ScenarioGoal } from '@types';
 import { filter } from 'rxjs/operators';
 import { DomSanitizer } from '@angular/platform-browser';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-goal-overlay',
   templateUrl: './goal-overlay.component.html',
   styleUrls: ['./goal-overlay.component.scss'],
+  standalone: true,
+  imports: [
+    MatCardModule,
+    MatIconModule,
+    CommonModule,
+    MatButtonModule,
+    ButtonComponent,
+  ],
 })
 export class GoalOverlayComponent implements OnDestroy {
-  goal$ = this.goalOverlayService.selectedQuestion$;
   stateWideGoal$ = this.goalOverlayService.selectedStateWideGoal$;
 
   safeDescription$ = this.stateWideGoal$.pipe(
