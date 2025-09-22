@@ -396,113 +396,199 @@ class TargetSerializer(serializers.Serializer):
 
 
 class ConfigurationV2Serializer(serializers.Serializer):
-    stand_size = serializers.ChoiceField(
-        choices=StandSizeChoices.choices,
-        default=StandSizeChoices.LARGE,
-        required=False,
-    )
+    if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        stand_size = serializers.ChoiceField(
+            choices=StandSizeChoices.choices,
+            default=StandSizeChoices.LARGE,
+            required=False,
+        )
 
-    included_areas = serializers.ListField(
-        source="included_areas_ids",
-        child=serializers.IntegerField(),
-        allow_empty=True,
-        min_length=0,
-        required=False,
-    )
+        included_areas = serializers.ListField(
+            source="included_areas_ids",
+            child=serializers.IntegerField(),
+            allow_empty=True,
+            min_length=0,
+            required=False,
+        )
 
-    excluded_areas = serializers.ListField(
-        source="excluded_areas_ids",
-        child=serializers.IntegerField(),
-        allow_empty=True,
-        min_length=0,
-        required=False,
-    )
+        excluded_areas = serializers.ListField(
+            source="excluded_areas_ids",
+            child=serializers.IntegerField(),
+            allow_empty=True,
+            min_length=0,
+            required=False,
+        )
 
-    constraints = serializers.ListField(
-        child=ConstraintReadSerializer(),
-        allow_empty=True,
-        required=False,
-    )
+        constraints = serializers.ListField(
+            child=ConstraintReadSerializer(),
+            allow_empty=True,
+            required=False,
+        )
 
-    targets = serializers.ListField(
-        child=TargetSerializer(),
-        allow_empty=True,
-        required=False,
-        help_text="Scenario targets such as max_area, max_budget, estimated_cost, max_project_count",
-    )
+        targets = serializers.ListField(
+            child=TargetSerializer(),
+            allow_empty=True,
+            required=False,
+            help_text="Scenario targets such as max_area, max_budget, estimated_cost, max_project_count",
+        )
 
-    seed = serializers.IntegerField(
-        required=False,
-        allow_null=True,
-        help_text="Optional seed for reproducible randomization.",
-    )
+        seed = serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="Optional seed for reproducible randomization.",
+        )
 
-    def validate(self, attrs):
-        targets = attrs.get("targets", [])
-        if not any(t["name"] == "estimated_cost" for t in targets):
-            targets.append(
-                {
-                    "name": "estimated_cost",
-                    "operator": "eq",
-                    "value": str(settings.DEFAULT_ESTIMATED_COST),
-                }
-            )
-        if not any(t["name"] == "max_project_count" for t in targets):
-            targets.append(
-                {
-                    "name": "max_project_count",
-                    "operator": "eq",
-                    "value": str(settings.DEFAULT_MAX_PROJECT_COUNT),
-                }
-            )
-        attrs["targets"] = targets
-        return attrs
+        def validate(self, attrs):
+            targets = attrs.get("targets", [])
+            if not any(t["name"] == "estimated_cost" for t in targets):
+                targets.append(
+                    {
+                        "name": "estimated_cost",
+                        "operator": "eq",
+                        "value": str(settings.DEFAULT_ESTIMATED_COST),
+                    }
+                )
+            if not any(t["name"] == "max_project_count" for t in targets):
+                targets.append(
+                    {
+                        "name": "max_project_count",
+                        "operator": "eq",
+                        "value": str(settings.DEFAULT_MAX_PROJECT_COUNT),
+                    }
+                )
+            attrs["targets"] = targets
+            return attrs
+
+    else:
+        stand_size = serializers.ChoiceField(
+            choices=StandSizeChoices.choices,
+            default=StandSizeChoices.LARGE,
+            required=False,
+        )
+        estimated_cost = serializers.FloatField(
+            min_value=1,
+            default=settings.DEFAULT_ESTIMATED_COST,
+        )
+        max_budget = serializers.FloatField(
+            allow_null=True,
+            required=False,
+            help_text="Maximum budget, in USD, that can be used for calculating possible treatments. Either max_budget or max_area needs to be specified.",
+        )
+        max_area = serializers.FloatField(
+            allow_null=True,
+            required=False,
+            help_text="Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.",
+        )
+
+        max_project_count = serializers.IntegerField(
+            min_value=2,
+            max_value=10,
+            default=settings.DEFAULT_MAX_PROJECT_COUNT,
+            help_text="Maximum number of areas that can be generated by Forsys.",
+        )
+        max_slope = serializers.FloatField(
+            min_value=0,
+            max_value=100,
+            allow_null=True,
+            required=False,
+            help_text="Constraints areas where the maximum slope is higher than specified.",
+        )
+        min_distance_from_road = serializers.FloatField(
+            min_value=0,
+            max_value=100000,
+            allow_null=True,
+            required=False,
+            help_text="Constraints areas where the minimum distance from a road is higher than specified.",
+        )
+
+        excluded_areas = serializers.ListField(
+            source="excluded_areas_ids",
+            child=serializers.IntegerField(),
+            allow_empty=True,
+            min_length=0,
+            required=False,
+        )
+
+        seed = serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="Optional seed for reproducible randomization.",
+        )
 
 
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
-    included_areas = serializers.ListField(
-        source="included_areas_ids",
-        child=serializers.PrimaryKeyRelatedField(
-            queryset=DataLayer.objects.filter(
-                type=DataLayerType.VECTOR,
-                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+    if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        included_areas = serializers.ListField(
+            source="included_areas_ids",
+            child=serializers.PrimaryKeyRelatedField(
+                queryset=DataLayer.objects.filter(
+                    type=DataLayerType.VECTOR,
+                    geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+                ),
             ),
-        ),
-        allow_empty=True,
-        min_length=0,
-        required=False,
-    )
-    excluded_areas = serializers.ListField(
-        source="excluded_areas_ids",
-        child=serializers.PrimaryKeyRelatedField(
-            queryset=DataLayer.objects.filter(
-                type=DataLayerType.VECTOR,
-                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+            allow_empty=True,
+            min_length=0,
+            required=False,
+        )
+        excluded_areas = serializers.ListField(
+            source="excluded_areas_ids",
+            child=serializers.PrimaryKeyRelatedField(
+                queryset=DataLayer.objects.filter(
+                    type=DataLayerType.VECTOR,
+                    geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+                ),
             ),
-        ),
-        allow_empty=True,
-        min_length=0,
-        required=False,
-    )
-    constraints = serializers.ListField(
-        child=ConstraintSerializer(),
-        allow_empty=True,
-        required=False,
-    )
+            allow_empty=True,
+            min_length=0,
+            required=False,
+        )
+        constraints = serializers.ListField(
+            child=ConstraintSerializer(),
+            allow_empty=True,
+            required=False,
+        )
 
-    def validate_included_areas(self, included_areas):
-        return [included_area.pk for included_area in included_areas]
+        def validate_included_areas(self, included_areas):
+            return [included_area.pk for included_area in included_areas]
 
-    def validate_excluded_areas(self, excluded_areas):
-        return [excluded_area.pk for excluded_area in excluded_areas]
+        def validate_excluded_areas(self, excluded_areas):
+            return [excluded_area.pk for excluded_area in excluded_areas]
 
-    def validate_constraints(self, constraints):
-        return [{**c, "datalayer": c["datalayer"].pk} for c in (constraints or [])]
+        def validate_constraints(self, constraints):
+            return [{**c, "datalayer": c["datalayer"].pk} for c in (constraints or [])]
 
-    def update(self, instance, validated_data):
-        instance.configuration = {**(instance.configuration or {}), **validated_data}
-        instance.save(update_fields=["configuration"])
-        return instance
+        def update(self, instance, validated_data):
+            instance.configuration = {
+                **(instance.configuration or {}),
+                **validated_data,
+            }
+            instance.save(update_fields=["configuration"])
+            return instance
+
+    else:
+        excluded_areas = serializers.ListField(
+            source="excluded_areas_ids",
+            child=serializers.PrimaryKeyRelatedField(
+                queryset=DataLayer.objects.filter(
+                    type=DataLayerType.VECTOR,
+                    geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+                ),
+            ),
+            allow_empty=True,
+            min_length=0,
+            required=False,
+        )
+
+        def validate_excluded_areas(self, excluded_areas):
+            return [excluded_area.pk for excluded_area in excluded_areas]
+
+        def update(self, instance, validated_data):
+            instance.configuration = {
+                **(instance.configuration or {}),
+                **validated_data,
+            }
+            instance.save(update_fields=["configuration"])
+            return instance
 
 
 class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
@@ -589,8 +675,17 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="results",
         help_text="Results of the scenario.",
     )
-    max_treatment_area = serializers.SerializerMethodField()
-    max_budget = serializers.SerializerMethodField()
+    if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        max_treatment_area = serializers.SerializerMethodField()
+        max_budget = serializers.SerializerMethodField()
+    else:
+        max_treatment_area = serializers.ReadOnlyField(
+            source="configuration.max_treatment_area_ratio",
+            help_text="Max Treatment Area Ratio.",
+        )
+        max_budget = serializers.ReadOnlyField(
+            source="configuration.max_budget", help_text="Max budget."
+        )
 
     bbox = serializers.SerializerMethodField()
 
