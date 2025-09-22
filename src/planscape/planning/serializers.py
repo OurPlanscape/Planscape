@@ -25,12 +25,7 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import (
-    get_acreage,
-    planning_area_covers,
-    union_geojson,
-    scenario_is_in_california,
-)
+from planning.services import get_acreage, planning_area_covers, union_geojson
 from planscape.exceptions import InvalidGeometry
 
 
@@ -501,7 +496,6 @@ class TreatmentGoalSimpleSerializer(serializers.ModelSerializer):
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):
-    can_create_treatment_plans = serializers.SerializerMethodField()
     notes = serializers.CharField(required=False, help_text="Notes of the Scenario.")
     updated_at = serializers.DateTimeField(
         required=False, help_text="Last update date and time in UTC."
@@ -534,9 +528,6 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     )
 
     bbox = serializers.SerializerMethodField()
-
-    def get_can_create_treatment_plans(self, instance) -> bool:
-        return scenario_is_in_california(instance)
 
     def get_bbox(self, instance) -> Optional[List[float]]:
         geometries = list(
@@ -583,7 +574,6 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "origin",
             "version",
             "capabilities",
-            "can_create_treatment_plans",
         )
         model = Scenario
 
@@ -624,7 +614,6 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "geopackage_url",
             "geopackage_status",
             "capabilities",
-            "can_create_treatment_plans",
         )
         model = Scenario
 
@@ -749,7 +738,6 @@ class ScenarioSerializer(
             "version",
             "geopackage_url",
             "capabilities",
-            "can_create_treatment_plans",
         )
         model = Scenario
 
@@ -768,11 +756,7 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
 
 
 class ScenarioAndProjectAreasSerializer(serializers.ModelSerializer):
-    can_create_treatment_plans = serializers.SerializerMethodField()
     project_areas = ProjectAreaSerializer(many=True, read_only=True)
-
-    def get_can_create_treatment_plans(self, instance) -> bool:
-        return scenario_is_in_california(instance)
 
     class Meta:
         fields = (
@@ -787,7 +771,6 @@ class ScenarioAndProjectAreasSerializer(serializers.ModelSerializer):
             "status",
             "project_areas",
             "capabilities",
-            "can_create_treatment_plans",
         )
         model = Scenario
 
