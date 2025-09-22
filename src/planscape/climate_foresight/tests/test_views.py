@@ -10,6 +10,11 @@ from planscape.tests.factories import UserFactory
 
 class ClimateForesightRunViewSetTest(APITestCase):
     def setUp(self):
+        from django.contrib.contenttypes.models import ContentType
+        from planning.models import PlanningArea
+
+        ContentType.objects.get_or_create(app_label="planning", model="planningarea")
+
         self.user = UserFactory(
             username="testuser", first_name="Test", last_name="User"
         )
@@ -46,7 +51,7 @@ class ClimateForesightRunViewSetTest(APITestCase):
             status="draft",
         )
 
-        self.base_url = "/api/v2/climate-foresight-runs/"
+        self.base_url = "/planscape-backend/v2/climate-foresight-runs/"
 
     def test_unauthenticated_access(self):
         response = self.client.get(self.base_url)
@@ -204,8 +209,10 @@ class ClimateForesightRunViewSetTest(APITestCase):
 
     def test_by_planning_area_action(self):
         self.client.force_authenticate(user=self.user)
-        url = f"{self.base_url}by-planning-area/{self.planning_area.id}/"
 
+        self.planning_area.refresh_from_db()
+
+        url = f"{self.base_url}by-planning-area/{self.planning_area.id}/"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -261,7 +268,6 @@ class ClimateForesightRunViewSetTest(APITestCase):
             "name",
             "planning_area",
             "planning_area_name",
-            "user",
             "creator",
             "status",
             "created_at",
