@@ -14,13 +14,19 @@ class ClimateForesightRunManager(models.Manager):
         return self.filter(planning_area=planning_area, user=user)
 
 
+class ClimateForesightRunStatus(models.TextChoices):
+    DRAFT = "draft", "Draft"
+    RUNNING = "running", "Running"
+    DONE = "done", "Done"
+
+
 class ClimateForesightRun(CreatedAtMixin, models.Model):
     """Climate Foresight Run model."""
 
     STATUS_CHOICES = [
-        ("draft", "Draft"),
-        ("running", "Running"),
-        ("done", "Done"),
+        ClimateForesightRunStatus.DRAFT,
+        ClimateForesightRunStatus.RUNNING,
+        ClimateForesightRunStatus.DONE,
     ]
 
     planning_area = models.ForeignKey(
