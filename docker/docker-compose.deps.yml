@@ -20,7 +20,7 @@ services:
     extends:
       service: _planscape
     working_dir: /usr/src/app/src/planscape
-    command: celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,impacts,default
+    command: celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics
     deploy:
       replicas: 1
     env_file:
