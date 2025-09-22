@@ -7,6 +7,7 @@ import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { MapConfigService } from '../maplibre-map/map-config.service';
 import { SharedModule } from '@shared';
+import { GoalOverlayComponent } from '../plan/goal-overlay/goal-overlay.component';
 
 @NgModule({
   declarations: [ScenarioComponent],
@@ -15,6 +16,7 @@ import { SharedModule } from '@shared';
     ScenarioRoutingModule,
     ScenarioMapComponent,
     SharedModule,
+    GoalOverlayComponent,
   ],
   providers: [DataLayersStateService, MapConfigState, MapConfigService],
 })
