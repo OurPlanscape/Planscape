@@ -26,7 +26,7 @@ export interface Scenario {
   version?: string;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
-  can_create_treatment_plans?: boolean;
+  capabilities?: ScenarioCapabilities[];
 }
 
 /**
@@ -107,6 +107,8 @@ export type GeoPackageStatus =
   | 'SUCCEEDED'
   | 'FAILED'
   | null;
+
+export type ScenarioCapabilities = 'IMPACTS' | 'FORSYS';
 
 export interface TreatmentGoalConfig {
   category_name?: string;
