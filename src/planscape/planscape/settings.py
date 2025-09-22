@@ -410,8 +410,8 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
-    "planning.tasks.trigger_geopackage_generation": {"queue": "geopacakge"},
-    "planning.tasks.async_generate_scenario_geopackage": {"queue": "geopacakge"},
+    "planning.tasks.trigger_geopackage_generation": {"queue": "geopackage"},
+    "planning.tasks.async_generate_scenario_geopackage": {"queue": "geopackage"},
     "planning.tasks.async_create_stands": {"queue": "planning-stand-creation"},
     "planning.tasks.async_calculate_stand_metrics": {"queue": "planning-stand-metrics"},
     "planning.tasks.async_calculate_stand_metrics_v2": {
