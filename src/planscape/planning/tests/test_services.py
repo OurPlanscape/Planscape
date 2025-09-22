@@ -23,13 +23,13 @@ from stands.tests.factories import StandFactory
 
 from planning.models import (
     PlanningArea,
+    ScenarioCapability,
     ScenarioResultStatus,
     TreatmentGoalGroup,
-    ScenarioCapability,
     TreatmentGoalUsageType,
 )
-
 from planning.services import (
+    compute_scenario_capabilities,
     export_planning_area_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
@@ -43,7 +43,6 @@ from planning.services import (
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
-    compute_scenario_capabilities,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -738,6 +737,4 @@ class CapabilitiesServiceTest(TestCase):
             name="caps-conus",
         )
         caps = compute_scenario_capabilities(scenario)
-        self.assertEqual(
-            set(caps), {ScenarioCapability.FORSYS, ScenarioCapability.IMPACTS}
-        )
+        self.assertEqual(set(caps), {ScenarioCapability.FORSYS})

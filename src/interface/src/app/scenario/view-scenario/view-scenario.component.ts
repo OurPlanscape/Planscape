@@ -18,7 +18,6 @@ import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { Scenario } from '@types';
 import { filter } from 'rxjs/operators';
-import { FeatureService } from '../../features/feature.service';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ScenarioDownloadFooterComponent } from '../scenario-download-footer/scenario-download-footer.component';
 import { NewTreatmentFooterComponent } from 'src/app/scenario/new-treatment-footer/new-treatment-footer.component';
@@ -33,6 +32,7 @@ import { getPlanPath, POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
+import { FeatureService } from 'src/app/features/feature.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -90,8 +90,8 @@ export class ViewScenarioComponent {
     private scenarioState: ScenarioState,
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
-    private featureService: FeatureService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private featureService: FeatureService
   ) {
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
@@ -145,10 +145,7 @@ export class ViewScenarioComponent {
   private shouldPollForGeoPackage(scenario: Scenario) {
     const geoPackageStatus = scenario.geopackage_status;
 
-    if (
-      !geoPackageStatus ||
-      !this.featureService.isFeatureEnabled('SCENARIO_IMPROVEMENTS')
-    ) {
+    if (!geoPackageStatus) {
       return false; // if this is null, we can assume there will be no geopackage, ever
     }
     return geoPackageStatus === 'PENDING' || geoPackageStatus === 'PROCESSING';

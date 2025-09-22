@@ -1,29 +1,22 @@
 import copy
 from unittest import mock
-from unittest.mock import patch
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.conf import settings
+from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
-from django.test import TestCase
-
 
 from planning.models import (
     Scenario,
+    ScenarioCapability,
     ScenarioResult,
     ScenarioVersion,
     TreatmentGoalGroup,
-    TreatmentGoalUsesDataLayer,
-    ScenarioCapability,
 )
-
-from planning.serializers import ScenarioV2Serializer, ListScenarioSerializer
+from planning.serializers import ListScenarioSerializer, ScenarioV2Serializer
 from planning.services import compute_scenario_capabilities
-
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -785,20 +778,43 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.tg_conus = TreatmentGoalFactory.create(
             group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
         )
+        self.treatment_goal = TreatmentGoalFactory.create(
+            group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
+        )
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             user=self.user,
             treatment_goal=self.tg_conus,
             configuration={"stand_size": "LARGE"},
-            name="caps-view",
+            name="caps-view1",
+        )
+        self.scenario2 = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=self.treatment_goal,
+            configuration={"stand_size": "LARGE"},
+            name="caps-view2",
         )
 
-    def test_capabilities_present_in_detail(self):
+    def test_capabilities_present_in_detail_outside_california(self):
         self.scenario.capabilities = compute_scenario_capabilities(self.scenario)
         self.scenario.save(update_fields=["capabilities"])
 
         self.client.force_authenticate(self.user)
         url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        caps = resp.data.get("capabilities")
+        self.assertIsInstance(caps, list)
+        self.assertSetEqual(set(caps), {"FORSYS"})
+
+    def test_capabilities_present_in_detail_inside_california(self):
+        self.scenario2.capabilities = compute_scenario_capabilities(self.scenario2)
+        self.scenario2.save(update_fields=["capabilities"])
+
+        self.client.force_authenticate(self.user)
+        url = reverse("api:planning:scenarios-detail", args=[self.scenario2.pk])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
