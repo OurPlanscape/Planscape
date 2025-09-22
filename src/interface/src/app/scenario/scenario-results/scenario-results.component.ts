@@ -3,10 +3,9 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ScenarioResult } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
-import { FeatureService } from '../../features/feature.service';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
 import { TreatmentOpportunityChartComponent } from '../treatment-opportunity-chart/treatment-opportunity-chart.component';
-import { SectionComponent } from '@styleguide';
+import { ButtonComponent, SectionComponent } from '@styleguide';
 import { CumulativeAttainmentChartComponent } from '../cumulative-attainment-chart/cumulative-attainment-chart.component';
 import {
   ProjectAreaReport,
@@ -29,6 +28,7 @@ import { getGroupedAttainment } from 'src/app/chart-helper';
     ProjectAreasComponent,
     CumulativeAttainmentChartComponent,
     ScenarioMetricsLegendComponent,
+    ButtonComponent,
   ],
   selector: 'app-scenario-results',
   templateUrl: './scenario-results.component.html',
@@ -46,7 +46,6 @@ export class ScenarioResultsComponent implements OnChanges {
   constructor(
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
-    private featureService: FeatureService,
     private chartService: ScenarioResultsChartsService
   ) {
     this.chartService.resetColors();
@@ -93,23 +92,11 @@ export class ScenarioResultsComponent implements OnChanges {
     }
   }
 
-  isScenarioImprovementsFlagEnabled() {
-    const isFlagEnabled = this.featureService.isFeatureEnabled(
-      'SCENARIO_IMPROVEMENTS'
-    );
-
-    return isFlagEnabled;
-  }
-
   hasAnalytics() {
     let analytics = false;
     if (this.results) {
       analytics = hasAnalytics(this.results);
     }
     return analytics;
-  }
-
-  shouldShowAnalyticsImprovements() {
-    return this.isScenarioImprovementsFlagEnabled() && this.hasAnalytics();
   }
 }
