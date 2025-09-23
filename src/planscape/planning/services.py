@@ -460,6 +460,14 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
     if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        OPERATOR_MAP = {
+            "eq": "=",
+            "lt": "<",
+            "lte": "<=",
+            "gt": ">",
+            "gte": ">=",
+        }
+
         for constraint in cfg.get("constraints", []):
             datalayer_id = constraint.get("datalayer")
             operator = constraint.get("operator")
@@ -474,7 +482,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                         "metric": get_datalayer_metric(dl),
                         "type": dl.type,
                         "geometry_type": dl.geometry_type,
-                        "threshold": f"value {operator} {value}",
+                        "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
                         "usage_type": "THRESHOLD",
                     }
                 )
