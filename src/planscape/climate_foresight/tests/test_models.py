@@ -16,13 +16,13 @@ class ClimateForesightRunModelTest(TestCase):
         run = ClimateForesightRun.objects.create(
             planning_area=self.planning_area,
             name="Test Analysis",
-            user=self.user,
+            created_by=self.user,
             status="draft",
         )
 
         self.assertEqual(run.name, "Test Analysis")
         self.assertEqual(run.planning_area, self.planning_area)
-        self.assertEqual(run.user, self.user)
+        self.assertEqual(run.created_by, self.user)
         self.assertEqual(run.status, "draft")
         self.assertIsNotNone(run.created_at)
 
@@ -35,7 +35,7 @@ class ClimateForesightRunModelTest(TestCase):
 
     def test_default_status(self):
         run = ClimateForesightRun.objects.create(
-            planning_area=self.planning_area, name="Test Analysis", user=self.user
+            planning_area=self.planning_area, name="Test Analysis", created_by=self.user
         )
         self.assertEqual(run.status, "draft")
 
@@ -46,20 +46,20 @@ class ClimateForesightRunModelTest(TestCase):
             run = ClimateForesightRun.objects.create(
                 planning_area=self.planning_area,
                 name=f"Run {status}",
-                user=self.user,
+                created_by=self.user,
                 status=status,
             )
             self.assertEqual(run.status, status)
 
     def test_ordering_by_created_at(self):
         run1 = ClimateForesightRunFactory(
-            planning_area=self.planning_area, user=self.user
+            planning_area=self.planning_area, created_by=self.user
         )
         run2 = ClimateForesightRunFactory(
-            planning_area=self.planning_area, user=self.user
+            planning_area=self.planning_area, created_by=self.user
         )
         run3 = ClimateForesightRunFactory(
-            planning_area=self.planning_area, user=self.user
+            planning_area=self.planning_area, created_by=self.user
         )
 
         runs = ClimateForesightRun.objects.all()
@@ -70,7 +70,7 @@ class ClimateForesightRunModelTest(TestCase):
     def test_soft_delete_planning_area_keeps_run(self):
         """Test that soft deleting a planning area does not delete the run."""
         run = ClimateForesightRunFactory(
-            planning_area=self.planning_area, user=self.user
+            planning_area=self.planning_area, created_by=self.user
         )
         run_id = run.id
 
@@ -87,7 +87,7 @@ class ClimateForesightRunModelTest(TestCase):
     def test_cascade_delete_with_user(self):
         test_user = UserFactory()
         run = ClimateForesightRunFactory(
-            planning_area=self.planning_area, user=test_user
+            planning_area=self.planning_area, created_by=test_user
         )
         run_id = run.id
 
@@ -105,16 +105,16 @@ class ClimateForesightRunManagerTest(TestCase):
         self.planning_area3 = PlanningAreaFactory(user=self.user2)
 
         self.run1 = ClimateForesightRunFactory(
-            planning_area=self.planning_area1, user=self.user1, name="Run 1"
+            planning_area=self.planning_area1, created_by=self.user1, name="Run 1"
         )
         self.run2 = ClimateForesightRunFactory(
-            planning_area=self.planning_area1, user=self.user1, name="Run 2"
+            planning_area=self.planning_area1, created_by=self.user1, name="Run 2"
         )
         self.run3 = ClimateForesightRunFactory(
-            planning_area=self.planning_area2, user=self.user1, name="Run 3"
+            planning_area=self.planning_area2, created_by=self.user1, name="Run 3"
         )
         self.run4 = ClimateForesightRunFactory(
-            planning_area=self.planning_area3, user=self.user2, name="Run 4"
+            planning_area=self.planning_area3, created_by=self.user2, name="Run 4"
         )
 
     def test_list_by_user(self):

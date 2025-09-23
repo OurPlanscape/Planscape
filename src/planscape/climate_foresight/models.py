@@ -7,11 +7,11 @@ from planning.models import PlanningArea
 class ClimateForesightRunManager(models.Manager):
     def list_by_user(self, user: User):
         """Returns ClimateForesightRun analyses for a given user."""
-        return self.filter(user=user)
+        return self.filter(created_by=user)
 
     def list_by_planning_area(self, planning_area: PlanningArea, user: User):
         """Returns ClimateForesightRun analyses for a given planning area and user."""
-        return self.filter(planning_area=planning_area, user=user)
+        return self.filter(planning_area=planning_area, created_by=user)
 
 
 class ClimateForesightRunStatus(models.TextChoices):
@@ -22,12 +22,6 @@ class ClimateForesightRunStatus(models.TextChoices):
 
 class ClimateForesightRun(CreatedAtMixin, models.Model):
     """Climate Foresight Run model."""
-
-    STATUS_CHOICES = [
-        ClimateForesightRunStatus.DRAFT,
-        ClimateForesightRunStatus.RUNNING,
-        ClimateForesightRunStatus.DONE,
-    ]
 
     planning_area = models.ForeignKey(
         PlanningArea,
@@ -40,7 +34,7 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
         max_length=255, help_text="Name of the climate foresight run"
     )
 
-    user = models.ForeignKey(
+    created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="climate_foresight_runs",
@@ -49,7 +43,7 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
 
     status = models.CharField(
         max_length=20,
-        choices=STATUS_CHOICES,
+        choices=ClimateForesightRunStatus.choices,
         default="draft",
         help_text="Current status of the run",
     )

@@ -28,25 +28,25 @@ class ClimateForesightRunViewSetTest(APITestCase):
 
         self.user_run1 = ClimateForesightRunFactory(
             planning_area=self.planning_area,
-            user=self.user,
+            created_by=self.user,
             name="User Run 1",
             status="draft",
         )
         self.user_run2 = ClimateForesightRunFactory(
             planning_area=self.planning_area,
-            user=self.user,
+            created_by=self.user,
             name="User Run 2",
             status="running",
         )
         self.user_run3 = ClimateForesightRunFactory(
             planning_area=self.shared_planning_area,
-            user=self.user,
+            created_by=self.user,
             name="User Run 3",
             status="done",
         )
         self.other_run = ClimateForesightRunFactory(
             planning_area=self.other_planning_area,
-            user=self.other_user,
+            created_by=self.other_user,
             name="Other User Run",
             status="draft",
         )
@@ -128,7 +128,7 @@ class ClimateForesightRunViewSetTest(APITestCase):
         self.assertEqual(response_data["status"], "draft")
 
         created_run = ClimateForesightRun.objects.get(id=response_data["id"])
-        self.assertEqual(created_run.user, self.user)
+        self.assertEqual(created_run.created_by, self.user)
 
     def test_create_run_invalid_planning_area(self):
         self.client.force_authenticate(user=self.user)
@@ -280,7 +280,7 @@ class ClimateForesightRunViewSetTest(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         newest_run = ClimateForesightRunFactory(
-            planning_area=self.planning_area, user=self.user, name="Newest Run"
+            planning_area=self.planning_area, created_by=self.user, name="Newest Run"
         )
 
         response = self.client.get(self.base_url)

@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "user",
+                    "created_by",
                     models.ForeignKey(
                         help_text="User who created this run",
                         on_delete=django.db.models.deletion.CASCADE,

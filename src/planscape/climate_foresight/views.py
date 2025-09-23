@@ -33,7 +33,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Set the user when creating a new run."""
-        serializer.save(user=self.request.user)
+        serializer.save(created_by=self.request.user)
 
     @action(
         detail=False,

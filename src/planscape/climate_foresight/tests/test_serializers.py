@@ -26,7 +26,7 @@ class ClimateForesightRunSerializerTest(TestCase):
     def test_serialize_climate_foresight_run(self):
         run = ClimateForesightRunFactory(
             planning_area=self.planning_area,
-            user=self.user,
+            created_by=self.user,
             name="Test Run",
             status="running",
         )
@@ -50,7 +50,7 @@ class ClimateForesightRunSerializerTest(TestCase):
             username="fullnameuser", first_name="John", last_name="Doe"
         )
         run = ClimateForesightRunFactory(
-            user=user_with_name, planning_area=self.planning_area
+            created_by=user_with_name, planning_area=self.planning_area
         )
 
         request = self.factory.get("/")
@@ -62,7 +62,7 @@ class ClimateForesightRunSerializerTest(TestCase):
     def test_creator_field_without_full_name(self):
         user_no_name = UserFactory(username="noname", first_name="", last_name="")
         run = ClimateForesightRunFactory(
-            user=user_no_name, planning_area=self.planning_area
+            created_by=user_no_name, planning_area=self.planning_area
         )
 
         request = self.factory.get("/")
@@ -76,7 +76,7 @@ class ClimateForesightRunSerializerTest(TestCase):
             username="partialuser", first_name="Jane", last_name=""
         )
         run = ClimateForesightRunFactory(
-            user=user_partial, planning_area=self.planning_area
+            created_by=user_partial, planning_area=self.planning_area
         )
 
         request = self.factory.get("/")
@@ -145,7 +145,7 @@ class ClimateForesightRunSerializerTest(TestCase):
 
         self.assertNotEqual(instance.id, 999)
         self.assertIsNotNone(instance.created_at)
-        self.assertEqual(instance.user, self.user)
+        self.assertEqual(instance.created_by, self.user)
 
     def test_hidden_user_field(self):
         request = self.factory.post("/")
@@ -163,7 +163,7 @@ class ClimateForesightRunSerializerTest(TestCase):
 
         self.assertTrue(serializer.is_valid())
         instance = serializer.save()
-        self.assertEqual(instance.user, self.user)
+        self.assertEqual(instance.created_by, self.user)
 
 
 class ClimateForesightRunListSerializerTest(TestCase):
@@ -177,7 +177,7 @@ class ClimateForesightRunListSerializerTest(TestCase):
     def test_list_serializer_fields(self):
         run = ClimateForesightRunFactory(
             planning_area=self.planning_area,
-            user=self.user,
+            created_by=self.user,
             name="List Test",
             status="done",
         )
@@ -215,7 +215,7 @@ class ClimateForesightRunListSerializerTest(TestCase):
 
     def test_list_serializer_multiple_items(self):
         runs = ClimateForesightRunFactory.create_batch(
-            3, planning_area=self.planning_area, user=self.user
+            3, planning_area=self.planning_area, created_by=self.user
         )
 
         serializer = ClimateForesightRunListSerializer(runs, many=True)

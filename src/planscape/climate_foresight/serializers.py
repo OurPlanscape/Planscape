@@ -6,7 +6,7 @@ from planning.models import PlanningArea
 class ClimateForesightRunSerializer(serializers.ModelSerializer):
     """Serializer for ClimateForesightRun model."""
 
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
     created_at = serializers.DateTimeField(read_only=True)
     planning_area_name = serializers.CharField(
         source="planning_area.name", read_only=True
@@ -20,7 +20,7 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             "name",
             "planning_area",
             "planning_area_name",
-            "user",
+            "created_by",
             "creator",
             "status",
             "created_at",
@@ -29,9 +29,9 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
 
     def get_creator(self, obj):
         """Return the user's full name."""
-        if obj.user.first_name and obj.user.last_name:
-            return f"{obj.user.first_name} {obj.user.last_name}"
-        return obj.user.username
+        if obj.created_by.first_name and obj.created_by.last_name:
+            return f"{obj.created_by.first_name} {obj.created_by.last_name}"
+        return obj.created_by.username
 
     def validate_planning_area(self, value):
         """Ensure the user has access to the planning area."""
@@ -66,6 +66,6 @@ class ClimateForesightRunListSerializer(serializers.ModelSerializer):
 
     def get_creator(self, obj):
         """Return the user's full name."""
-        if obj.user.first_name and obj.user.last_name:
-            return f"{obj.user.first_name} {obj.user.last_name}"
-        return obj.user.username
+        if obj.created_by.first_name and obj.created_by.last_name:
+            return f"{obj.created_by.first_name} {obj.created_by.last_name}"
+        return obj.created_by.username
