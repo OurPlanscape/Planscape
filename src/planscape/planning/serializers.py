@@ -6,6 +6,7 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from core.flags import feature_enabled
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import StandSizeChoices
@@ -657,16 +658,14 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="configuration.max_budget", help_text="Max budget."
     )
 
-    if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
-        max_treatment_area = serializers.ReadOnlyField(
-            source="configuration.targets.max_area",
-            help_text="Max Treatment Area Ratio.",
-        )
-    else:
-        max_treatment_area = serializers.ReadOnlyField(
-            source="configuration.max_treatment_area_ratio",
-            help_text="Max Treatment Area Ratio.",
-        )
+    max_treatment_area = serializers.ReadOnlyField(
+        source=(
+            "configuration.targets.max_area"
+            if feature_enabled("SCENARIO_DRAFTS")
+            else "configuration.max_treatment_area_ratio"
+        ),
+        help_text="Max Treatment Area Ratio.",
+    )
 
     bbox = serializers.SerializerMethodField()
 
