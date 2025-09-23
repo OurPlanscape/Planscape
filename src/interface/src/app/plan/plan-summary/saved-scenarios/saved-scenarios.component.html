@@ -145,8 +145,12 @@
     </mat-tab-group>
   </app-section-loader>
 
-  <div *ngIf="!planningAreaIsReady" style="margin-top: 20px">
+  <sg-banner
+    [dismissible]="false"
+    type="warning"
+    *ngIf="!planningAreaIsReady"
+    style="margin-top: 20px">
     Your Planning Area is being prepared for Scenario Planning, this will take
     longer for larger Planning Areas.
-  </div>
+  </sg-banner>
 </div>

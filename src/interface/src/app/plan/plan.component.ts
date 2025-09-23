@@ -1,6 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { concatMap, Observable, take } from 'rxjs';
+import {
+  concatMap,
+  EMPTY,
+  interval,
+  map,
+  Observable,
+  switchMap,
+  take,
+} from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
 import { NotesSidebarState } from '@styleguide';
@@ -8,10 +16,12 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { UntilDestroy } from '@ngneat/until-destroy';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';
+import { POLLING_INTERVAL } from './plan-helpers';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 @UntilDestroy()
 @Component({
@@ -68,6 +78,7 @@ export class PlanComponent implements OnInit {
 
   ngOnInit() {
     this.loadNotes();
+    this.pollForChanges();
   }
 
   backToOverview() {
@@ -134,5 +145,21 @@ export class PlanComponent implements OnInit {
 
   canAddScenario(plan: Plan) {
     return canAddScenario(plan) || false;
+  }
+
+  // only poll if plan.map-status is not done
+  private pollForChanges() {
+    this.currentPlan$
+      .pipe(
+        // react only when the status actually changes
+        map((plan) => plan?.map_status),
+        distinctUntilChanged(),
+        // poll only while NOT DONE
+        switchMap((status) =>
+          status !== 'DONE' ? interval(POLLING_INTERVAL) : EMPTY
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe(() => this.planState.reloadPlan());
   }
 }
