@@ -604,10 +604,26 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
 
 
 def get_cost_per_acre(configuration: dict) -> float:
+    if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        return (
+            configuration.get("targets", {}).get("estimated_cost")
+            or settings.DEFAULT_ESTIMATED_COST
+        )
     return configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
 
 
 def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
+    if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        targets = configuration.get("targets", {}) or {}
+        max_budget = targets.get("max_budget")
+        cost_per_acre = get_cost_per_acre(configuration=configuration)
+
+        if max_budget:
+            return float(max_budget) / float(cost_per_acre)
+
+        max_area = targets.get("max_area")
+        return float(max_area) if max_area is not None else 0.0
+
     max_budget = configuration.get("max_budget") or None
     cost_per_acre = get_cost_per_acre(configuration=configuration)
     if max_budget:
@@ -618,6 +634,21 @@ def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
 
 def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
     configuration = scenario.configuration
+    if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        targets = configuration.get("targets", {}) or {}
+        max_budget = targets.get("max_budget")
+        cost_per_acre = get_cost_per_acre(configuration=configuration)
+
+        if max_budget and cost_per_acre > 0:
+            return (float(max_budget) / float(cost_per_acre)) / number_of_projects
+
+        max_area = targets.get("max_area")
+        if max_area:
+            return float(max_area) / number_of_projects
+
+        max_acres = get_min_project_area(scenario)
+        return float(max_acres)
+
     max_budget = configuration.get("max_budget")
     cost_per_acre = get_cost_per_acre(configuration=configuration)
     if max_budget and cost_per_acre > 0:

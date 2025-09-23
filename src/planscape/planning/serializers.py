@@ -652,12 +652,19 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="results",
         help_text="Results of the scenario.",
     )
-    max_budget = serializers.ReadOnlyField(
-        source="configuration.max_budget", help_text="Max budget."
-    )
+
     if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
-        max_treatment_area = serializers.SerializerMethodField()
+        max_budget = serializers.ReadOnlyField(
+            source="configuration.targets.max_budget", help_text="Max budget."
+        )
+        max_treatment_area = serializers.ReadOnlyField(
+            source="configuration.targets.max_area",
+            help_text="Max Treatment Area Ratio.",
+        )
     else:
+        max_budget = serializers.ReadOnlyField(
+            source="configuration.max_budget", help_text="Max budget."
+        )
         max_treatment_area = serializers.ReadOnlyField(
             source="configuration.max_treatment_area_ratio",
             help_text="Max Treatment Area Ratio.",
@@ -689,11 +696,6 @@ class ListScenarioSerializer(serializers.ModelSerializer):
 
     def get_tx_plan_count(self, obj):
         return obj.tx_plans.count()
-
-    def get_max_treatment_area(self, obj):
-        targets = obj.configuration.get("targets", {}) or {}
-        v = targets.get("max_area")
-        return int(v) if v is not None else None
 
     class Meta:
         fields = (
