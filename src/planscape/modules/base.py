@@ -91,7 +91,7 @@ def get_module(module_name: str) -> BaseModule:
 def compute_scenario_capabilities(scenario: Scenario) -> List[ScenarioCapability]:
     caps = list()
     for key, module in MODULE_HANDLERS.items():
-        if module._can_run_scenario(scenario):
+        if module.can_run(scenario):
             caps.append(key.upper())
     return caps
 
