@@ -9,7 +9,7 @@ class ModuleAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    @mock.patch("modules.services.get_module")
+    @mock.patch("modules.base.get_module")
     def test_retrieve_success_200(self, get_module_mock):
         pk = "forsys"
         payload = {"name": "forsys", "version": "1.0.0"}
@@ -22,7 +22,7 @@ class ModuleAPITests(TestCase):
         self.assertIsInstance(resp.data, dict)
         self.assertEqual(resp.data.get("name"), "forsys")
 
-    @mock.patch("modules.services.get_module", side_effect=KeyError)
+    @mock.patch("modules.base.get_module", side_effect=KeyError)
     def test_retrieve_404_when_service_raises_keyerror(self, _get_module_mock):
         pk = "does-not-exist"
         url = reverse("api:modules:modules-detail", kwargs={"pk": pk})
