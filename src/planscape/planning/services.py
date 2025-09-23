@@ -441,6 +441,23 @@ def zip_directory(file_obj, source_dir):
 
 
 def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
+    tx_goal = scenario.treatment_goal
+
+    datalayers = []
+    if tx_goal:
+        datalayers = [
+            {
+                "id": tgudl.datalayer.id,
+                "name": tgudl.datalayer.name,
+                "metric": get_datalayer_metric(tgudl.datalayer),
+                "type": tgudl.datalayer.type,
+                "geometry_type": tgudl.datalayer.geometry_type,
+                "threshold": tgudl.threshold,
+                "usage_type": tgudl.usage_type,
+            }
+            for tgudl in tx_goal.datalayer_usages.all()
+        ]
+
     cfg = dict(getattr(scenario, "configuration", {}) or {})
     if feature_enabled("SCENARIO_DRAFTS"):
         OPERATOR_MAP = {
