@@ -410,19 +410,36 @@ CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
-    "planning.tasks.*": {"queue": "forsys"},
-    "planning.tasks.trigger_geopackage_generation": {"queue": "geopackage"},
-    "planning.tasks.async_generate_scenario_geopackage": {"queue": "geopackage"},
-    "planning.tasks.async_create_stands": {"queue": "planning-stand-creation"},
-    "planning.tasks.async_calculate_stand_metrics": {"queue": "planning-stand-metrics"},
+    "planning.tasks.*": {
+        "queue": "forsys",
+    },
+    "planning.tasks.trigger_geopackage_generation": {
+        "queue": "geopackage",
+    },
+    "planning.tasks.async_generate_scenario_geopackage": {
+        "queue": "geopackage",
+    },
+    "planning.tasks.async_create_stands": {
+        "queue": "planning-stand-creation",
+    },
+    "planning.tasks.async_set_planning_area_status": {
+        "queue": "planning-stand-creation"
+    },
+    "planning.tasks.async_calculate_stand_metrics": {
+        "queue": "planning-stand-metrics",
+    },
     "planning.tasks.async_calculate_stand_metrics_v2": {
         "queue": "planning-stand-metrics"
     },
     "planning.tasks.async_calculate_stand_metrics_v3": {
         "queue": "planning-stand-metrics"
     },
-    "impacts.tasks.*": {"queue": "impacts"},
-    "e2e.tasks.*": {"queue": "default"},
+    "impacts.tasks.*": {
+        "queue": "impacts",
+    },
+    "e2e.tasks.*": {
+        "queue": "default",
+    },
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
