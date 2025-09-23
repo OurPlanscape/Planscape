@@ -68,7 +68,8 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate {
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -152,9 +153,8 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      this.draftConfig = { ...this.draftConfig, ...data }
+      this.draftConfig = { ...this.draftConfig, ...data };
       return this.savePatch(this.draftConfig);
     } else {
       this.config = { ...this.config, ...data };
@@ -164,7 +164,6 @@ export class ScenarioCreationComponent
       return of(true);
     }
   }
-
 
   savePatch(data: Partial<ScenarioDraftPayload>) {
     let success = false;
@@ -177,7 +176,7 @@ export class ScenarioCreationComponent
       },
       error: (e) => {
         console.error('patch error:', e);
-      }
+      },
     });
     return of(success);
   }

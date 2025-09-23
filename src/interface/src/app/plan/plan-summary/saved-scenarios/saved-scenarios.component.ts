@@ -113,15 +113,23 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
-  private openScenarioSetupDialog() {
-    return this.dialog.open(ScenarioSetupModalComponent, {
-      maxWidth: '560px',
-    });
-  }
+  // private openScenarioSetupDialog() {
+  //   return this.dialog.open(ScenarioSetupModalComponent, {
+  //     maxWidth: '560px',
+  //   });
+  // }
 
   handleNewScenarioButton(configId?: number): void {
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      this.openScenarioSetupDialog();
+      // TODO: bypassing this to test steps. This should call
+      //this.openScenarioSetupDialog();
+      console.log(
+        'logging this to avoid commenting out:',
+        ScenarioSetupModalComponent
+      );
+      // when that flag is on
+
+      this.openConfig(configId);
     } else {
       this.openConfig(configId);
     }

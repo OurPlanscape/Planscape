@@ -12,6 +12,7 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
 import { IdNamePair, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-step2',
@@ -32,7 +33,8 @@ export class Step2Component
 {
   constructor(
     private newScenarioState: NewScenarioState,
-    private forsysService: ForsysService
+    private forsysService: ForsysService,
+    private featureService: FeatureService
   ) {
     super();
   }
@@ -71,11 +73,19 @@ export class Step2Component
     return selectedKeys;
   }
 
-  getPatchData() {
-    return { excluded: this.getSelectedExcludedAreas() };
+  getDraftData() {
+    return { excluded_areas: this.getSelectedExcludedAreas() };
+  }
+
+  getPostData() {
+    return { excluded_areas: this.getSelectedExcludedAreas() };
   }
 
   getData() {
-    return { excluded_areas: this.getSelectedExcludedAreas() };
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      return this.getDraftData();
+    } else {
+      return this.getPostData();
+    }
   }
 }

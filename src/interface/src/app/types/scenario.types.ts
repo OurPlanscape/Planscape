@@ -66,8 +66,9 @@ export interface ScenarioResult {
   };
 }
 
-
-export interface ScenarioCreation extends ScenarioConfigPayload {
+export interface ScenarioCreation
+  extends ScenarioConfigPayload,
+    ScenarioDraftPayload {
   treatment_goal: number;
   excluded_areas: number[];
   name: string;
@@ -75,17 +76,10 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
 }
 
 export interface ScenarioDraftPayload {
-  excludes: number[];
+  excluded_areas: number[];
   includes: number[];
-  constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads 
-  target: NamedConstraint[]; //  (max acres treated, max budget, etc)
-}
-
-export interface ScenarioDraftPayload {
-  excludes: number[];
-  includes: number[];
-  constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads 
-  target: NamedConstraint[]; //  (max acres treated, max budget, etc)
+  constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads
+  targets: any[]; //  (max acres treated, max budget, etc)
 }
 
 export interface ScenarioConfigPayload {
@@ -99,7 +93,7 @@ export interface ScenarioConfigPayload {
 }
 
 export interface ScenarioCreationPayload {
-  configuration: ScenarioConfigPayload;
+  configuration: ScenarioConfigPayload | ScenarioDraftPayload;
   name: string;
   planning_area: number;
   treatment_goal: number;
@@ -194,14 +188,14 @@ export interface CategorizedScenarioGoals {
 
 export interface Constraint {
   datalayer: number;
-  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'in' | 'neq'
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'in' | 'neq';
   value: number; // backend supports string
 }
 
 // TODO - remove this and use `Constraint` when we implement dynamic constraints
 export interface NamedConstraint {
   name: string;
-  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'in' | 'neq'
+  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'in' | 'neq';
   value: number; // backend supports string
 }
 

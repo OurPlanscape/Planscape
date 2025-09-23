@@ -169,8 +169,42 @@ export class Step4Component
     };
   }
 
-  getData() {
+  getDraftData() {
+    const targetData = [];
+
+    // For now, cycle through our hardcoded layers:
+    if (this.form.value.estimated_cost) {
+      targetData.push({
+        name: 'estimated_cost',
+        value: this.form.value.estimated_cost,
+      });
+    }
+    if (this.form.value.max_area) {
+      targetData.push({
+        name: 'max_area',
+        value: this.form.value.max_area,
+      });
+    }
+    if (this.form.value.max_budget) {
+      targetData.push({
+        name: 'max_budget',
+        value: this.form.value.max_budget,
+      });
+    }
+
+    return { targets: targetData };
+  }
+
+  getPostData() {
     return this.form.value;
+  }
+
+  getData() {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      return this.getDraftData();
+    } else {
+      return this.getPostData();
+    }
   }
 
   // This enables and disables fields, based on what our current selection is
