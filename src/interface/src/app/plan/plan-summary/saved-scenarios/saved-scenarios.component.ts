@@ -113,6 +113,10 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
+  get planningAreaIsReady() {
+    return this.plan?.map_status === 'DONE';
+  }
+
   private openScenarioSetupDialog() {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
@@ -157,7 +161,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   get isValidPlanningArea() {
-    if (!this.plan) {
+    if (!this.plan || this.plan.map_status !== 'DONE') {
       return false;
     }
     return isValidTotalArea(this.plan.area_acres);

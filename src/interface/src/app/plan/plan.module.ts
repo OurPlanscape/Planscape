@@ -19,6 +19,7 @@ import { WINDOW_PROVIDERS } from '@services';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
 import {
+  BannerComponent,
   ButtonComponent,
   NotesSidebarComponent,
   OpacitySliderComponent,
@@ -83,6 +84,7 @@ import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.comp
     SectionComponent,
     ResourceUnavailableComponent,
     BaseLayersComponent,
+    BannerComponent,
   ],
 })
 export class PlanModule {}
