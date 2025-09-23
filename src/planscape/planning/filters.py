@@ -13,6 +13,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
+from core.flags import feature_enabled
 from rest_framework.filters import OrderingFilter
 from rest_framework.request import Request
 
@@ -97,7 +98,7 @@ def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
 
 class ScenarioOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
-        if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
+        if feature_enabled("SCENARIO_DRAFTS"):
             ordering_dict = {
                 "acres": "configuration__targets__max_area",
                 "completed_at": "results__completed_at",
