@@ -427,7 +427,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
         )
 
         targets = TargetsSerializer(
-            required=True,
+            required=False,
             help_text="Scenario targets: max_area, max_project_count, estimated_cost.",
         )
 
