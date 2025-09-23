@@ -12,7 +12,6 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce
-from django.db.models.expressions import RawSQL, OrderBy
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.request import Request
