@@ -653,18 +653,16 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         help_text="Results of the scenario.",
     )
 
+    max_budget = serializers.ReadOnlyField(
+        source="configuration.max_budget", help_text="Max budget."
+    )
+
     if "SCENARIO_DRAFTS" in settings.FEATURE_FLAGS:
-        max_budget = serializers.ReadOnlyField(
-            source="configuration.targets.max_budget", help_text="Max budget."
-        )
         max_treatment_area = serializers.ReadOnlyField(
             source="configuration.targets.max_area",
             help_text="Max Treatment Area Ratio.",
         )
     else:
-        max_budget = serializers.ReadOnlyField(
-            source="configuration.max_budget", help_text="Max budget."
-        )
         max_treatment_area = serializers.ReadOnlyField(
             source="configuration.max_treatment_area_ratio",
             help_text="Max Treatment Area Ratio.",
