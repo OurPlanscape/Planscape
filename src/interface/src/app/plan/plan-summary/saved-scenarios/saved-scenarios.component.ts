@@ -8,6 +8,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   getPlanPath,
   isValidTotalArea,
+  planningAreaIsReady,
   POLLING_INTERVAL,
 } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
@@ -115,7 +116,7 @@ export class SavedScenariosComponent implements OnInit {
 
   get planningAreaIsReady() {
     if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
-      return this.plan?.map_status === 'STANDS_DONE';
+      return this.plan && planningAreaIsReady(this.plan);
     } else {
       return true;
     }

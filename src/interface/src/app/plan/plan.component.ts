@@ -1,14 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  concatMap,
-  EMPTY,
-  interval,
-  map,
-  Observable,
-  switchMap,
-  take,
-} from 'rxjs';
+import { concatMap, EMPTY, interval, Observable, switchMap, take } from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
 import { NotesSidebarState } from '@styleguide';
@@ -20,8 +12,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';
-import { POLLING_INTERVAL } from './plan-helpers';
-import { distinctUntilChanged } from 'rxjs/operators';
+import { planningAreaIsReady, POLLING_INTERVAL } from './plan-helpers';
 
 @UntilDestroy()
 @Component({
@@ -151,12 +142,9 @@ export class PlanComponent implements OnInit {
   private pollForChanges() {
     this.currentPlan$
       .pipe(
-        // react only when the status actually changes
-        map((plan) => plan?.map_status),
-        distinctUntilChanged(),
         // poll only while NOT DONE
-        switchMap((status) =>
-          status !== 'STANDS_DONE' ? interval(POLLING_INTERVAL) : EMPTY
+        switchMap((plan) =>
+          !planningAreaIsReady(plan) ? interval(POLLING_INTERVAL) : EMPTY
         ),
         untilDestroyed(this)
       )
