@@ -76,10 +76,16 @@ export interface ScenarioCreation
 }
 
 export interface ScenarioDraftPayload {
-  excluded_areas: number[];
+  configuration: {excluded_areas: number[];
   includes: number[];
   constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads
-  targets: any[]; //  (max acres treated, max budget, etc)
+  targets: {
+    estimated_cost: number,
+    max_area: number,
+    max_budget: number,
+    max_project_count: number
+  } //  (max acres treated, max budget, etc)
+}
 }
 
 export interface ScenarioConfigPayload {

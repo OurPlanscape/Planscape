@@ -22,7 +22,7 @@ import { FeatureService } from '../../features/feature.service';
 // Placeholder for supported Layer IDs
 const LAYER_TO_ID: { [key: string]: number } = {
   max_slope: 1111,
-  min_distance_from_roads: 2222,
+  min_distance_from_road: 2222,
 };
 
 @Component({
@@ -85,7 +85,7 @@ export class Step3Component
         value: this.form.value.min_distance_from_road,
       });
     }
-    return { constraints: constraintsData };
+    return { configuration: { constraints: constraintsData }};
   }
 
   getData() {

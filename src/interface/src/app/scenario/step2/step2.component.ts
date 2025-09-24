@@ -74,7 +74,7 @@ export class Step2Component
   }
 
   getDraftData() {
-    return { excluded_areas: this.getSelectedExcludedAreas() };
+    return { configuration: { excluded_areas: this.getSelectedExcludedAreas() }};
   }
 
   getPostData() {
