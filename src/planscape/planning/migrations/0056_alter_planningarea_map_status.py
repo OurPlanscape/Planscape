@@ -1,6 +1,13 @@
 from django.db import migrations, models
 
 
+def set_stands_done(apps, schema_editor):
+    from planning.models import PlanningAreaMapStatus
+
+    PlanningArea = apps.get_model("planning", "PlanningArea")
+    PlanningArea.objects.update(map_status=PlanningAreaMapStatus.STANDS_DONE)
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("planning", "0055_backfill_scenario_capabilities"),
@@ -22,4 +29,5 @@ class Migration(migrations.Migration):
                 null=True,
             ),
         ),
+        migrations.RunPython(set_stands_done, migrations.RunPython.noop),
     ]
