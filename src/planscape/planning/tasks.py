@@ -13,11 +13,6 @@ from stands.services import (
     calculate_stand_zonal_stats,
     create_stands_for_geometry,
 )
-from planning.services import (
-    build_run_configuration,
-    get_available_stand_ids,
-    export_to_geopackage,
-)
 from utils.cli_utils import call_forsys
 
 from planning.models import (
@@ -26,6 +21,11 @@ from planning.models import (
     PlanningAreaMapStatus,
     Scenario,
     ScenarioResultStatus,
+)
+from planning.services import (
+    build_run_configuration,
+    export_to_geopackage,
+    get_available_stand_ids,
 )
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
@@ -92,7 +92,8 @@ def async_forsys_run(scenario_id: int) -> None:
 
 @app.task()
 def async_set_planning_area_status(
-    planning_area_id: int, status: PlanningAreaMapStatus
+    planning_area_id: int,
+    status: PlanningAreaMapStatus,
 ) -> None:
     try:
         with transaction.atomic():

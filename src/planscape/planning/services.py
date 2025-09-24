@@ -134,7 +134,10 @@ def create_planning_area(
     create_stands_job = chord(
         chain(
             async_create_stands.si(planning_area.pk),
-            set_map_status_in_progress,
+            async_set_planning_area_status.si(
+                planning_area.pk,
+                PlanningAreaMapStatus.STANDS_DONE,
+            ),
             precalculation_jobs,
         ),
         set_map_status_done,
