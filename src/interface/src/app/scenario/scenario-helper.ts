@@ -32,37 +32,6 @@ export function getScenarioCreationPayloadScenarioCreation(
   return result as ScenarioCreationPayload;
 }
 
-// // determine if the config field maps to a collection in the payload
-// export function mapToPayloadWithCollections(config: Partial<ScenarioCreation>): ScenarioCreationPayload {
-
-//   /// look at key
-//   // for known keys, push them to appropriate collection
-//   const constraints = config.constraints ?? [];
-
-//   const newPayload = {
-//     configuration: {},
-//     name: config.name,
-//     planning_area: config.planning_area,
-//     treatment_goal: config.treatment_goal,
-
-//     estimated_cost: config.estimated_cost,
-//     excluded_areas: config.excluded_areas,
-//     max_area: config.max_area,
-//     max_budget: config.max_budget,
-//     max_slope: config.max_slope,
-//     min_distance_from_road: config.min_distance_from_road,
-//     stand_size: config.stand_size,
-
-//     excludes: [],
-//     includes: [],
-//     constraints: constraints, // the constraints for the scenario, like max slope or distance to roads 
-//     target: [] //  (max acres treated, max budget, etc)
-
-//   };
-
-//   return newPayload;
-// };
-
 
 /**
  * This method will get a list of scenarioGoal and will return the grouped version of it

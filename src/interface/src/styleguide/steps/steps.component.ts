@@ -93,8 +93,6 @@ export class StepsComponent<T> extends CdkStepper {
             ? currentStep.getData()
             : control.value;
 
-        console.log('here is the data we are saving:', data);
-
         this.save(data)
           .pipe(take(1))
           .subscribe({
@@ -122,7 +120,8 @@ export class StepsComponent<T> extends CdkStepper {
     }
 
     if (this.isLastStep) {
-      //this.finished.emit();
+      // TODO: uncomment this after dev experiments
+      // this.finished.emit();
     } else {
       this.next();
     }
