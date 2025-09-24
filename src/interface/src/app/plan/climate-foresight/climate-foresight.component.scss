@@ -225,10 +225,10 @@
     flex: 1;
     padding: 16px;
     display: flex;
-    align-items: center;
-    justify-content: center;
 
     .no-analyses {
+      justify-self: center;
+      align-self: center;
       text-align: center;
       padding: 16px;
 
@@ -262,6 +262,12 @@
 
     .analyses-list {
       width: 100%;
+      padding: 0;
+      max-height: calc(100vh - 300px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
   }
 }
