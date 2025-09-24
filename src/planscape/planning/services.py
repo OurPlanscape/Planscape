@@ -131,9 +131,16 @@ def create_planning_area(
         planning_area.pk,
         PlanningAreaMapStatus.FAILED,
     )
+    create_stands_jobs = group(
+        [
+            async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+            async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+            async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+        ]
+    )
     create_stands_job = chord(
         chain(
-            async_create_stands.si(planning_area.pk),
+            create_stands_jobs,
             async_set_planning_area_status.si(
                 planning_area.pk,
                 PlanningAreaMapStatus.STANDS_DONE,

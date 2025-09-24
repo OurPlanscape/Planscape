@@ -34,13 +34,14 @@ log = logging.getLogger(__name__)
 
 
 @app.task()
-def async_create_stands(planning_area_id: int) -> None:
+def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
         try:
             planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-            for i in StandSizeChoices:
-                log.info(f"Creating stands for {planning_area_id} for stand size {i}")
-                create_stands_for_geometry(planning_area.geometry, i)
+            log.info(
+                f"Creating stands for {planning_area_id} for stand size {stand_size}"
+            )
+            create_stands_for_geometry(planning_area.geometry, stand_size)
         except PlanningArea.DoesNotExist:
             log.warning(f"Planning Area with {planning_area_id} does not exist.")
             raise
