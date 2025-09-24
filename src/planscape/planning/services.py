@@ -584,16 +584,15 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         )
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
-    max_budget = cfg.get("max_budget")
-    max_area = cfg.get("max_area")
 
-    has_budget = (max_budget is not None) and (max_budget > 0)
-    has_area = (max_area is not None) and (max_area > 0)
+    stand_size = cfg.get("stand_size")
+    if not stand_size:
+        errors.append("Configuration field `stand_size` is required.")
 
-    if not has_budget and not has_area:
-        errors.append("Provide either `max_budget` or `max_area`.")
-    if has_budget and has_area:
-        errors.append("Provide only one of `max_budget` or `max_area` (not both).")
+    targets = cfg.get("targets") or {}
+    max_area = targets.get("max_area")
+    if max_area is None:
+        errors.append("Configuration target `max_area` (number of acres) is required.")
 
     return errors
 

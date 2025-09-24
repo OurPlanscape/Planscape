@@ -793,6 +793,105 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
         )
 
 
+class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
+    configuration = ConfigurationV3Serializer()
+    geopackage_url = serializers.SerializerMethodField()
+    usage_types = TreatmentGoalUsageSerializer(
+        source="treatment_goal.datalayer_usages", many=True, read_only=True
+    )
+
+    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+        """
+        Returns the URL to download the scenario's geopackage file.
+        If the scenario is currently being exported, returns None.
+        """
+        return scenario.get_geopackage_url()
+
+    class Meta:
+        fields = (
+            "id",
+            "updated_at",
+            "created_at",
+            "planning_area",
+            "name",
+            "origin",
+            "notes",
+            "configuration",
+            "treatment_goal",
+            "usage_types",
+            "scenario_result",
+            "user",
+            "creator",
+            "status",
+            "version",
+            "geopackage_url",
+            "geopackage_status",
+            "capabilities",
+        )
+        model = Scenario
+
+
+class CreateScenarioV3Serializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    name = serializers.CharField(max_length=100, required=True)
+
+    class Meta:
+        model = Scenario
+        fields = (
+            "user",
+            "planning_area",
+            "name",
+            "origin",
+            "notes",
+        )
+
+
+class PatchScenarioV3Serializer(serializers.ModelSerializer):
+    treatment_goal = serializers.PrimaryKeyRelatedField(
+        queryset=TreatmentGoal.objects.all(),
+        required=False,
+        allow_null=True,
+        help_text="Treatment goal of the scenario.",
+    )
+    configuration = serializers.DictField(
+        required=False,
+        help_text="Supports stand_size, included_areas, excluded_areas, constraints, targets, seed.",
+    )
+
+    class Meta:
+        model = Scenario
+        fields = ("treatment_goal", "configuration")
+
+    def _apply_configuration(self, instance: Scenario, cfg_in: dict) -> Scenario:
+        cfg_in = (cfg_in or {}).copy()
+
+        targets = cfg_in.pop("targets", None) or {}
+        for key in ("max_area", "max_project_count", "estimated_cost"):
+            if key in targets:
+                cfg_in[key] = targets[key]
+
+        nested = UpsertConfigurationV3Serializer(
+            instance=instance,
+            data=cfg_in,
+            partial=True,
+            context=self.context,
+        )
+        nested.is_valid(raise_exception=True)
+        return nested.update(instance, nested.validated_data)
+
+    def update(self, instance: Scenario, validated_data):
+        if "treatment_goal" in validated_data:
+            instance.treatment_goal = validated_data["treatment_goal"]
+
+        if "configuration" in validated_data:
+            instance = self._apply_configuration(
+                instance, validated_data["configuration"]
+            )
+
+        instance.save(update_fields=["treatment_goal", "configuration"])
+        return instance
+
+
 class CreateScenarioSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     treatment_goal = serializers.PrimaryKeyRelatedField(
