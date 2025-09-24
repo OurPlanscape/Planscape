@@ -434,6 +434,9 @@ CELERY_TASK_ROUTES = {
     "planning.tasks.async_calculate_stand_metrics_v3": {
         "queue": "planning-stand-metrics"
     },
+    "planning.tasks.async_calculate_vector_metrics": {
+        "queue": "planning-stand-metrics",
+    },
     "impacts.tasks.*": {
         "queue": "impacts",
     },
