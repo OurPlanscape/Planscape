@@ -43,6 +43,9 @@ from planning.serializers import (
     TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
     UpsertConfigurationV2Serializer,
+    CreateScenarioV3Serializer,
+    ScenarioV3Serializer,
+    PatchScenarioV3Serializer,
 )
 from planning.services import (
     create_planning_area,
@@ -204,10 +207,23 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
-        "create": CreateScenarioV2Serializer,
-        "retrieve": ScenarioV2Serializer,
-        "partial_update": UpsertConfigurationV2Serializer,
+        "create": (
+            CreateScenarioV3Serializer
+            if feature_enabled("SCENARIO_DRAFTS")
+            else CreateScenarioV2Serializer
+        ),
+        "retrieve": (
+            ScenarioV3Serializer
+            if feature_enabled("SCENARIO_DRAFTS")
+            else ScenarioV2Serializer
+        ),
+        "partial_update": (
+            PatchScenarioV3Serializer
+            if feature_enabled("SCENARIO_DRAFTS")
+            else UpsertConfigurationV2Serializer
+        ),
     }
+
     filterset_class = ScenarioFilter
     filter_backends = [
         DjangoFilterBackend,
