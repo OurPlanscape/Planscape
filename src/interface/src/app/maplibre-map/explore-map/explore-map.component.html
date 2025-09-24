@@ -19,6 +19,8 @@
     'highlighted-map': showMapNumber && (isSelected$ | async) === true,
     'padded-map': mapNumber === 1 || mapNumber === 2,
   }">
+
+
   <app-map-base-layers
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-base-layers>
@@ -60,6 +62,7 @@
   <app-map-boundary-layer *ngIf="(mapInteractionMode$ | async) !== 'view'">
   </app-map-boundary-layer>
 
+
   <app-map-tooltip
     *ngIf="
       (mapInteractionMode$ | async) === 'draw' &&
@@ -70,6 +73,18 @@
     [lngLat]="mouseLngLat"
     >{{ drawModeTooltipContent }}</app-map-tooltip
   >
+
+ 
+ <mgl-layer id="below-drawing"
+  type="background"
+    [layout]="{ visibility: 'none' }"></mgl-layer>
+  <mgl-layer id="td-polygon"
+  type="background"
+  [layout]="{ visibility: 'none' }"
+    ></mgl-layer>
+  <mgl-layer id="drawing"
+  type="background"
+    [layout]="{ visibility: 'none'}"></mgl-layer>
 
   <app-map-drawing-toolbox
     *ngIf="(mapInteractionMode$ | async) !== 'view'"></app-map-drawing-toolbox>

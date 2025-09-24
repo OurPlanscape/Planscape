@@ -66,6 +66,7 @@ export class DrawService {
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
+      renderBelowLayerId: 'drawing',
     });
     if (!this._terraDraw) {
       this._terraDraw = new TerraDraw({

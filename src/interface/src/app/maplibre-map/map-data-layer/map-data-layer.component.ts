@@ -84,6 +84,8 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
   }
 
   async addRasterLayer() {
+    console.log('adding a raster layer...');
+
     if (this.mapLibreMap && this.cogUrl) {
       const currentOpacity: number = await firstValueFrom(
         this.mapConfigState.dataLayersOpacity$
@@ -108,6 +110,15 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
       this.removeRasterLayer();
       this.mapLibreMap.addSource('rasterImage', rasterSource);
       this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
+    }
+    this.replaceDrawingLayers();
+  }
+
+  replaceDrawingLayers(): void {
+    console.log('calling replaceDrawingLayers');
+    if (this.mapLibreMap) {
+      console.log('what do we know bout htis map?', this.mapLibreMap);
+      console.log('what are the layers?', this.mapLibreMap.style);
     }
   }
 
