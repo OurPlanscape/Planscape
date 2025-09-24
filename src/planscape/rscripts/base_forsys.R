@@ -774,6 +774,7 @@ call_forsys <- function(
     }, error = function(e) {
       e$status <- "PANIC"
       stop(e)
+    }
   )
 
   tryCatch(
@@ -993,10 +994,8 @@ main_v2 <- function(scenario_id) {
         "PANIC"
       )
       print(paste("[OK] Forsys PANIC for scenario", scenario_id))
-      stop(e)
-    },
-    finally = {
       print("[DONE - EARLY EXIT]")
+      stop(e)
     }
   )
 
@@ -1193,10 +1192,8 @@ main_pre_processed <- function(scenario_id) {
         "PANIC"
       )
       print(paste("[OK] Forsys PANIC for scenario", scenario_id))
-      stop(e)
-    },
-    finally = {
       print("[DONE - EARLY EXIT]")
+      stop(e)
     }
   )
 
