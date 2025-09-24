@@ -156,7 +156,7 @@ export class PlanComponent implements OnInit {
         distinctUntilChanged(),
         // poll only while NOT DONE
         switchMap((status) =>
-          status !== 'DONE' ? interval(POLLING_INTERVAL) : EMPTY
+          status !== 'STANDS_DONE' ? interval(POLLING_INTERVAL) : EMPTY
         ),
         untilDestroyed(this)
       )

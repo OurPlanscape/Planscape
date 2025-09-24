@@ -114,7 +114,11 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   get planningAreaIsReady() {
-    return this.plan?.map_status === 'DONE';
+    if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
+      return this.plan?.map_status === 'STANDS_DONE';
+    } else {
+      return true;
+    }
   }
 
   private openScenarioSetupDialog() {
@@ -161,7 +165,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   get isValidPlanningArea() {
-    if (!this.plan || this.plan.map_status !== 'DONE') {
+    if (!this.plan || !this.planningAreaIsReady) {
       return false;
     }
     return isValidTotalArea(this.plan.area_acres);
