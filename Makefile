@@ -144,7 +144,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop stop-celery stop-forsys-server start start-celery stop-martin start-martin start-forsys-server
+restart: reload stop-celery stop stop-forsys-server stop-martin start-martin start-forsys-server start start-celery
 
 nginx-restart:
 	sudo service nginx restart
