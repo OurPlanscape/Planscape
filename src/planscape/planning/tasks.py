@@ -13,11 +13,6 @@ from stands.services import (
     calculate_stand_zonal_stats,
     create_stands_for_geometry,
 )
-from planning.services import (
-    build_run_configuration,
-    get_available_stand_ids,
-    export_to_geopackage,
-)
 from utils.cli_utils import call_forsys
 
 from planning.models import (
@@ -27,6 +22,11 @@ from planning.models import (
     Scenario,
     ScenarioResultStatus,
 )
+from planning.services import (
+    build_run_configuration,
+    export_to_geopackage,
+    get_available_stand_ids,
+)
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -34,13 +34,14 @@ log = logging.getLogger(__name__)
 
 
 @app.task()
-def async_create_stands(planning_area_id: int) -> None:
+def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
         try:
             planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-            for i in StandSizeChoices:
-                log.info(f"Creating stands for {planning_area_id} for stand size {i}")
-                create_stands_for_geometry(planning_area.geometry, i)
+            log.info(
+                f"Creating stands for {planning_area_id} for stand size {stand_size}"
+            )
+            create_stands_for_geometry(planning_area.geometry, stand_size)
         except PlanningArea.DoesNotExist:
             log.warning(f"Planning Area with {planning_area_id} does not exist.")
             raise
@@ -92,7 +93,8 @@ def async_forsys_run(scenario_id: int) -> None:
 
 @app.task()
 def async_set_planning_area_status(
-    planning_area_id: int, status: PlanningAreaMapStatus
+    planning_area_id: int,
+    status: PlanningAreaMapStatus,
 ) -> None:
     try:
         with transaction.atomic():

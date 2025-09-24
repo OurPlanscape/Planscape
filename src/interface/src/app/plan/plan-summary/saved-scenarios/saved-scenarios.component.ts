@@ -8,6 +8,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   getPlanPath,
   isValidTotalArea,
+  planningAreaIsReady,
   POLLING_INTERVAL,
 } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
@@ -113,6 +114,14 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
+  get planningAreaIsReady() {
+    if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
+      return this.plan && planningAreaIsReady(this.plan);
+    } else {
+      return true;
+    }
+  }
+
   private openScenarioSetupDialog() {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
@@ -157,7 +166,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   get isValidPlanningArea() {
-    if (!this.plan) {
+    if (!this.plan || !this.planningAreaIsReady) {
       return false;
     }
     return isValidTotalArea(this.plan.area_acres);

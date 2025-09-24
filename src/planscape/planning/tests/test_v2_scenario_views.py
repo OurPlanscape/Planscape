@@ -1,10 +1,13 @@
 import copy
+import json
 from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase
 from django.urls import reverse
+from modules.base import compute_scenario_capabilities
 from rest_framework import status
 from rest_framework.test import APITestCase, APITransactionTestCase
 
@@ -16,7 +19,6 @@ from planning.models import (
     TreatmentGoalGroup,
 )
 from planning.serializers import ListScenarioSerializer, ScenarioV2Serializer
-from planning.services import compute_scenario_capabilities
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -705,6 +707,25 @@ class ScenarioDetailTest(APITestCase):
             self.assertIn("usage_type", entry)
             self.assertIn("datalayer", entry)
 
+    def test_detail_scenario_v2_scenario_result(self):
+        ScenarioResultFactory(scenario=self.scenario)
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(
+            "text_geometry",
+            data["scenario_result"]["result"]["features"][0]["properties"].keys(),
+        )
+
 
 class PatchScenarioConfigurationTest(APITransactionTestCase):
     def setUp(self):
@@ -773,8 +794,29 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
+        california_pa_geom = MultiPolygon(
+            GEOSGeometry(
+                json.dumps(
+                    {
+                        "coordinates": [
+                            [
+                                [-119.27995274110515, 36.36478317620936],
+                                [-119.27995274110515, 36.0314305736712],
+                                [-118.8507705399656, 36.0314305736712],
+                                [-118.8507705399656, 36.36478317620936],
+                                [-119.27995274110515, 36.36478317620936],
+                            ]
+                        ],
+                        "type": "Polygon",
+                    }
+                )
+            )
+        )
         self.user = UserFactory.create()
-        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.planning_area1 = PlanningAreaFactory.create(user=self.user)
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.user, geometry=california_pa_geom
+        )
         self.tg_conus = TreatmentGoalFactory.create(
             group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
         )
@@ -782,14 +824,14 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
         )
         self.scenario = ScenarioFactory.create(
-            planning_area=self.planning_area,
+            planning_area=self.planning_area1,
             user=self.user,
             treatment_goal=self.tg_conus,
             configuration={"stand_size": "LARGE"},
             name="caps-view1",
         )
         self.scenario2 = ScenarioFactory.create(
-            planning_area=self.planning_area,
+            planning_area=self.planning_area2,
             user=self.user,
             treatment_goal=self.treatment_goal,
             configuration={"stand_size": "LARGE"},

@@ -1,4 +1,4 @@
-import { ScenarioResult } from '@types';
+import { Plan, ScenarioResult } from '@types';
 import {
   ProjectAreaReport,
   ProjectTotalReport,
@@ -148,7 +148,7 @@ export function hasAnalytics(results: ScenarioResult): boolean {
   );
 }
 
-/* from a mixed featuresArray of polygons and multipolygons, 
+/* from a mixed featuresArray of polygons and multipolygons,
   this function converts each multipolygon to a polygon,
   then returns a GeoJSONStoreFeatures array of just polygons
 */
@@ -171,4 +171,8 @@ export function flattenMultipolygons(
     }
   });
   return polygons;
+}
+
+export function planningAreaIsReady(pa: Plan) {
+  return pa.map_status === 'DONE' || pa.map_status === 'STANDS_DONE';
 }
