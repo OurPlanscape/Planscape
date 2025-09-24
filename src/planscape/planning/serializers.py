@@ -254,6 +254,8 @@ class PlanningAreaNoteListSerializer(serializers.ModelSerializer):
 
 
 class ScenarioResultSerializer(serializers.ModelSerializer):
+    result = serializers.SerializerMethodField()
+
     class Meta:
         fields = (
             "id",
@@ -266,6 +268,16 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
             "run_details",
         )
         model = ScenarioResult
+
+    def get_result(self, instance):
+        result = instance.result
+        if not result:
+            return None
+        features = result.get("features")
+        for feature in features:
+            feature["properties"].pop("text_geometry")
+        result["features"] = features
+        return result
 
 
 class ConfigurationSerializer(serializers.Serializer):

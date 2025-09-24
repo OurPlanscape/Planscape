@@ -29,7 +29,7 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
-from modules.services import get_forsys_layer_by_capability, get_forsys_layer_by_name
+from modules.base import compute_scenario_capabilities
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
@@ -43,13 +43,11 @@ from planning.models import (
     PlanningAreaMapStatus,
     ProjectArea,
     Scenario,
-    ScenarioCapability,
     ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
-    TreatmentGoalGroup,
     TreatmentGoalUsageType,
 )
 from planscape.exceptions import InvalidGeometry
@@ -103,10 +101,12 @@ def create_planning_area(
         notes=notes,
         map_status=PlanningAreaMapStatus.PENDING,
     )
-    slope = get_forsys_layer_by_name("slope")
-    distance_from_roads = get_forsys_layer_by_name("distance_from_roads")
+    slope = DataLayer.objects.all().by_meta_name("slope")
+    distance_from_roads = DataLayer.objects.all().by_meta_name("distance_from_roads")
     datalayers = list(
-        get_forsys_layer_by_capability(TreatmentGoalUsageType.EXCLUSION_ZONE)
+        DataLayer.objects.all().by_meta_capability(
+            TreatmentGoalUsageType.EXCLUSION_ZONE
+        )
     ) + [
         slope,
         distance_from_roads,
@@ -131,10 +131,20 @@ def create_planning_area(
         planning_area.pk,
         PlanningAreaMapStatus.FAILED,
     )
+    create_stands_jobs = group(
+        [
+            async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+            async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+            async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+        ]
+    )
     create_stands_job = chord(
         chain(
-            async_create_stands.si(planning_area.pk),
-            set_map_status_in_progress,
+            create_stands_jobs,
+            async_set_planning_area_status.si(
+                planning_area.pk,
+                PlanningAreaMapStatus.STANDS_DONE,
+            ),
             precalculation_jobs,
         ),
         set_map_status_done,
@@ -1327,12 +1337,3 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_MEDIUM
         case _:
             return settings.MIN_AREA_PROJECT_LARGE
-
-
-def compute_scenario_capabilities(scenario: "Scenario") -> List[ScenarioCapability]:
-    caps = [ScenarioCapability.FORSYS]
-    tx_goal = scenario.treatment_goal
-    if tx_goal and tx_goal.group == TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS:
-        caps = [*caps, ScenarioCapability.IMPACTS]
-
-    return caps

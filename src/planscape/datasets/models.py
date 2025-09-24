@@ -185,13 +185,21 @@ class DataLayerQuerySet(models.QuerySet):
 
         return temp_geometry
 
+    def by_meta_module(self, module: str):
+        return self.all().filter(metadata__modules__has_key=module)
+
+    def by_meta_name(self, name: str):
+        query = {"modules": {"forsys": {"name": name}}}
+        return self.all().filter(metadata__contains=query).first()
+
+    def by_meta_capability(self, capability: str):
+        query = {"modules": {"forsys": {"capabilities": [capability]}}}
+        return self.all().filter(metadata__contains=query)
+
 
 class DataLayerManager(models.Manager):
     def get_queryset(self):
         return DataLayerQuerySet(self.model, using=self._db)
-
-    def by_module(self, module: str):
-        return self.get_queryset().filter(metadata__modules__has_key=module)
 
 
 class Style(

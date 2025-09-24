@@ -34,7 +34,11 @@
     </button>
     <button
       sg-button
-      matTooltip="Planning Area is Less than 100 Acres"
+      [matTooltip]="
+        planningAreaIsReady
+          ? 'Planning Area is Less than 100 Acres'
+          : 'Your Planning Area is being prepared'
+      "
       [matTooltipDisabled]="isValidPlanningArea"
       *ngIf="canAddScenarioForPlan"
       [disabled]="!isValidPlanningArea"
@@ -47,6 +51,7 @@
   </div>
 
   <app-section-loader
+    *ngIf="planningAreaIsReady"
     [isLoading]="loading"
     [hasData]="totalScenarios > 0"
     [ngClass]="{
@@ -139,4 +144,13 @@
       </mat-tab>
     </mat-tab-group>
   </app-section-loader>
+
+  <sg-banner
+    [dismissible]="false"
+    type="warning"
+    *ngIf="!planningAreaIsReady"
+    style="margin-top: 20px">
+    Your Planning Area is being prepared for Scenario Planning, this will take
+    longer for larger Planning Areas.
+  </sg-banner>
 </div>
