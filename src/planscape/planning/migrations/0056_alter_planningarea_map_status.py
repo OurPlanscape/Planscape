@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 choices=[
                     ("PENDING", "Pending"),
                     ("IN_PROGRESS", "In Progress"),
-                    ("STANDS_DONE", "Done"),
+                    ("STANDS_DONE", "Stands Done"),
                     ("DONE", "Done"),
                     ("FAILED", "Failed"),
                 ],

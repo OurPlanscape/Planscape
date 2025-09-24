@@ -69,7 +69,7 @@ class RegionChoices(models.TextChoices):
 class PlanningAreaMapStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     IN_PROGRESS = "IN_PROGRESS", "In Progress"
-    STANDS_DONE = "STANDS_DONE", "Done"
+    STANDS_DONE = "STANDS_DONE", "Stands Done"
     DONE = "DONE", "Done"
     FAILED = "FAILED", "Failed"
 
