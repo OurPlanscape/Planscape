@@ -1,3 +1,4 @@
+export * from './climate-foresight.types';
 export * from './data-sets';
 export * from './data.types';
 export * from './general';
