@@ -24,7 +24,7 @@ class StandFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def with_calculated_grid_key(self, create, extracted, **kwargs):
-        if not create:
+        if not create or not extracted:
             return
         geohash_expr = GeoHash(
             Centroid(Transform(self.geometry, TARGET_SRID)),
