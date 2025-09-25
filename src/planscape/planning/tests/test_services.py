@@ -630,7 +630,7 @@ class TestRemoveExcludes(TransactionTestCase):
         )
         datalayer_uploaded(self.datalayer.pk)
         self.datalayer.refresh_from_db()
-        stands = self.load_stands()
+        self.stands = self.load_stands()
         json_geom = {
             "coordinates": [
                 [
@@ -657,6 +657,8 @@ class TestRemoveExcludes(TransactionTestCase):
         with connection.cursor() as cur:
             qual_name = qualify_for_django(self.datalayer.table)
             cur.execute(f"DROP TABLE IF EXISTS {qual_name} CASCADE;")
+        for stand in self.stands:
+            stand.delete()
 
     def test_get_excluded_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
