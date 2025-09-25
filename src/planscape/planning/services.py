@@ -79,6 +79,20 @@ def create_metrics_task(
             )
 
 
+def get_truncated_stands_grid_keys(
+    planning_area: PlanningArea,
+    stand_size: StandSizeChoices,
+) -> List[str]:
+    stands = planning_area.get_stands(stand_size=stand_size)
+    precision = get_stand_grid_key_search_precision(stand_size)
+    truncated_stand_grid_keys = (
+        stands.annotate(trucated_hash=Substr("grid_key", 1, precision))
+        .distinct("trucated_hash")
+        .values_list("trucated_hash", flat=True)
+    )
+    return list(truncated_stand_grid_keys)
+
+
 @transaction.atomic()
 def create_planning_area(
     user: User,
@@ -120,14 +134,9 @@ def create_planning_area(
     precalculation_jobs = []
 
     for stand_size in StandSizeChoices:
-        stands = planning_area.get_stands(stand_size=stand_size)
-        hash_precision = get_stand_grid_key_search_precision(stand_size)
-        truncated_stand_grid_keys = (
-            stands.annotate(trucated_hash=Substr("grid_key", 1, hash_precision))
-            .distinct("trucated_hash")
-            .values_list("trucated_hash", flat=True)
+        truncated_stand_grid_keys = get_truncated_stands_grid_keys(
+            planning_area, stand_size
         )
-        truncated_stand_grid_keys = list(truncated_stand_grid_keys)
         jobs = [
             create_metrics_task(planning_area, datalayer, stand_size, grid_key_start)
             for datalayer in datalayers
@@ -269,14 +278,9 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         target=scenario.planning_area,
     )
     datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
-    stands = scenario.get_project_areas_stands()
-    hash_precision = get_stand_grid_key_search_precision(scenario.get_stand_size())
-    truncated_stand_grid_keys = (
-        stands.annotate(trucated_hash=Substr("grid_key", 1, hash_precision))
-        .distinct("trucated_hash")
-        .values_list("trucated_hash", flat=True)
+    truncated_stand_grid_keys = get_truncated_stands_grid_keys(
+        scenario.planning_area, scenario.get_stand_size()
     )
-    truncated_stand_grid_keys = list(truncated_stand_grid_keys)
 
     tasks = [
         async_calculate_stand_metrics.si(
@@ -640,14 +644,9 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
     datalayers = tx_goal.get_raster_datalayers() if tx_goal else []
-    stands = scenario.get_project_areas_stands()
-    hash_precision = get_stand_grid_key_search_precision(scenario.get_stand_size())
-    truncated_stand_grid_keys = (
-        stands.annotate(trucated_hash=Substr("grid_key", 1, hash_precision))
-        .distinct("trucated_hash")
-        .values_list("trucated_hash", flat=True)
+    truncated_stand_grid_keys = get_truncated_stands_grid_keys(
+        scenario.planning_area, scenario.get_stand_size()
     )
-    truncated_stand_grid_keys = list(truncated_stand_grid_keys)
     tasks = [
         async_calculate_stand_metrics.si(
             planning_area_id=scenario.planning_area.pk,
