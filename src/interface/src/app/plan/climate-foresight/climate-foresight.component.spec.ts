@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Map as MapLibreMap, ResourceType } from 'maplibre-gl';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 describe('ClimateForesightComponent', () => {
   let component: ClimateForesightComponent;
@@ -23,6 +24,7 @@ describe('ClimateForesightComponent', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockMapConfigState: jasmine.SpyObj<MapConfigState>;
   let mockBreadcrumbService: jasmine.SpyObj<BreadcrumbService>;
+  let mockHttpClient: jasmine.SpyObj<HttpClient>;
 
   const mockPlan: Plan = {
     id: 123,
@@ -89,6 +91,12 @@ describe('ClimateForesightComponent', () => {
       }
     );
 
+    mockHttpClient = jasmine.createSpyObj('HttpClient', [
+      'post',
+      'get',
+      'delete',
+    ]);
+
     await TestBed.configureTestingModule({
       imports: [
         ClimateForesightComponent,
@@ -104,6 +112,7 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA], // Ignore MapLibre component errors
@@ -161,6 +170,7 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -210,6 +220,7 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbAlreadySet },
+        { provide: HttpClient, useValue: mockHttpClient },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -244,6 +255,7 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -431,6 +443,7 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],
