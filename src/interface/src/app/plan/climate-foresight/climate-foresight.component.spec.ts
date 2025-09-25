@@ -120,7 +120,7 @@ describe('ClimateForesightComponent', () => {
   it('should initialize with correct default values', () => {
     expect(component.planName).toBe('');
     expect(component.planAcres).toBe('');
-    expect(component.hasAnalyses).toBeFalse();
+    expect(component.hasRuns).toBeFalse();
     expect(component.currentPlan).toBeNull();
     expect(component.mapLibreMap).toBeUndefined();
   });
@@ -287,12 +287,12 @@ describe('ClimateForesightComponent', () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
   });
 
-  it('should set hasAnalyses to true when startAnalysis is called', () => {
-    expect(component.hasAnalyses).toBeFalse();
+  it('should set hasRuns to true when startRun is called', () => {
+    expect(component.hasRuns).toBeFalse();
 
-    component.startAnalysis();
+    component.startRun();
 
-    expect(component.hasAnalyses).toBeTrue();
+    expect(component.hasRuns).toBeTrue();
   });
 
   it('should calculate bounds from geometry', (done) => {
@@ -347,7 +347,7 @@ describe('ClimateForesightComponent', () => {
   });
 
   it('should hide empty state when analyses exist', () => {
-    component.hasAnalyses = true;
+    component.hasRuns = true;
     fixture.detectChanges();
 
     const emptyState = fixture.nativeElement.querySelector('.no-analyses');
@@ -365,14 +365,14 @@ describe('ClimateForesightComponent', () => {
     expect(button?.textContent).toContain('Start Analysis');
   });
 
-  it('should call startAnalysis when button is clicked', () => {
-    spyOn(component, 'startAnalysis');
+  it('should call startRun when button is clicked', () => {
+    spyOn(component, 'startRun');
     fixture.detectChanges();
 
     const button = fixture.nativeElement.querySelector('.start-analysis-btn');
     button?.click();
 
-    expect(component.startAnalysis).toHaveBeenCalled();
+    expect(component.startRun).toHaveBeenCalled();
   });
 
   it('should display Climate Foresight tool information', () => {
