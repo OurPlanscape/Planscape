@@ -2,8 +2,14 @@ import factory
 import factory.fuzzy
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import Polygon
+from django.contrib.gis.db.models.functions import Centroid, GeoHash, Transform
+from django.db.models import F
 
 from stands.models import Stand, StandMetric, StandSizeChoices
+
+
+GEOHASH_PRECISION = 8
+TARGET_SRID = 4326
 
 
 class StandFactory(factory.django.DjangoModelFactory):
@@ -15,6 +21,16 @@ class StandFactory(factory.django.DjangoModelFactory):
     )
     geometry = Polygon(((1, 1), (1, 2), (2, 2), (1, 1)))
     area_m2 = factory.SelfAttribute("geometry.area")
+
+    @factory.post_generation
+    def with_calculated_grid_key(self, create, extracted, **kwargs):
+        if not create:
+            return
+        geohash_expr = GeoHash(
+            Centroid(Transform(self.geometry, TARGET_SRID)),
+            precision=GEOHASH_PRECISION,
+        )
+        self.grid_key = geohash_expr.resolve_expression(self)
 
 
 class StandMetricFactory(factory.django.DjangoModelFactory):
