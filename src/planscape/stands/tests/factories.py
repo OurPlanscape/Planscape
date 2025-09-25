@@ -8,7 +8,7 @@ from django.db.models import F
 from stands.models import Stand, StandMetric, StandSizeChoices
 
 
-GEOHASH_PRECISION = 8
+GEOHASH_PRECISION = 11
 TARGET_SRID = 4326
 
 
