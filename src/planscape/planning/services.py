@@ -25,6 +25,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
 from django.db.models.aggregates import Sum
+from django.db.models.functions import Substr
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
@@ -33,7 +34,7 @@ from modules.base import compute_scenario_capabilities
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
-from stands.services import get_datalayer_metric
+from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
 from planning.geometry import coerce_geojson, coerce_geometry
@@ -57,21 +58,24 @@ logger = logging.getLogger(__name__)
 
 
 def create_metrics_task(
-    planning_area: PlanningArea, datalayer: DataLayer, stand_size: StandSizeChoices
+    planning_area: PlanningArea,
+    datalayer: DataLayer,
+    stand_size: StandSizeChoices,
+    grid_key_start: str = "",
 ):
     from planning.tasks import (
-        async_calculate_stand_metrics_v3,
+        async_calculate_stand_metrics,
         async_calculate_vector_metrics,
     )
 
     match datalayer.type:
         case DataLayerType.VECTOR:
             return async_calculate_vector_metrics.si(
-                planning_area.pk, datalayer.pk, stand_size
+                planning_area.pk, datalayer.pk, stand_size, grid_key_start
             )
         case _:
-            return async_calculate_stand_metrics_v3.si(
-                planning_area.pk, datalayer.pk, stand_size
+            return async_calculate_stand_metrics.si(
+                planning_area.pk, datalayer.pk, stand_size, grid_key_start
             )
 
 
@@ -112,13 +116,26 @@ def create_planning_area(
         distance_from_roads,
     ]
     datalayers = list(filter(None, datalayers))
-    precalculation_jobs = group(
-        [
-            create_metrics_task(planning_area, datalayer, stand_size=stand_size)
+
+    precalculation_jobs = []
+
+    for stand_size in StandSizeChoices:
+        stands = planning_area.get_stands(stand_size=stand_size)
+        hash_precision = get_stand_grid_key_search_precision(stand_size)
+        truncated_stand_grid_keys = (
+            stands.annotate(trucated_hash=Substr("grid_key", 1, hash_precision))
+            .distinct("trucated_hash")
+            .values_list("trucated_hash", flat=True)
+        )
+        truncated_stand_grid_keys = list(truncated_stand_grid_keys)
+        jobs = [
+            create_metrics_task(planning_area, datalayer, stand_size, grid_key_start)
             for datalayer in datalayers
-            for stand_size in StandSizeChoices
+            for grid_key_start in truncated_stand_grid_keys
         ]
-    )
+        precalculation_jobs.extend(jobs)
+
+    precalculation_jobs = group(precalculation_jobs)
     set_map_status_done = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.DONE,
@@ -220,7 +237,7 @@ def get_treatment_goal_from_configuration(
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import (
-        async_calculate_stand_metrics_v2,
+        async_calculate_stand_metrics,
         async_forsys_run,
         async_pre_forsys_process,
     )
@@ -252,9 +269,24 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         target=scenario.planning_area,
     )
     datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+    stands = scenario.get_project_areas_stands()
+    hash_precision = get_stand_grid_key_search_precision(scenario.get_stand_size())
+    truncated_stand_grid_keys = (
+        stands.annotate(trucated_hash=Substr("grid_key", 1, hash_precision))
+        .distinct("trucated_hash")
+        .values_list("trucated_hash", flat=True)
+    )
+    truncated_stand_grid_keys = list(truncated_stand_grid_keys)
+
     tasks = [
-        async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
+        async_calculate_stand_metrics.si(
+            planning_area_id=scenario.planning_area.pk,
+            datalayer_id=d.pk,
+            stand_size=scenario.get_stand_size(),
+            grid_key_start=grid_key_start,
+        )
         for d in datalayers
+        for grid_key_start in truncated_stand_grid_keys
     ]
     tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
 
@@ -600,7 +632,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 @transaction.atomic()
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     from planning.tasks import (
-        async_calculate_stand_metrics_v2,
+        async_calculate_stand_metrics,
         async_forsys_run,
         async_pre_forsys_process,
     )
@@ -608,9 +640,23 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
     datalayers = tx_goal.get_raster_datalayers() if tx_goal else []
+    stands = scenario.get_project_areas_stands()
+    hash_precision = get_stand_grid_key_search_precision(scenario.get_stand_size())
+    truncated_stand_grid_keys = (
+        stands.annotate(trucated_hash=Substr("grid_key", 1, hash_precision))
+        .distinct("trucated_hash")
+        .values_list("trucated_hash", flat=True)
+    )
+    truncated_stand_grid_keys = list(truncated_stand_grid_keys)
     tasks = [
-        async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
+        async_calculate_stand_metrics.si(
+            planning_area_id=scenario.planning_area.pk,
+            datalayer_id=d.pk,
+            stand_size=scenario.get_stand_size(),
+            grid_key_start=grid_key_start,
+        )
         for d in datalayers
+        for grid_key_start in truncated_stand_grid_keys
     ]
     tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
 

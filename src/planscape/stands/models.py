@@ -95,7 +95,7 @@ class Stand(CreatedAtMixin, models.Model):
 
     area_m2 = models.FloatField()
 
-    grid_key = models.CharField(max_length=64, null=True, blank=True)
+    grid_key = models.CharField(max_length=64, null=True, blank=True, db_index=True)
 
     objects: StandManager = StandManager.from_queryset(StandQuerySet)()
 
