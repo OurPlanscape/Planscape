@@ -68,15 +68,12 @@ class AsyncCalculateStandMetricsTest(TestCase):
     def test_async_calculate_stand_metrics(self):
         self.assertEqual(StandMetric.objects.count(), 0)
 
-        async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
-
-        self.assertNotEqual(StandMetric.objects.count(), Stand.objects.count())
-
-    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
-    def test_async_calculate_stand_metrics_paginated(self):
-        self.assertEqual(StandMetric.objects.count(), 0)
-
-        async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
+        async_calculate_stand_metrics(
+            planning_area_id=self.scenario.planning_area.pk,
+            datalayer_id=self.datalayer.pk,
+            stand_size=StandSizeChoices.LARGE,
+            grid_key_start="",
+        )
 
         self.assertNotEqual(StandMetric.objects.count(), Stand.objects.count())
 
@@ -86,31 +83,34 @@ class AsyncCalculateStandMetricsTest(TestCase):
         self.scenario.planning_area.geometry = MultiPolygon()
         self.scenario.planning_area.save()
 
-        async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
+        async_calculate_stand_metrics(
+            planning_area_id=self.scenario.planning_area.pk,
+            datalayer_id=self.datalayer.pk,
+            stand_size=StandSizeChoices.LARGE,
+            grid_key_start="",
+        )
 
         self.assertEqual(StandMetric.objects.count(), 0)
 
-    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
-    def test_async_calculate_stand_metrics_no_stands_paginated(self):
+    def test_async_calculate_stand_metrics_datalayer_does_not_exist(self):
         self.assertEqual(StandMetric.objects.count(), 0)
-
-        self.scenario.planning_area.geometry = MultiPolygon()
-        self.scenario.planning_area.save()
-
-        async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
-
-        self.assertEqual(StandMetric.objects.count(), 0)
-
-    def test_async_calculate_stand_metrics_no_datalayer(self):
-        self.assertEqual(StandMetric.objects.count(), 0)
-        async_calculate_stand_metrics(self.scenario.pk, "foo_bar")
+        async_calculate_stand_metrics(
+            planning_area_id=self.scenario.planning_area.pk,
+            datalayer_id=9999,  # non-existent datalayer
+            stand_size=StandSizeChoices.LARGE,
+            grid_key_start="",
+        )
 
         self.assertEqual(StandMetric.objects.count(), 0)
 
-    @override_settings(FEATURE_FLAGS="PAGINATED_STAND_METRICS,AUTO_CREATE_STANDS")
-    def test_async_calculate_stand_metrics_no_datalayer_paginated(self):
+    def test_async_calculate_stand_metrics_planning_area_does_not_exists(self):
         self.assertEqual(StandMetric.objects.count(), 0)
-        async_calculate_stand_metrics(self.scenario.pk, "foo_bar")
+        async_calculate_stand_metrics(
+            planning_area_id=9999,  # non-existent planning area
+            datalayer_id=self.datalayer.pk,
+            stand_size=StandSizeChoices.LARGE,
+            grid_key_start="",
+        )
 
         self.assertEqual(StandMetric.objects.count(), 0)
 
