@@ -277,39 +277,40 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
-    truncated_stand_grid_keys = get_truncated_stands_grid_keys(
-        scenario.planning_area, scenario.get_stand_size()
-    )
-
-    tasks = [
-        async_calculate_stand_metrics.si(
-            planning_area_id=scenario.planning_area.pk,
-            datalayer_id=d.pk,
-            stand_size=scenario.get_stand_size(),
-            grid_key_start=grid_key_start,
+    if treatment_goal and not feature_enabled("SCENARIO_DRAFTS"):
+        datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+        truncated_stand_grid_keys = get_truncated_stands_grid_keys(
+            scenario.planning_area, scenario.get_stand_size()
         )
-        for d in datalayers
-        for grid_key_start in truncated_stand_grid_keys
-    ]
-    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
 
-    track_openpanel(
-        name="planning.scenario.created",
-        properties={
-            "origin": scenario.origin,
-            "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
-            "treatment_goal_category": (
-                treatment_goal.category if treatment_goal else None
-            ),
-            "treatment_goal_name": treatment_goal.name if treatment_goal else None,
-            "email": user.email if user else None,
-        },
-        user_id=user.pk,
-    )
-    transaction.on_commit(
-        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
-    )
+        tasks = [
+            async_calculate_stand_metrics.si(
+                planning_area_id=scenario.planning_area.pk,
+                datalayer_id=d.pk,
+                stand_size=scenario.get_stand_size(),
+                grid_key_start=grid_key_start,
+            )
+            for d in datalayers
+            for grid_key_start in truncated_stand_grid_keys
+        ]
+        tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
+
+        track_openpanel(
+            name="planning.scenario.created",
+            properties={
+                "origin": scenario.origin,
+                "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
+                "treatment_goal_category": (
+                    treatment_goal.category if treatment_goal else None
+                ),
+                "treatment_goal_name": treatment_goal.name if treatment_goal else None,
+                "email": user.email if user else None,
+            },
+            user_id=user.pk,
+        )
+        transaction.on_commit(
+            lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+        )
     return scenario
 
 
