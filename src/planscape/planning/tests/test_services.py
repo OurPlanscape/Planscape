@@ -597,10 +597,11 @@ class TestRemoveExcludes(TransactionTestCase):
         for i, feature in enumerate(features):
             geometry = GEOSGeometry(json.dumps(feature.get("geometry")))
             stands.append(
-                Stand.objects.create(
+                StandFactory.create(
                     geometry=geometry,
                     size="LARGE",
                     area_m2=2_000_000,
+                    with_calculated_grid_key=True,
                 )
             )
         return stands
