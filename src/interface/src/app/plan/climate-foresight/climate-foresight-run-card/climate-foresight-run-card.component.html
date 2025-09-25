@@ -1,7 +1,7 @@
 <mat-card class="run-card" (click)="onCardClick()">
   <mat-card-content>
     <div class="card-header">
-      <h3 class="run-name">{{ run.name || 'Name' }}</h3>
+      <h3 class="run-name">{{ run.name }}</h3>
       <button
         mat-icon-button
         class="more-button"
@@ -19,7 +19,7 @@
 
       <div class="detail-column">
         <span class="detail-label">DATE CREATED</span>
-        <span class="detail-value">{{ formattedDate }}</span>
+        <span class="detail-value">{{ run.created_at | date }}</span>
       </div>
 
       <div class="detail-column">

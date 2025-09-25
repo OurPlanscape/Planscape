@@ -34,19 +34,6 @@ export class ClimateForesightRunCardComponent {
     return status.charAt(0).toUpperCase() + status.slice(1);
   }
 
-  get formattedDate(): string {
-    if (!this.run.created_at) {
-      return '-';
-    }
-    const date = new Date(this.run.created_at);
-    const options: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    };
-    return date.toLocaleDateString('en-US', options);
-  }
-
   onCardClick(): void {
     this.openRun.emit(this.run);
   }
