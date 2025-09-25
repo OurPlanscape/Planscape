@@ -1,6 +1,7 @@
 import logging
 
 import rasterio
+from typing import Optional
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
@@ -108,40 +109,12 @@ def async_set_planning_area_status(
         log.exception("Planning Area %s does not exist", planning_area_id)
 
 
-@app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None:
-    scenario = Scenario.objects.get(id=scenario_id)
-    stand_size = scenario.get_stand_size()
-    geometry = scenario.planning_area.geometry
-
-    stands = Stand.objects.within_polygon(geometry, stand_size).with_webmercator()
-
-    try:
-        with rasterio.Env(get_storage_session()):
-            query = {"modules": {"forsys": {"legacy_name": datalayer_name}}}
-            datalayer = DataLayer.objects.get(
-                type=DataLayerType.RASTER,
-                metadata__contains=query,
-            )
-            if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-                for page in paginator.page_range:
-                    paginated_stands = paginator.page(page)
-                    log.info(f"Processing page {page} of stands")
-
-                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
-            else:
-                calculate_stand_zonal_stats(stands, datalayer)
-    except DataLayer.DoesNotExist:
-        log.warning(f"DataLayer with name {datalayer_name} does not exist.")
-        return
-
-
 @app.task()
 def async_calculate_vector_metrics(
     planning_area_id: int,
     datalayer_id: int,
     stand_size: StandSizeChoices,
+    grid_key_start: str,
 ) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
         planning_area = PlanningArea.objects.get(id=planning_area_id)
@@ -150,64 +123,35 @@ def async_calculate_vector_metrics(
             datalayer=datalayer,
             planning_area_geometry=planning_area.geometry,
             stand_size=stand_size,
+            grid_key_start=grid_key_start,
         )
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics_v3(
-    planning_area_id: int, datalayer_id: int, stand_size: StandSizeChoices
+def async_calculate_stand_metrics(
+    planning_area_id: int,
+    datalayer_id: int,
+    stand_size: StandSizeChoices,
+    grid_key_start: str,
 ) -> None:
     """
-    Calculates stand metrics based on planning area. Calculates for all stand sizes.
+    Calculates stand metrics based on planning area, stand size, and datalayer.
+    Applying only to stands whose grid_key starts with the provided grid_key_start.
     """
     try:
         planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
         datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
-        stands = planning_area.get_stands(stand_size=stand_size).order_by("grid_key")
+        stands = (
+            planning_area.get_stands(stand_size=stand_size)
+            .with_webmercator()
+            .filter(grid_key__startswith=grid_key_start)
+            .order_by("grid_key")
+        )
         with rasterio.Env(get_storage_session()):
-            if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-                for page in paginator.page_range:
-                    paginated_stands = paginator.page(page)
-                    log.info(f"Processing page {page} of stands")
-
-                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
-            else:
-                calculate_stand_zonal_stats(stands, datalayer)
+            calculate_stand_zonal_stats(stands, datalayer)
     except PlanningArea.DoesNotExist:
         log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
         return
-    except DataLayer.DoesNotExist:
-        log.warning(f"DataLayer with id {datalayer_id} does not exist.")
-        return
-
-
-@app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> None:
-    scenario = Scenario.objects.get(id=scenario_id)
-    stand_size = scenario.get_stand_size()
-    geometry = scenario.planning_area.geometry
-
-    stands = (
-        Stand.objects.within_polygon(geometry, stand_size)
-        .with_webmercator()
-        .order_by("grid_key")
-    )
-
-    try:
-        with rasterio.Env(get_storage_session()):
-            datalayer = DataLayer.objects.get(
-                pk=datalayer_id,
-            )
-            if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-                for page in paginator.page_range:
-                    paginated_stands = paginator.page(page)
-                    log.info(f"Processing page {page} of stands")
-
-                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
-            else:
-                calculate_stand_zonal_stats(stands, datalayer)
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
