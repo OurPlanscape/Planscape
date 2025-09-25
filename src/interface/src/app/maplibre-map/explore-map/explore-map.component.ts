@@ -18,6 +18,7 @@ import {
   Map as MapLibreMap,
   MapMouseEvent,
   RequestTransformFunction,
+  ResourceType,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
 import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
@@ -107,12 +108,11 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
-
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
-
+  initialBaseMap: string | undefined = '';
   @Input() showMapNumber = true;
 
   @Output() mapCreated = new EventEmitter<{
@@ -155,6 +155,14 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
           this.cancelDrawingMode();
         }
       });
+
+    this.baseLayerUrl$.pipe(untilDestroyed(this))
+      .subscribe((url) => {
+        if (url) {
+          this.initialBaseMap = url?.toString();
+          this.updateBaseMap(url.toString());
+        }
+      });
   }
 
   ngOnInit() {
@@ -166,6 +174,64 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       this.dataLayersStateService.selectDataLayer(selectedLayer);
       this.dataLayersStateService.goToSelectedLayer(selectedLayer);
     }
+
+  }
+
+  updateBaseMap(url: string) {
+    console.log('updating the basemap...');
+    if (!this.mapLibreMap) {
+      return;
+    }
+    console.log('we have a url?', url);
+
+    const resourceType: ResourceType = ResourceType.Style;
+    const requestUrl = addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+    fetch(requestUrl.url)
+      .then(response => response.json())
+      .then(newStyle => {
+        const currentStyle = this.mapLibreMap.getStyle();
+
+        // collect everything that's a layer we want to preserve
+        const customLayers = currentStyle.layers.filter(layer =>
+          this.isCustomLayer(layer)
+        );
+        const customSources = this.getCustomSources(customLayers, currentStyle.sources);
+        // merge these into a new style object with new basemap sources
+        const fullNewMapStyle = {
+          ...newStyle,
+          sources: {
+            ...newStyle.sources,
+            ...customSources
+          },
+          layers: [
+            ...newStyle.layers,
+            ...customLayers
+          ]
+        };
+        //set the whole map style
+        this.mapLibreMap.setStyle(fullNewMapStyle);
+      })
+      .catch(error => {
+        console.error('Error updating base layers:', error);
+      });
+  }
+
+  //identify layers to preserve using layer name prefix
+  private isCustomLayer(layer: any): boolean {
+    const customLayerPrefixes = ['td-', 'drawing-', 'shapefile-', 'bottom-'];
+    return customLayerPrefixes.some(prefix => layer.id.startsWith(prefix));
+  }
+
+  //collect sources for identified layers
+  private getCustomSources(customLayers: any[], allSources: any): any {
+    const customSources: any = {};
+    customLayers.forEach(layer => {
+      if (layer.source && allSources[layer.source]) {
+        customSources[layer.source] = allSources[layer.source];
+      }
+    });
+    return customSources;
   }
 
   ngOnDestroy() {

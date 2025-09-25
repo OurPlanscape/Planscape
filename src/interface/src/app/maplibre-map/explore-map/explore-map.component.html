@@ -6,11 +6,11 @@
   [interactive]="true"
   [maxZoom]="maxZoom"
   [minZoom]="minZoom"
+  [style]="initialBaseMap"
   [pitchWithRotate]="false"
   [fitBounds]="bounds"
   [fitBoundsOptions]="(boundOptions$ | async) || undefined"
   (mapLoad)="mapLoaded($event)"
-  [style]="(baseLayerUrl$ | async) || ''"
   [attributionControl]="false"
   (mapMouseMove)="onMapMouseMove($event)"
   [transformRequest]="transformRequest"
@@ -19,8 +19,6 @@
     'highlighted-map': showMapNumber && (isSelected$ | async) === true,
     'padded-map': mapNumber === 1 || mapNumber === 2,
   }">
-
-
   <app-map-base-layers
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-base-layers>
@@ -62,7 +60,6 @@
   <app-map-boundary-layer *ngIf="(mapInteractionMode$ | async) !== 'view'">
   </app-map-boundary-layer>
 
-
   <app-map-tooltip
     *ngIf="
       (mapInteractionMode$ | async) === 'draw' &&
@@ -73,19 +70,10 @@
     [lngLat]="mouseLngLat"
     >{{ drawModeTooltipContent }}</app-map-tooltip
   >
-
- 
- <mgl-layer id="below-drawing"
-  type="background"
+  <mgl-layer
+    id="drawing-hook"
+    type="background"
     [layout]="{ visibility: 'none' }"></mgl-layer>
-  <mgl-layer id="td-polygon"
-  type="background"
-  [layout]="{ visibility: 'none' }"
-    ></mgl-layer>
-  <mgl-layer id="drawing"
-  type="background"
-    [layout]="{ visibility: 'none'}"></mgl-layer>
-
   <app-map-drawing-toolbox
     *ngIf="(mapInteractionMode$ | async) !== 'view'"></app-map-drawing-toolbox>
   <mgl-control position="top-left">
