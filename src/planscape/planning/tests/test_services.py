@@ -649,6 +649,7 @@ class TestRemoveExcludes(TransactionTestCase):
             self.datalayer,
             self.planning_area.geometry,
             stand_size=StandSizeChoices.LARGE,
+            grid_key_start=""
         )
 
     def tearDown(self):
