@@ -102,6 +102,7 @@ def calculate_stand_vector_stats3(
     datalayer: DataLayer,
     planning_area_geometry: GEOSGeometry,
     stand_size: StandSizeChoices,
+    grid_key_start: str,
 ):
     stands = Stand.objects.all().within_polygon(planning_area_geometry, stand_size)
     stand_ids = set(stands.all().values_list("id", flat=True))
@@ -110,6 +111,8 @@ def calculate_stand_vector_stats3(
     )
     existing_stand_ids = set(existing_metrics.all().values_list("id", flat=True))
     missing_stand_ids = stand_ids - existing_stand_ids
+
+    grid_key_start = f"{grid_key_start}%" if grid_key_start else "%"
 
     if len(missing_stand_ids) <= 0:
         log.info("There are no missing stands. Early return.")
@@ -126,6 +129,7 @@ def calculate_stand_vector_stats3(
         FROM stands_stand s
         WHERE
             s.id IN %s
+            AND grid_key LIKE %s
     )
     INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
     SELECT
@@ -150,7 +154,7 @@ def calculate_stand_vector_stats3(
     with connection.cursor() as cursor:
         cursor.execute(
             query,
-            [tuple(missing_stand_ids), datalayer.pk],
+            [tuple(missing_stand_ids), grid_key_start, datalayer.pk],
         )
 
 
@@ -250,3 +254,13 @@ def get_datalayer_metric(datalayer: DataLayer) -> str:
     if metric not in MODEL_AGGREGATION_MAP:
         return "avg"
     return metric
+
+
+def get_stand_grid_key_search_precision(stand_size: StandSizeChoices) -> int:
+    size_to_precision = {
+        StandSizeChoices.SMALL: 4,
+        StandSizeChoices.MEDIUM: 3,
+        StandSizeChoices.LARGE: 2,
+    }
+    precision = size_to_precision.get(stand_size, 4)
+    return precision
