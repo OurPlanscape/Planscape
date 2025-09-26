@@ -118,15 +118,17 @@ def calculate_stand_vector_stats3(
     stand_size: StandSizeChoices,
     grid_key_start: str,
 ):
-    stands = Stand.objects.all().within_polygon(planning_area_geometry, stand_size)
+    stands = (
+        Stand.objects.all()
+        .within_polygon(planning_area_geometry, stand_size)
+        .filter(size=stand_size, grid_key__icontains=grid_key_start)
+    )
     stand_ids = set(stands.all().values_list("id", flat=True))
     existing_metrics = StandMetric.objects.filter(
         stand_id__in=stand_ids, datalayer_id=datalayer.pk
     )
     existing_stand_ids = set(existing_metrics.all().values_list("id", flat=True))
     missing_stand_ids = stand_ids - existing_stand_ids
-
-    grid_key_start = f"{grid_key_start}%" if grid_key_start else "%"
 
     if len(missing_stand_ids) <= 0:
         log.info("There are no missing stands. Early return.")
@@ -143,7 +145,6 @@ def calculate_stand_vector_stats3(
         FROM stands_stand s
         WHERE
             s.id IN %s
-            AND grid_key LIKE %s
     )
     INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
     SELECT
@@ -168,7 +169,7 @@ def calculate_stand_vector_stats3(
     with connection.cursor() as cursor:
         cursor.execute(
             query,
-            [tuple(missing_stand_ids), grid_key_start, datalayer.pk],
+            [tuple(missing_stand_ids), datalayer.pk],
         )
 
 
