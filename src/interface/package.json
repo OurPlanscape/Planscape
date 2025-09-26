@@ -69,7 +69,7 @@
     "rxjs": "~7.8.1",
     "shpjs": "^5.0.2",
     "terra-draw": "^1.15.0",
-    "terra-draw-maplibre-gl-adapter": "^1.1.0",
+    "terra-draw-maplibre-gl-adapter": "^1.1.2",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.4"
   },
