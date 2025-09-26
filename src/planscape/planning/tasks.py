@@ -142,9 +142,9 @@ def async_calculate_stand_metrics(
         planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
         datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
         stands = (
-            planning_area.get_stands(stand_size=stand_size)
-            .with_webmercator()
-            .filter(grid_key__startswith=grid_key_start)
+            Stand.objects.all()
+            .within_polygon(planning_area.geometry, stand_size)
+            .filter(size=stand_size, grid_key__icontains=grid_key_start)
             .order_by("grid_key")
         )
         with rasterio.Env(get_storage_session()):
