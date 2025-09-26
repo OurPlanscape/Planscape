@@ -262,7 +262,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
                     )
                 )
 
-    lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
     log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
 
 
