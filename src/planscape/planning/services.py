@@ -152,18 +152,17 @@ def create_planning_area(
         planning_area.pk,
         PlanningAreaMapStatus.STANDS_DONE,
     )
-    create_stands_jobs = chord(
+    create_stand_metrics_jobs = chord(
+        header=create_stand_metrics_jobs, body=set_map_status_done
+    )
+    workflow = chord(
         header=[
             async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
             async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
             async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
         ],
-        body=set_map_status_stands_done,
+        body=create_stand_metrics_jobs,
     )
-    create_stand_metrics_jobs = chord(
-        header=create_stand_metrics_jobs, body=set_map_status_done
-    )
-    workflow = create_stands_jobs | create_stand_metrics_jobs
     track_openpanel(
         name="planning.planning_area.created",
         properties={
