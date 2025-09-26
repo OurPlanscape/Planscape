@@ -6,7 +6,7 @@ from datasets.models import DataLayer
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
-from stands.models import Stand, StandMetric, StandSizeChoices
+from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats3,
     calculate_stand_zonal_stats,
@@ -29,7 +29,7 @@ from planning.services import (
     get_available_stand_ids,
 )
 from planscape.celery import app
-from celery import chain, chord, group
+from celery import chord
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
