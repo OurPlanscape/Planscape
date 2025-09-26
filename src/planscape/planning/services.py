@@ -612,14 +612,6 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if not scenario.treatment_goal:
         errors.append("Scenario has no Treatment Goal assigned.")
 
-    if (
-        scenario.planning_area.get_stands(stand_size=scenario.get_stand_size()).count()
-        == 0
-    ):
-        errors.append(
-            "No stands are available in this Planning Area for the selected `stand_size`."
-        )
-
     cfg = dict(getattr(scenario, "configuration", {}) or {})
 
     stand_size = cfg.get("stand_size")

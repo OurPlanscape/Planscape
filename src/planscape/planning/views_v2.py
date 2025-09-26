@@ -298,7 +298,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        response_serializer = ScenarioV2Serializer(instance)
+        response_serializer = (
+            ScenarioV3Serializer(instance)
+            if feature_enabled("SCENARIO_DRAFTS")
+            else ScenarioV2Serializer(instance)
+        )
         return Response(response_serializer.data)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
