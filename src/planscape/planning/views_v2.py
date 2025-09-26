@@ -388,6 +388,9 @@ class TreatmentGoalViewSet(
 
     def get_queryset(self):
         qs = super().get_queryset()
+        logger.info(f"do we have a queryset? {qs}")
         if feature_enabled("CONUS_WIDE_SCENARIOS"):
             return qs
-        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
+        filtered = qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
+        logger.info(f"do we have a filtered queryset? {filtered}")
+        return filtered

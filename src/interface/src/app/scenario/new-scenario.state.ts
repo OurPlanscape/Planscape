@@ -127,8 +127,8 @@ export class NewScenarioState {
     private forsysService: ForsysService
   ) {
     this.forsysService.forsysData$.subscribe((forsys) => {
-      this.slopeId = forsys.thresholds.slope.id;
-      this.distanceToRoadsId = forsys.thresholds.distance_from_roads.id;
+      this.slopeId = forsys.thresholds.slope?.id;
+      this.distanceToRoadsId = forsys.thresholds.distance_from_roads?.id;
     });
   }
 
