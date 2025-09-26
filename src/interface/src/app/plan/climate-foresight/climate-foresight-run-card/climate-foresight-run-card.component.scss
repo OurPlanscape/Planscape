@@ -1,0 +1,91 @@
+@import 'colors';
+
+.run-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s ease-in-out;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  box-shadow: none;
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  mat-card-content {
+    padding: 24px !important;
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+}
+
+.run-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.more-button {
+  color: $color-md-gray;
+}
+
+.delete-button {
+  color: $color-error;
+
+  mat-icon {
+    color: $color-error;
+  }
+}
+
+.card-details {
+  display: flex;
+  gap: 16px;
+}
+
+.detail-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.detail-label {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: $color-md-gray;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 14px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  width: fit-content;
+
+  &.status-draft {
+    background-color: $color-soft-light-blue;
+    color: $color-main-blue;
+  }
+
+  &.status-running {
+    background-color: $color-brand-soft-yellow;
+    color: $color-dark-yellow;
+  }
+
+  &.status-done {
+    background-color: $color-brand-soft-green;
+    color: $color-brand-green;
+  }
+}

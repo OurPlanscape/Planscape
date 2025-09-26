@@ -5,14 +5,18 @@ import { PlanState } from '../plan.state';
 import { AuthService, WINDOW } from '@services';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { Plan } from '@types';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Map as MapLibreMap, ResourceType } from 'maplibre-gl';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ClimateForesightService } from '@services/climate-foresight.service';
 
 describe('ClimateForesightComponent', () => {
   let component: ClimateForesightComponent;
@@ -23,6 +27,10 @@ describe('ClimateForesightComponent', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockMapConfigState: jasmine.SpyObj<MapConfigState>;
   let mockBreadcrumbService: jasmine.SpyObj<BreadcrumbService>;
+  let mockHttpClient: jasmine.SpyObj<HttpClient>;
+  let mockDialog: jasmine.SpyObj<MatDialog>;
+  let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+  let mockClimateForesightService: jasmine.SpyObj<ClimateForesightService>;
 
   const mockPlan: Plan = {
     id: 123,
@@ -89,6 +97,31 @@ describe('ClimateForesightComponent', () => {
       }
     );
 
+    mockHttpClient = jasmine.createSpyObj('HttpClient', [
+      'post',
+      'get',
+      'delete',
+    ]);
+
+    const afterOpenedSubject = new Subject();
+    const afterAllClosedSubject = new Subject();
+    mockDialog = jasmine.createSpyObj('MatDialog', ['open'], {
+      openDialogs: [],
+      afterOpened: afterOpenedSubject,
+      afterAllClosed: afterAllClosedSubject,
+      getDialogById: jasmine.createSpy('getDialogById'),
+    });
+    // Add the private method to avoid runtime errors
+    (mockDialog as any)._getAfterAllClosed = jasmine
+      .createSpy('_getAfterAllClosed')
+      .and.returnValue(afterAllClosedSubject);
+    mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    mockClimateForesightService = jasmine.createSpyObj(
+      'ClimateForesightService',
+      ['createRun', 'deleteRun', 'listRunsByPlanningArea']
+    );
+    mockClimateForesightService.listRunsByPlanningArea.and.returnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [
         ClimateForesightComponent,
@@ -104,6 +137,13 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatSnackBar, useValue: mockSnackBar },
+        {
+          provide: ClimateForesightService,
+          useValue: mockClimateForesightService,
+        },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA], // Ignore MapLibre component errors
@@ -120,7 +160,7 @@ describe('ClimateForesightComponent', () => {
   it('should initialize with correct default values', () => {
     expect(component.planName).toBe('');
     expect(component.planAcres).toBe('');
-    expect(component.hasAnalyses).toBeFalse();
+    expect(component.hasRuns).toBeFalse();
     expect(component.currentPlan).toBeNull();
     expect(component.mapLibreMap).toBeUndefined();
   });
@@ -161,6 +201,13 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatSnackBar, useValue: mockSnackBar },
+        {
+          provide: ClimateForesightService,
+          useValue: mockClimateForesightService,
+        },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -210,6 +257,13 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbAlreadySet },
+        { provide: HttpClient, useValue: mockHttpClient },
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatSnackBar, useValue: mockSnackBar },
+        {
+          provide: ClimateForesightService,
+          useValue: mockClimateForesightService,
+        },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -244,6 +298,13 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatSnackBar, useValue: mockSnackBar },
+        {
+          provide: ClimateForesightService,
+          useValue: mockClimateForesightService,
+        },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -287,12 +348,25 @@ describe('ClimateForesightComponent', () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
   });
 
-  it('should set hasAnalyses to true when startAnalysis is called', () => {
-    expect(component.hasAnalyses).toBeFalse();
+  it('should not open dialog when no currentPlan', () => {
+    component.currentPlan = null;
 
-    component.startAnalysis();
+    component.startRun();
 
-    expect(component.hasAnalyses).toBeTrue();
+    expect(mockDialog.open).not.toHaveBeenCalled();
+  });
+
+  it('should return early when startRun called with no current plan', () => {
+    component.currentPlan = null;
+
+    // This should not throw an error and should return early
+    expect(() => component.startRun()).not.toThrow();
+  });
+
+  it('should have currentPlan property', () => {
+    expect(component.currentPlan).toBeNull();
+    component.currentPlan = mockPlan;
+    expect(component.currentPlan).toBe(mockPlan);
   });
 
   it('should calculate bounds from geometry', (done) => {
@@ -343,11 +417,26 @@ describe('ClimateForesightComponent', () => {
 
     const emptyState = fixture.nativeElement.querySelector('.no-analyses');
     expect(emptyState).toBeTruthy();
-    expect(emptyState?.textContent).toContain('No Analyses Yet');
+    expect(emptyState?.textContent).toContain('No Runs Yet');
   });
 
   it('should hide empty state when analyses exist', () => {
-    component.hasAnalyses = true;
+    // Mock the service to return runs
+    mockClimateForesightService.listRunsByPlanningArea.and.returnValue(
+      of([
+        {
+          id: 1,
+          name: 'Test Run',
+          planning_area: 123,
+          planning_area_name: 'Test Planning Area',
+          created_at: '2024-01-01',
+          creator: 'Test Creator',
+          status: 'draft' as const,
+        },
+      ])
+    );
+
+    // Trigger ngOnInit which will load the runs
     fixture.detectChanges();
 
     const emptyState = fixture.nativeElement.querySelector('.no-analyses');
@@ -365,14 +454,14 @@ describe('ClimateForesightComponent', () => {
     expect(button?.textContent).toContain('Start Analysis');
   });
 
-  it('should call startAnalysis when button is clicked', () => {
-    spyOn(component, 'startAnalysis');
+  it('should call startRun when button is clicked', () => {
+    spyOn(component, 'startRun');
     fixture.detectChanges();
 
     const button = fixture.nativeElement.querySelector('.start-analysis-btn');
     button?.click();
 
-    expect(component.startAnalysis).toHaveBeenCalled();
+    expect(component.startRun).toHaveBeenCalled();
   });
 
   it('should display Climate Foresight tool information', () => {
@@ -431,6 +520,13 @@ describe('ClimateForesightComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MapConfigState, useValue: mockMapConfigState },
         { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+        { provide: HttpClient, useValue: mockHttpClient },
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatSnackBar, useValue: mockSnackBar },
+        {
+          provide: ClimateForesightService,
+          useValue: mockClimateForesightService,
+        },
         { provide: WINDOW, useValue: window },
       ],
       schemas: [NO_ERRORS_SCHEMA],

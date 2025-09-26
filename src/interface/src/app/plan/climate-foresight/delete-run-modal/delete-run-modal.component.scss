@@ -1,0 +1,16 @@
+@import 'colors';
+
+:host {
+  display: block;
+}
+
+.modal-body-content {
+  padding: 12px;
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: $color-dark-gray;
+  }
+}

@@ -1,0 +1,41 @@
+<mat-card class="run-card" (click)="onCardClick()">
+  <mat-card-content>
+    <div class="card-header">
+      <h3 class="run-name">{{ run.name }}</h3>
+      <button
+        mat-icon-button
+        class="more-button"
+        [matMenuTriggerFor]="menu"
+        (click)="$event.stopPropagation()">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </div>
+
+    <div class="card-details">
+      <div class="detail-column">
+        <span class="detail-label">CREATOR</span>
+        <span class="detail-value">{{ run.creator }}</span>
+      </div>
+
+      <div class="detail-column">
+        <span class="detail-label">DATE CREATED</span>
+        <span class="detail-value">{{ run.created_at | date }}</span>
+      </div>
+
+      <div class="detail-column">
+        <span class="detail-label">STATUS</span>
+        <span class="status-badge" [ngClass]="statusClass">
+          {{ statusLabel }}
+        </span>
+      </div>
+      <div class="detail-column"></div>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<mat-menu #menu="matMenu">
+  <button class="delete-button" mat-menu-item (click)="onDelete($event)">
+    <mat-icon>delete</mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>
