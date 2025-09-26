@@ -862,31 +862,16 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         model = Scenario
         fields = ("treatment_goal", "configuration")
 
-    def _apply_configuration(self, instance: Scenario, cfg_in: dict) -> Scenario:
-        cfg_in = (cfg_in or {}).copy()
-
-        targets = cfg_in.pop("targets", None) or {}
-        for key in ("max_area", "max_project_count", "estimated_cost"):
-            if key in targets:
-                cfg_in[key] = targets[key]
-
-        nested = UpsertConfigurationV3Serializer(
-            instance=instance,
-            data=cfg_in,
-            partial=True,
-            context=self.context,
-        )
-        nested.is_valid(raise_exception=True)
-        return nested.update(instance, nested.validated_data)
-
     def update(self, instance: Scenario, validated_data):
         if "treatment_goal" in validated_data:
             instance.treatment_goal = validated_data["treatment_goal"]
 
         if "configuration" in validated_data:
-            instance = self._apply_configuration(
-                instance, validated_data["configuration"]
-            )
+            current_cfg = instance.configuration or {}
+            new_cfg = validated_data["configuration"]
+
+            merged_cfg = {**current_cfg, **new_cfg}
+            instance.configuration = merged_cfg
 
         instance.save(update_fields=["treatment_goal", "configuration"])
         return instance
