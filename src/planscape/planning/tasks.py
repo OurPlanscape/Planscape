@@ -3,6 +3,7 @@ import logging
 import rasterio
 from core.flags import feature_enabled
 from datasets.models import DataLayer
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
@@ -251,7 +252,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
             log.info(
                 f"Calculating missing stand metrics for datalayer {datalayer.pk} and {len(missing_stand_ids)} stands"
             )
-            batch_size = 1000
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
             for i in range(0, len(missing_stand_ids), batch_size):
                 batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
                 tasks.append(
