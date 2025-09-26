@@ -348,7 +348,7 @@ def get_missing_stand_ids_for_datalayer(
     that are within the geometry and of the given size, but do not have a metric
     for the given datalayer.
     """
-    
+
     query = """
     SELECT s.id FROM stands_stand s
     LEFT OUTER JOIN stands_standmetric sm
