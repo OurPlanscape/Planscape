@@ -24,6 +24,7 @@ import { AuthService } from '@services';
 import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
+import { baseMapStyles } from '../map-base-layers';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -112,7 +113,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
-  initialBaseMap: string | undefined = 'mapbox://styles/mapbox/light-v10';
+  initialBaseMap = baseMapStyles.road;
   @Input() showMapNumber = true;
 
   @Output() mapCreated = new EventEmitter<{
