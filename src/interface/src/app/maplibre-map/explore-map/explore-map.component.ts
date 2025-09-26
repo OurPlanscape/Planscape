@@ -112,7 +112,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
-  initialBaseMap: string | undefined = '';
+  initialBaseMap: string | undefined = 'mapbox://styles/mapbox/light-v10';
   @Input() showMapNumber = true;
 
   @Output() mapCreated = new EventEmitter<{
@@ -159,7 +159,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.baseLayerUrl$.pipe(untilDestroyed(this))
       .subscribe((url) => {
         if (url) {
-          this.initialBaseMap = url?.toString();
           this.updateBaseMap(url.toString());
         }
       });
