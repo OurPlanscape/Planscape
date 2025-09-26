@@ -258,9 +258,9 @@ def get_datalayer_metric(datalayer: DataLayer) -> str:
 
 def get_stand_grid_key_search_precision(stand_size: StandSizeChoices) -> int:
     size_to_precision = {
-        StandSizeChoices.SMALL: 4,
-        StandSizeChoices.MEDIUM: 3,
-        StandSizeChoices.LARGE: 2,
+        StandSizeChoices.SMALL: 5,
+        StandSizeChoices.MEDIUM: 4,
+        StandSizeChoices.LARGE: 3,
     }
-    precision = size_to_precision.get(stand_size, 4)
+    precision = size_to_precision.get(stand_size, 5)
     return precision
