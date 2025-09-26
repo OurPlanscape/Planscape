@@ -336,3 +336,42 @@ def get_stand_grid_key_search_precision(stand_size: StandSizeChoices) -> int:
     }
     precision = size_to_precision.get(stand_size, 5)
     return precision
+
+
+def get_missing_stand_ids_for_datalayer(
+    geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
+    datalayer: DataLayer,
+) -> set[int]:
+    """
+    Given a geometry, stand size and datalayer, return the set of stand IDs
+    that are within the geometry and of the given size, but do not have a metric
+    for the given datalayer.
+    """
+    
+    query = """
+    SELECT s.id FROM stands_stand s
+    LEFT OUTER JOIN stands_standmetric sm
+    ON s.id = sm.stand_id AND sm.datalayer_id = %s
+    WHERE
+        s.size = %s AND
+        s.geometry && ST_GeomFromText(%s, %s) AND
+        ST_Within(ST_Centroid(s.geometry), ST_GeomFromText(%s, %s))
+        AND sm.id IS NULL
+        ORDER BY s.grid_key;
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            [
+                datalayer.pk,
+                stand_size,
+                geometry.wkt,
+                settings.DEFAULT_CRS,
+                geometry.wkt,
+                settings.DEFAULT_CRS,
+            ],
+        )
+        rows = cursor.fetchall()
+        missing_stand_ids = {row[0] for row in rows}
+        return missing_stand_ids
