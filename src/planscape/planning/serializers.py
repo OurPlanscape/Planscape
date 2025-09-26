@@ -1,6 +1,6 @@
 import json
 from typing import List, Optional
-
+import logging
 import markdown
 from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
@@ -29,6 +29,7 @@ from planning.models import (
 from planning.services import get_acreage, planning_area_covers, union_geojson
 from planscape.exceptions import InvalidGeometry
 
+logger = logging.getLogger(__name__)
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
     scenario_count = serializers.IntegerField(
@@ -844,7 +845,6 @@ class CreateScenarioV3Serializer(serializers.ModelSerializer):
             "origin",
             "notes",
         )
-
 
 class PatchScenarioV3Serializer(serializers.ModelSerializer):
     treatment_goal = serializers.PrimaryKeyRelatedField(

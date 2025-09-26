@@ -23,6 +23,7 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioResult,
     TreatmentGoal,
     TreatmentGoalGroup,
 )
@@ -249,6 +250,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         scenario = create_scenario(
             **serializer.validated_data,
         )
+
+        if feature_enabled("SCENARIO_DRAFTS"):
+            scenario_result, created = ScenarioResult.objects.get_or_create(
+                scenario=scenario,
+                defaults={'status': 'DRAFT'}
+            )
+            if not created:
+                scenario_result.status = 'DRAFT'
+                scenario_result.save()
+
         out_serializer = ScenarioV2Serializer(instance=scenario)
 
         headers = self.get_success_headers(out_serializer.data)

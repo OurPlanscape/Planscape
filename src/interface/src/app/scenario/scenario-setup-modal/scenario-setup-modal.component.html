@@ -23,6 +23,9 @@
         <sg-input-field
           [disabled]="false"
           class="scenario-input"
+          showSupportMessage="on-error"
+          [error]="hasError()"
+          [supportMessage]="errorMessage"
           showSupportMessage="on-error">
           <input
             sgInput
@@ -30,6 +33,7 @@
             name="scenarioName"
             cdkFocusInitial
             formControlName="scenarioName"
+            
             class="name-field" />
         </sg-input-field>
       </div>

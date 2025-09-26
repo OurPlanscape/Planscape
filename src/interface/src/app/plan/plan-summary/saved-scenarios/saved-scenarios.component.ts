@@ -125,6 +125,8 @@ export class SavedScenariosComponent implements OnInit {
   private openScenarioSetupDialog() {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
+      data: {
+        planId: this.plan?.id}
     });
   }
 
@@ -149,6 +151,8 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
+    console.log('where should this go for a DRAFT scenario?');
+    
     this.breadcrumbService.updateBreadCrumb({
       label: 'Scenario: ' + clickedScenario.name,
       backUrl: getPlanPath(clickedScenario.planning_area),
