@@ -4,6 +4,7 @@ import rasterio
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.db import transaction
+from django.utils import timezone
 from gis.core import get_storage_session
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
@@ -101,7 +102,14 @@ def async_set_planning_area_status(
                 pk=planning_area_id
             )
             planning_area.map_status = status
-            planning_area.save()
+            update_fields = ["map_status", "updated_at"]
+            if status == PlanningAreaMapStatus.STANDS_DONE:
+                planning_area.stands_ready_at = timezone.now()
+                update_fields.append("stands_ready_at")
+            if status == PlanningAreaMapStatus.DONE:
+                planning_area.metrics_ready_at = timezone.now()
+                update_fields.append("metrics_ready_at")
+            planning_area.save(update_fields=update_fields)
             log.info("Planning Area %s map status set to %s", planning_area_id, status)
     except PlanningArea.DoesNotExist:
         log.exception("Planning Area %s does not exist", planning_area_id)
