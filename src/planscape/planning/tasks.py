@@ -1,17 +1,15 @@
 import logging
 
 import rasterio
-from typing import Optional
 from core.flags import feature_enabled
-from datasets.models import DataLayer, DataLayerType
-from django.conf import settings
-from django.core.paginator import Paginator
+from datasets.models import DataLayer
 from django.db import transaction
 from gis.core import get_storage_session
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats3,
     calculate_stand_zonal_stats,
+    calculate_stand_zonal_stats_api,
     create_stands_for_geometry,
 )
 from utils.cli_utils import call_forsys
@@ -147,8 +145,11 @@ def async_calculate_stand_metrics(
             .filter(size=stand_size, grid_key__icontains=grid_key_start)
             .order_by("grid_key")
         )
-        with rasterio.Env(get_storage_session()):
-            calculate_stand_zonal_stats(stands, datalayer)
+        if feature_enabled("API_ZONAL_STATS"):
+            calculate_stand_zonal_stats_api(stands, datalayer)
+        else:
+            with rasterio.Env(get_storage_session()):
+                calculate_stand_zonal_stats(stands, datalayer)
     except PlanningArea.DoesNotExist:
         log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
         return

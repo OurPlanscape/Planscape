@@ -539,3 +539,7 @@ AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
 )
 
 E2E_TESTS_ENABLED = config("E2E_TESTS_ENABLED", default=False, cast=bool)
+STAND_METRICS_API_URL = config(
+    "STAND_METRICS_API_URL",
+    "https://stand-metrics-test-537855483895.us-central1.run.app/",
+)
