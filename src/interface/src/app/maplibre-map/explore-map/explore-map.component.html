@@ -6,11 +6,11 @@
   [interactive]="true"
   [maxZoom]="maxZoom"
   [minZoom]="minZoom"
+  [style]="initialBaseMap"
   [pitchWithRotate]="false"
   [fitBounds]="bounds"
   [fitBoundsOptions]="(boundOptions$ | async) || undefined"
   (mapLoad)="mapLoaded($event)"
-  [style]="(baseLayerUrl$ | async) || ''"
   [attributionControl]="false"
   (mapMouseMove)="onMapMouseMove($event)"
   [transformRequest]="transformRequest"
@@ -70,7 +70,10 @@
     [lngLat]="mouseLngLat"
     >{{ drawModeTooltipContent }}</app-map-tooltip
   >
-
+  <mgl-layer
+    id="drawing-hook"
+    type="background"
+    [layout]="{ visibility: 'none' }"></mgl-layer>
   <app-map-drawing-toolbox
     *ngIf="(mapInteractionMode$ | async) !== 'view'"></app-map-drawing-toolbox>
   <mgl-control position="top-left">
