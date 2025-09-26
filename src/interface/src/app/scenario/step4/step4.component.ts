@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChanges, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   CommonModule,
   NgClass,
@@ -11,34 +11,17 @@ import { ScenarioCreation } from '@types';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { NgxMaskModule } from 'ngx-mask';
 import {
-  AbstractControl,
   FormControl,
   FormGroup,
-  FormGroupDirective,
   ReactiveFormsModule,
-  NgForm,
   ValidationErrors,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import {
-  calculateMaxArea,
-  calculateMinArea,
-  calculateMinBudget,
-  hasEnoughBudget,
-} from '../../validators/scenarios';
-import { ErrorStateMatcher } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
-import { FeatureService } from 'src/app/features/feature.service';
-
-const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
-  {
-    notEnoughBudget: 'notEnoughBudget',
-    budgetOrAreaRequired: 'budgetOrAreaRequired',
-  };
 
 @Component({
   selector: 'app-step4',
@@ -70,37 +53,23 @@ export class Step4Component
     {
       max_area: new FormControl<number | null>(null, [
         Validators.min(this.minMaxAreaValue),
-        Validators.max(this.maxMaxAreaValue),
-      ]),
-      max_budget: new FormControl<number | null>(null, [Validators.min(0)]),
-      estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
+        Validators.max(this.maxAreaValue),
         Validators.required,
       ]),
+      max_project_count: new FormControl<number | null>(null, [
+        Validators.min(1),
+        Validators.required,
+      ]),
+      estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
+        Validators.required,
+        Validators.min(1),
+      ]),
     },
-    { validators: this.budgetOrAreaRequiredValidator }
+    { validators: this.workingAreaValidator(this.maxAreaValue) }
   );
 
-  constructor(private featureService: FeatureService) {
+  constructor() {
     super();
-  }
-
-  focusedSelection = ''; // string to identify which selection is focused
-  budgetStateMatcher = new NotEnoughBudgetStateMatcher();
-
-  get minBudgetValue(): number {
-    const estCostPerAcre =
-      this.form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
-    return calculateMinBudget(this.maxAreaValue, estCostPerAcre);
-  }
-
-  get minMaxAreaValue() {
-    return calculateMinArea(this.maxAreaValue);
-  }
-
-  get maxMaxAreaValue() {
-    return this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')
-      ? this.maxAreaValue
-      : calculateMaxArea(this.maxAreaValue);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -110,94 +79,54 @@ export class Step4Component
       maxArea?.clearValidators();
       maxArea?.addValidators([
         Validators.min(this.minMaxAreaValue),
-        Validators.max(this.maxMaxAreaValue),
+        Validators.max(this.maxAreaValue),
+        Validators.required,
       ]);
-      // also update the totalBudgetValidator
       this.form.clearValidators();
-      this.form.addValidators([
-        this.budgetOrAreaRequiredValidator,
-        this.totalBudgetedValidator(this.maxAreaValue),
-      ]);
-
+      this.form.addValidators([this.workingAreaValidator(this.maxAreaValue)]);
       // refresh form
       this.form.updateValueAndValidity();
     }
   }
 
-  /**
-   * checks that one of budget or treatment area constraints is provided.
-   * @param form
-   * @private
-   */
-  private budgetOrAreaRequiredValidator(
-    form: AbstractControl
-  ): ValidationErrors | null {
-    const maxBudget = form.get('max_budget');
-    const maxArea = form.get('max_area');
-    const valid = !!maxBudget?.value || !!maxArea?.value;
-    return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
+  get minMaxAreaValue() {
+    return 1;
   }
 
-  /**
-   * Checks that the maxBudget is enough for the selected estimatedCost per acre
-   * @param maxAreaValue
-   * @private
-   */
-  private totalBudgetedValidator(maxAreaValue: number): ValidatorFn {
+  // Pre-condition: we should have a valid max_area (per project area) and and max_project_count
+  getTreatedPercentage(): number {
+    const formValues = this.form.value;
+    // Calculating the percentage based on the max_area ( acres per project area ) and the  max_project_count
+    return (
+      (formValues.max_area! * formValues.max_project_count! * 100) /
+      this.maxAreaValue!
+    );
+  }
+
+  private workingAreaValidator(maxAreaValue: number): ValidatorFn {
     return (form): ValidationErrors | null => {
-      const maxBudget = form.get('max_budget')?.value;
-      const estCostPerAcre =
-        form.get('estimated_cost')?.value ?? DEFAULT_TX_COST_PER_ACRE;
+      const projectAreaCount = form.get('max_project_count');
+      const acresPerProjectArea = form.get('max_area');
 
-      if (!!maxBudget) {
-        const hasBudget = hasEnoughBudget(
-          maxAreaValue,
-          estCostPerAcre,
-          maxBudget
-        );
-
-        return hasBudget
-          ? null
-          : {
-              [customErrors.notEnoughBudget]: calculateMinBudget(
-                maxAreaValue,
-                estCostPerAcre
-              ),
-            };
+      // If we don't have project area count or max area return null since we have required validator
+      if (
+        !projectAreaCount?.value ||
+        !acresPerProjectArea?.value ||
+        !maxAreaValue
+      ) {
+        return null;
       }
+
+      if (projectAreaCount?.value * acresPerProjectArea.value > maxAreaValue) {
+        debugger;
+        return { invalidWorkingArea: true };
+      }
+
       return null;
     };
   }
 
   getData() {
     return this.form.value;
-  }
-
-  // This enables and disables fields, based on what our current selection is
-  toggleMaxAreaAndMaxBudget() {
-    const maxBudgetControl = this.form!.get('max_budget');
-    const maxAreaControl = this.form!.get('max_area');
-
-    if (maxBudgetControl?.value) {
-      maxAreaControl?.disable();
-    } else {
-      maxAreaControl?.enable();
-    }
-
-    if (maxAreaControl?.value) {
-      maxBudgetControl?.disable();
-    } else {
-      maxBudgetControl?.enable();
-    }
-  }
-}
-
-class NotEnoughBudgetStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: FormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const hasError = form?.hasError(customErrors.notEnoughBudget);
-    return !!(control && control.touched && (control.invalid || hasError));
   }
 }
