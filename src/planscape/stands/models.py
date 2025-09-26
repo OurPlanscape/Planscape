@@ -6,6 +6,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Centroid, Transform
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.db.models import QuerySet
+from django.contrib.postgres.indexes import OpClass
 from django_stubs_ext.db.models import TypedModelMeta
 
 
@@ -115,6 +116,10 @@ class Stand(CreatedAtMixin, models.Model):
                     "size",
                 ],
                 name="stand_size_index",
+            ),
+            models.Index(
+                OpClass("grid_key", "text_pattern_ops"),
+                name="stand_gridkey_search_index",
             ),
         ]
 
