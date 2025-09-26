@@ -1,6 +1,12 @@
 <mgl-image
-  id="stripes-pattern"
-  [url]="'/assets/png/patterns/stripes-black.png'"></mgl-image>
+  id="exclude-pattern"
+  [options]="{ pixelRatio: 4, sdf: false }"
+  [url]="'/assets/png/patterns/excludes.png'"></mgl-image>
+
+<mgl-image
+  id="thresholds-pattern"
+  [options]="{ pixelRatio: 4, sdf: false }"
+  [url]="'/assets/png/patterns/thresholds.png'"></mgl-image>
 
 <ng-container *ngIf="tilesUrl$ | async as tilesUrl">
   <mgl-vector-source
@@ -25,12 +31,24 @@
   </mgl-layer>
 
   <mgl-layer
+    *ngIf="(step$ | async) === 1"
     id="scenario-stands-excluded"
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
+    [paint]="standExcludedPaint$ | async"
+    before="scenario-stands-line">
+  </mgl-layer>
+
+  <mgl-layer
+    *ngIf="showThresholdStands$ | async"
+    id="scenario-stands-thresholds"
+    type="fill"
+    [source]="sourceName"
+    [sourceLayer]="sourceName"
     [filter]="(filteredStands$ | async) || undefined"
-    [paint]="standExcludedPaint$ | async">
+    [paint]="standThresholdPaint$ | async"
+    before="scenario-stands-line">
   </mgl-layer>
 </ng-container>
 <div class="loader"></div>

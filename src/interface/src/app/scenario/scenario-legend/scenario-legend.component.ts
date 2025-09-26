@@ -35,7 +35,14 @@ export class ScenarioLegendComponent {
     })
   );
 
-  showConstrainedStands$ = this.newScenarioState.hasConstrainedStands$;
+  showConstrainedStands$ = combineLatest([
+    this.stepIndex$,
+    this.newScenarioState.hasConstrainedStands$,
+  ]).pipe(
+    map(([step, hasExcluded]) => {
+      return hasExcluded && step > 1;
+    })
+  );
 
   treatablePercent$ = this.newScenarioState.availableStands$.pipe(
     map((s) => s.summary.treatable_area / s.summary.available_area)

@@ -5,11 +5,7 @@
     type="line"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="{
-      'line-color': lineColor,
-      'line-width': 2,
-      'line-opacity': (opacity$ | async) || 0,
-    }"
+    [paint]="linePaint$ | async"
     [before]="before">
   </mgl-layer>
   <mgl-layer
@@ -17,10 +13,8 @@
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="{
-      'fill-color': backgroundColor,
-      'fill-opacity': (fillOpacity$ | async) || 0,
-    }"
+    [paint]="fillPaint$ | async"
     before="planning-area-polygon">
   </mgl-layer>
 </ng-container>
+Z Z
