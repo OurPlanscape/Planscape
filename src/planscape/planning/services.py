@@ -144,32 +144,28 @@ def create_planning_area(
         ]
         create_stand_metrics_jobs.extend(jobs)
 
-    create_stand_metrics_jobs = chord(
-        header=group(create_stand_metrics_jobs),
-        body=async_set_planning_area_status.si(
-            planning_area.pk,
-            PlanningAreaMapStatus.DONE,
-        ),
-    )
+    create_stand_metrics_jobs = group(create_stand_metrics_jobs)
     set_map_status_failed = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.FAILED,
     )
-    create_stands_jobs = chord(
-        header=group(
-            [
-                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
-                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
-                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
-            ]
-        ),
-        body=async_set_planning_area_status.si(
-            planning_area.pk, PlanningAreaMapStatus.STANDS_DONE
-        ),
+    create_stands_jobs = group(
+        [
+            async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+            async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+            async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+        ]
     )
     create_stands_job = chain(
+        async_set_planning_area_status.si(
+            planning_area.pk, PlanningAreaMapStatus.IN_PROGRESS
+        ),
         create_stands_jobs,
+        async_set_planning_area_status.si(
+            planning_area.pk, PlanningAreaMapStatus.STANDS_DONE
+        ),
         create_stand_metrics_jobs,
+        async_set_planning_area_status.si(planning_area.pk, PlanningAreaMapStatus.DONE),
     ).on_error(set_map_status_failed)
 
     track_openpanel(
