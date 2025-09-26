@@ -11,7 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
-from celery import chord
+from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
@@ -152,17 +152,25 @@ def create_planning_area(
         planning_area.pk,
         PlanningAreaMapStatus.STANDS_DONE,
     )
-    create_stand_metrics_jobs = chord(
-        header=create_stand_metrics_jobs, body=set_map_status_done
+
+    logger.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
+
+    stand_metrics_workflow = chord(
+        header=group(create_stand_metrics_jobs), body=set_map_status_done
     )
-    workflow = chord(
-        header=[
-            async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
-        ],
-        body=create_stand_metrics_jobs,
+
+    stands_workflow = chord(
+        header=group(
+            [
+                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+            ]
+        ),
+        body=set_map_status_stands_done,
     )
+    workflow = stands_workflow | stand_metrics_workflow
+
     track_openpanel(
         name="planning.planning_area.created",
         properties={
