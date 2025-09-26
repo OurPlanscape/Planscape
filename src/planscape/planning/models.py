@@ -108,6 +108,9 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
     )
 
+    stands_ready_at = models.DateTimeField(null=True)
+    metrics_ready_at = models.DateTimeField(null=True)
+
     def creator_name(self) -> str:
         return self.user.get_full_name()
 

@@ -131,7 +131,7 @@ def create_planning_area(
     ]
     datalayers = list(filter(None, datalayers))
 
-    precalculation_jobs = []
+    create_stand_metrics_jobs = []
 
     for stand_size in StandSizeChoices:
         truncated_stand_grid_keys = get_truncated_stands_grid_keys(
@@ -142,38 +142,34 @@ def create_planning_area(
             for datalayer in datalayers
             for grid_key_start in truncated_stand_grid_keys
         ]
-        precalculation_jobs.extend(jobs)
+        create_stand_metrics_jobs.extend(jobs)
 
-    precalculation_jobs = group(precalculation_jobs)
-    set_map_status_done = async_set_planning_area_status.si(
-        planning_area.pk,
-        PlanningAreaMapStatus.DONE,
-    )
-    set_map_status_in_progress = async_set_planning_area_status.si(
-        planning_area.pk,
-        PlanningAreaMapStatus.IN_PROGRESS,
+    create_stand_metrics_jobs = chord(
+        header=group(create_stand_metrics_jobs),
+        body=async_set_planning_area_status.si(
+            planning_area.pk,
+            PlanningAreaMapStatus.DONE,
+        ),
     )
     set_map_status_failed = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.FAILED,
     )
-    create_stands_jobs = group(
-        [
-            async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
-        ]
-    )
-    create_stands_job = chord(
-        chain(
-            create_stands_jobs,
-            async_set_planning_area_status.si(
-                planning_area.pk,
-                PlanningAreaMapStatus.STANDS_DONE,
-            ),
-            precalculation_jobs,
+    create_stands_jobs = chord(
+        header=group(
+            [
+                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+            ]
         ),
-        set_map_status_done,
+        body=async_set_planning_area_status.si(
+            planning_area.pk, PlanningAreaMapStatus.STANDS_DONE
+        ),
+    )
+    create_stands_job = chain(
+        create_stands_jobs,
+        create_stand_metrics_jobs,
     ).on_error(set_map_status_failed)
 
     track_openpanel(
