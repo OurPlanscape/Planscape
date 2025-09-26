@@ -277,7 +277,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    if treatment_goal and not feature_enabled("SCENARIO_DRAFTS"):
+    if not feature_enabled("SCENARIO_DRAFTS"):
         datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
         truncated_stand_grid_keys = get_truncated_stands_grid_keys(
             scenario.planning_area, scenario.get_stand_size()
