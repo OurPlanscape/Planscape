@@ -172,7 +172,7 @@ def calculate_stand_vector_stats3(
         )
 
 
-def api_stand_zonal_stats(
+def calculate_stand_zonal_stats_api(
     stands: QuerySet["Stand"],
     datalayer: DataLayer,
     aggregations: Collection[str] = DEFAULT_AGGREGATIONS,
