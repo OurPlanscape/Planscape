@@ -7,12 +7,12 @@ import {
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Step4Component } from './step4.component';
+import { Step4LegacyComponent } from './step4-legacy.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 
-describe('Step4Component', () => {
-  let component: Step4Component;
-  let fixture: ComponentFixture<Step4Component>;
+describe('Step4LegacyComponent', () => {
+  let component: Step4LegacyComponent;
+  let fixture: ComponentFixture<Step4LegacyComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -20,12 +20,12 @@ describe('Step4Component', () => {
         NoopAnimationsModule,
         BrowserAnimationsModule,
         NgxMaskModule.forRoot(),
-        Step4Component,
+        Step4LegacyComponent,
         FeaturesModule,
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Step4Component);
+    fixture = TestBed.createComponent(Step4LegacyComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
