@@ -11,7 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
-from celery import chain, chord, group
+from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
@@ -144,35 +144,26 @@ def create_planning_area(
         ]
         create_stand_metrics_jobs.extend(jobs)
 
-    create_stand_metrics_jobs = group(create_stand_metrics_jobs)
     set_map_status_done = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.DONE,
     )
-
-    set_map_status_failed = async_set_planning_area_status.si(
+    set_map_status_stands_done = async_set_planning_area_status.si(
         planning_area.pk,
-        PlanningAreaMapStatus.FAILED,
+        PlanningAreaMapStatus.STANDS_DONE,
     )
-    create_stands_jobs = group(
-        [
+    create_stands_jobs = chord(
+        header=[
             async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
             async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
             async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
-        ]
+        ],
+        body=set_map_status_stands_done,
     )
-    create_stands_job = chord(
-        chain(
-            create_stands_jobs,
-            async_set_planning_area_status.si(
-                planning_area.pk,
-                PlanningAreaMapStatus.STANDS_DONE,
-            ),
-            create_stands_jobs,
-        ),
-        set_map_status_done,
-    ).on_error(set_map_status_failed)
-
+    create_stand_metrics_jobs = chord(
+        header=create_stand_metrics_jobs, body=set_map_status_done
+    )
+    workflow = create_stands_jobs | create_stand_metrics_jobs
     track_openpanel(
         name="planning.planning_area.created",
         properties={
@@ -183,7 +174,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: create_stands_job.apply_async())
+        transaction.on_commit(lambda: workflow.apply_async())
     return planning_area
 
 
