@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name="stand",
             index=models.Index(
-                django.contrib.postgres.indexes.OpClass("grid_key", "text_pattern_ops"),
+                django.contrib.postgres.indexes.OpClass("grid_key", name="text_pattern_ops"),
                 name="stand_gridkey_search_index",
             ),
         ),

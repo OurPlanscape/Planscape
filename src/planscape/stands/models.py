@@ -118,7 +118,7 @@ class Stand(CreatedAtMixin, models.Model):
                 name="stand_size_index",
             ),
             models.Index(
-                OpClass("grid_key", "text_pattern_ops"),
+                OpClass("grid_key", name="text_pattern_ops"),
                 name="stand_gridkey_search_index",
             ),
         ]
