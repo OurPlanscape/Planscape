@@ -3,6 +3,7 @@ import logging
 from typing import Any, Collection, Dict
 
 import rasterio
+import requests
 from core.flags import feature_enabled
 from datasets.dynamic_models import qualify_for_django
 from datasets.models import DataLayer, DataLayerType
@@ -71,6 +72,19 @@ def to_stand_metric(
     }
     return StandMetric(
         stand_id=stats_result.get("id"), datalayer_id=datalayer.pk, **stand_metric_data
+    )
+
+
+def from_api_to_metric(
+    data: Dict[str, Any], datalayer: DataLayer, aggregations: Collection[str]
+) -> StandMetric:
+    stand_id = data.pop("stand_id")
+    datalayer_id = datalayer.pk
+    stand_metric_data = {
+        AGGREGATION_MODEL_MAP[agg]: data.get(agg) for agg in aggregations
+    }
+    return StandMetric(
+        stand_id=stand_id, datalayer_id=datalayer_id, **stand_metric_data
     )
 
 
@@ -158,6 +172,63 @@ def calculate_stand_vector_stats3(
         )
 
 
+def api_stand_zonal_stats(
+    stands: QuerySet["Stand"],
+    datalayer: DataLayer,
+    aggregations: Collection[str] = DEFAULT_AGGREGATIONS,
+) -> None:
+    if datalayer.type == DataLayerType.VECTOR:
+        raise ValueError("Cannot calculate zonal stats for vector layers.")
+
+    if datalayer.url is None:
+        raise ValueError("Cannot calculate zonal stats for empty urls.")
+    stand_ids = set(stands.all().values_list("id", flat=True))
+    existing_metrics = StandMetric.objects.filter(
+        stand_id__in=stand_ids,
+        datalayer_id=datalayer.pk,
+    )
+    existing_stand_ids = set(existing_metrics.all().values_list("stand_id", flat=True))
+    missing_stand_ids = stand_ids - existing_stand_ids
+    missing_stands = Stand.objects.filter(id__in=missing_stand_ids).with_webmercator()
+    if missing_stands.count() <= 0:
+        log.info("There are no missing stands. Early return.")
+        return
+
+    stand_geojson = list(map(to_geojson, missing_stands))
+    nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
+    payload = {
+        "datalayer": {
+            "id": datalayer.pk,
+            "url": datalayer.url,
+            "nodata": nodata,
+        },
+        "stands": {"type": "FeatureCollection", "features": stand_geojson},
+    }
+    response = requests.POST(settings.STAND_METRICS_API_URL, json=payload)
+    response.raise_for_status()
+
+    data = response.json()
+    results = list(
+        map(
+            lambda r: from_api_to_metric(
+                data=r,
+                datalayer=datalayer,
+                aggregations=aggregations,
+            ),
+            data,
+        )
+    )
+    StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields="min avg median max sum count majority minority".split(),
+    )
+
+    log.info(f"Created/Updated {len(results)} stand metrics.")
+
+
 def calculate_stand_zonal_stats(
     stands: QuerySet["Stand"],
     datalayer: DataLayer,
@@ -232,7 +303,7 @@ def calculate_stand_zonal_stats(
         batch_size=100,
         update_conflicts=True,
         unique_fields=["stand_id", "datalayer_id"],
-        update_fields="min avg max sum count majority minority".split(),
+        update_fields="min avg median max sum count majority minority".split(),
     )
 
     log.info(f"Created/Updated {len(results)} stand metrics.")
