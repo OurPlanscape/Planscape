@@ -241,9 +241,7 @@ def get_treatment_goal_from_configuration(
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import (
-        async_calculate_stand_metrics,
-        async_forsys_run,
-        async_pre_forsys_process,
+        prepare_scenarios_for_forsys_and_run,
     )
 
     # precedence here to the `kwargs`. if you supply `origin` here
@@ -273,23 +271,6 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         target=scenario.planning_area,
     )
     if not feature_enabled("SCENARIO_DRAFTS"):
-        datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
-        truncated_stand_grid_keys = get_truncated_stands_grid_keys(
-            scenario.planning_area, scenario.get_stand_size()
-        )
-
-        tasks = [
-            async_calculate_stand_metrics.si(
-                planning_area_id=scenario.planning_area.pk,
-                datalayer_id=d.pk,
-                stand_size=scenario.get_stand_size(),
-                grid_key_start=grid_key_start,
-            )
-            for d in datalayers
-            for grid_key_start in truncated_stand_grid_keys
-        ]
-        tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
-
         track_openpanel(
             name="planning.scenario.created",
             properties={
@@ -304,7 +285,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
             user_id=user.pk,
         )
         transaction.on_commit(
-            lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+            lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
         )
     return scenario
 
@@ -624,29 +605,11 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 @transaction.atomic()
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     from planning.tasks import (
-        async_calculate_stand_metrics,
-        async_forsys_run,
-        async_pre_forsys_process,
+        prepare_scenarios_for_forsys_and_run,
     )
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
-    datalayers = tx_goal.get_raster_datalayers() if tx_goal else []
-    truncated_stand_grid_keys = get_truncated_stands_grid_keys(
-        scenario.planning_area, scenario.get_stand_size()
-    )
-    tasks = [
-        async_calculate_stand_metrics.si(
-            planning_area_id=scenario.planning_area.pk,
-            datalayer_id=d.pk,
-            stand_size=scenario.get_stand_size(),
-            grid_key_start=grid_key_start,
-        )
-        for d in datalayers
-        for grid_key_start in truncated_stand_grid_keys
-    ]
-    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
-
     track_openpanel(
         name="planning.scenario.triggered",
         properties={
@@ -664,7 +627,7 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     )
 
     transaction.on_commit(
-        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+        lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
     )
     return scenario
 
