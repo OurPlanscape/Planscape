@@ -45,7 +45,6 @@ describe('ScenarioSetupModalComponent', () => {
           provide: MatDialog,
           useValue: fakeDialog,
         },
-
       ],
     }).compileComponents();
 

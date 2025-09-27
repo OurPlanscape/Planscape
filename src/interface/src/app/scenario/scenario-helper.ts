@@ -95,14 +95,8 @@ export function scenarioCanHaveTreatmentPlans(
   return false;
 }
 
-
 // TODO:
-export function convertV2ToV3Config(config: ScenarioConfigPayload) {
-
-}
+export function convertV2ToV3Config(config: ScenarioConfigPayload) {}
 
 // TODO
-export function convertV3ToV2Config(config:any) {
-
-}
-
+export function convertV3ToV2Config(config: any) {}

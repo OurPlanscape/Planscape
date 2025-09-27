@@ -19,7 +19,11 @@ import { ScenarioService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
-import { ScenarioConfig, ScenarioConfigPayload, ScenarioCreation } from '@types';
+import {
+  ScenarioConfig,
+  ScenarioConfigPayload,
+  ScenarioCreation,
+} from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
@@ -68,7 +72,8 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate {
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -143,7 +148,7 @@ export class ScenarioCreationComponent
     // Adding scenario name validator
     // this.refreshScenarioNameValidator();
     if (this.scenarioId) {
-      this.loadExistingScenario()
+      this.loadExistingScenario();
     }
   }
 
@@ -154,17 +159,19 @@ export class ScenarioCreationComponent
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         this.form.controls.scenarioName.setValue(scenario.name);
-        console.log('the config so far:', scenario.configuration);
 
-        //TODO: map this to the newScenario config? 
+        //TODO: map this to the newScenario config?
         // doublecheck: are we populating these screens from existing data when someone clicks a Draft?
-        const currentConfig = this.convertSavedConfigToNewConfig(scenario.configuration);
+        const currentConfig = this.convertSavedConfigToNewConfig(
+          scenario.configuration
+        );
         this.newScenarioState.setScenarioConfig(currentConfig);
-        console.log('returning this config', currentConfig);
       });
   }
 
-  convertSavedConfigToNewConfig(config: ScenarioConfig): Partial<ScenarioConfigPayload> {
+  convertSavedConfigToNewConfig(
+    config: ScenarioConfig
+  ): Partial<ScenarioConfigPayload> {
     const newState = Object.fromEntries(
       Object.entries(config)
         .filter(([_, value]) => value != null)

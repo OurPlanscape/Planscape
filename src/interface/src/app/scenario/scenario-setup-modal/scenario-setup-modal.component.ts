@@ -43,17 +43,17 @@ export class ScenarioSetupModalComponent {
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
     private router: Router
-  ) { }
+  ) {}
 
   cancel(): void {
     this.dialogRef.close(false);
   }
 
   hasError() {
-   if (this.errorMessage !== '') {
-    return true;
-   }
-   return false;
+    if (this.errorMessage !== '') {
+      return true;
+    }
+    return false;
   }
 
   handleSubmit(): void {
@@ -72,25 +72,25 @@ export class ScenarioSetupModalComponent {
       return;
     }
     const planId = this.data.planId;
-    console.log('we have a planId?', planId);
     this.scenarioService.createScenarioFromName(name, planId).subscribe({
       next: (result) => {
         this.dialogRef.close(result);
         this.submitting = false;
         if (result) {
-          this.router.navigate([
-            'plan',
-            planId,
-            'scenario',
-            result.id,
-          ]);
+          this.router.navigate(['plan', planId, 'scenario', result.id]);
         }
       },
       error: (e) => {
         // detect known errors
-        if (e.error?.global && e.error?.global.some((msg: string) => msg.includes('name must make a unique set'))) {
+        if (
+          e.error?.global &&
+          e.error?.global.some((msg: string) =>
+            msg.includes('name must make a unique set')
+          )
+        ) {
           this.submitting = false;
-          this.errorMessage = 'This name is already used by another scenario in this planning area.'
+          this.errorMessage =
+            'This name is already used by another scenario in this planning area.';
         } else {
           // otherwise, show snackbar for unknown errors
           this.matSnackBar.open(
