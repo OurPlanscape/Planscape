@@ -169,8 +169,20 @@ export class Step4Component
     };
   }
 
-  getData() {
+  getDraftData() {
+    return { configuration: {targets: this.form.value }};
+  }
+
+  getPostData() {
     return this.form.value;
+  }
+
+  getData() {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      return this.getDraftData();
+    } else {
+      return this.getPostData();
+    }
   }
 
   // This enables and disables fields, based on what our current selection is

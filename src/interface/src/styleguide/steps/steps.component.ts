@@ -120,7 +120,8 @@ export class StepsComponent<T> extends CdkStepper {
     }
 
     if (this.isLastStep) {
-      this.finished.emit();
+      // TODO: uncomment this after dev experiments
+      // this.finished.emit();
     } else {
       this.next();
     }

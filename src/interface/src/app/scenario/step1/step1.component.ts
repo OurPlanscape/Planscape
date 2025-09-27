@@ -50,7 +50,7 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
     stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
       Validators.required,
     ]),
-    treatment_goal: new FormControl<number | undefined>(undefined, [
+    treatment_goal: new FormControl<number | undefined>(1, [
       Validators.required,
     ]),
   });
@@ -96,7 +96,19 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
     return b.key.localeCompare(a.key);
   }
 
-  getData() {
+  getPostData() {
     return this.form.value;
+  }
+
+  getDraftData() {
+    return this.form.value;
+  }
+
+  getData() {
+    if (this.featuresService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      return this.getDraftData();
+    } else {
+      return this.getPostData();
+    }
   }
 }

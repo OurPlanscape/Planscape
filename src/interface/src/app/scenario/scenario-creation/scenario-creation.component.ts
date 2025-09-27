@@ -22,6 +22,7 @@ import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
   ScenarioConfig,
   ScenarioConfigPayload,
+  ScenarioDraftPayload,
   ScenarioCreation,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
@@ -77,6 +78,7 @@ export class ScenarioCreationComponent
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
+  draftConfig: Partial<ScenarioDraftPayload> = {};
 
   planId = this.route.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
@@ -189,9 +191,32 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    this.config = { ...this.config, ...data };
-    this.newScenarioState.setScenarioConfig(this.config);
-    return of(true);
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      this.draftConfig = { ...this.draftConfig, ...data };
+      return this.savePatch(this.draftConfig);
+    } else {
+      this.config = { ...this.config, ...data };
+      console.log('saving the step...with config:', this.config);
+      this.newScenarioState.setScenarioConfig(this.config);
+
+      return of(true);
+    }
+  }
+
+  savePatch(data: Partial<ScenarioDraftPayload>) {
+    let success = false;
+    //TODO: save with transformation
+    this.scenarioService.patchScenarioConfig(this.draftConfig).subscribe({
+      next: (result) => {
+        if (result) {
+          success = true;
+        }
+      },
+      error: (e) => {
+        console.error('patch error:', e);
+      },
+    });
+    return of(success);
   }
 
   async onFinish() {

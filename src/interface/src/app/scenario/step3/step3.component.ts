@@ -13,11 +13,17 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SectionComponent } from '@styleguide';
 import { NgxMaskModule } from 'ngx-mask';
 import { StepDirective } from 'src/styleguide/steps/step.component';
-import { NamedConstraint, ScenarioCreation } from '@types';
+import { NamedConstraint, ScenarioCreation, Constraint } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { FeatureService } from '../../features/feature.service';
+
+// Placeholder for supported Layer IDs
+const LAYER_TO_ID: { [key: string]: number } = {
+  max_slope: 1111,
+  min_distance_from_road: 2222,
+};
 
 @Component({
   selector: 'app-step3',
@@ -58,7 +64,39 @@ export class Step3Component
     super();
   }
 
+  getDraftData() {
+    /// TODO ---future: get the supported layer Ids at start of this component
+    // From forsys service?
+    // TODO -- read the values, add the presumed operators
+    const constraintsData: Constraint[] = [];
+
+    // For now, cycle through our hardcoded layers:
+    if (this.form.value.max_slope) {
+      constraintsData.push({
+        datalayer: LAYER_TO_ID['max_slope'],
+        operator: 'lt',
+        value: this.form.value.max_slope,
+      });
+    }
+    if (this.form.value.min_distance_from_road) {
+      constraintsData.push({
+        datalayer: LAYER_TO_ID['min_distance_from_road'],
+        operator: 'lte',
+        value: this.form.value.min_distance_from_road,
+      });
+    }
+    return { configuration: { constraints: constraintsData }};
+  }
+
   getData() {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      return this.getDraftData();
+    } else {
+      return this.getPostData();
+    }
+  }
+
+  getPostData() {
     return this.form.value;
   }
 

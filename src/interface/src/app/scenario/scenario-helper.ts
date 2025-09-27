@@ -32,6 +32,7 @@ export function getScenarioCreationPayloadScenarioCreation(
   return result as ScenarioCreationPayload;
 }
 
+
 /**
  * This method will get a list of scenarioGoal and will return the grouped version of it
  * @param goals : List of scenario goals
