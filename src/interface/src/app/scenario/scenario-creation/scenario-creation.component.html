@@ -36,7 +36,7 @@
       (selectedIndexChange)="stepChanged($event)"
       (finished)="onFinish()"
       [outerForm]="form"
-      [savingStep]="creatingScenario">
+      [savingStep]="awaitingBackendResponse">
       <sg-step>
         <app-step1 #step1></app-step1>
       </sg-step>

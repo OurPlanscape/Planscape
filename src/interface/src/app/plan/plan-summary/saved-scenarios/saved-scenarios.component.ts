@@ -58,7 +58,7 @@ export class SavedScenariosComponent implements OnInit {
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
     private featureService: FeatureService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.fetchScenarios();
@@ -126,7 +126,8 @@ export class SavedScenariosComponent implements OnInit {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
-        planId: this.plan?.id}
+        planId: this.plan?.id
+      }
     });
   }
 
@@ -151,8 +152,13 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    console.log('where should this go for a DRAFT scenario?');
-    
+
+    if (clickedScenario.scenario_result?.status === 'DRAFT') {
+      this.router.navigate(['scenario', 'draft', clickedScenario.id], {
+        relativeTo: this.route,
+      });
+    }else{
+
     this.breadcrumbService.updateBreadCrumb({
       label: 'Scenario: ' + clickedScenario.name,
       backUrl: getPlanPath(clickedScenario.planning_area),
@@ -162,6 +168,7 @@ export class SavedScenariosComponent implements OnInit {
       relativeTo: this.route,
     });
   }
+}
 
   tabChange(data: { index: number; tab: MatTab }) {
     this.selectedTabIndex = data.index;

@@ -19,7 +19,7 @@ import { ScenarioService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
-import { ScenarioCreation } from '@types';
+import { ScenarioConfig, ScenarioConfigPayload, ScenarioCreation } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
@@ -68,13 +68,14 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate
-{
+  implements OnInit, CanComponentDeactivate {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
 
   planId = this.route.snapshot.data['planId'];
+  scenarioId = this.route.snapshot.data['scenarioId'];
+
   plan$ = this.planState.currentPlan$;
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   finished = false;
@@ -83,7 +84,7 @@ export class ScenarioCreationComponent
     scenarioName: new FormControl('', [Validators.required]),
   });
 
-  creatingScenario = false;
+  awaitingBackendResponse = false;
 
   isDynamicMapEnabled = this.featureService.isFeatureEnabled(
     'DYNAMIC_SCENARIO_MAP'
@@ -140,7 +141,36 @@ export class ScenarioCreationComponent
       backUrl: getPlanPath(this.planId),
     });
     // Adding scenario name validator
-    this.refreshScenarioNameValidator();
+    // this.refreshScenarioNameValidator();
+    if (this.scenarioId) {
+      this.loadExistingScenario()
+    }
+  }
+
+  loadExistingScenario() {
+    // TODO: populate local data with name...anything else?
+    this.scenarioService
+      .getScenario(this.scenarioId)
+      .pipe(untilDestroyed(this))
+      .subscribe((scenario) => {
+        this.form.controls.scenarioName.setValue(scenario.name);
+        console.log('the config so far:', scenario.configuration);
+
+        //TODO: map this to the newScenario config? 
+        // doublecheck: are we populating these screens from existing data when someone clicks a Draft?
+        const currentConfig = this.convertSavedConfigToNewConfig(scenario.configuration);
+        this.newScenarioState.setScenarioConfig(currentConfig);
+        console.log('returning this config', currentConfig);
+      });
+  }
+
+  convertSavedConfigToNewConfig(config: ScenarioConfig): Partial<ScenarioConfigPayload> {
+    const newState = Object.fromEntries(
+      Object.entries(config)
+        .filter(([_, value]) => value != null)
+        .map(([key, value]) => [key, value as NonNullable<typeof value>])
+    );
+    return newState as Partial<ScenarioCreation>;
   }
 
   canDeactivate(): Observable<boolean> | boolean {
@@ -163,7 +193,7 @@ export class ScenarioCreationComponent
       name: this.form.getRawValue().scenarioName || '',
       planning_area: this.planId,
     });
-    this.creatingScenario = true;
+    this.awaitingBackendResponse = true;
     // Firing scenario name validation before finish
     const validated = await this.refreshScenarioNameValidator();
 
@@ -177,11 +207,11 @@ export class ScenarioCreationComponent
           this.dialog.open(SavingErrorModalComponent);
         },
         complete: () => {
-          this.creatingScenario = false;
+          this.awaitingBackendResponse = false;
         },
       });
     } else {
-      this.creatingScenario = false;
+      this.awaitingBackendResponse = false;
     }
   }
 
