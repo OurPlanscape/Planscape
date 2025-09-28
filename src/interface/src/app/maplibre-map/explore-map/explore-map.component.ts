@@ -109,6 +109,10 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
+  /**
+   * MapLibre requires an initital basemap, so we default to this,
+   * but we set this dynamically using updateBaseMap() below.
+   */
   initialBaseMap = baseMapStyles.road;
   @Input() showMapNumber = true;
 
@@ -173,6 +177,15 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /*
+  Here, we are bypassing the [style] attribute in the mgl adapter, 
+  because changes there are known to wipe all previous layers.
+   Instead, we call that programmatically here with .setStyle() 
+   after preserving the layers created  dynamically by terradraw 
+   (All terradraw layers are prefixed 'td-', etc), so we merge that into the style
+   object that we se there.
+  */
   updateBaseMap(url: string) {
     if (!this.mapLibreMap) {
       return;
