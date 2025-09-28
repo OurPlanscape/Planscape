@@ -3,7 +3,9 @@ import logging
 import rasterio
 from core.flags import feature_enabled
 from datasets.models import DataLayer
+from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 from gis.core import get_storage_session
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
@@ -11,6 +13,7 @@ from stands.services import (
     calculate_stand_zonal_stats,
     calculate_stand_zonal_stats_api,
     create_stands_for_geometry,
+    get_missing_stand_ids_for_datalayer,
 )
 from utils.cli_utils import call_forsys
 
@@ -27,6 +30,7 @@ from planning.services import (
     get_available_stand_ids,
 )
 from planscape.celery import app
+from celery import chord
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
@@ -101,7 +105,14 @@ def async_set_planning_area_status(
                 pk=planning_area_id
             )
             planning_area.map_status = status
-            planning_area.save()
+            update_fields = ["map_status", "updated_at"]
+            if status == PlanningAreaMapStatus.STANDS_DONE:
+                planning_area.stands_ready_at = timezone.now()
+                update_fields.append("stands_ready_at")
+            if status == PlanningAreaMapStatus.DONE:
+                planning_area.metrics_ready_at = timezone.now()
+                update_fields.append("metrics_ready_at")
+            planning_area.save(update_fields=update_fields)
             log.info("Planning Area %s map status set to %s", planning_area_id, status)
     except PlanningArea.DoesNotExist:
         log.exception("Planning Area %s does not exist", planning_area_id)
@@ -158,6 +169,30 @@ def async_calculate_stand_metrics(
         return
 
 
+@app.task(max_retries=3, retry_backoff=True)
+def async_calculate_stand_metrics_with_stand_list(
+    stand_ids: list,
+    datalayer_id: int,
+) -> None:
+    """
+    Calculates stand metrics based on stands list and datalayer.
+    """
+    try:
+        stands = Stand.objects.filter(id__in=stand_ids).order_by("grid_key")
+        datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
+        if feature_enabled("API_ZONAL_STATS"):
+            calculate_stand_zonal_stats_api(stands, datalayer)
+        else:
+            with rasterio.Env(get_storage_session()):
+                calculate_stand_zonal_stats(stands, datalayer)
+    except PlanningArea.DoesNotExist:
+        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
+        return
+    except DataLayer.DoesNotExist:
+        log.warning(f"DataLayer with id {datalayer_id} does not exist.")
+        return
+
+
 @app.task()
 def async_pre_forsys_process(scenario_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
@@ -189,6 +224,46 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         scenario = Scenario.objects.select_for_update().get(id=scenario_id)
         scenario.forsys_input = forsys_input  # type: ignore
         scenario.save(update_fields=["forsys_input", "updated_at"])
+
+
+@app.task()
+def prepare_scenarios_for_forsys_and_run(scenario_id: int):
+    log.info(f"Preparing scenario {scenario_id} for Forsys run.")
+    scenario = Scenario.objects.get(id=scenario_id)
+    if scenario.result_status != ScenarioResultStatus.PENDING:
+        log.info(
+            f"Scenario {scenario_id} is not in a pending state. Current status: {scenario.result_status}"
+        )
+        return
+
+    treatment_goal = scenario.treatment_goal
+
+    datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+
+    tasks = [async_pre_forsys_process.si(scenario_id=scenario.pk)]
+    for datalayer in datalayers:
+        missing_stand_ids = get_missing_stand_ids_for_datalayer(
+            geometry=scenario.planning_area.geometry,
+            stand_size=scenario.get_stand_size(),
+            datalayer=datalayer,
+        )
+
+        if missing_stand_ids:
+            log.info(
+                f"Calculating missing stand metrics for datalayer {datalayer.pk} and {len(missing_stand_ids)} stands"
+            )
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                tasks.append(
+                    async_calculate_stand_metrics_with_stand_list.si(
+                        stand_ids=batch_stand_ids,
+                        datalayer_id=datalayer.pk,
+                    )
+                )
+
+    chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
 
 
 @app.task()

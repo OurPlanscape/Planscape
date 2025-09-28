@@ -11,7 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
-from celery import chain, chord, group
+from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
@@ -131,7 +131,7 @@ def create_planning_area(
     ]
     datalayers = list(filter(None, datalayers))
 
-    precalculation_jobs = []
+    create_stand_metrics_jobs = []
 
     for stand_size in StandSizeChoices:
         truncated_stand_grid_keys = get_truncated_stands_grid_keys(
@@ -142,39 +142,34 @@ def create_planning_area(
             for datalayer in datalayers
             for grid_key_start in truncated_stand_grid_keys
         ]
-        precalculation_jobs.extend(jobs)
+        create_stand_metrics_jobs.extend(jobs)
 
-    precalculation_jobs = group(precalculation_jobs)
     set_map_status_done = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.DONE,
     )
-    set_map_status_in_progress = async_set_planning_area_status.si(
+    set_map_status_stands_done = async_set_planning_area_status.si(
         planning_area.pk,
-        PlanningAreaMapStatus.IN_PROGRESS,
+        PlanningAreaMapStatus.STANDS_DONE,
     )
-    set_map_status_failed = async_set_planning_area_status.si(
-        planning_area.pk,
-        PlanningAreaMapStatus.FAILED,
+
+    logger.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
+
+    stand_metrics_workflow = chord(
+        header=group(create_stand_metrics_jobs), body=set_map_status_done
     )
-    create_stands_jobs = group(
-        [
-            async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
-        ]
-    )
-    create_stands_job = chord(
-        chain(
-            create_stands_jobs,
-            async_set_planning_area_status.si(
-                planning_area.pk,
-                PlanningAreaMapStatus.STANDS_DONE,
-            ),
-            precalculation_jobs,
+
+    stands_workflow = chord(
+        header=group(
+            [
+                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+            ]
         ),
-        set_map_status_done,
-    ).on_error(set_map_status_failed)
+        body=set_map_status_stands_done,
+    )
+    workflow = stands_workflow | stand_metrics_workflow
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -186,7 +181,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: create_stands_job.apply_async())
+        transaction.on_commit(lambda: workflow.apply_async())
     return planning_area
 
 
@@ -246,9 +241,7 @@ def get_treatment_goal_from_configuration(
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import (
-        async_calculate_stand_metrics,
-        async_forsys_run,
-        async_pre_forsys_process,
+        prepare_scenarios_for_forsys_and_run,
     )
 
     # precedence here to the `kwargs`. if you supply `origin` here
@@ -278,23 +271,6 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         target=scenario.planning_area,
     )
     if not feature_enabled("SCENARIO_DRAFTS"):
-        datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
-        truncated_stand_grid_keys = get_truncated_stands_grid_keys(
-            scenario.planning_area, scenario.get_stand_size()
-        )
-
-        tasks = [
-            async_calculate_stand_metrics.si(
-                planning_area_id=scenario.planning_area.pk,
-                datalayer_id=d.pk,
-                stand_size=scenario.get_stand_size(),
-                grid_key_start=grid_key_start,
-            )
-            for d in datalayers
-            for grid_key_start in truncated_stand_grid_keys
-        ]
-        tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
-
         track_openpanel(
             name="planning.scenario.created",
             properties={
@@ -309,7 +285,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
             user_id=user.pk,
         )
         transaction.on_commit(
-            lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+            lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
         )
     return scenario
 
@@ -629,29 +605,11 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 @transaction.atomic()
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     from planning.tasks import (
-        async_calculate_stand_metrics,
-        async_forsys_run,
-        async_pre_forsys_process,
+        prepare_scenarios_for_forsys_and_run,
     )
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
-    datalayers = tx_goal.get_raster_datalayers() if tx_goal else []
-    truncated_stand_grid_keys = get_truncated_stands_grid_keys(
-        scenario.planning_area, scenario.get_stand_size()
-    )
-    tasks = [
-        async_calculate_stand_metrics.si(
-            planning_area_id=scenario.planning_area.pk,
-            datalayer_id=d.pk,
-            stand_size=scenario.get_stand_size(),
-            grid_key_start=grid_key_start,
-        )
-        for d in datalayers
-        for grid_key_start in truncated_stand_grid_keys
-    ]
-    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
-
     track_openpanel(
         name="planning.scenario.triggered",
         properties={
@@ -669,7 +627,7 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     )
 
     transaction.on_commit(
-        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+        lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
     )
     return scenario
 

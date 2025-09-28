@@ -118,15 +118,17 @@ def calculate_stand_vector_stats3(
     stand_size: StandSizeChoices,
     grid_key_start: str,
 ):
-    stands = Stand.objects.all().within_polygon(planning_area_geometry, stand_size)
+    stands = (
+        Stand.objects.all()
+        .within_polygon(planning_area_geometry, stand_size)
+        .filter(size=stand_size, grid_key__icontains=grid_key_start)
+    )
     stand_ids = set(stands.all().values_list("id", flat=True))
     existing_metrics = StandMetric.objects.filter(
         stand_id__in=stand_ids, datalayer_id=datalayer.pk
     )
     existing_stand_ids = set(existing_metrics.all().values_list("id", flat=True))
     missing_stand_ids = stand_ids - existing_stand_ids
-
-    grid_key_start = f"{grid_key_start}%" if grid_key_start else "%"
 
     if len(missing_stand_ids) <= 0:
         log.info("There are no missing stands. Early return.")
@@ -143,7 +145,6 @@ def calculate_stand_vector_stats3(
         FROM stands_stand s
         WHERE
             s.id IN %s
-            AND grid_key LIKE %s
     )
     INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
     SELECT
@@ -168,7 +169,7 @@ def calculate_stand_vector_stats3(
     with connection.cursor() as cursor:
         cursor.execute(
             query,
-            [tuple(missing_stand_ids), grid_key_start, datalayer.pk],
+            [tuple(missing_stand_ids), datalayer.pk],
         )
 
 
@@ -204,7 +205,7 @@ def calculate_stand_zonal_stats_api(
         },
         "stands": {"type": "FeatureCollection", "features": stand_geojson},
     }
-    response = requests.POST(settings.STAND_METRICS_API_URL, json=payload)
+    response = requests.post(f"{settings.STAND_METRICS_API_URL}/metrics", json=payload)
     response.raise_for_status()
 
     data = response.json()
@@ -335,3 +336,42 @@ def get_stand_grid_key_search_precision(stand_size: StandSizeChoices) -> int:
     }
     precision = size_to_precision.get(stand_size, 5)
     return precision
+
+
+def get_missing_stand_ids_for_datalayer(
+    geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
+    datalayer: DataLayer,
+) -> set[int]:
+    """
+    Given a geometry, stand size and datalayer, return the set of stand IDs
+    that are within the geometry and of the given size, but do not have a metric
+    for the given datalayer.
+    """
+
+    query = """
+    SELECT s.id FROM stands_stand s
+    LEFT OUTER JOIN stands_standmetric sm
+    ON s.id = sm.stand_id AND sm.datalayer_id = %s
+    WHERE
+        s.size = %s AND
+        s.geometry && ST_GeomFromText(%s, %s) AND
+        ST_Within(ST_Centroid(s.geometry), ST_GeomFromText(%s, %s))
+        AND sm.id IS NULL
+        ORDER BY s.grid_key;
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            [
+                datalayer.pk,
+                stand_size,
+                geometry.wkt,
+                settings.DEFAULT_CRS,
+                geometry.wkt,
+                settings.DEFAULT_CRS,
+            ],
+        )
+        rows = cursor.fetchall()
+        missing_stand_ids = {row[0] for row in rows}
+        return missing_stand_ids
