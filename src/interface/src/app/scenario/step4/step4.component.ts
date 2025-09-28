@@ -170,7 +170,7 @@ export class Step4Component
   }
 
   getDraftData() {
-    return { configuration: {targets: this.form.value }};
+    return { configuration: { targets: this.form.value } };
   }
 
   getPostData() {

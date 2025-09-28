@@ -13,6 +13,7 @@ export class TreatmentGoalsService {
     return this.http.get<ScenarioGoal[]>(
       `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${planning_area ? '?planning_area=' + planning_area : ''}`,
       {
+        //TODO: remove - in dev, this is failing without this attr
         withCredentials: true,
       }
     );

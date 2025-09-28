@@ -77,7 +77,13 @@ export class ScenarioSetupModalComponent {
         this.dialogRef.close(result);
         this.submitting = false;
         if (result) {
-          this.router.navigate(['plan', planId, 'scenario', 'draft', result.id]);
+          this.router.navigate([
+            'plan',
+            planId,
+            'scenario',
+            'draft',
+            result.id,
+          ]);
         }
       },
       error: (e) => {
@@ -92,7 +98,6 @@ export class ScenarioSetupModalComponent {
           this.errorMessage =
             'This name is already used by another scenario in this planning area.';
         } else {
-
           this.submitting = false;
 
           // otherwise, show snackbar for unknown errors

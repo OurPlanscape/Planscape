@@ -24,15 +24,6 @@ const routes: Routes = [
         },
       },
       {
-        path: 'draft', // Route for draft without scenarioId
-        component: ScenarioCreationComponent, // Directly route to ScenarioCreationComponent
-        title: 'Draft Scenario Creation',
-        canDeactivate: [canDeactivateGuard],
-        resolve: {
-          dataLayerInit: resetDatalayerResolver,
-        },
-      },
-      {
         path: 'draft/:scenarioId', // Route for draft with scenarioId
         component: ScenarioCreationComponent, // Also route to ScenarioCreationComponent
         title: 'Draft Scenario Configuration',

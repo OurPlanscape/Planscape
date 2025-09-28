@@ -137,7 +137,7 @@ export class NewScenarioState {
   }
 
   getDistanceToRoadsId() {
-    return this.distanceToRoadsId
+    return this.distanceToRoadsId;
   }
 
   setLoading(isLoading: boolean) {

@@ -133,12 +133,7 @@ export class SavedScenariosComponent implements OnInit {
 
   handleNewScenarioButton(configId?: number): void {
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      // TODO: bypassing this to test steps. This should call
       this.openScenarioSetupDialog();
-      console.log(
-        'logging this to avoid commenting out:',
-        ScenarioSetupModalComponent
-      );
     } else {
       this.openConfig(configId);
     }

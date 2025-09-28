@@ -61,14 +61,10 @@ export class ScenariosCardListComponent {
   handleOpenScenario(row: ScenarioRow): void {
     if (
       row.scenario_result &&
-      ['SUCCESS', 'FAILURE', 'PANIC'].includes(row.scenario_result.status)
+      ['SUCCESS', 'FAILURE', 'PANIC', 'DRAFT'].includes(
+        row.scenario_result.status
+      )
     ) {
-      this.selectedCard = row;
-      this.viewScenario.emit(row);
-    }
-
-    // handle draft scenario...
-    if (row.scenario_result && ['DRAFT'].includes(row.scenario_result.status)) {
       this.selectedCard = row;
       this.viewScenario.emit(row);
     }

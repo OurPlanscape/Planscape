@@ -32,7 +32,6 @@ export function getScenarioCreationPayloadScenarioCreation(
   return result as ScenarioCreationPayload;
 }
 
-
 /**
  * This method will get a list of scenarioGoal and will return the grouped version of it
  * @param goals : List of scenario goals
@@ -95,9 +94,3 @@ export function scenarioCanHaveTreatmentPlans(
   }
   return false;
 }
-
-// TODO:
-export function convertV2ToV3Config(config: ScenarioConfigPayload) {}
-
-// TODO
-export function convertV3ToV2Config(config: any) {}

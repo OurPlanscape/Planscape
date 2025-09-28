@@ -53,15 +53,13 @@ export class Step3Component
 
   constructor(
     private newScenarioState: NewScenarioState,
-    private featureService: FeatureService,
+    private featureService: FeatureService
   ) {
     super();
   }
 
   getDraftData() {
     const constraintsData: Constraint[] = [];
-
-    // TODO: is this the intended way to get layer Ids for these constraints?
 
     if (this.form.value.max_slope && this.newScenarioState.getSlopeId()) {
       constraintsData.push({
@@ -70,14 +68,17 @@ export class Step3Component
         value: this.form.value.max_slope,
       });
     }
-    if (this.form.value.min_distance_from_road && this.newScenarioState.getDistanceToRoadsId()) {
+    if (
+      this.form.value.min_distance_from_road &&
+      this.newScenarioState.getDistanceToRoadsId()
+    ) {
       constraintsData.push({
         datalayer: this.newScenarioState.getDistanceToRoadsId(),
         operator: 'lte',
         value: this.form.value.min_distance_from_road,
       });
     }
-    return { configuration: { constraints: constraintsData }};
+    return { configuration: { constraints: constraintsData } };
   }
 
   getData() {

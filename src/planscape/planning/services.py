@@ -597,7 +597,10 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
 
 def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     errors: List[str] = []
-    if scenario.result_status not in {ScenarioResultStatus.PENDING, ScenarioResultStatus.DRAFT}:
+    if scenario.result_status not in {
+        ScenarioResultStatus.PENDING,
+        ScenarioResultStatus.DRAFT,
+    }:
         return [f"Scenario cannot be run on status {scenario.result_status}."]
 
     if scenario.status == ScenarioStatus.ARCHIVED:
@@ -627,7 +630,7 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         async_forsys_run,
         async_pre_forsys_process,
     )
-    
+
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
     datalayers = tx_goal.get_raster_datalayers() if tx_goal else []

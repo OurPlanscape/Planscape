@@ -50,13 +50,16 @@ export class ScenarioService {
     });
   }
 
-  runScenario(scenarioId : number) {
+  runScenario(scenarioId: number) {
     // actually run the scenario
     const runUrl = `${this.v2Path}${scenarioId}/run/`;
-    return this.http
-      .post<Scenario>(runUrl, {}, {
+    return this.http.post<Scenario>(
+      runUrl,
+      {},
+      {
         withCredentials: true,
-      });
+      }
+    );
   }
 
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
@@ -81,15 +84,18 @@ export class ScenarioService {
 
   //sends a partial scenario configuration using PATCH
   // returns success or failure, based on backend results
-  // TODO: assumes the scenario endpoint, so review
-  patchScenarioConfig(scenarioId : number, configPayload: Partial<ScenarioDraftPayload>) {
-    // was using this: this.v2Path
+  patchScenarioConfig(
+    scenarioId: number,
+    configPayload: Partial<ScenarioDraftPayload>
+  ) {
     return this.http
       .patch<Scenario>(this.v2Path + scenarioId, configPayload, {
         withCredentials: true,
       })
       .pipe(
         catchError((error) => {
+          //TODO: handle specific field error formats in step form
+          // We probably need to coordinate backend formats / messages here
           const message =
             error.error?.global?.[0] || 'Failed to save configuration';
           throw new CreateScenarioError(

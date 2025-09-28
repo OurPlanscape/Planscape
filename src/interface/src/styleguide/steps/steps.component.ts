@@ -64,7 +64,10 @@ export class StepsComponent<T> extends CdkStepper {
 
   allPatchesSuccessful = false;
 
-  constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef,
+  constructor(
+    dir: Directionality,
+    cdr: ChangeDetectorRef,
+    el: ElementRef,
     private featureService: FeatureService
   ) {
     super(dir, cdr, el);
@@ -102,7 +105,7 @@ export class StepsComponent<T> extends CdkStepper {
           .pipe(take(1))
           .subscribe({
             next: (result) => {
-              if(this.isLastStep) {
+              if (this.isLastStep) {
                 this.allPatchesSuccessful = true;
               }
               this.moveNextOrFinish();

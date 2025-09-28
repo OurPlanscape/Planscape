@@ -73,7 +73,8 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate {
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -146,23 +147,22 @@ export class ScenarioCreationComponent
       label: 'Scenario: New Scenario',
       backUrl: getPlanPath(this.planId),
     });
-    // Adding scenario name validator
-    // this.refreshScenarioNameValidator();
-    if (this.scenarioId) {
-      this.loadExistingScenario();
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      if (this.scenarioId) {
+        this.loadExistingScenario();
+      }
+    } else {
+      // Adding scenario name validator
+      this.refreshScenarioNameValidator();
     }
   }
 
   loadExistingScenario() {
-    // TODO: populate local data with name...anything else?
     this.scenarioService
       .getScenario(this.scenarioId)
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         this.form.controls.scenarioName.setValue(scenario.name);
-
-        //TODO: map this to the newScenario config?
-        // doublecheck: are we populating these screens from existing data when someone clicks a Draft?
         const currentConfig = this.convertSavedConfigToNewConfig(
           scenario.configuration
         );
@@ -195,7 +195,6 @@ export class ScenarioCreationComponent
       return this.savePatch(this.draftConfig);
     } else {
       this.config = { ...this.config, ...data };
-      console.log('saving the step...with config:', this.config);
       this.newScenarioState.setScenarioConfig(this.config);
 
       return of(true);
@@ -205,24 +204,25 @@ export class ScenarioCreationComponent
   savePatch(data: Partial<ScenarioDraftPayload>): Observable<boolean> {
     this.newScenarioState.setScenarioConfig(this.config);
 
-    return this.scenarioService.patchScenarioConfig(this.scenarioId, this.draftConfig).pipe(
-      map((result) => {
-        if (result) {
-          console.log('Patch was successful:', result);
-          return true; // Return true if the patch was successful
-        }
-        return false; // Return false if the result is not as expected
-      }),
-      catchError((e) => {
-        console.error('Patch error:', e);
-        return of(false); // Return false in case of an error
-      })
-    );
+    return this.scenarioService
+      .patchScenarioConfig(this.scenarioId, this.draftConfig)
+      .pipe(
+        map((result) => {
+          if (result) {
+            return true; // Return true if the patch was successful
+          }
+          return false; // Return false if the result is not as expected
+        }),
+        catchError((e) => {
+          console.error('Patch error:', e);
+          return of(false); // Return false in case of an error
+        })
+      );
   }
 
   async onFinish() {
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      this.runScenario()
+      this.runScenario();
     } else {
       this.finishFromFullConfig();
     }
@@ -233,7 +233,12 @@ export class ScenarioCreationComponent
     this.scenarioService.runScenario(this.scenarioId).subscribe({
       next: (result) => {
         this.finished = true; // ensure we don't get an alert when we navigate away
-        this.router.navigate(['plan', result.planning_area, 'scenario', result.id]);
+        this.router.navigate([
+          'plan',
+          result.planning_area,
+          'scenario',
+          result.id,
+        ]);
       },
       error: (e) => {
         this.dialog.open(SavingErrorModalComponent);
@@ -241,8 +246,8 @@ export class ScenarioCreationComponent
       },
       complete: () => {
         this.awaitingBackendResponse = false;
-      }
-    })
+      },
+    });
   }
 
   async finishFromFullConfig() {

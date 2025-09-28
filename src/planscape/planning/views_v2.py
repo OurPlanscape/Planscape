@@ -255,7 +255,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         if feature_enabled("SCENARIO_DRAFTS"):
             scenario_result, created = ScenarioResult.objects.get_or_create(
                 scenario=scenario,
-                defaults={'status': ScenarioResultStatus.DRAFT, 'scenario_result': ScenarioResultStatus.DRAFT}
+                defaults={
+                    "status": ScenarioResultStatus.DRAFT,
+                    "scenario_result": ScenarioResultStatus.DRAFT,
+                },
             )
             scenario_result.status = ScenarioResultStatus.DRAFT
             scenario_result.save()
@@ -396,11 +399,9 @@ class TreatmentGoalViewSet(
 
     def get_queryset(self):
         qs = super().get_queryset()
-        logger.info(f"do we have a queryset? {qs}")
         if feature_enabled("CONUS_WIDE_SCENARIOS"):
             return qs
         filtered = qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
-        logger.info(f"do we have a filtered queryset? {filtered}")
-        # disabling until we sort this out
-        #return filtered
+        # TODO: this fails in local - disabling until we sort this out
+        # return filtered
         return qs

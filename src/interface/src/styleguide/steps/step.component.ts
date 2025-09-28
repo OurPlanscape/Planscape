@@ -38,11 +38,6 @@ export class StepComponent<T> extends CdkStep implements AfterViewInit {
     }
   }
 
-  populateFormFromConfig() {
-    // map eleemments from configuration to the form elements in this step
-    return;
-  }
-
   getData(): PartialDeep<T> {
     return this.stepLogic?.getData() || {};
   }
