@@ -16,6 +16,7 @@ import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
 import { ButtonComponent } from '../button/button.component';
 import { StepComponent } from './step.component';
+import { FeatureService } from 'src/app/features/feature.service';
 
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).
@@ -61,7 +62,9 @@ export class StepsComponent<T> extends CdkStepper {
 
   @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
-  constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef) {
+  constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef,
+    private featureService: FeatureService
+  ) {
     super(dir, cdr, el);
   }
 
@@ -119,13 +122,26 @@ export class StepsComponent<T> extends CdkStepper {
       return;
     }
 
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      // for this..we want to still call next, and then only call finished.
+      this.next();
+      //TODO, ensure this PATCH was successful, then...
+      if (this.isLastStep) {
+        this.finished.emit();
+      }
+    }else {
+
+
+
     if (this.isLastStep) {
-      // TODO: uncomment this after dev experiments
-      // this.finished.emit();
+      //TODO: dont call this until AFTER we call the last save...
+
+      this.finished.emit();
     } else {
       this.next();
     }
   }
+}
 
   goBack(): void {
     this.previous();

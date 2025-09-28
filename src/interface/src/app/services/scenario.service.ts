@@ -50,6 +50,15 @@ export class ScenarioService {
     });
   }
 
+  runScenario(scenarioId : number) {
+    // actually run the scenario
+    const runUrl = `${this.v2Path}${scenarioId}/run/`;
+    return this.http
+      .post<Scenario>(runUrl, {}, {
+        withCredentials: true,
+      });
+  }
+
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
   createScenarioFromSteps(
     scenarioParameters: ScenarioCreationPayload
@@ -73,11 +82,10 @@ export class ScenarioService {
   //sends a partial scenario configuration using PATCH
   // returns success or failure, based on backend results
   // TODO: assumes the scenario endpoint, so review
-  patchScenarioConfig(configPayload: Partial<ScenarioDraftPayload>) {
-    const temporaryEndpoint = 'http://localhost:8000/patch-scenario';
+  patchScenarioConfig(scenarioId : number, configPayload: Partial<ScenarioDraftPayload>) {
     // was using this: this.v2Path
     return this.http
-      .patch<Scenario>(temporaryEndpoint, configPayload, {
+      .patch<Scenario>(this.v2Path + scenarioId, configPayload, {
         withCredentials: true,
       })
       .pipe(

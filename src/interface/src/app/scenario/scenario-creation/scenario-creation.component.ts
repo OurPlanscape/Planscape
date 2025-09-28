@@ -73,8 +73,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate
-{
+  implements OnInit, CanComponentDeactivate {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -206,7 +205,7 @@ export class ScenarioCreationComponent
   savePatch(data: Partial<ScenarioDraftPayload>) {
     let success = false;
     //TODO: save with transformation
-    this.scenarioService.patchScenarioConfig(this.draftConfig).subscribe({
+    this.scenarioService.patchScenarioConfig(this.scenarioId, this.draftConfig).subscribe({
       next: (result) => {
         if (result) {
           success = true;
@@ -220,6 +219,28 @@ export class ScenarioCreationComponent
   }
 
   async onFinish() {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      this.runScenario()
+    } else {
+      this.finishFromFullConfig();
+    }
+  }
+
+  async runScenario() {
+    this.scenarioService.runScenario(this.scenarioId).subscribe({
+      next: (runResult) => {
+        console.log('here is the result of running:', runResult);
+      },
+      error: () => {
+        console.log('error running...');
+      }, 
+      complete: () => {
+        console.log('we completed saving?');
+      }
+    })
+  }
+
+  async finishFromFullConfig() {
     const payload = getScenarioCreationPayloadScenarioCreation({
       ...this.config,
       name: this.form.getRawValue().scenarioName || '',

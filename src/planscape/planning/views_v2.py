@@ -393,4 +393,6 @@ class TreatmentGoalViewSet(
             return qs
         filtered = qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
         logger.info(f"do we have a filtered queryset? {filtered}")
-        return filtered
+        # disabling until we sort this out
+        #return filtered
+        return qs
