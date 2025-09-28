@@ -139,9 +139,6 @@ export class SavedScenariosComponent implements OnInit {
         'logging this to avoid commenting out:',
         ScenarioSetupModalComponent
       );
-      // when that flag is on
-
-      this.openConfig(configId);
     } else {
       this.openConfig(configId);
     }

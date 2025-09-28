@@ -62,6 +62,8 @@ export class StepsComponent<T> extends CdkStepper {
 
   @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
+  allPatchesSuccessful = false;
+
   constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef,
     private featureService: FeatureService
   ) {
@@ -99,7 +101,10 @@ export class StepsComponent<T> extends CdkStepper {
         this.save(data)
           .pipe(take(1))
           .subscribe({
-            next: () => {
+            next: (result) => {
+              if(this.isLastStep) {
+                this.allPatchesSuccessful = true;
+              }
               this.moveNextOrFinish();
             },
             error: (err) => {
@@ -126,22 +131,17 @@ export class StepsComponent<T> extends CdkStepper {
       // for this..we want to still call next, and then only call finished.
       this.next();
       //TODO, ensure this PATCH was successful, then...
-      if (this.isLastStep) {
+      if (this.isLastStep && this.allPatchesSuccessful) {
         this.finished.emit();
       }
-    }else {
-
-
-
-    if (this.isLastStep) {
-      //TODO: dont call this until AFTER we call the last save...
-
-      this.finished.emit();
     } else {
-      this.next();
+      if (this.isLastStep) {
+        this.finished.emit();
+      } else {
+        this.next();
+      }
     }
   }
-}
 
   goBack(): void {
     this.previous();

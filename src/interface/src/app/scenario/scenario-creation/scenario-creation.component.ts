@@ -5,7 +5,7 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { firstValueFrom, map, Observable, of, skip } from 'rxjs';
+import { firstValueFrom, map, Observable, of, skip, catchError } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
@@ -202,20 +202,22 @@ export class ScenarioCreationComponent
     }
   }
 
-  savePatch(data: Partial<ScenarioDraftPayload>) {
-    let success = false;
-    //TODO: save with transformation
-    this.scenarioService.patchScenarioConfig(this.scenarioId, this.draftConfig).subscribe({
-      next: (result) => {
+  savePatch(data: Partial<ScenarioDraftPayload>): Observable<boolean> {
+    this.newScenarioState.setScenarioConfig(this.config);
+
+    return this.scenarioService.patchScenarioConfig(this.scenarioId, this.draftConfig).pipe(
+      map((result) => {
         if (result) {
-          success = true;
+          console.log('Patch was successful:', result);
+          return true; // Return true if the patch was successful
         }
-      },
-      error: (e) => {
-        console.error('patch error:', e);
-      },
-    });
-    return of(success);
+        return false; // Return false if the result is not as expected
+      }),
+      catchError((e) => {
+        console.error('Patch error:', e);
+        return of(false); // Return false in case of an error
+      })
+    );
   }
 
   async onFinish() {
@@ -227,15 +229,18 @@ export class ScenarioCreationComponent
   }
 
   async runScenario() {
+    this.awaitingBackendResponse = true;
     this.scenarioService.runScenario(this.scenarioId).subscribe({
-      next: (runResult) => {
-        console.log('here is the result of running:', runResult);
+      next: (result) => {
+        this.finished = true; // ensure we don't get an alert when we navigate away
+        this.router.navigate(['plan', result.planning_area, 'scenario', result.id]);
       },
-      error: () => {
-        console.log('error running...');
-      }, 
+      error: (e) => {
+        this.dialog.open(SavingErrorModalComponent);
+        this.awaitingBackendResponse = false;
+      },
       complete: () => {
-        console.log('we completed saving?');
+        this.awaitingBackendResponse = false;
       }
     })
   }

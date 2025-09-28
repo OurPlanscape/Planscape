@@ -24,6 +24,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioResult,
+    ScenarioResultStatus,
     TreatmentGoal,
     TreatmentGoalGroup,
 )
@@ -247,18 +248,20 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        scenario = create_scenario(
-            **serializer.validated_data,
-        )
+        # TODO: review the correct way to set the status
+        serializer.result_status = ScenarioResultStatus.DRAFT
+        scenario = create_scenario(**serializer.validated_data)
 
         if feature_enabled("SCENARIO_DRAFTS"):
             scenario_result, created = ScenarioResult.objects.get_or_create(
                 scenario=scenario,
-                defaults={'status': 'DRAFT'}
+                defaults={'status': ScenarioResultStatus.DRAFT, 'scenario_result': ScenarioResultStatus.DRAFT}
             )
-            if not created:
-                scenario_result.status = 'DRAFT'
-                scenario_result.save()
+            scenario_result.status = ScenarioResultStatus.DRAFT
+            scenario_result.save()
+            # Set the scenario's result_status to DRAFT
+            scenario.result_status = ScenarioResultStatus.DRAFT
+            scenario.save()  # Save the scenario to persist the changes
 
         out_serializer = ScenarioV2Serializer(instance=scenario)
 
@@ -320,6 +323,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
+        # TODO: remember what the correct approach is
+        scenario.result_status = ScenarioResultStatus.PENDING
+        scenario.results.status = ScenarioResultStatus.PENDING
+        scenario.save()
+        scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
