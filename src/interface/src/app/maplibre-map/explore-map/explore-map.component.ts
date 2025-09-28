@@ -177,7 +177,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     }
   }
 
-
   /*
   Here, we are bypassing the [style] attribute in the mgl adapter, 
   because changes there are known to wipe all previous layers.
