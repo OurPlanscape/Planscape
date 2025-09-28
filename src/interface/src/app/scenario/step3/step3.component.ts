@@ -19,12 +19,6 @@ import { debounceTime } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { FeatureService } from '../../features/feature.service';
 
-// Placeholder for supported Layer IDs
-const LAYER_TO_ID: { [key: string]: number } = {
-  max_slope: 1111,
-  min_distance_from_road: 2222,
-};
-
 @Component({
   selector: 'app-step3',
   standalone: true,
@@ -59,28 +53,26 @@ export class Step3Component
 
   constructor(
     private newScenarioState: NewScenarioState,
-    private featureService: FeatureService
+    private featureService: FeatureService,
   ) {
     super();
   }
 
   getDraftData() {
-    /// TODO ---future: get the supported layer Ids at start of this component
-    // From forsys service?
-    // TODO -- read the values, add the presumed operators
     const constraintsData: Constraint[] = [];
 
-    // For now, cycle through our hardcoded layers:
-    if (this.form.value.max_slope) {
+    // TODO: is this the intended way to get layer Ids for these constraints?
+
+    if (this.form.value.max_slope && this.newScenarioState.getSlopeId()) {
       constraintsData.push({
-        datalayer: LAYER_TO_ID['max_slope'],
+        datalayer: this.newScenarioState.getSlopeId(),
         operator: 'lt',
         value: this.form.value.max_slope,
       });
     }
-    if (this.form.value.min_distance_from_road) {
+    if (this.form.value.min_distance_from_road && this.newScenarioState.getDistanceToRoadsId()) {
       constraintsData.push({
-        datalayer: LAYER_TO_ID['min_distance_from_road'],
+        datalayer: this.newScenarioState.getDistanceToRoadsId(),
         operator: 'lte',
         value: this.form.value.min_distance_from_road,
       });

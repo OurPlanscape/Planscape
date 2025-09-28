@@ -101,7 +101,10 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
   }
 
   getDraftData() {
-    return this.form.value;
+    return {
+      treatment_goal: this.form.value.treatment_goal,
+      configuration: { stand_size: this.form.value.stand_size }
+    }
   }
 
   getData() {

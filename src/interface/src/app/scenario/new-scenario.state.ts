@@ -132,6 +132,14 @@ export class NewScenarioState {
     });
   }
 
+  getSlopeId() {
+    return this.slopeId;
+  }
+
+  getDistanceToRoadsId() {
+    return this.distanceToRoadsId
+  }
+
   setLoading(isLoading: boolean) {
     this._loading$.next(isLoading);
   }
