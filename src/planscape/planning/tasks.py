@@ -2,16 +2,18 @@ import logging
 
 import rasterio
 from core.flags import feature_enabled
-from datasets.models import DataLayer, DataLayerType
+from datasets.models import DataLayer
 from django.conf import settings
-from django.core.paginator import Paginator
 from django.db import transaction
+from django.utils import timezone
 from gis.core import get_storage_session
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats3,
     calculate_stand_zonal_stats,
+    calculate_stand_zonal_stats_api,
     create_stands_for_geometry,
+    get_missing_stand_ids_for_datalayer,
 )
 from utils.cli_utils import call_forsys
 
@@ -28,6 +30,7 @@ from planning.services import (
     get_available_stand_ids,
 )
 from planscape.celery import app
+from celery import chord
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
@@ -102,39 +105,17 @@ def async_set_planning_area_status(
                 pk=planning_area_id
             )
             planning_area.map_status = status
-            planning_area.save()
+            update_fields = ["map_status", "updated_at"]
+            if status == PlanningAreaMapStatus.STANDS_DONE:
+                planning_area.stands_ready_at = timezone.now()
+                update_fields.append("stands_ready_at")
+            if status == PlanningAreaMapStatus.DONE:
+                planning_area.metrics_ready_at = timezone.now()
+                update_fields.append("metrics_ready_at")
+            planning_area.save(update_fields=update_fields)
             log.info("Planning Area %s map status set to %s", planning_area_id, status)
     except PlanningArea.DoesNotExist:
         log.exception("Planning Area %s does not exist", planning_area_id)
-
-
-@app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None:
-    scenario = Scenario.objects.get(id=scenario_id)
-    stand_size = scenario.get_stand_size()
-    geometry = scenario.planning_area.geometry
-
-    stands = Stand.objects.within_polygon(geometry, stand_size).with_webmercator()
-
-    try:
-        with rasterio.Env(get_storage_session()):
-            query = {"modules": {"forsys": {"legacy_name": datalayer_name}}}
-            datalayer = DataLayer.objects.get(
-                type=DataLayerType.RASTER,
-                metadata__contains=query,
-            )
-            if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-                for page in paginator.page_range:
-                    paginated_stands = paginator.page(page)
-                    log.info(f"Processing page {page} of stands")
-
-                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
-            else:
-                calculate_stand_zonal_stats(stands, datalayer)
-    except DataLayer.DoesNotExist:
-        log.warning(f"DataLayer with name {datalayer_name} does not exist.")
-        return
 
 
 @app.task()
@@ -142,6 +123,7 @@ def async_calculate_vector_metrics(
     planning_area_id: int,
     datalayer_id: int,
     stand_size: StandSizeChoices,
+    grid_key_start: str,
 ) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
         planning_area = PlanningArea.objects.get(id=planning_area_id)
@@ -150,29 +132,34 @@ def async_calculate_vector_metrics(
             datalayer=datalayer,
             planning_area_geometry=planning_area.geometry,
             stand_size=stand_size,
+            grid_key_start=grid_key_start,
         )
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics_v3(
-    planning_area_id: int, datalayer_id: int, stand_size: StandSizeChoices
+def async_calculate_stand_metrics(
+    planning_area_id: int,
+    datalayer_id: int,
+    stand_size: StandSizeChoices,
+    grid_key_start: str,
 ) -> None:
     """
-    Calculates stand metrics based on planning area. Calculates for all stand sizes.
+    Calculates stand metrics based on planning area, stand size, and datalayer.
+    Applying only to stands whose grid_key starts with the provided grid_key_start.
     """
     try:
         planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
         datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
-        stands = planning_area.get_stands(stand_size=stand_size).order_by("grid_key")
-        with rasterio.Env(get_storage_session()):
-            if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-                for page in paginator.page_range:
-                    paginated_stands = paginator.page(page)
-                    log.info(f"Processing page {page} of stands")
-
-                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
-            else:
+        stands = (
+            Stand.objects.all()
+            .within_polygon(planning_area.geometry, stand_size)
+            .filter(size=stand_size, grid_key__icontains=grid_key_start)
+            .order_by("grid_key")
+        )
+        if feature_enabled("API_ZONAL_STATS"):
+            calculate_stand_zonal_stats_api(stands, datalayer)
+        else:
+            with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(stands, datalayer)
     except PlanningArea.DoesNotExist:
         log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
@@ -183,31 +170,24 @@ def async_calculate_stand_metrics_v3(
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics_v2(scenario_id: int, datalayer_id: int) -> None:
-    scenario = Scenario.objects.get(id=scenario_id)
-    stand_size = scenario.get_stand_size()
-    geometry = scenario.planning_area.geometry
-
-    stands = (
-        Stand.objects.within_polygon(geometry, stand_size)
-        .with_webmercator()
-        .order_by("grid_key")
-    )
-
+def async_calculate_stand_metrics_with_stand_list(
+    stand_ids: list,
+    datalayer_id: int,
+) -> None:
+    """
+    Calculates stand metrics based on stands list and datalayer.
+    """
     try:
-        with rasterio.Env(get_storage_session()):
-            datalayer = DataLayer.objects.get(
-                pk=datalayer_id,
-            )
-            if feature_enabled("PAGINATED_STAND_METRICS"):
-                paginator = Paginator(stands, settings.STAND_METRICS_PAGE_SIZE)
-                for page in paginator.page_range:
-                    paginated_stands = paginator.page(page)
-                    log.info(f"Processing page {page} of stands")
-
-                    calculate_stand_zonal_stats(paginated_stands.object_list, datalayer)
-            else:
+        stands = Stand.objects.filter(id__in=stand_ids).order_by("grid_key")
+        datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
+        if feature_enabled("API_ZONAL_STATS"):
+            calculate_stand_zonal_stats_api(stands, datalayer)
+        else:
+            with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(stands, datalayer)
+    except PlanningArea.DoesNotExist:
+        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
+        return
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
@@ -244,6 +224,46 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         scenario = Scenario.objects.select_for_update().get(id=scenario_id)
         scenario.forsys_input = forsys_input  # type: ignore
         scenario.save(update_fields=["forsys_input", "updated_at"])
+
+
+@app.task()
+def prepare_scenarios_for_forsys_and_run(scenario_id: int):
+    log.info(f"Preparing scenario {scenario_id} for Forsys run.")
+    scenario = Scenario.objects.get(id=scenario_id)
+    if scenario.result_status != ScenarioResultStatus.PENDING:
+        log.info(
+            f"Scenario {scenario_id} is not in a pending state. Current status: {scenario.result_status}"
+        )
+        return
+
+    treatment_goal = scenario.treatment_goal
+
+    datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+
+    tasks = [async_pre_forsys_process.si(scenario_id=scenario.pk)]
+    for datalayer in datalayers:
+        missing_stand_ids = get_missing_stand_ids_for_datalayer(
+            geometry=scenario.planning_area.geometry,
+            stand_size=scenario.get_stand_size(),
+            datalayer=datalayer,
+        )
+
+        if missing_stand_ids:
+            log.info(
+                f"Calculating missing stand metrics for datalayer {datalayer.pk} and {len(missing_stand_ids)} stands"
+            )
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                tasks.append(
+                    async_calculate_stand_metrics_with_stand_list.si(
+                        stand_ids=batch_stand_ids,
+                        datalayer_id=datalayer.pk,
+                    )
+                )
+
+    chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
 
 
 @app.task()

@@ -428,11 +428,8 @@ CELERY_TASK_ROUTES = {
     "planning.tasks.async_calculate_stand_metrics": {
         "queue": "planning-stand-metrics",
     },
-    "planning.tasks.async_calculate_stand_metrics_v2": {
-        "queue": "planning-stand-metrics"
-    },
-    "planning.tasks.async_calculate_stand_metrics_v3": {
-        "queue": "planning-stand-metrics"
+    "planning.tasks.async_calculate_stand_metrics_with_stand_list": {
+        "queue": "planning-stand-metrics",
     },
     "planning.tasks.async_calculate_vector_metrics": {
         "queue": "planning-stand-metrics",
@@ -545,3 +542,7 @@ AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
 )
 
 E2E_TESTS_ENABLED = config("E2E_TESTS_ENABLED", default=False, cast=bool)
+STAND_METRICS_API_URL = config(
+    "STAND_METRICS_API_URL",
+    "https://stand-metrics-test-537855483895.us-central1.run.app/",
+)

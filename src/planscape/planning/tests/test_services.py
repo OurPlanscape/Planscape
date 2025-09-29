@@ -597,10 +597,11 @@ class TestRemoveExcludes(TransactionTestCase):
         for i, feature in enumerate(features):
             geometry = GEOSGeometry(json.dumps(feature.get("geometry")))
             stands.append(
-                Stand.objects.create(
+                StandFactory.create(
                     geometry=geometry,
                     size="LARGE",
                     area_m2=2_000_000,
+                    with_calculated_grid_key=True,
                 )
             )
         return stands
@@ -629,7 +630,7 @@ class TestRemoveExcludes(TransactionTestCase):
         )
         datalayer_uploaded(self.datalayer.pk)
         self.datalayer.refresh_from_db()
-        stands = self.load_stands()
+        self.stands = self.load_stands()
         json_geom = {
             "coordinates": [
                 [
@@ -649,12 +650,15 @@ class TestRemoveExcludes(TransactionTestCase):
             self.datalayer,
             self.planning_area.geometry,
             stand_size=StandSizeChoices.LARGE,
+            grid_key_start="",
         )
 
     def tearDown(self):
         with connection.cursor() as cur:
             qual_name = qualify_for_django(self.datalayer.table)
             cur.execute(f"DROP TABLE IF EXISTS {qual_name} CASCADE;")
+        for stand in self.stands:
+            stand.delete()
 
     def test_get_excluded_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)

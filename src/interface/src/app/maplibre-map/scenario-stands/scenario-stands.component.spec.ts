@@ -44,6 +44,7 @@ describe('ScenarioStandsComponent', () => {
           availableStands$: of({} as AvailableStands),
           excludedStands$: of([]),
           doesNotMeetConstraintsStands$: of([]),
+          stepIndex$: of(0),
         }),
         MockProvider(MapConfigState, {
           projectAreasOpacity$: of(0),

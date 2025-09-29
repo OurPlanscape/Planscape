@@ -67,18 +67,17 @@ section {
     }
   }
 
-  &.pattern {
+  &.pattern-constraint {
     &:before {
-      // placeholder, not actual final pattern!
-      background-color: $color-light-magenta;
-      background-image: url('/assets/png/patterns/stripes-black.png');
+      background-image: url('/assets/png/patterns/thresholds.png');
+      background-size: cover;
     }
   }
 
-  &.pattern-gray {
+  &.pattern-excluded {
     &:before {
-      background-color: $color-text-gray;
-      background-image: url('/assets/png/patterns/stripes-black.png');
+      background-image: url('/assets/png/patterns/excludes.png');
+      background-size: cover;
     }
   }
 }

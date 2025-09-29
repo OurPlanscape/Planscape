@@ -11,7 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
-from celery import chain, chord, group
+from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
@@ -25,6 +25,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
 from django.db.models.aggregates import Sum
+from django.db.models.functions import Substr
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
@@ -33,7 +34,7 @@ from modules.base import compute_scenario_capabilities
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandSizeChoices, area_from_size
-from stands.services import get_datalayer_metric
+from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
 from planning.geometry import coerce_geojson, coerce_geometry
@@ -57,22 +58,39 @@ logger = logging.getLogger(__name__)
 
 
 def create_metrics_task(
-    planning_area: PlanningArea, datalayer: DataLayer, stand_size: StandSizeChoices
+    planning_area: PlanningArea,
+    datalayer: DataLayer,
+    stand_size: StandSizeChoices,
+    grid_key_start: str = "",
 ):
     from planning.tasks import (
-        async_calculate_stand_metrics_v3,
+        async_calculate_stand_metrics,
         async_calculate_vector_metrics,
     )
 
     match datalayer.type:
         case DataLayerType.VECTOR:
             return async_calculate_vector_metrics.si(
-                planning_area.pk, datalayer.pk, stand_size
+                planning_area.pk, datalayer.pk, stand_size, grid_key_start
             )
         case _:
-            return async_calculate_stand_metrics_v3.si(
-                planning_area.pk, datalayer.pk, stand_size
+            return async_calculate_stand_metrics.si(
+                planning_area.pk, datalayer.pk, stand_size, grid_key_start
             )
+
+
+def get_truncated_stands_grid_keys(
+    planning_area: PlanningArea,
+    stand_size: StandSizeChoices,
+) -> List[str]:
+    stands = planning_area.get_stands(stand_size=stand_size)
+    precision = get_stand_grid_key_search_precision(stand_size)
+    truncated_stand_grid_keys = (
+        stands.annotate(trucated_hash=Substr("grid_key", 1, precision))
+        .distinct("trucated_hash")
+        .values_list("trucated_hash", flat=True)
+    )
+    return list(truncated_stand_grid_keys)
 
 
 @transaction.atomic()
@@ -112,43 +130,46 @@ def create_planning_area(
         distance_from_roads,
     ]
     datalayers = list(filter(None, datalayers))
-    precalculation_jobs = group(
-        [
-            create_metrics_task(planning_area, datalayer, stand_size=stand_size)
+
+    create_stand_metrics_jobs = []
+
+    for stand_size in StandSizeChoices:
+        truncated_stand_grid_keys = get_truncated_stands_grid_keys(
+            planning_area, stand_size
+        )
+        jobs = [
+            create_metrics_task(planning_area, datalayer, stand_size, grid_key_start)
             for datalayer in datalayers
-            for stand_size in StandSizeChoices
+            for grid_key_start in truncated_stand_grid_keys
         ]
-    )
+        create_stand_metrics_jobs.extend(jobs)
+
     set_map_status_done = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.DONE,
     )
-    set_map_status_in_progress = async_set_planning_area_status.si(
+    set_map_status_stands_done = async_set_planning_area_status.si(
         planning_area.pk,
-        PlanningAreaMapStatus.IN_PROGRESS,
+        PlanningAreaMapStatus.STANDS_DONE,
     )
-    set_map_status_failed = async_set_planning_area_status.si(
-        planning_area.pk,
-        PlanningAreaMapStatus.FAILED,
+
+    logger.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
+
+    stand_metrics_workflow = chord(
+        header=group(create_stand_metrics_jobs), body=set_map_status_done
     )
-    create_stands_jobs = group(
-        [
-            async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
-            async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
-        ]
-    )
-    create_stands_job = chord(
-        chain(
-            create_stands_jobs,
-            async_set_planning_area_status.si(
-                planning_area.pk,
-                PlanningAreaMapStatus.STANDS_DONE,
-            ),
-            precalculation_jobs,
+
+    stands_workflow = chord(
+        header=group(
+            [
+                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+            ]
         ),
-        set_map_status_done,
-    ).on_error(set_map_status_failed)
+        body=set_map_status_stands_done,
+    )
+    workflow = stands_workflow | stand_metrics_workflow
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -160,7 +181,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: create_stands_job.apply_async())
+        transaction.on_commit(lambda: workflow.apply_async())
     return planning_area
 
 
@@ -220,9 +241,7 @@ def get_treatment_goal_from_configuration(
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import (
-        async_calculate_stand_metrics_v2,
-        async_forsys_run,
-        async_pre_forsys_process,
+        prepare_scenarios_for_forsys_and_run,
     )
 
     # precedence here to the `kwargs`. if you supply `origin` here
@@ -251,29 +270,23 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
-    tasks = [
-        async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
-        for d in datalayers
-    ]
-    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
-
-    track_openpanel(
-        name="planning.scenario.created",
-        properties={
-            "origin": scenario.origin,
-            "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
-            "treatment_goal_category": (
-                treatment_goal.category if treatment_goal else None
-            ),
-            "treatment_goal_name": treatment_goal.name if treatment_goal else None,
-            "email": user.email if user else None,
-        },
-        user_id=user.pk,
-    )
-    transaction.on_commit(
-        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
-    )
+    if not feature_enabled("SCENARIO_DRAFTS"):
+        track_openpanel(
+            name="planning.scenario.created",
+            properties={
+                "origin": scenario.origin,
+                "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
+                "treatment_goal_category": (
+                    treatment_goal.category if treatment_goal else None
+                ),
+                "treatment_goal_name": treatment_goal.name if treatment_goal else None,
+                "email": user.email if user else None,
+            },
+            user_id=user.pk,
+        )
+        transaction.on_commit(
+            lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
+        )
     return scenario
 
 
@@ -575,14 +588,6 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if not scenario.treatment_goal:
         errors.append("Scenario has no Treatment Goal assigned.")
 
-    if (
-        scenario.planning_area.get_stands(stand_size=scenario.get_stand_size()).count()
-        == 0
-    ):
-        errors.append(
-            "No stands are available in this Planning Area for the selected `stand_size`."
-        )
-
     cfg = dict(getattr(scenario, "configuration", {}) or {})
 
     stand_size = cfg.get("stand_size")
@@ -600,20 +605,11 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 @transaction.atomic()
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     from planning.tasks import (
-        async_calculate_stand_metrics_v2,
-        async_forsys_run,
-        async_pre_forsys_process,
+        prepare_scenarios_for_forsys_and_run,
     )
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
-    datalayers = tx_goal.get_raster_datalayers() if tx_goal else []
-    tasks = [
-        async_calculate_stand_metrics_v2.si(scenario_id=scenario.pk, datalayer_id=d.pk)
-        for d in datalayers
-    ]
-    tasks.append(async_pre_forsys_process.si(scenario_id=scenario.pk))
-
     track_openpanel(
         name="planning.scenario.triggered",
         properties={
@@ -631,7 +627,7 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     )
 
     transaction.on_commit(
-        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+        lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
     )
     return scenario
 
