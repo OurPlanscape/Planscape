@@ -25,6 +25,7 @@ describe('ExploreMapComponent', () => {
         }),
         MockProvider(MapConfigState, {
           mapInteractionMode$: new BehaviorSubject<MapInteractionMode>('view'),
+          baseMapUrl$: of(''),
         }),
         MockProvider(PlanState, {
           currentPlanId$: of(null),
