@@ -251,6 +251,7 @@ def calculate_stand_zonal_stats_api(
             "nodata": nodata,
         },
         "stands": {"type": "FeatureCollection", "features": stand_geojson},
+        "env": settings.ENV,
     }
     response = requests.post(f"{settings.STAND_METRICS_API_URL}/metrics", json=payload)
     response.raise_for_status()
