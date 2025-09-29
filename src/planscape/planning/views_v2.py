@@ -257,8 +257,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                     "status": ScenarioResultStatus.DRAFT,
                 },
             )
-            scenario_result.status = ScenarioResultStatus.DRAFT
-            scenario_result.save()
+            if not created:
+                scenario_result.status = ScenarioResultStatus.DRAFT
+                scenario_result.save()
 
         out_serializer = ScenarioV2Serializer(instance=scenario)
 
