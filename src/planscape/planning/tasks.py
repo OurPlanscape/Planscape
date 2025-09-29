@@ -9,7 +9,7 @@ from django.utils import timezone
 from gis.core import get_storage_session
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
-    calculate_stand_vector_stats3,
+    calculate_stand_vector_stats_with_stand_list,
     calculate_stand_zonal_stats,
     calculate_stand_zonal_stats_api,
     create_stands_for_geometry,
@@ -23,14 +23,16 @@ from planning.models import (
     PlanningAreaMapStatus,
     Scenario,
     ScenarioResultStatus,
+    TreatmentGoalUsageType,
 )
 from planning.services import (
+    create_metrics_task,
     build_run_configuration,
     export_to_geopackage,
     get_available_stand_ids,
 )
 from planscape.celery import app
-from celery import chord
+from celery import chord, group
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
@@ -120,19 +122,14 @@ def async_set_planning_area_status(
 
 @app.task()
 def async_calculate_vector_metrics(
-    planning_area_id: int,
+    stand_ids: list[int],
     datalayer_id: int,
-    stand_size: StandSizeChoices,
-    grid_key_start: str,
 ) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
-        planning_area = PlanningArea.objects.get(id=planning_area_id)
         datalayer = DataLayer.objects.get(id=datalayer_id)
-        calculate_stand_vector_stats3(
+        calculate_stand_vector_stats_with_stand_list(
+            stand_ids=stand_ids,
             datalayer=datalayer,
-            planning_area_geometry=planning_area.geometry,
-            stand_size=stand_size,
-            grid_key_start=grid_key_start,
         )
 
 
@@ -191,6 +188,85 @@ def async_calculate_stand_metrics_with_stand_list(
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
+
+
+@app.task()
+def prepare_planning_area(planning_area_id: int) -> None:
+    planning_area = PlanningArea.objects.get(id=planning_area_id)
+    if planning_area.map_status != PlanningAreaMapStatus.PENDING:
+        log.info(
+            f"Planning Area {planning_area_id} is not in a pending state. Current status: {planning_area.map_status}"
+        )
+        return
+
+    planning_area.map_status = PlanningAreaMapStatus.IN_PROGRESS
+    planning_area.save(update_fields=["map_status", "updated_at"])
+
+    log.info(f"Preparing planning area {planning_area_id}")
+    slope = DataLayer.objects.all().by_meta_name("slope")
+    distance_from_roads = DataLayer.objects.all().by_meta_name("distance_from_roads")
+    datalayers = list(
+        DataLayer.objects.all().by_meta_capability(
+            TreatmentGoalUsageType.EXCLUSION_ZONE
+        )
+    ) + [
+        slope,
+        distance_from_roads,
+    ]
+    datalayers = list(filter(None, datalayers))
+
+    create_stand_metrics_jobs = []
+
+    for datalayer in datalayers:
+        for stand_size in StandSizeChoices:
+            missing_stand_ids = get_missing_stand_ids_for_datalayer(
+                geometry=planning_area.geometry,
+                stand_size=stand_size,
+                datalayer=datalayer,
+            )
+            if not missing_stand_ids:
+                log.info(
+                    f"No missing stand metrics for datalayer {datalayer.pk} and stand size {stand_size}"
+                )
+                continue
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                create_stand_metrics_jobs.append(
+                    create_metrics_task(
+                        stand_ids=batch_stand_ids,
+                        datalayer=datalayer,
+                    )
+                )
+
+    set_map_status_done = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.DONE,
+    )
+    set_map_status_stands_done = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.STANDS_DONE,
+    )
+
+    log.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
+
+    stand_metrics_workflow = chord(
+        header=group(create_stand_metrics_jobs), body=set_map_status_done
+    )
+
+    stands_workflow = chord(
+        header=group(
+            [
+                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+            ]
+        ),
+        body=set_map_status_stands_done,
+    )
+    workflow = stands_workflow | stand_metrics_workflow
+    workflow.apply_async()
+    log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
 
 
 @app.task()
