@@ -1,11 +1,11 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { firstValueFrom, map, Observable, of, skip } from 'rxjs';
+import { firstValueFrom, map, Observable, skip, take } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
@@ -63,6 +63,7 @@ enum ScenarioTabs {
     Step3Component,
     Step4Component,
     BaseLayersComponent,
+    JsonPipe,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -96,6 +97,8 @@ export class ScenarioCreationComponent
   treatable_area$ = this.newScenarioState.availableStands$.pipe(
     map((s) => s.summary.treatable_area)
   );
+
+  loading$ = this.newScenarioState.loading$;
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -152,9 +155,20 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    this.config = { ...this.config, ...data };
-    this.newScenarioState.setScenarioConfig(this.config);
-    return of(true);
+    console.log('this triggers');
+    return this.newScenarioState.isValidToGoNext$.pipe(
+      take(1),
+      map((valid) => {
+        console.log('but this doesnt');
+        if (valid) {
+          this.config = { ...this.config, ...data };
+          this.newScenarioState.setScenarioConfig(this.config);
+        } else {
+          console.log('caramba jefe no');
+        }
+        return valid;
+      })
+    );
   }
 
   async onFinish() {

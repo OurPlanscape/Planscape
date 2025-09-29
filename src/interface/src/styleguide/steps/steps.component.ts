@@ -58,6 +58,7 @@ export class StepsComponent<T> extends CdkStepper {
   @Output() finished = new EventEmitter();
 
   @Input() savingStep = false;
+  @Input() disabled = false;
 
   @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
@@ -96,8 +97,10 @@ export class StepsComponent<T> extends CdkStepper {
         this.save(data)
           .pipe(take(1))
           .subscribe({
-            next: () => {
-              this.moveNextOrFinish();
+            next: (moveNext) => {
+              if (moveNext) {
+                this.moveNextOrFinish();
+              }
             },
             error: (err) => {
               control.setErrors({
