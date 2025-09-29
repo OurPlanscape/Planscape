@@ -1,0 +1,32 @@
+<div class="progress-stepper">
+  <div class="stepper-container">
+    <div *ngFor="let step of displaySteps; let i = index" class="step-wrapper">
+      <div
+        class="step-item"
+        [class.completed]="isStepCompleted(i)"
+        [class.current]="isStepCurrent(i)"
+        [class.future]="getStepState(i) === 'future'"
+        [class.clickable]="isStepClickable(i)"
+        (click)="onStepClick(i)">
+        <div class="step-indicator">
+          <div class="step-circle">
+            <mat-icon
+              *ngIf="isStepCompleted(i) && !isStepCurrent(i)"
+              class="checkmark"
+              >check</mat-icon
+            >
+            <span
+              *ngIf="!isStepCompleted(i) || isStepCurrent(i)"
+              class="step-number"
+              >{{ i + 1 }}</span
+            >
+          </div>
+        </div>
+
+        <div class="step-label">{{ step.label }}</div>
+      </div>
+
+      <div *ngIf="i !== displaySteps.length - 1" class="step-connector"></div>
+    </div>
+  </div>
+</div>

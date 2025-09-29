@@ -1,0 +1,136 @@
+@import 'colors';
+@import 'mixins';
+
+.progress-stepper {
+  padding: 24px 0;
+}
+
+.stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+}
+
+.step-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  position: relative;
+
+  &:last-child {
+    flex: 0;
+  }
+}
+
+.step-item {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  position: relative;
+  margin-right: 8px;
+  margin-left: 8px;
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  &.completed:not(.current) {
+    .step-circle {
+      background-color: $color-brand-teal;
+      border-color: $color-brand-teal;
+      color: white;
+    }
+  }
+
+  &.current {
+    .step-circle {
+      background-color: white;
+      border-color: $color-brand-teal;
+      color: $color-brand-teal;
+      font-weight: 600;
+
+      .step-number {
+        color: $color-brand-teal;
+      }
+    }
+
+    .step-label {
+      font-weight: 500;
+    }
+  }
+
+  &.future {
+    .step-circle {
+      background-color: white;
+      border-color: transparent; // avoid border shift when changing color
+      color: $color-text-gray;
+    }
+
+    .step-label {
+      color: $color-text-gray;
+    }
+  }
+}
+
+.step-indicator {
+  position: relative;
+  z-index: 1;
+}
+
+.step-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.checkmark {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  color: white;
+}
+
+.step-number {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.step-label {
+  font-size: 14px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.step-connector {
+  flex: auto;
+  height: 1px;
+  background-color: $color-text-gray;
+  top: 50%;
+  z-index: 0;
+}
+
+@media (max-width: 768px) {
+  .stepper-container {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .step-item {
+    min-width: 80px;
+  }
+
+  .step-label {
+    font-size: 12px;
+    max-width: 80px;
+  }
+}

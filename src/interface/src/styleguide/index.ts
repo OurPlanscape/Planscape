@@ -21,6 +21,7 @@ export * from './opacity-slider/opacity-slider.component';
 export * from './overlay-loader/overlay-loader.component';
 export * from './paginator/paginator.component';
 export * from './panel/panel.component';
+export * from './progress-stepper/progress-stepper.component';
 export * from './project-area-expander/project-area-expander.component';
 export * from './scenario-card/scenario-card.component';
 export * from './search-bar/search-bar.component';
