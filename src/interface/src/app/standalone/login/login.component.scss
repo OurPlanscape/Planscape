@@ -4,6 +4,7 @@
 
 :host {
   display: flex;
+  height: 100%;
 
   ::ng-deep .mat-form-field-outline {
     background-color: $color-light-gray;
@@ -110,6 +111,8 @@ mat-form-field {
 .info-text-container {
   background-color: $color-soft-purple;
   width: 50%;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .login-form-buttons {
