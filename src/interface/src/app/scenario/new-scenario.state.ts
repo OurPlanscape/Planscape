@@ -96,11 +96,6 @@ export class NewScenarioState {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  summary$ = this.availableStands$.pipe(
-    map((s) => s.summary),
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
-
   isValidToGoNext$: Observable<boolean> = this.stepIndex$.pipe(
     switchMap((index) =>
       index <= 0
@@ -187,9 +182,5 @@ export class NewScenarioState {
 
   setBaseStandsLoaded(loaded: boolean) {
     this.baseStandsReady$.next(loaded);
-  }
-
-  getSummarySnapshot() {
-    return;
   }
 }

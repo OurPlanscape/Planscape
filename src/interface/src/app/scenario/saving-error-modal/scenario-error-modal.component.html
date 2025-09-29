@@ -1,6 +1,6 @@
 <sg-modal
   class="error-modal"
-  [title]="data.title || 'Planscape Cannot Complete This Action'"
+  [title]="data?.title || 'Planscape Cannot Complete This Action'"
   [shortHeader]="false"
   [showBorders]="false"
   [centerFooter]="false"
@@ -11,7 +11,7 @@
   (clickedPrimary)="cancelExit()">
   <div modalBodyContent class="padded">
     {{
-      data.message ||
+      data?.message ||
         'Please try again or report this issue through our feedback form'
     }}
   </div>
