@@ -193,14 +193,6 @@ def async_calculate_stand_metrics_with_stand_list(
 @app.task()
 def prepare_planning_area(planning_area_id: int) -> None:
     planning_area = PlanningArea.objects.get(id=planning_area_id)
-    if planning_area.map_status != PlanningAreaMapStatus.PENDING:
-        log.info(
-            f"Planning Area {planning_area_id} is not in a pending state. Current status: {planning_area.map_status}"
-        )
-        return
-
-    planning_area.map_status = PlanningAreaMapStatus.IN_PROGRESS
-    planning_area.save(update_fields=["map_status", "updated_at"])
 
     log.info(f"Preparing planning area {planning_area_id}")
     slope = DataLayer.objects.all().by_meta_name("slope")
