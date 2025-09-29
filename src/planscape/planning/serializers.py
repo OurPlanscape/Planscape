@@ -1,5 +1,6 @@
 import json
 from typing import List, Optional
+
 import markdown
 from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
@@ -852,8 +853,11 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="Treatment goal of the scenario.",
     )
-    configuration = ConfigurationV3Serializer()
-
+    configuration = serializers.DictField(
+        required=False,
+        help_text="Supports stand_size, included_areas, excluded_areas, constraints, targets, seed.",
+    )
+    
     class Meta:
         model = Scenario
         fields = ("treatment_goal", "configuration")

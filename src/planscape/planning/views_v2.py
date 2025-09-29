@@ -246,8 +246,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        scenario = create_scenario(**serializer.validated_data)
-
+        scenario = create_scenario(
+            **serializer.validated_data,
+        )
         out_serializer = ScenarioV2Serializer(instance=scenario)
 
         headers = self.get_success_headers(out_serializer.data)
