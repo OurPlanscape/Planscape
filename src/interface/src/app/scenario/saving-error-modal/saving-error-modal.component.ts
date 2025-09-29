@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ModalComponent } from '@styleguide';
 
 @Component({
@@ -10,7 +10,10 @@ import { ModalComponent } from '@styleguide';
   styleUrl: './saving-error-modal.component.scss',
 })
 export class SavingErrorModalComponent {
-  readonly dialogRef = inject(MatDialogRef<SavingErrorModalComponent>);
+  constructor(
+    private dialogRef: MatDialogRef<SavingErrorModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { title: string; message: string }
+  ) {}
 
   cancelExit(): void {
     this.dialogRef.close(false);

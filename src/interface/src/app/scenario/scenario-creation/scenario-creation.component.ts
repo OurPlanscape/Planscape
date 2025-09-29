@@ -155,16 +155,21 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    console.log('this triggers');
     return this.newScenarioState.isValidToGoNext$.pipe(
       take(1),
       map((valid) => {
-        console.log('but this doesnt');
+        console.log('is valid?', valid);
         if (valid) {
           this.config = { ...this.config, ...data };
           this.newScenarioState.setScenarioConfig(this.config);
         } else {
-          console.log('caramba jefe no');
+          this.dialog.open(SavingErrorModalComponent, {
+            data: {
+              title: 'Invalid Scenario Configuration',
+              message:
+                'Scenario must have Potential Treatable Area in order to move forward with planning. Update your selections to allow for available stands',
+            },
+          });
         }
         return valid;
       })

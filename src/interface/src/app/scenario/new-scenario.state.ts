@@ -106,7 +106,7 @@ export class NewScenarioState {
       index <= 0
         ? of(true)
         : this.availableStands$.pipe(
-            map((s) => (s?.summary?.treatable_area ?? 0) > 0)
+            map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
           )
     ),
     distinctUntilChanged(),
