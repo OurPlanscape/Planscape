@@ -247,29 +247,13 @@ def prepare_planning_area(planning_area_id: int) -> None:
         planning_area.pk,
         PlanningAreaMapStatus.DONE,
     )
-    set_map_status_stands_done = async_set_planning_area_status.si(
-        planning_area.pk,
-        PlanningAreaMapStatus.STANDS_DONE,
-    )
 
     log.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
 
     stand_metrics_workflow = chord(
         header=group(create_stand_metrics_jobs), body=set_map_status_done
     )
-
-    stands_workflow = chord(
-        header=group(
-            [
-                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
-                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
-                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
-            ]
-        ),
-        body=set_map_status_stands_done,
-    )
-    workflow = stands_workflow | stand_metrics_workflow
-    workflow.apply_async()
+    stand_metrics_workflow.apply_async()
     log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
 
 

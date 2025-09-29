@@ -11,6 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
+from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
@@ -96,7 +97,11 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
-    from planning.tasks import prepare_planning_area
+    from planning.tasks import (
+        prepare_planning_area,
+        async_set_planning_area_status,
+        async_create_stands,
+    )
 
     """Canonical method to create a new planning area."""
 
@@ -114,6 +119,23 @@ def create_planning_area(
         notes=notes,
         map_status=PlanningAreaMapStatus.PENDING,
     )
+    set_map_status_stands_done = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.STANDS_DONE,
+    )
+
+    stands_workflow = chord(
+        header=group(
+            [
+                async_create_stands.si(planning_area.pk, StandSizeChoices.LARGE),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.MEDIUM),
+                async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
+            ]
+        ),
+        body=set_map_status_stands_done,
+    )
+
+    workflow = stands_workflow | prepare_planning_area.si(planning_area.pk)
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -125,9 +147,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(
-            lambda: prepare_planning_area.apply_async(args=(planning_area.pk,))
-        )
+        transaction.on_commit(lambda: workflow.apply_async())
     return planning_area
 
 
