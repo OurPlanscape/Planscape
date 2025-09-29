@@ -23,8 +23,6 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
-    ScenarioResult,
-    ScenarioResultStatus,
     TreatmentGoal,
     TreatmentGoalGroup,
 )
@@ -250,16 +248,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(**serializer.validated_data)
 
-        if feature_enabled("SCENARIO_DRAFTS"):
-            scenario_result, created = ScenarioResult.objects.get_or_create(
-                scenario=scenario,
-                defaults={
-                    "status": ScenarioResultStatus.DRAFT,
-                },
-            )
-            scenario_result.status = ScenarioResultStatus.DRAFT
-            scenario_result.save()
-
         out_serializer = ScenarioV2Serializer(instance=scenario)
 
         headers = self.get_success_headers(out_serializer.data)
@@ -320,8 +308,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
-        scenario.results.status = ScenarioResultStatus.PENDING
-        scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
@@ -392,5 +378,4 @@ class TreatmentGoalViewSet(
         qs = super().get_queryset()
         if feature_enabled("CONUS_WIDE_SCENARIOS"):
             return qs
-        filtered = qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
-        return filtered
+        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
