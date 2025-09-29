@@ -250,7 +250,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(**serializer.validated_data)
 
-        # TODO: confirm the correct way to set the status
         if feature_enabled("SCENARIO_DRAFTS"):
             scenario_result, created = ScenarioResult.objects.get_or_create(
                 scenario=scenario,
@@ -321,7 +320,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
-        # TODO: remember what the correct approach is
         scenario.results.status = ScenarioResultStatus.PENDING
         scenario.results.save()
 
@@ -395,6 +393,4 @@ class TreatmentGoalViewSet(
         if feature_enabled("CONUS_WIDE_SCENARIOS"):
             return qs
         filtered = qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
-        # TODO: this fails in local - disabling until we sort this out
-        # return filtered
-        return qs
+        return filtered

@@ -133,7 +133,6 @@ export class StepsComponent<T> extends CdkStepper {
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       // for this..we want to still call next, and then only call finished.
       this.next();
-      //TODO, ensure this PATCH was successful, then...
       if (this.isLastStep && this.allPatchesSuccessful) {
         this.finished.emit();
       }

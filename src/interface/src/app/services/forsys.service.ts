@@ -23,37 +23,6 @@ export class ForsysService {
       .getModule<ApiModule<ForsysData>>('forsys')
       .subscribe((data) => {
         this._forsysData$.next(data.options);
-        // TODO: REMOVE - Bogus data if we don't have layers in the DB:
-        const staticTestData = {
-          options: {
-            inclusions: [],
-            exclusions: [
-              {
-                id: 4209,
-                name: 'Protection Status 1 - Managed for biodiversity - disturbances events proceed or mimicked (e.g., wilderness)',
-              },
-              {
-                id: 4210,
-                name: 'Protection Status 2 - Managed for biodiversity - disturbance events suppressed (e.g., national wildlife refuge)',
-              },
-              {
-                id: 4211,
-                name: 'Protection Status 3 - Managed for multiple uses but subject to extractive uses such as logging and mining (e.g., national forest)',
-              },
-            ],
-            thresholds: {
-              slope: {
-                id: 4203,
-                name: 'CONUS Slope Percentage',
-              },
-              distance_from_roads: {
-                id: 4202,
-                name: 'Distance from Roads - Yards',
-              },
-            },
-          },
-        };
-        this._forsysData$.next(staticTestData.options);
       });
   }
 }
