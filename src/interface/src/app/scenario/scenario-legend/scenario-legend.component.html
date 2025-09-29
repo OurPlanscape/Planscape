@@ -17,7 +17,7 @@
           [outlined]="true"></button>
       </div>
     </div>
-    <div>{{ summary.available_area | number: '1.0-0' }} ac</div>
+    <div>{{ summary.treatable_area | number: '1.0-0' }} ac</div>
   </div>
   <div *ngIf="showExcludedStands$ | async">
     <div class="legend icon pattern-excluded">Excluded Area</div>
