@@ -185,6 +185,7 @@ class ScenarioResultStatus(models.TextChoices):
     TIMED_OUT = "TIMED_OUT", "Timed Out"
     DRAFT = "DRAFT", "Draft"
 
+
 class ScenarioManager(AliveObjectsManager):
     def list_by_user(self, user: Optional[User]):
         if not user:

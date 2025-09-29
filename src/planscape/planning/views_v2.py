@@ -324,7 +324,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         if feature_enabled("SCENARIO_DRAFTS") and scenario.results is not None:
             scenario.results.status = ScenarioResultStatus.PENDING
-            scenario.results.save()      
+            scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
