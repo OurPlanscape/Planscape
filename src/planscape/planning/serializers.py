@@ -857,7 +857,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         required=False,
         help_text="Supports stand_size, included_areas, excluded_areas, constraints, targets, seed.",
     )
-    
+
     class Meta:
         model = Scenario
         fields = ("treatment_goal", "configuration")
