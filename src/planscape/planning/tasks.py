@@ -239,6 +239,10 @@ def prepare_planning_area(planning_area_id: int) -> None:
                     )
                 )
 
+    log.info(
+        f"Spawning {len(create_stand_metrics_jobs)} vector and stand metrics tasks."
+    )
+
     set_map_status_done = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.DONE,
