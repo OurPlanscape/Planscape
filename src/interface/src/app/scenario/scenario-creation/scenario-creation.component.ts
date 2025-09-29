@@ -31,7 +31,7 @@ import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
-import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
+import { ScenarioErrorModalComponent } from '../saving-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -158,12 +158,11 @@ export class ScenarioCreationComponent
     return this.newScenarioState.isValidToGoNext$.pipe(
       take(1),
       map((valid) => {
-        console.log('is valid?', valid);
         if (valid) {
           this.config = { ...this.config, ...data };
           this.newScenarioState.setScenarioConfig(this.config);
         } else {
-          this.dialog.open(SavingErrorModalComponent, {
+          this.dialog.open(ScenarioErrorModalComponent, {
             data: {
               title: 'Invalid Scenario Configuration',
               message:
@@ -193,7 +192,7 @@ export class ScenarioCreationComponent
           this.router.navigate([result.id], { relativeTo: this.route });
         },
         error: () => {
-          this.dialog.open(SavingErrorModalComponent);
+          this.dialog.open(ScenarioErrorModalComponent);
         },
         complete: () => {
           this.creatingScenario = false;
@@ -239,7 +238,7 @@ export class ScenarioCreationComponent
       ctrl.updateValueAndValidity({ emitEvent: false });
       return true;
     } catch {
-      this.dialog.open(SavingErrorModalComponent);
+      this.dialog.open(ScenarioErrorModalComponent);
       return false;
     }
   }
