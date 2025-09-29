@@ -132,7 +132,9 @@ def create_planning_area(
                 async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
             ]
         ),
-        body=group([set_map_status_stands_done, prepare_planning_area.si(planning_area.pk)]),
+        body=group(
+            [set_map_status_stands_done, prepare_planning_area.si(planning_area.pk)]
+        ),
     )
 
     track_openpanel(
