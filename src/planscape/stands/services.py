@@ -3,8 +3,7 @@ import logging
 from typing import Any, Collection, Dict
 
 import rasterio
-import requests
-from core.flags import feature_enabled
+from core.requests import RequestSessionWrap
 from datasets.dynamic_models import qualify_for_django
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
@@ -12,10 +11,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from django.db.models import QuerySet
 from gis.info import get_gdal_env
-from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
-from shapely import total_bounds
-from shapely.geometry import shape
 
 from stands.models import Stand, StandMetric, StandSizeChoices
 
@@ -225,24 +221,23 @@ def calculate_stand_zonal_stats_api(
     datalayer: DataLayer,
     aggregations: Collection[str] = DEFAULT_AGGREGATIONS,
 ) -> None:
+    """ "This function calculates zonal stats for
+    a collection of stands using an external API.
+    This function DOES NOT skip recalculating metrics
+    for already calculated stands.
+    """
     if datalayer.type == DataLayerType.VECTOR:
         raise ValueError("Cannot calculate zonal stats for vector layers.")
 
     if datalayer.url is None:
         raise ValueError("Cannot calculate zonal stats for empty urls.")
-    stand_ids = set(stands.all().values_list("id", flat=True))
-    existing_metrics = StandMetric.objects.filter(
-        stand_id__in=stand_ids,
-        datalayer_id=datalayer.pk,
-    )
-    existing_stand_ids = set(existing_metrics.all().values_list("stand_id", flat=True))
-    missing_stand_ids = stand_ids - existing_stand_ids
-    missing_stands = Stand.objects.filter(id__in=missing_stand_ids).with_webmercator()
-    if missing_stands.count() <= 0:
+
+    stands = stands.with_webmercator()
+    if stands.count() <= 0:
         log.info("There are no missing stands. Early return.")
         return
 
-    stand_geojson = list(map(to_geojson, missing_stands))
+    stand_geojson = list(map(to_geojson, stands))
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
     payload = {
         "datalayer": {
@@ -253,7 +248,9 @@ def calculate_stand_zonal_stats_api(
         "stands": {"type": "FeatureCollection", "features": stand_geojson},
         "env": settings.ENV,
     }
-    response = requests.post(f"{settings.STAND_METRICS_API_URL}/metrics", json=payload)
+
+    session = RequestSessionWrap()
+    response = session.post(f"{settings.STAND_METRICS_API_URL}/metrics", json=payload)
     response.raise_for_status()
 
     data = response.json()
@@ -282,7 +279,7 @@ def calculate_stand_zonal_stats(
     stands: QuerySet["Stand"],
     datalayer: DataLayer,
     aggregations: Collection[str] = DEFAULT_AGGREGATIONS,
-) -> QuerySet[StandMetric]:
+) -> None:
     """This function calculates zonal stats for
     a collection of stands. This function skips
     recalculating metrics for already calculated
@@ -294,48 +291,19 @@ def calculate_stand_zonal_stats(
 
     if datalayer.url is None:
         raise ValueError("Cannot calculate zonal stats for empty urls.")
-    stand_ids = set(stands.all().values_list("id", flat=True))
-    existing_metrics = StandMetric.objects.filter(
-        stand_id__in=stand_ids,
-        datalayer_id=datalayer.pk,
-    )
-    existing_stand_ids = set(existing_metrics.all().values_list("stand_id", flat=True))
-    missing_stand_ids = stand_ids - existing_stand_ids
-    missing_stands = Stand.objects.filter(id__in=missing_stand_ids).with_webmercator()
-    if missing_stands.count() <= 0:
-        log.info("There are no missing stands. Early return.")
-        return StandMetric.objects.filter(
-            stand__id__in=stands,
-            datalayer_id=datalayer.pk,
-        )
 
+    missing_stands = stands.with_webmercator()
     stand_geojson = list(map(to_geojson, missing_stands))
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
     with rasterio.Env(**get_gdal_env()):
-        if feature_enabled("RASTERIO_WINDOWED_READ"):
-            with rasterio.open(datalayer.url) as main_raster:
-                bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
-                window = from_bounds(*bounds, transform=main_raster.transform)
-                data = main_raster.read(1, window=window)
-                window_transform = main_raster.window_transform(window)
-                stats = zonal_stats(
-                    raster=data,
-                    affine=window_transform,
-                    vectors=stand_geojson,
-                    stats=aggregations,
-                    nodata=nodata,
-                    geojson_out=True,
-                    band=1,
-                )
-        else:
-            stats = zonal_stats(
-                raster=datalayer.url,
-                vectors=stand_geojson,
-                stats=aggregations,
-                nodata=nodata,
-                geojson_out=True,
-                band=1,
-            )
+        stats = zonal_stats(
+            raster=datalayer.url,
+            vectors=stand_geojson,
+            stats=aggregations,
+            nodata=nodata,
+            geojson_out=True,
+            band=1,
+        )
 
     results = list(
         map(
@@ -356,11 +324,6 @@ def calculate_stand_zonal_stats(
     )
 
     log.info(f"Created/Updated {len(results)} stand metrics.")
-
-    return StandMetric.objects.filter(
-        stand_id__in=stand_ids,
-        datalayer=datalayer,
-    )
 
 
 def get_datalayer_metric(datalayer: DataLayer) -> str:
@@ -386,7 +349,7 @@ def get_stand_grid_key_search_precision(stand_size: StandSizeChoices) -> int:
     return precision
 
 
-def get_missing_stand_ids_for_datalayer(
+def get_missing_stand_ids_for_datalayer_within_geometry(
     geometry: GEOSGeometry,
     stand_size: StandSizeChoices,
     datalayer: DataLayer,
@@ -418,6 +381,40 @@ def get_missing_stand_ids_for_datalayer(
                 settings.DEFAULT_CRS,
                 geometry.wkt,
                 settings.DEFAULT_CRS,
+            ],
+        )
+        rows = cursor.fetchall()
+        missing_stand_ids = {row[0] for row in rows}
+        return missing_stand_ids
+
+
+def get_missing_stand_ids_for_datalayer_from_stand_list(
+    stand_ids: list[int],
+    datalayer: DataLayer,
+) -> set[int]:
+    """
+    Given a set of Stand IDs and datalayer, return the set of stand IDs
+    that do not have a metric for the given datalayer.
+    """
+
+    if len(stand_ids) == 0:
+        return set()
+
+    query = """
+    SELECT s.id FROM stands_stand s
+    LEFT OUTER JOIN stands_standmetric sm
+    ON s.id = sm.stand_id AND sm.datalayer_id = %s
+    WHERE
+        s.id IN %s
+        AND sm.id IS NULL
+        ORDER BY s.grid_key;
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            [
+                datalayer.pk,
+                tuple(stand_ids),
             ],
         )
         rows = cursor.fetchall()

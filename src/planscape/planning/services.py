@@ -98,9 +98,9 @@ def create_planning_area(
     notes: Optional[str] = None,
 ) -> PlanningArea:
     from planning.tasks import (
-        prepare_planning_area,
-        async_set_planning_area_status,
         async_create_stands,
+        async_set_planning_area_status,
+        prepare_planning_area,
     )
 
     """Canonical method to create a new planning area."""
@@ -123,6 +123,10 @@ def create_planning_area(
         planning_area.pk,
         PlanningAreaMapStatus.STANDS_DONE,
     )
+    set_map_status_stands_failed = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.FAILED,
+    )
 
     stands_workflow = chord(
         header=group(
@@ -135,7 +139,7 @@ def create_planning_area(
         body=group(
             [set_map_status_stands_done, prepare_planning_area.si(planning_area.pk)]
         ),
-    )
+    ).link_error(set_map_status_stands_failed)
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -206,9 +210,7 @@ def get_treatment_goal_from_configuration(
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
-    from planning.tasks import (
-        prepare_scenarios_for_forsys_and_run,
-    )
+    from planning.tasks import prepare_scenarios_for_forsys_and_run
 
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
@@ -570,9 +572,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
 @transaction.atomic()
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
-    from planning.tasks import (
-        prepare_scenarios_for_forsys_and_run,
-    )
+    from planning.tasks import prepare_scenarios_for_forsys_and_run
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
