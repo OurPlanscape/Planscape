@@ -6,7 +6,7 @@ from urllib3.util.retry import Retry
 class RequestSessionWrap(Session):
     def __init__(self):
         super().__init__()
-        retries = 5
+        retries = 3
         backoff_factor = 1
         status_forcelist = (500, 502, 504)
         retry = Retry(
