@@ -1,11 +1,11 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { firstValueFrom, map, Observable, of, skip } from 'rxjs';
+import { firstValueFrom, map, Observable, skip, take } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
@@ -31,7 +31,7 @@ import { Step4Component } from '../step4/step4.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
-import { SavingErrorModalComponent } from '../saving-error-modal/saving-error-modal.component';
+import { ScenarioErrorModalComponent } from '../saving-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -63,6 +63,7 @@ enum ScenarioTabs {
     Step3Component,
     Step4Component,
     BaseLayersComponent,
+    JsonPipe,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -96,6 +97,8 @@ export class ScenarioCreationComponent
   treatable_area$ = this.newScenarioState.availableStands$.pipe(
     map((s) => s.summary.treatable_area)
   );
+
+  loading$ = this.newScenarioState.loading$;
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -152,9 +155,24 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    this.config = { ...this.config, ...data };
-    this.newScenarioState.setScenarioConfig(this.config);
-    return of(true);
+    return this.newScenarioState.isValidToGoNext$.pipe(
+      take(1),
+      map((valid) => {
+        if (valid) {
+          this.config = { ...this.config, ...data };
+          this.newScenarioState.setScenarioConfig(this.config);
+        } else {
+          this.dialog.open(ScenarioErrorModalComponent, {
+            data: {
+              title: 'Invalid Scenario Configuration',
+              message:
+                'Scenario must have Potential Treatable Area in order to move forward with planning. Update your selections to allow for available stands',
+            },
+          });
+        }
+        return valid;
+      })
+    );
   }
 
   async onFinish() {
@@ -174,7 +192,7 @@ export class ScenarioCreationComponent
           this.router.navigate([result.id], { relativeTo: this.route });
         },
         error: () => {
-          this.dialog.open(SavingErrorModalComponent);
+          this.dialog.open(ScenarioErrorModalComponent);
         },
         complete: () => {
           this.creatingScenario = false;
@@ -220,7 +238,7 @@ export class ScenarioCreationComponent
       ctrl.updateValueAndValidity({ emitEvent: false });
       return true;
     } catch {
-      this.dialog.open(SavingErrorModalComponent);
+      this.dialog.open(ScenarioErrorModalComponent);
       return false;
     }
   }
