@@ -1,6 +1,7 @@
 import logging
 
 import rasterio
+from celery import chord, group
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
@@ -26,13 +27,12 @@ from planning.models import (
     TreatmentGoalUsageType,
 )
 from planning.services import (
-    create_metrics_task,
     build_run_configuration,
+    create_metrics_task,
     export_to_geopackage,
     get_available_stand_ids,
 )
 from planscape.celery import app
-from celery import chord, group
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
@@ -239,12 +239,16 @@ def prepare_planning_area(planning_area_id: int) -> None:
         planning_area.pk,
         PlanningAreaMapStatus.DONE,
     )
+    set_map_status_failed = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.FAILED,
+    )
 
     log.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
 
     stand_metrics_workflow = chord(
         header=group(create_stand_metrics_jobs), body=set_map_status_done
-    )
+    ).link_error(set_map_status_failed)
     stand_metrics_workflow.apply_async()
     log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
 
