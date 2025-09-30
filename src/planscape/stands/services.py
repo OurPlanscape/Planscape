@@ -399,6 +399,9 @@ def get_missing_stand_ids_for_datalayer_from_stand_list(
     that do not have a metric for the given datalayer.
     """
 
+    if len(stand_ids) == 0:
+        return set()
+
     query = """
     SELECT s.id FROM stands_stand s
     LEFT OUTER JOIN stands_standmetric sm
