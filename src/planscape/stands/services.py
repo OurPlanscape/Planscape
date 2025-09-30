@@ -173,6 +173,53 @@ def calculate_stand_vector_stats3(
         )
 
 
+def calculate_stand_vector_stats_with_stand_list(
+    stand_ids: list[int],
+    datalayer: DataLayer,
+):
+    if len(stand_ids) <= 0:
+        log.info("There are no missing stands. Early return.")
+        return
+
+    if datalayer.type == DataLayerType.RASTER:
+        raise ValueError("Cannot calculate vector stats for raster layers.")
+    quali_name = qualify_for_django(datalayer.table)
+    query = f"""
+    WITH centroid AS (
+        SELECT
+            id,
+            ST_Centroid(geometry) as "geometry"
+        FROM stands_stand s
+        WHERE
+            s.id IN %s
+    )
+    INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
+    SELECT
+        now(),
+        c.id,
+        %s,
+        CASE
+            WHEN EXISTS (
+                SELECT
+                    1
+                FROM {quali_name} as poly
+                WHERE
+                    c.geometry && poly.geometry AND
+                    ST_Intersects(c.geometry, poly.geometry)
+            )
+            THEN 1
+            ELSE 0
+        END AS majority
+    FROM centroid c
+    ON CONFLICT ("stand_id", "datalayer_id") DO NOTHING;
+    """.strip()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            [tuple(stand_ids), datalayer.pk],
+        )
+
+
 def calculate_stand_zonal_stats_api(
     stands: QuerySet["Stand"],
     datalayer: DataLayer,
@@ -204,6 +251,7 @@ def calculate_stand_zonal_stats_api(
             "nodata": nodata,
         },
         "stands": {"type": "FeatureCollection", "features": stand_geojson},
+        "env": settings.ENV,
     }
     response = requests.post(f"{settings.STAND_METRICS_API_URL}/metrics", json=payload)
     response.raise_for_status()

@@ -58,24 +58,20 @@ logger = logging.getLogger(__name__)
 
 
 def create_metrics_task(
-    planning_area: PlanningArea,
+    stand_ids: List[int],
     datalayer: DataLayer,
-    stand_size: StandSizeChoices,
-    grid_key_start: str = "",
 ):
     from planning.tasks import (
-        async_calculate_stand_metrics,
+        async_calculate_stand_metrics_with_stand_list,
         async_calculate_vector_metrics,
     )
 
     match datalayer.type:
         case DataLayerType.VECTOR:
-            return async_calculate_vector_metrics.si(
-                planning_area.pk, datalayer.pk, stand_size, grid_key_start
-            )
+            return async_calculate_vector_metrics.si(stand_ids, datalayer.pk)
         case _:
-            return async_calculate_stand_metrics.si(
-                planning_area.pk, datalayer.pk, stand_size, grid_key_start
+            return async_calculate_stand_metrics_with_stand_list.si(
+                stand_ids, datalayer.pk
             )
 
 
@@ -101,7 +97,11 @@ def create_planning_area(
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
-    from planning.tasks import async_create_stands, async_set_planning_area_status
+    from planning.tasks import (
+        prepare_planning_area,
+        async_set_planning_area_status,
+        async_create_stands,
+    )
 
     """Canonical method to create a new planning area."""
 
@@ -119,44 +119,9 @@ def create_planning_area(
         notes=notes,
         map_status=PlanningAreaMapStatus.PENDING,
     )
-    slope = DataLayer.objects.all().by_meta_name("slope")
-    distance_from_roads = DataLayer.objects.all().by_meta_name("distance_from_roads")
-    datalayers = list(
-        DataLayer.objects.all().by_meta_capability(
-            TreatmentGoalUsageType.EXCLUSION_ZONE
-        )
-    ) + [
-        slope,
-        distance_from_roads,
-    ]
-    datalayers = list(filter(None, datalayers))
-
-    create_stand_metrics_jobs = []
-
-    for stand_size in StandSizeChoices:
-        truncated_stand_grid_keys = get_truncated_stands_grid_keys(
-            planning_area, stand_size
-        )
-        jobs = [
-            create_metrics_task(planning_area, datalayer, stand_size, grid_key_start)
-            for datalayer in datalayers
-            for grid_key_start in truncated_stand_grid_keys
-        ]
-        create_stand_metrics_jobs.extend(jobs)
-
-    set_map_status_done = async_set_planning_area_status.si(
-        planning_area.pk,
-        PlanningAreaMapStatus.DONE,
-    )
     set_map_status_stands_done = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.STANDS_DONE,
-    )
-
-    logger.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
-
-    stand_metrics_workflow = chord(
-        header=group(create_stand_metrics_jobs), body=set_map_status_done
     )
 
     stands_workflow = chord(
@@ -167,9 +132,10 @@ def create_planning_area(
                 async_create_stands.si(planning_area.pk, StandSizeChoices.SMALL),
             ]
         ),
-        body=set_map_status_stands_done,
+        body=group(
+            [set_map_status_stands_done, prepare_planning_area.si(planning_area.pk)]
+        ),
     )
-    workflow = stands_workflow | stand_metrics_workflow
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -181,7 +147,7 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: workflow.apply_async())
+        transaction.on_commit(lambda: stands_workflow.apply_async())
     return planning_area
 
 
