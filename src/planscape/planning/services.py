@@ -139,7 +139,7 @@ def create_planning_area(
         body=group(
             [set_map_status_stands_done, prepare_planning_area.si(planning_area.pk)]
         ),
-    ).link_error(set_map_status_stands_failed)
+    )
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -151,7 +151,9 @@ def create_planning_area(
     )
     action.send(user, verb="created", action_object=planning_area)
     if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: stands_workflow.apply_async())
+        transaction.on_commit(
+            lambda: stands_workflow.apply_async(link_error=set_map_status_stands_failed)
+        )
     return planning_area
 
 

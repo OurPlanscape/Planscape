@@ -248,8 +248,8 @@ def prepare_planning_area(planning_area_id: int) -> None:
 
     stand_metrics_workflow = chord(
         header=group(create_stand_metrics_jobs), body=set_map_status_done
-    ).link_error(set_map_status_failed)
-    stand_metrics_workflow.apply_async()
+    )
+    stand_metrics_workflow.apply_async(link_error=set_map_status_failed)
     log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
 
 
