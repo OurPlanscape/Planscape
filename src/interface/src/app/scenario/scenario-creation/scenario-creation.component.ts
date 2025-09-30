@@ -5,7 +5,7 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
 import { StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { firstValueFrom, map, Observable, skip, take } from 'rxjs';
+import { firstValueFrom, map, Observable, of, skip, take } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
   AbstractControl,
@@ -155,6 +155,14 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
+    // if dynamic map is not able just go forward.
+    // remove this once dynamic map enabled.
+    if (!this.isDynamicMapEnabled) {
+      this.config = { ...this.config, ...data };
+      this.newScenarioState.setScenarioConfig(this.config);
+      return of(true);
+    }
+
     return this.newScenarioState.isValidToGoNext$.pipe(
       take(1),
       map((valid) => {
