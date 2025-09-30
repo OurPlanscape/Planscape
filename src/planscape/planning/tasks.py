@@ -134,39 +134,6 @@ def async_calculate_vector_metrics(
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics(
-    planning_area_id: int,
-    datalayer_id: int,
-    stand_size: StandSizeChoices,
-    grid_key_start: str,
-) -> None:
-    """
-    Calculates stand metrics based on planning area, stand size, and datalayer.
-    Applying only to stands whose grid_key starts with the provided grid_key_start.
-    """
-    try:
-        planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-        datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
-        stands = (
-            Stand.objects.all()
-            .within_polygon(planning_area.geometry, stand_size)
-            .filter(size=stand_size, grid_key__icontains=grid_key_start)
-            .order_by("grid_key")
-        )
-        if feature_enabled("API_ZONAL_STATS"):
-            calculate_stand_zonal_stats_api(stands, datalayer)
-        else:
-            with rasterio.Env(get_storage_session()):
-                calculate_stand_zonal_stats(stands, datalayer)
-    except PlanningArea.DoesNotExist:
-        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
-        return
-    except DataLayer.DoesNotExist:
-        log.warning(f"DataLayer with id {datalayer_id} does not exist.")
-        return
-
-
-@app.task(max_retries=3, retry_backoff=True)
 def async_calculate_stand_metrics_with_stand_list(
     stand_ids: list,
     datalayer_id: int,
@@ -182,9 +149,6 @@ def async_calculate_stand_metrics_with_stand_list(
         else:
             with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(stands, datalayer)
-    except PlanningArea.DoesNotExist:
-        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
-        return
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
