@@ -17,7 +17,7 @@
     sg-button
     (click)="goNext()"
     variant="primary"
-    [disabled]="savingStep"
+    [disabled]="savingStep || disabled"
     [loading]="savingStep">
     {{ isLastStep ? finishLabel : continueLabel }}
   </button>

@@ -36,7 +36,8 @@
       (selectedIndexChange)="stepChanged($event)"
       (finished)="onFinish()"
       [outerForm]="form"
-      [savingStep]="creatingScenario">
+      [savingStep]="creatingScenario"
+      [disabled]="(loading$ | async) || false">
       <sg-step>
         <app-step1 #step1></app-step1>
       </sg-step>
