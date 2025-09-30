@@ -8,7 +8,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
 from planning.models import ScenarioResultStatus, GeoPackageStatus
 from planning.tasks import (
-    async_calculate_stand_metrics,
+    async_calculate_stand_metrics_with_stand_list,
     async_forsys_run,
     async_pre_forsys_process,
     trigger_geopackage_generation,
@@ -42,10 +42,10 @@ class AsyncCalculateStandMetricsTest(TestCase):
 
     def setUp(self):
         self.stands = self.load_stands()
-        stand_ids = [s.id for s in self.stands]
+        self.stand_ids = [s.id for s in self.stands]
         self.planning_area_geometry = MultiPolygon(
             [
-                Stand.objects.filter(id__in=stand_ids).aggregate(
+                Stand.objects.filter(id__in=self.stand_ids).aggregate(
                     geometry=Union("geometry")
                 )["geometry"]
             ]
@@ -68,48 +68,27 @@ class AsyncCalculateStandMetricsTest(TestCase):
     def test_async_calculate_stand_metrics(self):
         self.assertEqual(StandMetric.objects.count(), 0)
 
-        async_calculate_stand_metrics(
-            planning_area_id=self.scenario.planning_area.pk,
+        async_calculate_stand_metrics_with_stand_list(
+            stand_ids=self.stand_ids,
             datalayer_id=self.datalayer.pk,
-            stand_size=StandSizeChoices.LARGE,
-            grid_key_start="",
         )
 
         self.assertNotEqual(StandMetric.objects.count(), Stand.objects.count())
 
     def test_async_calculate_stand_metrics_no_stands(self):
         self.assertEqual(StandMetric.objects.count(), 0)
-
-        self.scenario.planning_area.geometry = MultiPolygon()
-        self.scenario.planning_area.save()
-
-        async_calculate_stand_metrics(
-            planning_area_id=self.scenario.planning_area.pk,
+        async_calculate_stand_metrics_with_stand_list(
+            stand_ids=[],
             datalayer_id=self.datalayer.pk,
-            stand_size=StandSizeChoices.LARGE,
-            grid_key_start="",
         )
 
         self.assertEqual(StandMetric.objects.count(), 0)
 
     def test_async_calculate_stand_metrics_datalayer_does_not_exist(self):
         self.assertEqual(StandMetric.objects.count(), 0)
-        async_calculate_stand_metrics(
-            planning_area_id=self.scenario.planning_area.pk,
+        async_calculate_stand_metrics_with_stand_list(
+            stand_ids=self.stand_ids,
             datalayer_id=9999,  # non-existent datalayer
-            stand_size=StandSizeChoices.LARGE,
-            grid_key_start="",
-        )
-
-        self.assertEqual(StandMetric.objects.count(), 0)
-
-    def test_async_calculate_stand_metrics_planning_area_does_not_exists(self):
-        self.assertEqual(StandMetric.objects.count(), 0)
-        async_calculate_stand_metrics(
-            planning_area_id=9999,  # non-existent planning area
-            datalayer_id=self.datalayer.pk,
-            stand_size=StandSizeChoices.LARGE,
-            grid_key_start="",
         )
 
         self.assertEqual(StandMetric.objects.count(), 0)

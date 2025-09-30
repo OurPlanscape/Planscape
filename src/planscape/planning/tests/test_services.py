@@ -18,7 +18,7 @@ from django.db import connection
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
 from stands.models import Stand, StandSizeChoices
-from stands.services import calculate_stand_vector_stats3
+from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory
 
 from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType
@@ -646,11 +646,9 @@ class TestRemoveExcludes(TransactionTestCase):
         pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.metrics = calculate_stand_vector_stats3(
-            self.datalayer,
-            self.planning_area.geometry,
-            stand_size=StandSizeChoices.LARGE,
-            grid_key_start="",
+        self.metrics = calculate_stand_vector_stats_with_stand_list(
+            stand_ids=[stand.id for stand in self.stands],
+            datalayer=self.datalayer,
         )
 
     def tearDown(self):
