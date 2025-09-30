@@ -3,8 +3,7 @@ import logging
 from typing import Any, Collection, Dict
 
 import rasterio
-import requests
-from core.flags import feature_enabled
+from core.requests import RequestSessionWrap
 from datasets.dynamic_models import qualify_for_django
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
@@ -12,10 +11,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from django.db.models import QuerySet
 from gis.info import get_gdal_env
-from rasterio.windows import from_bounds
 from rasterstats import zonal_stats
-from shapely import total_bounds
-from shapely.geometry import shape
 
 from stands.models import Stand, StandMetric, StandSizeChoices
 
@@ -252,7 +248,9 @@ def calculate_stand_zonal_stats_api(
         "stands": {"type": "FeatureCollection", "features": stand_geojson},
         "env": settings.ENV,
     }
-    response = requests.post(f"{settings.STAND_METRICS_API_URL}/metrics", json=payload)
+
+    session = RequestSessionWrap()
+    response = session.post(f"{settings.STAND_METRICS_API_URL}/metrics", json=payload)
     response.raise_for_status()
 
     data = response.json()
