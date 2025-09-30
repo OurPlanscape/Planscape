@@ -1,4 +1,4 @@
-<div class="progress-stepper">
+<div class="steps-nav">
   <div class="stepper-container">
     <div *ngFor="let step of displaySteps; let i = index" class="step-wrapper">
       <div
@@ -23,7 +23,7 @@
           </div>
         </div>
 
-        <div class="step-label">{{ step.label }}</div>
+        <div class="step-label">{{ getStepLabel(i) }}</div>
       </div>
 
       <div *ngIf="i !== displaySteps.length - 1" class="step-connector"></div>

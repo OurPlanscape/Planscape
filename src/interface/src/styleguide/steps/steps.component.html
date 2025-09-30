@@ -1,13 +1,15 @@
+<!-- Content projection for navigation and steps -->
+<ng-content></ng-content>
+
+<!-- Step content display -->
 <div class="step">
   <ng-container
     *ngIf="selected"
     [ngTemplateOutlet]="selected.content"></ng-container>
 </div>
 
+<!-- Action buttons -->
 <div class="actions">
-  <div class="step-count">
-    Step {{ selectedIndex + 1 }} of {{ steps.length }}
-  </div>
   <button sg-button [disabled]="selectedIndex === 0" (click)="goBack()">
     {{ backLabel }}
   </button>

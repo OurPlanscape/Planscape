@@ -16,6 +16,7 @@ import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
 import { ButtonComponent } from '../button/button.component';
 import { StepComponent } from './step.component';
+import { StepsNavComponent } from './steps-nav.component';
 
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).
@@ -39,7 +40,7 @@ import { StepComponent } from './step.component';
 @Component({
   selector: 'sg-steps',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, CdkStepperModule],
+  imports: [CommonModule, ButtonComponent, CdkStepperModule, StepsNavComponent],
   providers: [{ provide: CdkStepper, useExisting: StepsComponent }],
   templateUrl: './steps.component.html',
   styleUrl: './steps.component.scss',
