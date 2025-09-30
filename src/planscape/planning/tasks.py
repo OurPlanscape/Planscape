@@ -13,7 +13,7 @@ from stands.services import (
     calculate_stand_zonal_stats,
     calculate_stand_zonal_stats_api,
     create_stands_for_geometry,
-    get_missing_stand_ids_for_datalayer,
+    get_missing_stand_ids_for_datalayer_within_geometry,
 )
 from utils.cli_utils import call_forsys
 
@@ -211,7 +211,7 @@ def prepare_planning_area(planning_area_id: int) -> None:
 
     for datalayer in datalayers:
         for stand_size in StandSizeChoices:
-            missing_stand_ids = get_missing_stand_ids_for_datalayer(
+            missing_stand_ids = get_missing_stand_ids_for_datalayer_within_geometry(
                 geometry=planning_area.geometry,
                 stand_size=stand_size,
                 datalayer=datalayer,
@@ -298,7 +298,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
 
     tasks = [async_pre_forsys_process.si(scenario_id=scenario.pk)]
     for datalayer in datalayers:
-        missing_stand_ids = get_missing_stand_ids_for_datalayer(
+        missing_stand_ids = get_missing_stand_ids_for_datalayer_within_geometry(
             geometry=scenario.planning_area.geometry,
             stand_size=scenario.get_stand_size(),
             datalayer=datalayer,
