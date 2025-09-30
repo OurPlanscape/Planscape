@@ -38,8 +38,9 @@ class CalculateStandZonalStatsTestCase(TestCase):
 
     def test_calculate_stand_zonal_stats_returns_stand_metrics(self):
         self.assertEqual(0, StandMetric.objects.count())
-        stands = Stand.objects.filter(id__in=self.stand_ids).with_webmercator()
-        metrics = calculate_stand_zonal_stats(stands, datalayer=self.datalayer)
+        stands = Stand.objects.filter(id__in=self.stand_ids)
+        calculate_stand_zonal_stats(stands, datalayer=self.datalayer)
+        metrics = StandMetric.objects.filter(stand__in=stands, datalayer=self.datalayer)
         self.assertGreater(metrics.count(), 0)
         for m in metrics:
             self.assertIsNotNone(m.min)
@@ -69,7 +70,7 @@ class CalculateStandZonalStatsTestCase(TestCase):
                 minority=2,
             )
         calculate_stand_zonal_stats(stands, datalayer=self.datalayer)
-        zonal_stats.assert_not_called()
+        zonal_stats.assert_called()  # removed filter, thus, it calls zonal_stats
 
     def test_calculate_stand_zonal_stats_with_vector_fails(self):
         datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
