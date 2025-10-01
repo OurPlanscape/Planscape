@@ -8,7 +8,7 @@ class RequestSessionWrap(Session):
         super().__init__()
         retries = 3
         backoff_factor = 1
-        status_forcelist = (500, 502, 504)
+        status_forcelist = (429, 500, 502, 503, 504)
         retry = Retry(
             total=retries,
             read=retries,
