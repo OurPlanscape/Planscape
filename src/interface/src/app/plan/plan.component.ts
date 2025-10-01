@@ -12,7 +12,13 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';
-import { planningAreaIsReady, POLLING_INTERVAL } from './plan-helpers';
+import {
+  planningAreaIsReady,
+  planningAreaMetricsAreReady,
+  planningAreaMetricsFailed,
+  POLLING_INTERVAL,
+} from './plan-helpers';
+import { FeatureService } from '../features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -30,7 +36,8 @@ export class PlanComponent implements OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState
+    private planState: PlanState,
+    private featureService: FeatureService
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
@@ -144,10 +151,20 @@ export class PlanComponent implements OnInit {
       .pipe(
         // poll only while NOT DONE
         switchMap((plan) =>
-          !planningAreaIsReady(plan) ? interval(POLLING_INTERVAL) : EMPTY
+          !this.isPlanMapStatusReady(plan) ? interval(POLLING_INTERVAL) : EMPTY
         ),
         untilDestroyed(this)
       )
       .subscribe(() => this.planState.reloadPlan());
+  }
+
+  private isPlanMapStatusReady(plan: Plan) {
+    if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
+      return (
+        planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan)
+      );
+    } else {
+      return planningAreaIsReady(plan) || planningAreaMetricsFailed(plan);
+    }
   }
 }

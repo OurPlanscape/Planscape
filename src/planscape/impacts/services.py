@@ -8,6 +8,7 @@ from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 import fiona
 import rasterio
 from actstream import action as actstream_action
+from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -41,7 +42,11 @@ from stands.models import (
     StandSizeChoices,
     pixels_from_size,
 )
-from stands.services import calculate_stand_zonal_stats
+from stands.services import (
+    calculate_stand_zonal_stats,
+    calculate_stand_zonal_stats_api,
+    get_missing_stand_ids_for_datalayer_from_stand_list,
+)
 
 from planscape.openpanel import track_openpanel
 
@@ -426,27 +431,58 @@ def calculate_impacts(
         "project_area",
     )
     stand_ids = prescriptions.values_list("stand_id", flat=True)
-    stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
     stand_size = treatment_plan.scenario.get_stand_size()
-    with rasterio.Env(get_storage_session()):
-        baseline_layer = ImpactVariable.get_datalayer(
-            impact_variable=variable,
-            action=None,
-            year=year,
-        )
-        baseline_metrics = calculate_stand_zonal_stats(
-            stands=stands,
-            datalayer=baseline_layer,
-        )
-        action_layer = ImpactVariable.get_datalayer(
-            impact_variable=variable,
-            action=action,
-            year=year,
-        )
-        action_metrics = calculate_stand_zonal_stats(
-            stands=stands,
-            datalayer=action_layer,
-        )
+    baseline_layer = ImpactVariable.get_datalayer(
+        impact_variable=variable,
+        action=None,
+        year=year,
+    )
+
+    missing_stand_ids = get_missing_stand_ids_for_datalayer_from_stand_list(
+        stand_ids=stand_ids, datalayer=baseline_layer
+    )
+    if len(missing_stand_ids) > 0:
+        missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
+        if feature_enabled("API_ZONAL_STATS"):
+            calculate_stand_zonal_stats_api(
+                stands=missing_stands, datalayer=baseline_layer
+            )
+        else:
+            with rasterio.Env(get_storage_session()):
+                calculate_stand_zonal_stats(
+                    stands=missing_stands,
+                    datalayer=baseline_layer,
+                )
+    baseline_metrics = StandMetric.objects.filter(
+        stand_id__in=stand_ids,
+        datalayer=baseline_layer,
+    )
+
+    action_layer = ImpactVariable.get_datalayer(
+        impact_variable=variable,
+        action=action,
+        year=year,
+    )
+
+    missing_stand_ids = get_missing_stand_ids_for_datalayer_from_stand_list(
+        stand_ids=stand_ids, datalayer=action_layer
+    )
+    if len(missing_stand_ids) > 0:
+        missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
+        if feature_enabled("API_ZONAL_STATS"):
+            calculate_stand_zonal_stats_api(
+                stands=missing_stands, datalayer=action_layer
+            )
+        else:
+            with rasterio.Env(get_storage_session()):
+                calculate_stand_zonal_stats(
+                    stands=missing_stands,
+                    datalayer=action_layer,
+                )
+    action_metrics = StandMetric.objects.filter(
+        stand_id__in=stand_ids,
+        datalayer=action_layer,
+    )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
@@ -553,22 +589,36 @@ def calculate_impacts_for_untreated_stands(
         "project_area",
     )
     treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
-    untreated_stands = (
+    untreated_stand_ids = (
         treatment_plan.scenario.get_project_areas_stands()
         .exclude(id__in=treated_stand_ids)
-        .with_webmercator()
+        .values_list("id", flat=True)
     )
 
-    with rasterio.Env(get_storage_session()):
-        baseline_layer = ImpactVariable.get_datalayer(
-            impact_variable=variable,
-            action=None,
-            year=year,
-        )
-        baseline_metrics = calculate_stand_zonal_stats(
-            stands=untreated_stands,
-            datalayer=baseline_layer,
-        )
+    baseline_layer = ImpactVariable.get_datalayer(
+        impact_variable=variable,
+        action=None,
+        year=year,
+    )
+    missing_stand_ids = get_missing_stand_ids_for_datalayer_from_stand_list(
+        stand_ids=list(untreated_stand_ids), datalayer=baseline_layer
+    )
+    if len(missing_stand_ids) > 0:
+        missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
+        if feature_enabled("API_ZONAL_STATS"):
+            calculate_stand_zonal_stats_api(
+                stands=missing_stands, datalayer=baseline_layer
+            )
+        else:
+            with rasterio.Env(get_storage_session()):
+                calculate_stand_zonal_stats(
+                    stands=missing_stands,
+                    datalayer=baseline_layer,
+                )
+    baseline_metrics = StandMetric.objects.filter(
+        stand_id__in=untreated_stand_ids,
+        datalayer=baseline_layer,
+    )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
 

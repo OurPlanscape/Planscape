@@ -119,6 +119,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       ] as const;
 
       return {
+        'fill-opacity-transition': { duration: 0 },
         'fill-color': [
           'case',
           hidden,
@@ -141,6 +142,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
             this.excludedKey
           ),
           'line-opacity': opacity,
+          'line-opacity-transition': { duration: 0 },
         }) as any
     )
   );
@@ -149,6 +151,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     map(
       (opacity) =>
         ({
+          'fill-opacity-transition': { duration: 0 },
           'fill-pattern': 'exclude-pattern', // constant pattern
           'fill-opacity': this.featureStatePaint(opacity, 0, this.excludedKey),
         }) as any
@@ -159,6 +162,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     map(
       (opacity) =>
         ({
+          'fill-opacity-transition': { duration: 0 },
           'fill-pattern': 'thresholds-pattern', // constant pattern
           'fill-opacity': this.featureStatePaint(
             opacity,

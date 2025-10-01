@@ -50,8 +50,8 @@ class CreateScenarioTest(APITransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
 
-    @mock.patch("planning.services.chord", autospec=True)
-    def test_create_with_explicit_treatment_goal(self, chord_mock):
+    @mock.patch("planning.tasks.prepare_scenarios_for_forsys_and_run", autospec=True)
+    def test_create_with_explicit_treatment_goal(self, task_mock):
         configuration = self.configuration.copy()
         configuration.pop("question_id")
         payload = {
@@ -70,7 +70,7 @@ class CreateScenarioTest(APITransactionTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(response.json().get("id"))
-        self.assertEqual(chord_mock.call_count, 1)
+        self.assertEqual(task_mock.delay.call_count, 1)
         self.assertEqual(1, Scenario.objects.count())
         scenario = Scenario.objects.get()
         self.assertEqual(scenario.treatment_goal, self.treatment_goal)

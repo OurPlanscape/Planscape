@@ -3,10 +3,10 @@ from typing import List, Optional
 
 import markdown
 from collaboration.services import get_permissions, get_role
+from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from core.flags import feature_enabled
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import StandSizeChoices
@@ -275,7 +275,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
             return None
         features = result.get("features")
         for feature in features:
-            feature["properties"].pop("text_geometry")
+            feature["properties"].pop("text_geometry", None)
         result["features"] = features
         return result
 
@@ -872,9 +872,16 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
 
             merged_cfg = {**current_cfg, **new_cfg}
             instance.configuration = merged_cfg
+            config_serializer = ConfigurationV3Serializer(data=merged_cfg)
+            if config_serializer.is_valid():
+                instance.configuration = config_serializer.validated_data
+            else:
+                raise serializers.ValidationError(config_serializer.errors)
 
         instance.save(update_fields=["treatment_goal", "configuration"])
-        return instance
+        instance.refresh_from_db()
+        serializer = ScenarioV2Serializer(instance)
+        return serializer.data
 
 
 class CreateScenarioSerializer(serializers.ModelSerializer):

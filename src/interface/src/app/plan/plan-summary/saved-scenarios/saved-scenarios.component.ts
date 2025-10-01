@@ -9,6 +9,8 @@ import {
   getPlanPath,
   isValidTotalArea,
   planningAreaIsReady,
+  planningAreaMetricsAreReady,
+  planningAreaMetricsFailed,
   POLLING_INTERVAL,
 } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
@@ -115,11 +117,17 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   get planningAreaIsReady() {
-    if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
+    if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
+      return this.plan && planningAreaMetricsAreReady(this.plan);
+    } else if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
       return this.plan && planningAreaIsReady(this.plan);
     } else {
       return true;
     }
+  }
+
+  get planningAreaFailed() {
+    return this.plan && planningAreaMetricsFailed(this.plan);
   }
 
   private openScenarioSetupDialog() {

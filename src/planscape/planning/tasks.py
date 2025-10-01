@@ -1,17 +1,20 @@
 import logging
 
 import rasterio
+from celery import chord, group
 from core.flags import feature_enabled
 from datasets.models import DataLayer
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
-    calculate_stand_vector_stats3,
+    calculate_stand_vector_stats_with_stand_list,
     calculate_stand_zonal_stats,
     calculate_stand_zonal_stats_api,
     create_stands_for_geometry,
+    get_missing_stand_ids_for_datalayer_within_geometry,
 )
 from utils.cli_utils import call_forsys
 
@@ -21,9 +24,11 @@ from planning.models import (
     PlanningAreaMapStatus,
     Scenario,
     ScenarioResultStatus,
+    TreatmentGoalUsageType,
 )
 from planning.services import (
     build_run_configuration,
+    create_metrics_task,
     export_to_geopackage,
     get_available_stand_ids,
 )
@@ -117,53 +122,99 @@ def async_set_planning_area_status(
 
 @app.task()
 def async_calculate_vector_metrics(
-    planning_area_id: int,
+    stand_ids: list[int],
     datalayer_id: int,
-    stand_size: StandSizeChoices,
-    grid_key_start: str,
 ) -> None:
     if feature_enabled("AUTO_CREATE_STANDS"):
-        planning_area = PlanningArea.objects.get(id=planning_area_id)
         datalayer = DataLayer.objects.get(id=datalayer_id)
-        calculate_stand_vector_stats3(
+        calculate_stand_vector_stats_with_stand_list(
+            stand_ids=stand_ids,
             datalayer=datalayer,
-            planning_area_geometry=planning_area.geometry,
-            stand_size=stand_size,
-            grid_key_start=grid_key_start,
         )
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics(
-    planning_area_id: int,
+def async_calculate_stand_metrics_with_stand_list(
+    stand_ids: list,
     datalayer_id: int,
-    stand_size: StandSizeChoices,
-    grid_key_start: str,
 ) -> None:
     """
-    Calculates stand metrics based on planning area, stand size, and datalayer.
-    Applying only to stands whose grid_key starts with the provided grid_key_start.
+    Calculates stand metrics based on stands list and datalayer.
     """
     try:
-        planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
+        stands = Stand.objects.filter(id__in=stand_ids).order_by("grid_key")
         datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
-        stands = (
-            Stand.objects.all()
-            .within_polygon(planning_area.geometry, stand_size)
-            .filter(size=stand_size, grid_key__icontains=grid_key_start)
-            .order_by("grid_key")
-        )
         if feature_enabled("API_ZONAL_STATS"):
             calculate_stand_zonal_stats_api(stands, datalayer)
         else:
             with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(stands, datalayer)
-    except PlanningArea.DoesNotExist:
-        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
-        return
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
+
+
+@app.task()
+def prepare_planning_area(planning_area_id: int) -> None:
+    planning_area = PlanningArea.objects.get(id=planning_area_id)
+
+    log.info(f"Preparing planning area {planning_area_id}")
+    slope = DataLayer.objects.all().by_meta_name("slope")
+    distance_from_roads = DataLayer.objects.all().by_meta_name("distance_from_roads")
+    datalayers = list(
+        DataLayer.objects.all().by_meta_capability(
+            TreatmentGoalUsageType.EXCLUSION_ZONE
+        )
+    ) + [
+        slope,
+        distance_from_roads,
+    ]
+    datalayers = list(filter(None, datalayers))
+
+    create_stand_metrics_jobs = []
+
+    for datalayer in datalayers:
+        for stand_size in StandSizeChoices:
+            missing_stand_ids = get_missing_stand_ids_for_datalayer_within_geometry(
+                geometry=planning_area.geometry,
+                stand_size=stand_size,
+                datalayer=datalayer,
+            )
+            if not missing_stand_ids:
+                log.info(
+                    f"No missing stand metrics for datalayer {datalayer.pk} and stand size {stand_size}"
+                )
+                continue
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                create_stand_metrics_jobs.append(
+                    create_metrics_task(
+                        stand_ids=batch_stand_ids,
+                        datalayer=datalayer,
+                    )
+                )
+
+    log.info(
+        f"Spawning {len(create_stand_metrics_jobs)} vector and stand metrics tasks."
+    )
+
+    set_map_status_done = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.DONE,
+    )
+    set_map_status_failed = async_set_planning_area_status.si(
+        planning_area.pk,
+        PlanningAreaMapStatus.FAILED,
+    )
+
+    log.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
+
+    stand_metrics_workflow = chord(
+        header=group(create_stand_metrics_jobs), body=set_map_status_done
+    ).on_error(set_map_status_failed)
+    stand_metrics_workflow.apply_async()
+    log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
 
 
 @app.task()
@@ -197,6 +248,71 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         scenario = Scenario.objects.select_for_update().get(id=scenario_id)
         scenario.forsys_input = forsys_input  # type: ignore
         scenario.save(update_fields=["forsys_input", "updated_at"])
+
+
+@app.task()
+def async_change_scenario_status(
+    scenario_id: int,
+    status: ScenarioResultStatus,
+) -> None:
+    try:
+        with transaction.atomic():
+            scenario: Scenario = Scenario.objects.select_for_update().get(
+                pk=scenario_id
+            )
+            scenario.result_status = status
+            scenario.save(update_fields=["result_status", "updated_at"])
+            log.info("Scenario %s status set to %s", scenario_id, status)
+    except Scenario.DoesNotExist:
+        log.exception("Scenario %s does not exist", scenario_id)
+
+
+@app.task()
+def prepare_scenarios_for_forsys_and_run(scenario_id: int):
+    log.info(f"Preparing scenario {scenario_id} for Forsys run.")
+    scenario = Scenario.objects.get(id=scenario_id)
+    if scenario.result_status != ScenarioResultStatus.PENDING:
+        log.info(
+            f"Scenario {scenario_id} is not in a pending state. Current status: {scenario.result_status}"
+        )
+        return
+
+    treatment_goal = scenario.treatment_goal
+
+    datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+
+    tasks = [async_pre_forsys_process.si(scenario_id=scenario.pk)]
+    for datalayer in datalayers:
+        missing_stand_ids = get_missing_stand_ids_for_datalayer_within_geometry(
+            geometry=scenario.planning_area.geometry,
+            stand_size=scenario.get_stand_size(),
+            datalayer=datalayer,
+        )
+
+        if missing_stand_ids:
+            log.info(
+                f"Calculating missing stand metrics for datalayer {datalayer.pk} and {len(missing_stand_ids)} stands"
+            )
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                tasks.append(
+                    async_calculate_stand_metrics_with_stand_list.si(
+                        stand_ids=batch_stand_ids,
+                        datalayer_id=datalayer.pk,
+                    )
+                )
+
+    workflow_failed_task = async_change_scenario_status.si(
+        scenario_id=scenario.pk, status=ScenarioResultStatus.PANIC
+    )
+    forsys_task = async_forsys_run.si(scenario_id=scenario.pk)
+
+    workflow = chord(header=group(tasks), body=forsys_task).on_error(
+        workflow_failed_task
+    )
+    workflow.apply_async()
+    log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
 
 
 @app.task()

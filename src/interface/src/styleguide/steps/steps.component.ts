@@ -59,6 +59,7 @@ export class StepsComponent<T> extends CdkStepper {
   @Output() finished = new EventEmitter();
 
   @Input() savingStep = false;
+  @Input() disabled = false;
 
   @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
@@ -104,11 +105,17 @@ export class StepsComponent<T> extends CdkStepper {
         this.save(data)
           .pipe(take(1))
           .subscribe({
-            next: (result) => {
-              if (this.isLastStep) {
-                this.allPatchesSuccessful = true;
+            next: (moveNext) => {
+              if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+                if (this.isLastStep) {
+                  this.allPatchesSuccessful = true;
+                }
+                this.moveNextOrFinish();
+              } else {
+                if (moveNext) {
+                  this.moveNextOrFinish();
+                }
               }
-              this.moveNextOrFinish();
             },
             error: (err) => {
               control.setErrors({
