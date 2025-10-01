@@ -3,7 +3,6 @@ import {
   InputDirective,
   InputFieldComponent,
   ModalComponent,
-  ModalInfoComponent,
 } from '@styleguide';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -25,7 +24,6 @@ import { Router } from '@angular/router';
     InputDirective,
     ReactiveFormsModule,
     InputFieldComponent,
-    ModalInfoComponent,
   ],
   templateUrl: './scenario-setup-modal.component.html',
   styleUrl: './scenario-setup-modal.component.scss',
