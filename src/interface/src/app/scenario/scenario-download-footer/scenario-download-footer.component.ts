@@ -36,7 +36,7 @@ export class ScenarioDownloadFooterComponent {
     private fileServerService: FileSaverService,
     private snackbar: MatSnackBar,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
@@ -56,9 +56,10 @@ export class ScenarioDownloadFooterComponent {
   handleButton() {
     if (this.geoPackageStatus === 'SUCCEEDED') {
       this.handleDownload();
-    } else {
+    } else if (this.geoPackageStatus === 'FAILED') {
       this.displayFailureModal();
     }
+    // other states should be disabled, so do nothing
   }
 
   handleDownload() {
