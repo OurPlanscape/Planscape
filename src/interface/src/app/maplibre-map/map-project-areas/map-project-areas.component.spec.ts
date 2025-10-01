@@ -22,7 +22,7 @@ describe('MapProjectAreasComponent', () => {
       providers: [
         MockProvider(TreatmentsState),
         MockProvider(MapConfigState, {
-          projectAreasOpacity$: of(0.5),
+          opacity$: of(0.5),
           zoomLevel$: new BehaviorSubject<number>(7),
         }),
         MockProvider(ScenarioState, {
