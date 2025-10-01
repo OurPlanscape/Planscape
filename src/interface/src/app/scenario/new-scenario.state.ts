@@ -10,6 +10,8 @@ import {
   map,
   mapTo,
   merge,
+  Observable,
+  of,
   shareReplay,
   startWith,
   switchMap,
@@ -92,6 +94,18 @@ export class NewScenarioState {
         )
     ),
     shareReplay({ bufferSize: 1, refCount: true })
+  );
+
+  isValidToGoNext$: Observable<boolean> = this.stepIndex$.pipe(
+    switchMap((index) =>
+      index <= 0
+        ? of(true)
+        : this.availableStands$.pipe(
+            map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
+          )
+    ),
+    distinctUntilChanged(),
+    shareReplay(1)
   );
 
   public excludedStands$ = this.availableStands$.pipe(

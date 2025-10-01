@@ -1,0 +1,17 @@
+<sg-modal
+  [title]="'Delete &quot;' + data.runName + '&quot;?'"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [centerFooter]="false"
+  primaryButtonText="Delete"
+  secondaryButtonText="Cancel"
+  (clickedPrimary)="onDelete()"
+  (clickedSecondary)="onCancel()"
+  (clickedClose)="onCancel()">
+  <div modalBodyContent class="modal-body-content">
+    <p class="delete-run-message">
+      This action will permanently delete the analysis and all its associated
+      data. This cannot be undone.
+    </p>
+  </div>
+</sg-modal>

@@ -74,32 +74,37 @@
 
   <div class="right-panel">
     <div class="analysis-header">
-      <h3>Analyses</h3>
+      <h3>Runs</h3>
       <button
-        mat-raised-button
-        color="primary"
-        (click)="startAnalysis()"
+        sg-button
+        variant="primary"
+        (click)="startRun()"
         class="start-analysis-btn">
-        <mat-icon>play_arrow</mat-icon>
+        <mat-icon>assignment_add</mat-icon>
         Start Analysis
       </button>
     </div>
 
     <div class="analysis-content">
-      <div *ngIf="!hasAnalyses" class="no-analyses">
+      <div *ngIf="!hasRuns" class="no-analyses">
         <div class="empty-state-icon">
           <mat-icon>bar_chart</mat-icon>
         </div>
-        <h4>No Analyses Yet</h4>
+        <h4>No Runs Yet</h4>
         <p>
-          You haven't run any analyses yet. Kick things off by clicking the
+          You haven't created any runs yet. Kick things off by clicking the
           "Start Analysis" button to explore insights and make data-driven
           decisions.
         </p>
       </div>
 
-      <div *ngIf="hasAnalyses" class="analyses-list">
-        <!-- Analysis results will be displayed here -->
+      <div *ngIf="hasRuns" class="analyses-list">
+        <app-climate-foresight-run-card
+          *ngFor="let run of runs"
+          [run]="run"
+          (delete)="deleteRun($event)"
+          (openRun)="openRun($event)">
+        </app-climate-foresight-run-card>
       </div>
     </div>
   </div>
