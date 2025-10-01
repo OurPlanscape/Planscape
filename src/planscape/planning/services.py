@@ -139,7 +139,7 @@ def create_planning_area(
         body=group(
             [set_map_status_stands_done, prepare_planning_area.si(planning_area.pk)]
         ),
-    ).link_error(set_map_status_stands_failed)
+    ).on_error(set_map_status_stands_failed)
 
     track_openpanel(
         name="planning.planning_area.created",
@@ -547,7 +547,10 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
 def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     errors: List[str] = []
 
-    if scenario.result_status != ScenarioResultStatus.PENDING:
+    if scenario.result_status not in {
+        ScenarioResultStatus.PENDING,
+        ScenarioResultStatus.DRAFT,
+    }:
         return [f"Scenario cannot be run on status {scenario.result_status}."]
 
     if scenario.status == ScenarioStatus.ARCHIVED:

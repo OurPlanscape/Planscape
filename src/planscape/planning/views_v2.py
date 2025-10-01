@@ -23,6 +23,8 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioResult,
+    ScenarioResultStatus,
     TreatmentGoal,
     TreatmentGoalGroup,
 )
@@ -246,9 +248,20 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        scenario = create_scenario(
-            **serializer.validated_data,
-        )
+        scenario = create_scenario(**serializer.validated_data)
+
+        if feature_enabled("SCENARIO_DRAFTS"):
+            scenario_result, created = ScenarioResult.objects.get_or_create(
+                scenario=scenario,
+                defaults={
+                    "status": ScenarioResultStatus.DRAFT,
+                },
+            )
+            if not created:
+                scenario_result.status = ScenarioResultStatus.DRAFT
+                scenario_result.save()
+            scenario.refresh_from_db()
+
         out_serializer = ScenarioV2Serializer(instance=scenario)
 
         headers = self.get_success_headers(out_serializer.data)
@@ -309,6 +322,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
+
+        if feature_enabled("SCENARIO_DRAFTS") and scenario.results is not None:
+            scenario.results.status = ScenarioResultStatus.PENDING
+            scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:

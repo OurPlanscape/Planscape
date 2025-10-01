@@ -134,39 +134,6 @@ def async_calculate_vector_metrics(
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_calculate_stand_metrics(
-    planning_area_id: int,
-    datalayer_id: int,
-    stand_size: StandSizeChoices,
-    grid_key_start: str,
-) -> None:
-    """
-    Calculates stand metrics based on planning area, stand size, and datalayer.
-    Applying only to stands whose grid_key starts with the provided grid_key_start.
-    """
-    try:
-        planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-        datalayer: DataLayer = DataLayer.objects.get(pk=datalayer_id)
-        stands = (
-            Stand.objects.all()
-            .within_polygon(planning_area.geometry, stand_size)
-            .filter(size=stand_size, grid_key__icontains=grid_key_start)
-            .order_by("grid_key")
-        )
-        if feature_enabled("API_ZONAL_STATS"):
-            calculate_stand_zonal_stats_api(stands, datalayer)
-        else:
-            with rasterio.Env(get_storage_session()):
-                calculate_stand_zonal_stats(stands, datalayer)
-    except PlanningArea.DoesNotExist:
-        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
-        return
-    except DataLayer.DoesNotExist:
-        log.warning(f"DataLayer with id {datalayer_id} does not exist.")
-        return
-
-
-@app.task(max_retries=3, retry_backoff=True)
 def async_calculate_stand_metrics_with_stand_list(
     stand_ids: list,
     datalayer_id: int,
@@ -182,9 +149,6 @@ def async_calculate_stand_metrics_with_stand_list(
         else:
             with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(stands, datalayer)
-    except PlanningArea.DoesNotExist:
-        log.warning(f"PlanningArea with id {datalayer_id} does not exist.")
-        return
     except DataLayer.DoesNotExist:
         log.warning(f"DataLayer with id {datalayer_id} does not exist.")
         return
@@ -248,7 +212,7 @@ def prepare_planning_area(planning_area_id: int) -> None:
 
     stand_metrics_workflow = chord(
         header=group(create_stand_metrics_jobs), body=set_map_status_done
-    ).link_error(set_map_status_failed)
+    ).on_error(set_map_status_failed)
     stand_metrics_workflow.apply_async()
     log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
 
@@ -287,6 +251,23 @@ def async_pre_forsys_process(scenario_id: int) -> None:
 
 
 @app.task()
+def async_change_scenario_status(
+    scenario_id: int,
+    status: ScenarioResultStatus,
+) -> None:
+    try:
+        with transaction.atomic():
+            scenario: Scenario = Scenario.objects.select_for_update().get(
+                pk=scenario_id
+            )
+            scenario.result_status = status
+            scenario.save(update_fields=["result_status", "updated_at"])
+            log.info("Scenario %s status set to %s", scenario_id, status)
+    except Scenario.DoesNotExist:
+        log.exception("Scenario %s does not exist", scenario_id)
+
+
+@app.task()
 def prepare_scenarios_for_forsys_and_run(scenario_id: int):
     log.info(f"Preparing scenario {scenario_id} for Forsys run.")
     scenario = Scenario.objects.get(id=scenario_id)
@@ -322,7 +303,11 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
                     )
                 )
 
-    chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    chord(tasks).on_error(
+        async_change_scenario_status.si(
+            scenario_id=scenario.pk, status=ScenarioResultStatus.PANIC
+        )
+    )(async_forsys_run.si(scenario_id=scenario.pk))
     log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
 
 

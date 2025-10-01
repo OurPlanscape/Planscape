@@ -108,67 +108,6 @@ AGGREGATION_MODEL_MAP = {
 MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.items()}
 
 
-def calculate_stand_vector_stats3(
-    datalayer: DataLayer,
-    planning_area_geometry: GEOSGeometry,
-    stand_size: StandSizeChoices,
-    grid_key_start: str,
-):
-    stands = (
-        Stand.objects.all()
-        .within_polygon(planning_area_geometry, stand_size)
-        .filter(size=stand_size, grid_key__icontains=grid_key_start)
-    )
-    stand_ids = set(stands.all().values_list("id", flat=True))
-    existing_metrics = StandMetric.objects.filter(
-        stand_id__in=stand_ids, datalayer_id=datalayer.pk
-    )
-    existing_stand_ids = set(existing_metrics.all().values_list("id", flat=True))
-    missing_stand_ids = stand_ids - existing_stand_ids
-
-    if len(missing_stand_ids) <= 0:
-        log.info("There are no missing stands. Early return.")
-        return
-
-    if datalayer.type == DataLayerType.RASTER:
-        raise ValueError("Cannot calculate vector stats for raster layers.")
-    quali_name = qualify_for_django(datalayer.table)
-    query = f"""
-    WITH centroid AS (
-        SELECT
-            id,
-            ST_Centroid(geometry) as "geometry"
-        FROM stands_stand s
-        WHERE
-            s.id IN %s
-    )
-    INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
-    SELECT
-        now(),
-        c.id,
-        %s,
-        CASE
-            WHEN EXISTS (
-                SELECT
-                    1
-                FROM {quali_name} as poly
-                WHERE
-                    c.geometry && poly.geometry AND
-                    ST_Intersects(c.geometry, poly.geometry)
-            )
-            THEN 1
-            ELSE 0
-        END AS majority
-    FROM centroid c
-    ON CONFLICT ("stand_id", "datalayer_id") DO NOTHING;
-    """.strip()
-    with connection.cursor() as cursor:
-        cursor.execute(
-            query,
-            [tuple(missing_stand_ids), datalayer.pk],
-        )
-
-
 def calculate_stand_vector_stats_with_stand_list(
     stand_ids: list[int],
     datalayer: DataLayer,
