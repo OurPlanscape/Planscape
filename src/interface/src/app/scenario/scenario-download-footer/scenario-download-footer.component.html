@@ -25,7 +25,11 @@
     *ngIf="geoPackageStatus"
     variant="primary"
     class="footer-button"
-    [disabled]="downloadingScenario || geoPackageStatus === 'PENDING'"
+    [disabled]="
+      downloadingScenario ||
+      geoPackageStatus === 'PENDING' ||
+      geoPackageStatus === 'PROCESSING'
+    "
     (click)="handleButton()">
     {{ buttonLabels[geoPackageStatus] || 'Generating GeoPackage' }}
   </button>
