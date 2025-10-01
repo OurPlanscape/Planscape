@@ -209,21 +209,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
-        "create": (
-            CreateScenarioV3Serializer
-            if feature_enabled("SCENARIO_DRAFTS")
-            else CreateScenarioV2Serializer
-        ),
-        "retrieve": (
-            ScenarioV3Serializer
-            if feature_enabled("SCENARIO_DRAFTS")
-            else ScenarioV2Serializer
-        ),
-        "partial_update": (
-            PatchScenarioV3Serializer
-            if feature_enabled("SCENARIO_DRAFTS")
-            else UpsertConfigurationV2Serializer
-        ),
+        "create": CreateScenarioV2Serializer,
+        "retrieve": ScenarioV2Serializer,
+        "partial_update": UpsertConfigurationV2Serializer
     }
 
     filterset_class = ScenarioFilter
@@ -250,7 +238,22 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(**serializer.validated_data)
 
-        if feature_enabled("SCENARIO_DRAFTS"):
+        out_serializer = ScenarioV2Serializer(instance=scenario)
+
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+    @action(detail=False, methods=['post'], url_path="draft")
+    def create_draft(self, request):
+        serializer = CreateScenarioV3Serializer(data=request.data, context={'request': request})
+        try:
+            serializer.is_valid(raise_exception=True)
+            scenario = create_scenario(**serializer.validated_data)
+
             scenario_result, created = ScenarioResult.objects.get_or_create(
                 scenario=scenario,
                 defaults={
@@ -262,14 +265,17 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 scenario_result.save()
             scenario.refresh_from_db()
 
-        out_serializer = ScenarioV2Serializer(instance=scenario)
+            out_serializer = ScenarioV3Serializer(instance=scenario)
 
-        headers = self.get_success_headers(out_serializer.data)
-        return Response(
-            out_serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
+            headers = self.get_success_headers(out_serializer.data)
+            return Response(
+                out_serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers,
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
     def perform_destroy(self, instance):
         delete_scenario(
@@ -311,21 +317,27 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        response_serializer = ScenarioV2Serializer(instance)
+        return Response(response_serializer.data)
+
+    @action(methods=["patch"], detail=True, url_path="draft")
+    def patch_draft(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = PatchScenarioV3Serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         response_serializer = (
             ScenarioV3Serializer(instance)
-            if feature_enabled("SCENARIO_DRAFTS")
-            else ScenarioV2Serializer(instance)
         )
         return Response(response_serializer.data)
 
+    # This is only called by DRAFT-enabled frontend
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
-
-        if feature_enabled("SCENARIO_DRAFTS") and scenario.results is not None:
-            scenario.results.status = ScenarioResultStatus.PENDING
-            scenario.results.save()
+        scenario.results.status = ScenarioResultStatus.PENDING
+        scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
