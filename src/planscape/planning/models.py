@@ -183,6 +183,7 @@ class ScenarioResultStatus(models.TextChoices):
     FAILURE = "FAILURE", "Failure"
     PANIC = "PANIC", "Panic"
     TIMED_OUT = "TIMED_OUT", "Timed Out"
+    DRAFT = "DRAFT", "Draft"
 
 
 class ScenarioManager(AliveObjectsManager):
