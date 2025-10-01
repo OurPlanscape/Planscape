@@ -251,6 +251,23 @@ def async_pre_forsys_process(scenario_id: int) -> None:
 
 
 @app.task()
+def async_change_scenario_status(
+    scenario_id: int,
+    status: ScenarioResultStatus,
+) -> None:
+    try:
+        with transaction.atomic():
+            scenario: Scenario = Scenario.objects.select_for_update().get(
+                pk=scenario_id
+            )
+            scenario.result_status = status
+            scenario.save(update_fields=["result_status", "updated_at"])
+            log.info("Scenario %s status set to %s", scenario_id, status)
+    except Scenario.DoesNotExist:
+        log.exception("Scenario %s does not exist", scenario_id)
+
+
+@app.task()
 def prepare_scenarios_for_forsys_and_run(scenario_id: int):
     log.info(f"Preparing scenario {scenario_id} for Forsys run.")
     scenario = Scenario.objects.get(id=scenario_id)
@@ -286,7 +303,11 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
                     )
                 )
 
-    chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    chord(tasks).on_error(
+        async_change_scenario_status.si(
+            scenario_id=scenario.pk, status=ScenarioResultStatus.PANIC
+        )
+    )(async_forsys_run.si(scenario_id=scenario.pk))
     log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
 
 
