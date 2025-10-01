@@ -27,7 +27,7 @@ import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow
 import { MatDialog } from '@angular/material/dialog';
 import { StepComponent } from '../../../styleguide/steps/step.component';
 import { Step2Component } from '../step2/step2.component';
-import { Step4Component } from '../step4/step4.component';
+import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
@@ -37,6 +37,8 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
+import { FeaturesModule } from 'src/app/features/features.module';
+import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -61,9 +63,11 @@ enum ScenarioTabs {
     Step1Component,
     Step2Component,
     Step3Component,
-    Step4Component,
+    TreatmentTargetComponent,
+    Step4LegacyComponent,
     BaseLayersComponent,
     JsonPipe,
+    FeaturesModule,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
