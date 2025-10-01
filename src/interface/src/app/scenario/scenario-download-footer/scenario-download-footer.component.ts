@@ -36,7 +36,7 @@ export class ScenarioDownloadFooterComponent {
     private fileServerService: FileSaverService,
     private snackbar: MatSnackBar,
     private dialog: MatDialog
-  ) { }
+  ) {}
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
