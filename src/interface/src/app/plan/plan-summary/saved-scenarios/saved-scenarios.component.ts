@@ -133,6 +133,9 @@ export class SavedScenariosComponent implements OnInit {
   private openScenarioSetupDialog() {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
+      data: {
+        planId: this.plan?.id,
+      },
     });
   }
 
@@ -157,14 +160,20 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    this.breadcrumbService.updateBreadCrumb({
-      label: 'Scenario: ' + clickedScenario.name,
-      backUrl: getPlanPath(clickedScenario.planning_area),
-    });
+    if (clickedScenario.scenario_result?.status === 'DRAFT') {
+      this.router.navigate(['scenario', 'draft', clickedScenario.id], {
+        relativeTo: this.route,
+      });
+    } else {
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Scenario: ' + clickedScenario.name,
+        backUrl: getPlanPath(clickedScenario.planning_area),
+      });
 
-    this.router.navigate(['scenario', clickedScenario.id], {
-      relativeTo: this.route,
-    });
+      this.router.navigate(['scenario', clickedScenario.id], {
+        relativeTo: this.route,
+      });
+    }
   }
 
   tabChange(data: { index: number; tab: MatTab }) {
