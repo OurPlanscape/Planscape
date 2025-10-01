@@ -16,6 +16,7 @@ import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
 import { ButtonComponent } from '../button/button.component';
 import { StepComponent } from './step.component';
+import { FeatureService } from 'src/app/features/feature.service';
 
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).
@@ -62,7 +63,14 @@ export class StepsComponent<T> extends CdkStepper {
 
   @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
-  constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef) {
+  allPatchesSuccessful = false;
+
+  constructor(
+    dir: Directionality,
+    cdr: ChangeDetectorRef,
+    el: ElementRef,
+    private featureService: FeatureService
+  ) {
     super(dir, cdr, el);
   }
 
@@ -98,8 +106,15 @@ export class StepsComponent<T> extends CdkStepper {
           .pipe(take(1))
           .subscribe({
             next: (moveNext) => {
-              if (moveNext) {
+              if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+                if (this.isLastStep) {
+                  this.allPatchesSuccessful = true;
+                }
                 this.moveNextOrFinish();
+              } else {
+                if (moveNext) {
+                  this.moveNextOrFinish();
+                }
               }
             },
             error: (err) => {
@@ -122,10 +137,18 @@ export class StepsComponent<T> extends CdkStepper {
       return;
     }
 
-    if (this.isLastStep) {
-      this.finished.emit();
-    } else {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      // for this..we want to still call next, and then only call finished.
       this.next();
+      if (this.isLastStep && this.allPatchesSuccessful) {
+        this.finished.emit();
+      }
+    } else {
+      if (this.isLastStep) {
+        this.finished.emit();
+      } else {
+        this.next();
+      }
     }
   }
 
