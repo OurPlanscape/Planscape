@@ -257,11 +257,12 @@ def async_change_scenario_status(
 ) -> None:
     try:
         with transaction.atomic():
-            scenario: Scenario = Scenario.objects.select_for_update().get(
-                pk=scenario_id
-            )
+            scenario = Scenario.objects.select_for_update().get(pk=scenario_id)
             scenario.result_status = status
             scenario.save(update_fields=["result_status", "updated_at"])
+            if hasattr(scenario, "results"):
+                scenario.results.status = status
+                scenario.results.save()
             log.info("Scenario %s status set to %s", scenario_id, status)
     except Scenario.DoesNotExist:
         log.exception("Scenario %s does not exist", scenario_id)
