@@ -83,6 +83,10 @@ export class ScenarioMapComponent {
     map((scenarioId) => (scenarioId ? 'Project Area Opacity' : 'Stand Opacity'))
   );
 
+  showScenarioStands$ = this.scenarioState.currentScenarioId$.pipe(
+    map((scenarioId) => !scenarioId && this.isDynamicMapEnabled())
+  );
+
   showOpacitySlider$ = combineLatest([
     this.isScenarioSuccessful$,
     this.newScenarioState.stepIndex$,
@@ -90,8 +94,7 @@ export class ScenarioMapComponent {
     map(
       ([isScenarioSuccessful, stepIndex]) =>
         isScenarioSuccessful ||
-        (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP') &&
-          (isScenarioSuccessful || stepIndex > 0))
+        (this.isDynamicMapEnabled() && (isScenarioSuccessful || stepIndex > 0))
     )
   );
 
@@ -134,6 +137,10 @@ export class ScenarioMapComponent {
   );
 
   loading$ = this.newScenarioState.loading$;
+
+  isDynamicMapEnabled() {
+    return this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP');
+  }
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
