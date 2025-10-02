@@ -47,7 +47,7 @@ describe('ScenarioStandsComponent', () => {
           stepIndex$: of(0),
         }),
         MockProvider(MapConfigState, {
-          projectAreasOpacity$: of(0),
+          opacity$: of(0),
         }),
       ],
     }).compileComponents();
