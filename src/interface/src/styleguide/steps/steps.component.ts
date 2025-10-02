@@ -16,7 +16,6 @@ import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
 import { ButtonComponent } from '../button/button.component';
 import { StepComponent } from './step.component';
-import { StepsNavComponent } from './steps-nav.component';
 
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).
@@ -40,7 +39,7 @@ import { StepsNavComponent } from './steps-nav.component';
 @Component({
   selector: 'sg-steps',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, CdkStepperModule, StepsNavComponent],
+  imports: [CommonModule, ButtonComponent, CdkStepperModule],
   providers: [{ provide: CdkStepper, useExisting: StepsComponent }],
   templateUrl: './steps.component.html',
   styleUrl: './steps.component.scss',
@@ -51,6 +50,7 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() finishLabel = 'finish';
   @Input() genericErrorMsg = 'Unknown error';
   @Input() errorKey = 'invalid';
+  @Input() showActions = true;
   // save callback
   @Input() save?: (data: Partial<T>) => Observable<boolean>;
   // outer form, optional, that should check validity / mark as touched when saving
