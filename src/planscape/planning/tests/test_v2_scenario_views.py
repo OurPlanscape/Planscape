@@ -745,7 +745,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
             },
         )
 
-        self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
+        self.url = reverse("api:planning:scenarios-patch-draft", args=[self.scenario.pk])
 
     def test_patch_scenario_configuration_success(self):
         payload = {
@@ -773,7 +773,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
     def test_patch_scenario_configuration_forbidden_for_other_user(self):
         scenario = ScenarioFactory(user=self.other_user)
-        url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {"max_budget": 100000}
 
         # Authenticate as a user who does not own the scenario
@@ -784,7 +784,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
-        invalid_url = reverse("api:planning:scenarios-detail", args=[999999])
+        invalid_url = reverse("api:planning:scenarios-patch-draft", args=[999999])
         self.client.force_authenticate(self.user)
         payload = {"max_budget": 5000}
 
@@ -863,6 +863,63 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
         self.assertSetEqual(set(caps), {"FORSYS", "IMPACTS"})
+
+
+class CreateScenarioForDraftsTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.user2 = UserFactory()
+        self.other_user = UserFactory()
+
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.planning_area2 = PlanningAreaFactory(user=self.user2)
+        self.treatment_goal = TreatmentGoalFactory()
+
+    def test_create_with_name_and_planning_area(self):
+        payload = {
+            "name": "my dear scenario",
+            "planning_area": self.planning_area.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        scenario = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(scenario.get("id"))
+        self.assertEqual(scenario.get("scenario_result").get("status"), 'DRAFT')
+
+    def test_create_without_name(self):
+        payload = {
+            "planning_area": self.planning_area.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            b'{"error":"{\'name\': [ErrorDetail(string=\'This field is required.\', code=\'required\')]}"}',
+            response.content,
+        )
+
+    def test_create_for_planning_area_without_permission(self):
+        payload = {
+            "planning_area": self.planning_area2.pk,
+            "name": "scenario in some other users area"
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class ScenarioCapabilitiesSerializerTest(TestCase):

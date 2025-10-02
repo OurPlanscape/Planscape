@@ -247,7 +247,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             headers=headers,
         )
 
-    @action(detail=False, methods=['post'], url_path="draft")
+    @action(detail=False,methods=['post'],url_path="draft")
     def create_draft(self, request):
         serializer = CreateScenarioV3Serializer(data=request.data, context={'request': request})
         try:
@@ -276,6 +276,12 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'], url_path='draft')
+    def get_drafts(self, request):
+        # Logic to retrieve drafts
+        drafts = self.queryset.filter(status='DRAFT')  # Example filter
+        serializer = DraftScenarioSerializer(drafts, many=True)  # Use a serializer for drafts
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         delete_scenario(
