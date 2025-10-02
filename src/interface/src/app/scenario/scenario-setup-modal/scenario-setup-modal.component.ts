@@ -37,7 +37,7 @@ export class ScenarioSetupModalComponent {
   submitting = false;
   errorMessage: string = '';
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any, // Access the passed data
+    @Inject(MAT_DIALOG_DATA) public data: { planId: number }, // Access the passed data
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
     private router: Router
@@ -45,13 +45,6 @@ export class ScenarioSetupModalComponent {
 
   cancel(): void {
     this.dialogRef.close(false);
-  }
-
-  hasError() {
-    if (this.errorMessage !== '') {
-      return true;
-    }
-    return false;
   }
 
   handleSubmit(): void {
@@ -89,7 +82,9 @@ export class ScenarioSetupModalComponent {
         if (
           e.error?.global &&
           e.error?.global.some((msg: string) =>
-            msg.includes('name must make a unique set')
+            msg.includes(
+              'The fields planning_area, name must make a unique set.'
+            )
           )
         ) {
           this.submitting = false;

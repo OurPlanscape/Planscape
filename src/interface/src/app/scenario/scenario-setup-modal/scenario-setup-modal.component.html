@@ -24,7 +24,7 @@
           [disabled]="false"
           class="scenario-input"
           showSupportMessage="on-error"
-          [error]="hasError()"
+          [error]="this.errorMessage !== ''"
           [supportMessage]="errorMessage">
           <input
             sgInput
