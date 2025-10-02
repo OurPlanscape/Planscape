@@ -95,7 +95,9 @@ export class StepsNavComponent {
       return index <= this.latestStep + 1;
     }
 
-    return step.editable !== false || step.optional || index <= this.latestStep + 1;
+    return (
+      step.editable !== false || step.optional || index <= this.latestStep + 1
+    );
   }
 
   onStepClick(index: number): void {
