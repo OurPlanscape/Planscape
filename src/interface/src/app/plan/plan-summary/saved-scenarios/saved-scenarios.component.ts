@@ -161,9 +161,7 @@ export class SavedScenariosComponent implements OnInit {
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
     if (clickedScenario.scenario_result?.status === 'DRAFT') {
-      this.router.navigate(['scenario', 'draft', clickedScenario.id], {
-        relativeTo: this.route,
-      });
+      // TODO: navigate to new draft scenario - TBD
     } else {
       this.breadcrumbService.updateBreadCrumb({
         label: 'Scenario: ' + clickedScenario.name,

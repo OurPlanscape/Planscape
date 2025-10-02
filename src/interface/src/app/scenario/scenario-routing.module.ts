@@ -24,18 +24,6 @@ const routes: Routes = [
         },
       },
       {
-        // TODO: this probably isnt the route we want,
-        // but this is a placeholder so we don't break the existing route
-        path: 'draft/:scenarioId', // Route for draft with scenarioId
-        component: ScenarioCreationComponent, // Also route to ScenarioCreationComponent
-        title: 'Draft Scenario Configuration',
-        canDeactivate: [canDeactivateGuard],
-        resolve: {
-          scenarioId: scenarioLoaderResolver,
-          dataLayerInit: resetDatalayerResolver,
-        },
-      },
-      {
         path: ':scenarioId',
         component: ScenarioRoutePlaceholderComponent,
         title: 'Scenario Configuration',

@@ -14,7 +14,6 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -39,8 +38,7 @@ export class ScenarioSetupModalComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { planId: number }, // Access the passed data
     private matSnackBar: MatSnackBar,
-    private scenarioService: ScenarioService,
-    private router: Router
+    private scenarioService: ScenarioService
   ) {}
 
   cancel(): void {
@@ -68,13 +66,7 @@ export class ScenarioSetupModalComponent {
         this.dialogRef.close(result);
         this.submitting = false;
         if (result) {
-          this.router.navigate([
-            'plan',
-            planId,
-            'scenario',
-            'draft',
-            result.id,
-          ]);
+          // TODO: TBD navigate to new scenario
         }
       },
       error: (e) => {
