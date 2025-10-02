@@ -46,7 +46,9 @@ export class MapConfigState {
   );
   public treatedStandsOpacity$ = this._treatedStandsOpacity.asObservable();
 
-  private _opacity = new BehaviorSubject(0.5);
+  private _opacity = new BehaviorSubject<number>(
+    FrontendConstants.MAPLIBRE_MAP_VECTOR_LAYER_OPACITY
+  );
   public opacity$ = this._opacity.asObservable();
 
   private defaultZoomLevel = 7;
