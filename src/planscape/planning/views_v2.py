@@ -248,7 +248,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             headers=headers,
         )
 
-    @action(detail=False,methods=['post'],url_path="draft")
+    @action(detail=False, methods=["post"], url_path="draft")
     def create_draft(self, request):
         serializer = self.get_serializer(data=request.data)
         try:
@@ -278,11 +278,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     # TODO: create a 'draft' get/list endpoint
-    @action(detail=False, methods=['get'], url_path='draft')
+    @action(detail=False, methods=["get"], url_path="draft")
     def get_drafts(self, request):
-        # Logic to retrieve drafts
-        # drafts = self.queryset.filter(status='DRAFT')  # Example filter
-        serializer = ScenarioV3Serializer(drafts, many=True)  # Use a serializer for drafts
+        serializer = ScenarioV3Serializer(drafts, many=True)
         return Response(serializer.data)
 
     def perform_destroy(self, instance):
@@ -331,12 +329,12 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["patch"], detail=True, url_path="draft")
     def patch_draft(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = PatchScenarioV3Serializer(instance, data=request.data, partial=True)
+        serializer = PatchScenarioV3Serializer(
+            instance, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        response_serializer = (
-            ScenarioV3Serializer(instance)
-        )
+        response_serializer = ScenarioV3Serializer(instance)
         return Response(response_serializer.data)
 
     # This is only called by DRAFT-enabled frontend
