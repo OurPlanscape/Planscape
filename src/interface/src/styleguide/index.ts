@@ -31,6 +31,7 @@ export * from './status-chip/status-chip.component';
 export * from './steps/steps.component';
 export * from './steps/step.component';
 export * from './steps/steps-nav.component';
+export * from './steps/steps-actions.component';
 export * from './tile-button/tile-button.component';
 export * from './treatment-card/treatment-card.component';
 export * from './treatment-prescription/treatment-prescription.component';
