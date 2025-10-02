@@ -966,7 +966,7 @@ class CreateScenarioForDraftsTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            b"{\"error\":\"{'name': [ErrorDetail(string='This field is required.', code='required')]}\"}",
+            b'{"name":["This field is required."]}',
             response.content,
         )
 
