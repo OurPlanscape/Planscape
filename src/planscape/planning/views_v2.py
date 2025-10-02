@@ -211,7 +211,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
         "retrieve": ScenarioV2Serializer,
-        "partial_update": UpsertConfigurationV2Serializer
+        "partial_update": UpsertConfigurationV2Serializer,
+        "create_draft": CreateScenarioV3Serializer,
     }
 
     filterset_class = ScenarioFilter
@@ -249,7 +250,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     @action(detail=False,methods=['post'],url_path="draft")
     def create_draft(self, request):
-        serializer = CreateScenarioV3Serializer(data=request.data, context={'request': request})
+        serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
             scenario = create_scenario(**serializer.validated_data)
@@ -276,11 +277,12 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    # TODO: create a 'draft' get/list endpoint
     @action(detail=False, methods=['get'], url_path='draft')
     def get_drafts(self, request):
         # Logic to retrieve drafts
-        drafts = self.queryset.filter(status='DRAFT')  # Example filter
-        serializer = DraftScenarioSerializer(drafts, many=True)  # Use a serializer for drafts
+        # drafts = self.queryset.filter(status='DRAFT')  # Example filter
+        serializer = ScenarioV3Serializer(drafts, many=True)  # Use a serializer for drafts
         return Response(serializer.data)
 
     def perform_destroy(self, instance):
@@ -342,8 +344,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
-        scenario.results.status = ScenarioResultStatus.PENDING
-        scenario.results.save()
+        if hasattr(scenario, "results"):
+            scenario.result_status = ScenarioResultStatus.PENDING
+            scenario.result_status.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
