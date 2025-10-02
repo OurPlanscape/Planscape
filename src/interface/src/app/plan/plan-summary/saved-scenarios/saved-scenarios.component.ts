@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, ScenarioService } from '@services';
@@ -24,6 +24,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeatureService } from 'src/app/features/feature.service';
 import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
+import { PlanState } from '../../plan.state';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -37,7 +38,7 @@ export interface ScenarioRow extends Scenario {
   styleUrls: ['./saved-scenarios.component.scss'],
 })
 export class SavedScenariosComponent implements OnInit {
-  @Input() plan: Plan | null = null;
+  plan: Plan | null = null;
   user$ = this.authService.loggedInUser$;
 
   highlightedScenarioRow: ScenarioRow | null = null;
@@ -59,12 +60,16 @@ export class SavedScenariosComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private planState: PlanState
   ) {}
 
   ngOnInit(): void {
-    this.fetchScenarios();
-    this.pollForChanges();
+    this.planState.currentPlan$.pipe(untilDestroyed(this)).subscribe((plan) => {
+      this.plan = plan || null;
+      this.fetchScenarios();
+      this.pollForChanges();
+    });
   }
 
   private pollForChanges() {
