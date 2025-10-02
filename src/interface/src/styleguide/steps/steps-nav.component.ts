@@ -1,8 +1,43 @@
-import { Component, Input, Optional, Inject, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { CdkStepper } from '@angular/cdk/stepper';
 
+export interface StepConfig {
+  label: string;
+  completed?: boolean;
+  optional?: boolean;
+  editable?: boolean;
+}
+
+/**
+ * Presentational step navigation component that displays a horizontal step progress indicator.
+ * This component is designed to work independently and can be coordinated with sg-steps or
+ * used standalone with custom step logic.
+ *
+ * Usage with sg-steps:
+ * ```html
+ * <sg-steps-nav
+ *   [steps]="stepsList"
+ *   [selectedIndex]="stepper.selectedIndex"
+ *   [linear]="stepper.linear"
+ *   (selectionChange)="stepper.selectedIndex = $event">
+ * </sg-steps-nav>
+ *
+ * <sg-steps #stepper>
+ *   <cdk-step label="Step 1">...</cdk-step>
+ *   <cdk-step label="Step 2">...</cdk-step>
+ * </sg-steps>
+ * ```
+ *
+ * Standalone usage:
+ * ```html
+ * <sg-steps-nav
+ *   [steps]="[{label: 'Setup'}, {label: 'Configure'}, {label: 'Review'}]"
+ *   [selectedIndex]="currentStep"
+ *   (selectionChange)="onStepChange($event)">
+ * </sg-steps-nav>
+ * ```
+ */
 @Component({
   selector: 'sg-steps-nav',
   standalone: true,
@@ -10,46 +45,21 @@ import { CdkStepper } from '@angular/cdk/stepper';
   templateUrl: './steps-nav.component.html',
   styleUrls: ['./steps-nav.component.scss'],
 })
-export class StepsNavComponent implements OnInit {
+export class StepsNavComponent {
+  @Input() steps: StepConfig[] = [];
+  @Input() selectedIndex = 0;
+  @Input() linear = false;
   @Input() allowNavigation = true;
-  @Input() stepper?: CdkStepper;
+  @Output() selectionChange = new EventEmitter<number>();
 
-  private _stepper!: CdkStepper;
-
-  constructor(
-    @Optional() @Inject(CdkStepper) private parentStepper: CdkStepper | null
-  ) {
-    // Parent stepper will be set in ngOnInit
-  }
-
-  ngOnInit() {
-    // Use input stepper if provided, otherwise use parent
-    this._stepper = this.stepper || this.parentStepper!;
-    if (!this._stepper) {
-      console.error(
-        'sg-steps-nav: No stepper found. Must be used inside sg-steps or with [stepper] input'
-      );
-    }
-  }
-
-  get displaySteps() {
-    return this._stepper?.steps || [];
-  }
-
-  get selectedIndex(): number {
-    return this._stepper?.selectedIndex || 0;
-  }
-
-  set selectedIndex(index: number) {
-    if (this._stepper) {
-      this._stepper.selectedIndex = index;
-    }
+  get displaySteps(): StepConfig[] {
+    return this.steps;
   }
 
   get latestStep(): number {
     let latest = 0;
-    this.displaySteps.forEach((step, index) => {
-      if (!step.hasError && step.completed) {
+    this.steps.forEach((step, index) => {
+      if (step.completed) {
         latest = Math.max(latest, index);
       }
     });
@@ -67,8 +77,8 @@ export class StepsNavComponent implements OnInit {
   }
 
   isStepCompleted(index: number): boolean {
-    const step = this.displaySteps.get(index);
-    return step ? step.completed && !step.hasError : false;
+    const step = this.steps[index];
+    return step?.completed || false;
   }
 
   isStepCurrent(index: number): boolean {
@@ -78,24 +88,24 @@ export class StepsNavComponent implements OnInit {
   isStepClickable(index: number): boolean {
     if (!this.allowNavigation) return false;
 
-    const step = this.displaySteps.get(index);
+    const step = this.steps[index];
     if (!step) return false;
 
-    if (this._stepper.linear) {
-      return index <= this.latestStep;
+    if (this.linear) {
+      return index <= this.latestStep + 1;
     }
 
-    return step.editable || step.optional || index <= this.latestStep;
+    return step.editable !== false || step.optional || index <= this.latestStep + 1;
   }
 
   onStepClick(index: number): void {
     if (this.isStepClickable(index) && index !== this.selectedIndex) {
-      this.selectedIndex = index;
+      this.selectionChange.emit(index);
     }
   }
 
   getStepLabel(index: number): string {
-    const step = this.displaySteps.get(index);
+    const step = this.steps[index];
     return step?.label || `Step ${index + 1}`;
   }
 }

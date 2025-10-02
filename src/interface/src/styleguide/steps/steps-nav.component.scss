@@ -1,8 +1,8 @@
 @import 'colors';
 @import 'mixins';
 
-.steps-nav {
-  padding: 24px 0;
+:host {
+  padding: 16px 12px;
 }
 
 .stepper-container {

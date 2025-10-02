@@ -1,409 +1,323 @@
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
-import { Component, ViewChild } from '@angular/core';
-import { CdkStepperModule } from '@angular/cdk/stepper';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StepsNavComponent } from './steps-nav.component';
-import { StepsComponent } from './steps.component';
-
-@Component({
-  selector: 'app-test-host',
-  template: `
-    <sg-steps [linear]="linear">
-      <cdk-step
-        [label]="'First Step'"
-        [editable]="editableSteps[0]"
-        [completed]="completedSteps[0]">
-        <p>Step 1 content</p>
-        <sg-steps-nav [allowNavigation]="allowNavigation"></sg-steps-nav>
-      </cdk-step>
-      <cdk-step
-        [label]="'Second Step'"
-        [editable]="editableSteps[1]"
-        [completed]="completedSteps[1]">
-        <p>Step 2 content</p>
-        <sg-steps-nav [allowNavigation]="allowNavigation"></sg-steps-nav>
-      </cdk-step>
-      <cdk-step
-        [label]="'Third Step'"
-        [optional]="true"
-        [editable]="editableSteps[2]"
-        [completed]="completedSteps[2]">
-        <p>Step 3 content</p>
-        <sg-steps-nav [allowNavigation]="allowNavigation"></sg-steps-nav>
-      </cdk-step>
-      <cdk-step
-        [label]="'Fourth Step'"
-        [editable]="editableSteps[3]"
-        [completed]="completedSteps[3]">
-        <p>Step 4 content</p>
-        <sg-steps-nav [allowNavigation]="allowNavigation"></sg-steps-nav>
-      </cdk-step>
-    </sg-steps>
-  `,
-  standalone: true,
-  imports: [StepsComponent, StepsNavComponent, CdkStepperModule],
-})
-class TestHostComponent {
-  @ViewChild(StepsComponent) stepper!: StepsComponent<any>;
-  linear = false;
-  allowNavigation = true;
-  editableSteps = [true, true, true, true];
-  completedSteps = [false, false, false, false];
-}
 
 describe('StepsNavComponent', () => {
-  let fixture: ComponentFixture<TestHostComponent>;
-  let host: TestHostComponent;
-  let navElement: HTMLElement;
+  let component: StepsNavComponent;
+  let fixture: ComponentFixture<StepsNavComponent>;
+  let compiled: HTMLElement;
 
-  beforeEach(fakeAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [TestHostComponent],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [StepsNavComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TestHostComponent);
-    fixture.detectChanges();
-    tick();
-    host = fixture.componentInstance;
-    navElement = fixture.nativeElement;
-  }));
-
-  it('should create', () => {
-    expect(host.stepper).toBeTruthy();
+    fixture = TestBed.createComponent(StepsNavComponent);
+    component = fixture.componentInstance;
+    compiled = fixture.nativeElement;
   });
 
-  it('should display all steps from parent stepper', fakeAsync(() => {
-    const stepItems = navElement.querySelectorAll('.step-item');
-    expect(stepItems.length).toBe(4);
-  }));
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
-  it('should mark first step as current initially', fakeAsync(() => {
-    const firstStep = navElement.querySelector('.step-item');
-    expect(firstStep?.classList.contains('current')).toBeTrue();
-  }));
-
-  it('should display step labels correctly', fakeAsync(() => {
-    const stepLabels = navElement.querySelectorAll('.step-label');
-    expect(stepLabels[0].textContent?.trim()).toBe('First Step');
-    expect(stepLabels[1].textContent?.trim()).toBe('Second Step');
-    expect(stepLabels[2].textContent?.trim()).toBe('Third Step');
-    expect(stepLabels[3].textContent?.trim()).toBe('Fourth Step');
-  }));
-
-  it('should display step numbers correctly', fakeAsync(() => {
-    const stepNumbers = navElement.querySelectorAll('.step-number');
-    expect(stepNumbers[0].textContent?.trim()).toBe('1');
-    expect(stepNumbers[1].textContent?.trim()).toBe('2');
-    expect(stepNumbers[2].textContent?.trim()).toBe('3');
-    expect(stepNumbers[3].textContent?.trim()).toBe('4');
-  }));
-
-  it('should show checkmark for completed steps that are not current', fakeAsync(() => {
-    host.completedSteps[0] = true;
-    host.stepper.selectedIndex = 1;
-    fixture.detectChanges();
-    tick();
-
-    const firstStep = navElement.querySelector('.step-item');
-    const checkmark = firstStep?.querySelector('mat-icon.checkmark');
-    const stepNumber = firstStep?.querySelector('.step-number');
-
-    expect(checkmark).toBeTruthy();
-    expect(checkmark?.textContent?.trim()).toBe('check');
-    expect(stepNumber).toBeFalsy();
-  }));
-
-  it('should show step number for current step even if completed', fakeAsync(() => {
-    host.completedSteps[0] = true;
-    host.stepper.selectedIndex = 0;
-    fixture.detectChanges();
-    tick();
-
-    const firstStep = navElement.querySelector('.step-item');
-    const checkmark = firstStep?.querySelector('mat-icon.checkmark');
-    const stepNumber = firstStep?.querySelector('.step-number');
-
-    expect(checkmark).toBeFalsy();
-    expect(stepNumber).toBeTruthy();
-    expect(stepNumber?.textContent?.trim()).toBe('1');
-  }));
-
-  it('should navigate to clicked step when allowNavigation is true', fakeAsync(() => {
-    host.completedSteps[0] = true;
-    fixture.detectChanges();
-    tick();
-
-    const secondStep = navElement.querySelectorAll(
-      '.step-item'
-    )[1] as HTMLElement;
-    secondStep.click();
-    fixture.detectChanges();
-    tick();
-
-    expect(host.stepper.selectedIndex).toBe(1);
-  }));
-
-  it('should not navigate when allowNavigation is false', fakeAsync(() => {
-    host.allowNavigation = false;
-    host.completedSteps[0] = true;
-    fixture.detectChanges();
-    tick();
-
-    const secondStep = navElement.querySelectorAll(
-      '.step-item'
-    )[1] as HTMLElement;
-    secondStep.click();
-    fixture.detectChanges();
-    tick();
-
-    expect(host.stepper.selectedIndex).toBe(0);
-  }));
-
-  it('should apply correct CSS classes based on step state', fakeAsync(() => {
-    host.completedSteps[0] = true;
-    host.stepper.selectedIndex = 1;
-    fixture.detectChanges();
-    tick();
-
-    const steps = navElement.querySelectorAll('.step-item');
-
-    // First step should be completed
-    expect(steps[0].classList.contains('completed')).toBeTrue();
-    expect(steps[0].classList.contains('current')).toBeFalse();
-
-    // Second step should be current
-    expect(steps[1].classList.contains('current')).toBeTrue();
-    expect(steps[1].classList.contains('completed')).toBeFalse();
-
-    // Third step should be future
-    expect(steps[2].classList.contains('future')).toBeTrue();
-  }));
-
-  it('should show connectors between steps', fakeAsync(() => {
-    const connectors = navElement.querySelectorAll('.step-connector');
-    expect(connectors.length).toBe(3); // 4 steps = 3 connectors
-  }));
-
-  it('should mark steps as clickable based on completion', fakeAsync(() => {
-    host.completedSteps[0] = true;
-    fixture.detectChanges();
-    tick();
-
-    const steps = navElement.querySelectorAll('.step-item');
-    expect(steps[0].classList.contains('clickable')).toBeTrue();
-    expect(steps[1].classList.contains('clickable')).toBeTrue();
-  }));
-
-  describe('linear stepper mode', () => {
-    beforeEach(fakeAsync(() => {
-      host.linear = true;
+  describe('basic rendering', () => {
+    beforeEach(() => {
+      component.steps = [
+        { label: 'First Step' },
+        { label: 'Second Step' },
+        { label: 'Third Step' },
+        { label: 'Fourth Step' },
+      ];
+      component.selectedIndex = 0;
       fixture.detectChanges();
-      tick();
-    }));
+    });
 
-    it('should only allow navigation to completed steps in linear mode', fakeAsync(() => {
-      host.completedSteps[0] = true;
-      host.stepper.selectedIndex = 0;
+    it('should display all steps', () => {
+      const stepItems = compiled.querySelectorAll('.step-item');
+      expect(stepItems.length).toBe(4);
+    });
+
+    it('should display step labels correctly', () => {
+      const stepLabels = compiled.querySelectorAll('.step-label');
+      expect(stepLabels[0].textContent?.trim()).toBe('First Step');
+      expect(stepLabels[1].textContent?.trim()).toBe('Second Step');
+      expect(stepLabels[2].textContent?.trim()).toBe('Third Step');
+      expect(stepLabels[3].textContent?.trim()).toBe('Fourth Step');
+    });
+
+    it('should display step numbers correctly', () => {
+      const stepNumbers = compiled.querySelectorAll('.step-number');
+      expect(stepNumbers[0].textContent?.trim()).toBe('1');
+      expect(stepNumbers[1].textContent?.trim()).toBe('2');
+      expect(stepNumbers[2].textContent?.trim()).toBe('3');
+      expect(stepNumbers[3].textContent?.trim()).toBe('4');
+    });
+
+    it('should mark first step as current initially', () => {
+      const firstStep = compiled.querySelector('.step-item');
+      expect(firstStep?.classList.contains('current')).toBeTrue();
+    });
+
+    it('should show connectors between steps', () => {
+      const connectors = compiled.querySelectorAll('.step-connector');
+      expect(connectors.length).toBe(3); // 4 steps = 3 connectors
+    });
+  });
+
+  describe('step states', () => {
+    beforeEach(() => {
+      component.steps = [
+        { label: 'Step 1', completed: true },
+        { label: 'Step 2', completed: true },
+        { label: 'Step 3', completed: false },
+        { label: 'Step 4' },
+      ];
+      component.selectedIndex = 2;
       fixture.detectChanges();
-      tick();
+    });
 
-      // Try to navigate to step 2 (index 1) which is not completed
-      const thirdStep = navElement.querySelectorAll(
-        '.step-item'
-      )[2] as HTMLElement;
-      thirdStep.click();
+    it('should show checkmark for completed steps that are not current', () => {
+      const firstStep = compiled.querySelectorAll('.step-item')[0];
+      const checkmark = firstStep.querySelector('mat-icon.checkmark');
+      const stepNumber = firstStep.querySelector('.step-number');
+
+      expect(checkmark).toBeTruthy();
+      expect(checkmark?.textContent?.trim()).toBe('check');
+      expect(stepNumber).toBeFalsy();
+    });
+
+    it('should show step number for current step even if completed', () => {
+      component.steps = [
+        { label: 'Step 1', completed: true },
+        { label: 'Step 2' },
+      ];
+      component.selectedIndex = 0;
       fixture.detectChanges();
-      tick();
 
-      expect(host.stepper.selectedIndex).toBe(0); // Should remain on step 0
-    }));
+      const firstStep = compiled.querySelector('.step-item');
+      const checkmark = firstStep?.querySelector('mat-icon.checkmark');
+      const stepNumber = firstStep?.querySelector('.step-number');
 
-    it('should allow navigation to current and previous completed steps', fakeAsync(() => {
-      host.completedSteps[0] = true;
-      host.completedSteps[1] = true;
-      host.stepper.selectedIndex = 2;
+      expect(checkmark).toBeFalsy();
+      expect(stepNumber).toBeTruthy();
+      expect(stepNumber?.textContent?.trim()).toBe('1');
+    });
+
+    it('should apply correct CSS classes based on step state', () => {
+      const steps = compiled.querySelectorAll('.step-item');
+
+      // First step should be completed
+      expect(steps[0].classList.contains('completed')).toBeTrue();
+      expect(steps[0].classList.contains('current')).toBeFalse();
+
+      // Second step should be completed
+      expect(steps[1].classList.contains('completed')).toBeTrue();
+      expect(steps[1].classList.contains('current')).toBeFalse();
+
+      // Third step should be current
+      expect(steps[2].classList.contains('current')).toBeTrue();
+      expect(steps[2].classList.contains('completed')).toBeFalse();
+
+      // Fourth step should be future
+      expect(steps[3].classList.contains('future')).toBeTrue();
+    });
+  });
+
+  describe('navigation', () => {
+    beforeEach(() => {
+      component.steps = [
+        { label: 'Step 1', completed: true },
+        { label: 'Step 2', completed: true },
+        { label: 'Step 3', completed: false },
+        { label: 'Step 4' },
+      ];
+      component.selectedIndex = 0;
+      component.allowNavigation = true;
       fixture.detectChanges();
-      tick();
+    });
 
-      // Navigate back to step 1
-      const secondStep = navElement.querySelectorAll(
+    it('should emit selectionChange when clicking a clickable step', () => {
+      spyOn(component.selectionChange, 'emit');
+
+      const secondStep = compiled.querySelectorAll(
         '.step-item'
       )[1] as HTMLElement;
       secondStep.click();
-      fixture.detectChanges();
-      tick();
 
-      expect(host.stepper.selectedIndex).toBe(1);
-    }));
+      expect(component.selectionChange.emit).toHaveBeenCalledWith(1);
+    });
+
+    it('should not emit selectionChange when clicking current step', () => {
+      spyOn(component.selectionChange, 'emit');
+
+      const firstStep = compiled.querySelector('.step-item') as HTMLElement;
+      firstStep.click();
+
+      expect(component.selectionChange.emit).not.toHaveBeenCalled();
+    });
+
+    it('should not emit selectionChange when allowNavigation is false', () => {
+      component.allowNavigation = false;
+      fixture.detectChanges();
+      spyOn(component.selectionChange, 'emit');
+
+      const secondStep = compiled.querySelectorAll(
+        '.step-item'
+      )[1] as HTMLElement;
+      secondStep.click();
+
+      expect(component.selectionChange.emit).not.toHaveBeenCalled();
+    });
+
+    it('should mark steps as clickable based on completion', () => {
+      const steps = compiled.querySelectorAll('.step-item');
+      expect(steps[0].classList.contains('clickable')).toBeTrue(); // completed
+      expect(steps[1].classList.contains('clickable')).toBeTrue(); // completed
+      expect(steps[2].classList.contains('clickable')).toBeTrue(); // next step
+    });
   });
 
-  describe('non-linear stepper mode', () => {
-    beforeEach(fakeAsync(() => {
-      host.linear = false;
+  describe('linear mode', () => {
+    beforeEach(() => {
+      component.steps = [
+        { label: 'Step 1', completed: true },
+        { label: 'Step 2', completed: true },
+        { label: 'Step 3', completed: false },
+        { label: 'Step 4' },
+      ];
+      component.selectedIndex = 0;
+      component.linear = true;
+      component.allowNavigation = true;
       fixture.detectChanges();
-      tick();
-    }));
+    });
 
-    it('should allow navigation to editable steps', fakeAsync(() => {
-      host.editableSteps[2] = true;
-      host.stepper.selectedIndex = 0;
-      fixture.detectChanges();
-      tick();
+    it('should only allow navigation to completed steps and next step in linear mode', () => {
+      const steps = compiled.querySelectorAll('.step-item');
+      expect(steps[0].classList.contains('clickable')).toBeTrue(); // completed
+      expect(steps[1].classList.contains('clickable')).toBeTrue(); // completed
+      expect(steps[2].classList.contains('clickable')).toBeTrue(); // next step
+      expect(steps[3].classList.contains('clickable')).toBeFalse(); // future
+    });
 
-      const thirdStep = navElement.querySelectorAll(
+    it('should not allow clicking future steps in linear mode', () => {
+      spyOn(component.selectionChange, 'emit');
+
+      const fourthStep = compiled.querySelectorAll(
         '.step-item'
-      )[2] as HTMLElement;
-      thirdStep.click();
+      )[3] as HTMLElement;
+      fourthStep.click();
+
+      expect(component.selectionChange.emit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('non-linear mode', () => {
+    beforeEach(() => {
+      component.steps = [
+        { label: 'Step 1', completed: true },
+        { label: 'Step 2', completed: false },
+        { label: 'Step 3', optional: true },
+        { label: 'Step 4', editable: true },
+      ];
+      component.selectedIndex = 0;
+      component.linear = false;
+      component.allowNavigation = true;
       fixture.detectChanges();
-      tick();
+    });
 
-      expect(host.stepper.selectedIndex).toBe(2);
-    }));
+    it('should allow navigation to optional steps', () => {
+      const thirdStep = compiled.querySelectorAll('.step-item')[2];
+      expect(thirdStep.classList.contains('clickable')).toBeTrue();
+    });
 
-    it('should allow navigation to optional steps', fakeAsync(() => {
-      host.stepper.selectedIndex = 0;
-      fixture.detectChanges();
-      tick();
-
-      // Third step is optional
-      const thirdStep = navElement.querySelectorAll(
-        '.step-item'
-      )[2] as HTMLElement;
-      thirdStep.click();
-      fixture.detectChanges();
-      tick();
-
-      expect(host.stepper.selectedIndex).toBe(2);
-    }));
+    it('should allow navigation to editable steps', () => {
+      const fourthStep = compiled.querySelectorAll('.step-item')[3];
+      expect(fourthStep.classList.contains('clickable')).toBeTrue();
+    });
   });
 
   describe('component methods', () => {
-    let nav: StepsNavComponent;
+    beforeEach(() => {
+      component.steps = [
+        { label: 'Step 1', completed: true },
+        { label: 'Step 2', completed: false },
+        { label: 'Step 3' },
+      ];
+      component.selectedIndex = 1;
+    });
 
-    beforeEach(fakeAsync(() => {
-      // Get the nav component from the first step
-      const stepContent = fixture.nativeElement.querySelector('sg-steps-nav');
-      nav = stepContent
-        ? fixture.debugElement.query(
-            (el) => el.componentInstance instanceof StepsNavComponent
-          )?.componentInstance
-        : null;
+    it('should return correct step state', () => {
+      expect(component.getStepState(0)).toBe('completed');
+      expect(component.getStepState(1)).toBe('current');
+      expect(component.getStepState(2)).toBe('future');
+    });
 
-      expect(nav).toBeTruthy();
-    }));
+    it('should correctly identify completed steps', () => {
+      expect(component.isStepCompleted(0)).toBeTrue();
+      expect(component.isStepCompleted(1)).toBeFalse();
+      expect(component.isStepCompleted(2)).toBeFalse();
+    });
 
-    it('should return correct step state', fakeAsync(() => {
-      host.stepper.selectedIndex = 1;
-      fixture.detectChanges();
-      tick();
+    it('should correctly identify current step', () => {
+      expect(component.isStepCurrent(0)).toBeFalse();
+      expect(component.isStepCurrent(1)).toBeTrue();
+      expect(component.isStepCurrent(2)).toBeFalse();
+    });
 
-      expect(nav.getStepState(0)).toBe('completed');
-      expect(nav.getStepState(1)).toBe('current');
-      expect(nav.getStepState(2)).toBe('future');
-    }));
+    it('should calculate latest completed step', () => {
+      expect(component.latestStep).toBe(0);
 
-    it('should correctly identify completed steps', fakeAsync(() => {
-      host.completedSteps[0] = true;
-      fixture.detectChanges();
-      tick();
+      component.steps[1].completed = true;
+      expect(component.latestStep).toBe(1);
+    });
 
-      expect(nav.isStepCompleted(0)).toBeTrue();
-      expect(nav.isStepCompleted(1)).toBeFalse();
-    }));
+    it('should return step labels', () => {
+      expect(component.getStepLabel(0)).toBe('Step 1');
+      expect(component.getStepLabel(1)).toBe('Step 2');
+      expect(component.getStepLabel(2)).toBe('Step 3');
+    });
 
-    it('should correctly identify current step', fakeAsync(() => {
-      host.stepper.selectedIndex = 1;
-      fixture.detectChanges();
-      tick();
-
-      expect(nav.isStepCurrent(0)).toBeFalse();
-      expect(nav.isStepCurrent(1)).toBeTrue();
-      expect(nav.isStepCurrent(2)).toBeFalse();
-    }));
-
-    it('should calculate latest completed step', fakeAsync(() => {
-      host.completedSteps[0] = true;
-      host.completedSteps[1] = true;
-      fixture.detectChanges();
-      tick();
-
-      expect(nav.latestStep).toBe(1);
-    }));
-
-    it('should return step labels', fakeAsync(() => {
-      expect(nav.getStepLabel(0)).toBe('First Step');
-      expect(nav.getStepLabel(1)).toBe('Second Step');
-    }));
-
-    it('should determine step clickability based on allowNavigation', fakeAsync(() => {
-      host.completedSteps[0] = true;
-      host.allowNavigation = true;
-      fixture.detectChanges();
-      tick();
-
-      expect(nav.isStepClickable(0)).toBeTrue();
-      expect(nav.isStepClickable(1)).toBeTrue();
-
-      host.allowNavigation = false;
-      fixture.detectChanges();
-      tick();
-
-      expect(nav.isStepClickable(0)).toBeFalse();
-      expect(nav.isStepClickable(1)).toBeFalse();
-    }));
-
-    it('should not change step when clicking current step', fakeAsync(() => {
-      host.stepper.selectedIndex = 1;
-      fixture.detectChanges();
-      tick();
-
-      nav.onStepClick(1);
-      fixture.detectChanges();
-      tick();
-
-      expect(host.stepper.selectedIndex).toBe(1);
-    }));
-
-    it('should change step when clicking clickable step', fakeAsync(() => {
-      host.completedSteps[0] = true;
-      fixture.detectChanges();
-      tick();
-
-      nav.onStepClick(1);
-      fixture.detectChanges();
-      tick();
-
-      expect(host.stepper.selectedIndex).toBe(1);
-    }));
+    it('should return default label for missing step', () => {
+      expect(component.getStepLabel(10)).toBe('Step 11');
+    });
   });
-});
 
-describe('StepsNavComponent error handling', () => {
-  @Component({
-    selector: 'app-test-host-no-stepper',
-    template: `<sg-steps-nav></sg-steps-nav>`,
-    standalone: true,
-    imports: [StepsNavComponent],
-  })
-  class TestHostNoStepperComponent {}
+  describe('empty state', () => {
+    it('should handle empty steps array', () => {
+      component.steps = [];
+      fixture.detectChanges();
 
-  it('should log error when no stepper is provided', fakeAsync(() => {
-    spyOn(console, 'error');
+      const stepItems = compiled.querySelectorAll('.step-item');
+      expect(stepItems.length).toBe(0);
+    });
+  });
 
-    TestBed.configureTestingModule({
-      imports: [TestHostNoStepperComponent],
-    }).compileComponents();
+  describe('edge cases', () => {
+    it('should handle many steps', () => {
+      component.steps = Array.from({ length: 10 }, (_, i) => ({
+        label: `Step ${i + 1}`,
+        completed: i < 5,
+      }));
+      component.selectedIndex = 5;
+      fixture.detectChanges();
 
-    const testFixture = TestBed.createComponent(TestHostNoStepperComponent);
-    testFixture.detectChanges();
-    tick();
+      const stepItems = compiled.querySelectorAll('.step-item');
+      expect(stepItems.length).toBe(10);
+    });
 
-    expect(console.error).toHaveBeenCalledWith(
-      'sg-steps-nav: No stepper found. Must be used inside sg-steps or with [stepper] input'
-    );
-  }));
+    it('should handle long step labels', () => {
+      component.steps = [
+        {
+          label:
+            'This is a very long step label that might wrap to multiple lines',
+        },
+      ];
+      fixture.detectChanges();
+
+      const stepLabel = compiled.querySelector('.step-label');
+      expect(stepLabel?.textContent?.trim()).toBe(
+        'This is a very long step label that might wrap to multiple lines'
+      );
+    });
+  });
 });
