@@ -253,17 +253,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(**serializer.validated_data)
-
-        scenario_result, created = ScenarioResult.objects.get_or_create(
-            scenario=scenario,
-            defaults={
-                "status": ScenarioResultStatus.DRAFT,
-            },
-        )
-        if not created:
-            scenario_result.status = ScenarioResultStatus.DRAFT
-            scenario_result.save()
-        scenario.refresh_from_db()
+        
+        if hasattr(scenario, "result_status"):
+            scenario.results.status = ScenarioResultStatus.DRAFT
+            scenario.results.save()
+            scenario.refresh_from_db()
 
         out_serializer = ScenarioV3Serializer(instance=scenario)
 
@@ -273,12 +267,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
-
-    # TODO: create a 'draft' get/list endpoint
-    @action(detail=False, methods=["get"], url_path="draft")
-    def get_drafts(self, request):
-        serializer = ScenarioV3Serializer(drafts, many=True)
-        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         delete_scenario(
