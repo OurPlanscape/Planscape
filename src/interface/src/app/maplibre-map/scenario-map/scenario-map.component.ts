@@ -79,6 +79,10 @@ export class ScenarioMapComponent {
 
   isScenarioSuccessful$ = this.scenarioState.isScenarioSuccessful$;
 
+  opacityTooltip$ = this.scenarioState.currentScenarioId$.pipe(
+    map((scenarioId) => (scenarioId ? 'Project Area Opacity' : 'Stand Opacity'))
+  );
+
   showOpacitySlider$ = combineLatest([
     this.isScenarioSuccessful$,
     this.newScenarioState.stepIndex$,
@@ -108,7 +112,7 @@ export class ScenarioMapComponent {
     })
   );
 
-  projectAreasOpacity$ = this.mapConfigState.projectAreasOpacity$;
+  opacity$ = this.mapConfigState.opacity$;
 
   projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
@@ -136,7 +140,7 @@ export class ScenarioMapComponent {
   }
 
   handleOpacityChange(opacity: number) {
-    this.mapConfigState.setProjectAreasOpacity(opacity);
+    this.mapConfigState.setOpacity(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
