@@ -46,7 +46,7 @@ export class ScenarioService {
   //TODO: make planId not optional
   createScenarioFromName(name: string, planId: number) {
     const scenarioParameters = { name: name, planning_area: planId };
-    return this.http.post<Scenario>(this.v2Path, scenarioParameters, {
+    return this.http.post<Scenario>(this.v2Path + 'draft/', scenarioParameters, {
       withCredentials: true,
     });
   }

@@ -204,10 +204,20 @@ export class ScenarioCreationComponent
     return dialogRef.afterClosed();
   }
 
+
+  convertFormOutputToDraftPayload(formData : any) : Partial<ScenarioDraftPayload> {
+    console.log('here is the formData:', formData);
+    const payload = {};
+    return payload;
+  }
+
   saveStep(data: Partial<ScenarioCreation>) {
+    console.log('we are savign step');
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      const payload = this.convertFormOutputToDraftPayload(data);
       this.draftConfig = { ...this.draftConfig, ...data };
-      return this.savePatch(this.draftConfig);
+      // TODO: convert this to different format:
+      return this.savePatch(payload);
     } else {
       // if dynamic map is not able just go forward.
       // remove this once dynamic map enabled.

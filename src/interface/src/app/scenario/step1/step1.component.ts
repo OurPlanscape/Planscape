@@ -108,10 +108,6 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
   }
 
   getData() {
-    if (this.featuresService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      return this.getDraftData();
-    } else {
-      return this.getPostData();
-    }
+       return this.form.value;
   }
 }

@@ -411,4 +411,5 @@ class TreatmentGoalViewSet(
         qs = super().get_queryset()
         if feature_enabled("CONUS_WIDE_SCENARIOS"):
             return qs
-        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
+        # return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
+        return qs

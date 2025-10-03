@@ -68,7 +68,7 @@ export interface ScenarioResult {
 
 export interface ScenarioCreation
   extends ScenarioConfigPayload,
-    ScenarioDraftPayload {
+  ScenarioDraftPayload {
   treatment_goal: number;
   excluded_areas: number[];
   name: string;
@@ -105,6 +105,39 @@ export interface ScenarioCreationPayload {
   name: string;
   planning_area: number;
   treatment_goal: number;
+}
+
+function mapConfigToDraftConfig(input: Partial<ScenarioConfigPayload>): Partial<ScenarioDraftPayload> {
+  const targets: Partial<ScenarioDraftPayload['configuration']['targets']> = {};
+  const draftConfig: Partial<ScenarioDraftPayload> = {};
+  if (input.estimated_cost !== undefined) {
+    targets.estimated_cost = input.estimated_cost;
+  }
+  if (input.max_area !== undefined) {
+    targets.max_area = input.max_area;
+  }
+  if (input.max_budget !== undefined) {
+    targets.max_budget = input.max_budget;
+  }
+  if (input.max_slope !== undefined) {
+    // map to a layer
+  }
+  if (input.min_distance_from_road !== undefined) {
+    // map to a layer
+  }
+  if (input.stand_size !== undefined) {
+    draftConfig.configuration.stand_size = input.stand_size;
+  }
+
+  return {
+    configuration: {
+      excluded_areas: input.excluded_areas || [], // Default to an empty array if undefined
+      stand_size: input.stand_size,
+      includes: [], // Always included as an empty array
+      constraints: [], // Always included as an empty array
+      targets: { ...targets }, // Include only populated properties
+    }
+  };
 }
 
 export type ScenarioResultStatus =

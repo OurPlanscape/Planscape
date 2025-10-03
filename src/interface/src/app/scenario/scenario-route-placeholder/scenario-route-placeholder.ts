@@ -6,6 +6,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ResourceUnavailableComponent } from '../../shared/resource-unavailable/resource-unavailable.component';
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
+import { ScenarioCreationComponent } from '../scenario-creation/scenario-creation.component';
 
 @Component({
   standalone: true,
@@ -16,6 +17,7 @@ import { ViewScenarioComponent } from '../view-scenario/view-scenario.component'
     MatProgressSpinnerModule,
     UploadedScenarioViewComponent,
     ViewScenarioComponent,
+    ScenarioCreationComponent,
   ],
   selector: 'app-scenario-route-placeholder',
   templateUrl: './scenario-route-placeholder.component.html',
@@ -27,5 +29,9 @@ export class ScenarioRoutePlaceholderComponent {
     takeWhile((resource) => resource.isLoading, true)
   );
 
-  constructor(private scenarioState: ScenarioState) {}
+  constructor(private scenarioState: ScenarioState) {
+
+    console.log('what is the scenario state?', scenarioState);
+
+  }
 }
