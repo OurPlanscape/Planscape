@@ -23,7 +23,9 @@
         <sg-input-field
           [disabled]="false"
           class="scenario-input"
-          showSupportMessage="on-error">
+          showSupportMessage="on-error"
+          [error]="this.errorMessage !== ''"
+          [supportMessage]="errorMessage">
           <input
             sgInput
             placeholder="e.g., High Severity Fire"

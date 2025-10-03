@@ -1,7 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { ScenarioSetupModalComponent } from './scenario-setup-modal.component';
 
 describe('ScenarioSetupModalComponent', () => {
@@ -11,6 +15,13 @@ describe('ScenarioSetupModalComponent', () => {
     'MatDialogRef',
     {
       close: undefined,
+    },
+    {}
+  );
+  const fakeDialog = jasmine.createSpyObj(
+    'MatDialog',
+    {
+      open: undefined,
     },
     {}
   );
@@ -25,6 +36,14 @@ describe('ScenarioSetupModalComponent', () => {
         {
           provide: MatDialogRef<ScenarioSetupModalComponent>,
           useValue: fakeDialogRef,
+        },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {},
+        },
+        {
+          provide: MatDialog,
+          useValue: fakeDialog,
         },
       ],
     }).compileComponents();
