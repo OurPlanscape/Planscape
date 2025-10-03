@@ -10,7 +10,6 @@ import { NgChartsModule } from 'ng2-charts';
 import { NgModule } from '@angular/core';
 import { NgxMaskModule } from 'ngx-mask';
 import { PlanComponent } from './plan.component';
-import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { ResourceUnavailableComponent } from '../shared/resource-unavailable/resource-unavailable.component';
 import { RouterModule } from '@angular/router';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
@@ -44,7 +43,6 @@ import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.comp
     AreaNotesComponent,
     DeleteNoteDialogComponent,
     PlanComponent,
-    PlanOverviewComponent,
     SavedScenariosComponent,
   ],
   providers: [

@@ -46,11 +46,10 @@ export class MapConfigState {
   );
   public treatedStandsOpacity$ = this._treatedStandsOpacity.asObservable();
 
-  private readonly defaultProjectAreasOpacity = 0.5;
-  private _projectAreasOpacity = new BehaviorSubject(
-    this.defaultProjectAreasOpacity
+  private _opacity = new BehaviorSubject<number>(
+    FrontendConstants.MAPLIBRE_MAP_VECTOR_LAYER_OPACITY
   );
-  public projectAreasOpacity$ = this._projectAreasOpacity.asObservable();
+  public opacity$ = this._opacity.asObservable();
 
   private defaultZoomLevel = 7;
   public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
@@ -101,8 +100,8 @@ export class MapConfigState {
     this._treatedStandsOpacity.next(value);
   }
 
-  setProjectAreasOpacity(value: number) {
-    this._projectAreasOpacity.next(value);
+  setOpacity(value: number) {
+    this._opacity.next(value);
   }
 
   enterDrawingMode() {
