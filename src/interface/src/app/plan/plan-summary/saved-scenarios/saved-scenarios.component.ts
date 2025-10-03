@@ -10,6 +10,7 @@ import {
   isValidTotalArea,
   planningAreaIsReady,
   planningAreaMetricsAreReady,
+  planningAreaMetricsFailed,
   POLLING_INTERVAL,
 } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
@@ -123,6 +124,10 @@ export class SavedScenariosComponent implements OnInit {
     } else {
       return true;
     }
+  }
+
+  get planningAreaFailed() {
+    return this.plan && planningAreaMetricsFailed(this.plan);
   }
 
   private openScenarioSetupDialog() {

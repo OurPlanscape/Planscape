@@ -303,11 +303,15 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
                     )
                 )
 
-    chord(tasks).on_error(
-        async_change_scenario_status.si(
-            scenario_id=scenario.pk, status=ScenarioResultStatus.PANIC
-        )
-    )(async_forsys_run.si(scenario_id=scenario.pk))
+    workflow_failed_task = async_change_scenario_status.si(
+        scenario_id=scenario.pk, status=ScenarioResultStatus.PANIC
+    )
+    forsys_task = async_forsys_run.si(scenario_id=scenario.pk)
+
+    workflow = chord(header=group(tasks), body=forsys_task).on_error(
+        workflow_failed_task
+    )
+    workflow.apply_async()
     log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
 
 

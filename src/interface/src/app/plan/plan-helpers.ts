@@ -180,3 +180,7 @@ export function planningAreaIsReady(pa: Plan) {
 export function planningAreaMetricsAreReady(pa: Plan) {
   return pa.map_status === 'DONE';
 }
+
+export function planningAreaMetricsFailed(pa: Plan) {
+  return pa.map_status === 'FAILED';
+}

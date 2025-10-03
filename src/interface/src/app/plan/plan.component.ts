@@ -15,6 +15,7 @@ import { canAddScenario } from './permissions';
 import {
   planningAreaIsReady,
   planningAreaMetricsAreReady,
+  planningAreaMetricsFailed,
   POLLING_INTERVAL,
 } from './plan-helpers';
 import { FeatureService } from '../features/feature.service';
@@ -150,18 +151,20 @@ export class PlanComponent implements OnInit {
       .pipe(
         // poll only while NOT DONE
         switchMap((plan) =>
-          !this.isPlanReady(plan) ? interval(POLLING_INTERVAL) : EMPTY
+          !this.isPlanMapStatusReady(plan) ? interval(POLLING_INTERVAL) : EMPTY
         ),
         untilDestroyed(this)
       )
       .subscribe(() => this.planState.reloadPlan());
   }
 
-  private isPlanReady(plan: Plan) {
+  private isPlanMapStatusReady(plan: Plan) {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      return planningAreaMetricsAreReady(plan);
+      return (
+        planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan)
+      );
     } else {
-      return planningAreaIsReady(plan);
+      return planningAreaIsReady(plan) || planningAreaMetricsFailed(plan);
     }
   }
 }

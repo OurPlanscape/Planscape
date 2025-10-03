@@ -148,9 +148,30 @@
   <sg-banner
     [dismissible]="false"
     type="warning"
-    *ngIf="!planningAreaIsReady"
-    style="margin-top: 20px">
+    *ngIf="!planningAreaIsReady && !planningAreaFailed"
+    class="banner">
     Your Planning Area is being prepared for Scenario Planning, this will take
     longer for larger Planning Areas.
+  </sg-banner>
+
+  <sg-banner
+    [dismissible]="false"
+    type="error"
+    *ngIf="!planningAreaIsReady && planningAreaFailed"
+    class="banner">
+    <div>
+      <div>
+        There was an error preparing your Planning Area for Scenario Planning.
+      </div>
+      <div>
+        Please
+        <a
+          href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw"
+          target="_blank"
+          >contact support</a
+        >
+        or try creating a new Planning Area.
+      </div>
+    </div>
   </sg-banner>
 </div>

@@ -13,7 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SectionComponent } from '@styleguide';
 import { NgxMaskModule } from 'ngx-mask';
 import { StepDirective } from 'src/styleguide/steps/step.component';
-import { NamedConstraint, ScenarioCreation } from '@types';
+import { NamedConstraint, ScenarioCreation, Constraint } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
@@ -58,7 +58,38 @@ export class Step3Component
     super();
   }
 
+  getDraftData() {
+    const constraintsData: Constraint[] = [];
+
+    if (this.form.value.max_slope && this.newScenarioState.getSlopeId()) {
+      constraintsData.push({
+        datalayer: this.newScenarioState.getSlopeId(),
+        operator: 'lt',
+        value: this.form.value.max_slope,
+      });
+    }
+    if (
+      this.form.value.min_distance_from_road &&
+      this.newScenarioState.getDistanceToRoadsId()
+    ) {
+      constraintsData.push({
+        datalayer: this.newScenarioState.getDistanceToRoadsId(),
+        operator: 'lte',
+        value: this.form.value.min_distance_from_road,
+      });
+    }
+    return { configuration: { constraints: constraintsData } };
+  }
+
   getData() {
+    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      return this.getDraftData();
+    } else {
+      return this.getPostData();
+    }
+  }
+
+  getPostData() {
     return this.form.value;
   }
 

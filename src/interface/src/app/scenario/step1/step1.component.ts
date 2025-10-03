@@ -96,7 +96,22 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
     return b.key.localeCompare(a.key);
   }
 
-  getData() {
+  getPostData() {
     return this.form.value;
+  }
+
+  getDraftData() {
+    return {
+      treatment_goal: this.form.value.treatment_goal,
+      configuration: { stand_size: this.form.value.stand_size },
+    };
+  }
+
+  getData() {
+    if (this.featuresService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+      return this.getDraftData();
+    } else {
+      return this.getPostData();
+    }
   }
 }
