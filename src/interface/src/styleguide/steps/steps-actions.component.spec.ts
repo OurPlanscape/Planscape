@@ -185,7 +185,9 @@ describe('StepsActionsComponent', () => {
       component.loading = true;
       fixture.detectChanges();
 
-      const continueButton = compiled.querySelector('button[variant="primary"]');
+      const continueButton = compiled.querySelector(
+        'button[variant="primary"]'
+      );
       expect(continueButton?.getAttribute('ng-reflect-loading')).toBe('true');
     });
   });
