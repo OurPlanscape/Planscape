@@ -10,7 +10,7 @@ import {
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
@@ -28,11 +28,17 @@ import { ButtonComponent } from '@styleguide';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-card-list.component';
 import { RouterTestingModule } from '@angular/router/testing';
+import { PlanState } from '../../plan.state';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
   let fakeScenarioService: ScenarioService;
+  let mockPlan = new BehaviorSubject({
+    ...MOCK_PLAN,
+    permissions: ['add_scenario'],
+    user: 1,
+  });
 
   beforeEach(async () => {
     const fakeRoute = jasmine.createSpyObj(
@@ -91,13 +97,14 @@ describe('SavedScenariosComponent', () => {
         MockProvider(AuthService),
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: ScenarioService, useValue: fakeScenarioService },
+        MockProvider(PlanState, {
+          currentPlan$: mockPlan,
+        }),
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SavedScenariosComponent);
     component = fixture.componentInstance;
-
-    component.plan = { ...MOCK_PLAN, permissions: ['add_scenario'], user: 1 };
   });
 
   it('should create', () => {
@@ -115,6 +122,7 @@ describe('SavedScenariosComponent', () => {
   });
 
   it('clicking new configuration button should call service and navigate', fakeAsync(async () => {
+    mockPlan.next({ ...MOCK_PLAN, permissions: ['add_scenario'], user: 1 });
     const route = fixture.debugElement.injector.get(ActivatedRoute);
     const router = fixture.debugElement.injector.get(Router);
     spyOn(router, 'navigate');
@@ -142,7 +150,10 @@ describe('SavedScenariosComponent', () => {
   }));
 
   it('should show New Scenario button with add_scenario permission', () => {
-    component.plan!.permissions = ['add_scenario', 'something_else'];
+    mockPlan.next({
+      ...mockPlan.value,
+      permissions: ['add_scenario', 'something_else'],
+    });
     fixture.detectChanges();
     const newScenarioButton = fixture.debugElement.query(
       By.css('[data-id="new-scenario"]')
@@ -151,7 +162,10 @@ describe('SavedScenariosComponent', () => {
   });
 
   it('should hide New Scenario button without add_scenario permission', () => {
-    component.plan!.permissions = ['nothing_here'];
+    mockPlan.next({
+      ...mockPlan.value,
+      permissions: ['nothing_here'],
+    });
     fixture.detectChanges();
     const newScenarioButton = fixture.debugElement.query(
       By.css('[data-id="new-scenario"]')

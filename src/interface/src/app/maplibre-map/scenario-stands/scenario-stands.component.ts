@@ -53,7 +53,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     })
   );
 
-  opacity$ = this.mapConfigState.projectAreasOpacity$;
+  opacity$ = this.mapConfigState.opacity$;
 
   // local copies to reset feature state
   private excludedStands: number[] = [];

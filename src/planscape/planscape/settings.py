@@ -546,3 +546,7 @@ STAND_METRICS_API_URL = config(
     "STAND_METRICS_API_URL",
     "https://stand-metrics-test-537855483895.us-central1.run.app/",
 )
+
+# RequestsSessionWrap settings
+REQUESTS_RETRIES = config("REQUESTS_RETRIES", default=3, cast=int)
+REQUESTS_BACKOFF_FACTOR = config("REQUESTS_BACKOFF_FACTOR", default=1, cast=float)

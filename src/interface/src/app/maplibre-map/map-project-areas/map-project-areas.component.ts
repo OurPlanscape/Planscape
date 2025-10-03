@@ -119,7 +119,7 @@ export class MapProjectAreasComponent implements OnInit {
       this.paint = this.getFillColors();
     }
 
-    this.mapConfigState.projectAreasOpacity$
+    this.mapConfigState.opacity$
       .pipe(untilDestroyed(this))
       .subscribe((opacity) => {
         this.opacity = opacity;

@@ -40,8 +40,12 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
     budgetOrAreaRequired: 'budgetOrAreaRequired',
   };
 
+/**
+ * This component is deprecated. Use Step4Component instead
+ * @deprecated
+ */
 @Component({
-  selector: 'app-step4',
+  selector: 'app-step4-legacy',
   standalone: true,
   imports: [
     CommonModule,
@@ -56,11 +60,11 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
     ReactiveFormsModule,
     SectionComponent,
   ],
-  providers: [{ provide: StepDirective, useExisting: Step4Component }],
-  templateUrl: './step4.component.html',
-  styleUrl: './step4.component.scss',
+  providers: [{ provide: StepDirective, useExisting: Step4LegacyComponent }],
+  templateUrl: './step4-legacy.component.html',
+  styleUrl: './step4-legacy.component.scss',
 })
-export class Step4Component
+export class Step4LegacyComponent
   extends StepDirective<ScenarioCreation>
   implements OnChanges
 {

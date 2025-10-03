@@ -16,6 +16,9 @@ import { NgxMaskModule } from 'ngx-mask';
 import { NewScenarioState } from '../new-scenario.state';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { AvailableStands } from '@types';
+import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
+import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
+import { FeaturesModule } from 'src/app/features/features.module';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -48,8 +51,11 @@ describe('ScenarioCreationComponent', () => {
           DataLayersComponent,
           Step1Component,
           Step3Component,
+          TreatmentTargetComponent,
+          Step4LegacyComponent,
           BaseLayersComponent
         ),
+        FeaturesModule,
       ],
     }).compileComponents();
 

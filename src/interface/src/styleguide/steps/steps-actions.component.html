@@ -1,0 +1,21 @@
+<div class="actions">
+  <div class="step-count" *ngIf="showStepCount">
+    Step {{ currentStep + 1 }} of {{ totalSteps }}
+  </div>
+  <button
+    sg-button
+    *ngIf="showBack"
+    [disabled]="!canGoBack || loading"
+    (click)="onBack()">
+    {{ backLabel }}
+  </button>
+  <button
+    sg-button
+    *ngIf="showContinue"
+    (click)="onNext()"
+    variant="primary"
+    [disabled]="!canGoNext || loading"
+    [loading]="loading">
+    {{ isLastStep ? finishLabel : continueLabel }}
+  </button>
+</div>

@@ -17,9 +17,9 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
-from stands.models import Stand, StandSizeChoices
+from stands.models import StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
-from stands.tests.factories import StandFactory
+from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType
 from planning.services import (
@@ -671,6 +671,31 @@ class TestRemoveExcludes(TransactionTestCase):
     def test_get_constrained_stands_thresholds(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
+        # in this scenario, without operator and with THRESHOLD usagetype
+        # we are getting all the stands that are NOT equals 1
+        excluded_stands = get_constrained_stands(
+            stands,
+            self.datalayer,
+            metric_column="majority",
+            value=1,
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
+        )
+
+        self.assertEqual(6, len(excluded_stands))
+
+    def test_get_constrained_stands_multiple_datalayers(self):
+        another_datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+        )
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.assertEquals(17, len(stands))
+
+        for stand in stands:
+            StandMetricFactory.create(
+                stand=stand,
+                datalayer=another_datalayer,
+                majority=1,
+            )
         # in this scenario, without operator and with THRESHOLD usagetype
         # we are getting all the stands that are NOT equals 1
         excluded_stands = get_constrained_stands(

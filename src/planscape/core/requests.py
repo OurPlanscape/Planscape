@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -6,8 +8,8 @@ from urllib3.util.retry import Retry
 class RequestSessionWrap(Session):
     def __init__(self):
         super().__init__()
-        retries = 3
-        backoff_factor = 1
+        retries = settings.REQUESTS_RETRIES
+        backoff_factor = settings.REQUESTS_BACKOFF_FACTOR
         status_forcelist = (429, 500, 502, 503, 504)
         retry = Retry(
             total=retries,
