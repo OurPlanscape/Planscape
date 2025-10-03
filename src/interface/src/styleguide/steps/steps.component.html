@@ -4,7 +4,7 @@
     [ngTemplateOutlet]="selected.content"></ng-container>
 </div>
 
-<div class="actions">
+<div class="actions" *ngIf="showActions">
   <div class="step-count">
     Step {{ selectedIndex + 1 }} of {{ steps.length }}
   </div>

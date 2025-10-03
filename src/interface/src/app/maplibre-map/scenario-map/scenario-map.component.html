@@ -55,7 +55,7 @@
     <app-data-layer-name></app-data-layer-name>
   </mgl-control>
 
-  <ng-container *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'">
+  <ng-container *ngIf="showScenarioStands$ | async">
     <app-scenario-stands
       *ngIf="mapLibreMap"
       [mapLibreMap]="mapLibreMap"></app-scenario-stands>
@@ -65,7 +65,7 @@
     <app-map-layer-color-legend></app-map-layer-color-legend>
   </mgl-control>
 
-  <mgl-control position="top-right" *appFeatureFlag="'DYNAMIC_SCENARIO_MAP'">
+  <mgl-control position="top-right" *ngIf="showScenarioStands$ | async">
     <app-scenario-legend></app-scenario-legend>
   </mgl-control>
 </mgl-map>
