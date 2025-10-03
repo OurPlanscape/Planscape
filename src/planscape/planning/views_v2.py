@@ -253,7 +253,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(**serializer.validated_data)
-        
+
         if hasattr(scenario, "result_status"):
             scenario.results.status = ScenarioResultStatus.DRAFT
             scenario.results.save()
