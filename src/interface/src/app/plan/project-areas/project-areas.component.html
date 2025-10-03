@@ -1,35 +1,38 @@
 <table>
   <thead>
     <tr>
-      <th></th>
-      <th>Acres</th>
-      <th>% Total</th>
-      <th>Est Cost</th>
-      <th>Score</th>
+      <th class="rank">Rank</th>
+      <th class="right">Acres</th>
+      <th class="right">% Total</th>
+      <th class="right">Estimated Cost</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let area of areas">
       <td
-        class="area-id"
+        class="rank"
         [style.border-left-color]="getColorByPosition(area.rank)">
         {{ area.rank }}
       </td>
-      <td data-id="acres">{{ area.acres | number: '1.0-0' }}</td>
-      <td data-id="percentTotal">{{ area.percentTotal | number: '1.0-2' }}%</td>
-      <td data-id="estimatedCost">{{ area.estimatedCost | currencyInK }}</td>
-      <td data-id="score" class="score">{{ area.score | number: '1.0-2' }}</td>
+      <td data-id="acres" class="right">{{ area.acres | number: '1.0-0' }}</td>
+      <td data-id="percentTotal" class="right">
+        {{ area.percentTotal | number: '1.0-2' }}%
+      </td>
+      <td data-id="estimatedCost" class="right">
+        {{ area.estimatedCost | currency: 'USD' : 'symbol' : '1.0-0' }}
+      </td>
     </tr>
     <tr class="total-row">
       <td></td>
-      <td data-id="total-acres">{{ total.acres | number: '1.0-0' }}</td>
-      <td data-id="total-percent">
+      <td data-id="total-acres" class="right">
+        {{ total.acres | number: '1.0-0' }}
+      </td>
+      <td data-id="total-percent" class="right">
         {{ total.percentTotal | number: '1.0-2' }}%
       </td>
-      <td data-id="total-estimatedCost">
-        {{ total.estimatedCost | currencyInK }}
+      <td data-id="total-estimatedCost" class="right">
+        {{ total.estimatedCost | currency: 'USD' : 'symbol' : '1.0-0' }}
       </td>
-      <td></td>
     </tr>
   </tbody>
 </table>

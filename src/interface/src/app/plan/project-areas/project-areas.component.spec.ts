@@ -6,7 +6,6 @@ import {
 } from '@angular/core/testing';
 import { ProjectAreasComponent } from './project-areas.component';
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { CurrencyInKPipe } from '@shared';
 import { CurrencyPipe } from '@angular/common';
 import { By } from '@angular/platform-browser';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
@@ -34,7 +33,7 @@ describe('ProjectAreasComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [TestHostComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [LegacyMaterialModule, ProjectAreasComponent, CurrencyInKPipe],
+      imports: [LegacyMaterialModule, ProjectAreasComponent],
       providers: [CurrencyPipe],
     }).compileComponents();
 
@@ -78,22 +77,13 @@ describe('ProjectAreasComponent', () => {
     expect(queryElement.innerHTML.trim()).toBe('22.34%');
   }));
 
-  it('should show `estimatedCost` in K with 2 decimals', fakeAsync(() => {
+  it('should show `estimatedCost` in as currency with 2 decimals', fakeAsync(() => {
     tick();
     fixture.detectChanges();
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="estimatedCost"]')
     ).nativeElement;
-    expect(queryElement.innerHTML.trim()).toBe('$1.23K');
-  }));
-
-  it('should show `score` as number with two decimals', fakeAsync(() => {
-    tick();
-    fixture.detectChanges();
-    const queryElement = fixture.debugElement.query(
-      By.css('[data-id="score"]')
-    ).nativeElement;
-    expect(queryElement.innerHTML.trim()).toBe('2.12');
+    expect(queryElement.innerHTML.trim()).toBe('$1,231');
   }));
 
   it('should calculate totals based on provided areas', fakeAsync(() => {
@@ -126,7 +116,7 @@ describe('ProjectAreasComponent', () => {
     const acres = fixture.debugElement.query(
       By.css('[data-id="total-acres"]')
     ).nativeElement;
-    expect(acres.innerHTML).toBe('12');
+    expect(acres.innerHTML.trim()).toBe('12');
 
     const percentTotal = fixture.debugElement.query(
       By.css('[data-id="total-percent"]')
@@ -136,6 +126,6 @@ describe('ProjectAreasComponent', () => {
     const estimatedCost = fixture.debugElement.query(
       By.css('[data-id="total-estimatedCost"]')
     ).nativeElement;
-    expect(estimatedCost.innerHTML.trim()).toBe('$0.4K');
+    expect(estimatedCost.innerHTML.trim()).toBe('$400');
   }));
 });
