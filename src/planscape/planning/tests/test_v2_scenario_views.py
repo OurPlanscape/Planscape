@@ -727,6 +727,7 @@ class ScenarioDetailTest(APITestCase):
         )
 
 
+# This should test exclusively the 'V3' configuration structure
 class PatchScenarioConfigurationTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory()
@@ -738,33 +739,94 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.scenario = ScenarioFactory(
             user=self.user,
             planning_area=self.planning_area,
-            treatment_goal=self.treatment_goal,
-            configuration={
-                "stand_size": "LARGE",
-                "max_budget": 1000,
-            },
+            name="some patchable scenario",
         )
 
-        self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
+        self.url = reverse(
+            "api:planning:scenarios-patch-draft", args=[self.scenario.pk]
+        )
 
     def test_patch_scenario_configuration_success(self):
         payload = {
-            "max_budget": 20000,
-            "min_distance_from_road": 100,
-            "stand_size": "SMALL",
-            "max_project_count": 5,
+            "configuration": {
+                "targets": {"estimated_cost": 12345, "max_area": 11111},
+                "stand_size": "SMALL",
+            }
         }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.url, payload, format="json")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         config = response.data.get("configuration", {})
-        self.assertEqual(config.get("max_budget"), 20000)
-        self.assertEqual(config.get("min_distance_from_road"), 100)
+        targets = config.get("targets", {})
+
         self.assertEqual(config.get("stand_size"), "SMALL")
-        self.assertEqual(config.get("max_project_count"), 5)
+        self.assertEqual(config.get("targets").get("estimated_cost"), 12345)
+
+    # Test sequential patches, ensure we retain values as expected
+    def test_patch_scenario_incremental_updates(self):
+        payload = {
+            "min_distance_from_road": 100,
+            "max_project_count": 5,
+            "configuration": {
+                "targets": {"estimated_cost": 12345, "max_area": 11111},
+            },
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        config = response.data.get("configuration", {})
+        targets = config.get("targets", {})
+        self.assertEqual(targets.get("estimated_cost"), 12345)
+        self.assertEqual(targets.get("max_area"), 11111)
+        self.assertEqual(config.get("stand_size"), "LARGE")  # DEFAULT VALUE
+
+        # Send a subsequent update with a few values
+        payload2 = {
+            "configuration": {
+                "stand_size": "MEDIUM",
+                "targets": {"estimated_cost": 22222, "max_area": 11111},
+                "excluded_areas": [1, 2, 3],
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response2 = self.client.patch(self.url, payload2, format="json")
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+        config2 = response2.data.get("configuration", {})
+        targets = config2.get("targets")
+
+        self.assertEqual(targets.get("estimated_cost"), 22222)
+        self.assertEqual(config2.get("stand_size"), "MEDIUM")
+
+        # Send a third update to clear an array
+        payload3 = {"configuration": {"excluded_areas": []}}
+
+        self.client.force_authenticate(self.user)
+        response3 = self.client.patch(self.url, payload3, format="json")
+        self.assertEqual(response3.status_code, status.HTTP_200_OK)
+
+        config3 = response3.data.get("configuration", {})
+        self.assertEqual(config3.get("excluded_areas"), [])
+        self.assertEqual(config3.get("stand_size"), "MEDIUM")
+
+        # Send a fourth update with predictable validation errors
+        payload4 = {
+            "configuration": {
+                "stand_size": "INVALID VALUE",
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response4 = self.client.patch(self.url, payload4, format="json")
+        self.assertEqual(response4.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            b'{"stand_size":["\\"INVALID VALUE\\" is not a valid choice."]}',
+            response4.content,
+        )
 
     def test_patch_scenario_configuration_unauthenticated(self):
         payload = {"max_budget": 5000}
@@ -773,7 +835,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
 
     def test_patch_scenario_configuration_forbidden_for_other_user(self):
         scenario = ScenarioFactory(user=self.other_user)
-        url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {"max_budget": 100000}
 
         # Authenticate as a user who does not own the scenario
@@ -784,7 +846,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
-        invalid_url = reverse("api:planning:scenarios-detail", args=[999999])
+        invalid_url = reverse("api:planning:scenarios-patch-draft", args=[999999])
         self.client.force_authenticate(self.user)
         payload = {"max_budget": 5000}
 
@@ -863,6 +925,63 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
         self.assertSetEqual(set(caps), {"FORSYS", "IMPACTS"})
+
+
+class CreateScenarioForDraftsTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.user2 = UserFactory()
+        self.other_user = UserFactory()
+
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.planning_area2 = PlanningAreaFactory(user=self.user2)
+        self.treatment_goal = TreatmentGoalFactory()
+
+    def test_create_with_name_and_planning_area(self):
+        payload = {
+            "name": "my dear scenario",
+            "planning_area": self.planning_area.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        scenario = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(scenario.get("id"))
+        self.assertEqual(scenario.get("scenario_result").get("status"), "DRAFT")
+
+    def test_create_without_name(self):
+        payload = {
+            "planning_area": self.planning_area.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            b'{"name":["This field is required."]}',
+            response.content,
+        )
+
+    def test_create_for_planning_area_without_permission(self):
+        payload = {
+            "planning_area": self.planning_area2.pk,
+            "name": "scenario in some other users area",
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class ScenarioCapabilitiesSerializerTest(TestCase):
