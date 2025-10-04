@@ -452,7 +452,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         ]
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
-    if cfg.hasattr("constraints") and isinstance(cfg.get("constraints"), list):
+    if "constraints" in cfg and isinstance(cfg.get("constraints"), list):
         OPERATOR_MAP = {
             "eq": "=",
             "lt": "<",
