@@ -238,7 +238,9 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    if not feature_enabled("SCENARIO_DRAFTS"):
+    if (
+        scenario.treatment_goal is not None
+    ):  # scenarios in 'draft' wont have a treatment_goal
         track_openpanel(
             name="planning.scenario.created",
             properties={
@@ -450,7 +452,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         ]
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
-    if feature_enabled("SCENARIO_DRAFTS"):
+    if "constraints" in cfg and isinstance(cfg.get("constraints"), list):
         OPERATOR_MAP = {
             "eq": "=",
             "lt": "<",
@@ -616,7 +618,7 @@ def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
 
 def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
     configuration = scenario.configuration
-    if feature_enabled("SCENARIO_DRAFTS"):
+    if "targets" in configuration:  # differentiate between the "new" config and old
         targets = configuration.get("targets", {}) or {}
         max_area = targets.get("max_area")
         if max_area:

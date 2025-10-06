@@ -853,10 +853,8 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="Treatment goal of the scenario.",
     )
-    configuration = serializers.DictField(
-        required=False,
-        help_text="Supports stand_size, included_areas, excluded_areas, constraints, targets, seed.",
-    )
+
+    configuration = ConfigurationV3Serializer
 
     class Meta:
         model = Scenario

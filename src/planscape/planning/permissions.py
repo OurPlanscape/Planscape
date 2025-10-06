@@ -17,7 +17,7 @@ class ScenarioViewPermission(PlanscapePermission):
         if not self.is_authenticated(request):
             return False
         match view.action:
-            case "create":
+            case "create" | "create_draft":
                 pa_id = request.data.get("planning_area") or None
                 if not pa_id:
                     return False
