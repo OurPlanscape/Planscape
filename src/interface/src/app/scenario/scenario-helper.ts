@@ -1,5 +1,4 @@
 import {
-  CategorizedScenarioGoals,
   ScenarioConfigPayload,
   ScenarioCreation,
   ScenarioCreationPayload,
@@ -60,25 +59,6 @@ export function getGroupedGoals(
     },
     {}
   );
-}
-
-/**
- * This method will get a list of scenarioGoal and will return the categorized version of it
- * TODO: remove this function once CONUS_WIDE_SCENARIOS be removed
- * @param goals : List of scenario goals
- * @deprecated
- */
-export function legacyGetCategorizedGoals(
-  goals: ScenarioGoal[]
-): CategorizedScenarioGoals {
-  return goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
-    const category = goal.category_text;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(goal);
-    return acc;
-  }, {});
 }
 
 /***

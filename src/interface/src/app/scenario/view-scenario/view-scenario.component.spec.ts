@@ -21,7 +21,6 @@ import { PlanState } from 'src/app/plan/plan.state';
 import { POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { ScenarioService } from '@services';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
-import { FeatureService } from 'src/app/features/feature.service';
 
 describe('ViewScenarioComponent (polling)', () => {
   let fixture: ComponentFixture<ViewScenarioComponent>;
@@ -40,17 +39,12 @@ describe('ViewScenarioComponent (polling)', () => {
     return { ...baseScenario, scenario_result: { status } as ScenarioResult };
   }
 
-  let featureSpy: jasmine.SpyObj<FeatureService>;
-
   beforeEach(async () => {
     scenario$ = new BehaviorSubject<Scenario>(makeScenario('PENDING'));
     scenarioStateSpy = {
       reloadScenario: jasmine.createSpy('reloadScenario'),
       currentScenario$: scenario$.asObservable(),
     };
-
-    featureSpy = jasmine.createSpyObj('FeatureService', ['isFeatureEnabled']);
-    featureSpy.isFeatureEnabled.and.returnValue(true);
 
     await TestBed.configureTestingModule({
       declarations: [
@@ -70,10 +64,7 @@ describe('ViewScenarioComponent (polling)', () => {
       ],
     }).compileComponents();
 
-    TestBed.overrideProvider(FeatureService, { useValue: featureSpy });
-    TestBed.overrideComponent(ViewScenarioComponent, {
-      set: { providers: [{ provide: FeatureService, useValue: featureSpy }] },
-    });
+    TestBed.overrideComponent(ViewScenarioComponent, {});
   });
 
   function createComponent() {
@@ -138,7 +129,6 @@ describe('ViewScenarioComponent (polling)', () => {
   }));
 
   it('polls when geopackage_status is PENDING/PROCESSING and feature flag is ON', fakeAsync(() => {
-    featureSpy.isFeatureEnabled.and.returnValue(true);
     scenario$.next(makeScenario('SUCCESS'));
     createComponent();
     scenario$.next({
@@ -170,8 +160,6 @@ describe('ViewScenarioComponent (polling)', () => {
 
   it('cleans up polling on component destroy', fakeAsync(() => {
     // ensure only main polling exists (no geopackage)
-
-    featureSpy.isFeatureEnabled.and.returnValue(false);
     scenario$.next(makeScenario('PENDING'));
     createComponent();
 

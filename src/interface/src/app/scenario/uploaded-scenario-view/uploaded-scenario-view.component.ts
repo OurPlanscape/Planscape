@@ -12,7 +12,6 @@ import { ScenarioState } from '../scenario.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
-import { FeatureService } from 'src/app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -35,8 +34,7 @@ export class UploadedScenarioViewComponent {
     private planState: PlanState,
     private scenarioState: ScenarioState,
     private breadcrumbService: BreadcrumbService,
-    private route: ActivatedRoute,
-    private featureService: FeatureService
+    private route: ActivatedRoute
   ) {
     this.scenario$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.breadcrumbService.updateBreadCrumb({
@@ -51,9 +49,6 @@ export class UploadedScenarioViewComponent {
   plan$ = this.planState.currentPlan$;
 
   scenarioCanHaveTreatmentPlans(scenario: Scenario | undefined) {
-    if (!this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
-      return true;
-    }
     return scenarioCanHaveTreatmentPlans(scenario);
   }
 

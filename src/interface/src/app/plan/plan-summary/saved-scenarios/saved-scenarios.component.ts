@@ -124,10 +124,8 @@ export class SavedScenariosComponent implements OnInit {
   get planningAreaIsReady() {
     if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
       return this.plan && planningAreaMetricsAreReady(this.plan);
-    } else if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
-      return this.plan && planningAreaIsReady(this.plan);
     } else {
-      return true;
+      return this.plan && planningAreaIsReady(this.plan);
     }
   }
 
