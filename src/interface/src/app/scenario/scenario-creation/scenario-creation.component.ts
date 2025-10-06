@@ -203,8 +203,9 @@ export class ScenarioCreationComponent
     return dialogRef.afterClosed();
   }
 
-
-  convertFormOutputToDraftPayload(formData : any) : Partial<ScenarioDraftPayload> {
+  convertFormOutputToDraftPayload(
+    formData: any
+  ): Partial<ScenarioDraftPayload> {
     const payload = {};
     return payload;
   }

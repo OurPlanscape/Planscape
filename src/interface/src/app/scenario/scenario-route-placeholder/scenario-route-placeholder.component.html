@@ -11,19 +11,23 @@
   </ng-template>
 
   <ng-template #scenarioOk>
-    <ng-container *ngIf="scenarioResource.data?.scenario_result?.status === 'DRAFT'; else checkOrigin">
-    <app-scenario-creation></app-scenario-creation>
-  </ng-container>
+    <ng-container
+      *ngIf="
+        scenarioResource.data?.scenario_result?.status === 'DRAFT';
+        else checkOrigin
+      ">
+      <app-scenario-creation></app-scenario-creation>
+    </ng-container>
 
-  <ng-template #checkOrigin>
-    <app-uploaded-scenario-view
-      [scenario]="scenarioResource.data"
-      *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
-    </app-uploaded-scenario-view>
-  </ng-template>
+    <ng-template #checkOrigin>
+      <app-uploaded-scenario-view
+        [scenario]="scenarioResource.data"
+        *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
+      </app-uploaded-scenario-view>
+    </ng-template>
 
-  <ng-template #createScenario>
-    <app-view-scenario></app-view-scenario>
+    <ng-template #createScenario>
+      <app-view-scenario></app-view-scenario>
+    </ng-template>
   </ng-template>
-</ng-template>
 </ng-container>
