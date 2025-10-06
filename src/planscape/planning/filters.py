@@ -98,11 +98,11 @@ def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
 
 class ScenarioOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
-            ordering_dict = {
-                "budget": "configuration__max_budget",
-                "acres": "configuration__max_treatment_area_ratio",
-                "completed_at": "results__completed_at",
-            }
+        ordering_dict = {
+            "budget": "configuration__max_budget",
+            "acres": "configuration__max_treatment_area_ratio",
+            "completed_at": "results__completed_at",
+        }
 
         ordering = self.get_ordering(request, queryset, view)
         if not ordering:
@@ -115,6 +115,7 @@ class ScenarioOrderingFilter(OrderingFilter):
 
         custom_ordering = map(get_custom_ordering, ordering)
         return queryset.order_by(*custom_ordering)
+
 
 class ScenarioV3OrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
@@ -134,7 +135,6 @@ class ScenarioV3OrderingFilter(OrderingFilter):
 
         custom_ordering = map(get_custom_ordering, ordering)
         return queryset.order_by(*custom_ordering)
-
 
 
 class ScenarioFilter(filters.FilterSet):
