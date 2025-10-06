@@ -2,17 +2,10 @@
   margin: 10px;
   text-align: center;
 }
-
-.pending-icon {
-  margin: 10px auto;
-  display: block;
-  width: 50px;
-  height: 50px;
-  font-size: 50px;
-}
-.center {
-  margin: auto;
-}
 .spinner {
   margin: 10px auto;
+}
+.actions {
+  display: flex;
+  justify-content: center;
 }
