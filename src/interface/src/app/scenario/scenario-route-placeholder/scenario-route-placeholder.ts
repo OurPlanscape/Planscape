@@ -6,7 +6,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ResourceUnavailableComponent } from '../../shared/resource-unavailable/resource-unavailable.component';
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
-
+import { ScenarioCreationComponent } from '../scenario-creation/scenario-creation.component';
 @Component({
   standalone: true,
   imports: [
@@ -15,6 +15,7 @@ import { ViewScenarioComponent } from '../view-scenario/view-scenario.component'
     AsyncPipe,
     MatProgressSpinnerModule,
     UploadedScenarioViewComponent,
+    ScenarioCreationComponent,
     ViewScenarioComponent,
   ],
   selector: 'app-scenario-route-placeholder',

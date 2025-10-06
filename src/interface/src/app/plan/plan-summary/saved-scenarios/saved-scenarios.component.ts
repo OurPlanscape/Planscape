@@ -165,9 +165,6 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    if (clickedScenario.scenario_result?.status === 'DRAFT') {
-      // TODO: navigate to new draft scenario - TBD
-    } else {
       this.breadcrumbService.updateBreadCrumb({
         label: 'Scenario: ' + clickedScenario.name,
         backUrl: getPlanPath(clickedScenario.planning_area),
@@ -176,7 +173,6 @@ export class SavedScenariosComponent implements OnInit {
       this.router.navigate(['scenario', clickedScenario.id], {
         relativeTo: this.route,
       });
-    }
   }
 
   tabChange(data: { index: number; tab: MatTab }) {

@@ -6,6 +6,7 @@ import {
   Constraint,
   Scenario,
   ScenarioCreationPayload,
+  ScenarioDraftPayload,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -42,11 +43,24 @@ export class ScenarioService {
     });
   }
 
+  //TODO: make planId not optional
   createScenarioFromName(name: string, planId: number) {
     const scenarioParameters = { name: name, planning_area: planId };
-    return this.http.post<Scenario>(this.v2Path, scenarioParameters, {
+    return this.http.post<Scenario>(this.v2Path + 'draft/', scenarioParameters, {
       withCredentials: true,
     });
+  }
+
+  runScenario(scenarioId: number) {
+    // actually run the scenario
+    const runUrl = `${this.v2Path}${scenarioId}/run/`;
+    return this.http.post<Scenario>(
+      runUrl,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
   }
 
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
@@ -64,6 +78,29 @@ export class ScenarioService {
             'Please change your settings and try again.';
           throw new CreateScenarioError(
             'Your scenario config is invalid. ' + message
+          );
+        })
+      );
+  }
+
+  //sends a partial scenario configuration using PATCH
+  // returns success or failure, based on backend results
+  patchScenarioConfig(
+    scenarioId: number,
+    configPayload: Partial<ScenarioDraftPayload>
+  ) {
+    return this.http
+      .patch<Scenario>(this.v2Path + scenarioId, configPayload, {
+        withCredentials: true,
+      })
+      .pipe(
+        catchError((error) => {
+          //TODO: handle specific field error formats in step form
+          // We probably need to coordinate backend formats / messages here
+          const message =
+            error.error?.global?.[0] || 'Failed to save configuration';
+          throw new CreateScenarioError(
+            'Scenario Config is invalid. ' + message
           );
         })
       );
