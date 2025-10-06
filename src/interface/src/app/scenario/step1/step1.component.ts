@@ -20,7 +20,6 @@ import { SectionComponent } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ActivatedRoute } from '@angular/router';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MatIconModule } from '@angular/material/icon';
 import { FeaturesModule } from '../../features/features.module';
 import { getGroupedGoals } from '../scenario-helper';
@@ -60,11 +59,7 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
   planId = this.route.snapshot.data['planId'];
 
   categorizedStatewideGoals$ = this.treatmentGoalsService
-    .getTreatmentGoals(
-      this.featuresService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')
-        ? this.planId
-        : null
-    )
+    .getTreatmentGoals(this.planId)
     .pipe(
       map((goals) => {
         return getGroupedGoals(goals);
@@ -80,8 +75,7 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
     private scenarioState: ScenarioState,
-    private route: ActivatedRoute,
-    private featuresService: FeatureService
+    private route: ActivatedRoute
   ) {
     super();
   }

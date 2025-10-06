@@ -11,8 +11,6 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
-`CONUS_WIDE_SCENARIOS` : Enable CONUS wide scenarios
-
 `DYNAMIC_SCENARIO_MAP`: Shows stands on new scenario configuration steps"
 
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool

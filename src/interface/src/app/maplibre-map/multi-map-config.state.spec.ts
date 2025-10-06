@@ -7,7 +7,6 @@ import { BaseLayer, Extent } from '@types';
 import { MockProvider } from 'ng-mocks';
 import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
 import { BehaviorSubject } from 'rxjs';
-import { FeatureService } from '../features/feature.service';
 import { FrontendConstants } from '../map/map.constants';
 
 describe('MultiMapConfigState', () => {
@@ -25,7 +24,6 @@ describe('MultiMapConfigState', () => {
       providers: [
         MultiMapConfigState,
         { provide: MultiMapsStorageService, useValue: storage },
-        MockProvider(FeatureService),
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: selectedLayers$,
           setBaseLayers: (layers) => selectedLayers$.next(layers),
