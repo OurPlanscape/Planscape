@@ -680,9 +680,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
 
     max_treatment_area = serializers.ReadOnlyField(
         source=(
-            "configuration.targets.max_area"
-            if feature_enabled("SCENARIO_DRAFTS")
-            else "configuration.max_treatment_area_ratio"
+            "configuration.max_treatment_area_ratio"
         ),
         help_text="Max Treatment Area Ratio.",
     )
@@ -736,6 +734,16 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "capabilities",
         )
         model = Scenario
+
+
+class ListScenarioV3Serializer(ListScenarioSerializer):
+    max_treatment_area = serializers.ReadOnlyField(
+        source="configuration.max_treatment_area_ratio",
+        help_text="Max Treatment Area Ratio without feature flag."
+    )
+    class Meta(ListScenarioSerializer.Meta):
+        model = ListScenarioSerializer.Meta.model
+        fields = ListScenarioSerializer.Meta.fields
 
 
 class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):

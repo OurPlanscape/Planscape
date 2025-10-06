@@ -17,6 +17,7 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioFilter,
     ScenarioOrderingFilter,
+    ScenarioV3OrderingFilter,
     TreatmentGoalFilter,
 )
 from planning.models import (
@@ -37,6 +38,7 @@ from planning.serializers import (
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    ListScenarioV3Serializer,
     PlanningAreaSerializer,
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
@@ -321,6 +323,35 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         self.perform_update(serializer)
         response_serializer = ScenarioV3Serializer(instance)
         return Response(response_serializer.data)
+
+    @action(methods=["get"], detail=True, url_path="patch")
+    def run(self, request, pk=None):
+        scenario = self.get_object()
+
+        if feature_enabled("SCENARIO_DRAFTS") and scenario.results is not None:
+            scenario.results.status = ScenarioResultStatus.PENDING
+            scenario.results.save()
+
+        errors = validate_scenario_configuration(scenario)
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        # trigger
+        trigger_scenario_run(scenario, request.user)
+
+        serializer = ScenarioV2Serializer(instance=scenario)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    @action(detail=False, methods=['get'], url_path='draft')
+    def list_drafts(self, request):
+        filter_backends = [
+        DjangoFilterBackend,
+        ScenarioV3OrderingFilter,
+        ]
+        scenarios = self.get_queryset()
+        serializer = ListScenarioV3Serializer(scenarios, many=True)
+        return Response(serializer.data)
+
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
     @action(methods=["post"], detail=True, url_path="run")
