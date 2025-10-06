@@ -1,37 +1,47 @@
+@import "colors";
+
 
 table {
   width: 100%;
   border-collapse: collapse;
+  text-align: left;
 }
 
+th, td {
+  padding: 2px 10px 2px 20px;
+}
 
 th {
   font-weight: bold;
 }
 
-td {
-  text-align: center;
-}
-
-.score {
-  font-weight: bold;
-}
 
 tr:nth-child(even):not(.total-row) {
-  background-color: #e3e5e8;
+  background-color: $color-light-gray;
 }
 
 .total-row {
-  border-top: 1px solid black;
+  border-top: 1px solid $color-black;
+  font-weight: bold;
 }
+
 
 .tooltip {
   padding: 20px;
 }
 
-.area-id {
+.rank {
+  width: 100%;
   border-left: 8px solid transparent;
   display: block;
+  padding: 2px 10px;
+
+}
+
+.right {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
 }
 
 @media print {
