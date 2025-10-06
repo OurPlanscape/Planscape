@@ -65,7 +65,9 @@
 }
 
 .plan-content.with-overview {
+  height: 100%;
   flex-direction: column;
+  overflow: auto;
 }
 
 .plan-map-container {
@@ -99,10 +101,6 @@
   }
 
   ::ng-deep {
-    .plan-overview-container .plan-scenario-panel .plan-scenario-panel-content {
-      display: none;
-    }
-
     app-scenario-configurations .configurations-wrapper .no-configs-overlay {
       display: none;
     }

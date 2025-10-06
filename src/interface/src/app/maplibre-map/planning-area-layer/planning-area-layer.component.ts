@@ -30,7 +30,7 @@ import { transition } from '@angular/animations';
 export class PlanningAreaLayerComponent {
   @Input() before = '';
 
-  opacity$ = this.mapConfigState.projectAreasOpacity$;
+  opacity$ = this.mapConfigState.opacity$;
 
   linePaint$ = this.opacity$.pipe(
     map(
@@ -38,7 +38,7 @@ export class PlanningAreaLayerComponent {
         ({
           'line-color': this.lineColor,
           'line-width': 2,
-          'line-opacity': opacity,
+          'line-opacity': 0.8,
           'line-opacity-transition': { duration: 0 },
         }) as any
     )
@@ -49,7 +49,7 @@ export class PlanningAreaLayerComponent {
       (opacity) =>
         ({
           'fill-color': this.backgroundColor,
-          'fill-opacity': opacity * 0.2,
+          'fill-opacity': opacity * 0.15,
           'fill-opacity-transition': { duration: 0 },
         }) as any
     )

@@ -14,7 +14,7 @@ export interface Plan {
   role: string;
   scenario_count: number;
   user: number;
-  map_status?: 'DONE' | 'PENDING' | 'IN_PROGRESS' | 'STANDS_DONE';
+  map_status?: 'DONE' | 'PENDING' | 'IN_PROGRESS' | 'STANDS_DONE' | 'FAILED';
 }
 
 export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;

@@ -50,6 +50,7 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() finishLabel = 'finish';
   @Input() genericErrorMsg = 'Unknown error';
   @Input() errorKey = 'invalid';
+  @Input() showActions = true;
   // save callback
   @Input() save?: (data: Partial<T>) => Observable<boolean>;
   // outer form, optional, that should check validity / mark as touched when saving

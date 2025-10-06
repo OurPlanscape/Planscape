@@ -1,22 +1,21 @@
-import { Component, inject } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   standalone: true,
-  imports: [MatProgressSpinnerModule, MatButtonModule, RouterModule],
+  imports: [
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    RouterModule,
+    ButtonComponent,
+  ],
   selector: 'app-scenario-pending',
   templateUrl: './scenario-pending.component.html',
   styleUrls: ['./scenario-pending.component.scss'],
 })
 export class ScenarioPendingComponent {
-  private route: ActivatedRoute = inject(ActivatedRoute);
-  private router: Router = inject(Router);
-
-  planId = this.route.snapshot.data['planId'];
-
-  goBackToPlan() {
-    this.router.navigate(['/plan', this.planId]);
-  }
+  @Output() goBack = new EventEmitter();
 }

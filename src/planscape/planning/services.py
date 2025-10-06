@@ -33,7 +33,7 @@ from impacts.calculator import truncate_result
 from modules.base import compute_scenario_capabilities
 from pyproj import Geod
 from shapely import wkt
-from stands.models import Stand, StandSizeChoices, area_from_size
+from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
@@ -1181,15 +1181,20 @@ def get_constrained_stands(
             .get("metric_column", "avg")
         )
     if not operator:
-        metric_filter = f"metrics__{metric_column}"
+        metric_filter = f"{metric_column}"
     else:
-        metric_filter = f"metrics__{metric_column}__{operator}"
+        metric_filter = f"{metric_column}__{operator}"
     logger.info(f"processing metric_filter {metric_filter} with value {value}")
 
-    stands_qs = stands_qs.filter(metrics__datalayer_id=datalayer.pk)
     match usage_type:
         case TreatmentGoalUsageType.THRESHOLD:
-            stands_qs = stands_qs.exclude(**{metric_filter: value})
+            metrics = StandMetric.objects.filter(
+                datalayer_id=datalayer.pk,
+                stand_id__in=stands_qs,
+                **{metric_filter: value},
+            )
+            excluded_ids = list(metrics.values_list("stand_id", flat=True))
+            stands_qs = stands_qs.exclude(pk__in=excluded_ids)
         case _:
             raise ValueError("Invalid usage_type for get_constrainted_stands.")
 

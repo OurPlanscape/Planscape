@@ -7,7 +7,6 @@ import { Plan } from '@types';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
 import { AuthService, PlanningAreaNotesService } from '@services';
-import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
 import { MockComponent } from 'ng-mocks';
@@ -97,7 +96,6 @@ describe('PlanComponent', () => {
       ],
       declarations: [
         PlanComponent,
-        PlanOverviewComponent,
         MockComponent(NavBarComponent),
         MockComponent(PlanningAreaTitlebarMenuComponent),
       ],
