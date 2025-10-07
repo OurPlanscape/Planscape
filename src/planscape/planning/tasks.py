@@ -188,6 +188,7 @@ def prepare_planning_area(planning_area_id: int) -> None:
             batch_size = settings.STAND_METRICS_PAGE_SIZE
             for i in range(0, len(missing_stand_ids), batch_size):
                 batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+
                 create_stand_metrics_jobs.append(
                     create_metrics_task(
                         stand_ids=batch_stand_ids,
