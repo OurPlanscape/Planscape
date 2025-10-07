@@ -265,8 +265,6 @@ export class ScenarioCreationComponent
     console.log('savingstep?:', data);
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       const payload = this.convertFormOutputToDraftPayload(data);
-      this.draftConfig = { ...this.draftConfig, ...data };
-      // TODO: convert this to different format:
       return this.savePatch(payload);
     } else {
       // if dynamic map is not able just go forward.
