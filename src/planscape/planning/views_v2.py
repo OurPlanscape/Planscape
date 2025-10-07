@@ -327,8 +327,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def run(self, request, pk=None):
         scenario = self.get_object()
         if hasattr(scenario, "results"):
-            scenario.result_status = ScenarioResultStatus.PENDING
-            scenario.result_status.save()
+            scenario.results.status = ScenarioResultStatus.PENDING
+            scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
