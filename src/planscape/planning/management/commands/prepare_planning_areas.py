@@ -10,7 +10,7 @@ from planning.tasks import prepare_planning_area
 
 log = logging.getLogger(__name__)
 
-ACRES_PER_SECOND = 6_000
+ACRES_PER_SECOND = 12000
 
 
 class Command(BaseCommand):
