@@ -155,7 +155,7 @@ def async_calculate_stand_metrics_with_stand_list(
 
 
 @app.task()
-def prepare_planning_area(planning_area_id: int) -> None:
+def prepare_planning_area(planning_area_id: int) -> int:
     planning_area = PlanningArea.objects.get(id=planning_area_id)
 
     log.info(f"Preparing planning area {planning_area_id}")
@@ -216,6 +216,7 @@ def prepare_planning_area(planning_area_id: int) -> None:
     ).on_error(set_map_status_failed)
     stand_metrics_workflow.apply_async()
     log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
+    return len(create_stand_metrics_jobs)
 
 
 @app.task()

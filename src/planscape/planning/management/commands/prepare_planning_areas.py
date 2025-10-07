@@ -28,12 +28,13 @@ class Command(BaseCommand):
             self.stdout.write(f"Preparing Planning Area {planning_area.pk}")
             sleep = self.get_sleep_timer(planning_area)
             try:
-                prepare_planning_area(planning_area_id=planning_area.pk)
+                task_count = prepare_planning_area(planning_area_id=planning_area.pk)
                 self.stdout.write(
                     f"[OK] Queued prepare_planning_area {planning_area.pk}. Waiting {sleep}."
                 )
                 total_pas -= 1
-                time.sleep(sleep)
+                if task_count > 0:
+                    time.sleep(sleep)
                 self.stdout.write(f"We have {total_pas} remaining.")
             except Exception:
                 self.stderr.write(
