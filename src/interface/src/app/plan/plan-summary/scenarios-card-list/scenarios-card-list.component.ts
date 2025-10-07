@@ -24,6 +24,7 @@ import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
 import { userCanAddTreatmentPlan } from '../../permissions';
+import { DeleteScenarioDialogComponent } from '../../../scenario/delete-scenario-dialog/delete-scenario-dialog.component';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -124,6 +125,42 @@ export class ScenariosCardListComponent {
         },
       });
     }
+  }
+
+  showDeleteScenarioDialog(scenario: Scenario) {
+    if (scenario.id) {
+      this.dialog
+        .open(DeleteScenarioDialogComponent, { data: { name: scenario.name } })
+        .afterClosed()
+        .pipe(take(1))
+        .subscribe((name) => {
+          if (name) {
+            this.deleteScenario(scenario);
+          }
+        });
+    }
+  }
+
+  private deleteScenario(scenario: Scenario) {
+    this.scenarioService.deleteScenario(Number(scenario.id)).subscribe({
+      next: () => {
+        // remove it from the list
+        this.scenarios = this.scenarios.filter((s) => s.id !== scenario.id);
+        this.snackbar.open(
+          `"${scenario.name}" has been deleted`,
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
+        this.triggerRefresh.emit();
+      },
+      error: (err) => {
+        this.snackbar.open(
+          `Error: ${err.error.error}`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
   }
 
   openNewTreatmentDialog(event: Event, s: Scenario) {

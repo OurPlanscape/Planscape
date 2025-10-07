@@ -23,6 +23,7 @@ import {
   StatusChipStatus,
 } from '../status-chip/status-chip.component';
 import { ButtonComponent } from '../button/button.component';
+import { ScenarioRow } from '../../app/plan/plan-summary/saved-scenarios/saved-scenarios.component';
 
 export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
 
@@ -60,12 +61,14 @@ export class ScenarioCardComponent {
   @Input() selected: boolean = false;
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
   @Input() userCanArchiveScenario = false;
+  @Input() userCanDeleteScenario = false;
   @Input() showTreatmentPlanButton = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
   @Output() openNewTreatment = new EventEmitter();
   @Output() toggleArchiveStatus = new EventEmitter();
+  @Output() deleteScenario = new EventEmitter<ScenarioRow>();
   @Output() clicked = new EventEmitter();
 
   readonly chipsStatus: Record<

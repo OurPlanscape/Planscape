@@ -1,0 +1,16 @@
+<sg-modal
+  [title]="modalTitle"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [centerFooter]="false"
+  [padBody]="true"
+  primaryButtonText="Delete"
+  primaryButtonVariant="negative"
+  (clickedSecondary)="cancelDelete()"
+  (clickedClose)="cancelDelete()"
+  (clickedPrimary)="confirmDelete()">
+  <div modalBodyContent class="padded">
+    Are you sure you want to delete this scenario? All configuration details and
+    results will be permanently deleted, and this action cannot be undone
+  </div>
+</sg-modal>
