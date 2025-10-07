@@ -32,6 +32,7 @@ OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "add_collaborator",
     "delete_collaborator",
     "change_collaborator",
+    "delete_planningarea",
 ]
 PERMISSIONS = {
     Role.OWNER: OWNER_PERMISSIONS,
