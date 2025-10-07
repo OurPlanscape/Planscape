@@ -84,16 +84,16 @@ export interface ScenarioConfigPayload {
 }
 
 export interface ScenarioDraftPayload {
-    excluded_areas: number[];
-    stand_size: STAND_SIZE;
-    includes: number[];
-    constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
-    targets: {
-      estimated_cost: number;
-      max_area: number;
-      max_budget: number;
-      max_project_count: number;
-    };
+  excluded_areas: number[];
+  stand_size: STAND_SIZE;
+  includes: number[];
+  constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
+  targets: {
+    estimated_cost: number;
+    max_area: number;
+    max_budget: number;
+    max_project_count: number;
+  };
 }
 
 export interface ScenarioCreationPayload {
@@ -216,4 +216,3 @@ export interface AvailableStands {
     unavailable_area: number; // unavailable area
   };
 }
-

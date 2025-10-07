@@ -191,5 +191,4 @@ export class NewScenarioState {
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
   }
-
 }

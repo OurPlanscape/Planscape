@@ -86,7 +86,8 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate {
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -206,11 +207,13 @@ export class ScenarioCreationComponent
   convertFormOutputToDraftPayload(
     formData: Partial<ScenarioConfigPayload>
   ): Partial<ScenarioDraftPayload> {
-
     const payload: Partial<ScenarioDraftPayload> = {};
 
     // Direct mappings
-    if (formData.excluded_areas !== undefined && formData.excluded_areas?.length > 0) {
+    if (
+      formData.excluded_areas !== undefined &&
+      formData.excluded_areas?.length > 0
+    ) {
       payload.excluded_areas = Array.from(formData.excluded_areas);
     }
     if (formData.stand_size !== undefined) {
@@ -243,7 +246,7 @@ export class ScenarioCreationComponent
         value: formData.min_distance_from_road,
       });
     }
-    if (formData.max_slope != null && this.newScenarioState.getSlopeId()) {
+    if (formData.max_slope && this.newScenarioState.getSlopeId()) {
       constraints.push({
         datalayer: this.newScenarioState.getSlopeId(),
         operator: 'lt',
