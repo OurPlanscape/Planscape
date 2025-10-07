@@ -886,7 +886,7 @@ class ListPlanningAreasWithPermissionsTest(APITestCase):
         self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
 
 
-class DeletePlanningAreaTest(APITransactionTestCase):
+class DeletePlanningAreaTest(APITestCase):
     def setUp(self):
         self.creator = UserFactory.create()
         self.owner = UserFactory()
