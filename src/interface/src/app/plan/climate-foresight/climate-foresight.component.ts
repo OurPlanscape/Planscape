@@ -175,6 +175,7 @@ export class ClimateForesightComponent implements OnInit {
         this.snackBar.open('Run created successfully', 'Close', {
           duration: 3000,
         });
+        this.openRun(run);
       },
       error: (error) => {
         this.loading = false;
@@ -207,7 +208,9 @@ export class ClimateForesightComponent implements OnInit {
       });
   }
 
-  openRun(run: ClimateForesightRun): void {}
+  openRun(run: ClimateForesightRun): void {
+    this.router.navigate(['run', run.id], { relativeTo: this.route });
+  }
 
   deleteRun(run: ClimateForesightRun): void {
     const dialogRef = this.dialog.open(DeleteRunModalComponent, {
