@@ -1,0 +1,164 @@
+<div class="data-layer-selection-container">
+  <div class="left-panel-container">
+    <div class="left-panel">
+      <sg-panel [showDivider]="false">
+        <div panel-title class="panel-header">
+          <h3>DATA LAYER SELECTION</h3>
+          <button sg-button icon="help_outline" variant="link"></button>
+        </div>
+        <p>
+          Select the data layers you would like to translate. You will also have
+          the option to combine selected layers together to support aggregated
+          analysis.
+        </p>
+
+        <div panel-content class="panel-body">
+          <div class="selection-counter">
+            <span class="count"
+              >{{ selectedCount }}/{{ maxDataLayers }} Selected</span
+            >
+            <button sg-button icon="add" (click)="toggleBrowser()">
+              Select
+            </button>
+          </div>
+
+          <div class="data-layers-list">
+            <div *ngIf="selectedCount === 0" class="no-selection">
+              <p>No Data Layers Selected</p>
+            </div>
+
+            <div *ngIf="selectedCount > 0" class="selected-layers">
+              <div
+                *ngFor="let layer of selectedDataLayers"
+                class="selected-layer-item">
+                <span class="layer-name">{{ layer.name }}</span>
+                <button
+                  sg-button
+                  variant="icon-only"
+                  icon="close"
+                  (click)="removeDataLayer(layer)"
+                  class="remove-button"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sg-panel>
+    </div>
+    <ng-content select="[actions]"></ng-content>
+  </div>
+
+  <div class="browser-panel" [class.open]="isBrowserOpen">
+    <div class="browser-header">
+      <h3>Data Layers</h3>
+      <button
+        sg-button
+        variant="icon-only"
+        icon="close"
+        (click)="toggleBrowser()"></button>
+    </div>
+
+    <div class="browser-content">
+      <div class="browser-search">
+        <sg-search-bar
+          class="search-bar"
+          [debounceInterval]="300"
+          searchPlaceholder="Search by dataset, metric, category"
+          [inputHeight]="'regular'"
+          (searchString)="onSearchChange($event)"
+          [searchValue]="searchTerm"></sg-search-bar>
+        <span class="selection-hint" *ngIf="!canSelectMore"
+          >Maximum selection reached</span
+        >
+      </div>
+
+      <div class="tree-container" *ngIf="!loadingLayers">
+        <mat-tree
+          *ngIf="filteredTreeData.length > 0"
+          [dataSource]="filteredTreeData"
+          [treeControl]="treeControl"
+          class="data-layers-tree">
+          <mat-tree-node
+            *matTreeNodeDef="let node"
+            matTreeNodePadding
+            class="data-layer-node">
+            <div class="data-layer-item">
+              <button
+                mat-icon-button
+                class="selection-button"
+                [class.selected]="isLayerSelected(node.item)"
+                [disabled]="!isLayerSelected(node.item) && !canSelectMore"
+                (click)="toggleLayerSelection(node.item)">
+                <mat-icon>
+                  {{
+                    isLayerSelected(node.item) ? 'check_circle' : 'add_circle'
+                  }}
+                </mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                class="preview-button"
+                [class.previewed]="isLayerPreviewed(node.item)"
+                [disabled]="!isLayerSelected(node.item)"
+                (click)="toggleLayerPreview(node.item)">
+                <mat-icon>
+                  {{
+                    isLayerPreviewed(node.item)
+                      ? 'radio_button_checked'
+                      : 'radio_button_unchecked'
+                  }}
+                </mat-icon>
+              </button>
+              <span
+                class="layer-name"
+                (click)="toggleLayerSelection(node.item)">
+                {{ node.name }}
+              </span>
+            </div>
+          </mat-tree-node>
+
+          <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+            <div
+              class="mat-tree-node category-node"
+              matTreeNodeToggle
+              [class.expanded]="treeControl.isExpanded(node)">
+              <span class="category-icon"></span>
+              {{ node.name }}
+            </div>
+            <div
+              *ngIf="treeControl.isExpanded(node)"
+              role="group"
+              class="category-children">
+              <ng-container matTreeNodeOutlet></ng-container>
+            </div>
+          </mat-nested-tree-node>
+        </mat-tree>
+      </div>
+
+      <div class="loading-container" *ngIf="loadingLayers">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading data layers...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="map-container">
+      <div class="map-preview">
+        <mgl-map
+          *ngIf="bounds$ | async as bounds"
+          [style]="(baseLayerUrl$ | async) || ''"
+          [transformRequest]="transformRequest"
+          [maxZoom]="maxZoom"
+          [minZoom]="minZoom"
+          [dragRotate]="false"
+          [fitBoundsOptions]="{ padding: 20 }"
+          [fitBounds]="bounds"
+          [interactive]="true"
+          (mapLoad)="mapLoaded($event)">
+          <app-planning-area-layer
+            *ngIf="mapLibreMap"></app-planning-area-layer>
+        </mgl-map>
+      </div>
+    </div>
+  </div>
+</div>
