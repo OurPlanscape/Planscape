@@ -32,7 +32,6 @@ import { getPlanPath, POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
-import { FeatureService } from 'src/app/features/feature.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -90,8 +89,7 @@ export class ViewScenarioComponent {
     private scenarioState: ScenarioState,
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
-    private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService
+    private breadcrumbService: BreadcrumbService
   ) {
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
@@ -176,9 +174,6 @@ export class ViewScenarioComponent {
   }
 
   scenarioCanHaveTreatmentPlans(s: Scenario) {
-    if (!this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
-      return true;
-    }
     return scenarioCanHaveTreatmentPlans(s);
   }
 

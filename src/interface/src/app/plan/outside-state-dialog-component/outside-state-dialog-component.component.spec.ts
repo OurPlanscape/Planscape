@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef } from '@angular/material/dialog';
 import { OutsideStateDialogComponentComponent } from './outside-state-dialog-component.component';
-import { FeatureService } from 'src/app/features/feature.service';
-import { MockProvider } from 'ng-mocks';
 
 describe('OutsideStateDialogComponentComponent', () => {
   let component: OutsideStateDialogComponentComponent;
@@ -18,7 +16,6 @@ describe('OutsideStateDialogComponentComponent', () => {
             close: () => {},
           },
         },
-        MockProvider(FeatureService),
       ],
     }).compileComponents();
 

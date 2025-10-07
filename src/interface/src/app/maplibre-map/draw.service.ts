@@ -17,7 +17,6 @@ import {
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
-import { FeatureService } from '../features/feature.service';
 import { flattenMultipolygons } from '../plan/plan-helpers';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
@@ -58,10 +57,7 @@ export class DrawService {
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
 
-  constructor(
-    private http: HttpClient,
-    private featureService: FeatureService
-  ) {}
+  constructor(private http: HttpClient) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -227,11 +223,7 @@ export class DrawService {
     if (this._boundaryShape$.value !== null) {
       return this._boundaryShape$.asObservable();
     }
-    let boundaryPath = 'assets/geojson/ca_state.geojson';
-    if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
-      boundaryPath = 'assets/geojson/conus-census.geojson';
-    }
-    return this.http.get<GeoJSON>(boundaryPath).pipe(
+    return this.http.get<GeoJSON>('assets/geojson/conus-census.geojson').pipe(
       catchError((error) => {
         console.error('Failed to load shape:', error);
         return of(null); // Return null on error
