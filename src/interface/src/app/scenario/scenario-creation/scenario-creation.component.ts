@@ -32,6 +32,7 @@ import {
   ScenarioConfigPayload,
   ScenarioDraftPayload,
   ScenarioCreation,
+  Constraint,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
@@ -85,8 +86,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate
-{
+  implements OnInit, CanComponentDeactivate {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -204,13 +204,62 @@ export class ScenarioCreationComponent
   }
 
   convertFormOutputToDraftPayload(
-    formData: any
+    formData: Partial<ScenarioConfigPayload>
   ): Partial<ScenarioDraftPayload> {
-    const payload = {};
+
+    const payload: Partial<ScenarioDraftPayload> = {};
+
+    // Direct mappings
+    if (formData.excluded_areas !== undefined && formData.excluded_areas?.length > 0) {
+      payload.excluded_areas = Array.from(formData.excluded_areas);
+    }
+    if (formData.stand_size !== undefined) {
+      payload.stand_size = formData.stand_size;
+    }
+
+    const targets: any = {};
+    if (formData.estimated_cost !== undefined) {
+      targets.estimated_cost = formData.estimated_cost;
+    }
+    if (formData.max_area !== undefined) {
+      targets.max_area = formData.max_area;
+    }
+    if (formData.max_budget !== undefined) {
+      targets.max_budget = formData.max_budget;
+    }
+    if (Object.keys(targets).length > 0) {
+      payload.targets = targets;
+    }
+
+    // Constraints
+    const constraints: Constraint[] = [];
+    if (
+      formData.min_distance_from_road &&
+      this.newScenarioState.getDistanceToRoadsId()
+    ) {
+      constraints.push({
+        datalayer: this.newScenarioState.getDistanceToRoadsId(),
+        operator: 'lte',
+        value: formData.min_distance_from_road,
+      });
+    }
+    if (formData.max_slope != null && this.newScenarioState.getSlopeId()) {
+      constraints.push({
+        datalayer: this.newScenarioState.getSlopeId(),
+        operator: 'lt',
+        value: formData.max_slope,
+      });
+    }
+    if (constraints.length > 0) {
+      payload.constraints = constraints;
+    }
+
+    console.log('payload is what:', payload);
     return payload;
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
+    console.log('savingstep?:', data);
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       const payload = this.convertFormOutputToDraftPayload(data);
       this.draftConfig = { ...this.draftConfig, ...data };

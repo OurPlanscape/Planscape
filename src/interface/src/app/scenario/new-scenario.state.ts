@@ -183,4 +183,13 @@ export class NewScenarioState {
   setBaseStandsLoaded(loaded: boolean) {
     this.baseStandsReady$.next(loaded);
   }
+
+  getSlopeId() {
+    return this.slopeId;
+  }
+
+  getDistanceToRoadsId() {
+    return this.distanceToRoadsId;
+  }
+
 }
