@@ -43,7 +43,6 @@ export class ScenarioService {
     });
   }
 
-  //TODO: make planId not optional
   createScenarioFromName(name: string, planId: number) {
     const scenarioParameters = { name: name, planning_area: planId };
     return this.http.post<Scenario>(
@@ -93,8 +92,9 @@ export class ScenarioService {
     scenarioId: number,
     configPayload: Partial<ScenarioDraftPayload>
   ) {
+    console.log('saving to patch...');
     return this.http
-      .patch<Scenario>(this.v2Path + scenarioId, configPayload, {
+      .patch<Scenario>(this.v2Path + scenarioId + '/draft/', configPayload, {
         withCredentials: true,
       })
       .pipe(

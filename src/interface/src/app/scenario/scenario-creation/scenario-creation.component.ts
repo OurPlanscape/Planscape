@@ -33,6 +33,7 @@ import {
   ScenarioDraftPayload,
   ScenarioCreation,
   Constraint,
+  ScenarioDraftConfig,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
@@ -86,8 +87,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate
-{
+  implements OnInit, CanComponentDeactivate {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -205,21 +205,26 @@ export class ScenarioCreationComponent
   }
 
   convertFormOutputToDraftPayload(
-    formData: Partial<ScenarioConfigPayload>
+    formData: Partial<ScenarioCreation>
   ): Partial<ScenarioDraftPayload> {
     const payload: Partial<ScenarioDraftPayload> = {};
-
-    // Direct mappings
+    const config: Partial<ScenarioDraftConfig> = {};
+    if (
+      formData.treatment_goal !== undefined
+    ) {
+      payload.treatment_goal = formData.treatment_goal;
+    }
+    if (formData.stand_size !== undefined)
+    {
+      config.stand_size = formData.stand_size;
+    }
     if (
       formData.excluded_areas !== undefined &&
       formData.excluded_areas?.length > 0
     ) {
-      payload.excluded_areas = Array.from(formData.excluded_areas);
+      config.excluded_areas = Array.from(formData.excluded_areas);
     }
-    if (formData.stand_size !== undefined) {
-      payload.stand_size = formData.stand_size;
-    }
-
+    // targets
     const targets: any = {};
     if (formData.estimated_cost !== undefined) {
       targets.estimated_cost = formData.estimated_cost;
@@ -230,10 +235,12 @@ export class ScenarioCreationComponent
     if (formData.max_budget !== undefined) {
       targets.max_budget = formData.max_budget;
     }
-    if (Object.keys(targets).length > 0) {
-      payload.targets = targets;
+    if (formData.max_project_count !== undefined) {
+      targets.max_project_count = formData.max_project_count
     }
-
+    if (Object.keys(targets).length > 0) {
+      config.targets = targets;
+    }
     // Constraints
     const constraints: Constraint[] = [];
     if (
@@ -254,17 +261,18 @@ export class ScenarioCreationComponent
       });
     }
     if (constraints.length > 0) {
-      payload.constraints = constraints;
+      config.constraints = constraints;
     }
-
-    console.log('payload is what:', payload);
+    payload.configuration = config;
     return payload;
+
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
     console.log('savingstep?:', data);
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       const payload = this.convertFormOutputToDraftPayload(data);
+      console.log('here is the payload we are sending', payload);
       return this.savePatch(payload);
     } else {
       // if dynamic map is not able just go forward.
@@ -300,7 +308,7 @@ export class ScenarioCreationComponent
     this.newScenarioState.setScenarioConfig(this.config);
 
     return this.scenarioService
-      .patchScenarioConfig(this.scenarioId, this.draftConfig)
+      .patchScenarioConfig(this.scenarioId, data)
       .pipe(
         map((result) => {
           if (result) {

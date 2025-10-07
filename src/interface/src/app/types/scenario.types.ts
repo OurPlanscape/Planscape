@@ -79,11 +79,12 @@ export interface ScenarioConfigPayload {
   max_area: number;
   max_slope: number | null;
   min_distance_from_road: number | null;
+  max_project_count: number;
   stand_size: STAND_SIZE;
   max_budget?: number;
 }
 
-export interface ScenarioDraftPayload {
+export interface ScenarioDraftConfig {
   excluded_areas: number[];
   stand_size: STAND_SIZE;
   includes: number[];
@@ -96,11 +97,20 @@ export interface ScenarioDraftPayload {
   };
 }
 
+export interface ScenarioDraftPayload {
+  configuration: Partial<ScenarioDraftConfig>;
+  name: string;
+  planning_area: number;
+  treatment_goal: number;
+}
+
+
 export interface ScenarioCreationPayload {
   configuration: ScenarioConfigPayload;
   name: string;
   planning_area: number;
   treatment_goal: number;
+  stand_size: STAND_SIZE; // TODO: fix this stopgap placeholder
 }
 
 export type ScenarioResultStatus =
