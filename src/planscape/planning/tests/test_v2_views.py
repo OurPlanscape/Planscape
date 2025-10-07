@@ -886,6 +886,98 @@ class ListPlanningAreasWithPermissionsTest(APITestCase):
         self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
 
 
+class DeletePlanningAreaTest(APITransactionTestCase):
+    def setUp(self):
+        self.creator = UserFactory.create()
+        self.owner = UserFactory()
+        self.collaborator = UserFactory()
+        self.viewer = UserFactory()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            name="Deletable Area",
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+
+    def test_delete_planning_area_as_creator(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(PlanningArea.objects.count(), 0)
+
+    def test_delete_planning_area_as_owner(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(PlanningArea.objects.count(), 0)
+
+    def test_delete_planning_area_as_collaborator(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_planning_area_as_viewer(self):
+        self.client.force_authenticate(self.viewer)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_planning_area_unauthenticated(self):
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_nonexistent_planning_area(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": 9999},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+
 class CreateScenariosFromUpload(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
