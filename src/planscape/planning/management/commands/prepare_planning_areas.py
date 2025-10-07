@@ -26,7 +26,7 @@ class Command(BaseCommand):
             try:
                 task_count = prepare_planning_area(planning_area_id=planning_area.pk)
                 self.stdout.write(
-                    f"[OK] Queued prepare_planning_area {planning_area.pk}. Waiting {sleep}."
+                    f"[OK] Queued prepare_planning_area {planning_area.pk}. Waiting {cooldown}."
                 )
                 total_pas -= 1
                 if task_count > 0:
