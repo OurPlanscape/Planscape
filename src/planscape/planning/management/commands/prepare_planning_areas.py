@@ -22,7 +22,7 @@ class Command(BaseCommand):
         planning_areas = PlanningArea.objects.exclude(
             map_status=PlanningAreaMapStatus.DONE
         )
-        total_pas = planning_areas.objects.count()
+        total_pas = planning_areas.count()
         self.stdout.write(f"Calculating stand metrics for {total_pas}.")
         for planning_area in planning_areas:
             self.stdout.write(f"Preparing Planning Area {planning_area.pk}")
