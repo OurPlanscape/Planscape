@@ -5,20 +5,17 @@ from typing import Any
 from django.core.management.base import BaseCommand
 
 from planning.models import PlanningArea, PlanningAreaMapStatus
-from planning.services import get_acreage
 from planning.tasks import prepare_planning_area
 
 log = logging.getLogger(__name__)
 
-ACRES_PER_SECOND = 12000
-
 
 class Command(BaseCommand):
-    def get_sleep_timer(self, planning_area) -> float:
-        acreage = get_acreage(planning_area.geometry)
-        return acreage / ACRES_PER_SECOND
+    def add_arguments(self, parser):
+        parser.add_argument("cooldown", type=int, default=60)
 
     def handle(self, *args: Any, **options: Any) -> str | None:
+        cooldown = options.get("cooldown", 60) or 60
         planning_areas = PlanningArea.objects.exclude(
             map_status=PlanningAreaMapStatus.DONE
         )
@@ -26,7 +23,6 @@ class Command(BaseCommand):
         self.stdout.write(f"Calculating stand metrics for {total_pas}.")
         for planning_area in planning_areas:
             self.stdout.write(f"Preparing Planning Area {planning_area.pk}")
-            sleep = self.get_sleep_timer(planning_area)
             try:
                 task_count = prepare_planning_area(planning_area_id=planning_area.pk)
                 self.stdout.write(
@@ -34,7 +30,7 @@ class Command(BaseCommand):
                 )
                 total_pas -= 1
                 if task_count > 0:
-                    time.sleep(sleep)
+                    time.sleep(cooldown)
                 self.stdout.write(f"We have {total_pas} remaining.")
             except Exception:
                 self.stderr.write(
