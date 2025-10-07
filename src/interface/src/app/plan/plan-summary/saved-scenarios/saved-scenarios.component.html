@@ -17,7 +17,7 @@
     <mat-icon class="material-symbols-outlined">description</mat-icon>
     <div class="overview-item">
       <strong>Scenarios:</strong>
-      {{ plan?.scenario_count }}
+      {{ loading ? plan?.scenario_count : activeScenarios.length }}
     </div>
 
     <a [routerLink]="['/explore', plan?.id]" class="view-map">View Map</a>
@@ -97,6 +97,9 @@
               [scenarios]="activeScenarios"
               [plan]="plan"
               (viewScenario)="navigateToScenario($event)"
+              (scenarioDeleted)="
+                removeScenarioFromList($event, 'activeScenarios')
+              "
               (triggerRefresh)="fetchScenarios()"></app-scenarios-card-list>
           </ng-container>
           <div class="empty-state" *ngIf="activeScenarios.length === 0">
@@ -133,8 +136,9 @@
             <app-scenarios-card-list
               [scenarios]="archivedScenarios"
               [plan]="plan"
-              (viewScenario)="
-                navigateToScenario($event)
+              (viewScenario)="navigateToScenario($event)"
+              (scenarioDeleted)="
+                removeScenarioFromList($event, 'archivedScenarios')
               "></app-scenarios-card-list>
           </ng-container>
           <div class="empty-state" *ngIf="archivedScenarios.length === 0">

@@ -114,6 +114,14 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
+  removeScenarioFromList(
+    scenario: Scenario,
+    list: 'activeScenarios' | 'archivedScenarios'
+  ) {
+    this[list] = this[list].filter((s) => s.id !== scenario.id);
+    this.fetchScenarios();
+  }
+
   get canAddScenarioForPlan(): boolean {
     if (!this.plan) {
       return false;

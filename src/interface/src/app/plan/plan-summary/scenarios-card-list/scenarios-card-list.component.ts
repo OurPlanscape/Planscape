@@ -17,14 +17,13 @@ import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { CreateTreatmentDialogComponent } from '../../../scenario/create-treatment-dialog/create-treatment-dialog.component';
+import { DeleteScenarioDialogComponent } from '../../../scenario/delete-scenario-dialog/delete-scenario-dialog.component';
 import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
 import { userCanAddTreatmentPlan } from '../../permissions';
-import { DeleteScenarioDialogComponent } from '../../../scenario/delete-scenario-dialog/delete-scenario-dialog.component';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -40,6 +39,7 @@ export class ScenariosCardListComponent {
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
   @Output() triggerRefresh = new EventEmitter<ScenarioRow>();
+  @Output() scenarioDeleted = new EventEmitter<ScenarioRow>();
 
   constructor(
     private authService: AuthService,
@@ -144,18 +144,16 @@ export class ScenariosCardListComponent {
   private deleteScenario(scenario: Scenario) {
     this.scenarioService.deleteScenario(Number(scenario.id)).subscribe({
       next: () => {
-        // remove it from the list
-        this.scenarios = this.scenarios.filter((s) => s.id !== scenario.id);
         this.snackbar.open(
           `"${scenario.name}" has been deleted`,
           'Dismiss',
           SNACK_BOTTOM_NOTICE_CONFIG
         );
-        this.triggerRefresh.emit();
+        this.scenarioDeleted.emit(scenario);
       },
       error: (err) => {
         this.snackbar.open(
-          `Error: ${err.error.error}`,
+          `Error: Unable to delete ${scenario.name}`,
           'Dismiss',
           SNACK_ERROR_CONFIG
         );
