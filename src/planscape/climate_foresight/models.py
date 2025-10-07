@@ -48,6 +48,16 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
         help_text="Current status of the run",
     )
 
+    selected_data_layers = models.JSONField(
+        null=True,
+        blank=True,
+        default=list,
+        help_text=(
+            "List of selected data layer configurations. Each item contains: "
+            "data_layer_id (int), favor_high (bool), pillar (str)"
+        ),
+    )
+
     objects = ClimateForesightRunManager()
 
     class Meta:

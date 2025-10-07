@@ -4,7 +4,13 @@ from planning.models import PlanningArea
 
 
 class ClimateForesightRunSerializer(serializers.ModelSerializer):
-    """Serializer for ClimateForesightRun model."""
+    """Serializer for ClimateForesightRun model.
+
+    selected_data_layers should be a list of objects with:
+    - data_layer_id (int): ID of the selected data layer
+    - favor_high (bool): True if high values are favorable, False if low values are favorable
+    - pillar (str): The pillar/category assignment for this layer
+    """
 
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
     created_at = serializers.DateTimeField(read_only=True)
@@ -24,6 +30,7 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             "creator",
             "status",
             "created_at",
+            "selected_data_layers",
         ]
         read_only_fields = ["id", "created_at", "planning_area_name", "creator"]
 
