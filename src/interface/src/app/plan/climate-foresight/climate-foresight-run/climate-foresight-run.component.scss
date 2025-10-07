@@ -1,0 +1,38 @@
+@import '../../../../../src/styles/variables';
+@import '../../../../../src/styles/colors';
+
+.climate-foresight-run-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - $navbar-height);
+}
+
+.step-layout {
+  display: flex;
+  gap: 20px;
+  height: 100%;
+}
+
+.step-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.step-sidebar {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+::ng-deep {
+  .step {
+    overflow-y: hidden !important;
+    padding: 0 !important;
+  }
+
+  sg-steps-nav {
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    z-index: 3;
+  }
+}

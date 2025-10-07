@@ -1,7 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ClimateForesightRun, CreateClimateForesightRunPayload } from '@types';
+import {
+  ClimateForesightRun,
+  CreateClimateForesightRunPayload,
+  DataLayer,
+} from '@types';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -63,5 +67,30 @@ export class ClimateForesightService {
     return this.http.delete<void>(`${this.basePath}${id}/`, {
       withCredentials: true,
     });
+  }
+
+  /**
+   * Get data layers available for climate foresight analysis
+   */
+  getDataLayers(): Observable<DataLayer[]> {
+    return this.http.get<DataLayer[]>(`${this.basePath}data_layers/`, {
+      withCredentials: true,
+    });
+  }
+
+  /**
+   * Update a climate foresight run (partial update)
+   */
+  updateRun(
+    id: number,
+    payload: Partial<ClimateForesightRun>
+  ): Observable<ClimateForesightRun> {
+    return this.http.patch<ClimateForesightRun>(
+      `${this.basePath}${id}/`,
+      payload,
+      {
+        withCredentials: true,
+      }
+    );
   }
 }

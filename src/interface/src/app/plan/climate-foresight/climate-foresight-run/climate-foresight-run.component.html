@@ -1,0 +1,63 @@
+<app-nav-bar [area]="'SCENARIOS'"></app-nav-bar>
+
+<div class="climate-foresight-run-container">
+  <sg-steps-nav
+    [steps]="stepsList"
+    [selectedIndex]="currentStepIndex"
+    [allowNavigation]="true"
+    (selectionChange)="
+      stepsComponent && (stepsComponent.selectedIndex = $event)
+    ">
+  </sg-steps-nav>
+
+  <sg-steps
+    #stepsComponent
+    [save]="saveStepData"
+    [savingStep]="savingStep"
+    [showActions]="currentStepIndex !== 0"
+    (finished)="onFinished()">
+    <sg-step label="Select Data Layers">
+      <div class="step-layout">
+        <div class="step-content">
+          <app-data-layer-selection
+            #dataLayerSelection
+            [plan]="currentPlan"
+            [run]="currentRun"
+            (complete)="onStepComplete($event)">
+            <ng-container actions>
+              <sg-steps-actions
+                [currentStep]="currentStepIndex"
+                [totalSteps]="totalSteps"
+                [canGoNext]="dataLayerSelectionComponent?.form?.valid || false"
+                [loading]="savingStep"
+                [showBack]="false"
+                [showStepCount]="false"
+                continueLabel="Save & Continue"
+                (back)="goToPreviousStep()"
+                (next)="goToNextStep()">
+              </sg-steps-actions>
+            </ng-container>
+          </app-data-layer-selection>
+        </div>
+      </div>
+    </sg-step>
+
+    <cdk-step label="Assign Favorability" [stepControl]="favorabilityForm!">
+      <div class="step-layout">
+        <div class="step-content"></div>
+      </div>
+    </cdk-step>
+
+    <cdk-step label="Assign Pillars" [stepControl]="pillarsForm!">
+      <div class="step-layout">
+        <div class="step-content"></div>
+      </div>
+    </cdk-step>
+
+    <cdk-step label="Run & Risk Assessment" [stepControl]="assessmentForm!">
+      <div class="step-layout">
+        <div class="step-content"></div>
+      </div>
+    </cdk-step>
+  </sg-steps>
+</div>
