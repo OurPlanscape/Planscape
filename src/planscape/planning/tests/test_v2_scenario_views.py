@@ -727,7 +727,7 @@ class ScenarioDetailTest(APITestCase):
         )
 
 
-# This should test exclusively the 'V3' configuration structure
+# This should test exclusively the 'V3' configuration
 class PatchScenarioConfigurationTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory()
