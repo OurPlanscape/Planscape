@@ -5,7 +5,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TransactionTestCase
+from django.test import TestCase
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -26,7 +26,7 @@ from impacts.tasks import (
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 
 
-class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
+class AsyncSendEmailProcessFinishedTest(TestCase):
     def setUp(self):
         self.treatment_plan = TreatmentPlanFactory.create()
         self.user = self.treatment_plan.created_by
@@ -55,7 +55,7 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
         self.assertFalse(send_email_mock.called)
 
 
-class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
+class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
@@ -218,7 +218,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
 
 
-class AsyncCalculateBaselineMetricsForVariableYearTest(TransactionTestCase):
+class AsyncCalculateBaselineMetricsForVariableYearTest(TestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
