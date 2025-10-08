@@ -87,7 +87,8 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate {
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioCreation> = {};
@@ -209,13 +210,10 @@ export class ScenarioCreationComponent
   ): Partial<ScenarioDraftPayload> {
     const payload: Partial<ScenarioDraftPayload> = {};
     const config: Partial<ScenarioDraftConfig> = {};
-    if (
-      formData.treatment_goal !== undefined
-    ) {
+    if (formData.treatment_goal !== undefined) {
       payload.treatment_goal = formData.treatment_goal;
     }
-    if (formData.stand_size !== undefined)
-    {
+    if (formData.stand_size !== undefined) {
       config.stand_size = formData.stand_size;
     }
     if (
@@ -236,7 +234,7 @@ export class ScenarioCreationComponent
       targets.max_budget = formData.max_budget;
     }
     if (formData.max_project_count !== undefined) {
-      targets.max_project_count = formData.max_project_count
+      targets.max_project_count = formData.max_project_count;
     }
     if (Object.keys(targets).length > 0) {
       config.targets = targets;
@@ -265,14 +263,11 @@ export class ScenarioCreationComponent
     }
     payload.configuration = config;
     return payload;
-
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    console.log('savingstep?:', data);
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       const payload = this.convertFormOutputToDraftPayload(data);
-      console.log('here is the payload we are sending', payload);
       return this.savePatch(payload);
     } else {
       // if dynamic map is not able just go forward.
@@ -307,20 +302,18 @@ export class ScenarioCreationComponent
   savePatch(data: Partial<ScenarioDraftPayload>): Observable<boolean> {
     this.newScenarioState.setScenarioConfig(this.config);
 
-    return this.scenarioService
-      .patchScenarioConfig(this.scenarioId, data)
-      .pipe(
-        map((result) => {
-          if (result) {
-            return true; // Return true if the patch was successful
-          }
-          return false; // Return false if the result is not as expected
-        }),
-        catchError((e) => {
-          console.error('Patch error:', e);
-          return of(false); // Return false in case of an error
-        })
-      );
+    return this.scenarioService.patchScenarioConfig(this.scenarioId, data).pipe(
+      map((result) => {
+        if (result) {
+          return true; // Return true if the patch was successful
+        }
+        return false; // Return false if the result is not as expected
+      }),
+      catchError((e) => {
+        console.error('Patch error:', e);
+        return of(false); // Return false in case of an error
+      })
+    );
   }
 
   async onFinish() {

@@ -54,8 +54,8 @@ export class ScenarioService {
     );
   }
 
+  /** Actually runs the draft scenario after it's been configured */
   runScenario(scenarioId: number) {
-    // actually run the scenario
     const runUrl = `${this.v2Path}${scenarioId}/run/`;
     return this.http.post<Scenario>(
       runUrl,
@@ -92,15 +92,12 @@ export class ScenarioService {
     scenarioId: number,
     configPayload: Partial<ScenarioDraftPayload>
   ) {
-    console.log('saving to patch...');
     return this.http
       .patch<Scenario>(this.v2Path + scenarioId + '/draft/', configPayload, {
         withCredentials: true,
       })
       .pipe(
         catchError((error) => {
-          //TODO: handle specific field error formats in step form
-          // We probably need to coordinate backend formats / messages here
           const message =
             error.error?.global?.[0] || 'Failed to save configuration';
           throw new CreateScenarioError(
