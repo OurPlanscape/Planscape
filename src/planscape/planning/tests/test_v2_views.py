@@ -16,6 +16,7 @@ from rest_framework.test import APITestCase
 from planning.models import (
     PlanningArea,
     RegionChoices,
+    ScenarioStatus,
     ScenarioResult,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
@@ -439,6 +440,8 @@ class GetPlanningAreaTest(APITestCase):
         self.assertEqual(first_planning_area.get("scenario_count"), 3)
 
         self.scenario1_1.delete()
+        self.scenario1_2.status = ScenarioStatus.ARCHIVED
+        self.scenario1_2.save()
 
         self.client.force_authenticate(self.user)
         response = self.client.get(
@@ -450,7 +453,7 @@ class GetPlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         results = content.get("results")
         first_planning_area = results[0]
-        self.assertEqual(first_planning_area.get("scenario_count"), 2)
+        self.assertEqual(first_planning_area.get("scenario_count"), 1)
 
 
 class ListPlanningAreaSortingTest(APITestCase):
