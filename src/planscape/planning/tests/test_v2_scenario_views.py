@@ -824,7 +824,7 @@ class PatchScenarioConfigurationTest(APITransactionTestCase):
         response4 = self.client.patch(self.url, payload4, format="json")
         self.assertEqual(response4.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            b'{"stand_size":["\\"INVALID VALUE\\" is not a valid choice."]}',
+            b'{"configuration":{"stand_size":["\\"INVALID VALUE\\" is not a valid choice."]}}',
             response4.content,
         )
 
