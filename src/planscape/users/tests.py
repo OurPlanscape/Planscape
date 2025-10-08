@@ -13,12 +13,12 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planscape.tests.factories import UserFactory
 
 
-class CreateUserTest(APITransactionTestCase):
+class CreateUserTest(APITestCase):
     def test_create_user_username_is_email(self):
         payload = json.dumps(
             {
@@ -45,7 +45,7 @@ class CreateUserTest(APITransactionTestCase):
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
 
-class DeactivateUserTest(APITransactionTestCase):
+class DeactivateUserTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create(email="testuser@test.com")
         self.user.set_password("12345")
@@ -99,7 +99,7 @@ class DeactivateUserTest(APITransactionTestCase):
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
 
 
-class IsVerifiedUserTest(APITransactionTestCase):
+class IsVerifiedUserTest(APITestCase):
     def setUp(self):
         payload = json.dumps(
             {
@@ -350,7 +350,7 @@ class LoginTest(TransactionTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
 
-class ValidateMartinRequestTestCase(APITransactionTestCase):
+class ValidateMartinRequestTestCase(APITestCase):
     def setUp(self):
         Permissions.objects.get_or_create(role=Role.OWNER, permission="view_scenario")
         Permissions.objects.get_or_create(

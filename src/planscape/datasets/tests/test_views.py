@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from organizations.tests.factories import OrganizationFactory
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from datasets.models import DataLayerType, VisibilityOptions
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
@@ -12,7 +12,7 @@ from planscape.tests.factories import UserFactory
 User = get_user_model()
 
 
-class TestDataLayerViewSet(APITransactionTestCase):
+class TestDataLayerViewSet(APITestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
@@ -197,7 +197,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(10, data.get("count"))
 
 
-class TestDatasetViewSet(APITransactionTestCase):
+class TestDatasetViewSet(APITestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
@@ -266,7 +266,7 @@ class TestDatasetViewSet(APITransactionTestCase):
         self.assertEqual(datalayer.pk, data[0].get("id"))
 
 
-class TestPublicAccess(APITransactionTestCase):
+class TestPublicAccess(APITestCase):
     def setUp(self) -> None:
         self.dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
         self.datalayer = DataLayerFactory.create(dataset=self.dataset)

@@ -6,14 +6,14 @@ from organizations.tests.factories import OrganizationFactory
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
 
 
-class TestAdminDataLayerViewSet(APITransactionTestCase):
+class TestAdminDataLayerViewSet(APITestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
@@ -88,7 +88,7 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(1, DataLayer.objects.all().count())
 
 
-class TestAdminDatasetViewSet(APITransactionTestCase):
+class TestAdminDatasetViewSet(APITestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()

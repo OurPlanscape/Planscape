@@ -11,7 +11,7 @@ from impacts.permissions import (
     VIEWER_PERMISSIONS,
 )
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planning.models import (
     PlanningArea,
@@ -30,7 +30,7 @@ from planning.tests.factories import (
 from planning.tests.helpers import _load_geojson_fixture
 
 
-class CreatorsTest(APITransactionTestCase):
+class CreatorsTest(APITestCase):
     def setUp(self):
         self.geometry = {
             "type": "MultiPolygon",
@@ -132,7 +132,7 @@ class CreatorsTest(APITransactionTestCase):
         self.assertEqual(set(creator_names), {"user a", "user b", "user e"})
 
 
-class GetPlanningAreaTest(APITransactionTestCase):
+class GetPlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
 
@@ -426,7 +426,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(planning_areas["count"], 0)
 
 
-class ListPlanningAreaSortingTest(APITransactionTestCase):
+class ListPlanningAreaSortingTest(APITestCase):
     def setUp(self):
         self.user1 = UserFactory.create(username="testuser")
 
@@ -710,7 +710,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.assertListEqual(acres, sorted(acres))
 
 
-class CreatePlanningAreaTest(APITransactionTestCase):
+class CreatePlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.valid_data = {
@@ -978,7 +978,7 @@ class DeletePlanningAreaTest(APITestCase):
         self.assertEqual(PlanningArea.objects.count(), 1)
 
 
-class CreateScenariosFromUpload(APITransactionTestCase):
+class CreateScenariosFromUpload(APITestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
         self.la_geojson = json.dumps(_load_geojson_fixture("around_LA.geojson"))
@@ -1094,7 +1094,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         )
 
 
-class TreatmentGoalViewSetTest(APITransactionTestCase):
+class TreatmentGoalViewSetTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
