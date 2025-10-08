@@ -6,7 +6,15 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TransactionTestCase
+from django.test import TestCase, TransactionTestCase
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
+from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.tests.factories import StandFactory
+
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -39,14 +47,6 @@ from impacts.tests.factories import (
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
 )
-from planning.tests.factories import (
-    PlanningAreaFactory,
-    ProjectAreaFactory,
-    ScenarioFactory,
-)
-from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
-from stands.tests.factories import StandFactory
-
 from planscape.tests.factories import UserFactory
 
 
@@ -366,7 +366,7 @@ class GetCalculationMetricsWoActionTest(TransactionTestCase):
         self.assertEqual(len(matrix), total_records)
 
 
-class CalculateImpactsTest(TransactionTestCase):
+class CalculateImpactsTest(TestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
