@@ -97,10 +97,9 @@
               [scenarios]="activeScenarios"
               [plan]="plan"
               (viewScenario)="navigateToScenario($event)"
-              (scenarioDeleted)="
+              (triggerRefresh)="
                 removeScenarioFromList($event, 'activeScenarios')
-              "
-              (triggerRefresh)="fetchScenarios()"></app-scenarios-card-list>
+              "></app-scenarios-card-list>
           </ng-container>
           <div class="empty-state" *ngIf="activeScenarios.length === 0">
             No active scenarios
@@ -137,7 +136,7 @@
               [scenarios]="archivedScenarios"
               [plan]="plan"
               (viewScenario)="navigateToScenario($event)"
-              (scenarioDeleted)="
+              (triggerRefresh)="
                 removeScenarioFromList($event, 'archivedScenarios')
               "></app-scenarios-card-list>
           </ng-container>

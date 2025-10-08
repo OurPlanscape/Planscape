@@ -114,7 +114,7 @@ export class ScenariosCardListComponent {
             'Dismiss',
             SNACK_BOTTOM_NOTICE_CONFIG
           );
-          this.triggerRefresh.emit();
+          this.triggerRefresh.emit(scenario);
         },
         error: (err) => {
           this.snackbar.open(
@@ -149,7 +149,7 @@ export class ScenariosCardListComponent {
           'Dismiss',
           SNACK_BOTTOM_NOTICE_CONFIG
         );
-        this.scenarioDeleted.emit(scenario);
+        this.triggerRefresh.emit(scenario);
       },
       error: (err) => {
         this.snackbar.open(
