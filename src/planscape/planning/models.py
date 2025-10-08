@@ -22,7 +22,7 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Count, Max, Q, QuerySet
+from django.db.models import Case, Count, Max, Q, QuerySet, When, IntegerField
 from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
@@ -49,7 +49,14 @@ class PlanningAreaManager(AliveObjectsManager):
     def list_for_api(self, user: User) -> QuerySet:
         queryset = PlanningArea.objects.list_by_user(user)
         return (
-            queryset.annotate(scenario_count=Count("scenarios", distinct=True))
+            queryset.annotate(
+                scenario_count=Count(
+                    Case(
+                        When(scenarios__deleted_at__isnull=True, then=1),
+                        output_field=IntegerField(),
+                    )
+                )
+            )
             .annotate(
                 scenario_latest_updated_at=Coalesce(
                     Max("scenarios__updated_at"), "updated_at"

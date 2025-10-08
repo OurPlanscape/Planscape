@@ -425,6 +425,33 @@ class GetPlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(planning_areas["count"], 0)
 
+    def test_list_planning_areas_scenario_count(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse("api:planning:planningareas-list"),
+            {},
+            content_type="application/json",
+        )
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        results = content.get("results")
+        first_planning_area = results[0]
+        self.assertEqual(first_planning_area.get("scenario_count"), 3)
+
+        self.scenario1_1.delete()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse("api:planning:planningareas-list"),
+            {},
+            content_type="application/json",
+        )
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        results = content.get("results")
+        first_planning_area = results[0]
+        self.assertEqual(first_planning_area.get("scenario_count"), 2)
+
 
 class ListPlanningAreaSortingTest(APITestCase):
     def setUp(self):
