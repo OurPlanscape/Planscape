@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     Scenario,
@@ -29,7 +29,7 @@ from planning.tests.factories import (
 )
 
 
-class CreateScenarioTest(APITestCase):
+class CreateScenarioTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory()
         self.planning_area = PlanningAreaFactory(user=self.user)

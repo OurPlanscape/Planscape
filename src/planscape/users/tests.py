@@ -47,7 +47,7 @@ class CreateUserTest(APITestCase):
 
 class DeactivateUserTest(APITestCase):
     def setUp(self):
-        self.user = User.objects.create(email="testuser@test.com")
+        self.user = UserFactory.create(email="testuser@test.com")
         self.user.set_password("12345")
         self.user.save()
 

@@ -5,7 +5,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -55,7 +55,7 @@ class AsyncSendEmailProcessFinishedTest(TestCase):
         self.assertFalse(send_email_mock.called)
 
 
-class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
+class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())

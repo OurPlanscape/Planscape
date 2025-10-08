@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 from collaboration.models import UserObjectRole, Role
 from collaboration.services import link_invites, validate_ownership, get_permissions
+from impacts.permissions import OWNER_PERMISSIONS
 from planning.models import PlanningArea
 from django.contrib.auth.models import User
 
@@ -54,7 +55,7 @@ class TestGetPermissions(TestCase):
 
     def test_get_permissions_owner(self):
         permissions = get_permissions(self.user1, self.planning_area1)
-        self.assertGreater(7, len(permissions))
+        self.assertEqual(len(OWNER_PERMISSIONS), len(permissions))
 
     def test_get_permissions_not_owner_no_role(self):
         permissions = get_permissions(self.user1, self.planning_area2)
