@@ -39,16 +39,15 @@ BEGIN
       h.geom,
       ST_GeoHash(h.point_4326, 8) as "geohash"
     FROM hexes h
-    WHERE 
+    WHERE
       ST_Within(h.point, pa_5070) AND
-      NOT EXISTS(
-        SELECT 
-          1 
-        FROM 
-          stands_stand s 
-        WHERE 
-          h.point_4269 && s.geometry AND 
-          ST_Within(h.point_4269, s.geometry)
+      NOT EXISTS (
+        SELECT 1 FROM
+          stands_stand ss
+        WHERE
+          ss.size = stand_size AND
+          planning_area && ss.geometry AND
+          ST_Within(h.point_4269, ss.geometry)
       )
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
