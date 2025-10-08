@@ -6,7 +6,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -366,7 +366,7 @@ class GetCalculationMetricsWoActionTest(TransactionTestCase):
         self.assertEqual(len(matrix), total_records)
 
 
-class CalculateImpactsTest(TestCase):
+class CalculateImpactsTest(TransactionTestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
