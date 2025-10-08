@@ -11,11 +11,7 @@
   </ng-template>
 
   <ng-template #scenarioOk>
-    <ng-container
-      *ngIf="
-        scenarioResource.data?.scenario_result?.status === 'DRAFT';
-        else checkOrigin
-      ">
+    <ng-container *ngIf="(canViewDraft$ | async) === true; else checkOrigin">
       <app-scenario-creation></app-scenario-creation>
     </ng-container>
 

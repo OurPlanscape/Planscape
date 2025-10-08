@@ -59,6 +59,15 @@ export class ScenariosCardListComponent {
   }
 
   handleOpenScenario(row: ScenarioRow): void {
+    // ON SCENARIO_DRAFTS if you are not the creator you cannot open the scenario
+    if (
+      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+      row.user !== this.authService.currentUser()?.id &&
+      row.scenario_result &&
+      ['DRAFT'].includes(row.scenario_result.status)
+    ) {
+      return;
+    }
     if (
       row.scenario_result &&
       ['SUCCESS', 'FAILURE', 'PANIC', 'DRAFT'].includes(
