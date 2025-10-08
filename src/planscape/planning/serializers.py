@@ -532,6 +532,13 @@ class ConfigurationV3Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field in ["included_areas", "excluded_areas", "constraints"]:
+            if field not in data or data[field] is None:
+                data[field] = []
+        return data
+
 
 class UpsertConfigurationV3Serializer(ConfigurationV2Serializer):
     included_areas = serializers.ListField(
@@ -854,7 +861,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         help_text="Treatment goal of the scenario.",
     )
 
-    configuration = ConfigurationV3Serializer
+    configuration = ConfigurationV3Serializer()
 
     class Meta:
         model = Scenario
