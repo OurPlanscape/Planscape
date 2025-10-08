@@ -953,8 +953,8 @@ class DeletePlanningAreaTest(APITestCase):
             {},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 204)
-        self.assertEqual(PlanningArea.objects.count(), 0)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlanningArea.objects.count(), 1)
 
     def test_delete_planning_area_as_collaborator(self):
         self.client.force_authenticate(self.collaborator)
