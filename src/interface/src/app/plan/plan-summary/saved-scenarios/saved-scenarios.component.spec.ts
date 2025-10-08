@@ -10,7 +10,7 @@ import {
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
@@ -30,11 +30,25 @@ import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-car
 import { RouterTestingModule } from '@angular/router/testing';
 import { PlanState } from '../../plan.state';
 
-describe('SavedScenariosComponent', () => {
+// Helper to build a minimal ScenarioRow
+function makeScenario(id: number) {
+  return {
+    id,
+    name: 'S' + id,
+    planning_area: 1,
+    createdTimestamp: 100 + id,
+    configuration: { id: 1, max_budget: 200 },
+    status: 'ACTIVE',
+    geopackage_status: 'PENDING',
+    geopackage_url: null,
+  } as any;
+}
+
+describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
-  let fakeScenarioService: ScenarioService;
-  let mockPlan = new BehaviorSubject({
+  let scenarioSvcSpy: jasmine.SpyObj<ScenarioService>;
+  const mockPlan$ = new BehaviorSubject({
     ...MOCK_PLAN,
     permissions: ['add_scenario'],
     user: 1,
@@ -51,27 +65,9 @@ describe('SavedScenariosComponent', () => {
       }
     );
 
-    fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
-      'ScenarioService',
-      {
-        getScenariosForPlan: of([
-          {
-            id: 1,
-            name: 'name',
-            planning_area: 1,
-            createdTimestamp: 100,
-            configuration: {
-              id: 1,
-              max_budget: 200,
-            },
-            status: 'ACTIVE',
-            geopackage_status: 'PENDING',
-            geopackage_url: null,
-          },
-        ]),
-      },
-      {}
-    );
+    scenarioSvcSpy = jasmine.createSpyObj<ScenarioService>('ScenarioService', {
+      getScenariosForPlan: of([makeScenario(1)]), // default immediate response
+    });
 
     await TestBed.configureTestingModule({
       imports: [
@@ -96,9 +92,9 @@ describe('SavedScenariosComponent', () => {
         CurrencyPipe,
         MockProvider(AuthService),
         { provide: ActivatedRoute, useValue: fakeRoute },
-        { provide: ScenarioService, useValue: fakeScenarioService },
+        { provide: ScenarioService, useValue: scenarioSvcSpy },
         MockProvider(PlanState, {
-          currentPlan$: mockPlan,
+          currentPlan$: mockPlan$,
         }),
       ],
     }).compileComponents();
@@ -107,69 +103,173 @@ describe('SavedScenariosComponent', () => {
     component = fixture.componentInstance;
   });
 
+  afterEach(() => {
+    // reset spy between tests
+    scenarioSvcSpy.getScenariosForPlan.calls.reset();
+  });
+
   it('should create', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should call service for list of scenarios', () => {
+  it('manual fetch triggers a request and populates lists', () => {
     fixture.detectChanges();
-    expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(
+    // trigger AFTER poll subscriptions are wired up
+    component.fetchScenarios();
+
+    expect(scenarioSvcSpy.getScenariosForPlan).toHaveBeenCalledTimes(1);
+    expect(scenarioSvcSpy.getScenariosForPlan).toHaveBeenCalledWith(
       1,
       '-created_at'
     );
-    expect(component.activeScenarios.length).toEqual(1);
+    expect(component.activeScenarios.length).toBe(1);
   });
 
-  it('clicking new configuration button should call service and navigate', fakeAsync(async () => {
-    mockPlan.next({ ...MOCK_PLAN, permissions: ['add_scenario'], user: 1 });
+  it('should poll after the first interval tick (no immediate timer)', fakeAsync(() => {
+    fixture.detectChanges();
+    // no call until first interval tick
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(0);
+
+    // before first interval tick → no call
+    tick(POLLING_INTERVAL - 1);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(0);
+
+    // first poll tick
+    tick(1);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(1);
+
+    // second poll tick
+    tick(POLLING_INTERVAL);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
+
+    discardPeriodicTasks();
+  }));
+
+  it('skips poll ticks while a previous poll request is in flight (exhaustMap)', fakeAsync(() => {
+    // Call #1 (manual): immediate
+    // Call #2 (first poll): long-running
+    // Subsequent polls while #2 active should be ignored
+
+    const longPoll$ = new Subject<any[]>();
+
+    // Return specific observables in strict order per invocation
+    scenarioSvcSpy.getScenariosForPlan.and.returnValues(
+      of([makeScenario(1)]), // 1) manual
+      longPoll$.asObservable(), // 2) first poll (in-flight)
+      of([makeScenario(1)]) // 3) later poll after completion
+    );
+
+    fixture.detectChanges();
+
+    // trigger manual fetch so we have an initial state and to align call indices
+    component.fetchScenarios();
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(1); // manual
+
+    // first poll tick → starts long-running poll
+    tick(POLLING_INTERVAL);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
+
+    // another full interval passes but longPoll$ still active → NO new call
+    tick(POLLING_INTERVAL);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
+
+    // complete the long request now
+    longPoll$.next([makeScenario(1)]);
+    longPoll$.complete();
+
+    // next interval should trigger a new poll
+    tick(POLLING_INTERVAL);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(3);
+
+    discardPeriodicTasks();
+  }));
+
+  it('manual fetch preempts an in-flight poll and prevents stale overwrite', fakeAsync(() => {
+    // Sequence:
+    // 1) manual: returns [1]
+    // 2) first poll: in-flight (Subject)
+    // 3) manual trigger: returns [] and should cancel #2
+    // 4) if #2 later emits [1], it MUST NOT overwrite state
+
+    const pollSubject = new Subject<any[]>();
+
+    let callIndex = 0;
+    scenarioSvcSpy.getScenariosForPlan.and.callFake(() => {
+      callIndex++;
+      if (callIndex === 1) {
+        return of([makeScenario(1)]); // manual
+      }
+      if (callIndex === 2) {
+        return pollSubject.asObservable(); // first poll (in-flight)
+      }
+      if (callIndex === 3) {
+        return of([]); // manual refresh result after removal
+      }
+      return of([]);
+    });
+
+    fixture.detectChanges();
+
+    // Do an explicit manual fetch to populate initial list
+    component.fetchScenarios();
+
+    // After manual call
+    expect(component.activeScenarios.map((s) => s.id)).toEqual([1]);
+
+    // Let the poll start
+    tick(POLLING_INTERVAL);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
+
+    // Simulate user removal → locally remove + manual refresh
+    component.removeScenarioFromList(makeScenario(1), 'activeScenarios');
+    // manual refresh subscribes immediately
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(3);
+
+    // After manual completes, list should be []
+    expect(component.activeScenarios.length).toBe(0);
+
+    // Now, if the *old poll* emits, it should not overwrite (because it was canceled)
+    pollSubject.next([makeScenario(1)]);
+    pollSubject.complete();
+
+    // No change expected — still []
+    expect(component.activeScenarios.length).toBe(0);
+
+    discardPeriodicTasks();
+  }));
+
+  it('clicking new configuration navigates', fakeAsync(() => {
     const route = fixture.debugElement.injector.get(ActivatedRoute);
     const router = fixture.debugElement.injector.get(Router);
     spyOn(router, 'navigate');
+
     fixture.detectChanges();
 
     const button = fixture.debugElement.query(
       By.css('[data-id="new-scenario"]')
     );
     button.nativeElement.click();
+
     expect(router.navigate).toHaveBeenCalledOnceWith(['scenario'], {
       relativeTo: route,
     });
+
     flush();
     discardPeriodicTasks();
   }));
 
-  it('should poll for changes', fakeAsync(() => {
-    spyOn(component, 'fetchScenarios');
+  it('permission gating: shows New Scenario with add_scenario', () => {
+    mockPlan$.next({ ...mockPlan$.value, permissions: ['add_scenario'] });
     fixture.detectChanges();
-    expect(component.fetchScenarios).toHaveBeenCalledTimes(1);
-    tick(POLLING_INTERVAL);
-    fixture.detectChanges();
-    expect(component.fetchScenarios).toHaveBeenCalledTimes(2);
-    discardPeriodicTasks();
-  }));
-
-  it('should show New Scenario button with add_scenario permission', () => {
-    mockPlan.next({
-      ...mockPlan.value,
-      permissions: ['add_scenario', 'something_else'],
-    });
-    fixture.detectChanges();
-    const newScenarioButton = fixture.debugElement.query(
-      By.css('[data-id="new-scenario"]')
-    );
-    expect(newScenarioButton).not.toBeNull();
+    const btn = fixture.debugElement.query(By.css('[data-id="new-scenario"]'));
+    expect(btn).not.toBeNull();
   });
 
-  it('should hide New Scenario button without add_scenario permission', () => {
-    mockPlan.next({
-      ...mockPlan.value,
-      permissions: ['nothing_here'],
-    });
+  it('permission gating: hides New Scenario without add_scenario', () => {
+    mockPlan$.next({ ...mockPlan$.value, permissions: ['nothing_here'] });
     fixture.detectChanges();
-    const newScenarioButton = fixture.debugElement.query(
-      By.css('[data-id="new-scenario"]')
-    );
-    expect(newScenarioButton).toBeNull();
+    const btn = fixture.debugElement.query(By.css('[data-id="new-scenario"]'));
+    expect(btn).toBeNull();
   });
 });

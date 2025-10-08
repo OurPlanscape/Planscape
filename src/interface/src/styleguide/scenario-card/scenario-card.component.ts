@@ -60,12 +60,14 @@ export class ScenarioCardComponent {
   @Input() selected: boolean = false;
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
   @Input() userCanArchiveScenario = false;
+  @Input() userCanDeleteScenario = false;
   @Input() showTreatmentPlanButton = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
   @Output() openNewTreatment = new EventEmitter();
   @Output() toggleArchiveStatus = new EventEmitter();
+  @Output() deleteScenario = new EventEmitter();
   @Output() clicked = new EventEmitter();
 
   readonly chipsStatus: Record<
