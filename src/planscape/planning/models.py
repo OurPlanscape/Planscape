@@ -52,7 +52,11 @@ class PlanningAreaManager(AliveObjectsManager):
             queryset.annotate(
                 scenario_count=Count(
                     Case(
-                        When(scenarios__deleted_at__isnull=True, then=1),
+                        When(
+                            Q(scenarios__status=ScenarioStatus.ACTIVE)
+                            & Q(scenarios__deleted_at__isnull=True),
+                            then=1,
+                        ),
                         output_field=IntegerField(),
                     )
                 )
