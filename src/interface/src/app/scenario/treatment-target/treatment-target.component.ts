@@ -7,7 +7,7 @@ import {
   NgIf,
 } from '@angular/common';
 import { SectionComponent } from '@styleguide';
-import { ScenarioCreationPayload } from '@types';
+import { ScenarioCreation } from '@types';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { NgxMaskModule } from 'ngx-mask';
 import {
@@ -52,7 +52,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   styleUrl: './treatment-target.component.scss',
 })
 export class TreatmentTargetComponent
-  extends StepDirective<ScenarioCreationPayload>
+  extends StepDirective<ScenarioCreation>
   implements OnInit
 {
   maxAreaValue: number = 1;
