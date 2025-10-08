@@ -5,8 +5,12 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TestCase, TransactionTestCase
-from planning.tests.factories import ProjectAreaFactory
+from django.test import TransactionTestCase
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
 from stands.models import Stand
 
 from impacts.models import (
@@ -51,7 +55,7 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
         self.assertFalse(send_email_mock.called)
 
 
-class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
+class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
@@ -70,7 +74,6 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
 
     def setUp(self):
         self.stands = self.load_stands()
-        self.plan = TreatmentPlanFactory.create()
         stand_ids = [s.id for s in self.stands]
         self.project_area_geometry = MultiPolygon(
             [
@@ -79,6 +82,12 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 )["geometry"]
             ]
         )
+        self.pa = PlanningAreaFactory.create(
+            with_stands=False, geometry=self.project_area_geometry
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.pa)
+        self.plan = TreatmentPlanFactory.create(scenario=self.scenario)
+
         self.project_area = ProjectAreaFactory.create(
             scenario=self.plan.scenario, geometry=self.project_area_geometry
         )
