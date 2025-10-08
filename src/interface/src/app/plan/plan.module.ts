@@ -36,6 +36,7 @@ import { DataLayersComponent } from '../data-layers/data-layers/data-layers.comp
 import { DataLayersStateService } from '../data-layers/data-layers.state.service';
 import { MapConfigService } from '../maplibre-map/map-config.service';
 import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -83,6 +84,7 @@ import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.comp
     ResourceUnavailableComponent,
     BaseLayersComponent,
     BannerComponent,
+    MatProgressSpinnerModule,
   ],
 })
 export class PlanModule {}

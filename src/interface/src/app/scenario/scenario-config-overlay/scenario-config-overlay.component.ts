@@ -6,7 +6,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
 import { catchError, combineLatest, map } from 'rxjs';
-import { MatLegacyProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
 
@@ -19,7 +18,6 @@ import { ForsysService } from '@services/forsys.service';
     MatButtonModule,
     MatIconModule,
     ButtonComponent,
-    MatLegacyProgressSpinnerModule,
     DecimalPipe,
   ],
   templateUrl: './scenario-config-overlay.component.html',

@@ -145,3 +145,14 @@ app-section-loader {
 .banner {
   margin-top: 20px;
 }
+
+.spinner {
+  width: 100%;
+  margin: 20px auto;
+}
+
+.message {
+  text-align: center;
+  color: $color-text-dark;
+  font-size: 16px;
+}

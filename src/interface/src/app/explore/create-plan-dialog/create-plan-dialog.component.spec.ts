@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
+  MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
-  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { ExplorePlanCreateDialogComponent } from './explore-plan-create-dialog.component';
+import { CreatePlanDialogComponent } from './create-plan-dialog.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { DrawService } from '../draw.service';
+import { DrawService } from '../../maplibre-map/draw.service';
 
 describe('ExplorePlanCreateDialogComponent', () => {
-  let component: ExplorePlanCreateDialogComponent;
-  let fixture: ComponentFixture<ExplorePlanCreateDialogComponent>;
+  let component: CreatePlanDialogComponent;
+  let fixture: ComponentFixture<CreatePlanDialogComponent>;
 
   beforeEach(async () => {
     const fakeDrawService = {
@@ -32,7 +32,7 @@ describe('ExplorePlanCreateDialogComponent', () => {
         HttpClientTestingModule,
         MatDialogModule,
         MatSnackBarModule,
-        ExplorePlanCreateDialogComponent,
+        CreatePlanDialogComponent,
       ],
       providers: [
         {
@@ -44,13 +44,13 @@ describe('ExplorePlanCreateDialogComponent', () => {
           useValue: { drawService: fakeDrawService },
         },
         {
-          provide: MatDialogRef<ExplorePlanCreateDialogComponent>,
+          provide: MatDialogRef<CreatePlanDialogComponent>,
           useValue: fakeDialogRef,
         },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ExplorePlanCreateDialogComponent);
+    fixture = TestBed.createComponent(CreatePlanDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

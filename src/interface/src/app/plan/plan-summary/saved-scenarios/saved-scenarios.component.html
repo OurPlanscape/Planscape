@@ -145,14 +145,15 @@
     </mat-tab-group>
   </app-section-loader>
 
-  <sg-banner
-    [dismissible]="false"
-    type="warning"
-    *ngIf="!planningAreaIsReady && !planningAreaFailed"
-    class="banner">
-    Your Planning Area is being prepared for Scenario Planning, this will take
-    longer for larger Planning Areas.
-  </sg-banner>
+  <mat-spinner
+    diameter="32"
+    class="spinner"
+    *ngIf="!planningAreaIsReady && !planningAreaFailed"></mat-spinner>
+
+  <div *ngIf="!planningAreaIsReady && !planningAreaFailed" class="message">
+    Your Planning Area is being prepared for Scenario Planning. For larger areas
+    (over 1 million acres), this process may take up to 20 minutes.
+  </div>
 
   <sg-banner
     [dismissible]="false"
