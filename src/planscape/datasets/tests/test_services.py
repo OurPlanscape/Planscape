@@ -78,6 +78,9 @@ class TestCreateUploadURLForOrganization(TestCase):
 
 
 class TestCreateDataLayer(TestCase):
+    def setUp(self):
+        DataLayer.objects.all().delete()  # Delete hard coded datalayers
+
     @override_settings(PROVIDER="aws")
     @mock.patch(
         "datasets.services.create_upload_url_s3",

@@ -15,6 +15,7 @@ User = get_user_model()
 
 class TestAdminDataLayerViewSet(APITestCase):
     def setUp(self) -> None:
+        DataLayer.objects.all().delete()
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
         self.dataset = DatasetFactory.create()

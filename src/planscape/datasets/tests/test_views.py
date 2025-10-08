@@ -5,7 +5,7 @@ from django.urls import reverse
 from organizations.tests.factories import OrganizationFactory
 from rest_framework.test import APITestCase
 
-from datasets.models import DataLayerType, VisibilityOptions
+from datasets.models import DataLayer, DataLayerType, VisibilityOptions
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from planscape.tests.factories import UserFactory
 
@@ -14,6 +14,7 @@ User = get_user_model()
 
 class TestDataLayerViewSet(APITestCase):
     def setUp(self) -> None:
+        DataLayer.objects.all().delete()  # Delete hard coded Datalayers
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
         self.organization = OrganizationFactory.create(
@@ -222,7 +223,7 @@ class TestDatasetViewSet(APITestCase):
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+        self.assertEqual(dataset.pk, data.get("results")[1].get("id"))
 
     def test_get_by_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
@@ -231,7 +232,7 @@ class TestDatasetViewSet(APITestCase):
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+        self.assertEqual(dataset.pk, data.get("results")[1].get("id"))
 
     def test_browses_datalayers(self):
         self.client.force_authenticate(user=self.admin)

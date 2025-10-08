@@ -73,7 +73,9 @@ class TxPlanViewSetTest(APITestCase):
         collaborator = UserFactory()
         self.client.force_authenticate(user=collaborator)
 
-        _ = Permissions.objects.create(role=Role.COLLABORATOR, permission="add_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="add_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=collaborator.email,
             inviter=self.scenario.user,
@@ -102,7 +104,9 @@ class TxPlanViewSetTest(APITestCase):
         viewer = UserFactory()
         self.client.force_authenticate(user=viewer)
 
-        _ = Permissions.objects.create(role=Role.VIEWER, permission="view_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.VIEWER, permission="view_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=viewer.email,
             inviter=self.scenario.user,
@@ -234,7 +238,9 @@ class TxPlanViewSetTest(APITestCase):
         tx_plan = TreatmentPlanFactory.create(
             name="it's a bold plan",
         )
-        _ = Permissions.objects.create(role=Role.OWNER, permission="view_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.OWNER, permission="view_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=self.scenario.user.email,
             inviter=tx_plan.scenario.user,
@@ -270,7 +276,9 @@ class TxPlanViewSetTest(APITestCase):
     def test_update_tx_plan_with_role(self):
         self.client.force_authenticate(user=self.scenario.user)
         tx_plan = TreatmentPlanFactory.create(name="it's a bold plan")
-        _ = Permissions.objects.create(role=Role.OWNER, permission="edit_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.OWNER, permission="edit_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=self.scenario.user.email,
             inviter=tx_plan.scenario.user,
@@ -318,7 +326,9 @@ class TxPlanViewSetTest(APITestCase):
         tx_plan = TreatmentPlanFactory.create(
             name="it's a bold plan", scenario=orig_scenario
         )
-        _ = Permissions.objects.create(role=Role.OWNER, permission="edit_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.OWNER, permission="edit_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=self.scenario.user.email,
             inviter=tx_plan.scenario.user,
