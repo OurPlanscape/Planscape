@@ -1,36 +1,29 @@
 import json
-
 from unittest import mock
-from django.test import TransactionTestCase
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.contrib.gis.db.models import Union
 
-from impacts.tests.factories import TreatmentPlanFactory
-from impacts.tasks import (
-    async_send_email_process_finished,
-    async_calculate_impacts_for_variable_action_year,
+from datasets.models import DataLayerType
+from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.db.models import Union
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.test import TransactionTestCase
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
 )
 from stands.models import Stand
-from impacts.services import (
-    get_calculation_matrix,
-)
+
 from impacts.models import (
-    AVAILABLE_YEARS,
     ProjectAreaTreatmentResult,
     TreatmentPrescriptionAction,
     TreatmentResult,
-    ImpactVariable,
 )
-from stands.models import StandMetric
-from datasets.models import DataLayerType
-from datasets.tests.factories import DataLayerFactory
-from impacts.tests.factories import (
-    TreatmentPlanFactory,
-    TreatmentPrescriptionFactory,
+from impacts.services import get_calculation_matrix
+from impacts.tasks import (
+    async_calculate_impacts_for_variable_action_year,
+    async_send_email_process_finished,
 )
-from planning.tests.factories import (
-    ProjectAreaFactory,
-)
+from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 
 
 class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
@@ -81,7 +74,6 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
 
     def setUp(self):
         self.stands = self.load_stands()
-        self.plan = TreatmentPlanFactory.create()
         stand_ids = [s.id for s in self.stands]
         self.project_area_geometry = MultiPolygon(
             [
@@ -90,6 +82,12 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
                 )["geometry"]
             ]
         )
+        self.pa = PlanningAreaFactory.create(
+            with_stands=False, geometry=self.project_area_geometry
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.pa)
+        self.plan = TreatmentPlanFactory.create(scenario=self.scenario)
+
         self.project_area = ProjectAreaFactory.create(
             scenario=self.plan.scenario, geometry=self.project_area_geometry
         )
