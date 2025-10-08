@@ -28,11 +28,11 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "change_scenario",
+    "remove_scenario",
     "view_collaborator",
     "add_collaborator",
     "delete_collaborator",
     "change_collaborator",
-    "delete_planningarea",
 ]
 PERMISSIONS = {
     Role.OWNER: OWNER_PERMISSIONS,
