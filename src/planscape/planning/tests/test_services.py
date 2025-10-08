@@ -15,7 +15,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from fiona.crs import to_string
 from stands.models import StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
@@ -112,7 +112,7 @@ class MaxAreaProjectTest(TestCase):
         self.assertEqual(max_project_area, 500)
 
 
-class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
+class ValidateScenarioTreatmentRatioTest(TestCase):
     def setUp(self) -> None:
         # Test Polygon is 12165389.42118729 spherical acres
 
@@ -232,7 +232,7 @@ class GetSchemaTest(TestCase):
         self.assertEqual(5, len(schema["properties"]))
 
 
-class ExportToShapefileTest(TransactionTestCase):
+class ExportToShapefileTest(TestCase):
     def test_export_raises_value_error_failure(self):
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
@@ -587,7 +587,7 @@ class TestAcreageCalculation(TestCase):
         )
 
 
-class TestRemoveExcludes(TransactionTestCase):
+class TestRemoveExcludes(TestCase):
     def load_stands(self):
         with open("stands/tests/test_data/stands_over_ocean.geojson") as fp:
             geojson = json.loads(fp.read())

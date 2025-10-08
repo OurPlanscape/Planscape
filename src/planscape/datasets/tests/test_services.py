@@ -2,7 +2,7 @@ from unittest import mock
 from uuid import uuid4
 
 from django.conf import settings
-from django.test import TestCase, TransactionTestCase, override_settings
+from django.test import TestCase, override_settings
 from organizations.tests.factories import OrganizationFactory
 
 from datasets.models import Category, DataLayer, DataLayerStatus
@@ -77,7 +77,10 @@ class TestCreateUploadURLForOrganization(TestCase):
         )
 
 
-class TestCreateDataLayer(TransactionTestCase):
+class TestCreateDataLayer(TestCase):
+    def setUp(self):
+        DataLayer.objects.all().delete()  # Delete hard coded datalayers
+
     @override_settings(PROVIDER="aws")
     @mock.patch(
         "datasets.services.create_upload_url_s3",
@@ -159,7 +162,7 @@ class TestCreateDataLayer(TransactionTestCase):
             self.assertEqual(0, DataLayer.objects.all().count())
 
 
-class TestSearch(TransactionTestCase):
+class TestSearch(TestCase):
     def test_end_to_end(self):
         organization = OrganizationFactory.create(name="my cool fire org")
         dataset = DatasetFactory(

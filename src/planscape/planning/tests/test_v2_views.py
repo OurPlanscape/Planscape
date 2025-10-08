@@ -11,11 +11,12 @@ from impacts.permissions import (
     VIEWER_PERMISSIONS,
 )
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planning.models import (
     PlanningArea,
     RegionChoices,
+    ScenarioStatus,
     ScenarioResult,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
@@ -30,7 +31,7 @@ from planning.tests.factories import (
 from planning.tests.helpers import _load_geojson_fixture
 
 
-class CreatorsTest(APITransactionTestCase):
+class CreatorsTest(APITestCase):
     def setUp(self):
         self.geometry = {
             "type": "MultiPolygon",
@@ -132,7 +133,7 @@ class CreatorsTest(APITransactionTestCase):
         self.assertEqual(set(creator_names), {"user a", "user b", "user e"})
 
 
-class GetPlanningAreaTest(APITransactionTestCase):
+class GetPlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
 
@@ -425,8 +426,37 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(planning_areas["count"], 0)
 
+    def test_list_planning_areas_scenario_count(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse("api:planning:planningareas-list"),
+            {},
+            content_type="application/json",
+        )
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        results = content.get("results")
+        first_planning_area = results[0]
+        self.assertEqual(first_planning_area.get("scenario_count"), 3)
 
-class ListPlanningAreaSortingTest(APITransactionTestCase):
+        self.scenario1_1.delete()
+        self.scenario1_2.status = ScenarioStatus.ARCHIVED
+        self.scenario1_2.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse("api:planning:planningareas-list"),
+            {},
+            content_type="application/json",
+        )
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        results = content.get("results")
+        first_planning_area = results[0]
+        self.assertEqual(first_planning_area.get("scenario_count"), 1)
+
+
+class ListPlanningAreaSortingTest(APITestCase):
     def setUp(self):
         self.user1 = UserFactory.create(username="testuser")
 
@@ -710,7 +740,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.assertListEqual(acres, sorted(acres))
 
 
-class CreatePlanningAreaTest(APITransactionTestCase):
+class CreatePlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.valid_data = {
@@ -978,7 +1008,7 @@ class DeletePlanningAreaTest(APITestCase):
         self.assertEqual(PlanningArea.objects.count(), 1)
 
 
-class CreateScenariosFromUpload(APITransactionTestCase):
+class CreateScenariosFromUpload(APITestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
         self.la_geojson = json.dumps(_load_geojson_fixture("around_LA.geojson"))
@@ -1094,7 +1124,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         )
 
 
-class TreatmentGoalViewSetTest(APITransactionTestCase):
+class TreatmentGoalViewSetTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)

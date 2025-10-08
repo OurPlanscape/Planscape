@@ -1,6 +1,6 @@
 import json
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 from unittest import mock
 from collaboration.models import UserObjectRole, Role
 from collaboration.tests.factories import UserObjectRoleFactory
@@ -8,7 +8,7 @@ from planning.models import PlanningArea
 from planscape.tests.factories import UserFactory
 
 
-class CreateSharedLinkTest(APITransactionTestCase):
+class CreateSharedLinkTest(APITestCase):
     def setUp(self):
         self.user1 = UserFactory(username="testuser1")
         self.user2 = UserFactory(username="testuser2")
@@ -76,7 +76,7 @@ class CreateSharedLinkTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 401)
 
 
-class GetInvitationsTest(APITransactionTestCase):
+class GetInvitationsTest(APITestCase):
     def setUp(self):
         self.user1 = UserFactory(username="testuser1")
         self.user2 = UserFactory(username="testuser2")
@@ -120,7 +120,7 @@ class GetInvitationsTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 401)
 
 
-class UpdateCollaboratorRoleTest(APITransactionTestCase):
+class UpdateCollaboratorRoleTest(APITestCase):
     def setUp(self):
         self.owner = UserFactory()
         self.collab_user = UserFactory()
@@ -236,7 +236,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 401)
 
 
-class DeleteInviteTest(APITransactionTestCase):
+class DeleteInviteTest(APITestCase):
     def setUp(self):
         self.owner = UserFactory()
         self.collab_user = UserFactory()

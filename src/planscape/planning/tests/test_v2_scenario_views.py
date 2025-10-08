@@ -728,7 +728,7 @@ class ScenarioDetailTest(APITestCase):
 
 
 # This should test exclusively the 'V3' configuration
-class PatchScenarioConfigurationTest(APITransactionTestCase):
+class PatchScenarioConfigurationTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.other_user = UserFactory()
@@ -927,7 +927,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.assertSetEqual(set(caps), {"FORSYS", "IMPACTS"})
 
 
-class CreateScenarioForDraftsTest(APITransactionTestCase):
+class CreateScenarioForDraftsTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.user2 = UserFactory()

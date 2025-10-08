@@ -32,7 +32,7 @@ from planning.tests.factories import (
     ScenarioFactory,
 )
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
+from rest_framework.test import APIClient, APITestCase
 from stands.models import StandSizeChoices
 from stands.tests.factories import StandFactory, StandMetricFactory
 
@@ -41,7 +41,7 @@ from planscape.tests.factories import UserFactory
 User = get_user_model()
 
 
-class TxPlanViewSetTest(APITransactionTestCase):
+class TxPlanViewSetTest(APITestCase):
     def setUp(self):
         self.owner = UserFactory.create()
         self.collab_user = UserFactory.create()
@@ -73,7 +73,9 @@ class TxPlanViewSetTest(APITransactionTestCase):
         collaborator = UserFactory()
         self.client.force_authenticate(user=collaborator)
 
-        _ = Permissions.objects.create(role=Role.COLLABORATOR, permission="add_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="add_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=collaborator.email,
             inviter=self.scenario.user,
@@ -102,7 +104,9 @@ class TxPlanViewSetTest(APITransactionTestCase):
         viewer = UserFactory()
         self.client.force_authenticate(user=viewer)
 
-        _ = Permissions.objects.create(role=Role.VIEWER, permission="view_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.VIEWER, permission="view_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=viewer.email,
             inviter=self.scenario.user,
@@ -234,7 +238,9 @@ class TxPlanViewSetTest(APITransactionTestCase):
         tx_plan = TreatmentPlanFactory.create(
             name="it's a bold plan",
         )
-        _ = Permissions.objects.create(role=Role.OWNER, permission="view_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.OWNER, permission="view_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=self.scenario.user.email,
             inviter=tx_plan.scenario.user,
@@ -270,7 +276,9 @@ class TxPlanViewSetTest(APITransactionTestCase):
     def test_update_tx_plan_with_role(self):
         self.client.force_authenticate(user=self.scenario.user)
         tx_plan = TreatmentPlanFactory.create(name="it's a bold plan")
-        _ = Permissions.objects.create(role=Role.OWNER, permission="edit_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.OWNER, permission="edit_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=self.scenario.user.email,
             inviter=tx_plan.scenario.user,
@@ -318,7 +326,9 @@ class TxPlanViewSetTest(APITransactionTestCase):
         tx_plan = TreatmentPlanFactory.create(
             name="it's a bold plan", scenario=orig_scenario
         )
-        _ = Permissions.objects.create(role=Role.OWNER, permission="edit_tx_plan")
+        _ = Permissions.objects.get_or_create(
+            role=Role.OWNER, permission="edit_tx_plan"
+        )
         _ = UserObjectRole.objects.create(
             email=self.scenario.user.email,
             inviter=tx_plan.scenario.user,
@@ -389,7 +399,7 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
 
 
-class TxPlanViewSetPlotTest(APITransactionTestCase):
+class TxPlanViewSetPlotTest(APITestCase):
     def setUp(self):
         Permissions.objects.get_or_create(
             role=Role.COLLABORATOR, permission="view_tx_plan"
@@ -612,7 +622,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TxPrescriptionListTest(APITransactionTestCase):
+class TxPrescriptionListTest(APITestCase):
     def setUp(self):
         self.tx_plan = TreatmentPlanFactory.create()
         self.client.force_authenticate(user=self.tx_plan.scenario.user)
@@ -634,7 +644,7 @@ class TxPrescriptionListTest(APITransactionTestCase):
         self.assertEqual(data["count"], 2)
 
 
-class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
+class TxPrescriptionBatchDeleteTest(APITestCase):
     def setUp(self):
         self.tx_plan = TreatmentPlanFactory.create()
         self.alt_tx_plan = TreatmentPlanFactory.create()
@@ -905,7 +915,7 @@ class StandTreatmentResultsViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TxPlanNoteTest(APITransactionTestCase):
+class TxPlanNoteTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.other_user = UserFactory()

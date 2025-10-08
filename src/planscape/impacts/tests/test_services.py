@@ -6,7 +6,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TransactionTestCase
+from django.test import TestCase
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -50,7 +50,7 @@ from impacts.tests.factories import (
 from planscape.tests.factories import UserFactory
 
 
-class UpsertTreatmentPrescriptionTest(TransactionTestCase):
+class UpsertTreatmentPrescriptionTest(TestCase):
     def setUp(self):
         self.treatment_plan = TreatmentPlanFactory.create()
         self.project_area = ProjectAreaFactory.create(
@@ -120,7 +120,7 @@ class UpsertTreatmentPrescriptionTest(TransactionTestCase):
         self.assertNotEqual(rx1.pk, results[0].pk)
 
 
-class CloneTreatmentPlanTest(TransactionTestCase):
+class CloneTreatmentPlanTest(TestCase):
     def setUp(self):
         self.treatment_plan = TreatmentPlanFactory.create()
         self.project_area = ProjectAreaFactory.create(
@@ -150,7 +150,7 @@ class CloneTreatmentPlanTest(TransactionTestCase):
         self.assertNotEqual(new_plan.pk, self.treatment_plan.pk)
 
 
-class SummaryTest(TransactionTestCase):
+class SummaryTest(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create(
             configuration={"stand_size": StandSizeChoices.SMALL}
@@ -330,7 +330,7 @@ class SummaryTest(TransactionTestCase):
         self.assertAlmostEqual(precription["area_percent"], 28.57, places=2)
 
 
-class GetCalculationMatrixTest(TransactionTestCase):
+class GetCalculationMatrixTest(TestCase):
     def test_calculation_matrix_returns_correctly(self):
         years = [1, 2]
         plan = TreatmentPlanFactory.create()
@@ -349,7 +349,7 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertEqual(len(matrix), total_records)
 
 
-class GetCalculationMetricsWoActionTest(TransactionTestCase):
+class GetCalculationMetricsWoActionTest(TestCase):
     def test_calculation_matrix_wo_action_returns_correctly(self):
         years = [1, 2]
         matrix = get_calculation_matrix_wo_action(years=years)
@@ -366,7 +366,7 @@ class GetCalculationMetricsWoActionTest(TransactionTestCase):
         self.assertEqual(len(matrix), total_records)
 
 
-class CalculateImpactsTest(TransactionTestCase):
+class CalculateImpactsTest(TestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
@@ -488,7 +488,7 @@ class CalculateImpactsTest(TransactionTestCase):
             )
 
 
-class CalculateImpactsForUntreatedStandsTest(TransactionTestCase):
+class CalculateImpactsForUntreatedStandsTest(TestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
@@ -569,7 +569,7 @@ class CalculateImpactsForUntreatedStandsTest(TransactionTestCase):
             self.assertIsNotNone(treatment_result.forested_rate)
 
 
-class ImpactResultsDataPlotTest(TransactionTestCase):
+class ImpactResultsDataPlotTest(TestCase):
     def setUp(self):
         self.user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(user=self.user)
@@ -737,7 +737,7 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNotNone(item.get("relative_year"))
 
 
-class ClassificationFunctionsTest(TransactionTestCase):
+class ClassificationFunctionsTest(TestCase):
     def test_classify_flame_length(self):
         """
         Checks the numeric boundaries for flame length classification.
@@ -764,7 +764,7 @@ class ClassificationFunctionsTest(TransactionTestCase):
         self.assertEqual(classify_rate_of_spread(1500.1), "Extreme")
 
 
-class FetchTreatmentPlanDataTest(TransactionTestCase):
+class FetchTreatmentPlanDataTest(TestCase):
     def test_fetch_treatment_plan_data_returns_results(self):
         treatment_plan = TreatmentPlanFactory.create()
         _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
@@ -791,7 +791,7 @@ class FetchTreatmentPlanDataTest(TransactionTestCase):
         self.assertIn(stand2.pk, stand_ids)
 
 
-class ExportShapefileTest(TransactionTestCase):
+class ExportShapefileTest(TestCase):
     def test_export_creates_file(self):
         treatment_plan = TreatmentPlanFactory.create()
         _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
