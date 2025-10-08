@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planning.models import (
     Scenario,
@@ -29,7 +29,7 @@ from planning.tests.factories import (
 )
 
 
-class CreateScenarioTest(APITransactionTestCase):
+class CreateScenarioTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.planning_area = PlanningAreaFactory(user=self.user)
@@ -728,7 +728,7 @@ class ScenarioDetailTest(APITestCase):
 
 
 # This should test exclusively the 'V3' configuration
-class PatchScenarioConfigurationTest(APITransactionTestCase):
+class PatchScenarioConfigurationTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.other_user = UserFactory()
@@ -927,7 +927,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.assertSetEqual(set(caps), {"FORSYS", "IMPACTS"})
 
 
-class CreateScenarioForDraftsTest(APITransactionTestCase):
+class CreateScenarioForDraftsTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.user2 = UserFactory()
