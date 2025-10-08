@@ -628,6 +628,31 @@ get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
+  operator_map <- list(
+    "lt" = "<",
+    "lte" = "<=",
+    "gt" = ">",
+    "gte" = ">=",
+    "eq" = "="
+  )
+
+  if (!is.null(configuration$targets)) {
+    print("Detected v3-style configuration inside get_stand_thresholds_v2")
+
+    if (!is.null(configuration$constraints)) {
+      for (i in seq_len(length(configuration$constraints))) {
+        c <- configuration$constraints[[i]]
+        if (!is.null(c$datalayer) && !is.null(c$operator) && !is.null(c$value)) {
+          op <- operator_map[[c$operator]]
+          all_thresholds <- c(
+            all_thresholds,
+            glue::glue("datalayer_{c$datalayer} {op} {c$value}")
+          )
+        }
+      }
+    }
+  }
+
   # no changes for v2
   if (!is.null(configuration$max_slope)) {
     slope_layer <- get_datalayer_by_forsys_name(connection, "slope")
@@ -745,9 +770,32 @@ call_forsys <- function(
       # this might be configurable in the future. if it's the case, it will come in
       # the configuration variable. This also might change due the course of the
       # project as we're not sure on how many projects we will have at the beginning
-      max_treatment_area <- get_max_treatment_area(scenario)
-      number_of_projects <- get_number_of_projects(scenario)
-      min_area_project <- get_min_project_area(scenario)
+      if (!is.null(configuration$targets)) {
+        # new v3 style
+        print("Detected v3 configuration style.")
+        targets <- configuration$targets
+        max_treatment_area <- if (!is.null(targets$max_area)) {
+          targets$max_area
+        } else if (!is.null(targets$max_budget)) {
+          cost_per_acre <- get_cost_per_acre(scenario)
+          targets$max_budget / cost_per_acre
+        } else {
+          get_min_project_area(scenario) * targets$max_project_count
+        }
+
+        number_of_projects <- if (!is.null(targets$max_project_count)) {
+          targets$max_project_count
+        } else {
+          get_number_of_projects(scenario)
+        }
+
+        min_area_project <- get_min_project_area(scenario)
+      } else {
+        print("Using v2 configuration")
+        max_treatment_area <- get_max_treatment_area(scenario)
+        number_of_projects <- get_number_of_projects(scenario)
+        min_area_project <- get_min_project_area(scenario)
+      }
 
       # this scenario here happens when we don't have enough budget/area
       # for all the 10 projects. so we recalculate how many projects fits

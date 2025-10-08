@@ -854,7 +854,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         help_text="Treatment goal of the scenario.",
     )
 
-    configuration = ConfigurationV3Serializer
+    configuration = ConfigurationV3Serializer()
 
     class Meta:
         model = Scenario
