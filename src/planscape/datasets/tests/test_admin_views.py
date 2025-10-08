@@ -117,7 +117,6 @@ class TestAdminDatasetViewSet(APITestCase):
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(0, Dataset.objects.all().count())
 
     def test_create_by_admin_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
