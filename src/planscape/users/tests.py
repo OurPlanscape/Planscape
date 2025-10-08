@@ -5,7 +5,7 @@ from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
 from django.contrib.auth.models import User
 from django.core import mail
-from django.test import TransactionTestCase, override_settings
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from impacts.tests.factories import TreatmentPlanFactory
 from planning.tests.factories import (
@@ -134,7 +134,7 @@ class IsVerifiedUserTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class PasswordResetTest(TransactionTestCase):
+class PasswordResetTest(TestCase):
     def setUp(self):
         self.client.post(
             reverse("rest_register"),
@@ -259,7 +259,7 @@ class PasswordResetTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class PasswordChangeTest(TransactionTestCase):
+class PasswordChangeTest(TestCase):
     def setUp(self):
         self.client.post(
             reverse("rest_register"),
@@ -306,7 +306,7 @@ class PasswordChangeTest(TransactionTestCase):
 # Override the setting so that there is no cooldown time between verification
 # emails.
 @override_settings(ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN=0)
-class LoginTest(TransactionTestCase):
+class LoginTest(TestCase):
     def setUp(self):
         self.client.post(
             reverse("rest_register"),
