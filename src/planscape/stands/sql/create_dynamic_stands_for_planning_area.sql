@@ -30,7 +30,8 @@ BEGIN
     SELECT 
       geom, 
       ST_Centroid(geom) as "point",
-      ST_Transform(ST_Centroid(geom), 4326) as "point_4326" 
+      ST_Transform(ST_Centroid(geom), 4326) as "point_4326",
+      ST_Transform(ST_Centroid(geom), 4269) as "point_4269"
     FROM ST_HexagonGrid(side_m, envelope) AS g(geom)
   ),
   inside AS (
@@ -38,7 +39,9 @@ BEGIN
       h.geom,
       ST_GeoHash(h.point_4326, 8) as "geohash"
     FROM hexes h
-    WHERE ST_Within(h.point, pa_5070)
+    WHERE 
+      ST_Within(h.point, pa_5070) AND
+      NOT EXISTS(SELECT 1 FROM stands_stand s WHERE h.point_4269 && s.geometry AND ST_Within(h.point_4269, s.geometry))
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
   SELECT 
