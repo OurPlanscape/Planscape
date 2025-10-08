@@ -5,6 +5,7 @@ from datasets.tests.factories import DataLayerFactory
 from planning.models import PlanningArea, RegionChoices
 from planning.tests.factories import (
     PlanningAreaFactory,
+    ScenarioFactory,
     TreatmentGoalFactory,
     TreatmentGoalUsesDataLayerFactory,
 )
@@ -36,6 +37,21 @@ class PlanningAreaModelTest(TestCase):
             )
         except Exception as e:
             self.fail(f"Test failed {e}.")
+
+    def test_list_by_user_excludes_deleted_scenarios(self):
+        user = UserFactory()
+        planning_area = PlanningAreaFactory(user=user)
+
+        scenarios = ScenarioFactory.create_batch(size=5, planning_area=planning_area)
+
+        planning_areas = PlanningArea.objects.list_for_api(user)
+
+        self.assertEqual(planning_areas.first().scenario_count, 5)
+
+        scenarios[0].delete()
+        planning_areas = PlanningArea.objects.list_for_api(user)
+
+        self.assertEqual(planning_areas.first().scenario_count, 4)
 
 
 class TreatmentGoalUsesDataLayerTest(TestCase):
