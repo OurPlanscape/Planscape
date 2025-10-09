@@ -447,6 +447,37 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         budget_results = [s["max_treatment_area"] for s in response_data]
         self.assertEquals(budget_results, expected_acres_order)
 
+    def test_sort_scenario_by_reverse_acres_v3(self):
+        for acres in range(100, 105):
+            v3_config = {
+                "targets": {
+                    "max_area": acres,
+                    "estimated_cost": 2000,
+                },
+                "stand_size": "LARGE",
+            }
+            ScenarioFactory.create(
+                planning_area=self.planning_area,
+                name=f"v3_scenario_{acres}",
+                configuration=v3_config,
+                user=self.owner_user,
+            )
+
+        self.client.force_authenticate(self.owner_user)
+        query_params = {"ordering": "-acres"}
+        response = self.client.get(
+            reverse("api:planning:scenarios-list"),
+            query_params,
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        budget_results = [s["max_treatment_area"] for s in response_data]
+        expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
+        self.assertEqual(budget_results, expected_acres_order)
+
     def test_sort_scenario_by_reverse_budget(self):
         for b in range(100, 105):
             budget_conf = copy.copy(self.configuration)

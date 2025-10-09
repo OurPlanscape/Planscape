@@ -17,7 +17,6 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioFilter,
     ScenarioOrderingFilter,
-    ScenarioV3OrderingFilter,
     TreatmentGoalFilter,
 )
 from planning.models import (
@@ -322,18 +321,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         self.perform_update(serializer)
         response_serializer = ScenarioV3Serializer(instance)
         return Response(response_serializer.data)
-
-    @action(detail=False, methods=["get"], url_path="draft")
-    def list_drafts(self, request):
-        # start with all user scenarios
-        queryset = self.get_queryset()
-
-        # apply filters manually (so we don't affect the default list endpoint)
-        for backend in [DjangoFilterBackend(), ScenarioV3OrderingFilter()]:
-            queryset = backend.filter_queryset(request, queryset, self)
-
-        serializer = ListScenarioSerializer(queryset, many=True)
-        return Response(serializer.data)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
     @action(methods=["post"], detail=True, url_path="run")
