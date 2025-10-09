@@ -326,12 +326,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="draft")
     def list_drafts(self, request):
-        filter_backends = [
-            DjangoFilterBackend,
-            ScenarioV3OrderingFilter,
-        ]
-        scenarios = self.get_queryset()
-        serializer = ListScenarioV3Serializer(scenarios, many=True)
+        # start with all user scenarios
+        queryset = self.get_queryset()
+
+        # apply filters manually (so we don't affect the default list endpoint)
+        for backend in [DjangoFilterBackend(), ScenarioV3OrderingFilter()]:
+            queryset = backend.filter_queryset(request, queryset, self)
+
+        serializer = ListScenarioV3Serializer(queryset, many=True)
         return Response(serializer.data)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")

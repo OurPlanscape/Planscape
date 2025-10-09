@@ -478,7 +478,7 @@ class TargetsSerializer(serializers.Serializer):
     max_area = serializers.FloatField(
         allow_null=True,
         required=True,
-        help_text="Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.",
+        help_text="Maximum area, in acres that can be treated for the entire scenario.",
     )
     max_project_count = serializers.IntegerField(
         min_value=2,
@@ -679,8 +679,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     )
 
     max_treatment_area = serializers.ReadOnlyField(
-        source=("configuration.max_treatment_area_ratio"),
-        help_text="Max Treatment Area Ratio.",
+        source="configuration.max_treatment_area_ratio", help_text="Max Treatment Area Ratio."
     )
 
     bbox = serializers.SerializerMethodField()
@@ -734,14 +733,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         model = Scenario
 
 
-class ListScenarioV3Serializer(ListScenarioSerializer):
-    max_treatment_area = serializers.ReadOnlyField(
-        source="configuration.targets.max_area", help_text="Max Treatment Area Ratio."
-    )
 
-    class Meta(ListScenarioSerializer.Meta):
-        model = ListScenarioSerializer.Meta.model
-        fields = ListScenarioSerializer.Meta.fields
 
 
 class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
@@ -805,8 +797,16 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "treatment_goal",
         )
 
+class ListScenarioV3Serializer(ListScenarioSerializer):
+    max_treatment_area = serializers.ReadOnlyField(
+        source="configuration.targets.max_area", help_text="Max Treatment Area Ratio."
+    )
 
-class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
+    class Meta(ListScenarioSerializer.Meta):
+        model = ListScenarioSerializer.Meta.model
+        fields = ListScenarioSerializer.Meta.fields
+
+class ScenarioV3Serializer(ListScenarioV3Serializer, serializers.ModelSerializer):
     configuration = ConfigurationV3Serializer()
     geopackage_url = serializers.SerializerMethodField()
     usage_types = TreatmentGoalUsageSerializer(
@@ -891,7 +891,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
 
         instance.save(update_fields=["treatment_goal", "configuration"])
         instance.refresh_from_db()
-        serializer = ScenarioV2Serializer(instance)
+        serializer = ScenarioV3Serializer(instance)
         return serializer.data
 
 
