@@ -5,7 +5,7 @@ from celery import chord, group
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
-from django.contrib.gis.db.models.functions import Union
+from django.contrib.gis.db.models import Union as UnionOp
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
@@ -49,7 +49,7 @@ def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> 
             )
             other_planning_areas = PlanningArea.objects.exclude(
                 pk=planning_area_id
-            ).aggregate(union=Union("geometry"))
+            ).aggregate(union=UnionOp("geometry"))["union"]
             actual_geometry = planning_area.geometry.difference(other_planning_areas)
             if actual_geometry.empty:
                 log.info("No need to create stands, all good.")
