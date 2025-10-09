@@ -8,6 +8,8 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   pa_5070 geometry;
+  old_planning_areas geometry;
+  remaining_planning_area geometry;
   side_m float8;
   inserted integer := 0;
   stand_size text := upper(size_label);
@@ -23,7 +25,18 @@ BEGIN
     RAISE EXCEPTION USING MESSAGE = 'Unknown size ' || lbl;
   END IF;
 
-  pa_5070 := ST_Transform(planning_area, 5070);
+  old_planning_areas := SELECT 
+                          ST_Union(geometry) 
+                        FROM
+                          planning_planningarea pa
+                        WHERE 
+                          deleted_at IS NULL AND
+                          planning_area && pa.geometry AND
+                          ST_Intersects(planning_area, pa.geometry);
+
+  remaining_planning_area := SELECT ST_Difference(planning_area, old_planning_areas);
+
+  pa_5070 := ST_Transform(remaining_planning_area, 5070);
   envelope := ST_Envelope(pa_5070);
 
   WITH hexes AS (
