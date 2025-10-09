@@ -797,6 +797,17 @@ class PatchScenarioConfigurationTest(APITestCase):
 
     # Test sequential patches, ensure we retain values as expected
     def test_patch_scenario_incremental_updates(self):
+        from datasets.tests.factories import DataLayerFactory
+        from datasets.models import DataLayerType, GeometryType
+
+        # create valid excluded_areas with real PKs
+        excluded_layers = DataLayerFactory.create_batch(
+            3,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        excluded_ids = [layer.pk for layer in excluded_layers]
+
         payload = {
             "min_distance_from_road": 100,
             "max_project_count": 5,
@@ -819,7 +830,7 @@ class PatchScenarioConfigurationTest(APITestCase):
             "configuration": {
                 "stand_size": "MEDIUM",
                 "targets": {"estimated_cost": 22222, "max_area": 11111},
-                "excluded_areas": [1, 2, 3],
+                "excluded_areas": excluded_ids,
             }
         }
 
