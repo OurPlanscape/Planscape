@@ -41,14 +41,14 @@ BEGIN
     FROM hexes h
     WHERE
       ST_Within(h.point, pa_5070)
-      -- AND NOT EXISTS (
-      --   SELECT 1 FROM
-      --     stands_stand ss
-      --   WHERE
-      --     ss.size = stand_size AND
-      --     planning_area && ss.geometry AND
-      --     ST_Within(h.point_4269, ss.geometry)
-      -- )
+      AND NOT EXISTS (
+        SELECT 1 FROM
+          stands_stand ss
+        WHERE
+          ss.size = stand_size AND
+          planning_area && ss.geometry AND
+          ST_Within(h.point_4269, ss.geometry)
+      )
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
   SELECT 
@@ -62,5 +62,4 @@ BEGIN
 
   GET DIAGNOSTICS inserted = ROW_COUNT;
   RETURN inserted;
-END;
-$$;
+END $$;
