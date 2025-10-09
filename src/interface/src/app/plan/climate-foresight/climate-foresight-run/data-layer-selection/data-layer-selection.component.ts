@@ -47,7 +47,7 @@ import {
 } from '../../../../maplibre-map/maplibre.helper';
 import { AuthService, ClimateForesightService } from '@services';
 import { DataLayersService } from '../../../../services/data-layers.service';
-import { environment } from '../../../../../environments/environment.dev';
+import { environment } from '../../../../../environments/environment';
 import {
   buildPathTree,
   TreeNode,
