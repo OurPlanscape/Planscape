@@ -678,9 +678,13 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="configuration.max_budget", help_text="Max budget."
     )
 
-    max_treatment_area = serializers.ReadOnlyField(
-        source="configuration.max_treatment_area_ratio", help_text="Max Treatment Area Ratio."
-    )
+    def get_max_treatment_area(self, obj):
+        cfg = obj.configuration or {}
+        # Prefer v3-style (targets.max_area)
+        if "targets" in cfg and isinstance(cfg["targets"], dict):
+            return cfg["targets"].get("max_area")
+        # fallback to v2 field (max_treatment_area_ratio)
+        return cfg.get("max_treatment_area_ratio")
 
     bbox = serializers.SerializerMethodField()
 
@@ -797,16 +801,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "treatment_goal",
         )
 
-class ListScenarioV3Serializer(ListScenarioSerializer):
-    max_treatment_area = serializers.ReadOnlyField(
-        source="configuration.targets.max_area", help_text="Max Treatment Area Ratio."
-    )
-
-    class Meta(ListScenarioSerializer.Meta):
-        model = ListScenarioSerializer.Meta.model
-        fields = ListScenarioSerializer.Meta.fields
-
-class ScenarioV3Serializer(ListScenarioV3Serializer, serializers.ModelSerializer):
+class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV3Serializer()
     geopackage_url = serializers.SerializerMethodField()
     usage_types = TreatmentGoalUsageSerializer(

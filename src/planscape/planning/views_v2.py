@@ -38,7 +38,6 @@ from planning.serializers import (
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
-    ListScenarioV3Serializer,
     PlanningAreaSerializer,
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
@@ -333,7 +332,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         for backend in [DjangoFilterBackend(), ScenarioV3OrderingFilter()]:
             queryset = backend.filter_queryset(request, queryset, self)
 
-        serializer = ListScenarioV3Serializer(queryset, many=True)
+        serializer = ListScenarioSerializer(queryset, many=True)
         return Response(serializer.data)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
