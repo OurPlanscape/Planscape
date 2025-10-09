@@ -5,19 +5,10 @@ from celery import chord, group
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
+from django.contrib.gis.db.models.functions import Union
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
-from stands.models import Stand, StandSizeChoices
-from stands.services import (
-    calculate_stand_vector_stats_with_stand_list,
-    calculate_stand_zonal_stats,
-    calculate_stand_zonal_stats_api,
-    create_stands_for_geometry,
-    get_missing_stand_ids_for_datalayer_within_geometry,
-)
-from utils.cli_utils import call_forsys
-
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
@@ -32,6 +23,16 @@ from planning.services import (
     export_to_geopackage,
     get_available_stand_ids,
 )
+from stands.models import Stand, StandSizeChoices
+from stands.services import (
+    calculate_stand_vector_stats_with_stand_list,
+    calculate_stand_zonal_stats,
+    calculate_stand_zonal_stats_api,
+    create_stands_for_geometry,
+    get_missing_stand_ids_for_datalayer_within_geometry,
+)
+from utils.cli_utils import call_forsys
+
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -46,7 +47,14 @@ def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> 
             log.info(
                 f"Creating stands for {planning_area_id} for stand size {stand_size}"
             )
-            create_stands_for_geometry(planning_area.geometry, stand_size)
+            other_planning_areas = PlanningArea.objects.exclude(
+                pk=planning_area_id
+            ).aggregate(union=Union("geometry"))
+            actual_geometry = planning_area.geometry.difference(other_planning_areas)
+            if actual_geometry.empty:
+                log.info("No need to create stands, all good.")
+                return
+            create_stands_for_geometry(actual_geometry, stand_size)
         except PlanningArea.DoesNotExist:
             log.warning(f"Planning Area with {planning_area_id} does not exist.")
             raise
