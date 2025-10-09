@@ -747,23 +747,19 @@ call_forsys <- function(
       # project as we're not sure on how many projects we will have at the beginning
       if (!is.null(configuration$targets)) {
         # new v3 style
-        print("Detected v3 configuration style.")
+        print("Using v3 configuration.")
         targets <- configuration$targets
         max_treatment_area <- if (!is.null(targets$max_area)) {
           targets$max_area
-        } else if (!is.null(targets$max_budget)) {
-          cost_per_acre <- get_cost_per_acre(scenario)
-          targets$max_budget / cost_per_acre
         } else {
           get_min_project_area(scenario) * targets$max_project_count
+          print("There is no information to properly calculate max area, using {max_acres}.")
         }
-
         number_of_projects <- if (!is.null(targets$max_project_count)) {
           targets$max_project_count
         } else {
           get_number_of_projects(scenario)
         }
-
         min_area_project <- get_min_project_area(scenario)
       } else {
         print("Using v2 configuration")

@@ -478,7 +478,7 @@ class TargetsSerializer(serializers.Serializer):
     max_area = serializers.FloatField(
         allow_null=True,
         required=True,
-        help_text="Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.",
+        help_text="Maximum area, in acres that can be treated for the entire scenario.",
     )
     max_project_count = serializers.IntegerField(
         min_value=2,
@@ -678,16 +678,15 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="configuration.max_budget", help_text="Max budget."
     )
 
-    max_treatment_area = serializers.ReadOnlyField(
-        source=(
-            "configuration.targets.max_area"
-            if feature_enabled("SCENARIO_DRAFTS")
-            else "configuration.max_treatment_area_ratio"
-        ),
-        help_text="Max Treatment Area Ratio.",
-    )
+    max_treatment_area = serializers.SerializerMethodField()
 
     bbox = serializers.SerializerMethodField()
+
+    def get_max_treatment_area(self, obj):
+        cfg = obj.configuration or {}
+        if "targets" in cfg and isinstance(cfg["targets"], dict):
+            return cfg["targets"].get("max_area")
+        return cfg.get("max_treatment_area_ratio")
 
     def get_bbox(self, instance) -> Optional[List[float]]:
         geometries = list(
@@ -885,7 +884,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
 
         instance.save(update_fields=["treatment_goal", "configuration"])
         instance.refresh_from_db()
-        serializer = ScenarioV2Serializer(instance)
+        serializer = ScenarioV3Serializer(instance)
         return serializer.data
 
 

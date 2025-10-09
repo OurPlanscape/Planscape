@@ -447,6 +447,37 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         budget_results = [s["max_treatment_area"] for s in response_data]
         self.assertEquals(budget_results, expected_acres_order)
 
+    def test_sort_scenario_by_reverse_acres_v3(self):
+        for acres in range(100, 105):
+            v3_config = {
+                "targets": {
+                    "max_area": acres,
+                    "estimated_cost": 2000,
+                },
+                "stand_size": "LARGE",
+            }
+            ScenarioFactory.create(
+                planning_area=self.planning_area,
+                name=f"v3_scenario_{acres}",
+                configuration=v3_config,
+                user=self.owner_user,
+            )
+
+        self.client.force_authenticate(self.owner_user)
+        query_params = {"ordering": "-acres"}
+        response = self.client.get(
+            reverse("api:planning:scenarios-list"),
+            query_params,
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        budget_results = [s["max_treatment_area"] for s in response_data]
+        expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
+        self.assertEqual(budget_results, expected_acres_order)
+
     def test_sort_scenario_by_reverse_budget(self):
         for b in range(100, 105):
             budget_conf = copy.copy(self.configuration)
@@ -1062,3 +1093,124 @@ class RunScenarioEndpointTest(APITestCase):
         response = self.client.post(self.url, format="json")
         # get_object() hides unauthorized scenarios as 404
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class DeleteScenarioTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory.create()
+        self.owner = UserFactory.create()
+        self.collaborator = UserFactory.create()
+        self.viewer = UserFactory.create()
+
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+
+        self.creators_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.creator
+        )
+        self.owners_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.owner
+        )
+        self.collab_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.collaborator
+        )
+
+    def test_delete_creators_scenario_as_creator(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.creators_scenario.pk])
+        self.client.force_authenticate(self.creator)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_creators_scenario_as_owner(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.creators_scenario.pk])
+        self.client.force_authenticate(self.owner)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_creators_scenario_as_collaborator(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.creators_scenario.pk])
+        self.client.force_authenticate(self.collaborator)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_creators_scenario_as_viewer(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.creators_scenario.pk])
+        self.client.force_authenticate(self.viewer)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_owners_scenario_as_creator(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.owners_scenario.pk])
+        self.client.force_authenticate(self.creator)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_owners_scenario_as_owner(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.owners_scenario.pk])
+        self.client.force_authenticate(self.owner)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_owners_scenario_as_collaborator(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.owners_scenario.pk])
+        self.client.force_authenticate(self.collaborator)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_owners_scenario_as_viewer(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.owners_scenario.pk])
+        self.client.force_authenticate(self.viewer)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_collab_scenario_as_creator(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.collab_scenario.pk])
+        self.client.force_authenticate(self.creator)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_collab_scenario_as_owner(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.collab_scenario.pk])
+        self.client.force_authenticate(self.owner)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_collab_scenario_as_collaborator(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.collab_scenario.pk])
+        self.client.force_authenticate(self.collaborator)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_collab_scenario_as_viewer(self):
+        url = reverse("api:planning:scenarios-detail", args=[self.collab_scenario.pk])
+        self.client.force_authenticate(self.viewer)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 403)
