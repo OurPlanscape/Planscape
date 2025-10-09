@@ -628,31 +628,6 @@ get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
-  operator_map <- list(
-    "lt" = "<",
-    "lte" = "<=",
-    "gt" = ">",
-    "gte" = ">=",
-    "eq" = "="
-  )
-
-  if (!is.null(configuration$targets)) {
-    print("Detected v3-style configuration inside get_stand_thresholds_v2")
-
-    if (!is.null(configuration$constraints)) {
-      for (i in seq_len(length(configuration$constraints))) {
-        c <- configuration$constraints[[i]]
-        if (!is.null(c$datalayer) && !is.null(c$operator) && !is.null(c$value)) {
-          op <- operator_map[[c$operator]]
-          all_thresholds <- c(
-            all_thresholds,
-            glue::glue("datalayer_{c$datalayer} {op} {c$value}")
-          )
-        }
-      }
-    }
-  }
-
   # no changes for v2
   if (!is.null(configuration$max_slope)) {
     slope_layer <- get_datalayer_by_forsys_name(connection, "slope")

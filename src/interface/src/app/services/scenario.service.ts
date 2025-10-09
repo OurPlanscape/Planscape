@@ -76,6 +76,12 @@ export class ScenarioService {
     });
   }
 
+  deleteScenario(scenarioId: number) {
+    return this.http.delete<void>(`${this.v2Path}${scenarioId}/`, {
+      withCredentials: true,
+    });
+  }
+
   downloadCsvData(scenarioId: number): Observable<any> {
     return this.http.get(
       environment.backend_endpoint +

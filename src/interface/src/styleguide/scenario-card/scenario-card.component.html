@@ -30,16 +30,11 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu class="scenario-more-menu" #menu="matMenu">
-      <button
-        *ngIf="!hasFailed()"
-        class="more-menu-item"
-        mat-menu-item
-        (click)="openScenario.emit()">
+      <button *ngIf="!hasFailed()" mat-menu-item (click)="openScenario.emit()">
         <mat-icon class="material-symbols-outlined">folder_open</mat-icon>
         <span>Open</span>
       </button>
       <button
-        class="more-menu-item"
         mat-menu-item
         *ngIf="userCanArchiveScenario"
         (click)="toggleArchiveStatus.emit()">
@@ -50,6 +45,14 @@
           >unarchive
         </mat-icon>
         <span>{{ isArchived() ? 'Restore' : 'Archive' }}</span>
+      </button>
+      <button
+        class="delete"
+        mat-menu-item
+        *ngIf="userCanDeleteScenario"
+        (click)="deleteScenario.emit()">
+        <mat-icon class="material-symbols-outlined">delete</mat-icon>
+        <span>Delete</span>
       </button>
     </mat-menu>
   </div>

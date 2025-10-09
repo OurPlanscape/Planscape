@@ -16,8 +16,10 @@
   [selected]="isSelected(s)"
   (openNewTreatment)="openNewTreatmentDialog($event, s)"
   [userCanArchiveScenario]="userCanArchiveScenario(s)"
+  [userCanDeleteScenario]="userCanArchiveScenario(s)"
   [showTreatmentPlanButton]="
     userCanCreateTreatmentPlan() && hasTreatmentPlanCapability(s)
   "
-  (toggleArchiveStatus)="toggleScenarioStatus(s)">
+  (toggleArchiveStatus)="toggleScenarioStatus(s)"
+  (deleteScenario)="showDeleteScenarioDialog(s)">
 </sg-scenario-card>
