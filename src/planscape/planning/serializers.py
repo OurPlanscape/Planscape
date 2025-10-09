@@ -678,13 +678,15 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="configuration.max_budget", help_text="Max budget."
     )
 
+    max_treatment_area = serializers.SerializerMethodField()
+
+    bbox = serializers.SerializerMethodField()
+
     def get_max_treatment_area(self, obj):
         cfg = obj.configuration or {}
         if "targets" in cfg and isinstance(cfg["targets"], dict):
             return cfg["targets"].get("max_area")
         return cfg.get("max_treatment_area_ratio")
-
-    bbox = serializers.SerializerMethodField()
 
     def get_bbox(self, instance) -> Optional[List[float]]:
         geometries = list(
