@@ -540,7 +540,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
         return data
 
 
-class UpsertConfigurationV3Serializer(ConfigurationV2Serializer):
+class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
     included_areas = serializers.ListField(
         source="included_areas_ids",
         child=serializers.PrimaryKeyRelatedField(
@@ -860,7 +860,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         help_text="Treatment goal of the scenario.",
     )
 
-    configuration = ConfigurationV3Serializer()
+    configuration = UpsertConfigurationV3Serializer()
 
     class Meta:
         model = Scenario
