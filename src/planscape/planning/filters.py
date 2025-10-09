@@ -125,6 +125,7 @@ class ScenarioOrderingFilter(OrderingFilter):
         custom_ordering = map(get_custom_ordering, ordering)
         return queryset.order_by(*custom_ordering)
 
+
 class ScenarioFilter(filters.FilterSet):
     name = filters.CharFilter(
         lookup_expr="icontains",
