@@ -680,10 +680,8 @@ class ListScenarioSerializer(serializers.ModelSerializer):
 
     def get_max_treatment_area(self, obj):
         cfg = obj.configuration or {}
-        # Prefer v3-style (targets.max_area)
         if "targets" in cfg and isinstance(cfg["targets"], dict):
             return cfg["targets"].get("max_area")
-        # fallback to v2 field (max_treatment_area_ratio)
         return cfg.get("max_treatment_area_ratio")
 
     bbox = serializers.SerializerMethodField()
@@ -735,9 +733,6 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "capabilities",
         )
         model = Scenario
-
-
-
 
 
 class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
@@ -800,6 +795,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "configuration",
             "treatment_goal",
         )
+
 
 class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV3Serializer()
