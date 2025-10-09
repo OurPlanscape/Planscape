@@ -6,6 +6,7 @@ from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.geos import MultiPolygon
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
@@ -47,14 +48,24 @@ def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> 
             log.info(
                 f"Creating stands for {planning_area_id} for stand size {stand_size}"
             )
-            other_planning_areas = PlanningArea.objects.exclude(
-                pk=planning_area_id
+
+            other_stands = Stand.objects.filter(
+                size=stand_size, geometry__intersects=planning_area.geometry
             ).aggregate(union=UnionOp("geometry"))["union"]
-            actual_geometry = planning_area.geometry.difference(other_planning_areas)
+            actual_geometry = planning_area.geometry.difference(other_stands)
             if actual_geometry.empty:
                 log.info("No need to create stands, all good.")
                 return
-            create_stands_for_geometry(actual_geometry, stand_size)
+            match actual_geometry.geom_type:
+                case "Polygon":
+                    actual_geometry = MultiPolygon([actual_geometry])
+                case "MultiPolygon":
+                    pass
+                case _:
+                    return
+
+            for polygon in actual_geometry:
+                create_stands_for_geometry(polygon, stand_size)
         except PlanningArea.DoesNotExist:
             log.warning(f"Planning Area with {planning_area_id} does not exist.")
             raise
