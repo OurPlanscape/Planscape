@@ -1,13 +1,14 @@
 CREATE OR REPLACE FUNCTION public.generate_stands_for_planning_area(
+  planning_area_id int,
   planning_area geometry,
-  size_label text,
-  origin_x double precision,
-  origin_y double precision
+  size_label text
 ) RETURNS integer
 LANGUAGE plpgsql
 AS $$
 DECLARE
   pa_5070 geometry;
+  old_planning_areas geometry;
+  remaining_planning_area geometry;
   side_m float8;
   inserted integer := 0;
   stand_size text := upper(size_label);
@@ -23,7 +24,26 @@ BEGIN
     RAISE EXCEPTION USING MESSAGE = 'Unknown size ' || lbl;
   END IF;
 
-  pa_5070 := ST_Transform(planning_area, 5070);
+  SELECT 
+    ST_Union(geometry) 
+  INTO
+    old_planning_areas
+  FROM
+    planning_planningarea pa
+  WHERE
+    id <> planning_area_id AND
+    deleted_at IS NULL AND
+    planning_area && pa.geometry AND
+    ST_Intersects(planning_area, pa.geometry);
+
+  SELECT ST_Difference(planning_area, old_planning_areas) INTO remaining_planning_area;
+
+  IF ST_IsEmpty(remaining_planning_area) THEN
+    RAISE NOTICE 'Empty remaining planning area, no stands to calculate.';
+    RETURN 0;
+  END IF;
+
+  pa_5070 := ST_Transform(remaining_planning_area, 5070);
   envelope := ST_Envelope(pa_5070);
 
   WITH hexes AS (
@@ -41,6 +61,14 @@ BEGIN
     FROM hexes h
     WHERE
       ST_Within(h.point, pa_5070)
+      AND NOT EXISTS (
+        SELECT 1 FROM
+          stands_stand ss
+        WHERE
+          ss.size = stand_size AND
+          remaining_planning_area && ss.geometry AND
+          ST_Within(h.point_4269, ss.geometry)
+      )
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
   SELECT 
