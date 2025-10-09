@@ -197,6 +197,19 @@ describe('convertFormOutputToDraftPayload', () => {
       configuration: { excluded_areas: [555, 444, 333] },
     });
   });
+    it('should allow the user to set an empty excluded_areas array', () => {
+    const formData: Partial<ScenarioCreation> = {
+      excluded_areas: [],
+    };
+    const payloadResult = convertFormOutputToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: { excluded_areas: [] },
+    });
+  });
   it('should return the correct values for thresholds', () => {
     const formData: Partial<ScenarioCreation> = {
       min_distance_from_road: 100,

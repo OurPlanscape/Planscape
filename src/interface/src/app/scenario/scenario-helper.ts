@@ -92,7 +92,7 @@ export function convertFormOutputToDraftPayload(
   }
   if (
     formData.excluded_areas !== undefined &&
-    formData.excluded_areas?.length > 0
+    Array.isArray(formData.excluded_areas)
   ) {
     config.excluded_areas = Array.from(formData.excluded_areas);
   }
