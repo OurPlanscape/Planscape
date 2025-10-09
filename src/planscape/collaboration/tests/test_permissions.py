@@ -160,7 +160,7 @@ class PermissionsTest(TestCase):
         self.create_collaborator_record(Role.COLLABORATOR)
         self.assertFalse(ScenarioPermission.can_remove(self.invitee, self.scenario))
 
-    def test_owner_cannot_delete_scenarios(self):
+    def test_owner_can_delete_scenarios(self):
         self.create_collaborator_record(Role.OWNER)
         self.assertTrue(ScenarioPermission.can_remove(self.invitee, self.scenario))
 
