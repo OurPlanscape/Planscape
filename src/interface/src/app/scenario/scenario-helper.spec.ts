@@ -197,7 +197,7 @@ describe('convertFormOutputToDraftPayload', () => {
       configuration: { excluded_areas: [555, 444, 333] },
     });
   });
-    it('should allow the user to set an empty excluded_areas array', () => {
+  it('should allow the user to set an empty excluded_areas array', () => {
     const formData: Partial<ScenarioCreation> = {
       excluded_areas: [],
     };
