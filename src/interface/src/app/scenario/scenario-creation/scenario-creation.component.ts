@@ -13,6 +13,7 @@ import {
   skip,
   take,
   catchError,
+  finalize,
 } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
@@ -32,8 +33,6 @@ import {
   ScenarioConfigPayload,
   ScenarioDraftPayload,
   ScenarioCreation,
-  Constraint,
-  ScenarioDraftConfig,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
@@ -44,7 +43,10 @@ import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
 import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
-import { getScenarioCreationPayloadScenarioCreation } from '../scenario-helper';
+import {
+  getScenarioCreationPayloadScenarioCreation,
+  convertFormOutputToDraftPayload,
+} from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
@@ -205,69 +207,15 @@ export class ScenarioCreationComponent
     return dialogRef.afterClosed();
   }
 
-  convertFormOutputToDraftPayload(
-    formData: Partial<ScenarioCreation>
-  ): Partial<ScenarioDraftPayload> {
-    const payload: Partial<ScenarioDraftPayload> = {};
-    const config: Partial<ScenarioDraftConfig> = {};
-    if (formData.treatment_goal !== undefined) {
-      payload.treatment_goal = formData.treatment_goal;
-    }
-    if (formData.stand_size !== undefined) {
-      config.stand_size = formData.stand_size;
-    }
-    if (
-      formData.excluded_areas !== undefined &&
-      formData.excluded_areas?.length > 0
-    ) {
-      config.excluded_areas = Array.from(formData.excluded_areas);
-    }
-    // targets
-    const targets: any = {};
-    if (formData.estimated_cost !== undefined) {
-      targets.estimated_cost = formData.estimated_cost;
-    }
-    if (formData.max_area !== undefined) {
-      targets.max_area = formData.max_area;
-    }
-    if (formData.max_budget !== undefined) {
-      targets.max_budget = formData.max_budget;
-    }
-    if (formData.max_project_count !== undefined) {
-      targets.max_project_count = formData.max_project_count;
-    }
-    if (Object.keys(targets).length > 0) {
-      config.targets = targets;
-    }
-    // Constraints
-    const constraints: Constraint[] = [];
-    if (
-      formData.min_distance_from_road &&
-      this.newScenarioState.getDistanceToRoadsId()
-    ) {
-      constraints.push({
-        datalayer: this.newScenarioState.getDistanceToRoadsId(),
-        operator: 'lte',
-        value: formData.min_distance_from_road,
-      });
-    }
-    if (formData.max_slope && this.newScenarioState.getSlopeId()) {
-      constraints.push({
-        datalayer: this.newScenarioState.getSlopeId(),
-        operator: 'lt',
-        value: formData.max_slope,
-      });
-    }
-    if (constraints.length > 0) {
-      config.constraints = constraints;
-    }
-    payload.configuration = config;
-    return payload;
-  }
-
   saveStep(data: Partial<ScenarioCreation>) {
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      const payload = this.convertFormOutputToDraftPayload(data);
+      const thresholdsIdMap = new Map<string, number>();
+      thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());
+      thresholdsIdMap.set(
+        'distance_to_roads',
+        this.newScenarioState.getDistanceToRoadsId()
+      );
+      const payload = convertFormOutputToDraftPayload(data, thresholdsIdMap);
       return this.savePatch(payload);
     } else {
       // if dynamic map is not able just go forward.
@@ -326,24 +274,31 @@ export class ScenarioCreationComponent
 
   async runScenario() {
     this.awaitingBackendResponse = true;
-    this.scenarioService.runScenario(this.scenarioId).subscribe({
-      next: (result) => {
-        this.finished = true; // ensure we don't get an alert when we navigate away
-        this.router.navigate([
-          'plan',
-          result.planning_area,
-          'scenario',
-          result.id,
-        ]);
-      },
-      error: (e) => {
-        this.dialog.open(ScenarioErrorModalComponent);
-        this.awaitingBackendResponse = false;
-      },
-      complete: () => {
-        this.awaitingBackendResponse = false;
-      },
-    });
+    this.scenarioService
+      .runScenario(this.scenarioId)
+      .pipe(
+        finalize(() => {
+          this.awaitingBackendResponse = false;
+        })
+      )
+      .subscribe({
+        next: (result) => {
+          this.finished = true; // ensure we don't get an alert when we navigate away
+          this.router.navigate([
+            'plan',
+            result.planning_area,
+            'scenario',
+            result.id,
+          ]);
+        },
+        error: (e) => {
+          this.dialog.open(ScenarioErrorModalComponent);
+          this.awaitingBackendResponse = false;
+        },
+        complete: () => {
+          this.awaitingBackendResponse = false;
+        },
+      });
   }
 
   async finishFromFullConfig() {
@@ -357,18 +312,25 @@ export class ScenarioCreationComponent
     const validated = await this.refreshScenarioNameValidator();
 
     if (validated && this.form.valid) {
-      this.scenarioService.createScenarioFromSteps(payload).subscribe({
-        next: (result) => {
-          this.finished = true;
-          this.router.navigate([result.id], { relativeTo: this.route });
-        },
-        error: () => {
-          this.dialog.open(ScenarioErrorModalComponent);
-        },
-        complete: () => {
-          this.awaitingBackendResponse = false;
-        },
-      });
+      this.scenarioService
+        .createScenarioFromSteps(payload)
+        .pipe(
+          finalize(() => {
+            this.awaitingBackendResponse = false;
+          })
+        )
+        .subscribe({
+          next: (result) => {
+            this.finished = true;
+            this.router.navigate([result.id], { relativeTo: this.route });
+          },
+          error: () => {
+            this.dialog.open(ScenarioErrorModalComponent);
+          },
+          complete: () => {
+            this.awaitingBackendResponse = false;
+          },
+        });
     } else {
       this.awaitingBackendResponse = false;
     }
