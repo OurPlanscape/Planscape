@@ -6,13 +6,13 @@ import {
   catchError,
   EMPTY,
   exhaustMap,
-  interval,
   merge,
   Subject,
   switchMap,
   take,
   takeUntil,
   tap,
+  timer,
 } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -49,6 +49,7 @@ export interface ScenarioRow extends Scenario {
   styleUrls: ['./saved-scenarios.component.scss'],
 })
 export class SavedScenariosComponent implements OnInit {
+  planId: number | null = null;
   plan: Plan | null = null;
   user$ = this.authService.loggedInUser$;
 
@@ -78,15 +79,15 @@ export class SavedScenariosComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.planId = this.route.snapshot.params['planId'];
+    this.pollForChanges();
     this.planState.currentPlan$.pipe(untilDestroyed(this)).subscribe((plan) => {
-      this.plan = plan || null;
-      this.fetchScenarios();
-      this.pollForChanges();
+      this.plan = plan;
     });
   }
 
   private pollForChanges() {
-    const poll$ = interval(POLLING_INTERVAL).pipe(
+    const poll$ = timer(0, POLLING_INTERVAL).pipe(
       // start a fetch if not already running; ignore extra poll ticks while active
       exhaustMap(() =>
         this.fetchScenarios$().pipe(
@@ -118,7 +119,7 @@ export class SavedScenariosComponent implements OnInit {
 
   private fetchScenarios$() {
     return this.scenarioService
-      .getScenariosForPlan(this.plan!.id, this.sortSelection)
+      .getScenariosForPlan(this.planId!, this.sortSelection)
       .pipe(
         take(1),
         tap((scenarios) => {
