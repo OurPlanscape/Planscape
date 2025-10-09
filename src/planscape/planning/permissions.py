@@ -27,4 +27,4 @@ class ScenarioViewPermission(PlanscapePermission):
                 )
             case _:
                 # scenario filters this on the queryset
-                super().has_permission(request, view)
+                return super().has_permission(request, view)

@@ -21,9 +21,11 @@ def forwards(apps, schema_editor):
             PERMISSIONS_TO_BE_ADDED,
         )
     )
-    map(
-        lambda x: Permission.objects.filter(role=Role.OWNER, permission=x).delete(),
-        PERMISSIONS_TO_BE_REMOVED,
+    list(
+        map(
+            lambda x: Permission.objects.filter(role=Role.OWNER, permission=x).delete(),
+            PERMISSIONS_TO_BE_REMOVED,
+        )
     )
 
 
@@ -37,9 +39,11 @@ def backwards(apps, schema_editor):
             PERMISSIONS_TO_BE_REMOVED,
         )
     )
-    map(
-        lambda x: Permission.objects.filter(role=Role.OWNER, permission=x).delete(),
-        PERMISSIONS_TO_BE_ADDED,
+    list(
+        map(
+            lambda x: Permission.objects.filter(role=Role.OWNER, permission=x).delete(),
+            PERMISSIONS_TO_BE_ADDED,
+        )
     )
 
 

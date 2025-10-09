@@ -148,14 +148,15 @@ class CollaboratorPermission(CheckPermissionMixin):
 class ScenarioPermission(CheckPermissionMixin):
     @staticmethod
     def can_view(user: AbstractUser, scenario: Scenario):
-        if is_creator(user, scenario.planning_area):
-            return True
-
-        return check_for_permission(
+        planning_creator = is_creator(user, scenario.planning_area)
+        scenario_creator = is_creator(user, scenario)
+        has_permission = check_for_permission(
             user.pk,
             scenario.planning_area,
             "view_scenario",
         )
+
+        return any([planning_creator, scenario_creator, has_permission])
 
     @staticmethod
     def can_add(user: AbstractUser, scenario: Scenario):
