@@ -193,8 +193,8 @@ export class ClimateForesightRunComponent implements OnInit, OnDestroy {
       return of(false);
     }
 
-    const dataLayerConfigurations = data.dataLayers.map((layer: any) => ({
-      data_layer_id: layer.id,
+    const inputDatalayers = data.dataLayers.map((layer: any) => ({
+      datalayer: layer.id,
       favor_high: false,
       pillar: '',
     }));
@@ -202,7 +202,7 @@ export class ClimateForesightRunComponent implements OnInit, OnDestroy {
     return new Observable<boolean>((observer) => {
       this.climateForesightService
         .updateRun(this.runId!, {
-          selected_data_layers: dataLayerConfigurations,
+          input_datalayers: inputDatalayers,
         })
         .pipe(takeUntil(this.destroy$))
         .subscribe({

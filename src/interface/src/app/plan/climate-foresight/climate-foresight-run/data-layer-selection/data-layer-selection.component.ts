@@ -172,15 +172,15 @@ export class DataLayerSelectionComponent
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['run'] && this.run?.selected_data_layers) {
+    if (changes['run'] && this.run?.input_datalayers) {
       this.loadSavedDataLayers();
     }
   }
 
   private loadSavedDataLayers(): void {
-    if (this.run?.selected_data_layers) {
-      const layerIds = this.run.selected_data_layers.map(
-        (config) => config.data_layer_id
+    if (this.run?.input_datalayers) {
+      const layerIds = this.run.input_datalayers.map(
+        (config) => config.datalayer
       );
 
       this.climateForesightService.getDataLayers().subscribe({

@@ -1,7 +1,8 @@
 export type ClimateForesightRunStatus = 'draft' | 'running' | 'done';
 
-export interface DataLayerConfiguration {
-  data_layer_id: number;
+export interface InputDatalayer {
+  id?: number;
+  datalayer: number;
   favor_high: boolean;
   pillar: string;
 }
@@ -14,7 +15,7 @@ export interface ClimateForesightRun {
   created_at: string;
   creator: string;
   status: ClimateForesightRunStatus;
-  selected_data_layers?: DataLayerConfiguration[];
+  input_datalayers?: InputDatalayer[];
 }
 
 export interface CreateClimateForesightRunPayload {
