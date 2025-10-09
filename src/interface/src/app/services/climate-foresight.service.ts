@@ -73,7 +73,7 @@ export class ClimateForesightService {
    * Get data layers available for climate foresight analysis
    */
   getDataLayers(): Observable<DataLayer[]> {
-    return this.http.get<DataLayer[]>(`${this.basePath}data_layers/`, {
+    return this.http.get<DataLayer[]>(`${this.basePath}datalayers/`, {
       withCredentials: true,
     });
   }

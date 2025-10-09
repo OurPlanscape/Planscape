@@ -55,9 +55,9 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
-    def data_layers(self, request):
+    def datalayers(self, request):
         """Get data layers available for climate foresight analysis."""
-        data_layers = (
+        datalayers = (
             DataLayer.objects.filter(
                 metadata__modules__has_key="climate_foresight",
                 status=DataLayerStatus.READY,
@@ -65,5 +65,5 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
             .select_related("organization", "dataset", "category")
             .prefetch_related("styles")
         )
-        serializer = BrowseDataLayerSerializer(data_layers, many=True)
+        serializer = BrowseDataLayerSerializer(datalayers, many=True)
         return Response(serializer.data)
