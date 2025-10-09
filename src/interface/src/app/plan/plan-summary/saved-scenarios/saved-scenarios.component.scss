@@ -145,3 +145,22 @@ app-section-loader {
 .banner {
   margin-top: 20px;
 }
+
+.spinner {
+  width: 100%;
+  margin: 40px auto;
+}
+
+.pending-message {
+  text-align: center;
+
+  h4 {
+    @include standard-input-label();
+    margin: 0 0 8px;
+    color: $color-text-dark;
+  }
+
+  p {
+    color: $color-md-gray;
+  }
+}

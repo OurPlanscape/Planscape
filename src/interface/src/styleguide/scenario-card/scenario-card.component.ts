@@ -17,7 +17,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { ScenarioResultStatus } from '@types';
-import { MatLegacyProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
 import {
   StatusChipComponent,
   StatusChipStatus,
@@ -43,7 +42,6 @@ export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
     MatIconModule,
     MatMenuModule,
     MatButtonModule,
-    MatLegacyProgressSpinnerModule,
   ],
   templateUrl: './scenario-card.component.html',
   styleUrl: './scenario-card.component.scss',
