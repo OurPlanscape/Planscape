@@ -211,7 +211,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     serializer_classes = {
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
-        "retrieve": ScenarioV2Serializer,
         "partial_update": UpsertConfigurationV2Serializer,
         "create_draft": CreateScenarioV3Serializer,
     }
