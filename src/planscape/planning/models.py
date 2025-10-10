@@ -220,8 +220,7 @@ class ScenarioVersion(models.TextChoices):
     V1 = "V1", "Version 1"
     # New version (v2) treatment goals are stored in the TreatmentGoal model.
     V2 = "V2", "Version 2"
-    # New version (v3) treatment goals are stored in the TreatmentGoal model and
-    # introduces the 'draft' configuration structure (targets, constraints).
+    # New version (v3) introduces the 'draft' configuration structure (targets, constraints).
     V3 = "V3", "Version 3"
 
 
@@ -277,15 +276,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
-        models.ManyToManyField(
-            to=DataLayer,
-            through="TreatmentGoalUsesDataLayer",
-            through_fields=(
-                "treatment_goal",
-                "datalayer",
-            ),
-        )
+    datalayers: models.ManyToManyField[
+        DataLayer, models.Model
+    ] = models.ManyToManyField(
+        to=DataLayer,
+        through="TreatmentGoalUsesDataLayer",
+        through_fields=(
+            "treatment_goal",
+            "datalayer",
+        ),
     )
 
     geometry = models.MultiPolygonField(
