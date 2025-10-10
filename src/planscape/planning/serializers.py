@@ -554,7 +554,6 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         required=False,
     )
     excluded_areas = serializers.ListField(
-        source="excluded_areas_ids",
         child=serializers.PrimaryKeyRelatedField(
             queryset=DataLayer.objects.filter(
                 type=DataLayerType.VECTOR,

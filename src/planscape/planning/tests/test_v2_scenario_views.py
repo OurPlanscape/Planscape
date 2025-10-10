@@ -902,9 +902,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response2.status_code, status.HTTP_200_OK)
 
         config2 = response2.data.get("configuration", {})
-        targets = config2.get("targets")
+        targets2 = config2.get("targets")
 
-        self.assertEqual(targets.get("estimated_cost"), 22222)
+        self.assertEqual(targets2.get("estimated_cost"), 22222)
+        self.assertCountEqual(config2.get("excluded_areas"), excluded_ids)
         self.assertEqual(config2.get("stand_size"), "MEDIUM")
 
         # Send a third update to clear an array
