@@ -773,7 +773,9 @@ class PatchScenarioConfigurationTest(APITestCase):
             name="some patchable scenario",
         )
 
-        self.url = reverse("api:planning:scenarios-retrieve-or-patch-draft", args=[self.scenario.pk])
+        self.url = reverse(
+            "api:planning:scenarios-retrieve-or-patch-draft", args=[self.scenario.pk]
+        )
 
     def test_patch_scenario_configuration_success(self):
         payload = {
@@ -875,7 +877,9 @@ class PatchScenarioConfigurationTest(APITestCase):
 
     def test_patch_scenario_configuration_forbidden_for_other_user(self):
         scenario = ScenarioFactory(user=self.other_user)
-        url = reverse("api:planning:scenarios-retrieve-or-patch-draft", args=[scenario.pk])
+        url = reverse(
+            "api:planning:scenarios-retrieve-or-patch-draft", args=[scenario.pk]
+        )
         payload = {"max_budget": 100000}
 
         # Authenticate as a user who does not own the scenario
@@ -886,7 +890,9 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
-        invalid_url = reverse("api:planning:scenarios-retrieve-or-patch-draft", args=[999999])
+        invalid_url = reverse(
+            "api:planning:scenarios-retrieve-or-patch-draft", args=[999999]
+        )
         self.client.force_authenticate(self.user)
         payload = {"max_budget": 5000}
 
@@ -1239,7 +1245,9 @@ class ScenarioRetrieveDraftTest(APITestCase):
         config["targets"] = {"estimated_cost": 1000, "max_area": 2000}
         self.scenario.configuration = config
         self.scenario.save(update_fields=["configuration"])
-        self.url = reverse("api:planning:scenarios-retrieve-or-patch-draft", args=[self.scenario.pk])
+        self.url = reverse(
+            "api:planning:scenarios-retrieve-or-patch-draft", args=[self.scenario.pk]
+        )
 
     def test_retrieve_draft_success(self):
         self.client.force_authenticate(self.user)
