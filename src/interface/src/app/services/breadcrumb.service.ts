@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 export interface BreadCrumb {
   label: string;
   backUrl: string;
+  icon?: string;
 }
 
 @Injectable({

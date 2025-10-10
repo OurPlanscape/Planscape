@@ -6,7 +6,11 @@ from climate_foresight.serializers import (
     ClimateForesightRunSerializer,
     ClimateForesightRunListSerializer,
 )
-from climate_foresight.tests.factories import ClimateForesightRunFactory
+from climate_foresight.tests.factories import (
+    ClimateForesightRunFactory,
+    ClimateForesightRunInputDataLayerFactory,
+)
+from datasets.tests.factories import DataLayerFactory
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
 
@@ -155,6 +159,7 @@ class ClimateForesightRunSerializerTest(TestCase):
             "name": "New Run",
             "planning_area": self.planning_area.id,
             "status": "draft",
+            "input_datalayers": [],
         }
 
         serializer = ClimateForesightRunSerializer(
@@ -164,6 +169,101 @@ class ClimateForesightRunSerializerTest(TestCase):
         self.assertTrue(serializer.is_valid())
         instance = serializer.save()
         self.assertEqual(instance.created_by, self.user)
+
+    def test_serialize_with_input_datalayers(self):
+        run = ClimateForesightRunFactory(
+            planning_area=self.planning_area,
+            created_by=self.user,
+            name="Test Run",
+        )
+        datalayer1 = DataLayerFactory()
+        datalayer2 = DataLayerFactory()
+        ClimateForesightRunInputDataLayerFactory(
+            run=run, datalayer=datalayer1, favor_high=True, pillar="Ecological"
+        )
+        ClimateForesightRunInputDataLayerFactory(
+            run=run, datalayer=datalayer2, favor_high=False, pillar="Social"
+        )
+
+        request = self.factory.get("/")
+        request.user = self.user
+
+        serializer = ClimateForesightRunSerializer(run, context={"request": request})
+        data = serializer.data
+
+        self.assertIn("input_datalayers", data)
+        self.assertEqual(len(data["input_datalayers"]), 2)
+        self.assertEqual(data["input_datalayers"][0]["datalayer"], datalayer1.id)
+        self.assertEqual(data["input_datalayers"][0]["favor_high"], True)
+        self.assertEqual(data["input_datalayers"][0]["pillar"], "Ecological")
+
+    def test_create_with_input_datalayers(self):
+        request = self.factory.post("/")
+        request.user = self.user
+
+        datalayer1 = DataLayerFactory()
+        datalayer2 = DataLayerFactory()
+
+        data = {
+            "name": "New Run",
+            "planning_area": self.planning_area.id,
+            "status": "draft",
+            "input_datalayers": [
+                {
+                    "datalayer": datalayer1.id,
+                    "favor_high": True,
+                    "pillar": "Ecological",
+                },
+                {"datalayer": datalayer2.id, "favor_high": False, "pillar": "Economic"},
+            ],
+        }
+
+        serializer = ClimateForesightRunSerializer(
+            data=data, context={"request": request}
+        )
+
+        self.assertTrue(serializer.is_valid())
+        instance = serializer.save()
+
+        self.assertEqual(instance.input_datalayers.count(), 2)
+        input_dl1 = instance.input_datalayers.get(datalayer=datalayer1)
+        self.assertTrue(input_dl1.favor_high)
+        self.assertEqual(input_dl1.pillar, "Ecological")
+
+    def test_update_with_input_datalayers(self):
+        run = ClimateForesightRunFactory(
+            planning_area=self.planning_area, created_by=self.user
+        )
+        old_datalayer = DataLayerFactory()
+        ClimateForesightRunInputDataLayerFactory(
+            run=run, datalayer=old_datalayer, favor_high=True, pillar="Ecological"
+        )
+
+        request = self.factory.put("/")
+        request.user = self.user
+
+        new_datalayer = DataLayerFactory()
+        data = {
+            "name": run.name,
+            "planning_area": self.planning_area.id,
+            "status": run.status,
+            "input_datalayers": [
+                {"datalayer": new_datalayer.id, "favor_high": False, "pillar": "Social"}
+            ],
+        }
+
+        serializer = ClimateForesightRunSerializer(
+            run, data=data, context={"request": request}
+        )
+
+        self.assertTrue(serializer.is_valid())
+        instance = serializer.save()
+
+        self.assertEqual(instance.input_datalayers.count(), 1)
+        input_dl = instance.input_datalayers.first()
+        self.assertEqual(input_dl.datalayer, new_datalayer)
+        self.assertFalse(input_dl.favor_high)
+        self.assertEqual(input_dl.pillar, "Social")
 
 
 class ClimateForesightRunListSerializerTest(TestCase):

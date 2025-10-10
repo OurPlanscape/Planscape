@@ -4,7 +4,7 @@
       sg-button
       class="help"
       variant="icon-only"
-      icon="arrow_back"
+      [icon]="breadCrumb.icon || 'arrow_back'"
       [outlined]="true"
       [routerLink]="breadCrumb.backUrl"
       [queryParams]="params"

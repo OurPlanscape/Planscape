@@ -115,6 +115,7 @@ class ClimateForesightRunViewSetTest(APITestCase):
             "name": "New Climate Run",
             "planning_area": self.planning_area.id,
             "status": "draft",
+            "input_datalayers": [],
         }
 
         response = self.client.post(self.base_url, data, format="json")
@@ -152,6 +153,7 @@ class ClimateForesightRunViewSetTest(APITestCase):
             "name": "Updated Run Name",
             "planning_area": self.planning_area.id,
             "status": "running",
+            "input_datalayers": [],
         }
 
         response = self.client.put(url, data, format="json")

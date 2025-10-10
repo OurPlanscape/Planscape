@@ -1,6 +1,14 @@
 from django.test import TestCase
-from climate_foresight.models import ClimateForesightRun
-from climate_foresight.tests.factories import ClimateForesightRunFactory
+from django.db import IntegrityError
+from climate_foresight.models import (
+    ClimateForesightRun,
+    ClimateForesightRunInputDataLayer,
+)
+from climate_foresight.tests.factories import (
+    ClimateForesightRunFactory,
+    ClimateForesightRunInputDataLayerFactory,
+)
+from datasets.tests.factories import DataLayerFactory
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
 
@@ -151,3 +159,84 @@ class ClimateForesightRunManagerTest(TestCase):
         )
 
         self.assertEqual(pa3_runs.count(), 0)
+
+
+class ClimateForesightRunInputDataLayerTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.run = ClimateForesightRunFactory(
+            planning_area=self.planning_area, created_by=self.user
+        )
+        self.datalayer = DataLayerFactory()
+
+    def test_create_input_datalayer(self):
+        input_dl = ClimateForesightRunInputDataLayer.objects.create(
+            run=self.run,
+            datalayer=self.datalayer,
+            favor_high=True,
+            pillar="Ecological",
+        )
+
+        self.assertEqual(input_dl.run, self.run)
+        self.assertEqual(input_dl.datalayer, self.datalayer)
+        self.assertTrue(input_dl.favor_high)
+        self.assertEqual(input_dl.pillar, "Ecological")
+        self.assertIsNotNone(input_dl.created_at)
+
+    def test_string_representation(self):
+        input_dl = ClimateForesightRunInputDataLayerFactory(
+            run=self.run,
+            datalayer=self.datalayer,
+            pillar="Social",
+        )
+        expected = f"{self.run.name} - {self.datalayer.name} (Social)"
+        self.assertEqual(str(input_dl), expected)
+
+    def test_unique_constraint(self):
+        ClimateForesightRunInputDataLayerFactory(
+            run=self.run,
+            datalayer=self.datalayer,
+            favor_high=True,
+            pillar="Ecological",
+        )
+
+        with self.assertRaises(IntegrityError):
+            ClimateForesightRunInputDataLayer.objects.create(
+                run=self.run,
+                datalayer=self.datalayer,
+                favor_high=False,
+                pillar="Social",
+            )
+
+    def test_cascade_delete_with_run(self):
+        input_dl = ClimateForesightRunInputDataLayerFactory(run=self.run)
+        input_dl_id = input_dl.id
+
+        self.run.delete()
+
+        self.assertFalse(
+            ClimateForesightRunInputDataLayer.objects.filter(id=input_dl_id).exists()
+        )
+
+    def test_cascade_delete_with_datalayer(self):
+        input_dl = ClimateForesightRunInputDataLayerFactory(datalayer=self.datalayer)
+        input_dl_id = input_dl.id
+
+        # DataLayer uses soft delete, so input_datalayer should still exist
+        self.datalayer.delete()
+
+        # Input datalayer should still exist since datalayer was soft deleted
+        self.assertTrue(
+            ClimateForesightRunInputDataLayer.objects.filter(id=input_dl_id).exists()
+        )
+
+        # But the datalayer is marked as deleted
+        self.datalayer.refresh_from_db()
+        self.assertIsNotNone(self.datalayer.deleted_at)
+
+    def test_related_name_input_datalayers(self):
+        ClimateForesightRunInputDataLayerFactory(run=self.run)
+        ClimateForesightRunInputDataLayerFactory(run=self.run)
+
+        self.assertEqual(self.run.input_datalayers.count(), 2)

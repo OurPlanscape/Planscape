@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -8,6 +8,8 @@ from climate_foresight.serializers import (
     ClimateForesightRunListSerializer,
 )
 from planning.models import PlanningArea
+from datasets.models import DataLayer, DataLayerStatus
+from datasets.serializers import BrowseDataLayerSerializer
 
 
 class ClimateForesightRunViewSet(viewsets.ModelViewSet):
@@ -50,4 +52,18 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
             planning_area, request.user
         )
         serializer = ClimateForesightRunListSerializer(runs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def datalayers(self, request):
+        """Get data layers available for climate foresight analysis."""
+        datalayers = (
+            DataLayer.objects.filter(
+                metadata__modules__has_key="climate_foresight",
+                status=DataLayerStatus.READY,
+            )
+            .select_related("organization", "dataset", "category")
+            .prefetch_related("styles")
+        )
+        serializer = BrowseDataLayerSerializer(datalayers, many=True)
         return Response(serializer.data)
