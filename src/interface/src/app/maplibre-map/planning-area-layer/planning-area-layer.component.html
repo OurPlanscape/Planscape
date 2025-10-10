@@ -5,16 +5,8 @@
     type="line"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="linePaint$ | async"
+    [paint]="linePaint"
     [before]="before">
-  </mgl-layer>
-  <mgl-layer
-    id="planning-area-fill"
-    type="fill"
-    [source]="sourceName"
-    [sourceLayer]="sourceName"
-    [paint]="fillPaint$ | async"
-    before="planning-area-polygon">
   </mgl-layer>
 </ng-container>
 Z Z

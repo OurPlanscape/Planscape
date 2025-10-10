@@ -1,6 +1,10 @@
 @import 'colors';
 @import 'mixins';
 
+// map layers specific colors, see map.styles.ts
+$map_dark_gray: #646464;
+$map_light_gray: #909090;
+
 :host {
   display: block;
 }
@@ -67,17 +71,15 @@ section {
     }
   }
 
-  &.pattern-constraint {
+  &.dark-gray {
     &:before {
-      background-image: url('/assets/png/patterns/thresholds.png');
-      background-size: cover;
+      background-color: $map_dark_gray;
     }
   }
 
-  &.pattern-excluded {
+  &.light-gray {
     &:before {
-      background-image: url('/assets/png/patterns/excludes.png');
-      background-size: cover;
+      background-color: $map_light_gray;
     }
   }
 }
