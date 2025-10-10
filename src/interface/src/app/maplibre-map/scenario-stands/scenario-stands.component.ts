@@ -112,43 +112,32 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       return {
         'fill-color': [
           'case',
-          hidden,
+          ['==', ['feature-state', this.excludedKey], true],
           BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
           BASE_COLORS.dark_magenta, // otherwise
         ],
+
         'fill-outline-color': [
           'case',
-          hidden,
+          ['==', ['feature-state', this.excludedKey], true],
           BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
           BASE_COLORS.darker_magenta, // otherwise
         ],
-        'fill-opacity': this.featureStatePaint(
-          opacity * 0.7,
-          opacity * 0.9,
-          this.excludedKey
-        ),
+        'fill-opacity': [
+          'case',
+          hidden,
+          opacity * 0.6,
+          opacity * 0.9, // otherwise
+        ],
       } as any;
     })
   );
 
-  standLinePaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'line-width': 1,
-          'line-color': this.featureStatePaint(
-            BASE_COLORS.dark,
-            BASE_COLORS.dark_magenta,
-            this.excludedKey
-          ),
-          'line-opacity': opacity,
-        }) as any
-    )
-  );
-
   step$ = this.newScenarioState.stepIndex$;
-
-  showThresholdStands$ = this.step$.pipe(map((s) => s > 1));
 
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
@@ -194,18 +183,5 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       },
       key
     );
-  }
-
-  private featureStatePaint(
-    valueOn: number | string,
-    valueOff: number | string,
-    key: string
-  ) {
-    return [
-      'case',
-      ['boolean', ['feature-state', key], false],
-      valueOn,
-      valueOff,
-    ];
   }
 }
