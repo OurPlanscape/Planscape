@@ -83,6 +83,21 @@ export interface ScenarioConfigPayload {
   max_budget?: number;
 }
 
+export interface ScenarioDraftPayload {
+  configuration: {
+    excluded_areas: number[];
+    stand_size: STAND_SIZE;
+    includes: number[];
+    constraints: NamedConstraint[]; // the constraints for the scenario, like max slope or distance to roads
+    targets: {
+      estimated_cost: number;
+      max_area: number;
+      max_budget: number;
+      max_project_count: number;
+    };
+  };
+}
+
 export interface ScenarioCreationPayload {
   configuration: ScenarioConfigPayload;
   name: string;

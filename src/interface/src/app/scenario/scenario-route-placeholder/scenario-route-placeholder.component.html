@@ -4,7 +4,6 @@
       <mat-spinner diameter="24" class="loader"></mat-spinner>
     </div>
   </ng-container>
-
   <ng-template #scenarioLoaded>
     <ng-container *ngIf="scenarioResource.error; else scenarioOk">
       <app-resource-unavailable resource="scenario"></app-resource-unavailable>
@@ -12,10 +11,20 @@
   </ng-template>
 
   <ng-template #scenarioOk>
-    <app-uploaded-scenario-view
-      [scenario]="scenarioResource.data"
-      *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
-    </app-uploaded-scenario-view>
+    <ng-container
+      *ngIf="
+        scenarioResource.data?.scenario_result?.status === 'DRAFT';
+        else checkOrigin
+      ">
+      <app-scenario-creation></app-scenario-creation>
+    </ng-container>
+
+    <ng-template #checkOrigin>
+      <app-uploaded-scenario-view
+        [scenario]="scenarioResource.data"
+        *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
+      </app-uploaded-scenario-view>
+    </ng-template>
 
     <ng-template #createScenario>
       <app-view-scenario></app-view-scenario>
