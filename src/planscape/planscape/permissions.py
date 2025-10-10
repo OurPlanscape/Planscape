@@ -20,4 +20,4 @@ class PlanscapePermission(BasePermission):
             case "destroy":
                 return self.permission_set.can_remove(request.user, object)
             case _:
-                return True
+                return self.permission_set.can_view(request.user, object)

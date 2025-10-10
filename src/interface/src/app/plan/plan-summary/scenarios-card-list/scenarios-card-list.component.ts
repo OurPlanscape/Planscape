@@ -17,9 +17,9 @@ import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { CreateTreatmentDialogComponent } from '../../../scenario/create-treatment-dialog/create-treatment-dialog.component';
+import { DeleteScenarioDialogComponent } from '../../../scenario/delete-scenario-dialog/delete-scenario-dialog.component';
 import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
@@ -39,6 +39,7 @@ export class ScenariosCardListComponent {
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
   @Output() triggerRefresh = new EventEmitter<ScenarioRow>();
+  @Output() scenarioDeleted = new EventEmitter<ScenarioRow>();
 
   constructor(
     private authService: AuthService,
@@ -113,7 +114,7 @@ export class ScenariosCardListComponent {
             'Dismiss',
             SNACK_BOTTOM_NOTICE_CONFIG
           );
-          this.triggerRefresh.emit();
+          this.triggerRefresh.emit(scenario);
         },
         error: (err) => {
           this.snackbar.open(
@@ -124,6 +125,40 @@ export class ScenariosCardListComponent {
         },
       });
     }
+  }
+
+  showDeleteScenarioDialog(scenario: Scenario) {
+    if (scenario.id) {
+      this.dialog
+        .open(DeleteScenarioDialogComponent, { data: { name: scenario.name } })
+        .afterClosed()
+        .pipe(take(1))
+        .subscribe((name) => {
+          if (name) {
+            this.deleteScenario(scenario);
+          }
+        });
+    }
+  }
+
+  private deleteScenario(scenario: Scenario) {
+    this.scenarioService.deleteScenario(Number(scenario.id)).subscribe({
+      next: () => {
+        this.snackbar.open(
+          `"${scenario.name}" has been deleted`,
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
+        this.triggerRefresh.emit(scenario);
+      },
+      error: (err) => {
+        this.snackbar.open(
+          `Error: Unable to delete ${scenario.name}`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
   }
 
   openNewTreatmentDialog(event: Event, s: Scenario) {

@@ -1,14 +1,14 @@
 import json
 
 from django.contrib.auth.models import User
-from django.test import TransactionTestCase
+from django.test import TestCase
 
 from planning.models import SharedLink
 import planning.cron as cron
 from django.utils import timezone
 
 
-class DeleteOldLinksTest(TransactionTestCase):
+class DeleteOldLinksTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")

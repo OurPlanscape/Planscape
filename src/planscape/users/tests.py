@@ -5,7 +5,7 @@ from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
 from django.contrib.auth.models import User
 from django.core import mail
-from django.test import TransactionTestCase, override_settings
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from impacts.tests.factories import TreatmentPlanFactory
 from planning.tests.factories import (
@@ -13,12 +13,12 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planscape.tests.factories import UserFactory
 
 
-class CreateUserTest(APITransactionTestCase):
+class CreateUserTest(APITestCase):
     def test_create_user_username_is_email(self):
         payload = json.dumps(
             {
@@ -45,9 +45,9 @@ class CreateUserTest(APITransactionTestCase):
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
 
-class DeactivateUserTest(APITransactionTestCase):
+class DeactivateUserTest(APITestCase):
     def setUp(self):
-        self.user = User.objects.create(email="testuser@test.com")
+        self.user = UserFactory.create(email="testuser@test.com")
         self.user.set_password("12345")
         self.user.save()
 
@@ -99,7 +99,7 @@ class DeactivateUserTest(APITransactionTestCase):
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
 
 
-class IsVerifiedUserTest(APITransactionTestCase):
+class IsVerifiedUserTest(APITestCase):
     def setUp(self):
         payload = json.dumps(
             {
@@ -134,7 +134,7 @@ class IsVerifiedUserTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class PasswordResetTest(TransactionTestCase):
+class PasswordResetTest(TestCase):
     def setUp(self):
         self.client.post(
             reverse("rest_register"),
@@ -259,7 +259,7 @@ class PasswordResetTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class PasswordChangeTest(TransactionTestCase):
+class PasswordChangeTest(TestCase):
     def setUp(self):
         self.client.post(
             reverse("rest_register"),
@@ -306,7 +306,7 @@ class PasswordChangeTest(TransactionTestCase):
 # Override the setting so that there is no cooldown time between verification
 # emails.
 @override_settings(ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN=0)
-class LoginTest(TransactionTestCase):
+class LoginTest(TestCase):
     def setUp(self):
         self.client.post(
             reverse("rest_register"),
@@ -350,7 +350,7 @@ class LoginTest(TransactionTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
 
-class ValidateMartinRequestTestCase(APITransactionTestCase):
+class ValidateMartinRequestTestCase(APITestCase):
     def setUp(self):
         Permissions.objects.get_or_create(role=Role.OWNER, permission="view_scenario")
         Permissions.objects.get_or_create(

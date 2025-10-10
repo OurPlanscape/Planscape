@@ -131,6 +131,10 @@ new-treatment-btn {
   }
 }
 
+.delete, .delete .mat-icon {
+  color: $color-error;
+}
+
 ::ng-deep .scenario-more-menu .mat-icon {
   height: 20px;
   width: 20px;

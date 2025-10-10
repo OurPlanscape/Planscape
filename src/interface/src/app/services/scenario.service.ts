@@ -6,6 +6,7 @@ import {
   Constraint,
   Scenario,
   ScenarioCreationPayload,
+  ScenarioDraftPayload,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -44,9 +45,25 @@ export class ScenarioService {
 
   createScenarioFromName(name: string, planId: number) {
     const scenarioParameters = { name: name, planning_area: planId };
-    return this.http.post<Scenario>(this.v2Path, scenarioParameters, {
-      withCredentials: true,
-    });
+    return this.http.post<Scenario>(
+      this.v2Path + 'draft/',
+      scenarioParameters,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /** Actually runs the draft scenario after it's been configured */
+  runScenario(scenarioId: number) {
+    const runUrl = `${this.v2Path}${scenarioId}/run/`;
+    return this.http.post<Scenario>(
+      runUrl,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
   }
 
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
@@ -69,9 +86,36 @@ export class ScenarioService {
       );
   }
 
+  //sends a partial scenario configuration using PATCH
+  // returns success or failure, based on backend results
+  patchScenarioConfig(
+    scenarioId: number,
+    configPayload: Partial<ScenarioDraftPayload>
+  ) {
+    return this.http
+      .patch<Scenario>(this.v2Path + scenarioId + '/draft/', configPayload, {
+        withCredentials: true,
+      })
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.global?.[0] || 'Failed to save configuration';
+          throw new CreateScenarioError(
+            'Scenario Config is invalid. ' + message
+          );
+        })
+      );
+  }
+
   toggleScenarioStatus(scenarioId: number) {
     const url = this.v2Path + scenarioId + '/toggle_status/';
     return this.http.post<number>(url, {
+      withCredentials: true,
+    });
+  }
+
+  deleteScenario(scenarioId: number) {
+    return this.http.delete<void>(`${this.v2Path}${scenarioId}/`, {
       withCredentials: true,
     });
   }

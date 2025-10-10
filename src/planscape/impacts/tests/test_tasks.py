@@ -1,39 +1,32 @@
 import json
-
 from unittest import mock
-from django.test import TransactionTestCase
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.contrib.gis.db.models import Union
 
-from impacts.tests.factories import TreatmentPlanFactory
-from impacts.tasks import (
-    async_send_email_process_finished,
-    async_calculate_impacts_for_variable_action_year,
+from datasets.models import DataLayerType
+from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.db.models import Union
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.test import TestCase
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
 )
-from stands.models import Stand
-from impacts.services import (
-    get_calculation_matrix,
-)
+from stands.models import Stand, StandSizeChoices
+
 from impacts.models import (
-    AVAILABLE_YEARS,
     ProjectAreaTreatmentResult,
     TreatmentPrescriptionAction,
     TreatmentResult,
-    ImpactVariable,
 )
-from stands.models import StandMetric
-from datasets.models import DataLayerType
-from datasets.tests.factories import DataLayerFactory
-from impacts.tests.factories import (
-    TreatmentPlanFactory,
-    TreatmentPrescriptionFactory,
+from impacts.services import get_calculation_matrix
+from impacts.tasks import (
+    async_calculate_impacts_for_variable_action_year,
+    async_send_email_process_finished,
 )
-from planning.tests.factories import (
-    ProjectAreaFactory,
-)
+from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 
 
-class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
+class AsyncSendEmailProcessFinishedTest(TestCase):
     def setUp(self):
         self.treatment_plan = TreatmentPlanFactory.create()
         self.user = self.treatment_plan.created_by
@@ -62,7 +55,7 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
         self.assertFalse(send_email_mock.called)
 
 
-class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
+class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
@@ -81,7 +74,6 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
 
     def setUp(self):
         self.stands = self.load_stands()
-        self.plan = TreatmentPlanFactory.create()
         stand_ids = [s.id for s in self.stands]
         self.project_area_geometry = MultiPolygon(
             [
@@ -90,6 +82,12 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
                 )["geometry"]
             ]
         )
+        self.pa = PlanningAreaFactory.create(
+            with_stands=False, geometry=self.project_area_geometry
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.pa)
+        self.plan = TreatmentPlanFactory.create(scenario=self.scenario)
+
         self.project_area = ProjectAreaFactory.create(
             scenario=self.plan.scenario, geometry=self.project_area_geometry
         )
@@ -97,6 +95,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             [
                 TreatmentPrescriptionFactory.create(
                     treatment_plan=self.plan,
+                    project_area=self.project_area,
                     stand=stand,
                     action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
                     geometry=stand.geometry,
@@ -160,10 +159,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
 
             self.assertGreater(TreatmentResult.objects.count(), 0)
             self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
-            stands_within_project_area = self.project_area.get_stands()
-            self.assertEquals(
-                stands_within_project_area.count(), TreatmentResult.objects.count()
-            )
+            self.assertEquals(len(self.stands), TreatmentResult.objects.count())
 
     def test_trigger_task_with_delted_tx_plan(self):
         with self.settings(
@@ -220,7 +216,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
 
 
-class AsyncCalculateBaselineMetricsForVariableYearTest(TransactionTestCase):
+class AsyncCalculateBaselineMetricsForVariableYearTest(TestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())

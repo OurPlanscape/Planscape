@@ -2,7 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, ScenarioService } from '@services';
-import { interval, take } from 'rxjs';
+import {
+  catchError,
+  EMPTY,
+  exhaustMap,
+  merge,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+  timer,
+} from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
@@ -38,6 +49,7 @@ export interface ScenarioRow extends Scenario {
   styleUrls: ['./saved-scenarios.component.scss'],
 })
 export class SavedScenariosComponent implements OnInit {
+  planId: number | null = null;
   plan: Plan | null = null;
   user$ = this.authService.loggedInUser$;
 
@@ -50,6 +62,8 @@ export class SavedScenariosComponent implements OnInit {
   selectedTabIndex = 0;
   totalScenarios = 0;
   sortSelection = '-created_at';
+
+  private manualFetch$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
@@ -65,18 +79,30 @@ export class SavedScenariosComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.planId = this.route.snapshot.params['planId'];
+    this.pollForChanges();
     this.planState.currentPlan$.pipe(untilDestroyed(this)).subscribe((plan) => {
-      this.plan = plan || null;
-      this.fetchScenarios();
-      this.pollForChanges();
+      this.plan = plan;
     });
   }
 
   private pollForChanges() {
-    // we might want to check if any scenario is still pending in order to poll
-    interval(POLLING_INTERVAL)
-      .pipe(untilDestroyed(this))
-      .subscribe(() => this.fetchScenarios());
+    const poll$ = timer(0, POLLING_INTERVAL).pipe(
+      // start a fetch if not already running; ignore extra poll ticks while active
+      exhaustMap(() =>
+        this.fetchScenarios$().pipe(
+          // if a manual trigger arrives, cancel the current poll request
+          takeUntil(this.manualFetch$)
+        )
+      )
+    );
+
+    const manual$ = this.manualFetch$.pipe(
+      // run immediately; ignore extra manual clicks while one is running
+      switchMap(() => this.fetchScenarios$())
+    );
+
+    merge(poll$, manual$).pipe(untilDestroyed(this)).subscribe();
   }
 
   handleSortChange() {
@@ -88,30 +114,51 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   fetchScenarios(): void {
-    this.scenarioService
-      .getScenariosForPlan(this.plan?.id!, this.sortSelection)
-      .pipe(take(1))
-      .subscribe((scenarios) => {
-        this.totalScenarios = scenarios.length;
-        this.scenariosForUser = this.showOnlyMyScenarios
-          ? scenarios.filter((s) => s.user === this.user$.value?.id)
-          : scenarios;
-        const fetchedActiveScenarios = this.scenariosForUser.filter(
-          (s) => s.status === 'ACTIVE'
-        );
-        if (this.listsDiffer(this.activeScenarios, fetchedActiveScenarios)) {
-          this.activeScenarios = fetchedActiveScenarios;
-        }
-        const fetchedArchivedScenarios = this.scenariosForUser.filter(
-          (s) => s.status === 'ARCHIVED'
-        );
-        if (
-          this.listsDiffer(this.archivedScenarios, fetchedArchivedScenarios)
-        ) {
-          this.archivedScenarios = fetchedArchivedScenarios;
-        }
-        this.loading = false;
-      });
+    this.manualFetch$.next();
+  }
+
+  private fetchScenarios$() {
+    return this.scenarioService
+      .getScenariosForPlan(this.planId!, this.sortSelection)
+      .pipe(
+        take(1),
+        tap((scenarios) => {
+          this.totalScenarios = scenarios.length;
+
+          this.scenariosForUser = this.showOnlyMyScenarios
+            ? scenarios.filter((s) => s.user === this.user$.value?.id)
+            : scenarios;
+
+          const fetchedActive = this.scenariosForUser.filter(
+            (s) => s.status === 'ACTIVE'
+          );
+          if (this.listsDiffer(this.activeScenarios, fetchedActive)) {
+            this.activeScenarios = fetchedActive;
+          }
+
+          const fetchedArchived = this.scenariosForUser.filter(
+            (s) => s.status === 'ARCHIVED'
+          );
+          if (this.listsDiffer(this.archivedScenarios, fetchedArchived)) {
+            this.archivedScenarios = fetchedArchived;
+          }
+          this.loading = false;
+        }),
+
+        // keep the poller alive on errors
+        catchError(() => {
+          this.loading = false;
+          return EMPTY;
+        })
+      );
+  }
+
+  removeScenarioFromList(
+    scenario: Scenario,
+    list: 'activeScenarios' | 'archivedScenarios'
+  ) {
+    this[list] = this[list].filter((s) => s.id !== scenario.id);
+    this.fetchScenarios();
   }
 
   get canAddScenarioForPlan(): boolean {
@@ -163,18 +210,14 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    if (clickedScenario.scenario_result?.status === 'DRAFT') {
-      // TODO: navigate to new draft scenario - TBD
-    } else {
-      this.breadcrumbService.updateBreadCrumb({
-        label: 'Scenario: ' + clickedScenario.name,
-        backUrl: getPlanPath(clickedScenario.planning_area),
-      });
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Scenario: ' + clickedScenario.name,
+      backUrl: getPlanPath(clickedScenario.planning_area),
+    });
 
-      this.router.navigate(['scenario', clickedScenario.id], {
-        relativeTo: this.route,
-      });
-    }
+    this.router.navigate(['scenario', clickedScenario.id], {
+      relativeTo: this.route,
+    });
   }
 
   tabChange(data: { index: number; tab: MatTab }) {

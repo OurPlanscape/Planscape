@@ -8,7 +8,7 @@ from impacts.permissions import (
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from planning.geometry import coerce_geojson
@@ -18,7 +18,7 @@ from planning.tests.test_geometry import read_shapefile, to_geometry
 from planscape.tests.factories import UserFactory
 
 
-class CreatePlanningAreaTest(APITransactionTestCase):
+class CreatePlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
 
@@ -277,7 +277,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class CreatePlanningAreaNoRegionV1Test(APITransactionTestCase):
+class CreatePlanningAreaNoRegionV1Test(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.geometry = {
@@ -309,7 +309,7 @@ class CreatePlanningAreaNoRegionV1Test(APITransactionTestCase):
         self.assertIsNone(pa.region_name)
 
 
-class DeletePlanningAreaTest(APITransactionTestCase):
+class DeletePlanningAreaTest(APITestCase):
     def setUp(self):
         self.owner_user = UserFactory.create(
             username="area_owner",
@@ -466,7 +466,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(PlanningArea.objects.count(), 3)
 
 
-class UpdatePlanningAreaTest(APITransactionTestCase):
+class UpdatePlanningAreaTest(APITestCase):
     def setUp(self):
         self.owner_user = UserFactory.create(
             username="area_owner",
@@ -896,7 +896,7 @@ class GetPlanningAreaTest(APITestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
 
-class ListPlanningAreaTest(APITransactionTestCase):
+class ListPlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
         self.geometry = {

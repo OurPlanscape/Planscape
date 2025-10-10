@@ -12,7 +12,8 @@ import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { UploadPlanningAreaBoxComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
 import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
-import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/explore-plan-create-dialog.component';
+import { CreatePlanDialogComponent } from '../../explore/create-plan-dialog/create-plan-dialog.component';
+
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -103,7 +104,7 @@ export class ExploreModesToggleComponent {
   }
 
   private openPlanCreateDialog() {
-    return this.dialog.open(ExplorePlanCreateDialogComponent, {
+    return this.dialog.open(CreatePlanDialogComponent, {
       maxWidth: '560px',
       data: {
         drawService: this.drawService,

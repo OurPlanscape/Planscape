@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.urls import reverse
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planning.models import UserPrefs
 from planning.tests.test_geometry import read_shapefile, to_geometry
@@ -66,7 +66,7 @@ class ValidatePlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class CreateSharedLinkTest(APITransactionTestCase):
+class CreateSharedLinkTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -201,7 +201,7 @@ class CreateSharedLinkTest(APITransactionTestCase):
         self.assertEqual(shared_link_response.status_code, 404)
 
 
-class UserPrefsViewTest(APITransactionTestCase):
+class UserPrefsViewTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", password="12345")
         self.userpref = UserPrefs.objects.create(
@@ -372,7 +372,7 @@ class UserPrefsViewTest(APITransactionTestCase):
         )
 
 
-class EmptyUserPrefsAPIViewTest(APITransactionTestCase):
+class EmptyUserPrefsAPIViewTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", password="12345")
 

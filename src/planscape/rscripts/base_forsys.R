@@ -745,9 +745,28 @@ call_forsys <- function(
       # this might be configurable in the future. if it's the case, it will come in
       # the configuration variable. This also might change due the course of the
       # project as we're not sure on how many projects we will have at the beginning
-      max_treatment_area <- get_max_treatment_area(scenario)
-      number_of_projects <- get_number_of_projects(scenario)
-      min_area_project <- get_min_project_area(scenario)
+      if (!is.null(configuration$targets)) {
+        # new v3 style
+        print("Using v3 configuration.")
+        targets <- configuration$targets
+        max_treatment_area <- if (!is.null(targets$max_area)) {
+          targets$max_area
+        } else {
+          get_min_project_area(scenario) * targets$max_project_count
+          print("There is no information to properly calculate max area, using {max_acres}.")
+        }
+        number_of_projects <- if (!is.null(targets$max_project_count)) {
+          targets$max_project_count
+        } else {
+          get_number_of_projects(scenario)
+        }
+        min_area_project <- get_min_project_area(scenario)
+      } else {
+        print("Using v2 configuration")
+        max_treatment_area <- get_max_treatment_area(scenario)
+        number_of_projects <- get_number_of_projects(scenario)
+        min_area_project <- get_min_project_area(scenario)
+      }
 
       # this scenario here happens when we don't have enough budget/area
       # for all the 10 projects. so we recalculate how many projects fits

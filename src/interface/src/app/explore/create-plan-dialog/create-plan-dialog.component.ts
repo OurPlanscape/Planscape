@@ -7,7 +7,6 @@ import {
 } from '@styleguide';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DrawService } from '../draw.service';
 import { PlanService } from '@services';
 import {
   FormControl,
@@ -23,9 +22,10 @@ import { AnalyticsService } from '@services/analytics.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { NgIf } from '@angular/common';
+import type { DrawService } from '../../maplibre-map/draw.service';
 
 @Component({
-  selector: 'app-confirm-exit-drawing-modal',
+  selector: 'app-create-plan-dialog-component',
   standalone: true,
   imports: [
     NgIf,
@@ -37,10 +37,10 @@ import { NgIf } from '@angular/common';
     InputFieldComponent,
     ModalInfoComponent,
   ],
-  templateUrl: './explore-plan-create-dialog.component.html',
-  styleUrl: './explore-plan-create-dialog.component.scss',
+  templateUrl: './create-plan-dialog.component.html',
+  styleUrl: './create-plan-dialog.component.scss',
 })
-export class ExplorePlanCreateDialogComponent {
+export class CreatePlanDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any, // Access the passed data
     private planService: PlanService,
@@ -54,7 +54,7 @@ export class ExplorePlanCreateDialogComponent {
     planName: new FormControl('', Validators.required),
   });
   drawService: DrawService;
-  readonly dialogRef = inject(MatDialogRef<ExplorePlanCreateDialogComponent>);
+  readonly dialogRef = inject(MatDialogRef<CreatePlanDialogComponent>);
   submitting = false;
 
   cancel(): void {

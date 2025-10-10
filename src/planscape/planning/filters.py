@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.gis.db.models.functions import Area, Transform
 from django.db.models import (
     ExpressionWrapper,
+    Q,
     F,
     FloatField,
     Func,
@@ -98,7 +99,9 @@ def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
 
 class ScenarioOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
-        if feature_enabled("SCENARIO_DRAFTS"):
+        has_v3_targets = queryset.filter(Q(configuration__has_key="targets")).exists()
+
+        if has_v3_targets:
             ordering_dict = {
                 "acres": "configuration__targets__max_area",
                 "completed_at": "results__completed_at",
