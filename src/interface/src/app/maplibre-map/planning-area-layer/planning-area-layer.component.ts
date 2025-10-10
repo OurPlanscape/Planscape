@@ -44,17 +44,6 @@ export class PlanningAreaLayerComponent {
     )
   );
 
-  fillPaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'fill-color': this.backgroundColor,
-          'fill-opacity': opacity * 0.15,
-          'fill-opacity-transition': { duration: 0 },
-        }) as any
-    )
-  );
-
   constructor(
     private planState: PlanState,
     private mapConfigState: MapConfigState,
@@ -68,12 +57,6 @@ export class PlanningAreaLayerComponent {
   );
 
   readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
-
-  readonly backgroundColor = this.featureService.isFeatureEnabled(
-    'DYNAMIC_SCENARIO_MAP'
-  )
-    ? BASE_COLORS.blue
-    : BASE_COLORS.white_light_blue;
 
   readonly lineColor = this.featureService.isFeatureEnabled(
     'DYNAMIC_SCENARIO_MAP'
