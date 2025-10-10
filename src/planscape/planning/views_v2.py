@@ -280,6 +280,13 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             or self.serializer_class
         )
 
+    @extend_schema(description="Retrieve a Scenario draft (V3 configuration).")
+    @action(detail=True, methods=["get"], url_path="draft")
+    def retrieve_draft(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = ScenarioV3Serializer(instance, context={"request": request})
+        return Response(serializer.data)
+
     @extend_schema(description="Toggle status of a Scenario.")
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, pk=None):
