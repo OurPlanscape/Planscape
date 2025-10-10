@@ -633,6 +633,27 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("version"), ScenarioVersion.V2)
 
+        configuration["targets"] = [
+            {
+                "max_area": 5000.0,
+                "max_project_count": 5,
+                "estimated_cost": 100.0,
+            }
+        ]
+        self.scenario.configuration = configuration
+        self.scenario.save()
+
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={"pk": self.scenario.pk},
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("version"), ScenarioVersion.V3)
+
 
 class ScenarioDetailTest(APITestCase):
     def setUp(self):
@@ -774,7 +795,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         )
 
         self.url = reverse(
-            "api:planning:scenarios-retrieve-or-patch-draft", args=[self.scenario.pk]
+            "api:planning:scenarios-patch-draft", args=[self.scenario.pk]
         )
 
     def test_patch_scenario_configuration_success(self):
@@ -878,7 +899,7 @@ class PatchScenarioConfigurationTest(APITestCase):
     def test_patch_scenario_configuration_forbidden_for_other_user(self):
         scenario = ScenarioFactory(user=self.other_user)
         url = reverse(
-            "api:planning:scenarios-retrieve-or-patch-draft", args=[scenario.pk]
+            "api:planning:scenarios-patch-draft", args=[scenario.pk]
         )
         payload = {"max_budget": 100000}
 
@@ -891,7 +912,7 @@ class PatchScenarioConfigurationTest(APITestCase):
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
         invalid_url = reverse(
-            "api:planning:scenarios-retrieve-or-patch-draft", args=[999999]
+            "api:planning:scenarios-patch-draft", args=[999999]
         )
         self.client.force_authenticate(self.user)
         payload = {"max_budget": 5000}
@@ -1229,47 +1250,3 @@ class DeleteScenarioTest(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, 403)
-
-
-class ScenarioRetrieveDraftTest(APITestCase):
-    def setUp(self):
-        self.user = UserFactory()
-        self.other_user = UserFactory()
-        self.planning_area = PlanningAreaFactory(user=self.user)
-        self.scenario = ScenarioFactory(
-            planning_area=self.planning_area,
-            user=self.user,
-            name="draft_scenario_test",
-        )
-        config = self.scenario.configuration or {}
-        config["targets"] = {"estimated_cost": 1000, "max_area": 2000}
-        self.scenario.configuration = config
-        self.scenario.save(update_fields=["configuration"])
-        self.url = reverse(
-            "api:planning:scenarios-retrieve-or-patch-draft", args=[self.scenario.pk]
-        )
-
-    def test_retrieve_draft_success(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        data = response.json()
-        self.assertEqual(data.get("id"), self.scenario.id)
-        self.assertIn("configuration", data)
-        self.assertIn("planning_area", data)
-        self.assertIn("targets", data.get("configuration", {}))
-        self.assertIn("stand_size", data.get("configuration", {}))
-
-    def test_retrieve_draft_unauthenticated(self):
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertJSONEqual(
-            response.content,
-            {"detail": "Authentication credentials were not provided."},
-        )
-
-    def test_retrieve_draft_forbidden_for_other_user(self):
-        self.client.force_authenticate(self.other_user)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

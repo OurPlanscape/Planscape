@@ -220,7 +220,9 @@ class ScenarioVersion(models.TextChoices):
     V1 = "V1", "Version 1"
     # New version (v2) treatment goals are stored in the TreatmentGoal model.
     V2 = "V2", "Version 2"
-
+    # New version (v3) treatment goals are stored in the TreatmentGoal model and 
+    # introduces the 'draft' configuration structure (targets, constraints).
+    V3 = "V3", "Version 3"
 
 class TreatmentGoalCategory(models.TextChoices):
     FIRE_DYNAMICS = "FIRE_DYNAMICS", "Fire Dynamics"
@@ -470,7 +472,10 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     @cached_property
     def version(self):
-        if self.configuration and self.configuration.get("question_id") is not None:
+        cfg = self.configuration or {}
+        if "targets" in cfg:
+            return ScenarioVersion.V3
+        if "question_id" in cfg:
             return ScenarioVersion.V1
         return ScenarioVersion.V2
 
