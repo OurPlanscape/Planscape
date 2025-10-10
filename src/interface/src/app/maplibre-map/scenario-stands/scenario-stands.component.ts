@@ -23,8 +23,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 })
 export class ScenarioStandsComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
-
-  readonly COLORS = BASE_COLORS;
   readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
@@ -115,14 +113,15 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
         'fill-color': [
           'case',
           hidden,
-          '#646464', // if excluded OR constrained
+          BASE_COLORS.dark_gray,
           BASE_COLORS.dark_magenta, // otherwise
         ],
-        'fill-outline-color': this.featureStatePaint(
-          BASE_COLORS.dark,
-          BASE_COLORS.darker_magenta,
-          this.excludedKey
-        ),
+        'fill-outline-color': [
+          'case',
+          hidden,
+          BASE_COLORS.dark_gray,
+          BASE_COLORS.darker_magenta, // otherwise
+        ],
         'fill-opacity': this.featureStatePaint(
           opacity * 0.7,
           opacity * 0.9,
