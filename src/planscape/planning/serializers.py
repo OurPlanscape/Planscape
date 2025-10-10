@@ -870,16 +870,10 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             instance.treatment_goal = validated_data["treatment_goal"]
 
         if "configuration" in validated_data:
-            current_cfg = instance.configuration or {}
-            new_cfg = validated_data["configuration"]
-
-            merged_cfg = {**current_cfg, **new_cfg}
-            instance.configuration = merged_cfg
-            config_serializer = ConfigurationV3Serializer(data=merged_cfg)
-            if config_serializer.is_valid():
-                instance.configuration = config_serializer.validated_data
-            else:
-                raise serializers.ValidationError(config_serializer.errors)
+            instance.configuration = {
+                **(instance.configuration or {}),
+                **validated_data["configuration"],
+            }
 
         instance.save(update_fields=["treatment_goal", "configuration"])
         instance.refresh_from_db()
