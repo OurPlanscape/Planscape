@@ -248,40 +248,25 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             headers=headers,
         )
 
-    @extend_schema(description="Create, retrieve, or patch a Scenario draft (V3 configuration).")
-    @action(detail=True, methods=["get", "post", "patch"], url_path="drafts")
-    def drafts(self, request, *args, **kwargs):
-        if request.method == "POST":
-            serializer = CreateScenarioV3Serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            scenario = create_scenario(**serializer.validated_data)
+    @action(detail=False, methods=["post"], url_path="draft")
+    def create_draft(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        scenario = create_scenario(**serializer.validated_data)
 
-            if hasattr(scenario, "result_status"):
-                scenario.results.status = ScenarioResultStatus.DRAFT
-                scenario.results.save()
-                scenario.refresh_from_db()
+        if hasattr(scenario, "result_status"):
+            scenario.results.status = ScenarioResultStatus.DRAFT
+            scenario.results.save()
+            scenario.refresh_from_db()
 
-            out_serializer = ScenarioV3Serializer(instance=scenario)
-            headers = self.get_success_headers(out_serializer.data)
-            return Response(
-                out_serializer.data,
-                status=status.HTTP_201_CREATED,
-                headers=headers,
-            )
+        out_serializer = ScenarioV3Serializer(instance=scenario)
 
-        if request.method == "GET":
-            instance = self.get_object()
-            serializer = ScenarioV3Serializer(instance, context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        if request.method == "PATCH":
-            instance = self.get_object()
-            serializer = PatchScenarioV3Serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            response_serializer = ScenarioV3Serializer(instance)
-            return Response(response_serializer.data, status=status.HTTP_200_OK)
-
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
 
     def perform_destroy(self, instance):
         delete_scenario(
@@ -325,6 +310,24 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         self.perform_update(serializer)
         response_serializer = ScenarioV2Serializer(instance)
         return Response(response_serializer.data)
+
+    @extend_schema(description="Retrieve or patch a Scenario draft (V3 configuration).")
+    @action(detail=True, methods=["get", "patch"], url_path="drafts")
+    def retrieve_or_patch_draft(self, request, *args, **kwargs):
+        if request.method == "GET":
+            instance = self.get_object()
+            serializer = ScenarioV3Serializer(instance, context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if request.method == "PATCH":
+            instance = self.get_object()
+            serializer = PatchScenarioV3Serializer(
+                instance, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            response_serializer = ScenarioV3Serializer(instance)
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
     @action(methods=["post"], detail=True, url_path="run")
