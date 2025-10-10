@@ -1,6 +1,7 @@
 import {
   getGroupedGoals,
   getScenarioCreationPayloadScenarioCreation,
+  convertFormOutputToDraftPayload,
 } from './scenario-helper';
 import { ScenarioCreation, ScenarioGoal } from '@types';
 
@@ -160,5 +161,95 @@ describe('getGroupedGoals', () => {
 
     expect(result['Group Pretty']).toBeDefined();
     expect(result['Group Pretty']['Category Pretty']).toEqual([goal]);
+  });
+});
+
+describe('convertFormOutputToDraftPayload', () => {
+  const mockThresholdIds = new Map<string, number>([
+    ['distance_to_roads', 100],
+    ['slope', 200],
+  ]);
+  it('should return the correct values for standsize and tx goal', () => {
+    const formData: Partial<ScenarioCreation> = {
+      stand_size: 'LARGE',
+      treatment_goal: 1,
+    };
+    const payloadResult = convertFormOutputToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: { stand_size: 'LARGE' },
+      treatment_goal: 1,
+    });
+  });
+  it('should return the correct values for excluded areas', () => {
+    const formData: Partial<ScenarioCreation> = {
+      excluded_areas: [555, 444, 333],
+    };
+    const payloadResult = convertFormOutputToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: { excluded_areas: [555, 444, 333] },
+    });
+  });
+  it('should allow the user to set an empty excluded_areas array', () => {
+    const formData: Partial<ScenarioCreation> = {
+      excluded_areas: [],
+    };
+    const payloadResult = convertFormOutputToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: { excluded_areas: [] },
+    });
+  });
+  it('should return the correct values for thresholds', () => {
+    const formData: Partial<ScenarioCreation> = {
+      min_distance_from_road: 100,
+      max_slope: 99,
+    };
+    const payloadResult = convertFormOutputToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+    expect(Array.isArray(payloadResult.configuration?.constraints)).toBe(true);
+    expect(payloadResult.configuration?.constraints).toContain({
+      datalayer: 100,
+      operator: 'lte',
+      value: 100,
+    });
+    expect(payloadResult.configuration?.constraints).toContain({
+      datalayer: 200,
+      operator: 'lt',
+      value: 99,
+    });
+  });
+  it('should return the correct values for targets with maxarea', () => {
+    const formData: Partial<ScenarioCreation> = {
+      max_area: 43999,
+      max_project_count: 10,
+      estimated_cost: 2470,
+    };
+    const payloadResult = convertFormOutputToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: {
+        targets: {
+          estimated_cost: 2470,
+          max_area: 43999,
+          max_project_count: 10,
+        },
+      },
+    });
   });
 });
