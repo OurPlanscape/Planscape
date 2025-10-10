@@ -25,6 +25,7 @@ from planning.models import (
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
+    ScenarioVersion,
     TreatmentGoal,
     TreatmentGoalGroup,
 )
@@ -210,7 +211,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     serializer_classes = {
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
-        "retrieve": ScenarioV2Serializer,
         "partial_update": UpsertConfigurationV2Serializer,
         "create_draft": CreateScenarioV3Serializer,
     }
@@ -232,6 +232,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             .prefetch_related("project_areas")
         )
         return qs
+
+    @extend_schema(description="Retrieve a Scenario (auto-detects version).")
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        version = getattr(instance, "version", None)
+        if version == ScenarioVersion.V3:
+            serializer = ScenarioV3Serializer(instance, context={"request": request})
+        else:
+            serializer = ScenarioV2Serializer(instance, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(description="Create a Scenario.")
     def create(self, request, *args, **kwargs):
