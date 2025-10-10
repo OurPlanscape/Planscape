@@ -2,7 +2,6 @@ import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
-  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
@@ -19,13 +18,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 @Component({
   selector: 'app-scenario-stands',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    LayerComponent,
-    NgIf,
-    VectorSourceComponent,
-    ImageComponent,
-  ],
+  imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './scenario-stands.component.html',
 })
 export class ScenarioStandsComponent implements OnInit, OnDestroy {
@@ -119,14 +112,22 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       ] as const;
 
       return {
-        'fill-opacity-transition': { duration: 0 },
         'fill-color': [
           'case',
           hidden,
-          'transparent', // if excluded OR constrained
+          '#646464', // if excluded OR constrained
           BASE_COLORS.dark_magenta, // otherwise
         ],
-        'fill-opacity': opacity,
+        'fill-outline-color': this.featureStatePaint(
+          BASE_COLORS.dark,
+          BASE_COLORS.darker_magenta,
+          this.excludedKey
+        ),
+        'fill-opacity': this.featureStatePaint(
+          opacity * 0.7,
+          opacity * 0.9,
+          this.excludedKey
+        ),
       } as any;
     })
   );
@@ -142,33 +143,6 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
             this.excludedKey
           ),
           'line-opacity': opacity,
-          'line-opacity-transition': { duration: 0 },
-        }) as any
-    )
-  );
-
-  standExcludedPaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'fill-opacity-transition': { duration: 0 },
-          'fill-pattern': 'exclude-pattern', // constant pattern
-          'fill-opacity': this.featureStatePaint(opacity, 0, this.excludedKey),
-        }) as any
-    )
-  );
-
-  standThresholdPaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'fill-opacity-transition': { duration: 0 },
-          'fill-pattern': 'thresholds-pattern', // constant pattern
-          'fill-opacity': this.featureStatePaint(
-            opacity,
-            0,
-            this.constrainedKey
-          ),
         }) as any
     )
   );

@@ -10,9 +10,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { PlanState } from '../../plan/plan.state';
 import { map } from 'rxjs';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
-import { MapConfigState } from '../map-config.state';
 import { FeatureService } from '../../features/feature.service';
-import { transition } from '@angular/animations';
 
 @Component({
   selector: 'app-planning-area-layer',
@@ -30,23 +28,20 @@ import { transition } from '@angular/animations';
 export class PlanningAreaLayerComponent {
   @Input() before = '';
 
-  opacity$ = this.mapConfigState.opacity$;
+  readonly lineColor = this.featureService.isFeatureEnabled(
+    'DYNAMIC_SCENARIO_MAP'
+  )
+    ? BASE_COLORS.blue
+    : BASE_COLORS.md_gray;
 
-  linePaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'line-color': this.lineColor,
-          'line-width': 2,
-          'line-opacity': 0.8,
-          'line-opacity-transition': { duration: 0 },
-        }) as any
-    )
-  );
+  linePaint = {
+    'line-color': this.lineColor,
+    'line-width': 2,
+    'line-opacity': 0.8,
+  } as any;
 
   constructor(
     private planState: PlanState,
-    private mapConfigState: MapConfigState,
     private featureService: FeatureService
   ) {}
 
@@ -57,11 +52,4 @@ export class PlanningAreaLayerComponent {
   );
 
   readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
-
-  readonly lineColor = this.featureService.isFeatureEnabled(
-    'DYNAMIC_SCENARIO_MAP'
-  )
-    ? BASE_COLORS.blue
-    : BASE_COLORS.md_gray;
-  protected readonly transition = transition;
 }
