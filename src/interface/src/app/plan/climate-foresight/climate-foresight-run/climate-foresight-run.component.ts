@@ -19,7 +19,9 @@ import { ClimateForesightService } from '@services/climate-foresight.service';
 import { Plan, ClimateForesightRun } from '@types';
 import { DataLayerSelectionComponent } from './data-layer-selection/data-layer-selection.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-climate-foresight-run',
   standalone: true,
@@ -37,9 +39,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],
 })
-export class ClimateForesightRunComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-
+export class ClimateForesightRunComponent implements OnInit {
   @ViewChild(StepsComponent) stepsComponent?: StepsComponent<any>;
   @ViewChild('dataLayerSelection')
   dataLayerSelectionComponent?: DataLayerSelectionComponent;
@@ -89,7 +89,7 @@ export class ClimateForesightRunComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+    this.route.params.pipe(untilDestroyed(this)).subscribe((params) => {
       this.runId = params['runId'] ? +params['runId'] : null;
       if (this.runId) {
         this.loadRun();
@@ -97,15 +97,10 @@ export class ClimateForesightRunComponent implements OnInit, OnDestroy {
     });
 
     this.planState.currentPlan$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe((plan: Plan) => {
         this.currentPlan = plan;
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   private loadRun(): void {
@@ -113,7 +108,7 @@ export class ClimateForesightRunComponent implements OnInit, OnDestroy {
 
     this.climateForesightService
       .getRun(this.runId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe({
         next: (run) => {
           this.currentRun = run;
@@ -204,7 +199,7 @@ export class ClimateForesightRunComponent implements OnInit, OnDestroy {
         .updateRun(this.runId!, {
           input_datalayers: inputDatalayers,
         })
-        .pipe(takeUntil(this.destroy$))
+        .pipe(untilDestroyed(this))
         .subscribe({
           next: (updatedRun) => {
             this.currentRun = updatedRun;
