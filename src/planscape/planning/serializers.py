@@ -870,10 +870,14 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             instance.treatment_goal = validated_data["treatment_goal"]
 
         if "configuration" in validated_data:
-            instance.configuration = {
-                **(instance.configuration or {}),
-                **validated_data["configuration"],
-            }
+            cfg = instance.configuration or {}
+            incoming = validated_data["configuration"]
+            if "excluded_areas" in incoming:
+                cfg["excluded_areas_ids"] = incoming.pop("excluded_areas")
+            if "included_areas" in incoming:
+                cfg["included_areas_ids"] = incoming.pop("included_areas")
+            cfg.update(incoming)
+            instance.configuration = cfg
 
         instance.save(update_fields=["treatment_goal", "configuration"])
         instance.refresh_from_db()
