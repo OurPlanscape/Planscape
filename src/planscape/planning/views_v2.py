@@ -331,7 +331,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         response_serializer = ScenarioV3Serializer(instance)
-        return Response(response_serializer.data, status=status.HTTP_200_OK)
+        return Response(response_serializer.data)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
     @action(methods=["post"], detail=True, url_path="run")

@@ -778,6 +778,48 @@ class ScenarioDetailTest(APITestCase):
             data["scenario_result"]["result"]["features"][0]["properties"].keys(),
         )
 
+    def test_retrieve_scenario_versions_v2_and_v3(self):
+        self.client.force_authenticate(self.owner_user)
+
+        v2_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            configuration={"max_budget": 5000, "stand_size": "LARGE"},
+        )
+        resp_v2 = self.client.get(
+            reverse("api:planning:scenarios-detail", args=[v2_scenario.pk]),
+            format="json",
+        )
+        self.assertEqual(resp_v2.status_code, 200)
+        self.assertEqual(resp_v2.data.get("version"), ScenarioVersion.V2)
+        config = resp_v2.data.get("configuration", {})
+        self.assertIn("max_budget", config)
+        self.assertNotIn("targets", config)
+
+        v3_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            configuration={
+                "targets": {
+                    "max_area": 5000.0,
+                    "max_project_count": 5,
+                    "estimated_cost": 100.0,
+                },
+                "stand_size": "SMALL",
+            },
+        )
+        resp_v3 = self.client.get(
+            reverse("api:planning:scenarios-detail", args=[v3_scenario.pk]),
+            format="json",
+        )
+        self.assertEqual(resp_v3.status_code, 200)
+        self.assertEqual(resp_v3.data.get("version"), ScenarioVersion.V3)
+        config = resp_v3.data.get("configuration", {})
+        self.assertIn("targets", config)
+        targets = config["targets"]
+        self.assertEqual(targets["max_area"], 5000.0)
+        self.assertEqual(targets["estimated_cost"], 100.0)
+
 
 # This should test exclusively the 'V3' configuration
 class PatchScenarioConfigurationTest(APITestCase):
@@ -898,9 +940,7 @@ class PatchScenarioConfigurationTest(APITestCase):
 
     def test_patch_scenario_configuration_forbidden_for_other_user(self):
         scenario = ScenarioFactory(user=self.other_user)
-        url = reverse(
-            "api:planning:scenarios-patch-draft", args=[scenario.pk]
-        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {"max_budget": 100000}
 
         # Authenticate as a user who does not own the scenario
@@ -911,9 +951,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch_scenario_configuration_invalid_scenario_id(self):
-        invalid_url = reverse(
-            "api:planning:scenarios-patch-draft", args=[999999]
-        )
+        invalid_url = reverse("api:planning:scenarios-patch-draft", args=[999999])
         self.client.force_authenticate(self.user)
         payload = {"max_budget": 5000}
 
