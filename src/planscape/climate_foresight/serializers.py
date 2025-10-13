@@ -1,6 +1,18 @@
 from rest_framework import serializers
-from climate_foresight.models import ClimateForesightRun
+from climate_foresight.models import (
+    ClimateForesightRun,
+    ClimateForesightRunInputDataLayer,
+)
 from planning.models import PlanningArea
+
+
+class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
+    """Serializer for ClimateForesightRunInputDataLayer model."""
+
+    class Meta:
+        model = ClimateForesightRunInputDataLayer
+        fields = ["id", "datalayer", "favor_high", "pillar"]
+        read_only_fields = ["id"]
 
 
 class ClimateForesightRunSerializer(serializers.ModelSerializer):
@@ -12,6 +24,9 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
         source="planning_area.name", read_only=True
     )
     creator = serializers.SerializerMethodField()
+    input_datalayers = ClimateForesightRunInputDataLayerSerializer(
+        many=True, required=False
+    )
 
     class Meta:
         model = ClimateForesightRun
@@ -24,6 +39,7 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             "creator",
             "status",
             "created_at",
+            "input_datalayers",
         ]
         read_only_fields = ["id", "created_at", "planning_area_name", "creator"]
 
@@ -41,6 +57,29 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
                 "You don't have access to this planning area."
             )
         return value
+
+    def create(self, validated_data):
+        input_datalayers_data = validated_data.pop("input_datalayers", [])
+        run = ClimateForesightRun.objects.create(**validated_data)
+        for datalayer_data in input_datalayers_data:
+            ClimateForesightRunInputDataLayer.objects.create(run=run, **datalayer_data)
+        return run
+
+    def update(self, instance, validated_data):
+        input_datalayers_data = validated_data.pop("input_datalayers", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if input_datalayers_data is not None:
+            instance.input_datalayers.all().delete()
+            for datalayer_data in input_datalayers_data:
+                ClimateForesightRunInputDataLayer.objects.create(
+                    run=instance, **datalayer_data
+                )
+
+        return instance
 
 
 class ClimateForesightRunListSerializer(serializers.ModelSerializer):

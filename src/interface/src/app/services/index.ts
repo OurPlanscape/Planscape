@@ -13,3 +13,5 @@ export * from './notes.service';
 export * from './file-saver.service';
 export * from './jwt-interceptor.service';
 export * from './development-route.guard';
+export * from './climate-foresight.service';
+export * from './data-layers.service';
