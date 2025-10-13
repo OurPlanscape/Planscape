@@ -122,7 +122,14 @@ export class SavedScenariosComponent implements OnInit {
       .getScenariosForPlan(this.planId!, this.sortSelection)
       .pipe(
         take(1),
-        tap((scenarios) => {
+        tap((rawScenarios) => {
+          // If SCENARIO_DRAFT is disabled we filter the scenarios so we dont display the drafts
+          const scenarios = rawScenarios.filter((scenario) =>
+            this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
+              ? true
+              : scenario.scenario_result?.status !== 'DRAFT'
+          );
+
           this.totalScenarios = scenarios.length;
 
           this.scenariosForUser = this.showOnlyMyScenarios
