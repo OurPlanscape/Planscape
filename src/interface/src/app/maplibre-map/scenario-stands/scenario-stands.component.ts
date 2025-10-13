@@ -2,7 +2,6 @@ import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
-  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
@@ -19,19 +18,11 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 @Component({
   selector: 'app-scenario-stands',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    LayerComponent,
-    NgIf,
-    VectorSourceComponent,
-    ImageComponent,
-  ],
+  imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './scenario-stands.component.html',
 })
 export class ScenarioStandsComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
-
-  readonly COLORS = BASE_COLORS;
   readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
@@ -119,63 +110,34 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       ] as const;
 
       return {
-        'fill-opacity-transition': { duration: 0 },
         'fill-color': [
           'case',
-          hidden,
-          'transparent', // if excluded OR constrained
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
           BASE_COLORS.dark_magenta, // otherwise
         ],
-        'fill-opacity': opacity,
+
+        'fill-outline-color': [
+          'case',
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
+          BASE_COLORS.darker_magenta, // otherwise
+        ],
+        'fill-opacity': [
+          'case',
+          hidden,
+          opacity * 0.6,
+          opacity * 0.9, // otherwise
+        ],
       } as any;
     })
   );
 
-  standLinePaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'line-width': 1,
-          'line-color': this.featureStatePaint(
-            BASE_COLORS.dark,
-            BASE_COLORS.dark_magenta,
-            this.excludedKey
-          ),
-          'line-opacity': opacity,
-          'line-opacity-transition': { duration: 0 },
-        }) as any
-    )
-  );
-
-  standExcludedPaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'fill-opacity-transition': { duration: 0 },
-          'fill-pattern': 'exclude-pattern', // constant pattern
-          'fill-opacity': this.featureStatePaint(opacity, 0, this.excludedKey),
-        }) as any
-    )
-  );
-
-  standThresholdPaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'fill-opacity-transition': { duration: 0 },
-          'fill-pattern': 'thresholds-pattern', // constant pattern
-          'fill-opacity': this.featureStatePaint(
-            opacity,
-            0,
-            this.constrainedKey
-          ),
-        }) as any
-    )
-  );
-
   step$ = this.newScenarioState.stepIndex$;
-
-  showThresholdStands$ = this.step$.pipe(map((s) => s > 1));
 
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
@@ -221,18 +183,5 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       },
       key
     );
-  }
-
-  private featureStatePaint(
-    valueOn: number | string,
-    valueOff: number | string,
-    key: string
-  ) {
-    return [
-      'case',
-      ['boolean', ['feature-state', key], false],
-      valueOn,
-      valueOff,
-    ];
   }
 }

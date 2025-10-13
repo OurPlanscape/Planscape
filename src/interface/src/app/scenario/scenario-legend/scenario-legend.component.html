@@ -20,10 +20,10 @@
     <div>{{ summary.available_area | number: '1.0-0' }} ac</div>
   </div>
   <div *ngIf="showExcludedStands$ | async">
-    <div class="legend icon pattern-excluded">Excluded Area</div>
+    <div class="legend icon dark-gray">Excluded Area</div>
   </div>
   <div *ngIf="showConstrainedStands$ | async">
-    <div class="legend icon pattern-constraint">
+    <div class="legend icon light-gray">
       Does not meet Stand-level Constraint
     </div>
   </div>
