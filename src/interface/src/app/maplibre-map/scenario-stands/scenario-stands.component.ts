@@ -71,22 +71,13 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     this.newScenarioState.doesNotMeetConstraintsStands$
       .pipe(untilDestroyed(this))
       .subscribe((ids) => {
-        this.constrainedStands.forEach((id) =>
-          this.removeFeatureState(id, this.constrainedKey)
-        );
-        ids.forEach((id) => this.setFeatureState(id, this.constrainedKey));
-
-        this.constrainedStands = ids;
+        this.paintConstrainedStands(ids);
       });
 
     this.newScenarioState.excludedStands$
       .pipe(untilDestroyed(this))
       .subscribe((ids) => {
-        this.excludedStands.forEach((id) =>
-          this.removeFeatureState(id, this.excludedKey)
-        );
-        ids.forEach((id) => this.setFeatureState(id, this.excludedKey));
-        this.excludedStands = ids;
+        this.paintExcludedStands(ids);
       });
   }
 
@@ -141,10 +132,34 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
+
+    this.mapLibreMap.on('styledata', this.onStyleDataListener);
   }
+
+  private onStyleDataListener = (e: Event) => {
+    this.paintExcludedStands(this.excludedStands);
+    this.paintConstrainedStands(this.constrainedStands);
+  };
 
   ngOnDestroy(): void {
     this.mapLibreMap.off('sourcedata', this.onDataListener);
+  }
+
+  private paintExcludedStands(ids: number[]) {
+    this.excludedStands.forEach((id) =>
+      this.removeFeatureState(id, this.excludedKey)
+    );
+    ids.forEach((id) => this.setFeatureState(id, this.excludedKey));
+    this.excludedStands = ids;
+  }
+
+  private paintConstrainedStands(ids: number[]) {
+    this.constrainedStands.forEach((id) =>
+      this.removeFeatureState(id, this.constrainedKey)
+    );
+    ids.forEach((id) => this.setFeatureState(id, this.constrainedKey));
+
+    this.constrainedStands = ids;
   }
 
   private onDataListener = (event: any) => {
