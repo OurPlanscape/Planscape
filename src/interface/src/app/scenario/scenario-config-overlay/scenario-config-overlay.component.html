@@ -22,6 +22,16 @@
         {{ selectedExcludedAreas$ | async }}
       </dd>
       <dt>Stand Level Constraints:</dt>
+      <div
+        *ngIf="
+          constraintsToStrings(
+            scenario.configuration.constraints
+          ) as constraintStrings
+        ">
+        <dd *ngFor="let str of constraintStrings">
+          {{ str }}
+        </dd>
+      </div>
       <dd>
         {{
           scenario.configuration.max_slope
@@ -32,6 +42,14 @@
         }}
       </dd>
       <dt>Treatment Target:</dt>
+      <dd *ngIf="scenario.configuration.targets">
+        @if (scenario.configuration.targets.max_area) {
+          Planning Area Acres
+          {{ scenario.configuration.targets.max_area | number: '1.0-0' }}
+        } @else {
+          --
+        }
+      </dd>
       <dd>
         @if (scenario.configuration.max_area) {
           Planning Area Acres
