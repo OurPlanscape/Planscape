@@ -38,6 +38,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
         `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
     ),
     distinctUntilChanged(),
+    // when the stand size changes, set as loading
     tap((s) => {
       this.newScenarioState.setLoading(true);
       this.standsLoaded = false;
@@ -45,6 +46,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   );
 
   opacity$ = this.mapConfigState.opacity$;
+  step$ = this.newScenarioState.stepIndex$;
 
   // local copies to reset feature state
   private excludedStands: number[] = [];
@@ -128,21 +130,14 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     })
   );
 
-  step$ = this.newScenarioState.stepIndex$;
-
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
-
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
   }
 
-  private onStyleDataListener = (e: Event) => {
-    this.paintExcludedStands(this.excludedStands);
-    this.paintConstrainedStands(this.constrainedStands);
-  };
-
   ngOnDestroy(): void {
     this.mapLibreMap.off('sourcedata', this.onDataListener);
+    this.mapLibreMap.off('styledata', this.onStyleDataListener);
   }
 
   private paintExcludedStands(ids: number[]) {
@@ -158,9 +153,13 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       this.removeFeatureState(id, this.constrainedKey)
     );
     ids.forEach((id) => this.setFeatureState(id, this.constrainedKey));
-
     this.constrainedStands = ids;
   }
+
+  private onStyleDataListener = (e: Event) => {
+    this.paintExcludedStands(this.excludedStands);
+    this.paintConstrainedStands(this.constrainedStands);
+  };
 
   private onDataListener = (event: any) => {
     if (
@@ -172,7 +171,6 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     ) {
       this.zone.run(() => {
         this.newScenarioState.setBaseStandsLoaded(true);
-        this.newScenarioState.setLoading(false);
         this.standsLoaded = true;
       });
     }
