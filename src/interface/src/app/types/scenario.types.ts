@@ -29,6 +29,32 @@ export interface Scenario {
   capabilities?: ScenarioCapabilities[];
 }
 
+export interface ScenarioV3 {
+  id?: number; // undefined when we are creating a new scenario
+  name: string;
+  notes?: string;
+  creator?: string;
+  planning_area: number;
+  configuration: ScenarioDraftConfig;
+  scenario_result?: ScenarioResult;
+  status: SCENARIO_STATUS;
+  user?: number;
+  max_treatment_area?: number;
+  created_at?: string;
+  max_budget?: number;
+  tx_plan_count?: number | undefined;
+  origin?: ORIGIN_TYPE;
+  treatment_goal?: {
+    id: string;
+    name: string;
+  };
+  usage_types?: UsageType[];
+  version?: string;
+  geopackage_status: GeoPackageStatus;
+  geopackage_url: string | null;
+  capabilities?: ScenarioCapabilities[];
+}
+
 /**
  * TODO this type is used for the backend payload
  * as well as the frontend interface before saving the scenario.
@@ -72,6 +98,10 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   name: string;
   planning_area: number;
 }
+
+export interface UnifiedConfig
+  extends ScenarioConfigPayload,
+    ScenarioDraftConfig {}
 
 export interface ScenarioConfigPayload {
   estimated_cost: number;
