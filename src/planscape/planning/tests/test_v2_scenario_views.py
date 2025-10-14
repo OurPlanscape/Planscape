@@ -1134,6 +1134,7 @@ class CreateScenarioForDraftsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(scenario.get("id"))
         self.assertEqual(scenario.get("scenario_result").get("status"), "DRAFT")
+        self.assertEqual(scenario.get("version"), "V3")
 
     def test_create_without_name(self):
         payload = {
