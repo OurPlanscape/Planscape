@@ -39,7 +39,6 @@ export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioVersion!: string;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
-  @Input() priorities: string[] = [];
 
   areas: ProjectAreaReport[] = [];
 

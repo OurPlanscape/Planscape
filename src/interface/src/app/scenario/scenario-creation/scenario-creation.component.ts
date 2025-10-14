@@ -29,10 +29,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
-  ScenarioConfig,
   ScenarioConfigPayload,
   ScenarioDraftPayload,
   ScenarioCreation,
+  ScenarioConfig,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
@@ -181,14 +181,17 @@ export class ScenarioCreationComponent
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         this.form.controls.scenarioName.setValue(scenario.name);
-        const currentConfig = this.convertSavedConfigToNewConfig(
-          scenario.configuration
-        );
-        this.newScenarioState.setScenarioConfig(currentConfig);
+        //TODO: these should all technically be V3, but we may have some that are not
+        if (scenario.version === 'V2') {
+          const currentConfig = this.convertV2ConfigToNewConfig(
+            scenario.configuration
+          );
+          this.newScenarioState.setScenarioConfig(currentConfig);
+        }
       });
   }
 
-  convertSavedConfigToNewConfig(
+  convertV2ConfigToNewConfig(
     config: ScenarioConfig
   ): Partial<ScenarioConfigPayload> {
     const newState = Object.fromEntries(
