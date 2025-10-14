@@ -862,15 +862,23 @@ class PatchScenarioConfigurationTest(APITestCase):
     def test_patch_scenario_incremental_updates(self):
         from datasets.tests.factories import DataLayerFactory
         from datasets.models import DataLayerType, GeometryType
+        from planning.tests.factories import TreatmentGoalFactory
 
-        # create valid excluded_areas with real PKs
+        # create valid excluded_areas and included_areas with real PKs
         excluded_layers = DataLayerFactory.create_batch(
             3,
             type=DataLayerType.VECTOR,
             geometry_type=GeometryType.POLYGON,
         )
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
         excluded_ids = [layer.pk for layer in excluded_layers]
+        included_ids = [layer.pk for layer in included_layers]
 
+        # initial patch - baseline configuration
         payload = {
             "min_distance_from_road": 100,
             "max_project_count": 5,
@@ -886,9 +894,9 @@ class PatchScenarioConfigurationTest(APITestCase):
         targets = config.get("targets", {})
         self.assertEqual(targets.get("estimated_cost"), 12345)
         self.assertEqual(targets.get("max_area"), 11111)
-        self.assertEqual(config.get("stand_size"), "LARGE")  # DEFAULT VALUE
+        self.assertEqual(config.get("stand_size"), "LARGE")
 
-        # Send a subsequent update with a few values
+        # second patch - modify stand_size + add excluded_areas
         payload2 = {
             "configuration": {
                 "stand_size": "MEDIUM",
@@ -897,20 +905,17 @@ class PatchScenarioConfigurationTest(APITestCase):
             }
         }
 
-        self.client.force_authenticate(self.user)
         response2 = self.client.patch(self.url, payload2, format="json")
         self.assertEqual(response2.status_code, status.HTTP_200_OK)
 
         config2 = response2.data.get("configuration", {})
-        targets = config2.get("targets")
-
-        self.assertEqual(targets.get("estimated_cost"), 22222)
+        targets2 = config2.get("targets")
+        self.assertEqual(targets2.get("estimated_cost"), 22222)
+        self.assertCountEqual(config2.get("excluded_areas"), excluded_ids)
         self.assertEqual(config2.get("stand_size"), "MEDIUM")
 
-        # Send a third update to clear an array
+        # third patch - clear excluded_areas
         payload3 = {"configuration": {"excluded_areas": []}}
-
-        self.client.force_authenticate(self.user)
         response3 = self.client.patch(self.url, payload3, format="json")
         self.assertEqual(response3.status_code, status.HTTP_200_OK)
 
@@ -918,20 +923,91 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config3.get("excluded_areas"), [])
         self.assertEqual(config3.get("stand_size"), "MEDIUM")
 
-        # Send a fourth update with predictable validation errors
-        payload4 = {
-            "configuration": {
-                "stand_size": "INVALID VALUE",
-            }
-        }
-
-        self.client.force_authenticate(self.user)
+        # fourth patch - invalid stand_size value
+        payload4 = {"configuration": {"stand_size": "INVALID VALUE"}}
         response4 = self.client.patch(self.url, payload4, format="json")
         self.assertEqual(response4.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             b'{"configuration":{"stand_size":["\\"INVALID VALUE\\" is not a valid choice."]}}',
             response4.content,
         )
+
+        # fifth patch - add included_areas and constraints
+        constraint_layer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        constraint = {
+            "datalayer": constraint_layer.pk,
+            "operator": "lt",
+            "value": "50",
+        }
+        payload5 = {
+            "configuration": {
+                "included_areas": included_ids,
+                "constraints": [constraint],
+            }
+        }
+
+        response5 = self.client.patch(self.url, payload5, format="json")
+        self.assertEqual(response5.status_code, status.HTTP_200_OK)
+
+        config5 = response5.data.get("configuration", {})
+        self.assertCountEqual(config5.get("included_areas"), included_ids)
+        self.assertEqual(len(config5.get("constraints", [])), 1)
+        self.assertEqual(config5["constraints"][0]["operator"], "lt")
+
+        # sixth patch - invalid constraint operator
+        payload6 = {
+            "configuration": {
+                "constraints": [
+                    {"datalayer": constraint_layer.pk, "operator": "bad", "value": "10"}
+                ]
+            }
+        }
+
+        response6 = self.client.patch(self.url, payload6, format="json")
+        self.assertEqual(response6.status_code, status.HTTP_400_BAD_REQUEST)
+
+        error_data = response6.json()["configuration"]["constraints"]
+        self.assertIn("0", error_data)
+        self.assertIn("operator", error_data["0"])
+        self.assertIn("is not a valid choice", error_data["0"]["operator"][0])
+
+        # seventh patch - update seed + nested targets override
+        payload7 = {
+            "configuration": {
+                "seed": 999,
+                "targets": {
+                    "estimated_cost": 33333,
+                    "max_area": 22222,
+                    "max_project_count": 7,
+                },
+            }
+        }
+
+        response7 = self.client.patch(self.url, payload7, format="json")
+        self.assertEqual(response7.status_code, status.HTTP_200_OK)
+
+        config7 = response7.data.get("configuration", {})
+        self.assertEqual(config7.get("seed"), 999)
+        self.assertEqual(config7["targets"]["estimated_cost"], 33333)
+        self.assertEqual(config7["targets"]["max_project_count"], 7)
+
+        # eighth patch - change treatment_goal along with config
+        new_goal = TreatmentGoalFactory()
+        payload8 = {
+            "treatment_goal": new_goal.pk,
+            "configuration": {"stand_size": "SMALL"},
+        }
+
+        response8 = self.client.patch(self.url, payload8, format="json")
+        self.assertEqual(response8.status_code, status.HTTP_200_OK)
+
+        config8 = response8.data.get("configuration", {})
+        self.assertEqual(config8.get("stand_size"), "SMALL")
+        self.assertEqual(response8.data["treatment_goal"]["id"], new_goal.pk)
+        self.assertEqual(response8.data["treatment_goal"]["name"], new_goal.name)
 
     def test_patch_scenario_configuration_unauthenticated(self):
         payload = {"max_budget": 5000}
