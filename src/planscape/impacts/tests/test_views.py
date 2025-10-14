@@ -398,6 +398,17 @@ class TxPlanViewSetTest(APITestCase):
         )
         self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
 
+    def test_get_tx_plan_mismatched_scenario_returns_404(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        tx_plan = TreatmentPlanFactory.create(scenario=self.scenario)
+        wrong_scenario = ScenarioFactory.create()
+
+        url = reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk})
+        url = f"{url}?scenario_id={wrong_scenario.pk}"
+
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class TxPlanViewSetPlotTest(APITestCase):
     def setUp(self):

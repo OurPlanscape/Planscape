@@ -47,6 +47,7 @@ from rest_framework import mixins, response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -112,6 +113,15 @@ class TreatmentPlanViewSet(
             "created_by",
         )
         return qs
+
+    def get_object(self):
+        obj = super().get_object()
+        scenario_id = self.request.query_params.get("scenario_id")
+        if scenario_id and str(obj.scenario_id) != str(scenario_id):
+            raise NotFound(
+                detail=f"Treatment Plan {obj.id} does not belong to Scenario {scenario_id}."
+            )
+        return obj
 
     def get_serializer_class(self):
         try:
