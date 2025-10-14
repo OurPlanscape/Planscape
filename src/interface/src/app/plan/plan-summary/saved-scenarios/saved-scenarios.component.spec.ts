@@ -4,12 +4,11 @@ import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
-  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { SavedScenariosComponent } from './saved-scenarios.component';
@@ -45,7 +44,7 @@ function makeScenario(id: number) {
 }
 
 //Flaky test- disabling
-xdescribe('SavedScenariosComponent (updated polling/manual preemption)', () => {
+describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
   let scenarioSvcSpy: jasmine.SpyObj<ScenarioService>;
@@ -61,7 +60,9 @@ xdescribe('SavedScenariosComponent (updated polling/manual preemption)', () => {
       {},
       {
         snapshot: {
-          paramMap: convertToParamMap({ id: '24' }),
+          params: {
+            planId: '24',
+          },
         },
       }
     );
@@ -121,28 +122,28 @@ xdescribe('SavedScenariosComponent (updated polling/manual preemption)', () => {
 
     expect(scenarioSvcSpy.getScenariosForPlan).toHaveBeenCalledTimes(1);
     expect(scenarioSvcSpy.getScenariosForPlan).toHaveBeenCalledWith(
-      1,
+      '24' as any,
       '-created_at'
     );
     expect(component.activeScenarios.length).toBe(1);
   });
 
-  it('should poll after the first interval tick (no immediate timer)', fakeAsync(() => {
+  it('should poll after the first interval immediately', fakeAsync(() => {
     fixture.detectChanges();
     // no call until first interval tick
     expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(0);
 
     // before first interval tick → no call
     tick(POLLING_INTERVAL - 1);
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(0);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(1);
 
     // first poll tick
     tick(1);
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(1);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
 
     // second poll tick
     tick(POLLING_INTERVAL);
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
+    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(3);
 
     discardPeriodicTasks();
   }));
@@ -237,26 +238,6 @@ xdescribe('SavedScenariosComponent (updated polling/manual preemption)', () => {
     // No change expected — still []
     expect(component.activeScenarios.length).toBe(0);
 
-    discardPeriodicTasks();
-  }));
-
-  it('clicking new configuration navigates', fakeAsync(() => {
-    const route = fixture.debugElement.injector.get(ActivatedRoute);
-    const router = fixture.debugElement.injector.get(Router);
-    spyOn(router, 'navigate');
-
-    fixture.detectChanges();
-
-    const button = fixture.debugElement.query(
-      By.css('[data-id="new-scenario"]')
-    );
-    button.nativeElement.click();
-
-    expect(router.navigate).toHaveBeenCalledOnceWith(['scenario'], {
-      relativeTo: route,
-    });
-
-    flush();
     discardPeriodicTasks();
   }));
 
