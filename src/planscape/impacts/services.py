@@ -442,12 +442,16 @@ def calculate_impacts(
         stand_ids=stand_ids, datalayer=baseline_layer
     )
     if len(missing_stand_ids) > 0:
-        missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
         if feature_enabled("API_ZONAL_STATS"):
-            calculate_stand_zonal_stats_api(
-                stands=missing_stands, datalayer=baseline_layer
-            )
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                missing_stands = Stand.objects.filter(id__in=batch_stand_ids)
+                calculate_stand_zonal_stats_api(
+                    stands=missing_stands, datalayer=baseline_layer
+                )
         else:
+            missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
             with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(
                     stands=missing_stands,
@@ -468,12 +472,16 @@ def calculate_impacts(
         stand_ids=stand_ids, datalayer=action_layer
     )
     if len(missing_stand_ids) > 0:
-        missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
         if feature_enabled("API_ZONAL_STATS"):
-            calculate_stand_zonal_stats_api(
-                stands=missing_stands, datalayer=action_layer
-            )
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                missing_stands = Stand.objects.filter(id__in=batch_stand_ids)
+                calculate_stand_zonal_stats_api(
+                    stands=missing_stands, datalayer=action_layer
+                )
         else:
+            missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
             with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(
                     stands=missing_stands,
@@ -604,12 +612,16 @@ def calculate_impacts_for_untreated_stands(
         stand_ids=list(untreated_stand_ids), datalayer=baseline_layer
     )
     if len(missing_stand_ids) > 0:
-        missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
         if feature_enabled("API_ZONAL_STATS"):
-            calculate_stand_zonal_stats_api(
-                stands=missing_stands, datalayer=baseline_layer
-            )
+            batch_size = settings.STAND_METRICS_PAGE_SIZE
+            for i in range(0, len(missing_stand_ids), batch_size):
+                batch_stand_ids = list(missing_stand_ids)[i : i + batch_size]
+                missing_stands = Stand.objects.filter(id__in=batch_stand_ids)
+                calculate_stand_zonal_stats_api(
+                    stands=missing_stands, datalayer=baseline_layer
+                )
         else:
+            missing_stands = Stand.objects.filter(id__in=missing_stand_ids)
             with rasterio.Env(get_storage_session()):
                 calculate_stand_zonal_stats(
                     stands=missing_stands,
