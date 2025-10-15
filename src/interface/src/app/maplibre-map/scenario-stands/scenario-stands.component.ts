@@ -7,12 +7,23 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { ActivatedRoute } from '@angular/router';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
-import { combineLatest, map, Observable, tap } from 'rxjs';
+import {
+  animationFrameScheduler,
+  auditTime,
+  combineLatest,
+  concat,
+  map,
+  Observable,
+  observeOn,
+  of,
+  tap,
+} from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
 import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { FrontendConstants } from '../../map/map.constants';
 
 @UntilDestroy()
 @Component({
@@ -94,14 +105,17 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     )
   );
 
-  standPaint$ = this.opacity$.pipe(
+  // using this concat so we can keep things inside angular lifecycle without adding zone.runs or detectChanges
+  standPaint$ = concat(
+    of(FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY), // <-- emit immediately so the layer renders
+    this.opacity$.pipe(
+      // use  animationFrameScheduler (similar to requestAnimationFrame)
+      observeOn(animationFrameScheduler),
+      // collapse multiple slider events to one per frame
+      auditTime(0)
+    )
+  ).pipe(
     map((opacity) => {
-      const hidden = [
-        'any',
-        ['boolean', ['feature-state', this.excludedKey], false],
-        ['boolean', ['feature-state', this.constrainedKey], false],
-      ] as const;
-
       return {
         'fill-color': [
           'case',
@@ -111,6 +125,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
           BASE_COLORS.light_gray,
           BASE_COLORS.dark_magenta, // otherwise
         ],
+        'fill-opacity-transition': { duration: 0 },
 
         'fill-outline-color': [
           'case',
@@ -120,12 +135,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
           BASE_COLORS.light_gray,
           BASE_COLORS.darker_magenta, // otherwise
         ],
-        'fill-opacity': [
-          'case',
-          hidden,
-          opacity * 0.6,
-          opacity * 0.9, // otherwise
-        ],
+        'fill-opacity': opacity,
       } as any;
     })
   );
