@@ -916,6 +916,121 @@ class ListPlanningAreasWithPermissionsTest(APITestCase):
         self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
 
 
+class UpdatePlanningAreaTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory.create()
+        self.owner = UserFactory()
+        self.collaborator = UserFactory()
+        self.viewer = UserFactory()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            name="Editable Area",
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+        self.url = reverse(
+            "api:planning:planningareas-detail",
+            kwargs={"pk": self.planning_area.pk},
+        )
+        self.payload = {"name": "Renamed Area"}
+
+    def test_creator_can_rename_planning_area(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Renamed Area")
+
+    def test_owner_can_rename_planning_area(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Renamed Area")
+
+    def test_collaborator_cannot_rename_planning_area(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_viewer_cannot_rename_planning_area(self):
+        self.client.force_authenticate(self.viewer)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_to_taken_name_fails(self):
+        PlanningAreaFactory.create(
+            user=self.creator,
+            name="Another Area",
+        )
+        payload = {"name": "Another Area"}
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_to_same_name(self):
+        payload = {"name": "Editable Area"}
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_invalid_payload(self):
+        payload = {"planning_area": "Editable Area"}
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_using_put(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.put(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Renamed Area")
+
+
 class DeletePlanningAreaTest(APITestCase):
     def setUp(self):
         self.creator = UserFactory.create()

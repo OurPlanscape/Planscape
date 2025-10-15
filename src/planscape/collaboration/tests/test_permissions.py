@@ -77,6 +77,36 @@ class PermissionsTest(TestCase):
             PlanningAreaPermission.can_view(self.invitee, self.planning_area)
         )
 
+    # Changing Planning Area
+
+    def test_creator_can_change_planning_area(self):
+        self.assertTrue(
+            PlanningAreaPermission.can_change(self.user, self.planning_area)
+        )
+
+    def test_not_invited_cannot_change_planning_area(self):
+        self.assertFalse(
+            PlanningAreaPermission.can_change(self.invitee, self.planning_area)
+        )
+
+    def test_viewer_cannot_change_planning_area(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertFalse(
+            PlanningAreaPermission.can_change(self.invitee, self.planning_area)
+        )
+
+    def test_collaborator_cannot_change_planning_area(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertFalse(
+            PlanningAreaPermission.can_change(self.invitee, self.planning_area)
+        )
+
+    def test_owner_can_change_planning_area(self):
+        self.create_collaborator_record(Role.OWNER)
+        self.assertTrue(
+            PlanningAreaPermission.can_change(self.invitee, self.planning_area)
+        )
+
     # Viewing Scenarios
 
     def test_creator_can_view_scenario(self):

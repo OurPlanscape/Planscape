@@ -43,7 +43,9 @@ class PlanningAreaPermission(CheckPermissionMixin):
 
     @staticmethod
     def can_change(user: AbstractUser, planning_area: PlanningArea):
-        return is_creator(user, planning_area)
+        return is_creator(user, planning_area) or check_for_permission(
+            user.pk, planning_area, "change_planning_area"
+        )
 
     @staticmethod
     def can_remove(user: AbstractUser, planning_area: PlanningArea):
