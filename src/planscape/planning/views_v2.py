@@ -34,6 +34,7 @@ from planning.serializers import (
     AvailableStandsSerializer,
     CreatePlanningAreaSerializer,
     CreateScenarioV2Serializer,
+    UpdatePlanningAreaSerializer,
     GetAvailableStandsSerializer,
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
@@ -107,6 +108,8 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "create": CreatePlanningAreaSerializer,
         "list": ListPlanningAreaSerializer,
         "retrieve": PlanningAreaSerializer,
+        "update": UpdatePlanningAreaSerializer,
+        "partial_update": UpdatePlanningAreaSerializer,
     }
     pagination_class = pagination.LimitOffsetPagination
     filterset_class = PlanningAreaFilter
