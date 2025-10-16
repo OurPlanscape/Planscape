@@ -21,7 +21,5 @@
     userCanCreateTreatmentPlan() && hasTreatmentPlanCapability(s)
   "
   (toggleArchiveStatus)="toggleScenarioStatus(s)"
-  (deleteScenario)="showDeleteScenarioDialog(s)"
-  matTooltip="Only the creator can edit this draft"
-  [matTooltipDisabled]="!displayDraftCreatorTooltip(s)">
+  (deleteScenario)="showDeleteScenarioDialog(s)">
 </sg-scenario-card>
