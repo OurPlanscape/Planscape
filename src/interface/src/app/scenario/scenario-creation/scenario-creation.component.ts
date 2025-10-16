@@ -98,7 +98,7 @@ export class ScenarioCreationComponent
 
   planId = this.route.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
-
+  scenarioStatus: string = 'NEW';
   plan$ = this.planState.currentPlan$;
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   finished = false;
@@ -180,6 +180,7 @@ export class ScenarioCreationComponent
       .getScenario(this.scenarioId)
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
+        this.scenarioStatus = scenario.scenario_result?.status ?? 'NEW';
         this.form.controls.scenarioName.setValue(scenario.name);
         const currentConfig = this.convertSavedConfigToNewConfig(
           scenario.configuration
@@ -208,7 +209,10 @@ export class ScenarioCreationComponent
   }
 
   saveStep(data: Partial<ScenarioCreation>) {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+    if (
+      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+      this.scenarioStatus === 'DRAFT'
+    ) {
       const thresholdsIdMap = new Map<string, number>();
       thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());
       thresholdsIdMap.set(
@@ -265,7 +269,10 @@ export class ScenarioCreationComponent
   }
 
   async onFinish() {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+    if (
+      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+      this.scenarioStatus === 'DRAFT'
+    ) {
       this.runScenario();
     } else {
       this.finishFromFullConfig();
