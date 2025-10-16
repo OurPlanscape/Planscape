@@ -24,19 +24,11 @@ import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
 import { userCanAddTreatmentPlan } from '../../permissions';
-import { FeatureService } from 'src/app/features/feature.service';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-scenarios-card-list',
   standalone: true,
-  imports: [
-    ScenarioCardComponent,
-    NgFor,
-    SharedModule,
-    OverlayLoaderComponent,
-    MatTooltipModule,
-  ],
+  imports: [ScenarioCardComponent, NgFor, SharedModule, OverlayLoaderComponent],
   templateUrl: './scenarios-card-list.component.html',
   styleUrl: './scenarios-card-list.component.scss',
 })
@@ -49,10 +41,6 @@ export class ScenariosCardListComponent {
   @Output() triggerRefresh = new EventEmitter<ScenarioRow>();
   @Output() scenarioDeleted = new EventEmitter<ScenarioRow>();
 
-  draftsEnabled = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
-
-  open_statuses = ['SUCCESS', 'FAILURE', 'PANIC', 'DRAFT'];
-
   constructor(
     private authService: AuthService,
     private snackbar: MatSnackBar,
@@ -62,48 +50,23 @@ export class ScenariosCardListComponent {
     private route: ActivatedRoute,
     private overlayLoaderService: OverlayLoaderService,
     private dialog: MatDialog,
-    private analyticsService: AnalyticsService,
-    private featureService: FeatureService
+    private analyticsService: AnalyticsService
   ) {}
 
   numberOfAreas(scenario: Scenario) {
     return scenario.scenario_result?.result?.features?.length;
   }
 
-  isDraft(row: ScenarioRow): boolean {
-    return row.scenario_result?.status === 'DRAFT';
-  }
-
-  isCreator(row: ScenarioRow, userId?: number): boolean {
-    return userId != null && row.user === userId;
-  }
-
-  isDraftByOtherUser(row: ScenarioRow, userId?: number): boolean {
-    return (
-      this.draftsEnabled && this.isDraft(row) && !this.isCreator(row, userId)
-    );
-  }
-
-  canOpenScenario(row: ScenarioRow, userId?: number): boolean {
-    const status = row.scenario_result?.status;
-    if (!status) return false;
-
-    if (this.isDraftByOtherUser(row, userId)) return false;
-
-    return this.open_statuses.includes(status);
-  }
-
-  displayDraftCreatorTooltip(row: ScenarioRow): boolean {
-    const userId = this.authService.currentUser()?.id;
-    return this.isDraftByOtherUser(row, userId);
-  }
-
   handleOpenScenario(row: ScenarioRow): void {
-    const userId = this.authService.currentUser()?.id;
-    if (!this.canOpenScenario(row, userId)) return;
-
-    this.selectedCard = row;
-    this.viewScenario.emit(row);
+    if (
+      row.scenario_result &&
+      ['SUCCESS', 'FAILURE', 'PANIC', 'DRAFT'].includes(
+        row.scenario_result.status
+      )
+    ) {
+      this.selectedCard = row;
+      this.viewScenario.emit(row);
+    }
   }
 
   hasResults(scenario: Scenario) {
