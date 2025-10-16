@@ -11,7 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/ruff-action@v3
+      - uses: psf/black@stable
+        with:
+          options: "--check"
+          src: "src/planscape"
+          version: "23.7.0"
 
   build:
     runs-on: ubuntu-latest
