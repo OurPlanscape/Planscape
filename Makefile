@@ -120,12 +120,6 @@ stop-celery:
 status-celery:
 	${SYS_CTL} status celery-* --all
 
-stop-martin:
-	${SYS_CTL} stop martin.service
-
-start-martin:
-	${SYS_CTL} start martin.service
-
 stop-forsys-server:
 	${SYS_CTL} stop forsys-server.service
 
@@ -144,7 +138,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop-celery stop stop-forsys-server stop-martin start-martin start-forsys-server start start-celery
+restart: reload stop-celery stop stop-forsys-server start-forsys-server start start-celery
 
 nginx-restart:
 	sudo service nginx restart
