@@ -239,6 +239,8 @@ class TreatmentGoalGroup(models.TextChoices):
         "CALIFORNIA_PLANNING_METRICS",
         "California Planning Metrics",
     )
+    TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
+    PYROLOGIX = ("PYROLOGIX", "Pyrologix")
 
 
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
@@ -276,15 +278,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[
-        DataLayer, models.Model
-    ] = models.ManyToManyField(
-        to=DataLayer,
-        through="TreatmentGoalUsesDataLayer",
-        through_fields=(
-            "treatment_goal",
-            "datalayer",
-        ),
+    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
+        models.ManyToManyField(
+            to=DataLayer,
+            through="TreatmentGoalUsesDataLayer",
+            through_fields=(
+                "treatment_goal",
+                "datalayer",
+            ),
+        )
     )
 
     geometry = models.MultiPolygonField(
