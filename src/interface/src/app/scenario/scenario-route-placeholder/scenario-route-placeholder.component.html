@@ -12,7 +12,10 @@
 
   <ng-template #scenarioOk>
     <ng-container
-      *ngIf="(canViewScenarioCreation$ | async) === true; else checkOrigin">
+      *ngIf="
+        scenarioResource.data?.scenario_result?.status === 'DRAFT';
+        else checkOrigin
+      ">
       <app-scenario-creation></app-scenario-creation>
     </ng-container>
 
@@ -24,10 +27,7 @@
     </ng-template>
 
     <ng-template #createScenario>
-      <app-view-scenario
-        *ngIf="
-          scenarioResource.data?.scenario_result?.status === 'SUCCESS'
-        "></app-view-scenario>
+      <app-view-scenario></app-view-scenario>
     </ng-template>
   </ng-template>
 </ng-container>
