@@ -161,6 +161,36 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
         validators = []
 
 
+class UpdatePlanningAreaSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        if not attrs.get("name"):
+            raise serializers.ValidationError(
+                {"name": "A planning area name is required."}
+            )
+        instance = self.instance
+        if (
+            PlanningArea.objects.filter(
+                user=instance.user,
+                name=attrs["name"],
+            )
+            .exclude(id=instance.pk)
+            .exists()
+        ):
+            raise serializers.ValidationError(
+                {"name": "A planning area with this name already exists."}
+            )
+        return attrs
+
+    class Meta:
+        model = PlanningArea
+        fields = ("name",)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get("name")
+        instance.save(update_fields=["name", "updated_at"])
+        return instance
+
+
 class PlanningAreaSerializer(
     ListPlanningAreaSerializer,
     gis_serializers.GeoModelSerializer,
