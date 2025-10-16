@@ -821,6 +821,97 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(targets["estimated_cost"], 100.0)
 
 
+class UpdateScenarioTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory()
+        self.owner = UserFactory()
+        self.collaborator = UserFactory()
+        self.viewer = UserFactory()
+        self.not_invited = UserFactory()
+
+        self.planning_area = PlanningAreaFactory(
+            user=self.creator,
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+
+        self.scenario = ScenarioFactory(
+            user=self.creator,
+            planning_area=self.planning_area,
+            name="some patchable scenario",
+        )
+
+        self.url = reverse("api:planning:scenarios-detail", args=[self.scenario.pk])
+        self.payload = {"name": "renamed scenario"}
+
+    def test_creator_can_update_scenario_name(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.scenario.refresh_from_db()
+        body = response.json()
+        self.assertEqual(body.get("name"), self.scenario.name)
+        self.assertEqual(self.scenario.name, "renamed scenario")
+        self.assertEqual(self.scenario.user, self.creator)
+
+    def test_owner_can_update_scenario_name(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.scenario.refresh_from_db()
+        body = response.json()
+        self.assertEqual(body.get("name"), self.scenario.name)
+        self.assertEqual(self.scenario.name, "renamed scenario")
+        self.assertEqual(self.scenario.user, self.creator)
+
+    def test_collaborator_cannot_update_scenario_name(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.name, "some patchable scenario")
+        self.assertEqual(self.scenario.user, self.creator)
+
+    def test_collaborator_can_update_its_own_scenario_name(self):
+        self.client.force_authenticate(self.collaborator)
+        scenario = ScenarioFactory(
+            user=self.collaborator,
+            planning_area=self.planning_area,
+            name="collaborator's scenario",
+        )
+        url = reverse("api:planning:scenarios-detail", args=[scenario.pk])
+        response = self.client.patch(url, self.payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        scenario.refresh_from_db()
+        body = response.json()
+        self.assertEqual(body.get("name"), scenario.name)
+        self.assertEqual(scenario.name, "renamed scenario")
+        self.assertEqual(scenario.user, self.collaborator)
+
+    def test_viewer_cannot_update_scenario_name(self):
+        self.client.force_authenticate(self.viewer)
+        response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.name, "some patchable scenario")
+        self.assertEqual(self.scenario.user, self.creator)
+
+    def test_not_invited_cannot_update_scenario_name(self):
+        self.client.force_authenticate(self.not_invited)
+        response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.name, "some patchable scenario")
+        self.assertEqual(self.scenario.user, self.creator)
+
+
 # This should test exclusively the 'V3' configuration
 class PatchScenarioConfigurationTest(APITestCase):
     def setUp(self):

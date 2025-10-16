@@ -867,7 +867,7 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
         model = Scenario
 
 
-class CreateScenarioV3Serializer(serializers.ModelSerializer):
+class UpsertScenarioV3Serializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     name = serializers.CharField(max_length=100, required=True)
 
@@ -880,6 +880,10 @@ class CreateScenarioV3Serializer(serializers.ModelSerializer):
             "origin",
             "notes",
         )
+
+    def update(self, instance, validated_data):
+        validated_data.pop("user", None)
+        return super().update(instance, validated_data)
 
 
 class PatchScenarioV3Serializer(serializers.ModelSerializer):

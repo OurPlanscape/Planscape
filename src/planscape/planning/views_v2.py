@@ -47,7 +47,7 @@ from planning.serializers import (
     TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
     UpsertConfigurationV2Serializer,
-    CreateScenarioV3Serializer,
+    UpsertScenarioV3Serializer,
     ScenarioV3Serializer,
     PatchScenarioV3Serializer,
 )
@@ -214,8 +214,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     serializer_classes = {
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
-        "partial_update": UpsertConfigurationV2Serializer,
-        "create_draft": CreateScenarioV3Serializer,
+        "partial_update": UpsertScenarioV3Serializer,
+        "create_draft": UpsertScenarioV3Serializer,
     }
 
     filterset_class = ScenarioFilter
@@ -322,10 +322,13 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @extend_schema(description="Partially update a Scenario.")
-    def partial_update(self, request, *args, **kwargs):
+    @extend_schema(description="Update Scenario's configuration.")
+    @action(methods=["patch"], detail=True, url_path="configuration")
+    def patch_configuration(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = UpsertConfigurationV2Serializer(
+            instance, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         response_serializer = ScenarioV2Serializer(instance)

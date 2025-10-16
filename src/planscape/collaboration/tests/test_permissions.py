@@ -147,24 +147,36 @@ class PermissionsTest(TestCase):
         self.create_collaborator_record(Role.OWNER)
         self.assertTrue(ScenarioPermission.can_add(self.invitee, self.scenario))
 
-    # Change (Archive) Scenarios
+    # Change (Archive/Rename) Scenarios
 
-    def test_creator_can_archive_scenario(self):
+    def test_creator_can_change_scenario(self):
         self.assertTrue(ScenarioPermission.can_change(self.user, self.scenario))
 
-    def test_not_invited_cannot_archive_scenario(self):
+    def test_not_invited_cannot_change_scenario(self):
         self.assertFalse(ScenarioPermission.can_change(self.invitee, self.scenario))
 
-    def test_viewer_cannot_archive_scenario(self):
+    def test_viewer_cannot_change_scenario(self):
         self.create_collaborator_record(Role.VIEWER)
         self.assertFalse(ScenarioPermission.can_change(self.invitee, self.scenario))
 
-    def test_collaborator_cannot_archive_scenario(self):
+    def test_collaborator_cannot_change_scenario(self):
         self.create_collaborator_record(Role.COLLABORATOR)
         self.assertFalse(ScenarioPermission.can_change(self.invitee, self.scenario))
 
-    def test_scenario_owner_can_archive_scenario(self):
+    def test_owner_and_scenario_creator_can_change_scenario(self):
         self.create_collaborator_record(Role.OWNER)
+        # create a scenario with this user
+        scenario = Scenario.objects.create(
+            user=self.invitee,
+            planning_area=self.planning_area,
+            name="a different scenario",
+        )
+        scenario.save()
+        # assert that it can archive as it created the scenario
+        self.assertTrue(ScenarioPermission.can_change(self.invitee, scenario))
+
+    def test_collaborator_and_scenario_creator_can_change_scenario(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
         # create a scenario with this user
         scenario = Scenario.objects.create(
             user=self.invitee,
