@@ -92,15 +92,6 @@ migrate:
 	cd src/planscape && python3 manage.py install_layers
 	cd src/planscape && python3 manage.py install_layers --folder stands/sql
 
-load-conditions:
-	cd src/planscape && python3 manage.py load_conditions
-
-load-metrics:
-	cd src/planscape && python3 manage.py load_metrics
-
-load-rasters:
-	cd src/planscape && python3 manage.py load_rasters
-
 install-dependencies-backend:
 	pip install poetry setuptools && python3 -m poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && pip install -r requirements.txt
 
@@ -175,7 +166,7 @@ docker-build:
 		docker compose build ; \
 	fi
 docker-test:
-	./src/planscape/bin/run.sh python manage.py test $(TEST)
+	./src/planscape/bin/run.sh uv run python manage.py test $(TEST)
 
 docker-run: docker-build
 	docker compose up
@@ -197,17 +188,17 @@ docker-shell:
 	./src/planscape/bin/run.sh bash
 
 docker-makemigrations:
-	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
+	./src/planscape/bin/run.sh uv run python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
 	find . -type d -name migrations -exec sudo chown -R $(USER): {} +
 
 docker-migrate:
-	./src/planscape/bin/run.sh python manage.py migrate
-	./src/planscape/bin/run.sh python manage.py install_layers
+	./src/planscape/bin/run.sh uv run python manage.py migrate
+	./src/planscape/bin/run.sh uv run python manage.py install_layers
 
 # Reset relevant tables and load development fixture data
 load-dev-data:
-	./src/planscape/bin/run.sh python manage.py reset_dev_data
-	./src/planscape/bin/run.sh python manage.py loaddata datasets/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json
+	./src/planscape/bin/run.sh uv run python manage.py reset_dev_data
+	./src/planscape/bin/run.sh uv run python manage.py loaddata datasets/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json
 
 dev:
 	make -j2 dev-frontend dev-backend
