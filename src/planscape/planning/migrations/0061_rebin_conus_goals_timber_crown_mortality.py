@@ -45,7 +45,7 @@ def rebin_and_copy_geometry(apps, schema_editor):
         tg.group = group
         tg.active = True
 
-        update_fields = ["category", "group", "active"]
+        update_fields = ["category", "group", "active", "updated_at"]
 
         if tg.geometry is None and ref_geom is not None:
             tg.geometry = ref_geom
