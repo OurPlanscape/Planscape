@@ -73,7 +73,7 @@ jobs:
 
       - name: Cache is healthy?
         if: steps.cache.outputs.cache-hit == 'true'
-        run: timeout 10s poetry run pip --version || rm -rf .venv
+        run: timeout 10s uv run pip --version || rm -rf .venv
 
       - name: Set up PostGIS
         env:
