@@ -285,12 +285,13 @@ pip --version
 In that case, you will need to install pip. For macOS, you will have to "bootstrap" pip; instructions
 can be found [here](https://www.geeksforgeeks.org/how-to-install-pip-in-macos/).
 
+## [Install UV](https://docs.astral.sh/uv/getting-started/installation/)
+
 ## Download the Python dependencies:
 
 ```bash
-cd Planscape/src/planscape/
-python -m pip install --upgrade pip
-pip install poetry setuptools && python3 -m poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && pip install -r requirements.txt
+cd Planscape
+uv sync --dev
 ```
 
 ## Install Frontend Libraries and Services

@@ -10,6 +10,16 @@ from django.contrib.gis.geos import MultiPolygon
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
+from stands.models import Stand, StandSizeChoices
+from stands.services import (
+    calculate_stand_vector_stats_with_stand_list,
+    calculate_stand_zonal_stats,
+    calculate_stand_zonal_stats_api,
+    create_stands_for_geometry,
+    get_missing_stand_ids_for_datalayer_within_geometry,
+)
+from utils.cli_utils import call_forsys
+
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
@@ -24,16 +34,6 @@ from planning.services import (
     export_to_geopackage,
     get_available_stand_ids,
 )
-from stands.models import Stand, StandSizeChoices
-from stands.services import (
-    calculate_stand_vector_stats_with_stand_list,
-    calculate_stand_zonal_stats,
-    calculate_stand_zonal_stats_api,
-    create_stands_for_geometry,
-    get_missing_stand_ids_for_datalayer_within_geometry,
-)
-from utils.cli_utils import call_forsys
-
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -52,10 +52,18 @@ def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> 
             other_stands = Stand.objects.filter(
                 size=stand_size, geometry__intersects=planning_area.geometry
             ).aggregate(union=UnionOp("geometry"))["union"]
-            actual_geometry = planning_area.geometry.difference(other_stands)
+            actual_geometry = planning_area.geometry
+
+            if other_stands:
+                actual_geometry = planning_area.geometry.difference(other_stands)
+
+            if not actual_geometry:
+                log.info("actual_geometry null, all good.")
+
             if actual_geometry.empty:
                 log.info("No need to create stands, all good.")
                 return
+
             match actual_geometry.geom_type:
                 case "Polygon":
                     actual_geometry = MultiPolygon([actual_geometry])
