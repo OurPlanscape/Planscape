@@ -13,12 +13,10 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';
 import {
-  planningAreaIsReady,
   planningAreaMetricsAreReady,
   planningAreaMetricsFailed,
   POLLING_INTERVAL,
 } from './plan-helpers';
-import { FeatureService } from '../features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -36,8 +34,7 @@ export class PlanComponent implements OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState,
-    private featureService: FeatureService
+    private planState: PlanState
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
@@ -159,12 +156,6 @@ export class PlanComponent implements OnInit {
   }
 
   private isPlanMapStatusReady(plan: Plan) {
-    if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      return (
-        planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan)
-      );
-    } else {
-      return planningAreaIsReady(plan) || planningAreaMetricsFailed(plan);
-    }
+    return planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan);
   }
 }

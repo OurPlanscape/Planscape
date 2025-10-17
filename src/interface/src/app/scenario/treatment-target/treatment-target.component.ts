@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import {
   CommonModule,
-  NgClass,
   CurrencyPipe,
   DecimalPipe,
+  NgClass,
   NgIf,
 } from '@angular/common';
 import { SectionComponent } from '@styleguide';
@@ -22,8 +22,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
-import { FeatureService } from 'src/app/features/feature.service';
-import { PlanState } from 'src/app/plan/plan.state';
 import { map, take } from 'rxjs';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -60,26 +58,13 @@ export class TreatmentTargetComponent
 
   form!: FormGroup;
 
-  isDynamicMapEnabled = this.featureService.isFeatureEnabled(
-    'DYNAMIC_SCENARIO_MAP'
-  );
-
   treatable_area$ = this.newScenarioState.availableStands$.pipe(
     map((s) => s.summary.treatable_area)
   );
 
-  // TODO: remove once DYNAMIC_SCENARIO_MAP be released
-  plan$ = this.planState.currentPlan$;
-  // TODO: remove once DYNAMIC_SCENARIO_MAP be released
-  acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
+  maxAreaValue$ = this.treatable_area$;
 
-  maxAreaValue$ = this.isDynamicMapEnabled ? this.treatable_area$ : this.acres$;
-
-  constructor(
-    private featureService: FeatureService,
-    private planState: PlanState,
-    private newScenarioState: NewScenarioState
-  ) {
+  constructor(private newScenarioState: NewScenarioState) {
     super();
   }
 

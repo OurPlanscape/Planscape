@@ -10,7 +10,6 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { PlanState } from '../../plan/plan.state';
 import { map } from 'rxjs';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
-import { FeatureService } from '../../features/feature.service';
 
 @Component({
   selector: 'app-planning-area-layer',
@@ -28,11 +27,7 @@ import { FeatureService } from '../../features/feature.service';
 export class PlanningAreaLayerComponent {
   @Input() before = '';
 
-  readonly lineColor = this.featureService.isFeatureEnabled(
-    'DYNAMIC_SCENARIO_MAP'
-  )
-    ? BASE_COLORS.blue
-    : BASE_COLORS.md_gray;
+  readonly lineColor = BASE_COLORS.blue;
 
   linePaint = {
     'line-color': this.lineColor,
@@ -40,10 +35,7 @@ export class PlanningAreaLayerComponent {
     'line-opacity': 0.8,
   } as any;
 
-  constructor(
-    private planState: PlanState,
-    private featureService: FeatureService
-  ) {}
+  constructor(private planState: PlanState) {}
 
   tilesUrl$ = this.planState.currentPlanId$.pipe(
     map((id) => {
