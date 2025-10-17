@@ -87,13 +87,13 @@ mypy:
 	mypy . --strict --ignore-missing-imports | grep src/ | wc -l
 
 migrate:
-	cd src/planscape && python3 manage.py migrate --no-input
-	cd src/planscape && python3 manage.py collectstatic --no-input
-	cd src/planscape && python3 manage.py install_layers
-	cd src/planscape && python3 manage.py install_layers --folder stands/sql
+	uv run --directory=src/planscape manage.py migrate --no-input
+	uv run --directory=src/planscape manage.py collectstatic --no-input
+	uv run --directory=src/planscape manage.py install_layers
+	uv run --directory=src/planscape manage.py install_layers --folder stands/sql
 
 install-dependencies-backend:
-	pip install poetry setuptools && python3 -m poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && pip install -r requirements.txt
+	uv sync --locked --no-install-project --dev
 
 install-dependencies-forsys:
 	Rscript install.R
@@ -133,9 +133,6 @@ restart: reload stop-celery stop stop-forsys-server start-forsys-server start st
 
 nginx-restart:
 	sudo service nginx restart
-
-load-restrictions:
-	cd src/planscape && sh bin/load_restrictions.sh
 
 test-scenarios:
 	cd src/planscape && python3 manage.py test_scenarios
