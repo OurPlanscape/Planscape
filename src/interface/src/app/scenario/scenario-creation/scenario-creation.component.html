@@ -37,7 +37,7 @@
       (finished)="onFinish()"
       [outerForm]="form"
       [savingStep]="awaitingBackendResponse"
-      [disabled]="(loading$ | async) || false">
+      [disabled]="(loading$ | async) || awaitingBackendResponse || false">
       <sg-step>
         <app-step1 #step1></app-step1>
       </sg-step>
