@@ -232,10 +232,12 @@ export class ScenarioCreationComponent
   }
 
   savePatch(data: Partial<ScenarioDraftPayload>): Observable<boolean> {
+    this.awaitingBackendResponse = true;
     this.newScenarioState.setScenarioConfig(this.config);
 
     return this.scenarioService.patchScenarioConfig(this.scenarioId, data).pipe(
       map((result) => {
+        this.awaitingBackendResponse = false;
         if (result) {
           return true; // Return true if the patch was successful
         }
@@ -243,6 +245,7 @@ export class ScenarioCreationComponent
       }),
       catchError((e) => {
         console.error('Patch error:', e);
+        this.awaitingBackendResponse = false;
         return of(false); // Return false in case of an error
       })
     );
