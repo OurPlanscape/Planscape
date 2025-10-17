@@ -60,7 +60,9 @@
     emptyStateTitle="No scenarios yet"
     [emptyStateContent]="
       canAddScenarioForPlan
-        ? 'Click “New scenario” to start creating your scenarios.'
+        ? isValidPlanningArea
+          ? 'Click “New scenario” to start creating your scenarios.'
+          : 'Click “Upload Scenario” to add scenarios.'
         : ''
     ">
     <mat-tab-group
