@@ -68,6 +68,9 @@ export class NewScenarioState {
     this.excludedAreas$,
     this.constraints$,
   ]).pipe(
+    tap((allthevalues) =>
+      console.log('all the values from combineLatest:', allthevalues)
+    ),
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([standsLoaded, stepIndex]) => stepIndex < 3),

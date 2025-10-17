@@ -98,7 +98,7 @@ export class ScenarioCreationComponent
 
   planId = this.route.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
-
+  scenarioStatus = 'NOT_STARTED';
   finished = false;
 
   form = new FormGroup({
@@ -178,9 +178,11 @@ export class ScenarioCreationComponent
           scenario.configuration
         );
         this.newScenarioState.setScenarioConfig(currentConfig);
+        this.scenarioStatus = scenario.scenario_result?.status ?? 'NOT STARTED';
+        console.log('The scenario status', this.scenarioStatus);
         console.log(
           'The current config of newScenarioState after we load the scenario:',
-          this.newScenarioState.getScenarioConfig()
+          currentConfig
         );
       });
   }
@@ -224,8 +226,12 @@ export class ScenarioCreationComponent
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
-        console.log('here is the new scenariostate:', this.config);
-        if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+        console.log('here is the new scenario state config:', this.config);
+        //
+        if (
+          this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+          this.scenarioStatus === 'DRAFT'
+        ) {
           return this.savePatch(data).pipe(catchError(() => of(false)));
         }
 
@@ -249,19 +255,22 @@ export class ScenarioCreationComponent
       .pipe(
         map((result) => {
           if (result) {
-            return true; // Return true if the patch was successful
+            return true;
           }
-          return false; // Return false if the result is not as expected
+          return false;
         }),
         catchError((e) => {
           console.error('Patch error:', e);
-          return of(false); // Return false in case of an error
+          return of(false);
         })
       );
   }
 
   async onFinish() {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+    if (
+      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+      this.scenarioStatus === 'DRAFT'
+    ) {
       this.runScenario();
     } else {
       this.finishFromFullConfig();
