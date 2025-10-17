@@ -1,9 +1,9 @@
-import { Component, Input, SimpleChanges, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   CommonModule,
-  NgClass,
   CurrencyPipe,
   DecimalPipe,
+  NgClass,
   NgIf,
 } from '@angular/common';
 import { SectionComponent } from '@styleguide';
@@ -15,14 +15,13 @@ import {
   FormControl,
   FormGroup,
   FormGroupDirective,
-  ReactiveFormsModule,
   NgForm,
+  ReactiveFormsModule,
   ValidationErrors,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
 import {
-  calculateMaxArea,
   calculateMinArea,
   calculateMinBudget,
   hasEnoughBudget,
@@ -32,7 +31,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
-import { FeatureService } from 'src/app/features/feature.service';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
@@ -84,7 +82,7 @@ export class Step4LegacyComponent
     { validators: this.budgetOrAreaRequiredValidator }
   );
 
-  constructor(private featureService: FeatureService) {
+  constructor() {
     super();
   }
 
@@ -102,9 +100,7 @@ export class Step4LegacyComponent
   }
 
   get maxMaxAreaValue() {
-    return this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')
-      ? this.maxAreaValue
-      : calculateMaxArea(this.maxAreaValue);
+    return this.maxAreaValue;
   }
 
   ngOnChanges(changes: SimpleChanges): void {

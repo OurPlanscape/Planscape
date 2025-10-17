@@ -53,11 +53,7 @@
           *appFeatureFlag="'SCENARIO_DRAFTS'"></app-treatment-target>
         <app-step4-legacy
           #step4
-          [maxAreaValue]="
-            isDynamicMapEnabled
-              ? ((treatable_area$ | async) ?? 0)
-              : ((acres$ | async) ?? 0)
-          "
+          [maxAreaValue]="(treatable_area$ | async) ?? 0"
           *appFeatureFlag="'SCENARIO_DRAFTS'; hide: true"></app-step4-legacy>
       </sg-step>
     </sg-steps>

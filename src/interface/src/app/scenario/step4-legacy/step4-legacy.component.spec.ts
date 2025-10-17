@@ -1,14 +1,15 @@
 import {
   ComponentFixture,
-  TestBed,
   fakeAsync,
+  TestBed,
   tick,
 } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {
+  BrowserAnimationsModule,
+  NoopAnimationsModule,
+} from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Step4LegacyComponent } from './step4-legacy.component';
-import { FeaturesModule } from 'src/app/features/features.module';
 
 describe('Step4LegacyComponent', () => {
   let component: Step4LegacyComponent;
@@ -21,7 +22,6 @@ describe('Step4LegacyComponent', () => {
         BrowserAnimationsModule,
         NgxMaskModule.forRoot(),
         Step4LegacyComponent,
-        FeaturesModule,
       ],
     }).compileComponents();
 
