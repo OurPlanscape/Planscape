@@ -79,6 +79,25 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should return false if SCENARIO_DRAFTS is disabled and the scenario is NOT a draft', async () => {
+    TestBed.overrideProvider(FEATURES_JSON, {
+      useValue: { SCENARIO_DRAFTS: false },
+    });
+    mockUser$.next({ id: 1 });
+    mockScenario$.next({
+      user: 2,
+      planning_area: 5,
+      scenario_result: { status: 'SUCCESS' },
+    } as any);
+    createComp();
+
+    const canViewScenarioCreation = await firstValueFrom(
+      component.canViewScenarioCreation$
+    );
+
+    expect(canViewScenarioCreation).toBeFalse();
+  });
+
   it('should return false if SCENARIO_DRAFTS is disabled and the scenario is a DRAFT and redirect to planning area', async () => {
     TestBed.overrideProvider(FEATURES_JSON, {
       useValue: { SCENARIO_DRAFTS: false },

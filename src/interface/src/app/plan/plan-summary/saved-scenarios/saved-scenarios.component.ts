@@ -19,7 +19,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   getPlanPath,
   isValidTotalArea,
-  planningAreaIsReady,
   planningAreaMetricsAreReady,
   planningAreaMetricsFailed,
   POLLING_INTERVAL,
@@ -176,11 +175,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   get planningAreaIsReady() {
-    if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      return this.plan && planningAreaMetricsAreReady(this.plan);
-    } else {
-      return this.plan && planningAreaIsReady(this.plan);
-    }
+    return this.plan && planningAreaMetricsAreReady(this.plan);
   }
 
   get planningAreaFailed() {
