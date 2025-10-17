@@ -53,9 +53,17 @@ export class NewScenarioState {
 
   // trigger to get available stands
   private _baseStandsLoaded$ = merge(
-    this.standSize$.pipe(mapTo(false)), // flip to false on size change
-    this.baseStandsReady$.asObservable() // flip to true when loading completes
+    this.standSize$.pipe(
+      tap((size) => console.log('Stand size changed:', size)),
+      mapTo(false) // flip to false on size change
+    ),
+    this.baseStandsReady$
+      .asObservable()
+      .pipe(tap(() => console.log('Base stands ready!')))
   ).pipe(
+    tap((bsl) =>
+      console.log('whats happening in the baseStandsLoaded thingy?', bsl)
+    ),
     startWith(false),
     shareReplay({ bufferSize: 1, refCount: true }),
     distinctUntilChanged()
@@ -72,6 +80,9 @@ export class NewScenarioState {
       console.log('all the values from combineLatest:', allthevalues)
     ),
     filter(([standsLoaded]) => !!standsLoaded),
+    tap((afterStandsLoadedFilter) =>
+      console.log('afterStandsLoadedFilter values:', afterStandsLoadedFilter)
+    ),
     // only trigger/refresh on the steps that interact with the map
     filter(([standsLoaded, stepIndex]) => stepIndex < 3),
     tap(() => this.setLoading(true)),
@@ -188,6 +199,7 @@ export class NewScenarioState {
   }
 
   setBaseStandsLoaded(loaded: boolean) {
+    console.log('setBaseStandsLoaded is set to:', loaded);
     this.baseStandsReady$.next(loaded);
   }
 

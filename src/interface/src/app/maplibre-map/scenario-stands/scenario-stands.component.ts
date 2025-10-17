@@ -180,6 +180,10 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
       !this.standsLoaded
     ) {
       this.zone.run(() => {
+        console.log(
+          'so, this this.zone.run is happening? from what event?',
+          event
+        );
         this.newScenarioState.setBaseStandsLoaded(true);
         this.standsLoaded = true;
       });

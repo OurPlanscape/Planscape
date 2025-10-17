@@ -254,6 +254,7 @@ export class ScenarioCreationComponent
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(
         map((result) => {
+          console.log('here is the patch result:', result);
           if (result) {
             return true;
           }
