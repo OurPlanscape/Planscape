@@ -158,6 +158,10 @@ export class NewScenarioState {
     this._scenarioConfig$.next(config);
   }
 
+  getScenarioConfig() {
+    return this._scenarioConfig$.value;
+  }
+
   setConstraints(constraints: Constraint[]) {
     this._constraints$.next(constraints);
   }
