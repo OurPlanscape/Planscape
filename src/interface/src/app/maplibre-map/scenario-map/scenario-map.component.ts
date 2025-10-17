@@ -91,7 +91,7 @@ export class ScenarioMapComponent {
   ]).pipe(
     map(
       ([isScenarioSuccessful, stepIndex]) =>
-        isScenarioSuccessful || isScenarioSuccessful || stepIndex > 0
+        isScenarioSuccessful || stepIndex > 0
     )
   );
 

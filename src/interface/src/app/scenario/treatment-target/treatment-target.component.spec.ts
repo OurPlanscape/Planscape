@@ -1,16 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {
+  BrowserAnimationsModule,
+  NoopAnimationsModule,
+} from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentTargetComponent } from './treatment-target.component';
-import { FeaturesModule } from 'src/app/features/features.module';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MockProvider } from 'ng-mocks';
-import { PlanState } from 'src/app/plan/plan.state';
 import { NewScenarioState } from '../new-scenario.state';
 import { of } from 'rxjs';
 import { AvailableStands } from '@types';
-import { MOCK_PLAN } from '@services/mocks';
 
 describe('Step4LegacyComponent', () => {
   let component: TreatmentTargetComponent;
@@ -23,12 +22,8 @@ describe('Step4LegacyComponent', () => {
         BrowserAnimationsModule,
         NgxMaskModule.forRoot(),
         TreatmentTargetComponent,
-        FeaturesModule,
       ],
       providers: [
-        MockProvider(PlanState, {
-          currentPlan$: of(MOCK_PLAN),
-        }),
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),
         }),
