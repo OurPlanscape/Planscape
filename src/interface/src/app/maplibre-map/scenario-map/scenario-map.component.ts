@@ -81,8 +81,10 @@ export class ScenarioMapComponent {
     map((scenarioId) => (scenarioId ? 'Project Area Opacity' : 'Stand Opacity'))
   );
 
-  showScenarioStands$ = this.scenarioState.currentScenarioId$.pipe(
-    map((scenarioId) => !scenarioId)
+  showScenarioStands$ = this.scenarioState.currentScenario$.pipe(
+    map(
+      (scenario) => !scenario.id || scenario.scenario_result?.status === 'DRAFT'
+    )
   );
 
   showOpacitySlider$ = combineLatest([
