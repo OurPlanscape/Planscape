@@ -95,7 +95,7 @@ export class ScenarioCreationComponent
   config: Partial<ScenarioCreation> = {};
   draftConfig: Partial<ScenarioDraftPayload> = {};
 
-  planId = this.route.snapshot.data['planId'];
+  planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
 
   finished = false;
