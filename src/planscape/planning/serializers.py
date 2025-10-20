@@ -524,7 +524,6 @@ class TargetsSerializer(serializers.Serializer):
 class ConfigurationV3Serializer(serializers.Serializer):
     stand_size = serializers.ChoiceField(
         choices=StandSizeChoices.choices,
-        default=StandSizeChoices.LARGE,
         required=False,
     )
 
