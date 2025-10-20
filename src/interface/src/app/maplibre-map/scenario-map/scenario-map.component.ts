@@ -32,6 +32,7 @@ import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.comp
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
+import { Scenario } from '@types';
 
 @Component({
   selector: 'app-scenario-map',
@@ -83,7 +84,8 @@ export class ScenarioMapComponent {
 
   showScenarioStands$ = this.scenarioState.currentScenario$.pipe(
     map(
-      (scenario) => !scenario.id || scenario.scenario_result?.status === 'DRAFT'
+      (scenario: Scenario) =>
+        !scenario.id || scenario.scenario_result?.status === 'DRAFT'
     )
   );
 
