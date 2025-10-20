@@ -239,6 +239,8 @@ class TreatmentGoalGroup(models.TextChoices):
         "CALIFORNIA_PLANNING_METRICS",
         "California Planning Metrics",
     )
+    TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
+    PYROLOGIX = ("PYROLOGIX", "Pyrologix")
 
 
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):

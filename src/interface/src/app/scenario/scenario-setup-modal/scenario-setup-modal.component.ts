@@ -98,4 +98,13 @@ export class ScenarioSetupModalComponent {
       },
     });
   }
+
+  submitIfValid(event: Event) {
+    if (this.submitting || this.scenarioNameForm.invalid) {
+      event.preventDefault();
+      return;
+    }
+    event.preventDefault();
+    this.handleSubmit();
+  }
 }
