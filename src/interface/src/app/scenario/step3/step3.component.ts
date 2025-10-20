@@ -17,7 +17,6 @@ import { NamedConstraint, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { FeatureService } from '../../features/feature.service';
 
 @Component({
   selector: 'app-step3',
@@ -51,10 +50,7 @@ export class Step3Component
     ]),
   });
 
-  constructor(
-    private newScenarioState: NewScenarioState,
-    private featureService: FeatureService
-  ) {
+  constructor(private newScenarioState: NewScenarioState) {
     super();
   }
 
@@ -66,10 +62,7 @@ export class Step3Component
     this.form.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((form: any) => {
-        if (
-          this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP') &&
-          this.form.valid
-        ) {
+        if (this.form.valid) {
           const constraints: NamedConstraint[] = [];
           if (!(form.max_slope === null || form.max_slope === '')) {
             constraints.push({

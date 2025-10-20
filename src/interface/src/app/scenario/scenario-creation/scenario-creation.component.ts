@@ -6,14 +6,14 @@ import { StepComponent, StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
+  catchError,
+  finalize,
   firstValueFrom,
   map,
   Observable,
   of,
   skip,
   take,
-  catchError,
-  finalize,
 } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
@@ -31,8 +31,8 @@ import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
   ScenarioConfig,
   ScenarioConfigPayload,
-  ScenarioDraftPayload,
   ScenarioCreation,
+  ScenarioDraftPayload,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
@@ -41,11 +41,10 @@ import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow
 import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
-import { PlanState } from 'src/app/plan/plan.state';
 import { Step3Component } from '../step3/step3.component';
 import {
-  getScenarioCreationPayloadScenarioCreation,
   convertFormOutputToDraftPayload,
+  getScenarioCreationPayloadScenarioCreation,
 } from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
@@ -99,8 +98,6 @@ export class ScenarioCreationComponent
   planId = this.route.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
 
-  plan$ = this.planState.currentPlan$;
-  acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   finished = false;
 
   form = new FormGroup({
@@ -108,10 +105,6 @@ export class ScenarioCreationComponent
   });
 
   awaitingBackendResponse = false;
-
-  isDynamicMapEnabled = this.featureService.isFeatureEnabled(
-    'DYNAMIC_SCENARIO_MAP'
-  );
 
   continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
     ? 'Save & Continue'
@@ -143,7 +136,6 @@ export class ScenarioCreationComponent
     private scenarioService: ScenarioService,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute,
-    private planState: PlanState,
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
     private router: Router,
@@ -218,14 +210,6 @@ export class ScenarioCreationComponent
       const payload = convertFormOutputToDraftPayload(data, thresholdsIdMap);
       return this.savePatch(payload);
     } else {
-      // if dynamic map is not able just go forward.
-      // remove this once dynamic map enabled.
-      if (!this.isDynamicMapEnabled) {
-        this.config = { ...this.config, ...data };
-        this.newScenarioState.setScenarioConfig(this.config);
-        return of(true);
-      }
-
       return this.newScenarioState.isValidToGoNext$.pipe(
         take(1),
         map((valid) => {

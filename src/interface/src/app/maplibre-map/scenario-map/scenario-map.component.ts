@@ -31,7 +31,6 @@ import { FeaturesModule } from '../../features/features.module';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
-import { FeatureService } from '../../features/feature.service';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 
 @Component({
@@ -66,8 +65,7 @@ export class ScenarioMapComponent {
     private planState: PlanState,
     private scenarioState: ScenarioState,
     private mapConfigService: MapConfigService,
-    private newScenarioState: NewScenarioState,
-    private featureService: FeatureService
+    private newScenarioState: NewScenarioState
   ) {
     this.mapConfigService.initialize();
   }
@@ -84,7 +82,7 @@ export class ScenarioMapComponent {
   );
 
   showScenarioStands$ = this.scenarioState.currentScenarioId$.pipe(
-    map((scenarioId) => !scenarioId && this.isDynamicMapEnabled())
+    map((scenarioId) => !scenarioId)
   );
 
   showOpacitySlider$ = combineLatest([
@@ -93,8 +91,7 @@ export class ScenarioMapComponent {
   ]).pipe(
     map(
       ([isScenarioSuccessful, stepIndex]) =>
-        isScenarioSuccessful ||
-        (this.isDynamicMapEnabled() && (isScenarioSuccessful || stepIndex > 0))
+        isScenarioSuccessful || stepIndex > 0
     )
   );
 
@@ -137,10 +134,6 @@ export class ScenarioMapComponent {
   );
 
   loading$ = this.newScenarioState.loading$;
-
-  isDynamicMapEnabled() {
-    return this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP');
-  }
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

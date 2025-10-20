@@ -1,4 +1,7 @@
-FROM python:3.10-slim-bullseye
+FROM ghcr.io/astral-sh/uv:latest AS builder
+
+FROM python:3.14.0-slim-trixie
+COPY --from=builder /uv /uvx /bin/
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -16,19 +19,13 @@ RUN apt-get update && \
     postgresql-client \
     python3-pip
 
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /app
+WORKDIR /app
 
-# Python dependencies
-RUN pip install -U pip poetry setuptools
-COPY pyproject.toml poetry.lock /usr/src/app/
+COPY pyproject.toml uv.lock /app/
+RUN uv sync --locked --no-install-project --dev
 
-RUN poetry config virtualenvs.create false && \
-    poetry config installer.max-workers 10 && \
-    poetry install --no-interaction
-
-COPY .env martin.yaml Makefile /usr/src/app/
-COPY src/planscape/* /usr/src/app/
+COPY . /app
 
 EXPOSE 8000
 

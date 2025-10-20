@@ -173,10 +173,6 @@ export function flattenMultipolygons(
   return polygons;
 }
 
-export function planningAreaIsReady(pa: Plan) {
-  return pa.map_status === 'DONE' || pa.map_status === 'STANDS_DONE';
-}
-
 export function planningAreaMetricsAreReady(pa: Plan) {
   return pa.map_status === 'DONE';
 }
