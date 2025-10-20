@@ -98,6 +98,7 @@ export class ScenarioCreationComponent
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
+  // TODO: we can remove this status check when the DRAFTS FF is removed
   scenarioStatus = 'NOT_STARTED';
   finished = false;
 
@@ -215,7 +216,8 @@ export class ScenarioCreationComponent
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
-        //
+        // TODO: we can remove both of these conditions when the FF is removed,
+        //. but it's helpful for testing different routes
         if (
           this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
           this.scenarioStatus === 'DRAFT'
@@ -258,6 +260,8 @@ export class ScenarioCreationComponent
   }
 
   async onFinish() {
+    // TODO: we can remove both of these conditions when the FF is removed,
+    //. but it's helpful for testing different routes
     if (
       this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
       this.scenarioStatus === 'DRAFT'
