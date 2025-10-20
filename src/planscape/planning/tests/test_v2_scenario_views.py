@@ -985,7 +985,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         targets = config.get("targets", {})
         self.assertEqual(targets.get("estimated_cost"), 12345)
         self.assertEqual(targets.get("max_area"), 11111)
-        self.assertEqual(config.get("stand_size"), "LARGE")
+        self.assertNotIn("stand_size", config, "The 'stand_size' key should not have a default.")
 
         # second patch - modify stand_size + add excluded_areas
         payload2 = {
