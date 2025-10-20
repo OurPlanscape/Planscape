@@ -23,7 +23,6 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
-    ScenarioResult,
     ScenarioResultStatus,
     ScenarioVersion,
     TreatmentGoal,

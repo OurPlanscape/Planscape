@@ -3,7 +3,6 @@ from typing import Any, Collection, Dict, List, Optional
 
 import boto3
 import requests
-from pathlib import Path
 from boto3.session import Session
 from botocore.exceptions import ClientError
 from cacheops import cached

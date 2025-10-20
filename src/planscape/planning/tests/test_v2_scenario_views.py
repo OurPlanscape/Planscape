@@ -944,15 +944,15 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         config = response.data.get("configuration", {})
-        targets = config.get("targets", {})
 
         self.assertEqual(config.get("stand_size"), "SMALL")
         self.assertEqual(config.get("targets").get("estimated_cost"), 12345)
 
     # Test sequential patches, ensure we retain values as expected
     def test_patch_scenario_incremental_updates(self):
-        from datasets.tests.factories import DataLayerFactory
         from datasets.models import DataLayerType, GeometryType
+        from datasets.tests.factories import DataLayerFactory
+
         from planning.tests.factories import TreatmentGoalFactory
 
         # create valid excluded_areas and included_areas with real PKs
@@ -1295,8 +1295,8 @@ class RunScenarioEndpointTest(APITestCase):
         with (
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
-            ) as validate_mock,
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
+            ) as validate_mock,  # noqa: F841
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa,
         ):
             response = self.client.post(self.url, format="json")
 
@@ -1315,8 +1315,8 @@ class RunScenarioEndpointTest(APITestCase):
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration",
                 return_value=["Provide either `max_budget` or `max_area`."],
-            ) as validate_mock,
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
+            ) as validate_mock,  # noqa: F841
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 

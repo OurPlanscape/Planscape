@@ -697,19 +697,19 @@ def map_property(key_value_pair):
     key, value = key_value_pair
     type = ""
     match value:
-        case int() as v:
+        case int():
             type = "int64"
-        case str() as v:
+        case str():
             type = "str:128"
-        case float() as v:
+        case float():
             type = "float"
-        case datetime() as v:
+        case datetime():
             type = "str:64"
-        case date() as v:
+        case date():
             type = "date"
-        case time() as v:
+        case time():
             type = "time"
-        case dict() as v:
+        case dict():
             type = "json"
     return (key, type)
 
@@ -721,7 +721,7 @@ def get_schema(
     match geojson:
         case {"type": "FeatureCollection", "features": features}:
             feature = features[0]
-        case {"properties": _properties, "geometry": _geometry}:
+        case {"properties": _properties, "geometry": _geometry}:  # noqa
             feature = geojson
         case list() as features:
             feature = features[0]

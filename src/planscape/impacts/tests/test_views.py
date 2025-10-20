@@ -10,22 +10,6 @@ from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.utils import timezone
-from impacts.models import (
-    AVAILABLE_YEARS,
-    ImpactVariable,
-    ImpactVariableAggregation,
-    TreatmentPlan,
-    TreatmentPlanNote,
-    TreatmentPlanStatus,
-    TreatmentPrescriptionAction,
-)
-from impacts.tests.factories import (
-    ImpactVariable,
-    ProjectAreaTreatmentResultFactory,
-    TreatmentPlanFactory,
-    TreatmentPrescriptionFactory,
-    TreatmentResultFactory,
-)
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -36,6 +20,21 @@ from rest_framework.test import APIClient, APITestCase
 from stands.models import StandSizeChoices
 from stands.tests.factories import StandFactory, StandMetricFactory
 
+from impacts.models import (
+    AVAILABLE_YEARS,
+    ImpactVariable,
+    ImpactVariableAggregation,
+    TreatmentPlan,
+    TreatmentPlanNote,
+    TreatmentPlanStatus,
+    TreatmentPrescriptionAction,
+)
+from impacts.tests.factories import (
+    ProjectAreaTreatmentResultFactory,
+    TreatmentPlanFactory,
+    TreatmentPrescriptionFactory,
+    TreatmentResultFactory,
+)
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -681,7 +680,6 @@ class TxPrescriptionBatchDeleteTest(APITestCase):
             data=payload,
             format="json",
         )
-        response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_batch_delete_tx_rx_empty_list(self):
@@ -694,7 +692,6 @@ class TxPrescriptionBatchDeleteTest(APITestCase):
             data=payload,
             format="json",
         )
-        response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_batch_delete_nonowned_tx_rx(self):

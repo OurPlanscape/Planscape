@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from xml.etree import ElementTree
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from pygeometa.schemas import load_schema, SCHEMAS
 
 

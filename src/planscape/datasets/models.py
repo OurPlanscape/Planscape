@@ -17,6 +17,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Area
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.validators import RegexValidator, URLValidator
+from django.db.models import Manager
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node

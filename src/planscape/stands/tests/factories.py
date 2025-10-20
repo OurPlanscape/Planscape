@@ -3,7 +3,6 @@ import factory.fuzzy
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.db.models.functions import Centroid, GeoHash, Transform
-from django.db.models import F
 
 from stands.models import Stand, StandMetric, StandSizeChoices
 

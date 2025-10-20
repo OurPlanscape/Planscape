@@ -1,10 +1,9 @@
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import Tuple, Union
 
 from django.core.management.base import BaseCommand
 from django.db import connection
 
-from utils.file_utils import read_file
 
 
 TInput = Union[Path, str]

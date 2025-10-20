@@ -3,7 +3,6 @@ from urllib.parse import urlencode
 from datasets.models import DataLayer, Dataset
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from organizations.tests.factories import OrganizationFactory
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APITestCase
