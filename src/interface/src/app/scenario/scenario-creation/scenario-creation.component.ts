@@ -104,8 +104,6 @@ export class ScenarioCreationComponent
     scenarioName: new FormControl('', [Validators.required]),
   });
 
-  awaitingBackendResponse = false;
-
   continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
     ? 'Save & Continue'
     : 'Next';
@@ -232,10 +230,12 @@ export class ScenarioCreationComponent
   }
 
   savePatch(data: Partial<ScenarioDraftPayload>): Observable<boolean> {
+    this.newScenarioState.setLoading(true);
     this.newScenarioState.setScenarioConfig(this.config);
 
     return this.scenarioService.patchScenarioConfig(this.scenarioId, data).pipe(
       map((result) => {
+        this.newScenarioState.setLoading(false);
         if (result) {
           return true; // Return true if the patch was successful
         }
@@ -243,6 +243,7 @@ export class ScenarioCreationComponent
       }),
       catchError((e) => {
         console.error('Patch error:', e);
+        this.newScenarioState.setLoading(false);
         return of(false); // Return false in case of an error
       })
     );
@@ -257,12 +258,12 @@ export class ScenarioCreationComponent
   }
 
   async runScenario() {
-    this.awaitingBackendResponse = true;
+    this.newScenarioState.setLoading(true);
     this.scenarioService
       .runScenario(this.scenarioId)
       .pipe(
         finalize(() => {
-          this.awaitingBackendResponse = false;
+          this.newScenarioState.setLoading(false);
         })
       )
       .subscribe({
@@ -277,10 +278,10 @@ export class ScenarioCreationComponent
         },
         error: (e) => {
           this.dialog.open(ScenarioErrorModalComponent);
-          this.awaitingBackendResponse = false;
+          this.newScenarioState.setLoading(false);
         },
         complete: () => {
-          this.awaitingBackendResponse = false;
+          this.newScenarioState.setLoading(false);
         },
       });
   }
@@ -291,7 +292,7 @@ export class ScenarioCreationComponent
       name: this.form.getRawValue().scenarioName || '',
       planning_area: this.planId,
     });
-    this.awaitingBackendResponse = true;
+    this.newScenarioState.setLoading(true);
     // Firing scenario name validation before finish
     const validated = await this.refreshScenarioNameValidator();
 
@@ -300,7 +301,7 @@ export class ScenarioCreationComponent
         .createScenarioFromSteps(payload)
         .pipe(
           finalize(() => {
-            this.awaitingBackendResponse = false;
+            this.newScenarioState.setLoading(false);
           })
         )
         .subscribe({
@@ -312,11 +313,11 @@ export class ScenarioCreationComponent
             this.dialog.open(ScenarioErrorModalComponent);
           },
           complete: () => {
-            this.awaitingBackendResponse = false;
+            this.newScenarioState.setLoading(false);
           },
         });
     } else {
-      this.awaitingBackendResponse = false;
+      this.newScenarioState.setLoading(false);
     }
   }
 
