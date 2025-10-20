@@ -245,7 +245,6 @@ export class ScenarioCreationComponent
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(
         map((result) => {
-          this.newScenarioState.setLoading(false);
           if (result) {
             return true;
           }
