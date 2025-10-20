@@ -12,6 +12,12 @@ export function canDeletePlanningArea(plan: Plan | PreviewPlan, user: User) {
   return plan.user == user.id;
 }
 
+export function canEditPlanName(plan: Plan | PreviewPlan, user: User) {
+  return (
+    plan.user === user.id || plan.permissions?.includes('change_planning_area')
+  );
+}
+
 export function userCanAddTreatmentPlan(plan: Plan | PreviewPlan) {
   return plan.permissions?.includes('add_tx_plan');
 }

@@ -2,14 +2,13 @@
 @import 'mixins';
 
 :host {
-    .upload-form {
-        padding: 12px;
+  .upload-form {
+    padding: 12px;
 
-        ::ng-deep .input-wrapper {
-    width: 100%;
-  }
-
+    ::ng-deep .input-wrapper {
+      width: 100%;
     }
+  }
 
   .field-label-row {
     padding: 24px;
@@ -39,4 +38,12 @@
     color: $color-error;
     padding-left: 2px;
   }
+}
+
+.help-text {
+  margin-top: 4px;
+}
+
+.error {
+  color: $color-error;
 }

@@ -18,6 +18,10 @@
     <mat-icon class="material-symbols-outlined">map</mat-icon>
     <span>View Map</span>
   </a>
+  <button [disabled]="!canEditPlanName" mat-menu-item (click)="editPlanName()">
+    <mat-icon class="material-symbols-outlined">edit</mat-icon>
+    <span>Rename</span>
+  </button>
   <button mat-menu-item (click)="sharePlan()" [disabled]="!shareEnabled">
     <mat-icon class="material-symbols-outlined">share</mat-icon>
     <span>Share</span>

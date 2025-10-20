@@ -5,10 +5,11 @@ import { RouterLink } from '@angular/router';
 import { Plan, PreviewPlan } from '@types';
 import {
   canDeletePlanningArea,
+  canEditPlanName,
   canViewCollaborators,
 } from '../../plan/permissions';
 import { take } from 'rxjs';
-import { SNACK_NOTICE_CONFIG } from '@shared';
+import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
@@ -20,11 +21,14 @@ import {
 import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { CreatePlanDialogComponent } from 'src/app/explore/create-plan-dialog/create-plan-dialog.component';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-planning-area-menu',
   standalone: true,
   imports: [
+    NgIf,
     MatLegacyButtonModule,
     MatIconModule,
     MatMenuModule,
@@ -37,6 +41,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 export class PlanningAreaMenuComponent {
   @Input() plan!: Plan | PreviewPlan;
   @Output() afterDelete = new EventEmitter();
+  @Output() afterRename = new EventEmitter();
 
   constructor(
     private authService: AuthService,
@@ -71,6 +76,39 @@ export class PlanningAreaMenuComponent {
       return false;
     }
     return canDeletePlanningArea(this.plan, user);
+  }
+
+  get canEditPlanName() {
+    const user = this.authService.currentUser();
+    if (!user) {
+      return false;
+    }
+    return canEditPlanName(this.plan, user);
+  }
+
+  editPlanName() {
+    const dialogRef: MatDialogRef<CreatePlanDialogComponent> = this.dialog.open(
+      CreatePlanDialogComponent,
+      {
+        data: {
+          planName: this.plan.name,
+          planId: this.plan.id,
+        },
+      }
+    );
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.snackbar.open(
+            `Planning area name has been updated`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+          this.afterRename.emit();
+        }
+      });
   }
 
   deletePlan() {

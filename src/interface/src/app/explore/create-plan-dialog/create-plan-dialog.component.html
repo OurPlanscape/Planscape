@@ -1,9 +1,9 @@
 <sg-modal
-  title="Name your plan"
+  [title]="!editMode ? 'Name your plan' : 'Rename'"
   [shortHeader]="false"
-  [showBorders]="false"
+  [showBorders]="editMode"
   [centerFooter]="false"
-  primaryButtonText="Create"
+  [primaryButtonText]="primaryCTA"
   secondaryButtonText="Cancel"
   (clickedSecondary)="cancel()"
   (clickedClose)="cancel()"
@@ -13,12 +13,13 @@
   [primaryButtonDisabled]="submitting">
   <div modalBodyContent>
     <sg-modal-info
+      *ngIf="!editMode"
       infoType="info"
       leadingIcon="info_filled"
       message="Boundaries cannot be modified after the plan is saved.">
     </sg-modal-info>
     <sg-modal-info
-      *ngIf="!isValidTotalArea"
+      *ngIf="!editMode && !isValidTotalArea"
       infoType="warning"
       data-id="totalAreaError"
       leadingIcon="warning_filled"
@@ -45,9 +46,14 @@
         </sg-input-field>
       </div>
 
-      <mat-error *ngIf="planForm.hasError('planNameExists')">
+      <div class="help-text error" *ngIf="planForm.hasError('planNameExists')">
         There is already a planning area with that name.
-      </mat-error>
+      </div>
+
+      <div class="help-text error" *ngIf="displayError">
+        Something went wrong while saving your changes. Please try again in a
+        moment.
+      </div>
     </form>
   </div>
 </sg-modal>
