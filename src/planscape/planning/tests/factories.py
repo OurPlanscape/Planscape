@@ -1,11 +1,12 @@
-from django.conf import settings
-from django.db import connection
-
 import factory
 import factory.fuzzy
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
+from datasets.tests.factories import DataLayerFactory
+from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.db import connection
+
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -17,11 +18,9 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
-    TreatmentGoalGroup,
-    TreatmentGoalUsesDataLayer,
     TreatmentGoalUsageType,
+    TreatmentGoalUsesDataLayer,
 )
-from datasets.tests.factories import DataLayerFactory
 from planscape.tests.factories import UserFactory
 
 
@@ -88,7 +87,7 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted == True:
+        if extracted:
             with connection.cursor() as cur:
                 cur.execute(
                     """
@@ -125,7 +124,7 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted == True:
+        if extracted:
             TreatmentGoalUsesDataLayerFactory.create(
                 treatment_goal=self, usage_type=TreatmentGoalUsageType.PRIORITY
             )
@@ -190,7 +189,7 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted == True:
+        if extracted:
             ScenarioResultFactory(scenario=self)
 
 

@@ -3,7 +3,6 @@ from typing import List, Optional
 
 import markdown
 from collaboration.services import get_permissions, get_role
-from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon

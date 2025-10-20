@@ -92,7 +92,7 @@ class TestDataLayerViewSet(APITestCase):
 
     def test_filter_by_full_text_search_datalayer_name_multiple_return(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):
@@ -109,7 +109,7 @@ class TestDataLayerViewSet(APITestCase):
 
     def test_filter_by_full_text_search_dataset_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):
@@ -130,7 +130,7 @@ class TestDataLayerViewSet(APITestCase):
 
     def test_filter_by_full_text_search_organization_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):
@@ -178,7 +178,7 @@ class TestDataLayerViewSet(APITestCase):
 
     def test_find_anything(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):

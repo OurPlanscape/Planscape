@@ -1,7 +1,5 @@
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
-from rest_framework.exceptions import ValidationError
-from climate_foresight.models import ClimateForesightRun
 from climate_foresight.serializers import (
     ClimateForesightRunSerializer,
     ClimateForesightRunListSerializer,

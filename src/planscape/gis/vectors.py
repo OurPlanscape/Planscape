@@ -8,13 +8,8 @@ from uuid import uuid4
 from django.conf import settings
 from utils.cli_utils import ogr2ogr_cli, ogr2ogr_extract_layer_from_gpkg_to_shp
 
-from gis.core import get_layer_info, get_random_output_file, with_vsi_prefix
+from gis.core import get_layer_info, get_random_output_file
 from gis.exceptions import VectorError
-from pyproj import CRS
-import fiona
-from fiona.transform import transform_geom
-from fiona.errors import DriverError
-from shapely.geometry import shape, mapping
 
 log = logging.getLogger(__name__)
 

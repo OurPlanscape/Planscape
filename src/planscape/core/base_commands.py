@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import Any, Dict, Optional, Tuple
 from django.core.management.base import BaseCommand, CommandParser
 import requests

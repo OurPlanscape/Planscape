@@ -11,8 +11,6 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from rasterio.errors import RasterioIOError
 
-User = get_user_model()
-from django.contrib.auth import get_user_model
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -26,7 +24,6 @@ from impacts.services import (
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
 )
-
 from planscape.celery import app
 from planscape.openpanel import track_openpanel
 

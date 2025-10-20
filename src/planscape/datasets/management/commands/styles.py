@@ -5,7 +5,6 @@ import requests
 from core.base_commands import PlanscapeCommand
 from core.pprint import pprint
 from django.core.management.base import CommandParser
-from django.db import IntegrityError
 from pathlib import Path
 
 
