@@ -4,11 +4,11 @@ from django.conf import settings
 from django.contrib.gis.db.models.functions import Area, Transform
 from django.db.models import (
     ExpressionWrapper,
-    Q,
     F,
     FloatField,
     Func,
     Max,
+    Q,
     QuerySet,
     Value,
 )
