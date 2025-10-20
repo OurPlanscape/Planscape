@@ -1,17 +1,15 @@
-import json
-from django.urls import reverse
+from planning.tests.factories import PlanningAreaFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
+
 from climate_foresight.models import ClimateForesightRun
 from climate_foresight.tests.factories import ClimateForesightRunFactory
-from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
 
 
 class ClimateForesightRunViewSetTest(APITestCase):
     def setUp(self):
         from django.contrib.contenttypes.models import ContentType
-        from planning.models import PlanningArea
 
         ContentType.objects.get_or_create(app_label="planning", model="planningarea")
 
@@ -281,7 +279,7 @@ class ClimateForesightRunViewSetTest(APITestCase):
     def test_ordering_by_created_at(self):
         self.client.force_authenticate(user=self.user)
 
-        newest_run = ClimateForesightRunFactory(
+        ClimateForesightRunFactory(
             planning_area=self.planning_area, created_by=self.user, name="Newest Run"
         )
 

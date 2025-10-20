@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from datasets.models import Dataset, DataLayer, Category
-from organizations.models import Organization
 from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
 
 

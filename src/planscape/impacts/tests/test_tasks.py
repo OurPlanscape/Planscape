@@ -11,7 +11,7 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from stands.models import Stand, StandSizeChoices
+from stands.models import Stand
 
 from impacts.models import (
     ProjectAreaTreatmentResult,

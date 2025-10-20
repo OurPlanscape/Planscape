@@ -1,14 +1,10 @@
 from collaboration.utils import check_for_permission, is_creator
-from planning.models import (
-    ProjectArea,
-)
 from django.contrib.auth.models import AbstractUser
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
     Scenario,
 )
-from impacts.models import TreatmentPlanNote, TreatmentPlan
 
 
 class CheckPermissionMixin:

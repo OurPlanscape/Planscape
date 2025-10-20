@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import fiona
 import rasterio

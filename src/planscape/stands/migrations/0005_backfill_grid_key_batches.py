@@ -46,9 +46,10 @@ def forwards(apps, schema_editor):
             if i % 5 == 0 or updated < CHUNK:
                 cur.execute(SQL_COUNT_MISSING)
                 remaining = cur.fetchone()[0] or 0
-            
+
         cur.execute(SQL_COUNT_MISSING)
-        remaining = cur.fetchone()[0] or 0
+        remaining = cur.fetchone()[0] or 0  # noqa: F841
+
 
 def backwards(apps, schema_editor):
     pass

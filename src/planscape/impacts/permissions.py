@@ -1,15 +1,17 @@
 from collaboration.models import Role
 from collaboration.permissions import CheckPermissionMixin
 from collaboration.utils import (
+    check_for_owner_permission,
     check_for_permission,
     is_creator,
-    check_for_owner_permission,
 )
-from django.shortcuts import get_object_or_404
-from impacts.models import TreatmentPlan, TreatmentPlanNote
-from planning.models import Scenario
-from planscape.permissions import PlanscapePermission
 from django.contrib.auth.models import AbstractUser
+from django.shortcuts import get_object_or_404
+from planning.models import Scenario
+from rest_framework.serializers import ValidationError
+
+from impacts.models import TreatmentPlan, TreatmentPlanNote
+from planscape.permissions import PlanscapePermission
 
 VIEWER_PERMISSIONS = [
     "view_planningarea",
@@ -112,7 +114,13 @@ class TreatmentPlanViewPermission(PlanscapePermission):
                 return TreatmentPlanPermission.can_remove(request.user, object)
             case "clone":
                 return TreatmentPlanPermission.can_clone(request.user, object)
-            case "retrieve" | "summary" | "download" | "plot" | "stand_treatment_results":
+            case (
+                "retrieve"
+                | "summary"
+                | "download"
+                | "plot"
+                | "stand_treatment_results"
+            ):
                 return TreatmentPlanPermission.can_view(request.user, object)
             case "run":
                 return TreatmentPlanPermission.can_run(request.user, object)
@@ -182,7 +190,7 @@ class TreatmentPlanNoteViewPermission(PlanscapePermission):
 
             case "list":
                 if not treatment_plan_id:
-                    raise ValidationError(f"Missing required treatment_plan_id")
+                    raise ValidationError("Missing required treatment_plan_id")
                 try:
                     treatment_plan = TreatmentPlan.objects.select_related(
                         "scenario", "scenario__planning_area"
