@@ -9,12 +9,16 @@
   (clickedClose)="cancel()"
   (clickedPrimary)="handleSubmit()"
   [primaryButtonDisabled]="
-    scenarioNameForm.get('scenarioName')?.hasError('required') === true
+    scenarioNameForm.get('scenarioName')?.hasError('required') === true ||
+    submitting
   "
   [hasPrimarySpinner]="true"
   [isInSpinState]="submitting">
   <div modalBodyContent>
-    <form [formGroup]="scenarioNameForm" class="scenario-name-form">
+    <form
+      [formGroup]="scenarioNameForm"
+      class="scenario-name-form"
+      (ngSubmit)="submitIfValid($event)">
       <div class="field-row">
         <div class="field-label-required">
           Name Your Scenario
