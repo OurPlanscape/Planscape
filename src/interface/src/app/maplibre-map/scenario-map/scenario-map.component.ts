@@ -83,9 +83,7 @@ export class ScenarioMapComponent {
   );
 
   showScenarioStands$ = this.scenarioState.currentScenario$.pipe(
-    map(
-      (scenario: Scenario) => scenario.scenario_result?.status === 'DRAFT'
-    )
+    map((scenario: Scenario) => scenario.scenario_result?.status === 'DRAFT')
   );
 
   showOpacitySlider$ = combineLatest([
