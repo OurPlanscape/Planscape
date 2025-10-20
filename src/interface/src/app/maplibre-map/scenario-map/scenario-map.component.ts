@@ -84,8 +84,7 @@ export class ScenarioMapComponent {
 
   showScenarioStands$ = this.scenarioState.currentScenario$.pipe(
     map(
-      (scenario: Scenario) =>
-        !scenario.id || scenario.scenario_result?.status === 'DRAFT'
+      (scenario: Scenario) => scenario.scenario_result?.status === 'DRAFT'
     )
   );
 
