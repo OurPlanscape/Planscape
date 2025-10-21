@@ -90,7 +90,7 @@ export class ScenarioMapComponent {
       }
       // If scenarioId exists, we then check currentScenario$
       return this.scenarioState.currentScenario$.pipe(
-        map((scenario) => {
+        map((scenario: Scenario) => {
           // If the scenario exists and its status is 'DRAFT', return true
           return scenario?.scenario_result?.status === 'DRAFT';
         })
