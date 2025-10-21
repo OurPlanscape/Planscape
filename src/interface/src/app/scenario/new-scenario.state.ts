@@ -70,6 +70,11 @@ export class NewScenarioState {
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
+    tap(([, stepIndex]) => {
+      if (stepIndex >= 3) {
+        this.setLoading(false); // we never otherwise call this unless the step is < 3
+      }
+    }),
     filter(([standsLoaded, stepIndex]) => stepIndex < 3),
     tap(() => this.setLoading(true)),
     switchMap(([_, step, standSize, excludedAreas, constraints]) =>

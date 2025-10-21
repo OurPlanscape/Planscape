@@ -3,7 +3,6 @@ from typing import List, Optional
 
 import markdown
 from collaboration.services import get_permissions, get_role
-from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -525,7 +524,6 @@ class TargetsSerializer(serializers.Serializer):
 class ConfigurationV3Serializer(serializers.Serializer):
     stand_size = serializers.ChoiceField(
         choices=StandSizeChoices.choices,
-        default=StandSizeChoices.LARGE,
         required=False,
     )
 

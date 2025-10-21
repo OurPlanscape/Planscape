@@ -4,17 +4,16 @@ from django.conf import settings
 from django.contrib.gis.db.models.functions import Area, Transform
 from django.db.models import (
     ExpressionWrapper,
-    Q,
     F,
     FloatField,
     Func,
     Max,
+    Q,
     QuerySet,
     Value,
 )
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
-from core.flags import feature_enabled
 from rest_framework.filters import OrderingFilter
 from rest_framework.request import Request
 

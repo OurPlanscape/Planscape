@@ -32,6 +32,7 @@ import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.comp
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
+import { Scenario } from '@types';
 
 @Component({
   selector: 'app-scenario-map',
@@ -81,8 +82,8 @@ export class ScenarioMapComponent {
     map((scenarioId) => (scenarioId ? 'Project Area Opacity' : 'Stand Opacity'))
   );
 
-  showScenarioStands$ = this.scenarioState.currentScenarioId$.pipe(
-    map((scenarioId) => !scenarioId)
+  showScenarioStands$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario: Scenario) => scenario.scenario_result?.status === 'DRAFT')
   );
 
   showOpacitySlider$ = combineLatest([

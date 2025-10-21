@@ -1,7 +1,7 @@
+from datasets.tests.factories import DataLayerFactory
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
-from datasets.tests.factories import DataLayerFactory
 from planning.models import PlanningArea, RegionChoices, ScenarioStatus
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -15,12 +15,12 @@ from planscape.tests.factories import UserFactory
 class PlanningAreaModelTest(TestCase):
     def test_cannot_create_two_planning_areas_with_same_name(self):
         user = UserFactory()
-        original_planning_area = PlanningAreaFactory(
+        PlanningAreaFactory(
             name="foo", region_name=RegionChoices.SIERRA_NEVADA, user=user
         )
 
         with self.assertRaises(IntegrityError):
-            duplicated_planning_area = PlanningArea.objects.create(
+            PlanningArea.objects.create(
                 user=user, name="foo", region_name=RegionChoices.SIERRA_NEVADA
             )
 
@@ -32,7 +32,7 @@ class PlanningAreaModelTest(TestCase):
             )
             deleted_planning_area.delete()
 
-            second_planning_area = PlanningArea.objects.create(
+            PlanningArea.objects.create(
                 user=user, name="foo", region_name=RegionChoices.SIERRA_NEVADA
             )
         except Exception as e:

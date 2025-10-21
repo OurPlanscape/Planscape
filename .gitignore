@@ -190,3 +190,4 @@ compiled-static/
 
 # local Sentry config file
 .sentryclirc
+.ruff_cache
