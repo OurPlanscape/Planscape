@@ -1,4 +1,4 @@
-import { MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
+import { MatSnackBarConfig } from '@angular/material/snack-bar';
 
 export const DEFAULT_TX_COST_PER_ACRE: number = 2470;
 
@@ -9,25 +9,25 @@ export const DEFAULT_TX_COST_PER_ACRE: number = 2470;
 export const MSG_RESET_PASSWORD_ERROR =
   'Unable to reset your password at this time. Please try again later.';
 
-export const SNACK_NOTICE_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_NOTICE_CONFIG: MatSnackBarConfig = {
   duration: 4000,
   panelClass: ['snackbar-notice'],
   verticalPosition: 'top',
 };
 
-export const SNACK_BOTTOM_NOTICE_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_BOTTOM_NOTICE_CONFIG: MatSnackBarConfig = {
   duration: 4000,
   panelClass: ['snackbar-notice'],
   verticalPosition: 'bottom',
 };
 
-export const SNACK_ERROR_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_ERROR_CONFIG: MatSnackBarConfig = {
   duration: 10000,
   panelClass: ['snackbar-error'],
   verticalPosition: 'top',
 };
 
-export const SNACK_DEBUG_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_DEBUG_CONFIG: MatSnackBarConfig = {
   duration: 30000,
   panelClass: ['snackbar-debug-error'],
   verticalPosition: 'top',

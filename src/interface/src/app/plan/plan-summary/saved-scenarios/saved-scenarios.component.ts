@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, ScenarioService } from '@services';
 import {
@@ -35,6 +34,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeatureService } from 'src/app/features/feature.service';
 import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { PlanState } from '../../plan.state';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
