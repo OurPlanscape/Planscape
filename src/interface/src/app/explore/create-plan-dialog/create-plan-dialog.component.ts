@@ -1,4 +1,4 @@
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import {
   InputDirective,
   InputFieldComponent,
@@ -40,7 +40,9 @@ import type { DrawService } from '../../maplibre-map/draw.service';
   templateUrl: './create-plan-dialog.component.html',
   styleUrl: './create-plan-dialog.component.scss',
 })
-export class CreatePlanDialogComponent {
+export class CreatePlanDialogComponent implements OnInit {
+  displayError: boolean = false;
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any, // Access the passed data
     private planService: PlanService,
@@ -50,12 +52,32 @@ export class CreatePlanDialogComponent {
     this.drawService = data.drawService;
   }
 
+  get editMode(): boolean {
+    return this.data.planId !== undefined;
+  }
+
+  get primaryCTA(): string {
+    if (this.displayError) {
+      return 'Try Again';
+    } else if (this.editMode) {
+      return 'Done';
+    }
+    return 'Create';
+  }
+
   planForm = new FormGroup({
     planName: new FormControl('', Validators.required),
   });
   drawService: DrawService;
   readonly dialogRef = inject(MatDialogRef<CreatePlanDialogComponent>);
   submitting = false;
+
+  ngOnInit(): void {
+    // In case we are in edit mode we prefill the plan name
+    if (this.editMode) {
+      this.planForm.get('planName')?.setValue(this.data.planName);
+    }
+  }
 
   cancel(): void {
     this.dialogRef.close(false);
@@ -68,20 +90,30 @@ export class CreatePlanDialogComponent {
 
   async submitPlan() {
     if (this.planForm.valid) {
+      this.displayError = false;
       this.submitting = true;
-      const planExists = await firstValueFrom(
-        this.planService.planNameExists(
-          this.planForm.get('planName')?.value ?? ''
-        )
-      );
-      if (planExists) {
-        this.planForm.setErrors({ planNameExists: planExists });
-        this.submitting = false;
-        return;
-      }
+      try {
+        const planExists = await firstValueFrom(
+          this.planService.planNameExists(
+            this.planForm.get('planName')?.value ?? ''
+          )
+        );
+        if (planExists) {
+          this.planForm.setErrors({ planNameExists: planExists });
+          this.submitting = false;
+          return;
+        }
 
-      const planName = this.planForm.get('planName')?.value || '';
-      this.createPlan(planName);
+        const planName = this.planForm.get('planName')?.value || '';
+        if (this.editMode === true) {
+          this.editPlanningAreaName(planName);
+        } else {
+          this.createPlan(planName);
+        }
+      } catch (error) {
+        this.displayError = true;
+        this.submitting = false;
+      }
     }
   }
 
@@ -112,5 +144,30 @@ export class CreatePlanDialogComponent {
           this.submitting = false;
         },
       });
+  }
+
+  async editPlanningAreaName(name: string) {
+    if (!this.data.planId) {
+      return;
+    }
+    this.displayError = false;
+    this.planService.editPlanName(this.data.planId, name).subscribe({
+      next: (result) => {
+        this.dialogRef.close(true);
+        this.submitting = false;
+        // Adding analytics in case we need to track this
+        this.analyticsService.emitEvent(
+          'planning_area_name_edited',
+          undefined,
+          undefined,
+          result.id
+        );
+      },
+      error: (e) => {
+        // Display error message and try again
+        this.displayError = true;
+        this.submitting = false;
+      },
+    });
   }
 }
