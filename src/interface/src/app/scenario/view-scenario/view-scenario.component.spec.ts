@@ -21,6 +21,7 @@ import { PlanState } from 'src/app/plan/plan.state';
 import { POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { ScenarioService } from '@services';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('ViewScenarioComponent (polling)', () => {
   let fixture: ComponentFixture<ViewScenarioComponent>;
@@ -51,11 +52,12 @@ describe('ViewScenarioComponent (polling)', () => {
         MockDeclarations(DataLayersComponent, BaseLayersComponent),
       ],
       imports: [
-        ViewScenarioComponent,
+        MatDialogModule,
         RouterTestingModule,
+        ScenarioPendingComponent,
         ScenarioResultsComponent,
         TreatmentsTabComponent,
-        ScenarioPendingComponent,
+        ViewScenarioComponent,
       ],
       providers: [
         MockProviders(PlanState, ScenarioService),
