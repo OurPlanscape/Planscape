@@ -1,13 +1,11 @@
 from typing import Optional
-from django_filters import rest_framework as filters
+
 from django.db.models import QuerySet
-from rest_framework.request import Request
-from impacts.models import (
-    TreatmentPlan,
-    TreatmentPlanNote,
-    TreatmentPlanStatus,
-)
+from django_filters import rest_framework as filters
 from planning.models import Scenario
+from rest_framework.request import Request
+
+from impacts.models import TreatmentPlan, TreatmentPlanNote, TreatmentPlanStatus
 
 
 def get_scenarios_for_filter(request: Optional[Request]) -> QuerySet:
@@ -31,7 +29,6 @@ class TreatmentPlanFilterSet(filters.FilterSet):
     status = filters.ChoiceFilter(
         choices=TreatmentPlanStatus.choices,
         field_name="status",
-        lookup_expr="iexact",
         help_text="Treatment status choice (exact).",
     )
 
