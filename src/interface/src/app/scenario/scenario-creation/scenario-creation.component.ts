@@ -14,6 +14,7 @@ import {
   of,
   skip,
   take,
+  switchMap,
 } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
@@ -97,7 +98,8 @@ export class ScenarioCreationComponent
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
-
+  // TODO: we can remove this status check when the DRAFTS FF is removed
+  scenarioStatus = 'NOT_STARTED';
   finished = false;
 
   form = new FormGroup({
@@ -175,6 +177,7 @@ export class ScenarioCreationComponent
           scenario.configuration
         );
         this.newScenarioState.setScenarioConfig(currentConfig);
+        this.scenarioStatus = scenario.scenario_result?.status ?? 'NOT STARTED';
       });
   }
 
@@ -197,60 +200,71 @@ export class ScenarioCreationComponent
     return dialogRef.afterClosed();
   }
 
-  saveStep(data: Partial<ScenarioCreation>) {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      const thresholdsIdMap = new Map<string, number>();
-      thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());
-      thresholdsIdMap.set(
-        'distance_to_roads',
-        this.newScenarioState.getDistanceToRoadsId()
-      );
-      const payload = convertFormOutputToDraftPayload(data, thresholdsIdMap);
-      return this.savePatch(payload);
-    } else {
-      return this.newScenarioState.isValidToGoNext$.pipe(
-        take(1),
-        map((valid) => {
-          if (valid) {
-            this.config = { ...this.config, ...data };
-            this.newScenarioState.setScenarioConfig(this.config);
-          } else {
-            this.dialog.open(ScenarioErrorModalComponent, {
-              data: {
-                title: 'Invalid Scenario Configuration',
-                message:
-                  'Scenario must have Potential Treatable Area in order to move forward with planning. Update your selections to allow for available stands',
-              },
-            });
-          }
-          return valid;
-        })
-      );
-    }
+  saveStep(data: Partial<ScenarioCreation>): Observable<boolean> {
+    return this.newScenarioState.isValidToGoNext$.pipe(
+      take(1),
+      switchMap((valid) => {
+        if (!valid) {
+          this.dialog.open(ScenarioErrorModalComponent, {
+            data: {
+              title: 'Invalid Scenario Configuration',
+              message:
+                'Scenario must have Potential Treatable Area in order to move forward with planning. Update your selections to allow for available stands',
+            },
+          });
+          return of(false);
+        }
+        this.config = { ...this.config, ...data };
+        this.newScenarioState.setScenarioConfig(this.config);
+        // TODO: we can remove both of these conditions when the FF is removed,
+        //. but it's helpful for testing different routes
+        if (
+          this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+          this.scenarioStatus === 'DRAFT'
+        ) {
+          return this.savePatch(data).pipe(catchError(() => of(false)));
+        }
+
+        return of(true);
+      }),
+      catchError(() => of(false))
+    );
   }
 
   savePatch(data: Partial<ScenarioDraftPayload>): Observable<boolean> {
     this.newScenarioState.setLoading(true);
-    this.newScenarioState.setScenarioConfig(this.config);
-
-    return this.scenarioService.patchScenarioConfig(this.scenarioId, data).pipe(
-      map((result) => {
-        this.newScenarioState.setLoading(false);
-        if (result) {
-          return true; // Return true if the patch was successful
-        }
-        return false; // Return false if the result is not as expected
-      }),
-      catchError((e) => {
-        console.error('Patch error:', e);
-        this.newScenarioState.setLoading(false);
-        return of(false); // Return false in case of an error
-      })
+    const thresholdsIdMap = new Map<string, number>();
+    thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());
+    thresholdsIdMap.set(
+      'distance_to_roads',
+      this.newScenarioState.getDistanceToRoadsId()
     );
+    const payload = convertFormOutputToDraftPayload(data, thresholdsIdMap);
+
+    return this.scenarioService
+      .patchScenarioConfig(this.scenarioId, payload)
+      .pipe(
+        map((result) => {
+          if (result) {
+            return true;
+          }
+          return false;
+        }),
+        catchError((e) => {
+          console.error('Patch error:', e);
+          this.newScenarioState.setLoading(false);
+          return of(false);
+        })
+      );
   }
 
   async onFinish() {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
+    // TODO: we can remove both of these conditions when the FF is removed,
+    //. but it's helpful for testing different routes
+    if (
+      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+      this.scenarioStatus === 'DRAFT'
+    ) {
       this.runScenario();
     } else {
       this.finishFromFullConfig();
