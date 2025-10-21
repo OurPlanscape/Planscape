@@ -14,7 +14,8 @@
     matMenuContent
     (click)="$event.stopPropagation()"
     *ngIf="displayScenarioConfigOverlay$ | async">
-    <app-scenario-config-overlay></app-scenario-config-overlay>
+    <app-scenario-config-overlay *ngIf="scenarioVersion === 'V2'"></app-scenario-config-overlay>
+    <div *ngIf="scenarioVersion === 'V3'">OK WE ARE ON VERSION 3</div>
   </div>
 </mat-menu>
 
