@@ -1,0 +1,58 @@
+<ng-container *ngIf="displayScenarioConfigOverlay$ | async">
+  <div class="header">
+    <h3>Configurations</h3>
+  </div>
+  <div class="content" *ngIf="currentScenario$ | async as scenario">
+    <dl>
+      <dt>Stand Size:</dt>
+      <dd *ngIf="scenario.configuration.stand_size">
+        {{
+          standSizeOptions[scenario.configuration.stand_size].label +
+            ' (' +
+            standSizeOptions[scenario.configuration.stand_size].acres +
+            ' acres)'
+        }}
+      </dd>
+      <dt>Goal:</dt>
+      <dd>
+        {{ scenarioGoal$ | async }}
+      </dd>
+      <dt>Excluded Areas:</dt>
+      <dd>
+        {{ selectedExcludedAreas$ | async }}
+      </dd>
+      <dt>Stand Level Constraints:</dt>
+      <dd>
+        {{
+          scenario.configuration.max_slope
+            ? 'Slope less or equal than (<=) ' +
+              scenario.configuration.max_slope +
+              '%'
+            : '--'
+        }}
+      </dd>
+      <dt>Treatment Target:</dt>
+      <dd>
+        @if (scenario.configuration.max_area) {
+          Planning Area Acres
+          {{ scenario.configuration.max_area | number: '1.0-0' }}
+        } @else if (scenario.configuration.max_budget) {
+          Planning Area Budget ${{
+            scenario.configuration.max_budget | number: '1.0-2'
+          }}
+        } @else {
+          --
+        }
+      </dd>
+    </dl>
+  </div>
+  <div class="footer">
+    <button
+      sg-button
+      variant="primary"
+      class="scenario-config-button"
+      (click)="close()">
+      Close
+    </button>
+  </div>
+</ng-container>
