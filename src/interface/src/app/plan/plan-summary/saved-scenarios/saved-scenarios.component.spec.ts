@@ -16,7 +16,6 @@ import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
 import { SectionLoaderComponent, TypeSafeMatCellDef } from '@shared';
 import { CurrencyPipe } from '@angular/common';
-import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
 import { MatDialogModule } from '@angular/material/dialog';
 
 import { AuthService, ScenarioService } from '@services';
@@ -76,7 +75,6 @@ describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
         FormsModule,
         HttpClientTestingModule,
         LegacyMaterialModule,
-        MatTableModule,
         MatDialogModule,
         NoopAnimationsModule,
         FeaturesModule,
