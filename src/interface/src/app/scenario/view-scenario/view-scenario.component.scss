@@ -28,8 +28,18 @@
     }
 
     .mat-mdc-tab-labels {
-      padding: 0 16px 0 32px;
+      padding: 0 16px;
       border-bottom: 2px $color-soft-gray solid;
+    }
+
+    // remove paddings if showing pagination
+    .mat-mdc-tab-header-pagination-controls-enabled .mat-mdc-tab-labels {
+      padding: 0;
+    }
+
+    .mat-mdc-tab-header-pagination {
+      border-bottom: 2px $color-soft-gray solid;
+      padding-top: 2px;
     }
   }
 }
