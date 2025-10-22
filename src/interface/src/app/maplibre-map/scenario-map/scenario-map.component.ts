@@ -13,7 +13,7 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, of, switchMap } from 'rxjs';
+import { combineLatest, map, of, switchMap, mergeMap } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
@@ -82,8 +82,20 @@ export class ScenarioMapComponent {
     map((scenarioId) => (scenarioId ? 'Project Area Opacity' : 'Stand Opacity'))
   );
 
-  showScenarioStands$ = this.scenarioState.currentScenario$.pipe(
-    map((scenario: Scenario) => scenario.scenario_result?.status === 'DRAFT')
+  //check values of currentScenarioId and currentScenario (which might be empty)
+  showScenarioStands$ = this.scenarioState.currentScenarioId$.pipe(
+    mergeMap((scenarioId) => {
+      if (!scenarioId) {
+        return of(true);
+      }
+      // If scenarioId exists, we then check currentScenario$
+      return this.scenarioState.currentScenario$.pipe(
+        map((scenario: Scenario) => {
+          // If the scenario exists and its status is 'DRAFT', return true
+          return scenario?.scenario_result?.status === 'DRAFT';
+        })
+      );
+    })
   );
 
   showOpacitySlider$ = combineLatest([

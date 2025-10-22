@@ -40,6 +40,15 @@ export class PlanService {
     });
   }
 
+  /** Makes a request to the backend to rename the planning area with the given name */
+  editPlanName(planId: number, planName: string): Observable<any> {
+    return this.http.patch(
+      this.v2basePath + planId + '/',
+      { name: planName },
+      { withCredentials: true }
+    );
+  }
+
   /** Makes a request to the backend to fetch a plan with the given ID. */
   getPlan(planId: string): Observable<Plan> {
     return this.http.get<Plan>(this.v2basePath + planId + '/', {
