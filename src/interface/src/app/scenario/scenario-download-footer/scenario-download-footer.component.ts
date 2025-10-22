@@ -42,7 +42,7 @@ export class ScenarioDownloadFooterComponent {
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
-  @Input() scenarioVersion: string | undefined = 'V2';
+  @Input() scenarioVersion: string = 'V2';
   @Input() geoPackageURL?: string | null;
   @Input() geoPackageStatus?: string | null;
 
