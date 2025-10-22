@@ -52,6 +52,7 @@
   <app-scenario-download-footer
     [scenarioId]="scenarioId || undefined"
     [scenarioName]="scenario.name"
+    [scenarioVersion]="scenario.version || ''"
     [geoPackageURL]="scenario.geopackage_url"
     [geoPackageStatus]="scenario.geopackage_status"
     *ngIf="onResultsTab"></app-scenario-download-footer>
