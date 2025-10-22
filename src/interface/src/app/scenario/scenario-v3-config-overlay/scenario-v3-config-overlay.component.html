@@ -5,11 +5,11 @@
   <div class="content" *ngIf="currentScenario$ | async as scenario">
     <dl>
       <dt>Stand Size:</dt>
-      <dd *ngIf="scenario.configuration.stand_size">
+      <dd *ngIf="configuration?.stand_size as stand_size">
         {{
-          standSizeOptions[scenario.configuration.stand_size].label +
+          standSizeOptions[stand_size].label +
             ' (' +
-            standSizeOptions[scenario.configuration.stand_size].acres +
+            standSizeOptions[stand_size].acres +
             ' acres)'
         }}
       </dd>
@@ -22,26 +22,27 @@
         {{ selectedExcludedAreas$ | async }}
       </dd>
       <dt>Stand Level Constraints:</dt>
-      <dd>
-        {{
-          scenario.configuration.max_slope
-            ? 'Slope less or equal than (<=) ' +
-              scenario.configuration.max_slope +
-              '%'
-            : '--'
-        }}
+      <dd *ngFor="let c of configuration?.constraints">
+        <div *ngIf="c.datalayer === slopeId">
+          Slope less or equal than (<=) {{ c.value }} %
+        </div>
+        <div *ngIf="c.datalayer === distanceToRoadsId">
+          Distance from roads is less than (<) {{ c.value }} yds
+        </div>
       </dd>
       <dt>Treatment Target:</dt>
       <dd>
-        @if (scenario.configuration.max_area) {
+        @if (configuration?.targets?.max_area) {
           Planning Area Acres
-          {{ scenario.configuration.max_area | number: '1.0-0' }}
-        } @else if (scenario.configuration.max_budget) {
+          {{ configuration?.targets?.max_area | number: '1.0-0' }}
+        } @else if (configuration?.targets?.max_budget) {
           Planning Area Budget ${{
-            scenario.configuration.max_budget | number: '1.0-2'
+            configuration?.targets?.max_budget | number: '1.0-2'
           }}
-        } @else {
-          --
+        } @else if (configuration?.targets?.max_project_count) {
+          Max Project Count ${{
+            configuration?.targets?.max_project_count | number: '1.0-2'
+          }}
         }
       </dd>
     </dl>

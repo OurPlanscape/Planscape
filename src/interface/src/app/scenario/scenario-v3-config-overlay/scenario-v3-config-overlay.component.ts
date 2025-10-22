@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ScenarioState } from '../scenario.state';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,10 +8,11 @@ import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
 import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
+import { ScenarioDraftConfig } from '@types';
 
 @UntilDestroy()
 @Component({
-  selector: 'app-scenario-config-overlay',
+  selector: 'app-scenario-v3-config-overlay',
   standalone: true,
   imports: [
     CommonModule,
@@ -20,11 +21,10 @@ import { ForsysService } from '@services/forsys.service';
     ButtonComponent,
     DecimalPipe,
   ],
-  templateUrl: './scenario-config-overlay.component.html',
-  styleUrl: './scenario-config-overlay.component.scss',
+  templateUrl: './scenario-v3-config-overlay.component.html',
+  styleUrl: './scenario-v3-config-overlay.component.scss',
 })
-export class ScenarioV3ConfigOverlayComponent  {
-  
+export class ScenarioV3ConfigOverlayComponent {
   private scenarioState: ScenarioState = inject(ScenarioState);
   private forsysService: ForsysService = inject(ForsysService);
 
@@ -32,7 +32,18 @@ export class ScenarioV3ConfigOverlayComponent  {
   currentScenario$ = this.scenarioState.currentScenario$;
   excludedAreas$ = this.forsysService.excludedAreas$;
 
+  configuration: ScenarioDraftConfig | null = null;
+  slopeId: number | null = null;
+  distanceToRoadsId: number | null = null;
+
   readonly standSizeOptions = STAND_OPTIONS;
+
+  forsysData$ = this.forsysService.forsysData$
+    .pipe(untilDestroyed(this))
+    .subscribe((forsys) => {
+      this.slopeId = forsys.thresholds.slope.id;
+      this.distanceToRoadsId = forsys.thresholds.distance_from_roads.id;
+    });
 
   selectedExcludedAreas$ = combineLatest([
     this.currentScenario$,
@@ -40,6 +51,9 @@ export class ScenarioV3ConfigOverlayComponent  {
   ]).pipe(
     untilDestroyed(this),
     map(([scenario, excludedAreas]) => {
+      //TODO: when we have a ScenarioBase type and a way to query just config
+      // we should replace this cast
+      this.configuration = scenario.configuration as ScenarioDraftConfig;
       const ids = scenario.configuration?.excluded_areas ?? [];
       const labels = ids
         .map((id) => excludedAreas.find((a) => a.id === id)?.name)
@@ -57,9 +71,5 @@ export class ScenarioV3ConfigOverlayComponent  {
 
   close() {
     this.scenarioState.setDisplayOverlay(false);
-  }
-
-  ngOnDestroy(): void {
-    this.close();
   }
 }
