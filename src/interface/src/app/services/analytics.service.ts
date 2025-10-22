@@ -23,7 +23,8 @@ export class AnalyticsService {
       | 'polygons_draw_explore'
       | 'shapefiles_uploaded_explore'
       | 'run_treatment_analysis'
-      | 'new_treatment_plan',
+      | 'new_treatment_plan'
+      | 'planning_area_name_edited',
     category?: string,
     label?: string,
     value?: number,

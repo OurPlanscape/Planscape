@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PlanningAreaMenuComponent } from './planning-area-menu.component';
-import { MockProvider } from 'ng-mocks';
+import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { AuthService, PlanService } from '@services';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MOCK_PLAN } from '@services/mocks';
 import { MatDialogModule } from '@angular/material/dialog';
+import { CreatePlanDialogComponent } from 'src/app/explore/create-plan-dialog/create-plan-dialog.component';
 
 describe('PlanningAreaMenuComponent', () => {
   let component: PlanningAreaMenuComponent;
@@ -20,6 +21,7 @@ describe('PlanningAreaMenuComponent', () => {
         MatDialogModule,
         RouterTestingModule,
       ],
+      declarations: [MockDeclaration(CreatePlanDialogComponent)],
       providers: [
         MockProvider(AuthService),
         MockProvider(MatSnackBar),

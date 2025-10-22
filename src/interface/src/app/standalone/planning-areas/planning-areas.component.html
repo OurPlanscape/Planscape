@@ -99,7 +99,8 @@
           <ng-container *ngSwitchCase="'menu'">
             <app-planning-area-menu
               [plan]="element"
-              (afterDelete)="reload()"></app-planning-area-menu>
+              (afterDelete)="reload()"
+              (afterRename)="reload()"></app-planning-area-menu>
           </ng-container>
         </ng-container>
       </td>
