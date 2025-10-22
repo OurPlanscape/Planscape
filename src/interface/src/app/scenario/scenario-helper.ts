@@ -7,6 +7,7 @@ import {
   ScenarioDraftPayload,
   ScenarioGoal,
   Scenario,
+  NamedConstraint,
 } from '@types';
 
 /**
@@ -136,4 +137,18 @@ export function convertFormOutputToDraftPayload(
   }
   payload.configuration = config;
   return payload;
+}
+
+export function getNamedConstraints(
+  constraints: Constraint[],
+  slopeId: number
+): NamedConstraint[] {
+  return constraints.map((c) => {
+    const name = c.datalayer === slopeId ? 'maxSlope' : 'distanceToRoads';
+    return {
+      name,
+      value: c.value,
+      operator: c.operator,
+    };
+  });
 }

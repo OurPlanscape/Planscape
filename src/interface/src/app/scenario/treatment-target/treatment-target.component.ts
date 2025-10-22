@@ -22,7 +22,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
-import { map, take } from 'rxjs';
+import { filter, map, take } from 'rxjs';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
@@ -91,6 +91,30 @@ export class TreatmentTargetComponent
           },
           { validators: this.workingAreaValidator(this.maxAreaValue) }
         );
+
+        this.newScenarioState.scenarioConfig$
+          .pipe(
+            untilDestroyed(this),
+            take(1),
+            filter((c) => !!c.targets)
+          )
+          .subscribe((config) => {
+            if (config.targets) {
+              if (config.targets.estimated_cost) {
+                this.form
+                  .get('estimated_cost')
+                  ?.setValue(config.targets.estimated_cost);
+              }
+              if (config.targets.max_area) {
+                this.form.get('max_area')?.setValue(config.targets.max_area);
+              }
+              if (config.targets.max_project_count) {
+                this.form
+                  .get('max_project_count')
+                  ?.setValue(config.targets.max_project_count);
+              }
+            }
+          });
       });
   }
 

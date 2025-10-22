@@ -19,6 +19,7 @@ import { MOCK_SCENARIO } from '@services/mocks';
 import { Step1Component } from './step1.component';
 import { STAND_SIZE } from '../../plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
+import { NewScenarioState } from '../new-scenario.state';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -52,6 +53,9 @@ describe('Step1Component', () => {
               planId: 24,
             },
           } as any,
+        }),
+        MockProvider(NewScenarioState, {
+          scenarioConfig$: new BehaviorSubject({}),
         }),
       ],
     }).compileComponents();
