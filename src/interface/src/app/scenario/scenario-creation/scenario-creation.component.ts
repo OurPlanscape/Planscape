@@ -13,8 +13,8 @@ import {
   Observable,
   of,
   skip,
-  take,
   switchMap,
+  take,
 } from 'rxjs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import {
@@ -55,6 +55,8 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
+import { RunScenarioModalComponent } from '../run-scenario-modal/run-scenario-modal.component';
+import { filter } from 'rxjs/operators';
 
 enum ScenarioTabs {
   CONFIG,
@@ -259,16 +261,25 @@ export class ScenarioCreationComponent
   }
 
   async onFinish() {
+    this.newScenarioState.setLoading(false);
     // TODO: we can remove both of these conditions when the FF is removed,
     //. but it's helpful for testing different routes
     if (
       this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
       this.scenarioStatus === 'DRAFT'
     ) {
-      this.runScenario();
+      this.showRunScenarioConfirmation();
     } else {
       this.finishFromFullConfig();
     }
+  }
+
+  showRunScenarioConfirmation() {
+    this.dialog
+      .open(RunScenarioModalComponent)
+      .afterClosed()
+      .pipe(filter((confirmed) => !!confirmed))
+      .subscribe(() => this.runScenario());
   }
 
   async runScenario() {
@@ -283,6 +294,7 @@ export class ScenarioCreationComponent
       .subscribe({
         next: (result) => {
           this.finished = true; // ensure we don't get an alert when we navigate away
+          // TODO this should redirect or show a confirmation, but currently is not working as expected.
           this.router.navigate([
             'plan',
             result.planning_area,
