@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import { ScenarioState } from '../scenario.state';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,7 +24,7 @@ import { ScenarioDraftConfig } from '@types';
   templateUrl: './scenario-v3-config-overlay.component.html',
   styleUrl: './scenario-v3-config-overlay.component.scss',
 })
-export class ScenarioV3ConfigOverlayComponent {
+export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   private scenarioState: ScenarioState = inject(ScenarioState);
   private forsysService: ForsysService = inject(ForsysService);
 
@@ -71,5 +71,9 @@ export class ScenarioV3ConfigOverlayComponent {
 
   close() {
     this.scenarioState.setDisplayOverlay(false);
+  }
+
+  ngOnDestroy() {
+    this.close();
   }
 }
