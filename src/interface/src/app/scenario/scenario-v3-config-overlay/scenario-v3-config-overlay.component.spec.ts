@@ -1,0 +1,22 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ScenarioV3ConfigOverlayComponent } from './scenario-v3-config-overlay.component';
+
+describe('ScenarioV3ConfigOverlayComponent', () => {
+  let component: ScenarioV3ConfigOverlayComponent;
+  let fixture: ComponentFixture<ScenarioV3ConfigOverlayComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, ScenarioV3ConfigOverlayComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ScenarioV3ConfigOverlayComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
