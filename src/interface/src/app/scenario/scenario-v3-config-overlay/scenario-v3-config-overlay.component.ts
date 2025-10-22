@@ -54,7 +54,8 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
       //TODO: when we have a ScenarioBase type and a way to query just config
       // we should replace this cast
       this.configuration = scenario.configuration as ScenarioDraftConfig;
-      const ids = scenario.configuration?.excluded_areas ?? [];
+      
+      const ids = this.configuration.excluded_areas ?? [];
       const labels = ids
         .map((id) => excludedAreas.find((a) => a.id === id)?.name)
         .filter((v): v is string => !!v);
