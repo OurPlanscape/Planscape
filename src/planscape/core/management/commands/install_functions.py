@@ -10,7 +10,7 @@ TResult = Tuple[bool, TInput]
 
 
 class Command(BaseCommand):
-    help = "Installs or uninstalls functions under a path."
+    help = "Installs or uninstalls SQL functions from .sql files in a folder."
 
     def add_arguments(self, parser) -> None:
         parser.add_argument("--folder", type=str, default=None)
@@ -44,7 +44,7 @@ class Command(BaseCommand):
             options.get("folder", self.default_folder()) or self.default_folder()
         )
         files = list(folder.glob("*.sql"))
-        self.stdout.write("The following files were found:")
+        self.stdout.write("The following SQL files were found:")
         for f in files:
             self.stdout.write(f"{f} found")
         is_installation = not options.get("uninstall", False) or False
