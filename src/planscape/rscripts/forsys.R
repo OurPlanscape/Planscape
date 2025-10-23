@@ -45,8 +45,5 @@ if (is.null(scenario_id)) {
   stop("You need to specify one scenario id.")
 }
 
-if (stri_detect_fixed(Sys.getenv("FEATURE_FLAGS"), "FORSYS_PREPROCESSED")) {
-  main_pre_processed(scenario_id)
-} else {
-  main_v2(scenario_id)
-}
+
+main(scenario_id)
