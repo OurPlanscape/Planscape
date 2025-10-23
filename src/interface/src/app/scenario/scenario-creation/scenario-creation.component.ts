@@ -30,9 +30,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
-  ScenarioConfig,
-  ScenarioConfigPayload,
+  Scenario,
   ScenarioCreation,
+  ScenarioDraftConfig,
   ScenarioDraftPayload,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
@@ -95,8 +95,7 @@ export class ScenarioCreationComponent
 {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
-  config: Partial<ScenarioCreation> = {};
-  draftConfig: Partial<ScenarioDraftPayload> = {};
+  config: Partial<ScenarioDraftConfig> = {};
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
@@ -175,22 +174,26 @@ export class ScenarioCreationComponent
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         this.form.controls.scenarioName.setValue(scenario.name);
-        const currentConfig = this.convertSavedConfigToNewConfig(
-          scenario.configuration
-        );
+        // Mapping the backend object to the frontend configuration
+        const currentConfig = this.convertSavedConfigToNewConfig(scenario);
         this.newScenarioState.setScenarioConfig(currentConfig);
+        // Setting the initial state for the configuration
+        this.config = currentConfig;
         this.scenarioStatus = scenario.scenario_result?.status ?? 'NOT STARTED';
       });
   }
 
   convertSavedConfigToNewConfig(
-    config: ScenarioConfig
-  ): Partial<ScenarioConfigPayload> {
+    scenario: Scenario
+  ): Partial<ScenarioDraftConfig> {
     const newState = Object.fromEntries(
-      Object.entries(config)
+      Object.entries(scenario.configuration)
         .filter(([_, value]) => value != null)
         .map(([key, value]) => [key, value as NonNullable<typeof value>])
     );
+    // Adding excluded areas and treatment goal
+    newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
+    newState['treatment_goal'] = scenario.treatment_goal?.id;
     return newState as Partial<ScenarioCreation>;
   }
 
