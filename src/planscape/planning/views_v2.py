@@ -344,7 +344,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         response_serializer = ScenarioV3Serializer(instance)
         return Response(response_serializer.data)
 
-    @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
+    @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
@@ -359,7 +359,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         # trigger
         trigger_scenario_run(scenario, request.user)
 
-        serializer = ScenarioV2Serializer(instance=scenario)
+        serializer = ScenarioV3Serializer(instance=scenario)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
