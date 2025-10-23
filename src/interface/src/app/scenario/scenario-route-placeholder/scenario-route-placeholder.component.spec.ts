@@ -221,7 +221,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     expect(spinner).toBeTruthy();
   });
 
-
   it('should show scenario view if scenario was not uploaded and status is SUCCESS', async () => {
     TestBed.overrideProvider(FEATURES_JSON, {
       useValue: { SCENARIO_DRAFTS: true },
