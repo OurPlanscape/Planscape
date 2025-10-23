@@ -46,9 +46,7 @@ export class ScenarioRoutePlaceholderComponent {
     private router: Router,
     private scenarioState: ScenarioState,
     private featureService: FeatureService
-  ) {
-    this.scenarioState.reloadScenario();
-  }
+  ) {}
 
   // We are going to display scenario creation just if we have SCENARIO_DRAFTS FF enabled and the creator is the same as the logged in user
   canViewScenarioCreation$ = combineLatest([
@@ -80,7 +78,6 @@ export class ScenarioRoutePlaceholderComponent {
 
       // If it is a draft and the creator is not the same as the user logged in we redirect to planning areas
       const sameCreator = user?.id === scenario?.user;
-
       if (!(sameCreator && isDraft)) {
         this.router.navigate(['/plan', scenario?.planning_area]);
         return false;

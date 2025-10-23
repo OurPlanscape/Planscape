@@ -296,7 +296,6 @@ export class ScenarioCreationComponent
       .subscribe({
         next: (result) => {
           this.finished = true; // ensure we don't get an alert when we navigate away
-          // TODO this should redirect or show a confirmation, but currently is not working as expected.
           if (result.id) {
             this.scenarioState.setScenarioId(result.id);
             this.scenarioState.reloadScenario();
