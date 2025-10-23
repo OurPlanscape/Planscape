@@ -12,7 +12,10 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
 import { IdNamePair, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { filter, take } from 'rxjs';
 
+@UntilDestroy()
 @Component({
   selector: 'app-step2',
   standalone: true,
@@ -38,7 +41,7 @@ export class Step2Component
   }
 
   form = new FormGroup({
-    excluded_areas: new FormArray([]),
+    excluded_areas: new FormArray<FormControl<boolean>>([]),
   });
   excludedAreas$ = this.forsysService.excludedAreas$;
   excludedAreas: IdNamePair[] = [];
@@ -50,7 +53,29 @@ export class Step2Component
       this.form.get('excluded_areas')?.valueChanges.subscribe(() => {
         this.newScenarioState.setExcludedAreas(this.getSelectedExcludedAreas());
       });
+      this.prefillExcludedAreas();
     });
+  }
+
+  private prefillExcludedAreas() {
+    // Reading the config from the scenario state
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.excluded_areas),
+        take(1)
+      )
+      .subscribe((config) => {
+        let excluded_areas_value: boolean[] = [];
+        this.excludedAreas.forEach((area) => {
+          if (config.excluded_areas?.includes(area.id)) {
+            excluded_areas_value.push(true);
+          } else {
+            excluded_areas_value.push(false);
+          }
+        });
+        this.form.get('excluded_areas')?.setValue(excluded_areas_value);
+      });
   }
 
   private createFormControls() {

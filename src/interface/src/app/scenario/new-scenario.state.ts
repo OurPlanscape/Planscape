@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import { Constraint, NamedConstraint, ScenarioCreation } from '@types';
+import {
+  Constraint,
+  NamedConstraint,
+  ScenarioCreation,
+  ScenarioDraftConfig,
+} from '@types';
 import {
   BehaviorSubject,
   catchError,
@@ -22,12 +27,15 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
+import { getNamedConstraints } from './scenario-helper';
 
 @Injectable()
 export class NewScenarioState {
   planId = this.route.snapshot.data['planId'];
 
-  private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioCreation>>({});
+  private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioDraftConfig>>(
+    {}
+  );
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
 
   // user selected excluded areas
@@ -183,6 +191,10 @@ export class NewScenarioState {
       };
     });
     this.setConstraints(constraints);
+  }
+
+  getNamedConstraints(constraints: Constraint[]): NamedConstraint[] {
+    return getNamedConstraints(constraints, this.slopeId);
   }
 
   setBaseStandsLoaded(loaded: boolean) {

@@ -5,13 +5,12 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 
 
-
 TInput = Union[Path, str]
 TResult = Tuple[bool, TInput]
 
 
 class Command(BaseCommand):
-    help = "Installs all custom plpgsql functions used to generate layers"
+    help = "Installs or uninstalls SQL functions from .sql files in a folder."
 
     def add_arguments(self, parser) -> None:
         parser.add_argument("--folder", type=str, default=None)
@@ -45,7 +44,7 @@ class Command(BaseCommand):
             options.get("folder", self.default_folder()) or self.default_folder()
         )
         files = list(folder.glob("*.sql"))
-        self.stdout.write("The following layers were found:")
+        self.stdout.write("The following SQL files were found:")
         for f in files:
             self.stdout.write(f"{f} found")
         is_installation = not options.get("uninstall", False) or False
@@ -59,5 +58,5 @@ class Command(BaseCommand):
         fn = self.stdout.write if success else self.stderr.write
         indicator1 = "succeeded" if success else "failed"
         indicator2 = "[OK]" if success else "[FAIL]"
-        verb = "installation" if is_installation else "deletion"
+        verb = "installed" if is_installation else "uninstalled"
         fn(f"{indicator2} {file} {verb} {indicator1}")

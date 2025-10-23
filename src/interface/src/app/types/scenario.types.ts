@@ -89,6 +89,7 @@ export interface ScenarioDraftConfig {
   stand_size: STAND_SIZE;
   includes: number[];
   constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
+  treatment_goal: number;
   targets: {
     estimated_cost: number;
     max_area: number;

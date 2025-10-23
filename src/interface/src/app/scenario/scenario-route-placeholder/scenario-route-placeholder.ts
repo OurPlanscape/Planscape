@@ -60,14 +60,14 @@ export class ScenarioRoutePlaceholderComponent {
         this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
       const isDraft = scenario?.scenario_result?.status === 'DRAFT';
 
-      // If SCENARIO_DRAFTS is disabled and the scenario is not a draft we return false
-      if (!scenarioDraftsEnabled && !isDraft) {
-        return false;
-      }
-
       // If SCENARIO_DRAFTS is disabled and the scenario is a DRAFT we redirect to planning areas
       if (!scenarioDraftsEnabled && isDraft) {
         this.router.navigate(['/plan', scenario?.planning_area]);
+        return false;
+      }
+
+      // If SCENARIO_DRAFTS is disabled and the scenario is not a draft we return false
+      if (!scenarioDraftsEnabled) {
         return false;
       }
 
