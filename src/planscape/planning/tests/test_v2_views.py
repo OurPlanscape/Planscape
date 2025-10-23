@@ -18,6 +18,7 @@ from planning.models import (
     RegionChoices,
     ScenarioStatus,
     ScenarioResult,
+    TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
     TreatmentGoalUsesDataLayer,
@@ -1289,6 +1290,8 @@ class TreatmentGoalViewSetTest(APITestCase):
         )
 
         ca_group = TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
+
+        TreatmentGoal.objects.all().delete() # cleanup any existing records added on migrations
 
         self.first_treatment_goal = TreatmentGoalFactory.create(
             name="First",
