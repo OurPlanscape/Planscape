@@ -7,7 +7,6 @@ import {
   map,
   of,
   shareReplay,
-  take,
   takeWhile,
 } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -19,6 +18,9 @@ import { ScenarioCreationComponent } from '../scenario-creation/scenario-creatio
 import { FeatureService } from 'src/app/features/feature.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@services';
+import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
+
+@UntilDestroy()
 @Component({
   standalone: true,
   imports: [
@@ -39,7 +41,6 @@ export class ScenarioRoutePlaceholderComponent {
     // complete this stream after the resource is loaded.
     takeWhile((resource) => resource.isLoading, true)
   );
-
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -52,8 +53,8 @@ export class ScenarioRoutePlaceholderComponent {
     this.authService.loggedInUser$,
     this.scenarioState.currentScenario$,
   ]).pipe(
+    untilDestroyed(this),
     filter(([user]) => !!user),
-    take(1),
     map(([user, scenario]) => {
       const scenarioDraftsEnabled =
         this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
