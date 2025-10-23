@@ -479,6 +479,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                         "usage_type": "THRESHOLD",
                     }
                 )
+        number_of_projects = cfg.get("targets", {}).get("max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT)
     else:
         max_slope = cfg.get("max_slope")
         if max_slope:
@@ -513,10 +514,12 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 }
             )
 
+        number_of_projects = cfg.get(
+            "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+        )
+
     min_area_project = get_min_project_area(scenario)
-    number_of_projects = cfg.get(
-        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
-    )
+
     max_area_project = get_max_area_project(
         scenario=scenario,
         number_of_projects=number_of_projects,
