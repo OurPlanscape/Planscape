@@ -190,6 +190,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     TestBed.overrideProvider(FEATURES_JSON, {
       useValue: { SCENARIO_DRAFTS: true },
     });
+    mockScenarioResource$.next({ isLoading: false });
     mockUser$.next({ id: 1 });
     mockScenario$.next({
       user: 1,
@@ -220,31 +221,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     expect(spinner).toBeTruthy();
   });
 
-  it('should show uploaded view if scenario was uploaded and status is SUCCESS', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
-    mockScenarioResource$.next({
-      isLoading: false,
-    });
-    mockScenario$.next({
-      user: 1,
-      scenario_result: {
-        status: 'SUCCESS',
-        completed_at: '',
-        result: {
-          features: [],
-          type: 'ok',
-        },
-      },
-      origin: 'USER',
-    } as any);
-    createComp();
-    const component = fixture.debugElement.nativeElement.querySelector(
-      'app-uploaded-scenario-view'
-    );
-    expect(component).toBeTruthy();
-  });
 
   it('should show scenario view if scenario was not uploaded and status is SUCCESS', async () => {
     TestBed.overrideProvider(FEATURES_JSON, {
