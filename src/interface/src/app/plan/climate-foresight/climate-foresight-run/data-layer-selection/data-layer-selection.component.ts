@@ -191,7 +191,10 @@ export class DataLayerSelectionComponent
         }
 
         // Check layer path (categories)
-        if (layer.path && layer.path.some((p) => p.toLowerCase().includes(searchLower))) {
+        if (
+          layer.path &&
+          layer.path.some((p) => p.toLowerCase().includes(searchLower))
+        ) {
           return true;
         }
 
