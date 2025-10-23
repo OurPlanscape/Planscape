@@ -40,7 +40,7 @@ export class ScenarioSetupModalComponent {
     @Inject(MAT_DIALOG_DATA) public data: { planId: number }, // Access the passed data
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
-    private router: Router,
+    private router: Router
   ) {}
 
   cancel(): void {
@@ -67,7 +67,7 @@ export class ScenarioSetupModalComponent {
       next: (result) => {
         this.dialogRef.close(result);
         this.submitting = false;
-        if (result.id) {
+        if (result) {
           this.router.navigate(['plan', planId, 'scenario', result.id]);
         }
       },
