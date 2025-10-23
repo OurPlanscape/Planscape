@@ -479,7 +479,6 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                         "usage_type": "THRESHOLD",
                     }
                 )
-        number_of_projects = cfg.get("targets", {}).get("max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT)
     else:
         max_slope = cfg.get("max_slope")
         if max_slope:
@@ -514,7 +513,12 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 }
             )
 
-        number_of_projects = cfg.get(
+    number_of_projects = cfg.get(
+        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+    )
+    
+    if "targets" in cfg and isinstance(cfg.get("targets"), dict):
+        number_of_projects = cfg.get("targets", {}).get(
             "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
         )
 
@@ -625,7 +629,7 @@ def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
         targets = configuration.get("targets", {}) or {}
         max_area = targets.get("max_area")
         if max_area:
-            return float(max_area) / number_of_projects
+            return float(max_area)
         max_acres = get_min_project_area(scenario)
         return float(max_acres)
 
