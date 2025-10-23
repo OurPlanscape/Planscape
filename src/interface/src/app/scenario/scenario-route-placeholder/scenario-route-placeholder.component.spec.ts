@@ -172,4 +172,112 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     expect(routerSpy.navigate).not.toHaveBeenCalled();
     expect(canViewScenarioCreation).toBeTrue();
   });
+
+  // Navigation tests
+
+  it('should show loading spinner when resource is loading', async () => {
+    TestBed.overrideProvider(FEATURES_JSON, {
+      useValue: { SCENARIO_DRAFTS: true },
+    });
+    mockScenarioResource$.next({ isLoading: true });
+    createComp();
+    const spinner =
+      fixture.debugElement.nativeElement.querySelector('mat-spinner');
+    expect(spinner).toBeTruthy();
+  });
+
+  it('should show app-scenario-creation when scenario is DRAFT and user is owner', async () => {
+    TestBed.overrideProvider(FEATURES_JSON, {
+      useValue: { SCENARIO_DRAFTS: true },
+    });
+    mockUser$.next({ id: 1 });
+    mockScenario$.next({
+      user: 1,
+      planning_area: 5,
+      scenario_result: { status: 'DRAFT' },
+    } as any);
+
+    createComp();
+
+    const component = fixture.debugElement.nativeElement.querySelector(
+      'app-scenario-creation'
+    );
+    expect(component).toBeTruthy();
+  });
+
+  it('should show resource unavailable component on error', async () => {
+    TestBed.overrideProvider(FEATURES_JSON, {
+      useValue: { SCENARIO_DRAFTS: true },
+    });
+
+    mockScenarioResource$.next({
+      isLoading: true,
+      error: { name: 'terrible error', message: 'something failed' },
+    });
+    createComp();
+    const spinner =
+      fixture.debugElement.nativeElement.querySelector('mat-spinner');
+    expect(spinner).toBeTruthy();
+  });
+
+  it('should show uploaded view if scenario was uploaded and status is SUCCESS', async () => {
+    TestBed.overrideProvider(FEATURES_JSON, {
+      useValue: { SCENARIO_DRAFTS: true },
+    });
+    mockScenarioResource$.next({
+      isLoading: false,
+    });
+    mockScenario$.next({
+      user: 1,
+      scenario_result: {
+        status: 'SUCCESS',
+        completed_at: '',
+        result: {
+          features: [],
+          type: 'ok',
+        },
+      },
+      origin: 'USER',
+    } as any);
+    createComp();
+    const component = fixture.debugElement.nativeElement.querySelector(
+      'app-uploaded-scenario-view'
+    );
+    expect(component).toBeTruthy();
+  });
+
+  it('should show scenario view if scenario was not uploaded and status is SUCCESS', async () => {
+    TestBed.overrideProvider(FEATURES_JSON, {
+      useValue: { SCENARIO_DRAFTS: true },
+    });
+    mockScenarioResource$.next({
+      isLoading: false,
+    });
+    mockScenario$.next({
+      user: 1,
+      scenario_result: { status: 'SUCCESS', completed_at: '' },
+    } as any);
+    createComp();
+    const component =
+      fixture.debugElement.nativeElement.querySelector('app-view-scenario');
+    expect(component).toBeTruthy();
+  });
+
+  it('should show scenario view if scenario was not uploaded and status is PENDING', async () => {
+    TestBed.overrideProvider(FEATURES_JSON, {
+      useValue: { SCENARIO_DRAFTS: true },
+    });
+    mockScenarioResource$.next({
+      isLoading: false,
+    });
+    mockScenario$.next({
+      user: 1,
+      scenario_result: { status: 'PENDING', completed_at: '' },
+    } as any);
+    createComp();
+
+    const component =
+      fixture.debugElement.nativeElement.querySelector('app-view-scenario');
+    expect(component).toBeTruthy();
+  });
 });

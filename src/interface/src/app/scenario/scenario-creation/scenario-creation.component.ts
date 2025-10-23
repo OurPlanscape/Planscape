@@ -57,6 +57,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { RunScenarioModalComponent } from '../run-scenario-modal/run-scenario-modal.component';
 import { filter } from 'rxjs/operators';
+import { ScenarioState } from '../scenario.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -142,7 +143,8 @@ export class ScenarioCreationComponent
     private dialog: MatDialog,
     private router: Router,
     private featureService: FeatureService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private scenarioState: ScenarioState
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -295,6 +297,10 @@ export class ScenarioCreationComponent
         next: (result) => {
           this.finished = true; // ensure we don't get an alert when we navigate away
           // TODO this should redirect or show a confirmation, but currently is not working as expected.
+          if (result.id) {
+            this.scenarioState.setScenarioId(result.id);
+            this.scenarioState.reloadScenario();
+          }
           this.router.navigate([
             'plan',
             result.planning_area,

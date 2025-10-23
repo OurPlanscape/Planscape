@@ -7,7 +7,6 @@ import {
   map,
   of,
   shareReplay,
-  take,
   takeWhile,
 } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -19,6 +18,9 @@ import { ScenarioCreationComponent } from '../scenario-creation/scenario-creatio
 import { FeatureService } from 'src/app/features/feature.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@services';
+import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
+
+@UntilDestroy()
 @Component({
   standalone: true,
   imports: [
@@ -39,21 +41,23 @@ export class ScenarioRoutePlaceholderComponent {
     // complete this stream after the resource is loaded.
     takeWhile((resource) => resource.isLoading, true)
   );
-
+  scenario$ = this.scenarioState.currentScenario$;
   constructor(
     private authService: AuthService,
     private router: Router,
     private scenarioState: ScenarioState,
     private featureService: FeatureService
-  ) {}
+  ) {
+    this.scenarioState.reloadScenario();
+  }
 
   // We are going to display scenario creation just if we have SCENARIO_DRAFTS FF enabled and the creator is the same as the logged in user
   canViewScenarioCreation$ = combineLatest([
     this.authService.loggedInUser$,
     this.scenarioState.currentScenario$,
   ]).pipe(
+    untilDestroyed(this),
     filter(([user]) => !!user),
-    take(1),
     map(([user, scenario]) => {
       const scenarioDraftsEnabled =
         this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
@@ -77,6 +81,7 @@ export class ScenarioRoutePlaceholderComponent {
 
       // If it is a draft and the creator is not the same as the user logged in we redirect to planning areas
       const sameCreator = user?.id === scenario?.user;
+
       if (!(sameCreator && isDraft)) {
         this.router.navigate(['/plan', scenario?.planning_area]);
         return false;
