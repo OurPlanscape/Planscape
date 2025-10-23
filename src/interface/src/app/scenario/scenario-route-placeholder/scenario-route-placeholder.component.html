@@ -8,7 +8,6 @@
 
   <!-- If loading is completed and we have an error we should display resource unavailable component -->
   <ng-template #scenarioLoaded>
-    <ng-container *ngIf="scenario$ | async as scenario">
       <ng-container *ngIf="scenarioResource.error; else scenarioIsValid">
         <app-resource-unavailable
           resource="scenario"></app-resource-unavailable>
@@ -33,8 +32,8 @@
           <!-- Displaying uploaded scenario if the origin is USER -->
 
           <app-uploaded-scenario-view
-            [scenario]="scenario"
-            *ngIf="scenario.origin === 'USER'; else viewScenario">
+            [scenario]="scenarioResource.data"
+            *ngIf="scenarioResource.data?.origin === 'USER'; else viewScenario">
           </app-uploaded-scenario-view>
         </ng-template>
 
@@ -54,6 +53,5 @@
           </div>
         </ng-template>
       </ng-template>
-    </ng-container>
   </ng-template>
 </ng-container>

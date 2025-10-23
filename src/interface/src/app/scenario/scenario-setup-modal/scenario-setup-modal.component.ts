@@ -15,7 +15,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
 import { Router } from '@angular/router';
-import { ScenarioState } from '../scenario.state';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -42,7 +41,6 @@ export class ScenarioSetupModalComponent {
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
     private router: Router,
-    private scenarioState: ScenarioState
   ) {}
 
   cancel(): void {
@@ -70,8 +68,6 @@ export class ScenarioSetupModalComponent {
         this.dialogRef.close(result);
         this.submitting = false;
         if (result.id) {
-          this.scenarioState.setScenarioId(result.id);
-          this.scenarioState.reloadScenario();
           this.router.navigate(['plan', planId, 'scenario', result.id]);
         }
       },

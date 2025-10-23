@@ -41,7 +41,6 @@ export class ScenarioRoutePlaceholderComponent {
     // complete this stream after the resource is loaded.
     takeWhile((resource) => resource.isLoading, true)
   );
-  scenario$ = this.scenarioState.currentScenario$;
   constructor(
     private authService: AuthService,
     private router: Router,
