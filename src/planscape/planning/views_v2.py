@@ -1,6 +1,5 @@
 import logging
 
-from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
@@ -26,7 +25,6 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioVersion,
     TreatmentGoal,
-    TreatmentGoalGroup,
 )
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
@@ -417,8 +415,3 @@ class TreatmentGoalViewSet(
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        if feature_enabled("CONUS_WIDE_SCENARIOS"):
-            return qs
-        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)
