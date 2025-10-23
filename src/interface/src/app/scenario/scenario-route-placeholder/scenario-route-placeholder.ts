@@ -60,7 +60,7 @@ export class ScenarioRoutePlaceholderComponent {
       const isDraft = scenario?.scenario_result?.status === 'DRAFT';
 
       // If SCENARIO_DRAFTS is disabled and the scenario is not a draft we return false
-      if (!scenarioDraftsEnabled && !isDraft) {
+      if (!scenarioDraftsEnabled) {
         return false;
       }
 
