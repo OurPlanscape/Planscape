@@ -16,8 +16,9 @@ import { StepDirective } from 'src/styleguide/steps/step.component';
 import { NamedConstraint, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime } from 'rxjs';
-import { distinctUntilChanged } from 'rxjs/operators';
-
+import { distinctUntilChanged, filter, take } from 'rxjs/operators';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+@UntilDestroy()
 @Component({
   selector: 'app-step3',
   standalone: true,
@@ -84,6 +85,34 @@ export class Step3Component
             });
           }
           this.newScenarioState.setNamedConstraints(constraints);
+        }
+      });
+
+    // Reading the config from the scenario state
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.constraints),
+        take(1)
+      )
+      .subscribe((config) => {
+        if (config.constraints && config.constraints.length > 0) {
+          const max_slope = this.newScenarioState
+            .getNamedConstraints(config.constraints)
+            .find((c) => c?.name === 'maxSlope');
+
+          if (max_slope) {
+            this.form.get('max_slope')?.setValue(max_slope.value);
+          }
+
+          const min_distance_from_road = this.newScenarioState
+            .getNamedConstraints(config.constraints)
+            .find((c) => c?.name === 'distanceToRoads');
+          if (min_distance_from_road) {
+            this.form
+              .get('min_distance_from_road')
+              ?.setValue(min_distance_from_road.value);
+          }
         }
       });
   }

@@ -4,7 +4,7 @@ import { Step2Component } from './step2.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 describe('Step2Component', () => {
   let component: Step2Component;
@@ -16,6 +16,9 @@ describe('Step2Component', () => {
       providers: [
         MockProvider(NewScenarioState, {
           excludedAreas$: of([]),
+        }),
+        MockProvider(NewScenarioState, {
+          scenarioConfig$: new BehaviorSubject({}),
         }),
       ],
     }).compileComponents();
