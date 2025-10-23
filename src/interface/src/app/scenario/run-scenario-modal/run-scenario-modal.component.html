@@ -1,0 +1,17 @@
+<sg-modal
+  title="Ready to run the scenario?"
+  [showBorders]="false"
+  [padBody]="true"
+  [showClose]="false"
+  primaryButtonText="Run Scenario"
+  [hasSecondaryButton]="true"
+  secondaryButtonText="Cancel"
+  (clickedPrimary)="runScenario()"
+  (clickedSecondary)="cancel()">
+  <div modalBodyContent>
+    You are about to run the scenario using the selected priority objectives,
+    co-benefits, availability, thresholds, and constraints. Once the analysis
+    starts, these settings cannot be modified.
+    <div class="padded-top">Are you sure you want to proceed?</div>
+  </div>
+</sg-modal>

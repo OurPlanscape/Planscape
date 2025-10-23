@@ -10,6 +10,7 @@ import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { ScenarioConfigOverlayComponent } from 'src/app/scenario/scenario-config-overlay/scenario-config-overlay.component';
+import { ScenarioV3ConfigOverlayComponent } from 'src/app/scenario/scenario-v3-config-overlay/scenario-v3-config-overlay.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { GeopackageFailureModalComponent } from 'src/app/scenario/geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,6 +26,7 @@ import { MatDialog } from '@angular/material/dialog';
     FeaturesModule,
     MatMenuModule,
     ScenarioConfigOverlayComponent,
+    ScenarioV3ConfigOverlayComponent,
   ],
   templateUrl: './scenario-download-footer.component.html',
   styleUrl: './scenario-download-footer.component.scss',
@@ -40,6 +42,7 @@ export class ScenarioDownloadFooterComponent {
 
   @Input() scenarioId!: number | undefined;
   @Input() scenarioName!: string;
+  @Input() scenarioVersion: string = 'V2';
   @Input() geoPackageURL?: string | null;
   @Input() geoPackageStatus?: string | null;
 

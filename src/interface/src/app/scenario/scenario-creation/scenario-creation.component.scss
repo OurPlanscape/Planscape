@@ -11,21 +11,14 @@
   overflow: hidden;
 
   ::ng-deep {
-    mat-tab-header {
-      padding: 0 16px 0 16px;
-    }
-
     .mat-mdc-tab-body-wrapper {
       background-color: $color-soft-purple;
       flex: 1;
     }
 
     .mat-mdc-tab-labels {
-      border: 0;
-    }
-
-    .mdc-tab-indicator--active {
-      border-bottom: 2px solid $color-standard-blue;
+      padding: 0 16px;
+      border-bottom: 2px $color-soft-gray solid;
     }
   }
 }
