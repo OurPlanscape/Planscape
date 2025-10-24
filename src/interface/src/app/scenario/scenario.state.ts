@@ -6,7 +6,6 @@ import {
   catchError,
   combineLatest,
   concat,
-  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -36,10 +35,7 @@ export class ScenarioState {
 
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
-    this._currentScenarioId$.pipe(
-      distinctUntilChanged(),
-      filter((id): id is number => !!id)
-    ),
+    this._currentScenarioId$.pipe(filter((id): id is number => !!id)),
     this._reloadScenario$,
   ]).pipe(
     switchMap(([id]) =>
