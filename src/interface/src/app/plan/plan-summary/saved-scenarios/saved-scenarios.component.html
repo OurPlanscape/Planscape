@@ -99,6 +99,7 @@
               [scenarios]="activeScenarios"
               [plan]="plan"
               (viewScenario)="navigateToScenario($event)"
+              (triggerEdit)="fetchScenarios()"
               (triggerRefresh)="
                 removeScenarioFromList($event, 'activeScenarios')
               "></app-scenarios-card-list>
