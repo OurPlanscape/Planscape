@@ -66,6 +66,19 @@ export class ScenarioService {
     );
   }
 
+  /** Makes a request to the backend to rename the scenario with the given name */
+  editScenarioName(
+    scenarioId: number,
+    name: string,
+    planning_area: number
+  ): Observable<any> {
+    return this.http.patch(
+      this.v2Path + scenarioId + '/',
+      { name, planning_area },
+      { withCredentials: true }
+    );
+  }
+
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
   createScenarioFromSteps(
     scenarioParameters: ScenarioCreationPayload
