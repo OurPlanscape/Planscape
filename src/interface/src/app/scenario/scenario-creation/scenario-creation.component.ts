@@ -42,7 +42,7 @@ import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow
 import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
-import { Step3Component } from '../step3/step3.component';
+import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import {
   convertFormOutputToDraftPayload,
   getScenarioCreationPayloadScenarioCreation,
@@ -81,7 +81,7 @@ enum ScenarioTabs {
     StepComponent,
     Step1Component,
     Step2Component,
-    Step3Component,
+    StandLevelConstraintsComponent,
     TreatmentTargetComponent,
     Step4LegacyComponent,
     BaseLayersComponent,

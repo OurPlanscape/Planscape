@@ -1,0 +1,53 @@
+<!-- Stand levels constraints -->
+<sg-section
+  headline="Stand Level Constraints (OPTIONAL)"
+  class="constraints-step">
+  <p class="stand-label">
+    Set the conditions that must be met for ForSys to consider units for
+    treatment.
+  </p>
+
+  <form [formGroup]="form">
+    <div>Max Slope</div>
+    <div class="flex">
+      <mat-form-field
+        class="stand-level-input"
+        appearance="outline"
+        floatLabel="always">
+        <input
+          class="step3-input"
+          formControlName="max_slope"
+          matInput
+          type="number"
+          [value]="37" />
+
+        <mat-error
+          *ngIf="
+            form.get('max_slope')?.touched &&
+            form.get('max_slope')?.hasError('max')
+          ">
+          Slope cannot exceed 100
+        </mat-error>
+      </mat-form-field>
+      <span>%</span>
+    </div>
+
+    <div>Max Distance From Roads</div>
+    <div class="flex">
+      <mat-form-field
+        class="stand-level-input"
+        appearance="outline"
+        floatLabel="always">
+        <input
+          class="step3-input"
+          formControlName="min_distance_from_road"
+          matInput
+          type="text"
+          mask="separator"
+          thousandSeparator=","
+          [value]="" />
+      </mat-form-field>
+      <span>yds</span>
+    </div>
+  </form>
+</sg-section>
