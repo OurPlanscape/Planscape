@@ -44,3 +44,10 @@
   }
 }
 
+.disabled-tab-label {
+  pointer-events: auto;
+  cursor: not-allowed;
+  user-select: none;
+
+}
+
