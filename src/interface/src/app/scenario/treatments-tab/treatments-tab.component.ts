@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TreatmentsService } from '@services/treatments.service';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@types';
 import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
@@ -18,6 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TreatmentCardComponent } from '@styleguide';
 import { NgFor, NgIf } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @UntilDestroy()
 @Component({
