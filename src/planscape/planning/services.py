@@ -513,10 +513,17 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 }
             )
 
-    min_area_project = get_min_project_area(scenario)
     number_of_projects = cfg.get(
         "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
     )
+    
+    if "targets" in cfg and isinstance(cfg.get("targets"), dict):
+        number_of_projects = cfg.get("targets", {}).get(
+            "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
+        )
+
+    min_area_project = get_min_project_area(scenario)
+
     max_area_project = get_max_area_project(
         scenario=scenario,
         number_of_projects=number_of_projects,
@@ -622,7 +629,7 @@ def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
         targets = configuration.get("targets", {}) or {}
         max_area = targets.get("max_area")
         if max_area:
-            return float(max_area) / number_of_projects
+            return float(max_area)
         max_acres = get_min_project_area(scenario)
         return float(max_acres)
 

@@ -89,8 +89,8 @@ mypy:
 migrate:
 	uv run --directory=src/planscape manage.py migrate --no-input
 	uv run --directory=src/planscape manage.py collectstatic --no-input
-	uv run --directory=src/planscape manage.py install_layers
-	uv run --directory=src/planscape manage.py install_layers --folder stands/sql
+	uv run --directory=src/planscape manage.py install_functions
+	uv run --directory=src/planscape manage.py install_functions --folder stands/sql
 
 install-dependencies-backend:
 	uv sync --locked --no-install-project --dev
@@ -190,7 +190,7 @@ docker-makemigrations:
 
 docker-migrate:
 	./src/planscape/bin/run.sh uv run python manage.py migrate
-	./src/planscape/bin/run.sh uv run python manage.py install_layers
+	./src/planscape/bin/run.sh uv run python manage.py install_functions
 
 # Reset relevant tables and load development fixture data
 load-dev-data:

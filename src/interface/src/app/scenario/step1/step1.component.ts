@@ -1,5 +1,5 @@
 import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -13,7 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
 import { ScenarioCreation, ScenarioGoal } from '@types';
-import { map, shareReplay } from 'rxjs';
+import { filter, map, shareReplay, take } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { GoalOverlayService } from 'src/app/plan/goal-overlay/goal-overlay.service';
 import { SectionComponent } from '@styleguide';
@@ -23,7 +23,10 @@ import { ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FeaturesModule } from '../../features/features.module';
 import { getGroupedGoals } from '../scenario-helper';
+import { NewScenarioState } from '../new-scenario.state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-step1',
   standalone: true,
@@ -44,7 +47,10 @@ import { getGroupedGoals } from '../scenario-helper';
   templateUrl: './step1.component.html',
   styleUrl: './step1.component.scss',
 })
-export class Step1Component extends StepDirective<ScenarioCreation> {
+export class Step1Component
+  extends StepDirective<ScenarioCreation>
+  implements OnInit
+{
   form = new FormGroup({
     stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
       Validators.required,
@@ -75,9 +81,29 @@ export class Step1Component extends StepDirective<ScenarioCreation> {
     private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
     private scenarioState: ScenarioState,
+    private newScenarioState: NewScenarioState,
     private route: ActivatedRoute
   ) {
     super();
+  }
+
+  ngOnInit(): void {
+    // Reading the config from the scenario state
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.stand_size || !!c?.treatment_goal),
+        take(1)
+      )
+      .subscribe((config) => {
+        if (config.stand_size) {
+          this.form.get('stand_size')?.setValue(config.stand_size);
+        }
+
+        if (config.treatment_goal) {
+          this.form.get('treatment_goal')?.setValue(config.treatment_goal);
+        }
+      });
   }
 
   selectStatewideGoal(goal: ScenarioGoal) {

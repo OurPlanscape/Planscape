@@ -1,6 +1,5 @@
 import logging
 
-from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
@@ -26,7 +25,6 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioVersion,
     TreatmentGoal,
-    TreatmentGoalGroup,
 )
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
@@ -344,7 +342,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         response_serializer = ScenarioV3Serializer(instance)
         return Response(response_serializer.data)
 
-    @extend_schema(description="Trigger a ForSys run for this Scenario (V2 rules).")
+    @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
@@ -359,7 +357,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         # trigger
         trigger_scenario_run(scenario, request.user)
 
-        serializer = ScenarioV2Serializer(instance=scenario)
+        serializer = ScenarioV3Serializer(instance=scenario)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
@@ -417,8 +415,3 @@ class TreatmentGoalViewSet(
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        if feature_enabled("CONUS_WIDE_SCENARIOS"):
-            return qs
-        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)

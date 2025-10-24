@@ -30,9 +30,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
-  ScenarioConfig,
-  ScenarioConfigPayload,
+  Scenario,
   ScenarioCreation,
+  ScenarioDraftConfig,
   ScenarioDraftPayload,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
@@ -57,6 +57,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { RunScenarioModalComponent } from '../run-scenario-modal/run-scenario-modal.component';
 import { filter } from 'rxjs/operators';
+import { ScenarioState } from '../scenario.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -95,8 +96,7 @@ export class ScenarioCreationComponent
 {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
-  config: Partial<ScenarioCreation> = {};
-  draftConfig: Partial<ScenarioDraftPayload> = {};
+  config: Partial<ScenarioDraftConfig> = {};
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
@@ -142,7 +142,8 @@ export class ScenarioCreationComponent
     private dialog: MatDialog,
     private router: Router,
     private featureService: FeatureService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private scenarioState: ScenarioState
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -175,22 +176,26 @@ export class ScenarioCreationComponent
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         this.form.controls.scenarioName.setValue(scenario.name);
-        const currentConfig = this.convertSavedConfigToNewConfig(
-          scenario.configuration
-        );
+        // Mapping the backend object to the frontend configuration
+        const currentConfig = this.convertSavedConfigToNewConfig(scenario);
         this.newScenarioState.setScenarioConfig(currentConfig);
+        // Setting the initial state for the configuration
+        this.config = currentConfig;
         this.scenarioStatus = scenario.scenario_result?.status ?? 'NOT STARTED';
       });
   }
 
   convertSavedConfigToNewConfig(
-    config: ScenarioConfig
-  ): Partial<ScenarioConfigPayload> {
+    scenario: Scenario
+  ): Partial<ScenarioDraftConfig> {
     const newState = Object.fromEntries(
-      Object.entries(config)
+      Object.entries(scenario.configuration)
         .filter(([_, value]) => value != null)
         .map(([key, value]) => [key, value as NonNullable<typeof value>])
     );
+    // Adding excluded areas and treatment goal
+    newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
+    newState['treatment_goal'] = scenario.treatment_goal?.id;
     return newState as Partial<ScenarioCreation>;
   }
 
@@ -294,7 +299,10 @@ export class ScenarioCreationComponent
       .subscribe({
         next: (result) => {
           this.finished = true; // ensure we don't get an alert when we navigate away
-          // TODO this should redirect or show a confirmation, but currently is not working as expected.
+          if (result.id) {
+            this.scenarioState.setScenarioId(result.id);
+            this.scenarioState.reloadScenario();
+          }
           this.router.navigate([
             'plan',
             result.planning_area,
