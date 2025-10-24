@@ -42,7 +42,6 @@
   <button
     *ngIf="hasSecondaryButton"
     sg-button
-    mat-raised-button
     type="button"
     [variant]="secondaryButtonVariant"
     [disabled]="secondaryButtonDisabled"
@@ -51,9 +50,9 @@
   </button>
 
   <button
+    [attr.cdkFocusInitial]="!primaryButtonDisabled ? '' : null"
     sg-button
     variant="primary"
-    mat-raised-button
     type="button"
     [variant]="primaryButtonVariant"
     [ngClass]="{ 'spinner-class': isInSpinState }"
