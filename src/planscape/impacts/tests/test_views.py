@@ -965,7 +965,6 @@ class TxPlanNoteTest(APITestCase):
             new_note,
             content_type="application/json",
         )
-        print(f"what is the respone? {response}")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_notes_for_treatment_plan(self):
