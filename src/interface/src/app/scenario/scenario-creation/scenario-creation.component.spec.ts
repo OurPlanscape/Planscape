@@ -10,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
 import { Step1Component } from '../step1/step1.component';
 import { ScenarioState } from '../scenario.state';
-import { Step3Component } from '../step3/step3.component';
+import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxMaskModule } from 'ngx-mask';
 import { NewScenarioState } from '../new-scenario.state';
@@ -50,7 +50,7 @@ describe('ScenarioCreationComponent', () => {
         MockDeclarations(
           DataLayersComponent,
           Step1Component,
-          Step3Component,
+          StandLevelConstraintsComponent,
           TreatmentTargetComponent,
           Step4LegacyComponent,
           BaseLayersComponent
