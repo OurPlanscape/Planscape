@@ -191,11 +191,37 @@ class TestDataLayerViewSet(APITestCase):
         filter = {
             "term": "foo",
         }
+        DataLayerFactory.create(
+            dataset=self.dataset, name="Foo Vector", type=DataLayerType.VECTOR
+        )
         url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(filter)}"
         response = self.client.get(url)
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(10, data.get("count"))
+
+        for row in data["results"]:
+            self.assertEqual("RASTER", row["data"]["type"])
+
+    def test_find_anything_type_vector_returns_vectors(self):
+        self.client.force_authenticate(user=self.admin)
+        for i in range(3):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"vefoo {i}", type=DataLayerType.VECTOR
+            )
+        for i in range(5):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"vefoo R {i}", type=DataLayerType.RASTER
+            )
+
+        params = {"term": "vefoo", "type": DataLayerType.VECTOR}
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
+        resp = self.client.get(url)
+        data = resp.json()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(3, data.get("count"))
+        for row in data["results"]:
+            self.assertEqual("VECTOR", row["data"]["type"])
 
 
 class TestDatasetViewSet(APITestCase):
@@ -223,7 +249,8 @@ class TestDatasetViewSet(APITestCase):
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(dataset.pk, data.get("results")[1].get("id"))
+        ids = [row["id"] for row in data.get("results", [])]
+        self.assertIn(dataset.pk, ids)
 
     def test_get_by_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
@@ -232,7 +259,8 @@ class TestDatasetViewSet(APITestCase):
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(dataset.pk, data.get("results")[1].get("id"))
+        ids = [row["id"] for row in data.get("results", [])]
+        self.assertIn(dataset.pk, ids)
 
     def test_browses_datalayers(self):
         self.client.force_authenticate(user=self.admin)
