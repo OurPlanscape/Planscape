@@ -10,7 +10,7 @@
   (clickedPrimary)="submitPlan()"
   [hasPrimarySpinner]="true"
   [isInSpinState]="submitting"
-  [primaryButtonDisabled]="submitting">
+  [primaryButtonDisabled]="submitting || planForm.invalid">
   <div modalBodyContent>
     <sg-modal-info
       *ngIf="!editMode"
