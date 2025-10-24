@@ -1,9 +1,9 @@
 <sg-modal
-  title="Scenario Setup"
+  [title]="editMode ? 'Rename' : 'Scenario Setup'"
   [shortHeader]="false"
   [showBorders]="true"
   [centerFooter]="false"
-  primaryButtonText="Create"
+  [primaryButtonText]="primaryCTA"
   secondaryButtonText="Cancel"
   (clickedSecondary)="cancel()"
   (clickedClose)="cancel()"
