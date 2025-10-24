@@ -36,6 +36,13 @@
       </button>
       <button
         mat-menu-item
+        *ngIf="userCanEditScenario"
+        (click)="editScenario.emit()">
+        <mat-icon class="material-symbols-outlined">edit</mat-icon>
+        <span>Rename</span>
+      </button>
+      <button
+        mat-menu-item
         *ngIf="userCanArchiveScenario"
         (click)="toggleArchiveStatus.emit()">
         <mat-icon *ngIf="!isArchived()" class="material-symbols-outlined"

@@ -1,4 +1,4 @@
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import {
   InputDirective,
   InputFieldComponent,
@@ -15,6 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
 import { Router } from '@angular/router';
+import { Scenario } from '@types';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -28,7 +29,7 @@ import { Router } from '@angular/router';
   templateUrl: './scenario-setup-modal.component.html',
   styleUrl: './scenario-setup-modal.component.scss',
 })
-export class ScenarioSetupModalComponent {
+export class ScenarioSetupModalComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<ScenarioSetupModalComponent>);
 
   scenarioNameForm = new FormGroup({
@@ -37,11 +38,34 @@ export class ScenarioSetupModalComponent {
   submitting = false;
   errorMessage: string = '';
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { planId: number }, // Access the passed data
+    @Inject(MAT_DIALOG_DATA)
+    public data: { planId: number; scenario?: Scenario }, // Access the passed data
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
     private router: Router
   ) {}
+
+  get editMode(): boolean {
+    return this.data.scenario !== undefined;
+  }
+
+  get primaryCTA(): string {
+    if (this.errorMessage !== '') {
+      return 'Try Again';
+    } else if (this.editMode) {
+      return 'Done';
+    }
+    return 'Create';
+  }
+
+  ngOnInit(): void {
+    // In case we are in edit mode we prefill the scenario name
+    if (this.editMode && this.data.scenario) {
+      this.scenarioNameForm
+        .get('scenarioName')
+        ?.setValue(this.data.scenario.name);
+    }
+  }
 
   cancel(): void {
     this.dialogRef.close(false);
@@ -52,7 +76,12 @@ export class ScenarioSetupModalComponent {
       this.submitting = true;
       const scenarioName =
         this.scenarioNameForm.get('scenarioName')?.value || '';
-      this.createScenario(scenarioName);
+
+      if (!this.editMode) {
+        this.createScenario(scenarioName);
+      } else {
+        this.editScenarioName(scenarioName);
+      }
     }
   }
 
@@ -97,6 +126,40 @@ export class ScenarioSetupModalComponent {
         }
       },
     });
+  }
+
+  private editScenarioName(name: string) {
+    if (!this.data.planId || !this.data.scenario?.id) {
+      this.dialogRef.close();
+      return;
+    }
+    this.scenarioService
+      .editScenarioName(this.data.scenario.id, name, this.data.planId)
+      .subscribe({
+        next: () => {
+          this.dialogRef.close(true);
+          this.submitting = false;
+        },
+        error: (e) => {
+          // detect known errors
+          if (
+            e.error?.global &&
+            e.error?.global.some((msg: string) =>
+              msg.includes(
+                'The fields planning_area, name must make a unique set.'
+              )
+            )
+          ) {
+            this.submitting = false;
+            this.errorMessage =
+              'This name is already used by another scenario in this planning area.';
+          } else {
+            this.submitting = false;
+            this.errorMessage =
+              'Something went wrong while saving your changes. Please try again in a moment.';
+          }
+        },
+      });
   }
 
   submitIfValid(event: Event) {
