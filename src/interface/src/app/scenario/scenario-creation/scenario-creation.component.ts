@@ -289,6 +289,7 @@ export class ScenarioCreationComponent
 
   async runScenario() {
     this.newScenarioState.setLoading(true);
+    this.newScenarioState.setScenarioConfig({});
     this.scenarioService
       .runScenario(this.scenarioId)
       .pipe(

@@ -5,6 +5,7 @@ import {
   combineLatest,
   filter,
   map,
+  tap,
   of,
   shareReplay,
   takeWhile,
@@ -55,6 +56,9 @@ export class ScenarioRoutePlaceholderComponent {
   ]).pipe(
     untilDestroyed(this),
     filter(([user]) => !!user),
+    tap(([user, scenario]) => console.log('in placeholder we are detecting a change---here is the user?:', 
+      user, 'here is the scenario now: ', scenario)),
+    tap(([, scenario]) => console.log('here is the scenario status: ', scenario.scenario_result?.status)),
     map(([user, scenario]) => {
       const scenarioDraftsEnabled =
         this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');

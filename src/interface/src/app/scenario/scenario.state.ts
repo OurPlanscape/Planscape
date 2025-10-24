@@ -6,9 +6,10 @@ import {
   catchError,
   combineLatest,
   concat,
-  distinctUntilChanged,
+  // distinctUntilChanged,
   filter,
   map,
+  tap,
   Observable,
   of,
   shareReplay,
@@ -37,17 +38,20 @@ export class ScenarioState {
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
     this._currentScenarioId$.pipe(
-      distinctUntilChanged(),
+      tap(id => console.log("Current ID: ", id)),
+      // distinctUntilChanged(),
       filter((id): id is number => !!id)
     ),
     this._reloadScenario$,
   ]).pipe(
+    tap(([id]) => console.log("Reload Triggered for scenario Id:", id)),
     switchMap(([id]) =>
       concat(
         // when loading emit object with loading
         of({ isLoading: true }),
         this.scenarioService.getScenario(id).pipe(
           // when done, emit object with loading false and data
+          tap((data)=>console.log('SCENARIO STATE DID A RELOAD!', data)),
           map((data) => ({ data, isLoading: false }) as LoadedResult<Scenario>),
           // when we have errors, emit object with loading false and error
           catchError((error) => of({ isLoading: false, error }))
