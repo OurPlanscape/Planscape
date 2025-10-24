@@ -4,7 +4,9 @@ import { ChipInputComponent } from './chip-input.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatLegacyChipsModule } from '@angular/material/legacy-chips';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { NgForOf } from '@angular/common';
 
 describe('ChipInputComponent', () => {
   let component: ChipInputComponent;
@@ -12,12 +14,15 @@ describe('ChipInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ChipInputComponent],
+      declarations: [],
       imports: [
         MatFormFieldModule,
         MatInputModule,
         NoopAnimationsModule,
-        MatLegacyChipsModule,
+        MatChipsModule,
+        MatIconModule,
+        NgForOf,
+        ChipInputComponent,
       ],
     }).compileComponents();
 
