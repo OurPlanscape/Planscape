@@ -49,7 +49,7 @@ export class SharePlanDialogComponent {
 
   showCreator$ = this.authService.loggedInUser$.pipe(
     filter((user): user is User => !!user),
-    map((user) => user.id != this.data.plan.id)
+    map((user) => user.id != this.data.plan.user)
   );
 
   roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];
