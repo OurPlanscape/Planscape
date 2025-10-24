@@ -67,7 +67,7 @@ export class ScenarioSetupModalComponent {
       next: (result) => {
         this.dialogRef.close(result);
         this.submitting = false;
-        if (result.id) {
+        if (result) {
           this.router.navigate(['plan', planId, 'scenario', result.id]);
         }
       },
