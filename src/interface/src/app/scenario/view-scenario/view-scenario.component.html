@@ -34,10 +34,19 @@
       <app-base-layers class="white-background"></app-base-layers>
     </mat-tab>
     <mat-tab
-      label="Treatment Plans"
-      *ngIf="
-        scenarioHasResults(scenario) && scenarioCanHaveTreatmentPlans(scenario)
-      ">
+      *ngIf="scenarioHasResults(scenario)"
+      [disabled]="!scenarioCanHaveTreatmentPlans(scenario)">
+      <ng-template mat-tab-label>
+        <span
+          matTooltip="Treatment Plans are unavailable outside of CA"
+          matTooltipPosition="above"
+          [matTooltipDisabled]="scenarioCanHaveTreatmentPlans(scenario)"
+          [ngClass]="{
+            'disabled-tab-label': !scenarioCanHaveTreatmentPlans(scenario),
+          }">
+          Treatment Plans
+        </span>
+      </ng-template>
       <app-treatments-tab
         [scenarioId]="scenarioId"
         [planningArea]="plan$ | async"></app-treatments-tab>
