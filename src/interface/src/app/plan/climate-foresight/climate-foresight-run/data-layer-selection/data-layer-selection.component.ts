@@ -55,6 +55,7 @@ import {
 import { generateColorFunction } from '../../../../data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import { StepDirective } from '../../../../../styleguide/steps/step.component';
+import { MapConfigService } from '../../../../maplibre-map/map-config.service';
 
 @Component({
   selector: 'app-data-layer-selection',
@@ -75,6 +76,7 @@ import { StepDirective } from '../../../../../styleguide/steps/step.component';
   ],
   providers: [
     { provide: StepDirective, useExisting: DataLayerSelectionComponent },
+    MapConfigService,
   ],
   templateUrl: './data-layer-selection.component.html',
   styleUrls: ['./data-layer-selection.component.scss'],
@@ -106,6 +108,18 @@ export class DataLayerSelectionComponent
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
   allDataLayers: DataLayer[] = [];
   searchTerm = '';
+
+  selectedDataset: {
+    id: number;
+    name: string;
+    organizationName: string;
+  } | null = null;
+  datasetGroups: Array<{
+    id: number;
+    name: string;
+    organizationName: string;
+    layers: DataLayer[];
+  }> = [];
 
   mapLibreMap: MapLibreMap | null = null;
   bounds$: Observable<any>;
@@ -146,14 +160,59 @@ export class DataLayerSelectionComponent
     return this.selectedCount < this.maxDataLayers;
   }
 
+  get filteredDatasets(): Array<{
+    id: number;
+    name: string;
+    organizationName: string;
+    layers: DataLayer[];
+  }> {
+    if (!this.searchTerm.trim()) {
+      return this.datasetGroups;
+    }
+
+    const searchLower = this.searchTerm.toLowerCase();
+
+    return this.datasetGroups.filter((dataset) => {
+      // Check dataset name
+      if (dataset.name.toLowerCase().includes(searchLower)) {
+        return true;
+      }
+
+      // Check organization name
+      if (dataset.organizationName.toLowerCase().includes(searchLower)) {
+        return true;
+      }
+
+      // Check if any layer or its path matches
+      return dataset.layers.some((layer) => {
+        // Check layer name
+        if (layer.name.toLowerCase().includes(searchLower)) {
+          return true;
+        }
+
+        // Check layer path (categories)
+        if (
+          layer.path &&
+          layer.path.some((p) => p.toLowerCase().includes(searchLower))
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+    });
+  }
+
   constructor(
     private mapConfigState: MapConfigState,
     private planState: PlanState,
     private authService: AuthService,
     private climateForesightService: ClimateForesightService,
-    private dataLayersService: DataLayersService
+    private dataLayersService: DataLayersService,
+    private mapConfigService: MapConfigService
   ) {
     super();
+    this.mapConfigService.initialize();
     this.bounds$ = this.planState.planningAreaGeometry$.pipe(
       map((geometry) => {
         if (!geometry) {
@@ -227,8 +286,7 @@ export class DataLayerSelectionComponent
     this.climateForesightService.getDataLayers().subscribe({
       next: (layers: DataLayer[]) => {
         this.allDataLayers = layers;
-        this.treeData = buildPathTree(layers);
-        this.filteredTreeData = this.treeData;
+        this.groupLayersByDataset(layers);
         this.loadingLayers = false;
       },
       error: (err: any) => {
@@ -238,9 +296,60 @@ export class DataLayerSelectionComponent
     });
   }
 
+  private groupLayersByDataset(layers: DataLayer[]): void {
+    const datasetMap = new Map<
+      number,
+      {
+        id: number;
+        name: string;
+        organizationName: string;
+        layers: DataLayer[];
+      }
+    >();
+
+    for (const layer of layers) {
+      const datasetId = layer.dataset.id;
+      if (!datasetMap.has(datasetId)) {
+        datasetMap.set(datasetId, {
+          id: datasetId,
+          name: layer.dataset.name,
+          organizationName: layer.organization.name,
+          layers: [],
+        });
+      }
+      datasetMap.get(datasetId)!.layers.push(layer);
+    }
+
+    this.datasetGroups = Array.from(datasetMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }
+
+  selectDataset(dataset: {
+    id: number;
+    name: string;
+    organizationName: string;
+    layers: DataLayer[];
+  }): void {
+    this.selectedDataset = dataset;
+    this.treeData = buildPathTree(dataset.layers);
+    this.filteredTreeData = this.treeData;
+    this.searchTerm = '';
+  }
+
+  goBackToDatasets(): void {
+    this.selectedDataset = null;
+    this.treeData = [];
+    this.filteredTreeData = [];
+    this.searchTerm = '';
+  }
+
   onSearchChange(searchTerm: string): void {
     this.searchTerm = searchTerm;
-    this.filterTreeData();
+    if (this.selectedDataset) {
+      this.filterTreeData();
+    }
+    // Dataset filtering happens in the filteredDatasets getter
   }
 
   private filterTreeData(): void {

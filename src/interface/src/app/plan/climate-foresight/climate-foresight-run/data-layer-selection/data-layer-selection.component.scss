@@ -183,9 +183,119 @@
     }
   }
 
+  .content-container {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .datasets-list {
+    flex: 1;
+    overflow-y: auto;
+
+    .dataset-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      cursor: pointer;
+      border-bottom: 1px solid $color-soft-gray;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: $color-lighter-gray;
+      }
+
+      .dataset-info {
+        flex: 1;
+
+        .dataset-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: $color-dark-gray;
+          margin-bottom: 4px;
+        }
+
+        .dataset-org {
+          font-size: 12px;
+          color: $color-md-gray;
+        }
+      }
+
+      mat-icon {
+        color: $color-md-gray;
+      }
+    }
+
+    .no-results {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+
+      p {
+        margin: 0;
+        color: $color-md-gray;
+      }
+    }
+  }
+
+  .tree-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .dataset-header {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      cursor: pointer;
+      border-bottom: 1px solid $color-soft-gray;
+      gap: 12px;
+
+      &:hover {
+        background-color: $color-lighter-gray;
+      }
+
+      mat-icon {
+        color: $color-dark-gray;
+      }
+
+      .header-info {
+        flex: 1;
+
+        .selected-dataset-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: $color-dark-gray;
+          margin-bottom: 2px;
+        }
+
+        .selected-dataset-org {
+          font-size: 12px;
+          color: $color-md-gray;
+        }
+      }
+    }
+  }
+
   .tree-container {
     flex: 1;
     overflow-y: auto;
+
+    .no-results {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+
+      p {
+        margin: 0;
+        color: $color-md-gray;
+      }
+    }
   }
 
   .data-layers-tree {
@@ -217,10 +327,6 @@
 
       &.previewed mat-icon {
         color: $color-standard-blue;
-      }
-
-      &:disabled mat-icon {
-        color: $color-soft-gray;
       }
     }
 
