@@ -61,6 +61,7 @@ export class ScenarioCardComponent {
   @Input() userCanDeleteScenario = false;
   @Input() userCanEditScenario = false;
   @Input() showTreatmentPlanButton = false;
+  @Input() disabled = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
@@ -109,7 +110,7 @@ export class ScenarioCardComponent {
 
   @HostBinding('class.disabled-content')
   get disabledContent() {
-    return this.isRunning();
+    return this.isRunning() || this.disabled;
   }
 
   @HostBinding('class.selected')

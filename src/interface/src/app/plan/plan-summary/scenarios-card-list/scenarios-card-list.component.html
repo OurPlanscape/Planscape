@@ -25,5 +25,6 @@
   (deleteScenario)="showDeleteScenarioDialog(s)"
   (editScenario)="editScenario(s)"
   matTooltip="Only the creator can edit this draft"
-  [matTooltipDisabled]="!displayDraftCreatorTooltip(s)">
+  [matTooltipDisabled]="!displayDraftCreatorTooltip(s)"
+  [disabled]="displayDraftCreatorTooltip(s)">
 </sg-scenario-card>
