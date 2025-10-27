@@ -41,12 +41,30 @@
     padding: $steps-padding 0 $steps-padding $steps-padding;
     margin-right: 2px;
   }
-  
+
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+
 }
 
+.constraints-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .flex {
   display: flex;
   gap: 12px;
   align-items: baseline;
 }
+
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  line-height: 22px;
+  color: $color-dark-gray
+}
+

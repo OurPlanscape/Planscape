@@ -7,47 +7,62 @@
     treatment.
   </p>
 
-  <form [formGroup]="form">
-    <div>Max Slope</div>
-    <div class="flex">
-      <mat-form-field
-        class="stand-level-input"
-        appearance="outline"
-        floatLabel="always">
-        <input
-          class="step3-input"
-          formControlName="max_slope"
-          matInput
-          type="number"
-          [value]="37" />
+  <form [formGroup]="form" class="constraints-form">
+    <div>
+      <label for="max_slope" class="input-label">Max Slope</label>
+      <div class="flex">
+        <mat-form-field
+          class="stand-level-input"
+          appearance="outline"
+          floatLabel="always">
+          <input
+            id="max_slope"
+            class="step3-input"
+            formControlName="max_slope"
+            min="0"
+            max="100"
+            matInput
+            type="number" />
 
-        <mat-error
-          *ngIf="
-            form.get('max_slope')?.touched &&
-            form.get('max_slope')?.hasError('max')
-          ">
-          Slope cannot exceed 100
-        </mat-error>
-      </mat-form-field>
-      <span>%</span>
+          <mat-error
+            *ngIf="
+              form.get('max_slope')?.touched &&
+              form.get('max_slope')?.hasError('max')
+            ">
+            Slope cannot exceed 100
+          </mat-error>
+        </mat-form-field>
+        <span>%</span>
+      </div>
     </div>
-
-    <div>Max Distance From Roads</div>
-    <div class="flex">
-      <mat-form-field
-        class="stand-level-input"
-        appearance="outline"
-        floatLabel="always">
-        <input
-          class="step3-input"
-          formControlName="min_distance_from_road"
-          matInput
-          type="text"
-          mask="separator"
-          thousandSeparator=","
-          [value]="" />
-      </mat-form-field>
-      <span>yds</span>
+    <div>
+      <label for="min_distance_from_road" class="input-label">
+        Max Distance From Roads</label
+      >
+      <div class="flex">
+        <mat-form-field
+          class="stand-level-input"
+          appearance="outline"
+          floatLabel="always">
+          <input
+            id="min_distance_from_road"
+            class="step3-input"
+            formControlName="min_distance_from_road"
+            matInput
+            type="text"
+            mask="separator"
+            thousandSeparator=","
+            [value]="" />
+          <mat-error
+            *ngIf="
+              form.get('min_distance_from_road')?.touched &&
+              form.get('min_distance_from_road')?.hasError('max')
+            ">
+            Max Distance From Roads cannot exceed 100.000 yards
+          </mat-error>
+        </mat-form-field>
+        <span>yds</span>
+      </div>
     </div>
   </form>
 </sg-section>
