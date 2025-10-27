@@ -934,7 +934,7 @@ class PatchScenarioConfigurationTest(APITestCase):
     def test_patch_scenario_configuration_success(self):
         payload = {
             "configuration": {
-                "targets": {"estimated_cost": 12345, "max_area": 11111},
+                "targets": {"estimated_cost": 12345, "max_area": 11111, "max_project_count": 10},
                 "stand_size": "SMALL",
             }
         }
@@ -974,7 +974,7 @@ class PatchScenarioConfigurationTest(APITestCase):
             "min_distance_from_road": 100,
             "max_project_count": 5,
             "configuration": {
-                "targets": {"estimated_cost": 12345, "max_area": 11111},
+                "targets": {"estimated_cost": 12345, "max_area": 11111, "max_project_count": 10},
             },
         }
         self.client.force_authenticate(self.user)
