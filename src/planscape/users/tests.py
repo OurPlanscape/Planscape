@@ -3,10 +3,12 @@ import re
 
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
+from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 from impacts.tests.factories import TreatmentPlanFactory
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -561,3 +563,50 @@ class ValidateMartinRequestTestCase(APITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {"error": "X-Original-URI header not found"})
+
+
+class LastLoginTest(TestCase):
+    def setUp(self):
+        self.email = "lastlogin@test.com"
+        self.password = "ComplexPassword123"
+        self.client.post(
+            reverse("rest_register"),
+            {
+                "email": self.email,
+                "password1": self.password,
+                "password2": self.password,
+                "first_name": "FirstName",
+                "last_name": "LastName",
+            },
+        )
+        self.user = User.objects.get(email=self.email)
+        email = EmailAddress.objects.get(email=self.email)
+        email.verified = True
+        email.save()
+
+    def test_last_login_is_set_on_login(self):
+        self.user.refresh_from_db()
+        self.assertIsNone(self.user.last_login)
+        resp = self.client.post(
+            reverse("rest_login"),
+            {"email": self.email, "password": self.password},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertIsNotNone(self.user.last_login)
+        self.assertLess(
+            abs(self.user.last_login - timezone.now()), timedelta(minutes=2)
+        )
+
+    def test_last_login_updates_on_refresh(self):
+        self.client.post(
+            reverse("rest_login"),
+            {"email": self.email, "password": self.password},
+        )
+        self.user.refresh_from_db()
+        first_login_time = self.user.last_login
+        self.assertIsNotNone(first_login_time)
+        resp = self.client.post("/dj-rest-auth/token/refresh/", {})
+        self.assertEqual(resp.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertGreaterEqual(self.user.last_login, first_login_time)
