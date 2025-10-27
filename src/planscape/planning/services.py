@@ -554,6 +554,13 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
 
 
 def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
+    planning_area = scenario.planning_area
+    cfg = dict(getattr(scenario, "configuration", {}) or {})
+    stand_size = cfg.get("stand_size")
+    excluded_areas_ids = cfg.get("excluded_areas_ids", [])
+    targets = cfg.get("targets") or {}
+    max_area = targets.get("max_area")
+    max_project_count = targets.get("max_project_count")
     errors: List[str] = []
 
     if scenario.result_status not in {
@@ -568,25 +575,16 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if not scenario.treatment_goal:
         errors.append("Scenario has no Treatment Goal assigned.")
 
-    cfg = dict(getattr(scenario, "configuration", {}) or {})
-    planning_area = scenario.planning_area
-    stand_size = cfg.get("stand_size")
-
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
 
-    targets = cfg.get("targets") or {}
-    max_area = targets.get("max_area")
     if max_area is None:
         errors.append("Configuration target `max_area` (number of acres) is required.")
 
-    excluded_areas_ids = cfg.get("excluded_areas_ids", [])
-    max_project_count = targets.get("max_project_count")
-
     if max_project_count is None:
-        max_project_count = settings.DEFAULT_MAX_PROJECT_COUNT
-    
-    if stand_size:
+        errors.append("Configuration field `max_project_count` is required.")
+
+    if stand_size and max_project_count is not None:
         available_stand_ids = get_available_stand_ids(
             planning_area=planning_area,
             stand_size=stand_size,
