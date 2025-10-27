@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
 import { MatLegacyChipsModule as MatChipsModule } from '@angular/material/legacy-chips';
 
@@ -30,7 +29,6 @@ import { MatTableModule } from '@angular/material/table';
 @NgModule({
   exports: [
     MatButtonModule,
-    MatCardModule,
     MatCheckboxModule,
     MatChipsModule,
     MatDialogModule,
