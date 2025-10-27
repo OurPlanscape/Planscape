@@ -100,3 +100,17 @@ export const UserCannotArchiveScenario: Story = {
     userCanArchiveScenario: false,
   },
 };
+
+export const DisabledScenario: Story = {
+  args: {
+    name: 'Test Scenario',
+    areas: 5,
+    resultStatus: 'SUCCESS',
+    creator: 'Larry Larrington',
+    created_at: '2024-01-01 12:34:00',
+    budget: 1234567,
+    treatmentPlansCount: 5,
+    userCanArchiveScenario: false,
+    disabled: true,
+  },
+};
