@@ -11,7 +11,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
 import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
 import { MatLegacyMenuModule as MatMenuModule } from '@angular/material/legacy-menu';
-import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
 import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';
 import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -40,7 +39,6 @@ import { MatTableModule } from '@angular/material/table';
     MatInputModule,
     MatListModule,
     MatMenuModule,
-    MatPaginatorModule,
     MatProgressSpinnerModule,
     MatRadioModule,
     MatSelectModule,
