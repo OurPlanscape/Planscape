@@ -516,7 +516,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     number_of_projects = cfg.get(
         "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
     )
-    
+
     if "targets" in cfg and isinstance(cfg.get("targets"), dict):
         number_of_projects = cfg.get("targets", {}).get(
             "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
@@ -569,8 +569,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         errors.append("Scenario has no Treatment Goal assigned.")
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
-
+    planning_area = scenario.planning_area
     stand_size = cfg.get("stand_size")
+
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
 
@@ -578,6 +579,26 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     max_area = targets.get("max_area")
     if max_area is None:
         errors.append("Configuration target `max_area` (number of acres) is required.")
+
+    excluded_areas_ids = cfg.get("excluded_areas_ids", [])
+    max_project_count = targets.get("max_project_count")
+
+    if max_project_count is None:
+        max_project_count = settings.DEFAULT_MAX_PROJECT_COUNT
+    
+    if stand_size:
+        available_stand_ids = get_available_stand_ids(
+            planning_area=planning_area,
+            stand_size=stand_size,
+            excludes=excluded_areas_ids,
+        )
+        available_count = len(available_stand_ids)
+        if max_project_count < 1:
+            errors.append("max_project_count must be at least 1.")
+        if max_project_count >= available_count:
+            errors.append(
+                f"Not enough stands are available: {available_count} stands available for {max_project_count} requested projects."
+            )
 
     return errors
 
