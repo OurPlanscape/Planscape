@@ -302,6 +302,7 @@ export class ScenarioCreationComponent
           if (result.id) {
             this.scenarioState.setScenarioId(result.id);
             this.scenarioState.reloadScenario();
+            this.newScenarioState.resetConfiguration();
           }
           this.router.navigate([
             'plan',

@@ -208,4 +208,12 @@ export class NewScenarioState {
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
   }
+
+  resetConfiguration() {
+    this._scenarioConfig$.next({});
+    this._excludedAreas$.next([]);
+    this._constraints$.next([]);
+    this.baseStandsReady$.next(false);
+
+  }
 }
