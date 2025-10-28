@@ -198,24 +198,9 @@ export const Large: Story = {
   }),
 };
 
-export const NoBorders: Story = {
-  args: {
-    title: 'No border modal Modal',
-    showBorders: false,
-  },
-  render: (args) => ({
-    props: args,
-    template: `<div ${containerStyle}>
-      <sg-modal ${argsToTemplate(args)}>
-        <div modalBodyContent>Just a basic modal</div>
-      </sg-modal><div>`,
-  }),
-};
-
 export const LeadingIcon: Story = {
   args: {
-    ...Default,
-    showToolTip: true,
+    title: 'Modal with an icon',
     leadingIcon: 'assignment',
   },
   render: (args) => ({
@@ -228,14 +213,15 @@ export const LeadingIcon: Story = {
 };
 export const Tooltip: Story = {
   args: {
-    ...Default,
-    showToolTip: true,
+    title: 'Modal with a tooltip',
   },
   render: (args) => ({
     props: args,
     template: `<div ${containerStyle}>
-          <sg-modal ${argsToTemplate(args)}>
-                <div modalBodyContent>Here we show a tooltip.</div>
+          <sg-modal ${argsToTemplate(args)} >
+
+                <div modalBodyContent>Here we show a tooltip on the modal header. Useful to provide info.</div>
+
           </sg-modal><div>`,
   }),
 };
