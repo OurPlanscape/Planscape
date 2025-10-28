@@ -25,6 +25,7 @@ import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
 import { filter, map, take } from 'rxjs';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { STAND_SIZES } from 'src/app/plan/plan-helpers';
 
 @UntilDestroy()
 @Component({
@@ -63,6 +64,7 @@ export class TreatmentTargetComponent
   );
 
   maxAreaValue$ = this.treatable_area$;
+  minAcreage: number = 0;
 
   constructor(private newScenarioState: NewScenarioState) {
     super();
@@ -73,7 +75,6 @@ export class TreatmentTargetComponent
       .pipe(untilDestroyed(this), take(1))
       .subscribe((maxAreaValue) => {
         this.maxAreaValue = maxAreaValue || 0;
-
         this.form = new FormGroup(
           {
             max_area: new FormControl<number | null>(null, [
@@ -89,7 +90,12 @@ export class TreatmentTargetComponent
               Validators.min(1),
             ]),
           },
-          { validators: this.workingAreaValidator(this.maxAreaValue) }
+          {
+            validators: [
+              this.workingAreaValidator(this.maxAreaValue),
+              this.minAreaValidator(),
+            ],
+          }
         );
 
         this.newScenarioState.scenarioConfig$
@@ -99,6 +105,10 @@ export class TreatmentTargetComponent
             filter((c) => !!c.targets)
           )
           .subscribe((config) => {
+            this.minAcreage = config.stand_size
+              ? STAND_SIZES[config.stand_size]
+              : 0;
+
             if (config.targets) {
               if (config.targets.estimated_cost) {
                 this.form
@@ -129,6 +139,28 @@ export class TreatmentTargetComponent
       (formValues.max_area * formValues.max_project_count * 100) /
       this.maxAreaValue
     );
+  }
+
+  private minAreaValidator(): ValidatorFn {
+    return (form): ValidationErrors | null => {
+      const projectAreaCount = form.get('max_project_count');
+      const acresPerProjectArea = form.get('max_area');
+
+      if (!projectAreaCount?.value || !acresPerProjectArea?.value) {
+        return null;
+      }
+      // ensure that the total number of acres in the project area is
+      // at least equal to the min acreage required for the selected stand size.
+      //  For example, if the user selects a medium stand size,
+      //  the target project area acreage must be at least 100 acres.
+      if (
+        projectAreaCount?.value * acresPerProjectArea.value <
+        this.minAcreage
+      ) {
+        return { invalidMinAcres: true };
+      }
+      return null;
+    };
   }
 
   private workingAreaValidator(maxAreaValue: number): ValidatorFn {
