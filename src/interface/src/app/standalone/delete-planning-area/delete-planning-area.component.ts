@@ -11,7 +11,6 @@ import {
   standalone: true,
   imports: [ModalComponent, MatDialogModule],
   templateUrl: './delete-planning-area.component.html',
-  styleUrl: './delete-planning-area.component.scss',
 })
 export class DeletePlanningAreaComponent {
   readonly dialogRef = inject(MatDialogRef<DeletePlanningAreaComponent>);

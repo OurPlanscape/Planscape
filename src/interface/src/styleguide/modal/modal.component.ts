@@ -98,10 +98,6 @@ export class ModalComponent {
    */
   @Input() showClose? = true;
   /**
-   * Whether or not to show the tooltip button in the header
-   */
-  @Input() showToolTip? = false;
-  /**
    * Whether or not to show the header at all
    */
   @Input() hasHeader? = true;
