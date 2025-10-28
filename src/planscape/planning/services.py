@@ -582,16 +582,21 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if max_area is None:
         errors.append("Configuration target `max_area` (number of acres) is required.")
 
-    min_area_project = get_min_project_area(scenario)
-
-    if max_area is not None and max_area < min_area_project:
-        errors.append(
-            f"Target `max_area` must be at least {min_area_project} acres for stand size `{stand_size}`."
-        )
+    if max_area is not None:
+        min_area_project = get_min_project_area(scenario)
+        if max_area < min_area_project:
+            errors.append(
+                f"Target `max_area` must be at least {min_area_project} acres for stand size `{stand_size}`."
+            )
 
     if max_project_count is None:
         errors.append("Configuration field `max_project_count` is required.")
 
+    # STOP HERE if any required fields are missing
+    if errors:
+        return errors
+
+    # Expensive validations below
     try:
         available_stand_ids = get_available_stand_ids(
             planning_area=scenario.planning_area,
