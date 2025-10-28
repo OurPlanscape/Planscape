@@ -72,7 +72,7 @@ export const Default: Story = {
 
 export const Dialogs: Story = {
   args: {
-    title: 'Name your thing',
+    title: 'Name your thing with this modal',
     showClose: false,
   },
   parameters: {
@@ -97,10 +97,38 @@ This modal should have:
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
         <div modalBodyContent>
-        <div style='font-weight: 500; margin-bottom: 4px'>Label <span style='color:#D50000'>*</span></div>
-        <mat-form-field appearance='outline' subscriptSizing='dynamic' style='width:100%'>
-          <input matInput>
-        </mat-form-field>
+          <div style='font-weight: 500; margin-bottom: 4px'>Label <span style='color:#D50000'>*</span></div>
+          <mat-form-field appearance='outline' subscriptSizing='dynamic' style='width:100%'>
+            <input matInput>
+          </mat-form-field>
+        </div>
+      </sg-modal><div>`,
+  }),
+};
+
+export const DialogsWithBanners: Story = {
+  args: {
+    title: 'Name your thing with this modal',
+    showClose: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `Dialogs can also have a banner using \'ModalInfoComponent\'.
+        For more examples of different usages of banners/info boxes look at Modal Info Box Stories`,
+      },
+    },
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+      <sg-modal ${argsToTemplate(args)}>
+      <sg-modal-info modalInfoBox message='Dialogs can also have a banner to highlight some info' leadingIcon='info'></sg-modal-info>
+        <div modalBodyContent>
+          <div style='font-weight: 500; margin-bottom: 4px'>Label <span style='color:#D50000'>*</span></div>
+          <mat-form-field appearance='outline' subscriptSizing='dynamic' style='width:100%'>
+            <input matInput>
+          </mat-form-field>
         </div>
       </sg-modal><div>`,
   }),
@@ -143,7 +171,7 @@ For this specific modal configuration, use \`DeleteDialogComponent\`
   }),
 };
 
-export const DecisionModal: Story = {
+export const ConfirmationModal: Story = {
   args: {
     title: 'Are you sure?',
     primaryButtonText: 'Continue',
@@ -164,6 +192,8 @@ This modal should have:
 - Does not have an X to close the modal
 - A secondary cancel action (closes the modal)
 - A shortHeader to avoid bigger padding between title and body
+
+For this specific modal configuration, use \`ConfirmationDialogComponent\`
       `,
       },
     },
@@ -221,92 +251,15 @@ export const Tooltip: Story = {
     props: args,
     template: `<div ${containerStyle}>
           <sg-modal ${argsToTemplate(args)} >
-
-                <div modalBodyContent>Here we show a tooltip on the modal header. Useful to provide info.</div>
-
+            <div modalBodyContent>Here we show a tooltip on the modal header. Useful to provide info.</div>
+            <div tooltipContent>And this is the content of the tooltip.</div>
           </sg-modal><div>`,
   }),
 };
 
-export const WithoutFooter: Story = {
+export const ScrollableContent: Story = {
   args: {
-    ...Default,
-    hasHeader: true,
-    hasFooter: false,
-  },
-  render: (args) => ({
-    props: args,
-    template: `<div ${containerStyle}>
-          <sg-modal ${argsToTemplate(args)}>
-          <div modalBodyContent>Standard modal content</div>
-          </sg-modal><div>`,
-  }),
-};
-
-export const WithProgressElements: Story = {
-  args: {
-    ...Default,
-    hasHeader: true,
-    hasFooter: false,
-  },
-  render: (args) => ({
-    props: args,
-    template: `<div ${containerStyle}>
-          <sg-modal ${argsToTemplate(args)}>
-          <sg-modal-info message='Hello'></sg-modal-info>
-          <div modalBodyContent>Standard modal content</div>
-          </sg-modal><div>`,
-  }),
-};
-
-export const ProgressBlurb: Story = {
-  args: {
-    ...Default,
-    hasHeader: true,
-    hasFooter: false,
-  },
-  render: (args) => ({
-    props: args,
-    template: `<div ${containerStyle}>
-          <sg-modal ${argsToTemplate(args)}>
-          <div modalBodyContent style='padding:10px;background-color: #f6f6f6;'>Estimated time remaining: 3 minutes</div>
-
-          </sg-modal><div>`,
-  }),
-};
-
-export const WithoutHeader: Story = {
-  args: {
-    ...Default,
-    hasFooter: true,
-  },
-  render: (args) => ({
-    props: args,
-    template: `<div ${containerStyle}>
-          <sg-modal ${argsToTemplate(args)}>
-          <div modalBodyContent>Standard modal content</div>
-          </sg-modal><div>`,
-  }),
-};
-
-export const CenteredFooter: Story = {
-  args: {
-    ...Default,
-    title: 'This has a centered footer',
-    centerFooter: true,
-  },
-  render: (args) => ({
-    props: args,
-    template: `<div ${containerStyle}>
-      <sg-modal ${argsToTemplate(args)}>
-        <div modalBodyContent>Are you sure you want to delete this?</div>
-      </sg-modal><div>`,
-  }),
-};
-
-export const WithScrollableContent: Story = {
-  args: {
-    ...Default,
+    title: 'A modal that scrolls!',
     hasFooter: true,
     scrollableContent: true,
   },
@@ -314,7 +267,11 @@ export const WithScrollableContent: Story = {
     props: args,
     template: `<div ${bigContainerStyle}>
           <sg-modal ${argsToTemplate(args)}>
-          <div style='height=400px' modalBodyContent>Hoodie letterpress succulents iceland literally af heirloom occupy
+          <div style='height=400px' modalBodyContent>
+          <div>For modals that show a lot of data, we can allow scrollable content within the modal.</div>
+          <div>This can be used in combination with any modal size as well as other modal parameters.</div>
+          <p>Now, enjoy a bunch or random test to preview scrolling:</p>
+          Hoodie letterpress succulents iceland literally af heirloom occupy
           chia health goth forage quinoa vibecession pork belly try-hard. Narwhal mustache bushwick,
           kinfolk glossier coloring book praxis succulents. Migas pour-over VHS truffaut succulents
           irony man braid street art. Poutine biodiesel locavore fashion axe austin godard same
@@ -340,26 +297,5 @@ export const WithScrollableContent: Story = {
           tofu tousled pop-up deep v yuccie cred scenester kale chips farm-to-table sustainable. Williamsburg
            cray fingerstache bicycle rights farm-to-table tattooed kombucha fanny pack tbh.</div>
           </sg-modal><div>`,
-  }),
-};
-
-export const WithForm: Story = {
-  args: {
-    ...Default,
-    hasFooter: true,
-    scrollableContent: false,
-  },
-  render: (args) => ({
-    props: args,
-    template: `<div ${bigContainerStyle}>
-          <sg-modal ${argsToTemplate(args)}>
-          <div modalBodyContent>
-          <h3>Base Map</h3>
-          <div style='padding:10px'><input name='example' type='radio'>Choice 1</div>
-          <div style='padding:10px'><input name='example' type='radio'>Choice 2</div>
-          <div style='padding:10px'><input name='example' type='radio'>Choice 3</div>
-          <div style='padding:10px'><input name='example' type='radio'>Choice 4</div>
-          <div style='padding:10px'><input name='example' type='radio'>Choice 5</div>
-          </div></sg-modal><div>`,
   }),
 };

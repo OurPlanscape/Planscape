@@ -1,19 +1,17 @@
 <sg-modal
-  [title]="editMode ? 'Rename' : 'Scenario Setup'"
-  [shortHeader]="false"
-  [showBorders]="true"
-  [centerFooter]="false"
+  [title]="editMode ? 'Rename Scenario' : 'Scenario Setup'"
+  [showClose]="false"
   [primaryButtonText]="primaryCTA"
   secondaryButtonText="Cancel"
-  (clickedSecondary)="cancel()"
-  (clickedClose)="cancel()"
-  (clickedPrimary)="handleSubmit()"
   [primaryButtonDisabled]="
     scenarioNameForm.get('scenarioName')?.hasError('required') === true ||
     submitting
   "
   [hasPrimarySpinner]="true"
-  [isInSpinState]="submitting">
+  [isInSpinState]="submitting"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="handleSubmit()">
   <div modalBodyContent>
     <form
       [formGroup]="scenarioNameForm"

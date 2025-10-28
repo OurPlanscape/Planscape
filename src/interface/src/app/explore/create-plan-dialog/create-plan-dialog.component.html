@@ -1,31 +1,31 @@
 <sg-modal
-  [title]="!editMode ? 'Name your plan' : 'Rename'"
-  [shortHeader]="false"
-  [showBorders]="editMode"
-  [centerFooter]="false"
+  [title]="!editMode ? 'Name your Planning Area' : 'Rename Planning Area'"
+  [showClose]="false"
   [primaryButtonText]="primaryCTA"
   secondaryButtonText="Cancel"
-  (clickedSecondary)="cancel()"
-  (clickedClose)="cancel()"
-  (clickedPrimary)="submitPlan()"
   [hasPrimarySpinner]="true"
   [isInSpinState]="submitting"
-  [primaryButtonDisabled]="submitting || planForm.invalid">
-  <div modalBodyContent>
-    <sg-modal-info
-      *ngIf="!editMode"
-      infoType="info"
-      leadingIcon="info_filled"
-      message="Boundaries cannot be modified after the plan is saved.">
-    </sg-modal-info>
-    <sg-modal-info
-      *ngIf="!editMode && !isValidTotalArea"
-      infoType="warning"
-      data-id="totalAreaError"
-      leadingIcon="warning_filled"
-      message="Your planning area is less than 100 acres. You will not be able to run
+  [primaryButtonDisabled]="submitting || planForm.invalid"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="submitPlan()">
+  <sg-modal-info
+    modalInfoBox
+    *ngIf="!editMode"
+    infoType="info"
+    leadingIcon="info_filled"
+    message="Boundaries cannot be modified after the plan is saved.">
+  </sg-modal-info>
+  <sg-modal-info
+    modalInfoBox
+    *ngIf="!editMode && !isValidTotalArea"
+    infoType="warning"
+    data-id="totalAreaError"
+    leadingIcon="warning_filled"
+    message="Your planning area is less than 100 acres. You will not be able to run
         treatment scenarios in Plan.">
-    </sg-modal-info>
+  </sg-modal-info>
+  <div modalBodyContent>
     <form [formGroup]="planForm" (ngSubmit)="submitPlan()" class="upload-form">
       <div class="field-row">
         <div class="field-label-required">
