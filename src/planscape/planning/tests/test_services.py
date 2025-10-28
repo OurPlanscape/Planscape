@@ -771,7 +771,7 @@ class ValidateScenarioConfigurationTest(TestCase):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 2},
-            "excluded_areas_ids": ["MOCK_ALL"],  # to cause empty result
+            "excluded_areas_ids": [],
         }
         with mock.patch("planning.services.get_available_stand_ids", return_value=[]):
             errors = validate_scenario_configuration(self.scenario)
