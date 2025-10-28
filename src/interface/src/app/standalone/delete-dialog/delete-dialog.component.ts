@@ -7,7 +7,6 @@ import { ModalComponent } from '@styleguide';
 @Component({
   selector: 'app-delete-dialog',
   templateUrl: './delete-dialog.component.html',
-  styleUrls: ['./delete-dialog.component.scss'],
   standalone: true,
   imports: [CommonModule, LegacyMaterialModule, ModalComponent],
 })
