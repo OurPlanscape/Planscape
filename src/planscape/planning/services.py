@@ -573,6 +573,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
     stand_size = cfg.get("stand_size")
     excluded_areas_ids = cfg.get("excluded_areas_ids", [])
+    excluded_areas: List[DataLayer] = []
+    if excluded_areas_ids:
+        excluded_areas = list(DataLayer.objects.filter(pk__in=excluded_areas_ids))
     max_area = targets.get("max_area")
     max_project_count = targets.get("max_project_count")
 
@@ -601,7 +604,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         available_stand_ids = get_available_stand_ids(
             planning_area=scenario.planning_area,
             stand_size=stand_size,
-            excludes=excluded_areas_ids,
+            excludes=excluded_areas,
         )
         available_count = len(available_stand_ids)
     except Exception as exc:
