@@ -57,6 +57,7 @@ dependencies = [
     "google-cloud-storage>=3.1.1,<4",
     "gevent>=25.9.1,<26",
     "zope-event==5.1.1",
+    "scipy==1.15.0",
 ]
 
 [tool.isort]
