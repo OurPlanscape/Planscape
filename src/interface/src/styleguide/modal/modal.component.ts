@@ -117,10 +117,7 @@ export class ModalComponent {
    * Whether the buttons should be centered
    */
   @Input() centerFooter? = false;
-  /**
-   * Whether or not to use default padding for the projected content
-   */
-  @Input() padBody? = false;
+
   /**
    * Whether or not to show the borders on header and footer
    */
