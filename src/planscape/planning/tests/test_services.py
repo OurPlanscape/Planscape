@@ -35,6 +35,7 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
+    validate_scenario_configuration,
     validate_scenario_treatment_ratio,
 )
 from planning.tests.factories import (
@@ -721,3 +722,75 @@ class TestRemoveExcludes(TestCase):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
         self.assertLess(len(stand_ids), len(stands))
+
+class ValidateScenarioConfigurationTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create(with_stands=True)
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=self.treatment_goal,
+            configuration={},
+        )
+
+    def test_missing_stand_size(self):
+        self.scenario.configuration = {"targets": {"max_area": 500, "max_project_count": 2}}
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Configuration field `stand_size` is required.", errors)
+
+    def test_missing_max_area(self):
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {"max_project_count": 2},
+        }
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn(
+            "Configuration target `max_area` (number of acres) is required.", errors
+        )
+
+    def test_max_area_below_minimum(self):
+        # LARGE uses MIN_AREA_PROJECT_LARGE from settings
+        below_min = settings.MIN_AREA_PROJECT_LARGE - 1
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {"max_area": below_min, "max_project_count": 2},
+        }
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertTrue(any("must be at least" in e for e in errors))
+
+    def test_missing_max_project_count(self):
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {"max_area": 500},
+        }
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Configuration field `max_project_count` is required.", errors)
+
+    def test_zero_available_stands(self):
+        # Mocking that available_stands is zero
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {"max_area": 500, "max_project_count": 2},
+            "excluded_areas_ids": ["MOCK_ALL"],  # to cause empty result
+        }
+        with mock.patch("planning.services.get_available_stand_ids", return_value=[]):
+            errors = validate_scenario_configuration(self.scenario)
+            self.assertIn("No stands are available with the current configuration.", errors)
+
+    def test_insufficient_available_stands(self):
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {"max_area": 500, "max_project_count": 99},
+        }
+        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2]):
+            errors = validate_scenario_configuration(self.scenario)
+            self.assertIn("Not enough stands are available", " ".join(errors))
+
+    def test_valid_configuration(self):
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {"max_area": 9999, "max_project_count": 2},
+        }
+        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3]):
+            errors = validate_scenario_configuration(self.scenario)
+            self.assertEqual(errors, [])
