@@ -1,13 +1,12 @@
 <sg-modal
-  [title]="'Delete ' + data.name + '?'"
-  primaryButtonVariant="negative"
-  primaryButtonText="Delete"
+  [title]="data.title"
+  [shortHeader]="true"
   [showBorders]="false"
+  [showClose]="false"
+  primaryButtonText="Delete"
+  primaryButtonVariant="negative"
+  (clickedSecondary)="cancel()"
   (clickedClose)="cancel()"
-  (clickedPrimary)="confirm()"
-  (clickedSecondary)="cancel()">
-  <div modalBodyContent class="padded">
-    <b>Warning</b>
-    : This operation cannot be reversed.
-  </div>
+  (clickedPrimary)="confirm()">
+  <div modalBodyContent [innerHTML]="data.body"></div>
 </sg-modal>

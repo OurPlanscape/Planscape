@@ -42,7 +42,8 @@ export class TreatmentNavbarMenuComponent {
       DeleteDialogComponent,
       {
         data: {
-          name: '"' + this.treatmentPlanName + '"',
+          title: 'Delete "' + this.treatmentPlanName + '"?',
+          body: `<b>Warning</b>: This operation cannot be reversed.`,
         },
       }
     );
