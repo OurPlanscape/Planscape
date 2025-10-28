@@ -5,9 +5,11 @@ summarize_metrics <- function(forsys_output, stand_data, datalayers) {
   stand_data <- stand_data |> forsys::calculate_pcp(fields = fields)
   output_fields <- paste0("attain_", datalayers[["name"]])
   lookup <- setNames(pcp_sum_fields, output_fields)
-  stand_output <- forsys_output$stand_output |>
-    select(
-      filter(DoTreat == 1), 
+  stand_output <- select(
+      filter(
+        forsys_output$stand_output,
+        DoTreat == 1
+      ), 
       stand_id, 
       proj_id, 
       DoTreat, 
