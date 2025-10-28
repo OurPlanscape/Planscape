@@ -11,26 +11,27 @@
   0px 2px 2px 0px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 
+
   ::ng-deep .header {
-    height: 24px;
+    padding: 10px 16px;
   }
+
+  ::ng-deep .modal-body {
+    padding: 16px 16px 0;
+  }
+
 
   ::ng-deep .header-title {
     @include xs-label();
   }
 
-  ::ng-deep .modal-body {
-    padding-top: 4px;
-    padding-bottom: 2px;
-    overflow-y: scroll;
-  }
 
   ::ng-deep .mat-expansion-panel {
     box-shadow: none;
   }
 
   ::ng-deep .mat-expansion-panel-body {
-    padding: 0 16px 8px;
+    padding: 0 0 16px;
   }
 
   ::ng-deep .treatment-img {
@@ -44,7 +45,6 @@
   background-color: $color-white;
   display: flex;
   flex-direction: column;
-  padding-top: 10px;
 }
 
 .simple-rx-section {
@@ -81,7 +81,7 @@
   justify-content: left;
   gap: 6px;
   align-items: center;
-  padding: 10px 24px 10px 16px;
+  padding: 10px 8px 10px 0;
 }
 
 .expander-heading-content {
@@ -99,7 +99,7 @@
 .no-treatment-row {
   @include xs-label();
 
-  padding: 0px 16px;
+  padding: 0;
   width: 100%;
   display: flex;
   flex-direction: row;
