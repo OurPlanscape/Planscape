@@ -15,6 +15,7 @@
     [save]="saveStepData"
     [savingStep]="savingStep"
     [showActions]="currentStepIndex !== 0"
+    [disabled]="!canGoNext"
     (finished)="onFinished()">
     <sg-step label="Select Data Layers">
       <div class="step-layout">
@@ -42,11 +43,14 @@
       </div>
     </sg-step>
 
-    <cdk-step label="Assign Favorability" [stepControl]="favorabilityForm!">
-      <div class="step-layout">
-        <div class="step-content"></div>
-      </div>
-    </cdk-step>
+    <sg-step label="Assign Favorability">
+      <app-assign-favorability
+        #assignFavorability
+        [plan]="currentPlan"
+        [run]="currentRun"
+        (complete)="onStepComplete($event)">
+      </app-assign-favorability>
+    </sg-step>
 
     <cdk-step label="Assign Pillars" [stepControl]="pillarsForm!">
       <div class="step-layout">

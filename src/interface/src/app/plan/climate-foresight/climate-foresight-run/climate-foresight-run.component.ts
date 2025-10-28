@@ -18,6 +18,7 @@ import { PlanState } from '../../plan.state';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import { Plan, ClimateForesightRun } from '@types';
 import { DataLayerSelectionComponent } from './data-layer-selection/data-layer-selection.component';
+import { AssignFavorabilityComponent } from './assign-favorability/assign-favorability.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AssignPillarsComponent } from './assign-pillars/assign-pillars.component';
@@ -37,6 +38,7 @@ import { AssignPillarsComponent } from './assign-pillars/assign-pillars.componen
     MatSnackBarModule,
     DataLayerSelectionComponent,
     AssignPillarsComponent,
+    AssignFavorabilityComponent,
   ],
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],
@@ -45,6 +47,8 @@ export class ClimateForesightRunComponent implements OnInit {
   @ViewChild(StepsComponent) stepsComponent?: StepsComponent<any>;
   @ViewChild('dataLayerSelection')
   dataLayerSelectionComponent?: DataLayerSelectionComponent;
+  @ViewChild('assignFavorability')
+  assignFavorabilityComponent?: AssignFavorabilityComponent;
 
   currentPlan: Plan | null = null;
   currentRun: ClimateForesightRun | null = null;
@@ -79,6 +83,17 @@ export class ClimateForesightRunComponent implements OnInit {
 
   get isLastStep(): boolean {
     return this.currentStepIndex === this.totalSteps - 1;
+  }
+
+  get canGoNext(): boolean {
+    switch (this.currentStepIndex) {
+      case 0:
+        return this.dataLayerSelectionComponent?.form?.valid || false;
+      case 1:
+        return this.assignFavorabilityComponent?.canProceed || false;
+      default:
+        return false;
+    }
   }
 
   constructor(
@@ -136,8 +151,13 @@ export class ClimateForesightRunComponent implements OnInit {
       });
   }
 
-  private loadRunState(_run: ClimateForesightRun): void {
-    // TODO: Set current step based on run progress
+  private loadRunState(run: ClimateForesightRun): void {
+    if (this.stepsComponent && run.current_step) {
+      const stepIndex = run.current_step - 1;
+      setTimeout(() => {
+        this.stepsComponent!.selectedIndex = stepIndex;
+      }, 0);
+    }
   }
 
   onStepComplete(data: any): void {
@@ -175,6 +195,8 @@ export class ClimateForesightRunComponent implements OnInit {
     switch (stepIndex) {
       case 0:
         return this.saveDataLayers(data);
+      case 1:
+        return this.saveFavorability(data);
       default:
         this.savingStep = false;
         return of(false);
@@ -192,23 +214,33 @@ export class ClimateForesightRunComponent implements OnInit {
 
     const inputDatalayers = data.dataLayers.map((layer: any) => ({
       datalayer: layer.id,
-      favor_high: false,
       pillar: '',
     }));
+
+    const currentStep = (this.currentStepIndex || 0) + 1;
+
+    const nextStep = currentStep + 1;
+
+    const currentFurthestStep = this.currentRun?.furthest_step || 0;
+    const newFurthestStep = Math.max(nextStep, currentFurthestStep);
 
     return new Observable<boolean>((observer) => {
       this.climateForesightService
         .updateRun(this.runId!, {
           input_datalayers: inputDatalayers,
+          current_step: nextStep,
+          furthest_step: newFurthestStep,
         })
         .pipe(untilDestroyed(this))
         .subscribe({
           next: (updatedRun) => {
             this.currentRun = updatedRun;
+
             this.snackBar.open('Data layers saved', 'Close', {
               duration: 2000,
             });
             this.savingStep = false;
+
             observer.next(true);
             observer.complete();
           },
@@ -216,6 +248,70 @@ export class ClimateForesightRunComponent implements OnInit {
             console.error('Error saving data layers:', error);
             this.snackBar.open(
               'Failed to save data layers: ' +
+                (error?.error?.detail || error?.message || 'Unknown error'),
+              'Close',
+              { duration: 5000 }
+            );
+            this.savingStep = false;
+            observer.next(false);
+            observer.complete();
+          },
+        });
+    });
+  }
+
+  private saveFavorability(data: any): Observable<boolean> {
+    if (!data || !data.favorability || !this.runId) {
+      this.snackBar.open('Please assign favorability for all layers', 'Close', {
+        duration: 3000,
+      });
+      this.savingStep = false;
+      return of(false);
+    }
+
+    const updatedInputDatalayers = this.currentRun?.input_datalayers?.map(
+      (input) => {
+        const favorabilityAssignment = data.favorability.find(
+          (f: any) => f.datalayer === input.datalayer
+        );
+        return {
+          ...input,
+          favor_high: favorabilityAssignment?.favor_high ?? input.favor_high,
+        };
+      }
+    );
+
+    const currentStep = (this.currentStepIndex || 0) + 1;
+
+    const nextStep = currentStep + 1;
+
+    const currentFurthestStep = this.currentRun?.furthest_step || 0;
+    const newFurthestStep = Math.max(nextStep, currentFurthestStep);
+
+    return new Observable<boolean>((observer) => {
+      this.climateForesightService
+        .updateRun(this.runId!, {
+          input_datalayers: updatedInputDatalayers,
+          current_step: nextStep,
+          furthest_step: newFurthestStep,
+        })
+        .pipe(untilDestroyed(this))
+        .subscribe({
+          next: (updatedRun) => {
+            this.currentRun = updatedRun;
+
+            this.snackBar.open('Favorability saved', 'Close', {
+              duration: 2000,
+            });
+            this.savingStep = false;
+
+            observer.next(true);
+            observer.complete();
+          },
+          error: (error) => {
+            console.error('Error saving favorability:', error);
+            this.snackBar.open(
+              'Failed to save favorability: ' +
                 (error?.error?.detail || error?.message || 'Unknown error'),
               'Close',
               { duration: 5000 }
