@@ -12,6 +12,8 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 const meta: Meta<ModalComponent> = {
   title: 'Components/Modal',
@@ -19,7 +21,13 @@ const meta: Meta<ModalComponent> = {
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
-      imports: [MatDialogModule, BrowserAnimationsModule, ModalInfoComponent],
+      imports: [
+        MatDialogModule,
+        BrowserAnimationsModule,
+        ModalInfoComponent,
+        MatFormFieldModule,
+        MatInputModule,
+      ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
         { provide: MatDialogRef, useValue: {} },
@@ -56,23 +64,113 @@ export const Default: Story = {
     props: args,
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
-        <div modalBodyContent>Just a basic modal</div>
+        <div modalBodyContent>This is the default behavior of a modal,
+        without providing any other configurations besides the title.</div>
+      </sg-modal><div>`,
+  }),
+};
+
+export const Dialogs: Story = {
+  args: {
+    title: 'Name your thing',
+    showClose: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+*When to use*: When asking user for input (like naming new elements).
+
+This modal should have:
+- A primary CTA
+- A secondary cancel action (closes the modal)
+- Does not have an X to close the modal
+- Padding on the body
+- The form and fields without adding additional paddings
+
+      `,
+      },
+    },
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+      <sg-modal ${argsToTemplate(args)}>
+        <div modalBodyContent>
+        <div style='font-weight: 500; margin-bottom: 4px'>Label <span style='color:#D50000'>*</span></div>
+        <mat-form-field appearance='outline' subscriptSizing='dynamic' style='width:100%'>
+          <input matInput>
+        </mat-form-field>
+        </div>
       </sg-modal><div>`,
   }),
 };
 
 export const DeleteModal: Story = {
   args: {
-    ...Default,
     title: 'Delete Something',
     primaryButtonVariant: 'negative',
     primaryButtonText: 'Delete',
+    showBorders: false,
+    shortHeader: true,
+    showClose: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+*When to use*: When asking user confirmation to delete something
+
+This modal should have:
+- No borders
+- Padding on the body
+- Primary CTA in negative/red variant
+- Does not have an X to close the modal
+- A secondary cancel action (closes the modal)
+- A shortHeader to avoid bigger padding between title and body
+      `,
+      },
+    },
   },
   render: (args) => ({
     props: args,
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
         <div modalBodyContent>Are you sure you want to delete this?</div>
+      </sg-modal><div>`,
+  }),
+};
+
+export const DecisionModal: Story = {
+  args: {
+    title: 'Are you sure?',
+    primaryButtonText: 'Continue',
+    showBorders: false,
+    shortHeader: true,
+    showClose: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+*When to use*: When asking user confirmation to follow an action
+
+This modal should have:
+- No borders
+- Padding on the body
+- Primary CTA in default color
+- Does not have an X to close the modal
+- A secondary cancel action (closes the modal)
+- A shortHeader to avoid bigger padding between title and body
+      `,
+      },
+    },
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+      <sg-modal ${argsToTemplate(args)}>
+        <div modalBodyContent>A message that informs the users about a situation that requires acknowledgement</div>
       </sg-modal><div>`,
   }),
 };
@@ -86,7 +184,16 @@ export const Large: Story = {
     props: args,
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
-        <div modalBodyContent>Just a basic modal</div>
+        <div modalBodyContent>
+        <div>Use this modal sizing to display bigger modals, that include more data or summaries.</div>
+          <ul>
+            <li>Larger Modals should always include borders.</li>
+            <li>Depending on the use case, it might or may not include a footer with actions</li>
+            <li>When displaying a secondary action on the footer, do not include a close button</li>
+            <li>When not displaying footer actions, always show the close (X) button</li>
+          </ul>
+         <div>Check the design system for specific implementations of this type of modal</div>
+        </div>
       </sg-modal><div>`,
   }),
 };
@@ -169,7 +276,6 @@ export const ProgressBlurb: Story = {
     ...Default,
     hasHeader: true,
     hasFooter: false,
-    padBody: false,
   },
   render: (args) => ({
     props: args,
@@ -240,7 +346,7 @@ export const WithScrollableContent: Story = {
           before they sold out DIY listicle vegan selvage vape gluten-free raw denim migas master cleanse
           portland tilde. Gentrify slow-carb forage blackbird spyplane beard. Neutral milk hotel hoodie pug
           vape austin keffiyeh, taiyaki migas scenester asymmetrical.
-          
+
           Cupping organic neutra DSA, pour-over knausgaard shabby chic poke af church-key. Truffaut drinking
           vinegar adaptogen, yuccie subway tile freegan iceland offal hella skateboard. Chia tonx hell of,
           tofu tousled pop-up deep v yuccie cred scenester kale chips farm-to-table sustainable. Williamsburg
