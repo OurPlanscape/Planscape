@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Step3Component } from './step3.component';
+import { StandLevelConstraintsComponent } from './stand-level-constraints.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxMaskModule } from 'ngx-mask';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -7,14 +7,14 @@ import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
 import { BehaviorSubject } from 'rxjs';
 
-describe('Step3Component', () => {
-  let component: Step3Component;
-  let fixture: ComponentFixture<Step3Component>;
+describe('StandLevelConstraintsComponent', () => {
+  let component: StandLevelConstraintsComponent;
+  let fixture: ComponentFixture<StandLevelConstraintsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        Step3Component,
+        StandLevelConstraintsComponent,
         BrowserAnimationsModule,
         ReactiveFormsModule,
         NgxMaskModule.forRoot(),
@@ -27,7 +27,7 @@ describe('Step3Component', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Step3Component);
+    fixture = TestBed.createComponent(StandLevelConstraintsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
