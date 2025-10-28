@@ -582,6 +582,13 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if max_area is None:
         errors.append("Configuration target `max_area` (number of acres) is required.")
 
+    min_area_project = get_min_project_area(scenario)
+
+    if max_area is not None and max_area < min_area_project:
+        errors.append(
+            f"Target `max_area` must be at least {min_area_project} acres for stand size `{stand_size}`."
+        )
+
     if max_project_count is None:
         errors.append("Configuration field `max_project_count` is required.")
 
@@ -602,8 +609,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
     if max_project_count > available_count:
         errors.append(
-            f"Not enough stands are available: {available_count} stand(s) available for "
-            f"{max_project_count} requested project(s)."
+            f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
         )
 
     return errors
