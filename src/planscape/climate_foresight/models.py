@@ -88,6 +88,15 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="The pillar/category assignment for this layer",
     )
 
+    normalized_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        related_name="climate_foresight_normalized_for",
+        blank=True,
+        null=True,
+        help_text="The normalized version of this input data layer (for Climate Foresight analysis only)",
+    )
+
     class Meta:
         ordering = ["id"]
         verbose_name = "Climate Foresight Run Input Data Layer"
