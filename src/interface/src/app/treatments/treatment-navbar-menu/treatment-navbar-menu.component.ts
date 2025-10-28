@@ -9,9 +9,9 @@ import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentsService } from '@services/treatments.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AfterDuplicateTreatmentDialogComponent } from '../after-duplicate-treatment-dialog/after-duplicate-treatment-dialog.component';
 import { TreatmentPlan } from '@types';
 import { ButtonComponent, DialogData, ErrorDialogComponent } from '@styleguide';
+import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-treatment-navbar-menu',
@@ -110,8 +110,13 @@ export class TreatmentNavbarMenuComponent {
 
   openAfterDuplicateTreatmentDialog(newPlan: TreatmentPlan) {
     this.dialog
-      .open(AfterDuplicateTreatmentDialogComponent, {
-        data: { name: this.treatmentPlanName },
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Open the copy of ' + this.treatmentPlanName,
+          body: `All changes you made for ${this.treatmentPlanName} are auto-saved. Do you want to open the duplicated plan?`,
+          primaryCta: 'Open the copy',
+          secondaryCta: 'Stay On This Plan',
+        },
       })
       .afterClosed()
       .pipe(take(1))

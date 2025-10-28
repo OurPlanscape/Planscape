@@ -8,7 +8,6 @@ import { MatDialogRef } from '@angular/material/dialog';
   standalone: true,
   imports: [ModalComponent, NgIf],
   templateUrl: './outside-state-dialog-component.component.html',
-  styleUrl: './outside-state-dialog-component.component.scss',
 })
 export class OutsideStateDialogComponentComponent {
   readonly dialogRef = inject(
