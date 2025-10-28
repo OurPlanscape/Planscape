@@ -18,9 +18,10 @@ import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime } from 'rxjs';
 import { distinctUntilChanged, filter, take } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+
 @UntilDestroy()
 @Component({
-  selector: 'app-step3',
+  selector: 'app-stand-level-constraints',
   standalone: true,
   imports: [
     CommonModule,
@@ -32,11 +33,13 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MatInputModule,
     NgxMaskModule,
   ],
-  providers: [{ provide: StepDirective, useExisting: Step3Component }],
-  templateUrl: './step3.component.html',
-  styleUrl: './step3.component.scss',
+  providers: [
+    { provide: StepDirective, useExisting: StandLevelConstraintsComponent },
+  ],
+  templateUrl: './stand-level-constraints.component.html',
+  styleUrl: './stand-level-constraints.component.scss',
 })
-export class Step3Component
+export class StandLevelConstraintsComponent
   extends StepDirective<ScenarioCreation>
   implements OnInit
 {
