@@ -137,7 +137,7 @@ to_project_data <- function(
     new_column_for_postprocessing = FALSE) {
   configuration <- get_configuration(scenario)
   stand_size <- get_stand_size(configuration)
-  treatable_project_stand_ids <- select(
+  project_stand_ids <- select(
     filter(
       forsys_outputs$stand_output,
       proj_id == project_id,
@@ -145,18 +145,10 @@ to_project_data <- function(
     ),
     stand_id
   )
-  treatable_project_stand_ids <- as.integer(treatable_project_stand_ids$stand_id)
-  geometry <- get_project_geometry(connection, treatable_project_stand_ids)
-  text_geometry <- get_project_geometry_text(connection, treatable_project_stand_ids)
-
-  all_project_stand_ids <- select(
-    filter(
-      forsys_outputs$stand_output,
-      proj_id == project_id
-    ),
-    stand_id
-  )
-  stand_count <- nrow(all_project_stand_ids)
+  stand_count <- nrow(project_stand_ids)
+  project_stand_ids <- as.integer(project_stand_ids$stand_id)
+  geometry <- get_project_geometry(connection, project_stand_ids)
+  text_geometry <- get_project_geometry_text(connection, project_stand_ids)
   properties <- to_properties(
     project_id,
     scenario,
