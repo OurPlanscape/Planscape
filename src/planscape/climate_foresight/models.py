@@ -49,6 +49,16 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
         help_text="Current status of the run",
     )
 
+    current_step = models.IntegerField(
+        default=1,
+        help_text="Current step user is on (1=data layers, 2=favorability, 3=pillars, 4=run)",
+    )
+
+    furthest_step = models.IntegerField(
+        default=1,
+        help_text="Furthest step completed (enables resume/skip forward)",
+    )
+
     objects = ClimateForesightRunManager()
 
     class Meta:
@@ -95,6 +105,17 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         blank=True,
         null=True,
         help_text="The normalized version of this input data layer (for Climate Foresight analysis only)",
+    )
+
+    outlier_thresholds = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Percentile thresholds for outlier detection (e.g., {p5, p10, p90, p95})",
+    )
+
+    statistics_calculated = models.BooleanField(
+        default=False,
+        help_text="Whether statistics have been calculated for this layer",
     )
 
     class Meta:
