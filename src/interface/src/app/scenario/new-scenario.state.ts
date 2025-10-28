@@ -144,6 +144,9 @@ export class NewScenarioState {
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
+  private _draftFinished$ = new BehaviorSubject(false);
+  public draftFinished$ = this._loading$.asObservable();
+
   private slopeId = 0;
   private distanceToRoadsId = 0;
 
@@ -157,6 +160,14 @@ export class NewScenarioState {
       this.slopeId = forsys.thresholds.slope.id;
       this.distanceToRoadsId = forsys.thresholds.distance_from_roads.id;
     });
+  }
+
+  setDraftFinished(isFinished: boolean) {
+    this._draftFinished$.next(isFinished);
+  }
+
+  isDraftFinished() {
+    return this._draftFinished$.value === true;
   }
 
   setLoading(isLoading: boolean) {

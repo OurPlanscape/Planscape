@@ -5,6 +5,7 @@ import {
   combineLatest,
   filter,
   map,
+  Observable,
   of,
   shareReplay,
   takeWhile,
@@ -19,6 +20,10 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@services';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
+import { CanComponentDeactivate } from '@services/can-deactivate.guard';
+import { NewScenarioState } from '../new-scenario.state';
+import { MatDialog } from '@angular/material/dialog';
+import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
 
 @UntilDestroy()
 @Component({
@@ -36,7 +41,9 @@ import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
   templateUrl: './scenario-route-placeholder.component.html',
   styleUrl: './scenario-route-placeholder.component.scss',
 })
-export class ScenarioRoutePlaceholderComponent {
+export class ScenarioRoutePlaceholderComponent
+  implements CanComponentDeactivate
+{
   currentScenarioResource$ = this.scenarioState.currentScenarioResource$.pipe(
     // complete this stream after the resource is loaded.
     takeWhile((resource) => resource.isLoading, true)
@@ -44,9 +51,26 @@ export class ScenarioRoutePlaceholderComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private dialog: MatDialog,
     private scenarioState: ScenarioState,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private newScenarioState: NewScenarioState
   ) {}
+
+  isDraft = false;
+
+  canDeactivate(): Observable<boolean> | boolean {
+    if (
+      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
+      this.isDraft &&
+      !this.newScenarioState.isDraftFinished()
+    ) {
+      const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
+      return dialogRef.afterClosed();
+    }
+
+    return true;
+  }
 
   // We are going to display scenario creation just if we have SCENARIO_DRAFTS FF enabled and the creator is the same as the logged in user
   canViewScenarioCreation$ = combineLatest([
@@ -58,10 +82,10 @@ export class ScenarioRoutePlaceholderComponent {
     map(([user, scenario]) => {
       const scenarioDraftsEnabled =
         this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
-      const isDraft = scenario?.scenario_result?.status === 'DRAFT';
+      this.isDraft = scenario?.scenario_result?.status === 'DRAFT';
 
       // If SCENARIO_DRAFTS is disabled and the scenario is a DRAFT we redirect to planning areas
-      if (!scenarioDraftsEnabled && isDraft) {
+      if (!scenarioDraftsEnabled && this.isDraft) {
         this.router.navigate(['/plan', scenario?.planning_area]);
         return false;
       }
@@ -72,17 +96,17 @@ export class ScenarioRoutePlaceholderComponent {
       }
 
       // If the scenario is NOT a draft we should NOT display the creation mode
-      if (!isDraft) {
+      if (!this.isDraft) {
         return false;
       }
 
       // If it is a draft and the creator is not the same as the user logged in we redirect to planning areas
       const sameCreator = user?.id === scenario?.user;
-      if (!(sameCreator && isDraft)) {
+      if (!(sameCreator && this.isDraft)) {
         this.router.navigate(['/plan', scenario?.planning_area]);
         return false;
       }
-      return sameCreator && isDraft;
+      return sameCreator && this.isDraft;
     }),
     catchError(() => {
       this.router.navigate(['/home']);
