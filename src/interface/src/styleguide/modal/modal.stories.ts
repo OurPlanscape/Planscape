@@ -128,6 +128,8 @@ This modal should have:
 - Does not have an X to close the modal
 - A secondary cancel action (closes the modal)
 - A shortHeader to avoid bigger padding between title and body
+
+For this specific modal configuration, use \`DeleteDialogComponent\`
       `,
       },
     },
