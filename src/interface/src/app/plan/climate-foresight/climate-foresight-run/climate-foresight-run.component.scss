@@ -1,14 +1,16 @@
-@import '../../../../../src/styles/variables';
-@import '../../../../../src/styles/colors';
+@import 'variables';
+@import 'colors';
 
 .climate-foresight-run-container {
   display: flex;
   flex-direction: column;
-  height: calc(100% - $navbar-height);
+  height: calc(100% - ($navbar-height));
 
   ::ng-deep {
+    sg-steps {
+      overflow-y: auto;
+    }
     sg-steps .step {
-      overflow-y: hidden;
       padding: 0;
     }
 
