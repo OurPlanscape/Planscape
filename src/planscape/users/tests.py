@@ -4,6 +4,7 @@ import re
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
 from datetime import timedelta
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -606,7 +607,7 @@ class LastLoginTest(TestCase):
         self.user.refresh_from_db()
         first_login_time = self.user.last_login
         self.assertIsNotNone(first_login_time)
-        resp = self.client.post("/dj-rest-auth/token/refresh/", {})
+        resp = self.client.post(reverse("token_refresh"), {})
         self.assertEqual(resp.status_code, 200)
         self.user.refresh_from_db()
         self.assertGreaterEqual(self.user.last_login, first_login_time)
