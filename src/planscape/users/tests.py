@@ -4,7 +4,6 @@ import re
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
 from datetime import timedelta
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase, override_settings
