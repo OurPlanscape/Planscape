@@ -6,9 +6,8 @@ import {
   NgClass,
   NgIf,
 } from '@angular/common';
-import { SectionComponent } from '@styleguide';
+import { SectionComponent, StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
-import { StepDirective } from '../../../styleguide/steps/step.component';
 import { NgxMaskModule } from 'ngx-mask';
 import {
   FormControl,
@@ -56,14 +55,11 @@ export class TreatmentTargetComponent
 {
   maxAreaValue: number = 1;
   minMaxAreaValue = 1;
-
+  maxProjectValue = 1;
   form!: FormGroup;
 
-  treatable_area$ = this.newScenarioState.availableStands$.pipe(
-    map((s) => s.summary.treatable_area)
-  );
+  summary$ = this.newScenarioState.availableStands$.pipe(map((s) => s.summary));
 
-  maxAreaValue$ = this.treatable_area$;
   minAcreage: number = 0;
 
   constructor(private newScenarioState: NewScenarioState) {
@@ -71,61 +67,61 @@ export class TreatmentTargetComponent
   }
 
   ngOnInit(): void {
-    this.maxAreaValue$
-      .pipe(untilDestroyed(this), take(1))
-      .subscribe((maxAreaValue) => {
-        this.maxAreaValue = maxAreaValue || 0;
-        this.form = new FormGroup(
-          {
-            max_area: new FormControl<number | null>(null, [
-              Validators.min(this.minMaxAreaValue),
-              Validators.required,
-            ]),
-            max_project_count: new FormControl<number | null>(null, [
-              Validators.min(1),
-              Validators.required,
-            ]),
-            estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
-              Validators.required,
-              Validators.min(1),
-            ]),
-          },
-          {
-            validators: [
-              this.workingAreaValidator(this.maxAreaValue),
-              this.minAreaValidator(),
-            ],
-          }
-        );
+    this.summary$.pipe(untilDestroyed(this), take(1)).subscribe((summary) => {
+      this.maxAreaValue = summary.treatable_area || 0;
+      this.maxProjectValue = summary.treatable_stand_count;
+      this.form = new FormGroup(
+        {
+          max_area: new FormControl<number | null>(null, [
+            Validators.min(this.minMaxAreaValue),
+            Validators.required,
+          ]),
+          max_project_count: new FormControl<number | null>(null, [
+            Validators.min(1),
+            Validators.max(this.maxProjectValue),
+            Validators.required,
+          ]),
+          estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
+            Validators.required,
+            Validators.min(1),
+          ]),
+        },
+        {
+          validators: [
+            this.workingAreaValidator(this.maxAreaValue),
+            this.minAreaValidator(),
+          ],
+        }
+      );
 
-        this.newScenarioState.scenarioConfig$
-          .pipe(
-            untilDestroyed(this),
-            take(1),
-            filter((c) => !!c.targets)
-          )
-          .subscribe((config) => {
-            this.minAcreage = config.stand_size
-              ? STAND_SIZES[config.stand_size]
-              : 0;
+      this.newScenarioState.scenarioConfig$
+        .pipe(
+          untilDestroyed(this),
+          take(1),
+          filter((c) => !!c.targets)
+        )
+        .subscribe((config) => {
+          this.minAcreage = config.stand_size
+            ? STAND_SIZES[config.stand_size]
+            : 0;
 
-            if (config.targets) {
-              if (config.targets.estimated_cost) {
-                this.form
-                  .get('estimated_cost')
-                  ?.setValue(config.targets.estimated_cost);
-              }
-              if (config.targets.max_area) {
-                this.form.get('max_area')?.setValue(config.targets.max_area);
-              }
-              if (config.targets.max_project_count) {
-                this.form
-                  .get('max_project_count')
-                  ?.setValue(config.targets.max_project_count);
-              }
+          if (config.targets) {
+            if (config.targets.estimated_cost) {
+              this.form
+                .get('estimated_cost')
+                ?.setValue(config.targets.estimated_cost);
             }
-          });
-      });
+            if (config.targets.max_area) {
+              this.form.get('max_area')?.setValue(config.targets.max_area);
+            }
+            if (config.targets.max_project_count) {
+              this.form
+                .get('max_project_count')
+                ?.setValue(config.targets.max_project_count);
+            }
+          }
+        });
+    });
   }
 
   // Pre-condition: we should have a valid max_area (per project area) and max_project_count
