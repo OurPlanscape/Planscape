@@ -16,12 +16,17 @@ import {
 import { SharedModule } from '../../../shared/shared.module';
 import { PlanState } from '../../plan.state';
 import { ClimateForesightService } from '@services/climate-foresight.service';
-import { Plan, ClimateForesightRun } from '@types';
+import { Plan, ClimateForesightRun, InputDatalayer } from '@types';
 import { DataLayerSelectionComponent } from './data-layer-selection/data-layer-selection.component';
 import { AssignFavorabilityComponent } from './assign-favorability/assign-favorability.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AssignPillarsComponent } from './assign-pillars/assign-pillars.component';
+
+type SaveStepData = {
+  dataLayers: Partial<InputDatalayer>[];
+  favorability: Partial<InputDatalayer>[];
+};
 
 @UntilDestroy()
 @Component({
@@ -60,7 +65,7 @@ export class ClimateForesightRunComponent implements OnInit {
   pillarsForm: FormGroup | null = null;
   assessmentForm: FormGroup | null = null;
 
-  stepData: any = {};
+  stepData: Record<number, SaveStepData> = {};
 
   stepsList: StepConfig[] = [
     { label: 'Select Data Layers', completed: false },
@@ -160,7 +165,7 @@ export class ClimateForesightRunComponent implements OnInit {
     }
   }
 
-  onStepComplete(data: any): void {
+  onStepComplete(data: SaveStepData): void {
     const stepIndex = this.stepsComponent?.selectedIndex || 0;
     this.stepData[stepIndex] = data;
   }
@@ -183,7 +188,7 @@ export class ClimateForesightRunComponent implements OnInit {
     }
   }
 
-  saveStepData = (data: any): Observable<boolean> => {
+  saveStepData = (data: SaveStepData): Observable<boolean> => {
     if (!this.runId) {
       this.snackBar.open('No run ID found', 'Close', { duration: 3000 });
       return of(false);
@@ -203,7 +208,7 @@ export class ClimateForesightRunComponent implements OnInit {
     }
   };
 
-  private saveDataLayers(data: any): Observable<boolean> {
+  private saveDataLayers(data: SaveStepData): Observable<boolean> {
     if (!data || !data.dataLayers || !this.runId) {
       this.snackBar.open('Please select at least one data layer', 'Close', {
         duration: 3000,
@@ -212,10 +217,12 @@ export class ClimateForesightRunComponent implements OnInit {
       return of(false);
     }
 
-    const inputDatalayers = data.dataLayers.map((layer: any) => ({
-      datalayer: layer.id,
-      pillar: '',
-    }));
+    const inputDatalayers = data.dataLayers.map(
+      (layer: Partial<InputDatalayer>) => ({
+        datalayer: layer.id,
+        pillar: '',
+      })
+    );
 
     const currentStep = (this.currentStepIndex || 0) + 1;
 
@@ -230,7 +237,7 @@ export class ClimateForesightRunComponent implements OnInit {
           input_datalayers: inputDatalayers,
           current_step: nextStep,
           furthest_step: newFurthestStep,
-        })
+        } as Partial<ClimateForesightRun>)
         .pipe(untilDestroyed(this))
         .subscribe({
           next: (updatedRun) => {
@@ -260,7 +267,7 @@ export class ClimateForesightRunComponent implements OnInit {
     });
   }
 
-  private saveFavorability(data: any): Observable<boolean> {
+  private saveFavorability(data: SaveStepData): Observable<boolean> {
     if (!data || !data.favorability || !this.runId) {
       this.snackBar.open('Please assign favorability for all layers', 'Close', {
         duration: 3000,
@@ -272,7 +279,7 @@ export class ClimateForesightRunComponent implements OnInit {
     const updatedInputDatalayers = this.currentRun?.input_datalayers?.map(
       (input) => {
         const favorabilityAssignment = data.favorability.find(
-          (f: any) => f.datalayer === input.datalayer
+          (f: Partial<InputDatalayer>) => f.datalayer === input.datalayer
         );
         return {
           ...input,

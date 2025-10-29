@@ -22,7 +22,7 @@ export interface InputDatalayer {
   favor_high: boolean;
   pillar: string;
   normalized_datalayer_id?: number | null;
-  statistics?: LayerStatistics | null;
+  statistics: LayerStatistics | null;
 }
 
 export interface ClimateForesightRun {
