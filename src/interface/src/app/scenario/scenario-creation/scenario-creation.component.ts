@@ -119,7 +119,7 @@ export class ScenarioCreationComponent
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
-    if (!this.newScenarioState.isDraftFinished()) {
+    if (!this.newScenarioState.isDraftFinishedSnapshot()) {
       /* Most browsers will display their own default dialog to confirm navigation away
         from a window or URL. e.g, "Changes that you made may not be saved"
 
@@ -206,7 +206,7 @@ export class ScenarioCreationComponent
 
   // TODO: we can remove this entire method once we remove SCENARIO_DRAFTS FF
   canDeactivate(): Observable<boolean> | boolean {
-    if (this.newScenarioState.isDraftFinished()) {
+    if (this.newScenarioState.isDraftFinishedSnapshot()) {
       return true;
     }
     const dialogRef = this.dialog.open(ExitWorkflowModalComponent);

@@ -63,7 +63,7 @@ export class ScenarioRoutePlaceholderComponent
     if (
       this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
       this.isDraft &&
-      !this.newScenarioState.isDraftFinished()
+      !this.newScenarioState.isDraftFinishedSnapshot()
     ) {
       const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
       return dialogRef.afterClosed();

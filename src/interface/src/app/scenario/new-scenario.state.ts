@@ -145,7 +145,6 @@ export class NewScenarioState {
   public loading$ = this._loading$.asObservable();
 
   private _draftFinished$ = new BehaviorSubject(false);
-  public draftFinished$ = this._loading$.asObservable();
 
   private slopeId = 0;
   private distanceToRoadsId = 0;
@@ -166,7 +165,7 @@ export class NewScenarioState {
     this._draftFinished$.next(isFinished);
   }
 
-  isDraftFinished() {
+  isDraftFinishedSnapshot() {
     return this._draftFinished$.value === true;
   }
 
