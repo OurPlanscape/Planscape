@@ -272,6 +272,7 @@ export class ScenarioCreationComponent
   }
 
   async onFinish() {
+    this.newScenarioState.setDraftFinished(true);
     this.newScenarioState.setLoading(false);
     // TODO: we can remove both of these conditions when the FF is removed,
     //. but it's helpful for testing different routes
@@ -304,7 +305,6 @@ export class ScenarioCreationComponent
       )
       .subscribe({
         next: (result) => {
-          this.newScenarioState.setDraftFinished(true);
           if (result.id) {
             this.scenarioState.setScenarioId(result.id);
             this.scenarioState.reloadScenario();
