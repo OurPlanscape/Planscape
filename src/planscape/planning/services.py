@@ -473,7 +473,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
-    
+
     for constraint in constraints:
         datalayer_id = constraint.get("datalayer")
         operator = constraint.get("operator")
@@ -636,7 +636,12 @@ def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
 def get_max_area_project(scenario: Scenario) -> float:
     targets = (scenario.configuration or {}).get("targets") or {}
     max_area = targets.get("max_area")
-    return float(max_area) if max_area is not None else float(get_min_project_area(scenario))
+    return (
+        float(max_area)
+        if max_area is not None
+        else float(get_min_project_area(scenario))
+    )
+
 
 def get_max_treatable_stand_count(
     max_treatable_area: float,
