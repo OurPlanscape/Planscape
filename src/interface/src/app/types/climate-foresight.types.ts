@@ -1,10 +1,19 @@
 export type ClimateForesightRunStatus = 'draft' | 'running' | 'done';
 
-export interface OutlierThresholds {
+export interface Percentiles {
   p5: number;
   p10: number;
   p90: number;
   p95: number;
+}
+
+export interface LayerStatistics {
+  min: number;
+  max: number;
+  mean: number;
+  std: number;
+  count: number;
+  percentiles: Percentiles;
 }
 
 export interface InputDatalayer {
@@ -13,8 +22,7 @@ export interface InputDatalayer {
   favor_high: boolean;
   pillar: string;
   normalized_datalayer_id?: number | null;
-  outlier_thresholds?: OutlierThresholds | null;
-  statistics_calculated?: boolean;
+  statistics?: LayerStatistics | null;
 }
 
 export interface ClimateForesightRun {
