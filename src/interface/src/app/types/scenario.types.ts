@@ -223,5 +223,6 @@ export interface AvailableStands {
     available_area: number; // total area - exclusions
     treatable_area: number; // available area - thresholds
     unavailable_area: number; // unavailable area
+    treatable_stand_count: number; // number of available stands
   };
 }

@@ -28,9 +28,18 @@
           class="help-text error"
           *ngIf="
             form.get('max_project_count')?.touched &&
-            form.get('max_project_count')?.invalid
+            form.get('max_project_count')?.hasError('required')
           ">
           Field is required
+        </div>
+        <div
+          class="help-text error"
+          *ngIf="
+            form.get('max_project_count')?.touched &&
+            form.get('max_project_count')?.hasError('max')
+          ">
+          Target number of project areas exceeds available stands (max:
+          {{ maxProjectValue }}).
         </div>
       </div>
     </div>
