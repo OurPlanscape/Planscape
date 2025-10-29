@@ -16,7 +16,6 @@ from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
-from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
