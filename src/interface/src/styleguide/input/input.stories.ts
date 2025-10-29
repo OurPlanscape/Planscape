@@ -86,6 +86,18 @@ export const WithSuffix: Story = {
   },
 };
 
+export const Errors: Story = {
+  args: {
+    disabled: false,
+    error: true,
+    suffix: '',
+    supportMessage: 'Oh no an error ocurred.',
+    trailingIcon: '',
+    placeholder: 'Enter Amount',
+    showSupportMessage: 'on-error',
+  },
+};
+
 /**
  * Displays the support message only when on error state.
  *
@@ -104,7 +116,7 @@ export const SupportMessage: Story = {
     template: `
 <div style='display: flex; flex-direction: column; gap: 16px'>
 <h3>Support Message</h3>
-    <p>Support message can be displayed always, on error, or false.</p>
+    <p>Support message can be displayed always, on error, or false. Toggle the error input to see the difference</p>
     <sg-input-field ${argsToTemplate(args)} showSupportMessage='always'>
       <input sgInput  placeholder='Shows always' [disabled]='${args.disabled}'>
     </sg-input-field>
@@ -132,13 +144,42 @@ export const Highlighted: Story = {
   },
 };
 
-export const Small: Story = {
+export const FullScreen: Story = {
   args: {
     leadingIcon: 'search',
     disabled: false,
     error: false,
-    supportMessage: 'This is a smaller (height) input',
+    supportMessage:
+      'You can set size to full if you want the input to take available space (width)',
     placeholder: 'MM/DD/YYYY',
-    size: 'small',
+    size: 'full',
   },
+};
+
+export const WithLabels: Story = {
+  args: {
+    error: false,
+    supportMessage: 'This can take a label as well',
+    placeholder: 'John Doe',
+    size: 'full',
+    label: 'Enter your name',
+  },
+};
+
+export const WithLabelsRequired: Story = {
+  args: {
+    error: false,
+    supportMessage:
+      'If the input inside is required, the label shows a red asterisk',
+    placeholder: 'John Doe',
+    size: 'full',
+    label: 'Enter your name',
+  },
+  render: ({ placeholder, ...args }) => ({
+    props: args,
+    template: `
+    <sg-input-field ${argsToTemplate(args)}>
+     <input sgInput  placeholder='${placeholder}' [disabled]='${args.disabled}' required>
+    </sg-input-field>`,
+  }),
 };
