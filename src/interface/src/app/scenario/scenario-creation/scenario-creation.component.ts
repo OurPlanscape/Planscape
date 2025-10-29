@@ -155,11 +155,6 @@ export class ScenarioCreationComponent
   }
 
   ngOnInit(): void {
-    // Setting up the breadcrumb
-    this.breadcrumbService.updateBreadCrumb({
-      label: 'Scenario: New Scenario',
-      backUrl: getPlanPath(this.planId),
-    });
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       if (this.scenarioId) {
         this.loadExistingScenario();
@@ -167,6 +162,11 @@ export class ScenarioCreationComponent
     } else {
       // Adding scenario name validator
       this.refreshScenarioNameValidator();
+      // Setting up the breadcrumb
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Scenario: New Scenario',
+        backUrl: getPlanPath(this.planId),
+      });
     }
   }
 
@@ -175,6 +175,12 @@ export class ScenarioCreationComponent
       .getScenario(this.scenarioId)
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
+        // Setting up the breadcrumb
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Scenario: ' + scenario.name,
+          backUrl: getPlanPath(this.planId),
+        });
+
         this.form.controls.scenarioName.setValue(scenario.name);
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
