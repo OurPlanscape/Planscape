@@ -23,8 +23,8 @@
 
   &:focus-within {
     color: $color-black;
-
-    border-color: $color-main-blue;
+    background-color: $color-white;
+    border-color: $color-standard-blue;
   }
 }
 
