@@ -22,14 +22,12 @@ class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
             "favor_high",
             "pillar",
             "normalized_datalayer_id",
-            "outlier_thresholds",
-            "statistics_calculated",
+            "statistics",
         ]
         read_only_fields = [
             "id",
             "normalized_datalayer_id",
-            "outlier_thresholds",
-            "statistics_calculated",
+            "statistics",
         ]
 
 

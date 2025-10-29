@@ -107,15 +107,10 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="The normalized version of this input data layer (for Climate Foresight analysis only)",
     )
 
-    outlier_thresholds = models.JSONField(
+    statistics = models.JSONField(
         null=True,
         blank=True,
-        help_text="Percentile thresholds for outlier detection (e.g., {p5, p10, p90, p95})",
-    )
-
-    statistics_calculated = models.BooleanField(
-        default=False,
-        help_text="Whether statistics have been calculated for this layer",
+        help_text="Statistics calculated from clipped planning area: {min, max, mean, std, count, percentiles: {p5, p10, p90, p95}}",
     )
 
     class Meta:
