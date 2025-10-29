@@ -90,14 +90,12 @@ export class AssignFavorabilityComponent
 
   get isCurrentLayerStatisticsReady(): boolean {
     const inputLayer = this.currentInputDataLayer;
-    return inputLayer?.statistics_calculated ?? false;
+    return inputLayer?.statistics != null;
   }
 
   get areAllStatisticsReady(): boolean {
     if (!this.run?.input_datalayers) return false;
-    return this.run.input_datalayers.every(
-      (input) => input.statistics_calculated
-    );
+    return this.run.input_datalayers.every((input) => input.statistics != null);
   }
 
   get canProceed(): boolean {
@@ -121,11 +119,10 @@ export class AssignFavorabilityComponent
   get chartData(): ChartConfiguration<'bar'>['data'] | null {
     if (!this.currentLayer) return null;
 
-    const stats = this.currentLayer.info?.stats?.[0];
+    const stats = this.currentInputDataLayer?.statistics;
     if (!stats) return null;
 
     const { min, max, mean, std } = stats;
-    const inputDatalayer = this.currentInputDataLayer;
 
     const range = max - min;
     const bins = 14;
@@ -158,9 +155,9 @@ export class AssignFavorabilityComponent
 
     const currentFavorability = this.getFavorability(this.currentLayer.id);
 
-    // add line overlay if outlier thresholds are available and favorability is set
-    if (inputDatalayer?.outlier_thresholds && currentFavorability !== null) {
-      const { p10, p90 } = inputDatalayer.outlier_thresholds;
+    // add line overlay if favorability is set
+    if (currentFavorability !== null) {
+      const { p10, p90 } = stats.percentiles;
       const favorHigh = currentFavorability;
 
       const lineColor = favorHigh
@@ -429,7 +426,7 @@ export class AssignFavorabilityComponent
 
           return (
             updatedRun.input_datalayers?.every(
-              (input) => input.statistics_calculated
+              (input) => input.statistics != null
             ) ?? false
           );
         })
