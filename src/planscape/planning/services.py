@@ -445,6 +445,7 @@ def zip_directory(file_obj, source_dir):
 
 
 def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
+    # treatment goal datalayers
     tx_goal = scenario.treatment_goal
 
     datalayers = []
@@ -462,83 +463,40 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             for tgudl in tx_goal.datalayer_usages.all()
         ]
 
-    cfg = dict(getattr(scenario, "configuration", {}) or {})
-    if "constraints" in cfg and isinstance(cfg.get("constraints"), list):
-        OPERATOR_MAP = {
-            "eq": "=",
-            "lt": "<",
-            "lte": "<=",
-            "gt": ">",
-            "gte": ">=",
-        }
+    # constraints datalayers from scenario configuration
+    OPERATOR_MAP = {
+        "eq": "=",
+        "lt": "<",
+        "lte": "<=",
+        "gt": ">",
+        "gte": ">=",
+    }
+    cfg = getattr(scenario, "configuration", {}) or {}
+    constraints = cfg.get("constraints") or []
+    
+    for constraint in constraints:
+        datalayer_id = constraint.get("datalayer")
+        operator = constraint.get("operator")
+        value = constraint.get("value")
 
-        for constraint in cfg.get("constraints", []):
-            datalayer_id = constraint.get("datalayer")
-            operator = constraint.get("operator")
-            value = constraint.get("value")
-
-            if datalayer_id and operator and value is not None:
-                dl = DataLayer.objects.get(pk=datalayer_id)
-                datalayers.append(
-                    {
-                        "id": dl.pk,
-                        "name": dl.name,
-                        "metric": get_datalayer_metric(dl),
-                        "type": dl.type,
-                        "geometry_type": dl.geometry_type,
-                        "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
-                        "usage_type": "THRESHOLD",
-                    }
-                )
-    else:
-        max_slope = cfg.get("max_slope")
-        if max_slope:
-            slope = get_datalayer_by_module_atribute("forsys", "name", "slope")
+        if datalayer_id and operator and value is not None:
+            dl = DataLayer.objects.get(pk=datalayer_id)
             datalayers.append(
                 {
-                    "id": slope.pk,
-                    "name": slope.name,
-                    "metric": get_datalayer_metric(slope),
-                    "type": slope.type,
-                    "geometry_type": slope.geometry_type,
-                    "threshold": f"value <= {max_slope}",
+                    "id": dl.pk,
+                    "name": dl.name,
+                    "metric": get_datalayer_metric(dl),
+                    "type": dl.type,
+                    "geometry_type": dl.geometry_type,
+                    "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
                     "usage_type": "THRESHOLD",
                 }
             )
 
-        distance_from_roads = cfg.get("min_distance_from_road")
-        if distance_from_roads:
-            roads = get_datalayer_by_module_atribute(
-                "forsys", "name", "distance_from_roads"
-            )
-            distance_from_roads_meters = distance_from_roads / 1.094
-            datalayers.append(
-                {
-                    "id": roads.pk,
-                    "name": roads.name,
-                    "metric": get_datalayer_metric(roads),
-                    "type": roads.type,
-                    "geometry_type": roads.geometry_type,
-                    "threshold": f"value <= {distance_from_roads_meters}",
-                    "usage_type": "THRESHOLD",
-                }
-            )
-
-    number_of_projects = cfg.get(
-        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
-    )
-
-    if "targets" in cfg and isinstance(cfg.get("targets"), dict):
-        number_of_projects = cfg.get("targets", {}).get(
-            "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
-        )
+    number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
 
     min_area_project = get_min_project_area(scenario)
-
-    max_area_project = get_max_area_project(
-        scenario=scenario,
-        number_of_projects=number_of_projects,
-    )
+    max_area_project = get_max_area_project(scenario=scenario)
 
     sdw = settings.FORSYS_SDW
     epw = settings.FORSYS_EPW
@@ -675,28 +633,10 @@ def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
     return float(configuration.get("max_treatment_area_ratio"))
 
 
-def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
-    configuration = scenario.configuration
-    if "targets" in configuration:  # differentiate between the "new" config and old
-        targets = configuration.get("targets", {}) or {}
-        max_area = targets.get("max_area")
-        if max_area:
-            return float(max_area)
-        max_acres = get_min_project_area(scenario)
-        return float(max_acres)
-
-    max_budget = configuration.get("max_budget")
-    cost_per_acre = get_cost_per_acre(configuration=configuration)
-    if max_budget and cost_per_acre > 0:
-        return (max_budget / cost_per_acre) / number_of_projects
-
-    max_area = configuration.get("max_area")
-    if max_area:
-        return max_area / number_of_projects
-
-    max_acres = get_min_project_area(scenario)
-    return float(max_acres)
-
+def get_max_area_project(scenario: Scenario) -> float:
+    targets = (scenario.configuration or {}).get("targets") or {}
+    max_area = targets.get("max_area")
+    return float(max_area) if max_area is not None else float(get_min_project_area(scenario))
 
 def get_max_treatable_stand_count(
     max_treatable_area: float,
