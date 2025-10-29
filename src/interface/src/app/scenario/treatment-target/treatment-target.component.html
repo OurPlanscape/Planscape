@@ -38,7 +38,7 @@
             form.get('max_project_count')?.touched &&
             form.get('max_project_count')?.hasError('max')
           ">
-          Target number of project areas exceeds available stands (max:
+          Target exceeds available stands (max:
           {{ maxProjectValue }}).
         </div>
       </div>
@@ -67,7 +67,9 @@
         </div>
 
         <!-- Errors -->
-        <div class="help-text error" *ngIf="form.touched && form.invalid">
+        <div
+          class="help-text error"
+          *ngIf="form.get('max_area')?.touched && form.invalid">
           <ng-container *ngIf="form.get('max_area')?.hasError('required')">
             Field is required
           </ng-container>
