@@ -18,7 +18,7 @@ import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { Scenario } from '@types';
 import { filter } from 'rxjs/operators';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ScenarioDownloadFooterComponent } from '../scenario-download-footer/scenario-download-footer.component';
 import { NewTreatmentFooterComponent } from 'src/app/scenario/new-treatment-footer/new-treatment-footer.component';
 import { TreatmentsTabComponent } from 'src/app/scenario/treatments-tab/treatments-tab.component';
@@ -35,6 +35,7 @@ import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
 import { FeatureService } from 'src/app/features/feature.service';
 import { ScenarioSetupModalComponent } from '../scenario-setup-modal/scenario-setup-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 enum ScenarioTabs {
   RESULTS,
@@ -59,6 +60,8 @@ enum ScenarioTabs {
     ScenarioPendingComponent,
     ScenarioPendingComponent,
     BaseLayersComponent,
+    MatTooltipModule,
+    NgClass,
   ],
   selector: 'app-view-scenario',
   templateUrl: './view-scenario.component.html',

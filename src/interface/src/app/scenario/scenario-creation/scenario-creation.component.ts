@@ -42,7 +42,7 @@ import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow
 import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
-import { Step3Component } from '../step3/step3.component';
+import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import {
   convertFormOutputToDraftPayload,
   getScenarioCreationPayloadScenarioCreation,
@@ -57,6 +57,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { RunScenarioModalComponent } from '../run-scenario-modal/run-scenario-modal.component';
 import { filter } from 'rxjs/operators';
+import { ScenarioState } from '../scenario.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -80,7 +81,7 @@ enum ScenarioTabs {
     StepComponent,
     Step1Component,
     Step2Component,
-    Step3Component,
+    StandLevelConstraintsComponent,
     TreatmentTargetComponent,
     Step4LegacyComponent,
     BaseLayersComponent,
@@ -141,7 +142,8 @@ export class ScenarioCreationComponent
     private dialog: MatDialog,
     private router: Router,
     private featureService: FeatureService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private scenarioState: ScenarioState
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -153,11 +155,6 @@ export class ScenarioCreationComponent
   }
 
   ngOnInit(): void {
-    // Setting up the breadcrumb
-    this.breadcrumbService.updateBreadCrumb({
-      label: 'Scenario: New Scenario',
-      backUrl: getPlanPath(this.planId),
-    });
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       if (this.scenarioId) {
         this.loadExistingScenario();
@@ -165,6 +162,11 @@ export class ScenarioCreationComponent
     } else {
       // Adding scenario name validator
       this.refreshScenarioNameValidator();
+      // Setting up the breadcrumb
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Scenario: New Scenario',
+        backUrl: getPlanPath(this.planId),
+      });
     }
   }
 
@@ -173,6 +175,12 @@ export class ScenarioCreationComponent
       .getScenario(this.scenarioId)
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
+        // Setting up the breadcrumb
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Scenario: ' + scenario.name,
+          backUrl: getPlanPath(this.planId),
+        });
+
         this.form.controls.scenarioName.setValue(scenario.name);
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
@@ -297,7 +305,10 @@ export class ScenarioCreationComponent
       .subscribe({
         next: (result) => {
           this.finished = true; // ensure we don't get an alert when we navigate away
-          // TODO this should redirect or show a confirmation, but currently is not working as expected.
+          if (result.id) {
+            this.scenarioState.setScenarioId(result.id);
+            this.scenarioState.reloadScenario();
+          }
           this.router.navigate([
             'plan',
             result.planning_area,

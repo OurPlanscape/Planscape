@@ -21,11 +21,15 @@ import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { CreateTreatmentDialogComponent } from '../../../scenario/create-treatment-dialog/create-treatment-dialog.component';
 import { DeleteScenarioDialogComponent } from '../../../scenario/delete-scenario-dialog/delete-scenario-dialog.component';
 import { take } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
-import { userCanAddTreatmentPlan } from '../../permissions';
+import {
+  canEditScenarioName,
+  userCanAddTreatmentPlan,
+} from '../../permissions';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -47,6 +51,7 @@ export class ScenariosCardListComponent {
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
   @Output() triggerRefresh = new EventEmitter<ScenarioRow>();
+  @Output() triggerEdit = new EventEmitter();
   @Output() scenarioDeleted = new EventEmitter<ScenarioRow>();
 
   draftsEnabled = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
@@ -128,6 +133,15 @@ export class ScenariosCardListComponent {
     }
     const user = this.authService.currentUser();
     return user?.id === this.plan?.user || user?.id == scenario.user;
+  }
+
+  // Planning Area Creators and Owners, and Scenario Creators can rename scenarios
+  userCanEditScenario(scenario: Scenario) {
+    const user = this.authService.currentUser();
+    if (!this.plan || !user) {
+      return false;
+    }
+    return user?.id == scenario.user || canEditScenarioName(this.plan, user);
   }
 
   userCanCreateTreatmentPlan() {
@@ -243,5 +257,30 @@ export class ScenariosCardListComponent {
           );
         },
       });
+  }
+
+  editScenario(s: Scenario) {
+    if (this.plan) {
+      const dialogRef: MatDialogRef<ScenarioSetupModalComponent> =
+        this.dialog.open(ScenarioSetupModalComponent, {
+          data: {
+            planId: this.plan.id,
+            scenario: s,
+          },
+        });
+      dialogRef
+        .afterClosed()
+        .pipe(take(1))
+        .subscribe((confirmed) => {
+          if (confirmed) {
+            this.snackbar.open(
+              `Scenario name has been updated`,
+              'Dismiss',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+            this.triggerEdit.emit(s);
+          }
+        });
+    }
   }
 }

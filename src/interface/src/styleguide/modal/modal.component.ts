@@ -155,18 +155,22 @@ export class ModalComponent {
   get isExtraSmall() {
     return this.width === 'xsmall';
   }
+
   @HostBinding('class.small')
   get isSmall() {
     return this.width === 'small';
   }
+
   @HostBinding('class.medium')
   get isMedium() {
     return this.width === 'medium';
   }
+
   @HostBinding('class.large')
   get isLarge() {
     return this.width === 'large';
   }
+
   @HostBinding('class.full')
   get isFull() {
     return this.width === 'full';

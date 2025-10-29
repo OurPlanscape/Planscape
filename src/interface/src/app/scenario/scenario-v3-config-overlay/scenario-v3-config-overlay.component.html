@@ -5,7 +5,7 @@
   <div class="content" *ngIf="currentScenario$ | async as scenario">
     <dl>
       <dt>Stand Size:</dt>
-      <dd *ngIf="configuration?.stand_size as stand_size">
+      <dd *ngIf="scenario.configuration?.stand_size as stand_size">
         {{
           standSizeOptions[stand_size].label +
             ' (' +
@@ -27,7 +27,8 @@
           Slope less or equal than (<=) {{ c.value }} %
         </div>
         <div *ngIf="c.datalayer === distanceToRoadsId">
-          Distance from roads is less than (<) {{ c.value }} yds
+          Distance from roads is less than (<)
+          {{ c.value | number: '1.0-2' }} yds
         </div>
       </dd>
       <dt>Treatment Target:</dt>

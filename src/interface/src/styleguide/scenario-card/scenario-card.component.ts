@@ -59,13 +59,16 @@ export class ScenarioCardComponent {
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
   @Input() userCanArchiveScenario = false;
   @Input() userCanDeleteScenario = false;
+  @Input() userCanEditScenario = false;
   @Input() showTreatmentPlanButton = false;
+  @Input() disabled = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
   @Output() openNewTreatment = new EventEmitter();
   @Output() toggleArchiveStatus = new EventEmitter();
   @Output() deleteScenario = new EventEmitter();
+  @Output() editScenario = new EventEmitter();
   @Output() clicked = new EventEmitter();
 
   readonly chipsStatus: Record<
@@ -107,7 +110,7 @@ export class ScenarioCardComponent {
 
   @HostBinding('class.disabled-content')
   get disabledContent() {
-    return this.isRunning();
+    return this.isRunning() || this.disabled;
   }
 
   @HostBinding('class.selected')

@@ -3,7 +3,6 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { CookieService } from 'ngx-cookie-service';
 import { of } from 'rxjs';
 import { User } from '@types';
@@ -16,6 +15,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 // Define a dummy component for the route
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   template: '',

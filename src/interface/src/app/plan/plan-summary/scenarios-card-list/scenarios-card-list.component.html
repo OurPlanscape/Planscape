@@ -17,11 +17,14 @@
   (openNewTreatment)="openNewTreatmentDialog($event, s)"
   [userCanArchiveScenario]="userCanArchiveScenario(s)"
   [userCanDeleteScenario]="userCanArchiveScenario(s)"
+  [userCanEditScenario]="userCanEditScenario(s)"
   [showTreatmentPlanButton]="
     userCanCreateTreatmentPlan() && hasTreatmentPlanCapability(s)
   "
   (toggleArchiveStatus)="toggleScenarioStatus(s)"
   (deleteScenario)="showDeleteScenarioDialog(s)"
+  (editScenario)="editScenario(s)"
   matTooltip="Only the creator can edit this draft"
-  [matTooltipDisabled]="!displayDraftCreatorTooltip(s)">
+  [matTooltipDisabled]="!displayDraftCreatorTooltip(s)"
+  [disabled]="displayDraftCreatorTooltip(s)">
 </sg-scenario-card>
