@@ -14,6 +14,7 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { InputDirective, InputFieldComponent } from '@styleguide';
 
 const meta: Meta<ModalComponent> = {
   title: 'Components/Modal',
@@ -27,6 +28,8 @@ const meta: Meta<ModalComponent> = {
         ModalInfoComponent,
         MatFormFieldModule,
         MatInputModule,
+        InputFieldComponent,
+        InputDirective,
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
@@ -97,12 +100,12 @@ This modal should have:
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
         <div modalBodyContent>
-          <div style='font-weight: 500; margin-bottom: 4px'>Label <span style='color:#D50000'>*</span></div>
-          <mat-form-field appearance='outline' subscriptSizing='dynamic' style='width:100%'>
-            <input matInput>
-          </mat-form-field>
+          <sg-input-field label='The label' size='full'>
+            <input sgInput required>
+          </sg-input-field>
         </div>
-      </sg-modal><div>`,
+      </sg-modal>
+      <div>`,
   }),
 };
 
@@ -125,10 +128,9 @@ export const DialogsWithBanners: Story = {
       <sg-modal ${argsToTemplate(args)}>
       <sg-modal-info modalInfoBox message='Dialogs can also have a banner to highlight some info' leadingIcon='info'></sg-modal-info>
         <div modalBodyContent>
-          <div style='font-weight: 500; margin-bottom: 4px'>Label <span style='color:#D50000'>*</span></div>
-          <mat-form-field appearance='outline' subscriptSizing='dynamic' style='width:100%'>
-            <input matInput>
-          </mat-form-field>
+          <sg-input-field label='The label' size='full'>
+            <input sgInput required>
+          </sg-input-field>
         </div>
       </sg-modal><div>`,
   }),
