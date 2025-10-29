@@ -13,37 +13,29 @@
   (clickedClose)="cancel()"
   (clickedPrimary)="handleSubmit()">
   <div modalBodyContent>
-    <form
-      [formGroup]="scenarioNameForm"
-      class="scenario-name-form"
-      (ngSubmit)="submitIfValid($event)">
-      <div class="field-row">
-        <div class="field-label-required">
-          Name Your Scenario
-          <div class="required-star">*</div>
-        </div>
-        <sg-input-field
-          [disabled]="false"
-          class="scenario-input"
-          showSupportMessage="on-error"
-          [error]="this.errorMessage !== ''"
-          [supportMessage]="errorMessage">
-          <input
-            sgInput
-            placeholder="e.g., High Severity Fire"
-            name="scenarioName"
-            cdkFocusInitial
-            formControlName="scenarioName"
-            class="name-field" />
-        </sg-input-field>
-        <div
-          *ngIf="
-            data.fromClone === true &&
-            (data.scenario?.version === 'V2' || data.scenario?.version === 'V1')
-          ">
-          This scenario was created with an older version—some steps have
-          changed in the update.
-        </div>
+    <form [formGroup]="scenarioNameForm" (ngSubmit)="submitIfValid($event)">
+      <sg-input-field
+        [disabled]="false"
+        showSupportMessage="on-error"
+        label="Name Your Scenario"
+        [error]="this.errorMessage !== ''"
+        [supportMessage]="errorMessage"
+        size="full">
+        <input
+          sgInput
+          placeholder="e.g., High Severity Fire"
+          required
+          name="scenarioName"
+          cdkFocusInitial
+          formControlName="scenarioName" />
+      </sg-input-field>
+      <div
+        *ngIf="
+          data.fromClone === true &&
+          (data.scenario?.version === 'V2' || data.scenario?.version === 'V1')
+        ">
+        This scenario was created with an older version—some steps have changed
+        in the update.
       </div>
     </form>
   </div>
