@@ -272,7 +272,6 @@ export class ScenarioCreationComponent
   }
 
   async onFinish() {
-    this.newScenarioState.setDraftFinished(true);
     this.newScenarioState.setLoading(false);
     // TODO: we can remove both of these conditions when the FF is removed,
     //. but it's helpful for testing different routes
@@ -280,6 +279,7 @@ export class ScenarioCreationComponent
       this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
       this.scenarioStatus === 'DRAFT'
     ) {
+      this.newScenarioState.setDraftFinished(true);
       this.showRunScenarioConfirmation();
     } else {
       this.finishFromFullConfig();
