@@ -67,7 +67,7 @@ export class TreatmentTargetComponent
   }
 
   ngOnInit(): void {
-    this.summary$.pipe(untilDestroyed(this), take(1)).subscribe((summary) => {
+    this.summary$.pipe(untilDestroyed(this)).subscribe((summary) => {
       this.maxAreaValue = summary.treatable_area || 0;
       this.maxProjectValue = summary.treatable_stand_count;
       this.form = new FormGroup(
