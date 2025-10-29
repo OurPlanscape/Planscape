@@ -1260,6 +1260,8 @@ class AvailableStandsSummarySerializer(serializers.Serializer):
 
     unavailable_area = serializers.FloatField()
 
+    treatable_stand_count = serializers.IntegerField()
+
 
 class AvailableStandsSerializer(serializers.Serializer):
     unavailable = UnavailableStandsSerializer()
