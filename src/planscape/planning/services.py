@@ -1288,6 +1288,9 @@ def get_available_stands(
     excluded_ids = set(excluded_ids)
     constrained_ids = set(constrained_ids)
     only_constrained_ids = constrained_ids - excluded_ids
+    treatable_stand_count = (
+        stands.count() - len(excluded_ids) - len(only_constrained_ids)
+    )
     total_excluded_area = (
         Stand.objects.filter(id__in=excluded_ids)
         .annotate(area=area_transform)
@@ -1321,6 +1324,7 @@ def get_available_stands(
             / settings.CONVERSION_SQM_ACRES,
             "unavailable_area": total_unavailable_area.sq_m
             / settings.CONVERSION_SQM_ACRES,
+            "treatable_stand_count": max(treatable_stand_count, 0),
         },
     }
 
