@@ -28,21 +28,20 @@
   <div modalBodyContent>
     <form [formGroup]="planForm" (ngSubmit)="submitPlan()" class="upload-form">
       <div class="field-row">
-        <div class="field-label-required">
-          Planning Area Name
-          <div class="required-star">*</div>
-        </div>
         <sg-input-field
           [disabled]="false"
           class="scenario-input"
-          showSupportMessage="on-error">
+          label="Planning Area Name"
+          showSupportMessage="on-error"
+          size="full">
           <input
             sgInput
             placeholder="Plan Name"
             name="planName"
             cdkFocusInitial
             formControlName="planName"
-            class="name-field" />
+            class="name-field"
+            required />
         </sg-input-field>
       </div>
 
