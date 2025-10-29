@@ -27,19 +27,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="climateforesightruninputdatalayer",
-            name="outlier_thresholds",
+            name="statistics",
             field=models.JSONField(
                 blank=True,
                 null=True,
-                help_text="Percentile thresholds for outlier detection (e.g., {p5, p10, p90, p95})",
-            ),
-        ),
-        migrations.AddField(
-            model_name="climateforesightruninputdatalayer",
-            name="statistics_calculated",
-            field=models.BooleanField(
-                default=False,
-                help_text="Whether statistics have been calculated for this layer",
+                help_text="Statistics calculated from clipped planning area: {min, max, mean, std, count, percentiles: {p5, p10, p90, p95}}",
             ),
         ),
     ]
