@@ -4,7 +4,7 @@ import {
   moduleMetadata,
   StoryObj,
 } from '@storybook/angular';
-import { ModalComponent } from './modal.component';
+import { ModalComponent, TooltipContentDirective } from './modal.component';
 import { ModalInfoComponent } from '../modal-info-box/modal-info.component';
 import {
   MAT_DIALOG_DATA,
@@ -30,6 +30,7 @@ const meta: Meta<ModalComponent> = {
         MatInputModule,
         InputFieldComponent,
         InputDirective,
+        TooltipContentDirective,
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
@@ -248,13 +249,13 @@ export const LeadingIcon: Story = {
 export const Tooltip: Story = {
   args: {
     title: 'Modal with a tooltip',
+    tooltipContent: 'And this is the content of the tooltip. How useful!',
   },
   render: (args) => ({
     props: args,
     template: `<div ${containerStyle}>
           <sg-modal ${argsToTemplate(args)} >
             <div modalBodyContent>Here we show a tooltip on the modal header. Useful to provide info.</div>
-            <div tooltipContent>And this is the content of the tooltip.</div>
           </sg-modal><div>`,
   }),
 };

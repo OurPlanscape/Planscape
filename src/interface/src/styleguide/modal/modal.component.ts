@@ -1,7 +1,6 @@
 import {
   Component,
-  ContentChild,
-  ElementRef,
+  Directive,
   EventEmitter,
   HostBinding,
   Input,
@@ -14,6 +13,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ButtonComponent, ButtonVariant } from '../button/button.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+
+// eslint-disable-next-line @angular-eslint/directive-selector
+@Directive({ selector: '[tooltipContent]', standalone: true })
+export class TooltipContentDirective {}
 
 @Component({
   selector: 'sg-modal',
@@ -29,6 +33,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatDividerModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
+    TooltipContentDirective,
   ],
 })
 export class ModalComponent {
@@ -115,6 +121,11 @@ export class ModalComponent {
   @Input() centerFooter? = false;
 
   /**
+   * If provided, the modal will show a tooltip on the header
+   */
+  @Input() tooltipContent = '';
+
+  /**
    * Whether or not to show the borders on header and footer
    */
   @Input() showBorders? = true;
@@ -123,13 +134,10 @@ export class ModalComponent {
   @Output() clickedPrimary = new EventEmitter<any>();
   @Output() clickedClose = new EventEmitter<any>();
 
-  @ContentChild('tooltipContentDiv', { static: false })
-  tooltipContentDiv?: ElementRef | null = null;
-
   constructor() {}
 
   get hasTooltipContent(): boolean {
-    return !!this.tooltipContentDiv;
+    return !!this.tooltipContent;
   }
 
   handleCloseButton(): void {
