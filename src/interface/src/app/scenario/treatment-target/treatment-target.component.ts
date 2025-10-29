@@ -149,14 +149,11 @@ export class TreatmentTargetComponent
       if (!projectAreaCount?.value || !acresPerProjectArea?.value) {
         return null;
       }
-      // ensure that the total number of acres in the project area is
+      // ensure that the target number of acres per the project area is
       // at least equal to the min acreage required for the selected stand size.
       //  For example, if the user selects a medium stand size,
       //  the target project area acreage must be at least 100 acres.
-      if (
-        projectAreaCount?.value * acresPerProjectArea.value <
-        this.minAcreage
-      ) {
+      if (acresPerProjectArea.value < this.minAcreage) {
         return { invalidMinAcres: true };
       }
       return null;
