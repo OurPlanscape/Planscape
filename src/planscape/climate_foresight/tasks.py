@@ -1,6 +1,5 @@
 import logging
 
-from celery import shared_task
 from django.db import transaction
 
 from climate_foresight.models import ClimateForesightRunInputDataLayer
@@ -10,16 +9,16 @@ from climate_foresight.services import (
 )
 from datasets.models import DataLayerStatus
 from datasets.tasks import datalayer_uploaded
+from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
 
-@shared_task(
-    bind=True,
+@app.task(
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3, "countdown": 5},
 )
-def calculate_climate_foresight_layer_statistics(self, input_datalayer_id: int) -> None:
+def calculate_climate_foresight_layer_statistics(input_datalayer_id: int) -> None:
     """
     Calculate percentile thresholds for a climate foresight input data layer.
 
@@ -32,7 +31,7 @@ def calculate_climate_foresight_layer_statistics(self, input_datalayer_id: int) 
     """
     try:
         input_dl = ClimateForesightRunInputDataLayer.objects.select_related(
-            "datalayer", "run"
+            "datalayer", "run", "run__planning_area"
         ).get(pk=input_datalayer_id)
 
         log.info(
@@ -40,21 +39,25 @@ def calculate_climate_foresight_layer_statistics(self, input_datalayer_id: int) 
             f"(datalayer {input_dl.datalayer.id})"
         )
 
-        if input_dl.statistics_calculated:
+        if input_dl.statistics is not None:
             return
 
-        percentiles = calculate_layer_percentiles(
+        planning_area_geometry = input_dl.run.planning_area.geometry
+
+        result = calculate_layer_percentiles(
             input_layer=input_dl.datalayer,
+            planning_area_geometry=planning_area_geometry,
         )
 
         with transaction.atomic():
-            input_dl.outlier_thresholds = percentiles["outlier_thresholds"]
-            input_dl.statistics_calculated = True
+            input_dl.statistics = result["statistics"]
             input_dl.save()
 
+        stats = result["statistics"]
         log.info(
-            f"Successfully calculated percentiles for input layer {input_dl.id}. "
-            f"Thresholds: {percentiles['outlier_thresholds']}"
+            f"Successfully calculated statistics for input layer {input_dl.id}. "
+            f"Stats: min={stats['min']:.2f}, max={stats['max']:.2f}, "
+            f"percentiles={stats['percentiles']}"
         )
 
     except ClimateForesightRunInputDataLayer.DoesNotExist:
@@ -68,28 +71,28 @@ def calculate_climate_foresight_layer_statistics(self, input_datalayer_id: int) 
         raise
 
 
-@shared_task(
-    bind=True,
+@app.task(
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3, "countdown": 5},
 )
-def normalize_climate_foresight_input_layer(self, input_datalayer_id: int) -> None:
+def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> None:
     """
     Normalize a climate foresight input data layer asynchronously.
 
     This task:
     1. Reads the original raster
-    2. Applies auto-normalization
-    3. Creates a new normalized DataLayer
-    4. Links it to the ClimateForesightRunInputDataLayer
-    5. Processes the normalized layer (COG, hash, etc.)
+    2. Clips the raster to the planning area
+    3. Applies auto-normalization
+    4. Creates a new normalized DataLayer
+    5. Links it to the ClimateForesightRunInputDataLayer
+    6. Processes the normalized layer (COG, hash, etc.)
 
     Args:
         input_datalayer_id: ID of the ClimateForesightRunInputDataLayer to normalize
     """
     try:
         input_dl = ClimateForesightRunInputDataLayer.objects.select_related(
-            "datalayer", "run"
+            "datalayer", "run", "run__planning_area"
         ).get(pk=input_datalayer_id)
 
         log.info(
@@ -104,10 +107,13 @@ def normalize_climate_foresight_input_layer(self, input_datalayer_id: int) -> No
             )
             return
 
+        planning_area_geometry = input_dl.run.planning_area.geometry
+
         result = normalize_raster_layer(
             input_layer=input_dl.datalayer,
             run_id=input_dl.run.id,
             created_by=input_dl.run.created_by,
+            planning_area_geometry=planning_area_geometry,
         )
 
         normalized_layer = result["datalayer"]

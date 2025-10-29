@@ -1,36 +1,79 @@
 import logging
 import tempfile
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Tuple
 from uuid import uuid4
 
 import numpy as np
 import rasterio
-from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.gis.geos import MultiPolygon
+from rasterio.mask import mask as rasterio_mask
 
-from core import s3, gcs
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
-from datasets.services import create_datalayer, get_object_name, get_storage_url
+from datasets.services import create_datalayer, get_storage_url
 from gis.info import get_gdal_env
-from gis.rasters import to_planscape
+from gis.rasters import to_planscape_streaming
 from scipy import stats
 
 log = logging.getLogger(__name__)
 
 
+def _get_clipped_raster_data(
+    src: rasterio.DatasetReader,
+    geometry: MultiPolygon,
+) -> Tuple[np.ndarray, Any, Optional[float]]:
+    """
+    Read raster data clipped to a planning area geometry.
+
+    Args:
+        src: Open rasterio dataset
+        geometry: MultiPolygon to clip to (in EPSG:4269)
+
+    Returns:
+        Tuple of (clipped_data, transform, nodata)
+    """
+    from rasterio.warp import transform_geom
+
+    nodata = src.nodata
+
+    geom_geojson = {
+        "type": geometry.geom_type,
+        "coordinates": geometry.coords,
+    }
+
+    if src.crs and src.crs.to_epsg() != 4269:
+        geom_geojson = transform_geom(
+            src_crs="EPSG:4269",
+            dst_crs=src.crs,
+            geom=geom_geojson,
+        )
+
+    clipped_data, clipped_transform = rasterio_mask(
+        src,
+        [geom_geojson],
+        crop=True,
+        filled=True,
+        nodata=nodata if nodata is not None else -9999,
+    )
+
+    return clipped_data[0], clipped_transform, nodata
+
+
 def calculate_layer_percentiles(
     input_layer: DataLayer,
+    planning_area_geometry: MultiPolygon,
     target_sample_size: int = 10_000_000,
 ) -> Dict[str, Any]:
     """
-    Calculate percentile thresholds for a data layer using downsampled raster.
+    Calculate percentile thresholds for a data layer clipped to a planning area.
 
     This is a lightweight operation for frontend visualization (favorability charts).
     It only calculates percentiles and does not determine transformations.
 
     Args:
         input_layer: The input DataLayer to analyze
+        planning_area_geometry: MultiPolygon to clip the raster to (in EPSG:4269)
         target_sample_size: Target number of pixels for downsampled raster (default 10M)
 
     Returns:
@@ -45,18 +88,24 @@ def calculate_layer_percentiles(
 
     with rasterio.Env(**get_gdal_env()):
         with rasterio.open(input_layer.url) as src:
-            nodata = src.nodata
-            total_pixels = src.height * src.width
+            clipped_data, _, nodata = _get_clipped_raster_data(
+                src, planning_area_geometry
+            )
+
+            total_pixels = clipped_data.size
 
             downsample_factor = max(1, int(np.sqrt(total_pixels / target_sample_size)))
-            out_height = src.height // downsample_factor
-            out_width = src.width // downsample_factor
 
-            downsampled = src.read(
-                1,
-                out_shape=(out_height, out_width),
-                resampling=rasterio.enums.Resampling.average,
-            )
+            from scipy.ndimage import zoom
+
+            if downsample_factor > 1:
+                downsampled = zoom(
+                    clipped_data,
+                    (1 / downsample_factor, 1 / downsample_factor),
+                    order=1,  # bilinear
+                )
+            else:
+                downsampled = clipped_data
 
             if nodata is not None:
                 valid_mask = downsampled != nodata
@@ -65,15 +114,23 @@ def calculate_layer_percentiles(
 
             sample_array = downsampled[valid_mask].astype(np.float32)
 
-            percentiles = [5, 10, 90, 95]
-            percentile_values = np.percentile(sample_array, percentiles)
-            outlier_thresholds = {
-                f"p{p}": float(percentile_values[i]) for i, p in enumerate(percentiles)
+            percentile_keys = [5, 10, 90, 95]
+            percentile_values = np.percentile(sample_array, percentile_keys)
+            percentiles = {
+                f"p{p}": float(percentile_values[i])
+                for i, p in enumerate(percentile_keys)
             }
 
-            return {
-                "outlier_thresholds": outlier_thresholds,
+            statistics = {
+                "min": float(np.min(sample_array)),
+                "max": float(np.max(sample_array)),
+                "mean": float(np.mean(sample_array)),
+                "std": float(np.std(sample_array)),
+                "count": int(len(sample_array)),
+                "percentiles": percentiles,
             }
+
+            return {"statistics": statistics}
 
 
 def calculate_layer_statistics(
@@ -230,7 +287,7 @@ def _safe_ad_test(data: np.ndarray) -> float:
     """
 
     try:
-        result: AndersonResult = stats.anderson(data, dist="norm")
+        result = stats.anderson(data, dist="norm")
         statistic: float = result.statistic
 
         if statistic < result.critical_values[4]:
@@ -328,14 +385,16 @@ def normalize_raster_layer(
     input_layer: DataLayer,
     run_id: int,
     created_by: User,
+    planning_area_geometry: MultiPolygon,
 ) -> Dict[str, Any]:
     """
-    Normalize a raster data layer for climate foresight analysis.
+    Normalize a raster data layer clipped to a planning area for climate foresight analysis.
 
     Args:
         input_layer: The input DataLayer to normalize
         run_id: The ID of the ClimateForesightRun this belongs to
         created_by: User creating the normalized layer
+        planning_area_geometry: MultiPolygon to clip the raster to (in EPSG:4269)
 
     Returns:
         Dictionary containing:
@@ -349,7 +408,27 @@ def normalize_raster_layer(
         raise ValueError("Input layer must have a valid URL")
 
     with rasterio.Env(**get_gdal_env()):
+        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+            temp_clipped_path = tmp.name
+
         with rasterio.open(input_layer.url) as src:
+            clipped_data, clipped_transform, nodata = _get_clipped_raster_data(
+                src, planning_area_geometry
+            )
+
+            profile = src.profile.copy()
+            profile.update(
+                {
+                    "height": clipped_data.shape[0],
+                    "width": clipped_data.shape[1],
+                    "transform": clipped_transform,
+                }
+            )
+
+            with rasterio.open(temp_clipped_path, "w", **profile) as dst:
+                dst.write(clipped_data, 1)
+
+        with rasterio.open(temp_clipped_path) as src:
             profile = src.profile.copy()
             nodata = src.nodata
 
@@ -484,29 +563,22 @@ def normalize_raster_layer(
 
                     dst.write(output_block, 1, window=window)
 
-    processed_files = to_planscape(temp_path)
-    final_raster = processed_files[0]
-
     uuid = str(uuid4())
     dataset = input_layer.dataset
     organization = input_layer.organization
 
     original_name = f"normalized_{uuid}.tif"
-    object_name = get_object_name(
-        organization_id=organization.pk,
-        uuid=uuid,
-        original_name=original_name,
-    )
+
     storage_url = get_storage_url(
         organization_id=organization.pk,
         uuid=uuid,
         original_name=original_name,
     )
 
-    if settings.PROVIDER == "gcp":
-        gcs.upload_file_via_cli(object_name, final_raster)
-    else:
-        s3.upload_file_via_s3_client(object_name, final_raster)
+    to_planscape_streaming(
+        input_file=temp_path,
+        output_file=storage_url,
+    )
 
     metadata = {
         "modules": {
@@ -541,8 +613,7 @@ def normalize_raster_layer(
 
     try:
         Path(temp_path).unlink(missing_ok=True)
-        for processed_file in processed_files:
-            Path(processed_file).unlink(missing_ok=True)
+        Path(temp_clipped_path).unlink(missing_ok=True)
     except Exception as e:
         log.warning(f"Failed to clean up temp files: {e}")
 
