@@ -9,7 +9,7 @@
   </p>
   <form *ngIf="form" [formGroup]="form!">
     <!-- Target Number of Project Areas -->
-    <div>
+    <div class="form-row">
       <mat-form-field
         class="input-field"
         appearance="outline"
@@ -38,14 +38,14 @@
             form.get('max_project_count')?.touched &&
             form.get('max_project_count')?.hasError('max')
           ">
-          Target number of project areas exceeds available stands (max:
+          Target exceeds available stands (max:
           {{ maxProjectValue }}).
         </div>
       </div>
     </div>
 
     <!-- Target Number of Acres in Each Project Area-->
-    <div>
+    <div class="form-row">
       <mat-form-field
         class="input-field"
         appearance="outline"
@@ -67,7 +67,9 @@
         </div>
 
         <!-- Errors -->
-        <div class="help-text error" *ngIf="form.touched && form.invalid">
+        <div
+          class="help-text error"
+          *ngIf="form.get('max_area')?.touched && form.invalid">
           <ng-container *ngIf="form.get('max_area')?.hasError('required')">
             Field is required
           </ng-container>
@@ -93,7 +95,7 @@
     </div>
 
     <!-- Treatment Cost Per Acre -->
-    <div class="separator">
+    <div>
       <mat-form-field
         class="input-field"
         appearance="outline"
