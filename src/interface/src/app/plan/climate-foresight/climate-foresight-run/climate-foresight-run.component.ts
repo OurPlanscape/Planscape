@@ -49,7 +49,7 @@ type SaveStepData = {
   styleUrls: ['./climate-foresight-run.component.scss'],
 })
 export class ClimateForesightRunComponent implements OnInit {
-  @ViewChild(StepsComponent) stepsComponent?: StepsComponent<any>;
+  @ViewChild(StepsComponent) stepsComponent?: StepsComponent<SaveStepData>;
   @ViewChild('dataLayerSelection')
   dataLayerSelectionComponent?: DataLayerSelectionComponent;
   @ViewChild('assignFavorability')
@@ -188,7 +188,7 @@ export class ClimateForesightRunComponent implements OnInit {
     }
   }
 
-  saveStepData = (data: SaveStepData): Observable<boolean> => {
+  saveStepData = (data: Partial<SaveStepData>): Observable<boolean> => {
     if (!this.runId) {
       this.snackBar.open('No run ID found', 'Close', { duration: 3000 });
       return of(false);
@@ -208,7 +208,7 @@ export class ClimateForesightRunComponent implements OnInit {
     }
   };
 
-  private saveDataLayers(data: SaveStepData): Observable<boolean> {
+  private saveDataLayers(data: Partial<SaveStepData>): Observable<boolean> {
     if (!data || !data.dataLayers || !this.runId) {
       this.snackBar.open('Please select at least one data layer', 'Close', {
         duration: 3000,
@@ -267,7 +267,7 @@ export class ClimateForesightRunComponent implements OnInit {
     });
   }
 
-  private saveFavorability(data: SaveStepData): Observable<boolean> {
+  private saveFavorability(data: Partial<SaveStepData>): Observable<boolean> {
     if (!data || !data.favorability || !this.runId) {
       this.snackBar.open('Please assign favorability for all layers', 'Close', {
         duration: 3000,
@@ -278,7 +278,7 @@ export class ClimateForesightRunComponent implements OnInit {
 
     const updatedInputDatalayers = this.currentRun?.input_datalayers?.map(
       (input) => {
-        const favorabilityAssignment = data.favorability.find(
+        const favorabilityAssignment = data.favorability!.find(
           (f: Partial<InputDatalayer>) => f.datalayer === input.datalayer
         );
         return {
