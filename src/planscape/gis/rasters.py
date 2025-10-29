@@ -159,6 +159,142 @@ def warp(
             return output_file
 
 
+def to_cog_streaming(
+    input_file: str,
+    output_file: str,
+    cog_profile: str = "deflate",
+    overview_level: int = 4,
+    in_memory: bool = False,
+) -> str:
+    """
+    Convert a raster to Cloud Optimized GeoTIFF (COG) format using streaming.
+
+    Uses rio-cogeo's streaming approach to minimize memory usage by processing
+    the raster in blocks, not loading everything into memory.  Supports writing directly to cloud storage
+
+    Args:
+        input_file: Path to input raster file (local or cloud URL)
+        output_file: Path for output COG file (local or cloud URL)
+        cog_profile: COG profile to use (default: "deflate")
+        overview_level: Pyramid overview level (default: 4)
+        in_memory: Process in memory (default: False) - useful for small rasters
+
+    Returns:
+        Path/URL to the output COG file
+
+    Example:
+        >>> # Local file
+        >>> cog_file = to_cog_streaming("/tmp/normalized.tif", "/tmp/output_cog.tif")
+        >>>
+        >>> # Direct to GCS
+        >>> cog_url = to_cog_streaming("/tmp/normalized.tif", "gs://bucket/path/output.tif")
+    """
+    log.info(
+        f"Converting raster to COG format (streaming): {input_file} -> {output_file}"
+    )
+
+    output_profile = cog_profiles.get(cog_profile)
+    output_profile.update(dict(BIGTIFF="IF_SAFER"))
+
+    config = get_gdal_env()
+
+    cog_translate(
+        input_file,
+        output_file,
+        output_profile,
+        config=config,
+        in_memory=in_memory,
+        quiet=True,
+        web_optimized=True,
+        overview_level=overview_level,
+    )
+
+    log.info(f"COG conversion complete: {output_file}")
+    return output_file
+
+
+def to_planscape_streaming(input_file: str, output_file: str) -> str:
+    """
+    Memory-efficient version of to_planscape() that processes a single file.
+
+    This function:
+    1. Checks if the raster is in EPSG:3857 (Planscape CRS)
+    2. Warps to EPSG:3857 if needed (streaming block-by-block)
+    3. Validates if already COG format
+    4. Converts to COG if needed (streaming, not in-memory)
+
+    Use this when you want the same functionality as to_planscape() but with
+    better memory efficiency and more control over output location.
+
+    Args:
+        input_file: Path to input raster file
+        output_file: Path for final output COG file
+
+    Returns:
+        Path to the output COG file in EPSG:3857 format
+
+    Example:
+        >>> normalized = "/tmp/normalized.tif"
+        >>> final = to_planscape_streaming(normalized, "/tmp/final_cog.tif")
+    """
+    from pathlib import Path
+    import tempfile
+
+    log.info(f"Converting raster to Planscape format (streaming): {input_file}")
+
+    _, layer_info = get_layer_info(input_file=input_file)
+    layer_crs = layer_info.get("crs")
+
+    if layer_crs is None:
+        raise ValueError(
+            "Cannot convert to planscape format if raster file does not have CRS information."
+        )
+
+    _epsg, srid = layer_crs.split(":")
+    target_crs = f"EPSG:{settings.RASTER_CRS}"
+
+    if int(srid) != settings.RASTER_CRS:
+        log.info(f"CRS conversion needed: {layer_crs} -> {target_crs}")
+        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+            warped_file = tmp.name
+
+        warp(
+            input_file=input_file,
+            output_file=warped_file,
+            crs=target_crs,
+        )
+        processing_file = warped_file
+    else:
+        log.info(f"Raster already in {target_crs}")
+        processing_file = input_file
+        warped_file = None
+
+    is_valid, _errors, warnings = cog_validate(
+        src_path=processing_file,
+        quiet=True,
+    )
+
+    if not is_valid:
+        log.info("Converting to COG format (not already COG)")
+        to_cog_streaming(
+            input_file=processing_file,
+            output_file=output_file,
+            in_memory=False,  # perf: could determine based on raster size
+        )
+    else:
+        log.info(f"Already a valid COG. Warnings: {warnings}")
+        if processing_file != output_file:
+            import shutil
+
+            shutil.copy2(processing_file, output_file)
+
+    if warped_file:
+        Path(warped_file).unlink(missing_ok=True)
+
+    log.info(f"Planscape format conversion complete: {output_file}")
+    return output_file
+
+
 def data_mask(
     raster_path: str,
     connectivity: int = 8,
