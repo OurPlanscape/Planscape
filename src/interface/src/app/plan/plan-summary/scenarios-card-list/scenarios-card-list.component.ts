@@ -265,6 +265,7 @@ export class ScenariosCardListComponent {
         this.dialog.open(ScenarioSetupModalComponent, {
           data: {
             planId: this.plan.id,
+            fromClone: false,
             scenario: s,
           },
         });

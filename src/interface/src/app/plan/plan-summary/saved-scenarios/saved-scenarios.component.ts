@@ -187,6 +187,7 @@ export class SavedScenariosComponent implements OnInit {
       maxWidth: '560px',
       data: {
         planId: this.plan?.id,
+        fromClone: false,
       },
     });
   }
