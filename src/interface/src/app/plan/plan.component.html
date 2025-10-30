@@ -8,7 +8,7 @@
     *ngIf="planNotFound"
     resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
-    <div class="plan-summary-panel full-height">
+    <div class="plan-summary-panel">
       <sg-notes-sidebar
         [showHeader]="true"
         [notes]="sidebarNotes"
