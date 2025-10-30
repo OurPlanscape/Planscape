@@ -84,10 +84,14 @@
             {{ maxAreaValue | number: '1.0-0' }}.
           </ng-container>
 
-          <ng-container  *ngIf="form.get('max_area')?.touched && form.hasError('invalidMinAcres')">
-          Target acres per project area must be at least {{ minAcreage }} acres.
+          <ng-container
+            *ngIf="
+              form.get('max_area')?.touched && form.hasError('invalidMinAcres')
+            ">
+            Target acres per project area must be at least
+            {{ minAcreage }} acres.
           </ng-container>
-          
+
           <ng-container *ngIf="form.hasError('invalidWorkingArea')">
             Your target exceeds the treatable area.
           </ng-container>
