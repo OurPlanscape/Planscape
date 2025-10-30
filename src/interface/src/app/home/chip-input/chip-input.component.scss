@@ -10,9 +10,11 @@
       display: block;
     }
 
-    .mat-chip-list-wrapper {
+    .mat-mdc-text-field-wrapper {
       margin: 0;
       gap: 4px;
+      font-size: 14px;
+      min-height: 40px;
 
       .mat-input-element {
         padding: 3px 0;
@@ -21,13 +23,13 @@
       }
     }
 
-    .mat-form-field-appearance-outline .mat-form-field-outline {
-      top: 0;
+    .mdc-evolution-chip-set .mdc-evolution-chip {
+      margin-left: 0;
+      margin-right: 6px;
     }
 
-    .mat-chip {
-      @include small-input-label();
-      color: $color-dark-gray;
+    .mat-form-field-appearance-outline .mat-form-field-outline {
+      top: 0;
     }
 
     .mat-form-field-infix {
@@ -40,12 +42,12 @@
     }
 
 
-    mat-chip.mat-standard-chip {
-      background-color: white;
+    .custom-chip {
+      --mdc-chip-container-height: 30px;
+      --mdc-chip-elevated-container-color: $color-white;
+      --mdc-chip-label-text-weight: 500;
       border: 1px solid $color-dark-gray;
-      margin: 0;
-      padding: 4px 8px;
-      min-height: 30px;
+
 
       .mat-chip-remove {
         opacity: 0.9;

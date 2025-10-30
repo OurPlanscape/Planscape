@@ -87,10 +87,17 @@ describe('Step4LegacyComponent', () => {
     expect(result).toEqual({ invalidMinAcres: true });
   });
 
-  it('should return error when  target acres does not meet minimum for large stand size', () => {
+  it('should return error when target acres does not meet minimum for large stand size', () => {
     const validator = (component as any).minAreaValidator();
     component.minAcreage = 500;
     const result = validator(updateForm(9, 400)); // 400 < 500
+    expect(result).toEqual({ invalidMinAcres: true });
+  });
+
+  it('should return error if proj area field is empty but target is less than large stand size', () => {
+    const validator = (component as any).minAreaValidator();
+    component.minAcreage = 500;
+    const result = validator(updateForm(undefined, 400)); // 400 < 500
     expect(result).toEqual({ invalidMinAcres: true });
   });
 

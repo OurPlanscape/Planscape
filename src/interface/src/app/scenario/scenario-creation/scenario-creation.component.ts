@@ -102,7 +102,6 @@ export class ScenarioCreationComponent
   scenarioId = this.route.snapshot.data['scenarioId'];
   // TODO: we can remove this status check when the DRAFTS FF is removed
   scenarioStatus = 'NOT_STARTED';
-  finished = false;
 
   form = new FormGroup({
     scenarioName: new FormControl('', [Validators.required]),
@@ -120,7 +119,7 @@ export class ScenarioCreationComponent
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
-    if (!this.finished) {
+    if (!this.newScenarioState.isDraftFinishedSnapshot()) {
       /* Most browsers will display their own default dialog to confirm navigation away
         from a window or URL. e.g, "Changes that you made may not be saved"
 
@@ -205,8 +204,9 @@ export class ScenarioCreationComponent
     return newState as Partial<ScenarioCreation>;
   }
 
+  // TODO: we can remove this entire method once we remove SCENARIO_DRAFTS FF
   canDeactivate(): Observable<boolean> | boolean {
-    if (this.finished) {
+    if (this.newScenarioState.isDraftFinishedSnapshot()) {
       return true;
     }
     const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
@@ -282,6 +282,7 @@ export class ScenarioCreationComponent
       this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
       this.scenarioStatus === 'DRAFT'
     ) {
+      this.newScenarioState.setDraftFinished(true);
       this.showRunScenarioConfirmation();
     } else {
       this.finishFromFullConfig();
@@ -307,7 +308,6 @@ export class ScenarioCreationComponent
       )
       .subscribe({
         next: (result) => {
-          this.finished = true; // ensure we don't get an alert when we navigate away
           if (result.id) {
             this.scenarioState.setScenarioId(result.id);
             this.scenarioState.reloadScenario();
@@ -349,7 +349,7 @@ export class ScenarioCreationComponent
         )
         .subscribe({
           next: (result) => {
-            this.finished = true;
+            this.newScenarioState.setDraftFinished(true);
             this.router.navigate([result.id], { relativeTo: this.route });
           },
           error: () => {
