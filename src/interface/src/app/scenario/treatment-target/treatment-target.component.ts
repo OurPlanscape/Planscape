@@ -67,7 +67,7 @@ export class TreatmentTargetComponent
   }
 
   ngOnInit(): void {
-    this.summary$.pipe(untilDestroyed(this), take(1)).subscribe((summary) => {
+    this.summary$.pipe(untilDestroyed(this)).subscribe((summary) => {
       this.maxAreaValue = summary.treatable_area || 0;
       this.maxProjectValue = summary.treatable_stand_count;
       this.form = new FormGroup(
@@ -139,17 +139,16 @@ export class TreatmentTargetComponent
 
   private minAreaValidator(): ValidatorFn {
     return (form): ValidationErrors | null => {
-      const projectAreaCount = form.get('max_project_count');
       const acresPerProjectArea = form.get('max_area');
 
-      if (!projectAreaCount?.value || !acresPerProjectArea?.value) {
+      if (!acresPerProjectArea?.value) {
         return null;
       }
       // ensure that the target number of acres per the project area is
       // at least equal to the min acreage required for the selected stand size.
       //  For example, if the user selects a medium stand size,
       //  the target project area acreage must be at least 100 acres.
-      if (acresPerProjectArea.value < this.minAcreage) {
+      if (acresPerProjectArea?.value < this.minAcreage) {
         return { invalidMinAcres: true };
       }
       return null;
