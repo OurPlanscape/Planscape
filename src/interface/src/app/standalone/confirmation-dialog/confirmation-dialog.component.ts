@@ -3,16 +3,21 @@ import { ModalComponent } from '@styleguide';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-after-duplicate-treatment-dialog',
+  selector: 'app-confirmation-dialog',
   standalone: true,
   imports: [ModalComponent],
-  templateUrl: './after-duplicate-treatment-dialog.component.html',
-  styleUrl: './after-duplicate-treatment-dialog.component.scss',
+  templateUrl: './confirmation-dialog.component.html',
 })
-export class AfterDuplicateTreatmentDialogComponent {
+export class ConfirmationDialogComponent {
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { name: string },
-    public dialogRef: MatDialogRef<AfterDuplicateTreatmentDialogComponent>
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      title: string;
+      body: string;
+      primaryCta?: string;
+      secondaryCta?: string;
+    },
+    public dialogRef: MatDialogRef<ConfirmationDialogComponent>
   ) {}
 
   cancel(): void {

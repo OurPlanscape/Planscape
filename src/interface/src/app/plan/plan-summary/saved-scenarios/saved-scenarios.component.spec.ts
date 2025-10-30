@@ -27,6 +27,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-card-list.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PlanState } from '../../plan.state';
+import { MatCardModule } from '@angular/material/card';
 
 // Helper to build a minimal ScenarioRow
 function makeScenario(id: number) {
@@ -80,6 +81,7 @@ describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
         FeaturesModule,
         ButtonComponent,
         MatTabsModule,
+        MatCardModule,
         RouterTestingModule,
       ],
       declarations: [

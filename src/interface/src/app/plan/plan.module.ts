@@ -15,7 +15,6 @@ import { RouterModule } from '@angular/router';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { SharedModule } from '@shared';
 import { WINDOW_PROVIDERS } from '@services';
-import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
 import {
   BannerComponent,
@@ -41,12 +40,7 @@ import { MatCardModule } from '@angular/material/card';
 
 /** Components used in the plan flow. */
 @NgModule({
-  declarations: [
-    AreaNotesComponent,
-    DeleteNoteDialogComponent,
-    PlanComponent,
-    SavedScenariosComponent,
-  ],
+  declarations: [AreaNotesComponent, PlanComponent, SavedScenariosComponent],
   providers: [
     WINDOW_PROVIDERS,
     MapConfigState,

@@ -19,7 +19,6 @@ import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { CreateTreatmentDialogComponent } from '../../../scenario/create-treatment-dialog/create-treatment-dialog.component';
-import { DeleteScenarioDialogComponent } from '../../../scenario/delete-scenario-dialog/delete-scenario-dialog.component';
 import { take } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
@@ -30,6 +29,7 @@ import {
 import { FeatureService } from 'src/app/features/feature.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
+import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -181,7 +181,13 @@ export class ScenariosCardListComponent {
   showDeleteScenarioDialog(scenario: Scenario) {
     if (scenario.id) {
       this.dialog
-        .open(DeleteScenarioDialogComponent, { data: { name: scenario.name } })
+        .open(DeleteDialogComponent, {
+          data: {
+            title: `Delete "${scenario?.name}"?`,
+            body: `Are you sure you want to delete this scenario? All configuration details and
+                    results will be permanently deleted, and this action cannot be undone.`,
+          },
+        })
         .afterClosed()
         .pipe(take(1))
         .subscribe((name) => {

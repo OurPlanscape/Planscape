@@ -1,19 +1,17 @@
-:host {
-    display: block;
+@import "colors";
+
+.form-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: $color-text-dark;
+  margin-bottom: 4px;
+
+  span {
+    color: $color-error;
+  }
 }
 
-mat-form-field {
-    min-width: 480px;
-}
-
-.name-field {
-    margin-top: 32px;
-}
-
-.title {
-    margin: 24px 24px 0;
-}
-
-mat-dialog-actions {
-    padding: 0 24px 16px;
+.form-field {
+  width: 100%;
 }

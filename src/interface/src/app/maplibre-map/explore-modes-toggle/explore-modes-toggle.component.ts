@@ -9,10 +9,10 @@ import { DrawService } from '../draw.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
-import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { UploadPlanningAreaBoxComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
 import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
 import { CreatePlanDialogComponent } from '../../explore/create-plan-dialog/create-plan-dialog.component';
+import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -114,10 +114,16 @@ export class ExploreModesToggleComponent {
 
   private openConfirmExitDialog(): void {
     this.dialog
-      .open(ConfirmExitDrawingModalComponent)
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Discard Polygon(s)?',
+          body: 'Your polygon(s) have not been saved, are you sure you want to discard?',
+          primaryCta: 'Discard',
+        },
+      })
       .afterClosed()
-      .subscribe((modalResponse: any) => {
-        if (modalResponse === true) {
+      .subscribe((confirms: boolean) => {
+        if (confirms) {
           this.mapConfigState.enterViewMode();
         }
       });

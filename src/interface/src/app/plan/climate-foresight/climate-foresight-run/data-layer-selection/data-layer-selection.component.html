@@ -67,7 +67,6 @@
               ? 'Search layers...'
               : 'Search by dataset, metric, category'
           "
-          [inputHeight]="'regular'"
           (searchString)="onSearchChange($event)"
           [searchValue]="searchTerm"></sg-search-bar>
         <span class="selection-hint" *ngIf="!canSelectMore"

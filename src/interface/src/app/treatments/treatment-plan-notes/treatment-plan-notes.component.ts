@@ -2,14 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NotesSidebarComponent, NotesSidebarState } from '@styleguide';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import {
+  NOTE_DELETE_DIALOG,
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
+} from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Note, TreatmentPlanNotesService } from '../../services/notes.service';
 import { MatDialog } from '@angular/material/dialog';
-import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
-import { BehaviorSubject, take, distinctUntilChanged } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, take } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -64,7 +68,9 @@ export class TreatmentPlanNotesComponent implements OnInit {
   }
 
   handleNoteDelete(note: Note) {
-    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    const dialogRef = this.dialog.open(DeleteDialogComponent, {
+      data: NOTE_DELETE_DIALOG,
+    });
     dialogRef
       .afterClosed()
       .pipe(take(1))

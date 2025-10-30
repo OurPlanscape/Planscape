@@ -1,14 +1,14 @@
 import {
-  Meta,
-  StoryObj,
-  moduleMetadata,
   argsToTemplate,
+  Meta,
+  moduleMetadata,
+  StoryObj,
 } from '@storybook/angular';
 import { ModalComponent } from '../modal/modal.component';
 import { ModalInfoComponent } from './modal-info.component';
 import {
-  MatDialogModule,
   MAT_DIALOG_DATA,
+  MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -37,11 +37,10 @@ const meta: Meta<ModalInfoComponent> = {
     props: args,
     template: `<div ${containerStyle}>
         <sg-modal>
-        <div modalBodyContent>
-          <sg-modal-info ${argsToTemplate(args)}>
-          </sg-modal-info>
-          </div>
-        </sg-modal><div>`,
+          <sg-modal-info modalInfoBox ${argsToTemplate(args)} ></sg-modal-info>
+          <div modalBodyContent>The rest of the modal content.</div>
+        </sg-modal>
+        <div>`,
   }),
 };
 

@@ -82,10 +82,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
    * Allow the parent component to set a debounce
    */
   @Input() debounceInterval: number = 200;
-  /**
-   * Specify the height of the input form component
-   */
-  @Input() inputHeight: 'small' | 'regular' = 'small';
+
   /**
    * Determines if we should show a close button
    */

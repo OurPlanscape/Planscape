@@ -3,7 +3,6 @@
     class="search-bar"
     [debounceInterval]="160"
     searchPlaceholder="Search by dataset, metric, category, org..."
-    [inputHeight]="'regular'"
     (searchString)="search($event)"
     [showCloseButton]="true"
     (clearSearch)="clearSearch()"

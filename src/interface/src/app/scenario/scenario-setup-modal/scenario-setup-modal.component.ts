@@ -27,7 +27,6 @@ import { Scenario } from '@types';
     InputFieldComponent,
   ],
   templateUrl: './scenario-setup-modal.component.html',
-  styleUrl: './scenario-setup-modal.component.scss',
 })
 export class ScenarioSetupModalComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<ScenarioSetupModalComponent>);
@@ -37,6 +36,7 @@ export class ScenarioSetupModalComponent implements OnInit {
   });
   submitting = false;
   errorMessage: string = '';
+
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: { planId: number; scenario?: Scenario }, // Access the passed data
