@@ -102,7 +102,6 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         DataLayer,
         on_delete=models.SET_NULL,
         related_name="climate_foresight_normalized_for",
-        blank=True,
         null=True,
         help_text="The normalized version of this input data layer (for Climate Foresight analysis only)",
     )
