@@ -1,0 +1,152 @@
+@import "colors";
+
+$circle-size: 40px;
+$icon-size: 24px;
+$line-width: 2px;
+$line-top-offset: 17px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 40px; // TODO
+  box-sizing: border-box;
+}
+
+.title {
+  color: #000;
+  text-align: right;
+  /* Label/Top-level */
+  font-family: "Public Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 14px; /* 100% */
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  position: relative;
+
+  // this is the border that kinda does the arrows.
+  &::before {
+
+    position: absolute;
+    //border: $line-width solid #B6C9CC;/
+    outline: 2px solid #B6C9CC; // instead of border
+    // subtract half the circle size and half the line width so it looks centered relative
+    // to the circle.
+    width: calc(100% - #{($circle-size + $line-width  ) / 2 });
+    height: 103%;
+    content: "";
+    border-radius: 14px;
+    top: $line-top-offset;
+  }
+
+
+}
+
+.step {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 5px;
+  align-items: flex-end;
+}
+
+
+.name {
+  color: #000;
+  font-family: "Public Sans";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 22px;
+  text-transform: uppercase;
+  text-align: right;
+
+  padding-inline: 16px;
+  z-index: 12;
+  position: relative;
+
+  &.first {
+    background-color: white;
+  }
+
+  &.first::after {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    content: "";
+
+    left: -10px;
+    top: 2px;
+    background-size: contain;
+    background-image: url('/assets/svg/icons/greater-than.svg');
+  }
+}
+
+.description {
+  color: #767575; //var(--Neutral-Md-Gray, );
+  text-align: right;
+  /* Small Paragraph */
+  font-family: "Public Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  padding-inline: 16px;
+}
+
+.icon-wrapper {
+  position: relative;
+
+  &.arrow::after {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    content: "";
+    top: -20px;
+    background-size: contain;
+    transform: rotate(90deg);
+    background-image: url('/assets/svg/icons/greater-than.svg');
+    left: 12px;
+  }
+}
+
+.icon-wrapper::before {
+  position: absolute;
+  background-color: white;
+  width: 60px;
+  height: 60px;
+  content: "";
+  border-radius: 100%;
+  top: -10px;
+  left: -10px;
+}
+
+
+.icon {
+  width: $circle-size;
+  height: $circle-size;
+  border-radius: 100%;
+  background-color: #356A72; //teal
+  position: relative;
+  background-size: $icon-size $icon-size;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+
