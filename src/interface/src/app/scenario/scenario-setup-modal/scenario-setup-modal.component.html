@@ -38,8 +38,13 @@
             formControlName="scenarioName"
             class="name-field" />
         </sg-input-field>
-        <div *ngIf="data.fromClone === true && (data.scenario?.version === 'V2' || data.scenario?.version === 'V1')">
-          This scenario was created with an older version—some steps have changed in the update.
+        <div
+          *ngIf="
+            data.fromClone === true &&
+            (data.scenario?.version === 'V2' || data.scenario?.version === 'V1')
+          ">
+          This scenario was created with an older version—some steps have
+          changed in the update.
         </div>
       </div>
     </form>
