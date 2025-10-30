@@ -81,7 +81,7 @@ export function scenarioCanHaveTreatmentPlans(
 
 export function convertFlatConfigurationToDraftPayload(
   formData: Partial<ScenarioCreation>,
-  thresholdIds: Map<string, number>
+  thresholdIds?: Map<string, number>
 ): Partial<ScenarioDraftPayload> {
   const payload: Partial<ScenarioDraftPayload> = {};
   const config: Partial<ScenarioDraftConfig> = {};
@@ -116,21 +116,23 @@ export function convertFlatConfigurationToDraftPayload(
   }
   // Constraints
   const constraints: Constraint[] = [];
-  const roadLayerId = thresholdIds.get('distance_to_roads');
-  if (formData.min_distance_from_road && roadLayerId) {
-    constraints.push({
-      datalayer: roadLayerId,
-      operator: 'lte',
-      value: formData.min_distance_from_road,
-    });
-  }
-  const slopeId = thresholdIds.get('slope');
-  if (formData.max_slope && slopeId) {
-    constraints.push({
-      datalayer: slopeId,
-      operator: 'lt',
-      value: formData.max_slope,
-    });
+  if (thresholdIds) {
+    const roadLayerId = thresholdIds.get('distance_to_roads');
+    if (formData.min_distance_from_road && roadLayerId) {
+      constraints.push({
+        datalayer: roadLayerId,
+        operator: 'lte',
+        value: formData.min_distance_from_road,
+      });
+    }
+    const slopeId = thresholdIds.get('slope');
+    if (formData.max_slope && slopeId) {
+      constraints.push({
+        datalayer: slopeId,
+        operator: 'lt',
+        value: formData.max_slope,
+      });
+    }
   }
   if (constraints.length > 0) {
     config.constraints = constraints;

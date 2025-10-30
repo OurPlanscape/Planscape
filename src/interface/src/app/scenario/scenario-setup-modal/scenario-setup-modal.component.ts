@@ -56,8 +56,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     },
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
-    private router: Router,
-    private newScenarioState: NewScenarioState
+    private router: Router
   ) {}
 
   get editMode(): boolean {
@@ -102,12 +101,6 @@ export class ScenarioSetupModalComponent implements OnInit {
 
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
     if (newScenario.id) {
-      const thresholdsIdMap = new Map<string, number>();
-      thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());
-      thresholdsIdMap.set(
-        'distance_to_roads',
-        this.newScenarioState.getDistanceToRoadsId()
-      );
       let newPayload: Partial<ScenarioDraftPayload> = {};
       if (oldScenario.version === 'V3') {
         const oldConfig: Partial<ScenarioDraftConfig> =
@@ -118,10 +111,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
         const oldConfig: Partial<ScenarioDraftConfig> =
           oldScenario.configuration;
-        newPayload = convertFlatConfigurationToDraftPayload(
-          oldConfig,
-          thresholdsIdMap
-        );
+        newPayload = convertFlatConfigurationToDraftPayload(oldConfig);
       }
       if (Number(oldScenario.treatment_goal?.id)) {
         const num = Number(oldScenario.treatment_goal?.id);
