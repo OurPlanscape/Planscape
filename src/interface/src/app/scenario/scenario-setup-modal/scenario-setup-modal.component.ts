@@ -17,9 +17,11 @@ import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
 import { Router, UrlTree } from '@angular/router';
 import { Scenario, ScenarioDraftConfig, ScenarioDraftPayload } from '@types';
-import { map } from 'rxjs';
+import { map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
+import { ForsysService } from '@services/forsys.service';
+import { ForsysData } from '../../types/module.types';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -56,8 +58,17 @@ export class ScenarioSetupModalComponent implements OnInit {
     },
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private forsysService: ForsysService
+  ) {
+    this.forsysService.forsysData$
+      .pipe(take(1))
+      .subscribe((forsys: ForsysData) => {
+        this.thresholdsData = forsys.thresholds;
+      });
+  }
+
+  thresholdsData: any = null;
 
   get editMode(): boolean {
     return this.data.scenario !== undefined && this.data.fromClone !== true;
@@ -111,7 +122,16 @@ export class ScenarioSetupModalComponent implements OnInit {
       } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
         const oldConfig: Partial<ScenarioDraftConfig> =
           oldScenario.configuration;
-        newPayload = convertFlatConfigurationToDraftPayload(oldConfig);
+        const thresholdsIdMap = new Map<string, number>();
+        thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
+        thresholdsIdMap.set(
+          'distance_to_roads',
+          this.thresholdsData.distance_from_roads?.id
+        );
+        newPayload = convertFlatConfigurationToDraftPayload(
+          oldConfig,
+          thresholdsIdMap
+        );
       }
       if (Number(oldScenario.treatment_goal?.id)) {
         const num = Number(oldScenario.treatment_goal?.id);
