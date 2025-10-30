@@ -1,4 +1,5 @@
 import { Component, inject, Inject, OnInit } from '@angular/core';
+import { NgIf } from '@angular/common';
 import {
   InputDirective,
   InputFieldComponent,
@@ -25,6 +26,7 @@ import { NewScenarioState } from '../new-scenario.state';
   standalone: true,
   imports: [
     ModalComponent,
+    NgIf,
     InputDirective,
     ReactiveFormsModule,
     InputFieldComponent,
