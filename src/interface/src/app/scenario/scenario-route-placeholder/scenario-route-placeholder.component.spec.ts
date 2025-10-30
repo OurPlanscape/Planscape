@@ -16,6 +16,7 @@ import { ViewScenarioComponent } from '../view-scenario/view-scenario.component'
 import { FeatureService } from 'src/app/features/feature.service';
 import { FEATURES_JSON } from 'src/app/features/features-config';
 import { FeaturesModule } from 'src/app/features/features.module';
+import { NewScenarioState } from '../new-scenario.state';
 
 import { ScenarioState } from '../scenario.state';
 import { AuthService } from '@services';
@@ -63,6 +64,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
         FeatureService,
         MockProvider(CurrencyPipe),
         MockProvider(AuthService, { loggedInUser$: mockUser$ }),
+        MockProvider(NewScenarioState, {}),
         MockProvider(ScenarioState, {
           currentScenarioResource$: mockScenarioResource$,
           currentScenario$: mockScenario$,
