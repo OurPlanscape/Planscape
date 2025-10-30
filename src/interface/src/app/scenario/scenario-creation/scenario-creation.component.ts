@@ -252,7 +252,10 @@ export class ScenarioCreationComponent
       'distance_to_roads',
       this.newScenarioState.getDistanceToRoadsId()
     );
-    const payload = convertFlatConfigurationToDraftPayload(data, thresholdsIdMap);
+    const payload = convertFlatConfigurationToDraftPayload(
+      data,
+      thresholdsIdMap
+    );
 
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
