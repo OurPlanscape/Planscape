@@ -19,7 +19,6 @@ import { Router, UrlTree } from '@angular/router';
 import { Scenario, ScenarioDraftConfig, ScenarioDraftPayload } from '@types';
 import { map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
-import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 
@@ -33,7 +32,6 @@ import { ForsysData } from '../../types/module.types';
     ReactiveFormsModule,
     InputFieldComponent,
   ],
-  providers: [NewScenarioState],
   templateUrl: './scenario-setup-modal.component.html',
   styleUrl: './scenario-setup-modal.component.scss',
 })
@@ -111,43 +109,40 @@ export class ScenarioSetupModalComponent implements OnInit {
   }
 
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
-    if (newScenario.id) {
-      let newPayload: Partial<ScenarioDraftPayload> = {};
-      if (oldScenario.version === 'V3') {
-        const oldConfig: Partial<ScenarioDraftConfig> =
-          oldScenario.configuration as ScenarioDraftConfig;
-        newPayload = {
-          configuration: oldConfig,
-        };
-      } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
-        const oldConfig: Partial<ScenarioDraftConfig> =
-          oldScenario.configuration;
-        const thresholdsIdMap = new Map<string, number>();
-        thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
-        thresholdsIdMap.set(
-          'distance_to_roads',
-          this.thresholdsData.distance_from_roads?.id
-        );
-        newPayload = convertFlatConfigurationToDraftPayload(
-          oldConfig,
-          thresholdsIdMap
-        );
-      }
-      if (Number(oldScenario.treatment_goal?.id)) {
-        const num = Number(oldScenario.treatment_goal?.id);
-        newPayload.treatment_goal = num;
-      }
-      this.scenarioService
-        .patchScenarioConfig(newScenario.id, newPayload)
-        .pipe(
-          map((result) => {
-            this.reloadTo(
-              `/plan/${newScenario.planning_area}/scenario/${result.id}`
-            );
-          })
-        )
-        .subscribe();
+    let newPayload: Partial<ScenarioDraftPayload> = {};
+    if (oldScenario.version === 'V3') {
+      const oldConfig: Partial<ScenarioDraftConfig> =
+        oldScenario.configuration as ScenarioDraftConfig;
+      newPayload = {
+        configuration: oldConfig,
+      };
+    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
+      const oldConfig: Partial<ScenarioDraftConfig> = oldScenario.configuration;
+      const thresholdsIdMap = new Map<string, number>();
+      thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
+      thresholdsIdMap.set(
+        'distance_to_roads',
+        this.thresholdsData.distance_from_roads?.id
+      );
+      newPayload = convertFlatConfigurationToDraftPayload(
+        oldConfig,
+        thresholdsIdMap
+      );
     }
+    if (Number(oldScenario.treatment_goal?.id)) {
+      const num = Number(oldScenario.treatment_goal?.id);
+      newPayload.treatment_goal = num;
+    }
+    this.scenarioService
+      .patchScenarioConfig(newScenario.id!, newPayload)
+      .pipe(
+        map((result) => {
+          this.reloadTo(
+            `/plan/${newScenario.planning_area}/scenario/${result.id}`
+          );
+        })
+      )
+      .subscribe();
   }
 
   async reloadTo(url: string | UrlTree) {
