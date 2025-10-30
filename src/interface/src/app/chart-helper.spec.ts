@@ -54,5 +54,21 @@ describe('Chart helpers', () => {
       const datasets = getChartDatasetsFromFeatures([]);
       expect(datasets).toEqual([]);
     });
+
+    it('Should handle 0 values as expected', () => {
+      const features = [
+        { properties: { attainment: { a: 12, b: 0 } } },
+        { properties: { attainment: { a: 0, b: 14 } } },
+      ] as any;
+
+      const datasets = getChartDatasetsFromFeatures(features);
+
+      expect(datasets.length).toBe(2);
+      expect(datasets[0].data).toEqual([12, 0]);
+      expect(datasets[1].data).toEqual([0, 14]);
+
+      expect(datasets[0].stack).toBe('Stack 0');
+      expect(datasets[1].stack).toBe('Stack 0');
+    });
   });
 });
