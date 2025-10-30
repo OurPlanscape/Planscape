@@ -7,7 +7,6 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { ScenarioSetupModalComponent } from './scenario-setup-modal.component';
-import { ActivatedRoute } from '@angular/router';
 
 describe('ScenarioSetupModalComponent', () => {
   let component: ScenarioSetupModalComponent;
@@ -45,14 +44,6 @@ describe('ScenarioSetupModalComponent', () => {
         {
           provide: MatDialog,
           useValue: fakeDialog,
-        },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              data: { planId: 'mockPlanId' }, // Add any other required data here
-            },
-          },
         },
       ],
     }).compileComponents();
