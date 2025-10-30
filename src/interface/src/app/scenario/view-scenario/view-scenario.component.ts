@@ -140,7 +140,7 @@ export class ViewScenarioComponent {
         maxWidth: '560px',
         data: {
           planId: this.planId,
-          defaultName: `Copy of "${scenario.name}"`,
+          defaultName: '', // TODO: this is a placeholder for future name option
           fromClone: true,
           scenario: scenario,
         },

@@ -51,7 +51,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       fromClone: boolean;
       scenario?: Scenario;
       defaultName?: string;
-    }, // Access the passed data
+    },
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
     private router: Router,
@@ -155,11 +155,10 @@ export class ScenarioSetupModalComponent implements OnInit {
         this.dialogRef.close(result);
         this.submitting = false;
 
+        //for cloned scenarios, we copy configuration, then redirect
         if (this.data.fromClone && result.id && this.data.scenario) {
-          //note: we redirect after copying the config
           this.copyConfiguration(this.data.scenario, result);
         }
-        // else not clone?
         if (result.id && this.data.fromClone === false) {
           this.router.navigate(['plan', planId, 'scenario', result.id]);
         }
