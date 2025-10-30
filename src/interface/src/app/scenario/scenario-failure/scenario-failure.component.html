@@ -42,11 +42,18 @@
       RETURN TO PLAN OVERVIEW
     </a>
     <a
+      *appFeatureFlag="'SCENARIO_DRAFTS'; hide: true"
       (click)="tryAgain.emit()"
-      data-id="downloadCsv"
       sg-button
       variant="primary">
       TRY AGAIN
+    </a>
+    <a
+      *appFeatureFlag="'SCENARIO_DRAFTS'"
+      (click)="tryAgain.emit()"
+      sg-button
+      variant="primary">
+      Copy Scenario & Edit
     </a>
   </div>
 </section>
