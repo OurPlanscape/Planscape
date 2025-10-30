@@ -79,7 +79,7 @@ export function scenarioCanHaveTreatmentPlans(
   return false;
 }
 
-export function convertFormOutputToDraftPayload(
+export function convertFlatConfigurationToDraftPayload(
   formData: Partial<ScenarioCreation>,
   thresholdIds: Map<string, number>
 ): Partial<ScenarioDraftPayload> {

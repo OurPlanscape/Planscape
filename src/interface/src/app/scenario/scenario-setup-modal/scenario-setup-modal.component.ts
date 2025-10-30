@@ -17,7 +17,7 @@ import { ScenarioService } from '@services';
 import { Router, UrlTree } from '@angular/router';
 import { Scenario, ScenarioDraftConfig, ScenarioDraftPayload } from '@types';
 import { map } from 'rxjs';
-import { convertFormOutputToDraftPayload } from '../scenario-helper';
+import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 
 @Component({
@@ -116,7 +116,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
         const oldConfig: Partial<ScenarioDraftConfig> =
           oldScenario.configuration;
-        newPayload = convertFormOutputToDraftPayload(
+        newPayload = convertFlatConfigurationToDraftPayload(
           oldConfig,
           thresholdsIdMap
         );

@@ -44,7 +44,7 @@ import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import {
-  convertFormOutputToDraftPayload,
+  convertFlatConfigurationToDraftPayload,
   getScenarioCreationPayloadScenarioCreation,
 } from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
@@ -252,7 +252,7 @@ export class ScenarioCreationComponent
       'distance_to_roads',
       this.newScenarioState.getDistanceToRoadsId()
     );
-    const payload = convertFormOutputToDraftPayload(data, thresholdsIdMap);
+    const payload = convertFlatConfigurationToDraftPayload(data, thresholdsIdMap);
 
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
