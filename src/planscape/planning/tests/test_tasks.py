@@ -305,7 +305,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
             geopackage_status=GeoPackageStatus.PENDING,
         )
         ScenarioFactory.create(
-            result_status=ScenarioResultStatus.FAILURE,
+            result_status=ScenarioResultStatus.PANIC,
             geopackage_status=GeoPackageStatus.PENDING,
         )
 
