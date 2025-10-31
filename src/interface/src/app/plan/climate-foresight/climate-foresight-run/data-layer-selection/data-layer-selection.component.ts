@@ -173,24 +173,19 @@ export class DataLayerSelectionComponent
     const searchLower = this.searchTerm.toLowerCase();
 
     return this.datasetGroups.filter((dataset) => {
-      // Check dataset name
       if (dataset.name.toLowerCase().includes(searchLower)) {
         return true;
       }
 
-      // Check organization name
       if (dataset.organizationName.toLowerCase().includes(searchLower)) {
         return true;
       }
 
-      // Check if any layer or its path matches
       return dataset.layers.some((layer) => {
-        // Check layer name
         if (layer.name.toLowerCase().includes(searchLower)) {
           return true;
         }
 
-        // Check layer path (categories)
         if (
           layer.path &&
           layer.path.some((p) => p.toLowerCase().includes(searchLower))
@@ -436,7 +431,6 @@ export class DataLayerSelectionComponent
       this.previewedLayer = null;
       this.removeRasterLayer();
     } else {
-      // Select new preview
       this.previewedLayer = layer;
       this.loadLayerPreview(layer);
     }

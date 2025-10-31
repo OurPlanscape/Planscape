@@ -3,16 +3,32 @@ from climate_foresight.models import (
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
 )
+from climate_foresight.tasks import calculate_climate_foresight_layer_statistics
 from planning.models import PlanningArea
 
 
 class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
     """Serializer for ClimateForesightRunInputDataLayer model."""
 
+    normalized_datalayer_id = serializers.IntegerField(
+        source="normalized_datalayer.id", read_only=True, allow_null=True
+    )
+
     class Meta:
         model = ClimateForesightRunInputDataLayer
-        fields = ["id", "datalayer", "favor_high", "pillar"]
-        read_only_fields = ["id"]
+        fields = [
+            "id",
+            "datalayer",
+            "favor_high",
+            "pillar",
+            "normalized_datalayer_id",
+            "statistics",
+        ]
+        read_only_fields = [
+            "id",
+            "normalized_datalayer_id",
+            "statistics",
+        ]
 
 
 class ClimateForesightRunSerializer(serializers.ModelSerializer):
@@ -38,6 +54,8 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             "created_by",
             "creator",
             "status",
+            "current_step",
+            "furthest_step",
             "created_at",
             "input_datalayers",
         ]
@@ -58,11 +76,44 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate(self, attrs):
+        """Validate step advancement requirements."""
+        current_step = attrs.get("current_step")
+        input_datalayers_data = attrs.get("input_datalayers")
+
+        # If advancing to step 3 (after assigning favorability) or beyond, validate favor_high is set
+        if current_step and current_step >= 3:
+            if input_datalayers_data is None and self.instance:
+                layers_without_favor_high = self.instance.input_datalayers.filter(
+                    favor_high__isnull=True
+                )
+                if layers_without_favor_high.exists():
+                    raise serializers.ValidationError(
+                        "All data layers must have favorability (favor_high) set before advancing past step 2."
+                    )
+            elif input_datalayers_data is not None:
+                for layer_data in input_datalayers_data:
+                    if layer_data.get("favor_high") is None:
+                        raise serializers.ValidationError(
+                            "All data layers must have favorability (favor_high) set before advancing past step 2."
+                        )
+
+        return attrs
+
     def create(self, validated_data):
         input_datalayers_data = validated_data.pop("input_datalayers", [])
         run = ClimateForesightRun.objects.create(**validated_data)
+
         for datalayer_data in input_datalayers_data:
-            ClimateForesightRunInputDataLayer.objects.create(run=run, **datalayer_data)
+            input_dl = ClimateForesightRunInputDataLayer.objects.create(
+                run=run, **datalayer_data
+            )
+            calculate_climate_foresight_layer_statistics.delay(input_dl.id)
+
+        if input_datalayers_data:
+            run.furthest_step = max(run.furthest_step, 1)
+            run.save()
+
         return run
 
     def update(self, instance, validated_data):
@@ -70,15 +121,40 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        instance.save()
 
         if input_datalayers_data is not None:
-            instance.input_datalayers.all().delete()
-            for datalayer_data in input_datalayers_data:
-                ClimateForesightRunInputDataLayer.objects.create(
-                    run=instance, **datalayer_data
-                )
+            existing_layers = {
+                layer.datalayer: layer for layer in instance.input_datalayers.all()
+            }
 
+            incoming_datalayer_ids = {
+                datalayer_data.get("datalayer")
+                for datalayer_data in input_datalayers_data
+            }
+
+            for datalayer_data in input_datalayers_data:
+                datalayer_id = datalayer_data.get("datalayer")
+                existing_layer = existing_layers.get(datalayer_id)
+
+                if existing_layer:
+                    for attr, value in datalayer_data.items():
+                        if attr != "datalayer":
+                            setattr(existing_layer, attr, value)
+                    existing_layer.save()
+                else:
+                    input_dl = ClimateForesightRunInputDataLayer.objects.create(
+                        run=instance, **datalayer_data
+                    )
+                    calculate_climate_foresight_layer_statistics.delay(input_dl.id)
+
+            for datalayer_id, layer in existing_layers.items():
+                if datalayer_id not in incoming_datalayer_ids:
+                    layer.delete()
+
+            if "furthest_step" not in validated_data:
+                instance.furthest_step = max(instance.furthest_step, 1)
+
+        instance.save()
         return instance
 
 
