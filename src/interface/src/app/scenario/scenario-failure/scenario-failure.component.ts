@@ -19,9 +19,5 @@ export class ScenarioFailureComponent {
   @Output() goBack = new EventEmitter();
   @Output() tryAgain = new EventEmitter();
 
-  constructor(
-  ) { }
-
-
   protected readonly FormMessageType = FormMessageType;
 }
