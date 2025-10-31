@@ -1,5 +1,5 @@
-@import '../../../styles/variables';
-@import '../../../styles/colors';
+@import 'variables';
+@import 'colors';
 
 :host {
   display: flex;
@@ -14,12 +14,12 @@
   gap: 12px;
 
   .back-button {
-    color: white;
+    color: $color-white;
   }
 
   .page-title {
     margin: 0;
-    color: white;
+    color: $color-white;
     font-size: 20px;
     font-weight: 500;
   }
@@ -27,16 +27,15 @@
 
 .climate-foresight-container {
   display: flex;
-  flex-grow: 1;
-  flex-shrink: 0;
-  background: #f5f5f5;
+  background: $color-soft-white;
+  height: calc(100% - $navbar-height);
+  overflow-y: auto;
+  gap: 16px;
+  padding: 16px;
 }
 
 .left-panel {
   width: 592px;
-  padding: 16px;
-  padding-right: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -65,7 +64,6 @@
       margin-bottom: 8px;
       border: 1px solid $color-fields-gray;
       border-radius: 8px;
-
 
       .tool-icon {
         width: 80px;
@@ -122,7 +120,6 @@
   }
 
   .planning-area-section {
-
     .planning-area-name {
       font-size: 16px;
       font-weight: 500;
@@ -135,7 +132,7 @@
     .map-legend {
       padding: 8px;
       padding-left: 0;
-      background: white;
+      background: $color-white;
       border-bottom: none;
       border-radius: 4px 4px 0 0;
 
@@ -189,8 +186,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: white;
-  margin: 16px;
+  background: $color-white;
   border-radius: 4px;
   box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
   overflow: hidden;
