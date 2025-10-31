@@ -16,6 +16,8 @@ section {
 
 h4 {
     @include h4();
+    display: flex;
+    gap: 8px;
 }
 
 .button-left {
