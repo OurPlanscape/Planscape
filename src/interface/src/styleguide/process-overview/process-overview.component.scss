@@ -4,20 +4,36 @@ $circle-size: 40px;
 $icon-size: 24px;
 $line-width: 2px;
 $line-top-offset: 17px;
+$arrow-icon: '/assets/svg/icons/overview/arrowhead.svg';
+$arrow-icon-width: 9px;
+$arrow-icon-height: 16px;
+$icon-white-padding: 20px;
+
+
+@mixin arrowIcon() {
+  position: absolute;
+  content: "";
+  width: $arrow-icon-width;
+  height: $arrow-icon-height;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-image: url($arrow-icon);
+}
+
 
 :host {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 40px; // TODO
   box-sizing: border-box;
+  min-width: 320px;
 }
 
 .title {
   color: #000;
   text-align: right;
   /* Label/Top-level */
-  font-family: "Public Sans";
+
   font-size: 14px;
   font-style: normal;
   font-weight: 700;
@@ -27,28 +43,25 @@ $line-top-offset: 17px;
 }
 
 .steps {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: 1fr;
   justify-content: space-between;
   flex: 1;
   position: relative;
 
-  // this is the border that kinda does the arrows.
+  // this is the border that wraps the whole list
   &::before {
-
     position: absolute;
-    //border: $line-width solid #B6C9CC;/
     outline: 2px solid #B6C9CC; // instead of border
     // subtract half the circle size and half the line width so it looks centered relative
     // to the circle.
     width: calc(100% - #{($circle-size + $line-width  ) / 2 });
-    height: 103%;
+    height: calc(100% - $line-top-offset);
     content: "";
     border-radius: 14px;
     top: $line-top-offset;
   }
-
-
 }
 
 .step {
@@ -63,45 +76,38 @@ $line-top-offset: 17px;
   gap: 12px;
   padding-top: 5px;
   align-items: flex-end;
+  // min height before the arrow breaks
+  min-height: 70px;
 }
 
 
 .name {
-  color: #000;
-  font-family: "Public Sans";
+  color: $color-black;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
   line-height: 22px;
   text-transform: uppercase;
   text-align: right;
-
   padding-inline: 16px;
   z-index: 12;
   position: relative;
 
   &.first {
-    background-color: white;
+    background-color: $color-white;
   }
 
+  // add the arrowhead next to the first item name
   &.first::after {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    content: "";
-
-    left: -10px;
-    top: 2px;
-    background-size: contain;
-    background-image: url('/assets/svg/icons/greater-than.svg');
+    @include arrowIcon();
+    left: -#{$arrow-icon-width - $line-width};
+    top: 3px;
   }
 }
 
 .description {
-  color: #767575; //var(--Neutral-Md-Gray, );
+  color: $color-md-gray;
   text-align: right;
-  /* Small Paragraph */
-  font-family: "Public Sans";
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -113,27 +119,22 @@ $line-top-offset: 17px;
   position: relative;
 
   &.arrow::after {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    content: "";
-    top: -20px;
-    background-size: contain;
+    @include arrowIcon();
     transform: rotate(90deg);
-    background-image: url('/assets/svg/icons/greater-than.svg');
-    left: 12px;
+    left: #{ ($circle-size - $arrow-icon-width ) / 2};
+    top: - $icon-white-padding;
   }
 }
 
 .icon-wrapper::before {
-  position: absolute;
-  background-color: white;
-  width: 60px;
-  height: 60px;
   content: "";
+  position: absolute;
+  background-color: $color-white;
+  width: #{$circle-size + $icon-white-padding};
+  height: #{$circle-size + $icon-white-padding};
   border-radius: 100%;
-  top: -10px;
-  left: -10px;
+  top: -#{$icon-white-padding / 2 };
+  left: -#{$icon-white-padding / 2 };
 }
 
 
