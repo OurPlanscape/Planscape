@@ -11,7 +11,7 @@ const meta: Meta<ProcessOverviewComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div style='height: 500px; border: 1px solid #d0d0d0; resize: both; overflow: auto'>
+    template: `<div style='width:500px; height: 500px; border: 1px solid #d0d0d0; resize: vertical; overflow: auto'>
                   <sg-process-overview ${argsToTemplate(args)}></sg-process-overview>
                </div>`,
   }),
@@ -36,7 +36,7 @@ const steps: OverviewStep[] = [
     name: 'Stand-level Constraints',
     description:
       'Define the minimum or maximum values for key factors to guide decision-making.',
-    icon: '/assets/svg/icons/overview/thresholds.svg',
+    icon: '/assets/svg/icons/overview/stand-level.svg',
   },
 ];
 
