@@ -18,8 +18,8 @@ import { ButtonComponent, PanelComponent } from '@styleguide';
 import { Plan, ClimateForesightRun, DataLayer } from '@types';
 import { ClimateForesightService } from '@services';
 import { StepDirective } from '../../../../../styleguide/steps/step.component';
-import { interval } from 'rxjs';
-import { switchMap, filter } from 'rxjs/operators';
+import { interval, Subject } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 interface LayerFavorability {
@@ -61,6 +61,7 @@ export class AssignFavorabilityComponent
   currentLayerIndex: number = 0;
 
   private pollingInterval = 5_000;
+  private statisticsReady$ = new Subject<void>();
 
   form = new FormGroup({
     favorability: new FormControl<LayerFavorability[]>(
@@ -420,18 +421,23 @@ export class AssignFavorabilityComponent
     interval(this.pollingInterval)
       .pipe(
         untilDestroyed(this),
-        switchMap(() => this.climateForesightService.getRun(this.run!.id)),
-        filter((updatedRun) => {
-          this.run = updatedRun;
-
-          return (
-            updatedRun.input_datalayers?.every(
-              (input) => input.statistics != null
-            ) ?? false
-          );
-        })
+        takeUntil(this.statisticsReady$),
+        switchMap(() => this.climateForesightService.getRun(this.run!.id))
       )
       .subscribe({
+        next: (updatedRun) => {
+          this.run = updatedRun;
+
+          const allReady =
+            updatedRun.input_datalayers?.every(
+              (input) => input.statistics != null
+            ) ?? false;
+
+          if (allReady) {
+            this.statisticsReady$.next();
+            this.statisticsReady$.complete();
+          }
+        },
         error: (err) => {
           console.error('Error polling for statistics:', err);
         },

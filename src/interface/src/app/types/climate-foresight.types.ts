@@ -19,7 +19,7 @@ export interface LayerStatistics {
 export interface InputDatalayer {
   id?: number;
   datalayer: number;
-  favor_high: boolean;
+  favor_high: boolean | null;
   pillar: string;
   normalized_datalayer_id?: number | null;
   statistics: LayerStatistics | null;
