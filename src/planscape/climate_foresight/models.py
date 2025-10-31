@@ -101,6 +101,13 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="The normalized version of this input data layer (for Climate Foresight analysis only)",
     )
 
+    pillar = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="The pillar/category assignment for this layer",
+    )
+
     statistics = models.JSONField(
         null=True,
         blank=True,
