@@ -88,14 +88,9 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     )
 
     favor_high = models.BooleanField(
-        help_text="True if high values are favorable, False if low values are favorable"
-    )
-
-    pillar = models.CharField(
-        max_length=255,
+        null=True,
         blank=True,
-        default="",
-        help_text="The pillar/category assignment for this layer",
+        help_text="True if high values are favorable, False if low values are favorable",
     )
 
     normalized_datalayer = models.ForeignKey(

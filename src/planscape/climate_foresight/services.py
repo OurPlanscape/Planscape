@@ -1,63 +1,21 @@
 import logging
 import tempfile
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any
 from uuid import uuid4
 
 import numpy as np
 import rasterio
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon
-from rasterio.mask import mask as rasterio_mask
+from scipy import stats
 
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from datasets.services import create_datalayer, get_storage_url
 from gis.info import get_gdal_env
-from gis.rasters import to_planscape_streaming
-from scipy import stats
+from gis.rasters import read_raster_window_downsampled, to_planscape_streaming
 
 log = logging.getLogger(__name__)
-
-
-def _get_clipped_raster_data(
-    src: rasterio.DatasetReader,
-    geometry: MultiPolygon,
-) -> Tuple[np.ndarray, Any, Optional[float]]:
-    """
-    Read raster data clipped to a planning area geometry.
-
-    Args:
-        src: Open rasterio dataset
-        geometry: MultiPolygon to clip to (in EPSG:4269)
-
-    Returns:
-        Tuple of (clipped_data, transform, nodata)
-    """
-    from rasterio.warp import transform_geom
-
-    nodata = src.nodata
-
-    geom_geojson = {
-        "type": geometry.geom_type,
-        "coordinates": geometry.coords,
-    }
-
-    if src.crs and src.crs.to_epsg() != 4269:
-        geom_geojson = transform_geom(
-            src_crs="EPSG:4269",
-            dst_crs=src.crs,
-            geom=geom_geojson,
-        )
-
-    clipped_data, clipped_transform = rasterio_mask(
-        src,
-        [geom_geojson],
-        crop=True,
-        filled=True,
-        nodata=nodata if nodata is not None else -9999,
-    )
-
-    return clipped_data[0], clipped_transform, nodata
 
 
 def calculate_layer_percentiles(
@@ -78,7 +36,7 @@ def calculate_layer_percentiles(
 
     Returns:
         Dictionary containing:
-            - outlier_thresholds: Dict with p5, p10, p90, p95 percentiles
+            - statistics: Dict with min, max, mean, std, count, and percentiles
     """
     if input_layer.type != DataLayerType.RASTER:
         raise ValueError("Can only calculate percentiles for raster data layers")
@@ -88,31 +46,18 @@ def calculate_layer_percentiles(
 
     with rasterio.Env(**get_gdal_env()):
         with rasterio.open(input_layer.url) as src:
-            clipped_data, _, nodata = _get_clipped_raster_data(
-                src, planning_area_geometry
+            downsampled, valid_mask, _ = read_raster_window_downsampled(
+                src=src,
+                geometry=planning_area_geometry,
+                geometry_crs="EPSG:4269",
+                target_pixels=target_sample_size,
+                resampling=rasterio.enums.Resampling.bilinear,
             )
 
-            total_pixels = clipped_data.size
-
-            downsample_factor = max(1, int(np.sqrt(total_pixels / target_sample_size)))
-
-            from scipy.ndimage import zoom
-
-            if downsample_factor > 1:
-                downsampled = zoom(
-                    clipped_data,
-                    (1 / downsample_factor, 1 / downsample_factor),
-                    order=1,  # bilinear
-                )
-            else:
-                downsampled = clipped_data
-
-            if nodata is not None:
-                valid_mask = downsampled != nodata
-            else:
-                valid_mask = ~np.isnan(downsampled)
-
             sample_array = downsampled[valid_mask].astype(np.float32)
+
+            if len(sample_array) == 0:
+                raise ValueError("No valid pixels found in planning area")
 
             percentile_keys = [5, 10, 90, 95]
             percentile_values = np.percentile(sample_array, percentile_keys)
@@ -412,9 +357,20 @@ def normalize_raster_layer(
             temp_clipped_path = tmp.name
 
         with rasterio.open(input_layer.url) as src:
-            clipped_data, clipped_transform, nodata = _get_clipped_raster_data(
-                src, planning_area_geometry
+            clipped_data, valid_mask, clipped_transform = (
+                read_raster_window_downsampled(
+                    src=src,
+                    geometry=planning_area_geometry,
+                    geometry_crs="EPSG:4269",
+                    target_pixels=None,
+                    resampling=rasterio.enums.Resampling.nearest,
+                )
             )
+
+            nodata = src.nodata if src.nodata is not None else -9999
+
+            clipped_data = clipped_data.astype(np.float32)
+            clipped_data[~valid_mask] = nodata
 
             profile = src.profile.copy()
             profile.update(
@@ -422,6 +378,7 @@ def normalize_raster_layer(
                     "height": clipped_data.shape[0],
                     "width": clipped_data.shape[1],
                     "transform": clipped_transform,
+                    "nodata": nodata,
                 }
             )
 
