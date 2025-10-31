@@ -7,8 +7,6 @@ from climate_foresight.services import (
     calculate_layer_percentiles,
     normalize_raster_layer,
 )
-from datasets.models import DataLayerStatus
-from datasets.tasks import datalayer_uploaded
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
@@ -75,7 +73,7 @@ def calculate_climate_foresight_layer_statistics(input_datalayer_id: int) -> Non
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3, "countdown": 5},
 )
-def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> None:
+def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> int:
     """
     Normalize a climate foresight input data layer asynchronously.
 
@@ -85,10 +83,25 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> None:
     3. Applies auto-normalization
     4. Creates a new normalized DataLayer
     5. Links it to the ClimateForesightRunInputDataLayer
-    6. Processes the normalized layer (COG, hash, etc.)
+
+    NOTE: This task should be chained with datalayer_uploaded to process the
+    normalized layer (COG conversion, hash calculation, etc.)
+
+    Example:
+        from celery import chain
+        from datasets.tasks import datalayer_uploaded
+        from datasets.models import DataLayerStatus
+
+        chain(
+            normalize_climate_foresight_input_layer.si(input_dl_id),
+            datalayer_uploaded.si(status=DataLayerStatus.READY)
+        ).apply_async()
 
     Args:
         input_datalayer_id: ID of the ClimateForesightRunInputDataLayer to normalize
+
+    Returns:
+        int: ID of the created normalized DataLayer
     """
     try:
         input_dl = ClimateForesightRunInputDataLayer.objects.select_related(
@@ -105,7 +118,7 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> None:
                 f"Input layer {input_dl.id} already has a normalized layer "
                 f"({input_dl.normalized_datalayer.id}). Skipping."
             )
-            return
+            return input_dl.normalized_datalayer.id
 
         planning_area_geometry = input_dl.run.planning_area.geometry
 
@@ -126,12 +139,12 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> None:
             f"Linked normalized layer {normalized_layer.id} to input layer {input_dl.id}"
         )
 
-        datalayer_uploaded.delay(normalized_layer.pk, status=DataLayerStatus.READY)
-
         log.info(
             f"Successfully normalized input layer {input_dl.id}. "
             f"Transformation: {result['transformation_info']['transformation']}"
         )
+
+        return normalized_layer.pk
 
     except ClimateForesightRunInputDataLayer.DoesNotExist:
         log.error(f"Input data layer {input_datalayer_id} does not exist")
