@@ -76,6 +76,30 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate(self, attrs):
+        """Validate step advancement requirements."""
+        current_step = attrs.get("current_step")
+        input_datalayers_data = attrs.get("input_datalayers")
+
+        # If advancing to step 3 (after assigning favorability) or beyond, validate favor_high is set
+        if current_step and current_step >= 3:
+            if input_datalayers_data is None and self.instance:
+                layers_without_favor_high = self.instance.input_datalayers.filter(
+                    favor_high__isnull=True
+                )
+                if layers_without_favor_high.exists():
+                    raise serializers.ValidationError(
+                        "All data layers must have favorability (favor_high) set before advancing past step 2."
+                    )
+            elif input_datalayers_data is not None:
+                for layer_data in input_datalayers_data:
+                    if layer_data.get("favor_high") is None:
+                        raise serializers.ValidationError(
+                            "All data layers must have favorability (favor_high) set before advancing past step 2."
+                        )
+
+        return attrs
+
     def create(self, validated_data):
         input_datalayers_data = validated_data.pop("input_datalayers", [])
         run = ClimateForesightRun.objects.create(**validated_data)
