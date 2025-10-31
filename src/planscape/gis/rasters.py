@@ -1,14 +1,16 @@
 import json
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import rasterio
 from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry
 from gis.core import get_layer_info, get_random_output_file
 from gis.info import get_gdal_env
 from rasterio.crs import CRS
-from rasterio.features import shapes, sieve
+from rasterio.features import geometry_mask, shapes, sieve
+from rasterio.transform import from_bounds
 from rasterio.warp import (
     Resampling,
     calculate_default_transform,
@@ -359,3 +361,108 @@ def data_mask(
                 )
 
             return json.dumps(mapping(out_geom))
+
+
+def read_raster_window_downsampled(
+    src: rasterio.DatasetReader,
+    geometry: GEOSGeometry,
+    geometry_crs: str = "EPSG:4269",
+    target_pixels: Optional[int] = None,
+    resampling: Resampling = Resampling.bilinear,
+) -> Tuple[np.ndarray, np.ndarray, Any]:
+    """
+    Efficiently read a (optionally downsampled) window of raster data clipped to a geometry.
+
+    This function avoids loading unnecessary data by using rasterio's windowed reading
+    and optional out_shape parameter for downsampling.
+
+    Args:
+        src: Open rasterio dataset
+        geometry: Geometry to clip to (Django GEOSGeometry or Shapely geometry)
+        geometry_crs: CRS of the input geometry (default: EPSG:4269)
+        target_pixels: Target number of pixels to read. If None, reads at full resolution.
+                      Set to ~10M for statistical analysis. (default: None = full resolution)
+        resampling: Resampling method when downsampling (default: bilinear)
+
+    Returns:
+        Tuple of (data_array, valid_mask, transform) where:
+            - data_array: Raster values as numpy array
+            - valid_mask: Boolean mask indicating valid pixels (within geometry and not nodata)
+            - transform: Affine transform for the output array
+
+    Example (downsampled for statistics):
+        >>> with rasterio.open('large_raster.tif') as src:
+        >>>     data, mask, transform = read_raster_window_downsampled(
+        >>>         src, planning_area_geometry, target_pixels=10_000_000
+        >>>     )
+        >>>     valid_values = data[mask]
+        >>>     print(f"Mean: {np.mean(valid_values)}")
+
+    Example (full resolution for clipping):
+        >>> with rasterio.open('large_raster.tif') as src:
+        >>>     data, mask, transform = read_raster_window_downsampled(
+        >>>         src, planning_area_geometry, target_pixels=None
+        >>>     )
+        >>>     data[~mask] = src.nodata  # Mask outside pixels
+    """
+    nodata = src.nodata
+
+    # convert Django GEOSGeometry to Shapely if needed
+    if hasattr(geometry, "geom_type") and hasattr(geometry, "coords"):
+        geom_geojson = {
+            "type": geometry.geom_type,
+            "coordinates": geometry.coords,
+        }
+        geom_shape = shape(geom_geojson)
+    else:
+        geom_shape = geometry
+        geom_geojson = mapping(geom_shape)
+
+    if src.crs and src.crs.to_string() != geometry_crs:
+        geom_geojson = transform_geom(
+            src_crs=geometry_crs,
+            dst_crs=src.crs,
+            geom=geom_geojson,
+        )
+        geom_shape = shape(geom_geojson)
+
+    minx, miny, maxx, maxy = geom_shape.bounds
+    window = src.window(minx, miny, maxx, maxy)
+
+    window_width = int(window.width)
+    window_height = int(window.height)
+    total_pixels = window_width * window_height
+
+    if total_pixels == 0:
+        raise ValueError("Geometry does not intersect with raster")
+
+    if target_pixels is None:
+        out_height = window_height
+        out_width = window_width
+    else:
+        downsample_factor = max(1, int(np.sqrt(total_pixels / target_pixels)))
+        out_height = max(1, window_height // downsample_factor)
+        out_width = max(1, window_width // downsample_factor)
+
+    data = src.read(
+        1,
+        window=window,
+        out_shape=(out_height, out_width),
+        resampling=resampling,
+    )
+
+    output_transform = from_bounds(minx, miny, maxx, maxy, out_width, out_height)
+
+    geom_mask = geometry_mask(
+        [geom_geojson],
+        out_shape=(out_height, out_width),
+        transform=output_transform,
+        invert=True,  # inside geometry
+    )
+
+    if nodata is not None:
+        valid_mask = (data != nodata) & geom_mask
+    else:
+        valid_mask = ~np.isnan(data) & geom_mask
+
+    return data, valid_mask, output_transform
