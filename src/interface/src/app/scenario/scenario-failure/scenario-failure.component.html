@@ -6,7 +6,7 @@
   class="button-left"
   [disabled]="scenarioState !== 'FAILURE'">
   <mat-icon class="material-symbols-outlined">download</mat-icon>
-  DOWNLOAD CSV DATA
+  Download CSV data
 </button>
 
 <section>
@@ -16,16 +16,33 @@
       No optimal project areas for treatment were found
     </h4>
     <p>
-      The constraints you set may be preventing the tool from finding enough
-      valid land for the run to complete successfully. Please eliminate some
-      constraints (slope, roads, areas), and try again.
+      Planscape couldn't find enough treatable area to create project areas.
+      <br />
+      Review your scenario configurations and try adjusting the following:
     </p>
 
+    <ul>
+      <li>
+        <b>Check data coverage:</b> Make sure your planning area has enough
+        density of the key metrics for your treatment goal.
+      </li>
+      <li>
+        <b>Review exclusions:</b> Too many excluded areas can limit available
+        land for treatment.
+      </li>
+      <li>
+        <b>Relax constraints:</b> Try increasing the maximum slope or distance
+        from roads to include more treatable areas.
+      </li>
+      <li>
+        <b>Adjust treatment targets:</b> If available land is limited, consider
+        lowering your treatment targets to match what's feasible.
+      </li>
+    </ul>
+
     <p>
-      Additionally, review your planning area with the primary metrics layers
-      for your treatment goal. If the area you have selected doesn’t have enough
-      density of the key metrics, the tool won’t be able to find enough land to
-      select for treatment.
+      You can copy your scenario and edit it with these adjustments in mind,
+      then run the scenario again.
     </p>
   </ng-container>
 
@@ -39,14 +56,14 @@
 
   <div class="actions">
     <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
-      RETURN TO PLAN OVERVIEW
+      Return to Plan Overview
     </a>
     <a
       *appFeatureFlag="'SCENARIO_DRAFTS'; hide: true"
       (click)="tryAgain.emit()"
       sg-button
       variant="primary">
-      TRY AGAIN
+      Try Again
     </a>
     <a
       *appFeatureFlag="'SCENARIO_DRAFTS'"
