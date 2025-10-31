@@ -75,41 +75,27 @@ class MaxAreaProjectTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
 
-    def test_get_max_area_project__max_budget_and_cost_per_acre(self):
-        scenario = ScenarioFactory.create(
-            planning_area=self.planning_area,
-            configuration={
-                "max_budget": 10000000,
-                "est_cost": 2470,
-                "max_project_count": 10,
-            },
-        )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
-        self.assertAlmostEqual(max_project_area, 404.858, places=3)
-
     def test_get_max_area_project__max_area_and_number_of_projects(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
-            configuration={"max_area": 40000, "max_project_count": 10},
+            configuration={
+                "targets": {
+                    "max_area": 40000,
+                    "max_project_count": 10,
+                },
+            },
         )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
-        self.assertEqual(max_project_area, 4000)
+        max_project_area = get_max_area_project(scenario=scenario)
+        self.assertAlmostEqual(max_project_area, 40000.0)
 
     def test_get_max_area_project__min_project_area_and_number_of_projects(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             configuration={
                 "stand_size": StandSizeChoices.LARGE,
-                "max_project_count": 10,
             },
         )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
+        max_project_area = get_max_area_project(scenario=scenario)
         self.assertEqual(max_project_area, 500)
 
 
@@ -723,6 +709,7 @@ class TestRemoveExcludes(TestCase):
         self.assertEquals(17, len(stands))
         self.assertLess(len(stand_ids), len(stands))
 
+
 class ValidateScenarioConfigurationTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
@@ -734,7 +721,9 @@ class ValidateScenarioConfigurationTest(TestCase):
         )
 
     def test_missing_stand_size(self):
-        self.scenario.configuration = {"targets": {"max_area": 500, "max_project_count": 2}}
+        self.scenario.configuration = {
+            "targets": {"max_area": 500, "max_project_count": 2}
+        }
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Configuration field `stand_size` is required.", errors)
 
@@ -775,14 +764,18 @@ class ValidateScenarioConfigurationTest(TestCase):
         }
         with mock.patch("planning.services.get_available_stand_ids", return_value=[]):
             errors = validate_scenario_configuration(self.scenario)
-            self.assertIn("No stands are available with the current configuration.", errors)
+            self.assertIn(
+                "No stands are available with the current configuration.", errors
+            )
 
     def test_insufficient_available_stands(self):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 99},
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2]):
+        with mock.patch(
+            "planning.services.get_available_stand_ids", return_value=[1, 2]
+        ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertIn("Not enough stands are available", " ".join(errors))
 
@@ -791,6 +784,8 @@ class ValidateScenarioConfigurationTest(TestCase):
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3]):
+        with mock.patch(
+            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+        ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertEqual(errors, [])
