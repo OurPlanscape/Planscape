@@ -1,0 +1,17 @@
+<div class="title">Overview of the process</div>
+<div class="steps">
+  <div class="step" *ngFor="let step of steps; let i = index">
+    <div class="step-info">
+      <div class="name" [ngClass]="{ first: i === 0 }">
+        {{ step.name }}
+      </div>
+      <div class="description">{{ step.description }}</div>
+    </div>
+
+    <div class="icon-wrapper" [ngClass]="{ arrow: i !== 0 }">
+      <div
+        class="icon"
+        [style.background-image]="'url(' + step.icon + ')'"></div>
+    </div>
+  </div>
+</div>
