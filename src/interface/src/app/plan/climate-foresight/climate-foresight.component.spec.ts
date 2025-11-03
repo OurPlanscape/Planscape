@@ -417,11 +417,11 @@ describe('ClimateForesightComponent', () => {
 
     const emptyState = fixture.nativeElement.querySelector('.no-analyses');
     expect(emptyState).toBeTruthy();
-    expect(emptyState?.textContent).toContain('No Runs Yet');
+    expect(emptyState?.textContent).toContain('No Analyses Yet');
   });
 
   it('should hide empty state when analyses exist', () => {
-    // Mock the service to return runs
+    // Mock the service to return Analyses
     mockClimateForesightService.listRunsByPlanningArea.and.returnValue(
       of([
         {
