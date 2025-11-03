@@ -25,12 +25,12 @@ const steps: OverviewStep[] = [
     name: 'Treatment Goal',
     description:
       'Select important data layers that will be used throughout the workflow.',
-    icon: '/assets/svg/icons/overview/identify.svg',
+    icon: '/assets/svg/icons/overview/treatment-goal.svg',
   },
   {
     name: 'Exclude Areas',
     description: 'Include and exclude specific areas based on your plan.',
-    icon: '/assets/svg/icons/overview/include-exclude.svg',
+    icon: '/assets/svg/icons/overview/exclude-areas.svg',
   },
   {
     name: 'Stand-level Constraints',
@@ -46,12 +46,12 @@ const allSteps: OverviewStep[] = [
     name: 'Treatment Target',
     description:
       'Set limits on treatment areas to align with real-world restrictions.',
-    icon: '/assets/svg/icons/overview/group.svg',
+    icon: '/assets/svg/icons/overview/treatment-target.svg',
   },
   {
     name: 'Generate Output',
     description: 'View scenario results from Forsys.',
-    icon: '/assets/svg/icons/overview/output.svg',
+    icon: '/assets/svg/icons/overview/generate-output.svg',
   },
 ];
 

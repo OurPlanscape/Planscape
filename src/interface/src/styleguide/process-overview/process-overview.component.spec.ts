@@ -8,10 +8,9 @@ describe('ProcessOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProcessOverviewComponent]
-    })
-    .compileComponents();
-    
+      imports: [ProcessOverviewComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ProcessOverviewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
