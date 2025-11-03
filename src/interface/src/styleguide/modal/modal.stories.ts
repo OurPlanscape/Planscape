@@ -137,7 +137,7 @@ export const DialogsWithBanners: Story = {
   }),
 };
 
-export const DeleteModal: Story = {
+export const DeleteDialog: Story = {
   args: {
     title: 'Delete Something',
     primaryButtonVariant: 'negative',
@@ -174,7 +174,7 @@ For this specific modal configuration, use \`DeleteDialogComponent\`
   }),
 };
 
-export const ConfirmationModal: Story = {
+export const ConfirmationDialog: Story = {
   args: {
     title: 'Are you sure?',
     primaryButtonText: 'Continue',
@@ -197,6 +197,43 @@ This modal should have:
 - A shortHeader to avoid bigger padding between title and body
 
 For this specific modal configuration, use \`ConfirmationDialogComponent\`
+      `,
+      },
+    },
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+      <sg-modal ${argsToTemplate(args)}>
+        <div modalBodyContent>A message that informs the users about a situation that requires acknowledgement</div>
+      </sg-modal><div>`,
+  }),
+};
+
+export const BlockDialog: Story = {
+  args: {
+    title: 'You cannot continue',
+    primaryButtonText: 'Oh ok',
+    hasSecondaryButton: false,
+    showBorders: false,
+    shortHeader: true,
+    showClose: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+*When to use*: When showing a message to the user that blocks their flow
+
+This modal should have:
+- No borders
+- Padding on the body
+- Primary CTA in default color
+- Does not have an X to close the modal
+- No secondary action
+- A shortHeader to avoid bigger padding between title and body
+
+For this specific modal configuration, use \`BlockDialogComponent\`
       `,
       },
     },

@@ -57,6 +57,7 @@ import { TreatmentTargetComponent } from '../treatment-target/treatment-target.c
 import { filter } from 'rxjs/operators';
 import { ScenarioState } from '../scenario.state';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
+import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 
 enum ScenarioTabs {
   CONFIG,
@@ -209,12 +210,7 @@ export class ScenarioCreationComponent
       return true;
     }
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Exit Workflow?',
-        body: 'Are you sure you want to exit "Create New Scenario"? All unsaved changes will be lost.',
-        primaryCta: 'Leave',
-        secondaryCta: 'Keep Editing',
-      },
+      data: EXIT_SCENARIO_MODAL,
     });
     return dialogRef.afterClosed();
   }

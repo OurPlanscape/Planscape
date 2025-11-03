@@ -4,8 +4,7 @@
   [showBorders]="false"
   [showClose]="false"
   [primaryButtonText]="data.primaryCta ? data.primaryCta : 'Ok'"
-  [secondaryButtonText]="data.secondaryCta ? data.secondaryCta : 'Cancel'"
-  (clickedSecondary)="cancel()"
-  (clickedPrimary)="confirm()">
+  [hasSecondaryButton]="false"
+  (clickedPrimary)="close()">
   <div modalBodyContent [innerHTML]="data.body"></div>
 </sg-modal>
