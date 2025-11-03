@@ -20,6 +20,7 @@ import { Plan, ClimateForesightRun } from '@types';
 import { DataLayerSelectionComponent } from './data-layer-selection/data-layer-selection.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { AssignPillarsComponent } from './assign-pillars/assign-pillars.component';
 
 @UntilDestroy()
 @Component({
@@ -35,6 +36,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     CdkStepperModule,
     MatSnackBarModule,
     DataLayerSelectionComponent,
+    AssignPillarsComponent,
   ],
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],
