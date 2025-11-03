@@ -3,6 +3,7 @@ from climate_foresight.models import (
     ClimateForesightPillar,
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
+    ClimateForesightRunStatus,
 )
 from climate_foresight.tasks import calculate_climate_foresight_layer_statistics
 from planning.models import PlanningArea
