@@ -238,7 +238,10 @@ export class ScenarioCreationComponent
           this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
           this.scenarioStatus === 'DRAFT'
         ) {
-          if (this.scenarioName !== this.form.get('scenarioName')?.value) {
+          if (
+            this.scenarioName !== this.form.get('scenarioName')?.value &&
+            this.form.get('scenarioName')?.value !== null
+          ) {
             this.handleNameChange(
               this.form.get('scenarioName')?.value ?? this.scenarioName
             );
