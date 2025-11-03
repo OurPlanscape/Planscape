@@ -102,6 +102,7 @@ export class ScenarioCreationComponent
   scenarioId = this.route.snapshot.data['scenarioId'];
   // TODO: we can remove this status check when the DRAFTS FF is removed
   scenarioStatus = 'NOT_STARTED';
+  scenarioName = '';
 
   form = new FormGroup({
     scenarioName: new FormControl('', [Validators.required]),
@@ -179,7 +180,7 @@ export class ScenarioCreationComponent
           label: 'Scenario: ' + scenario.name,
           backUrl: getPlanPath(this.planId),
         });
-
+        this.scenarioName = scenario.name;
         this.form.controls.scenarioName.setValue(scenario.name);
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
@@ -285,9 +286,28 @@ export class ScenarioCreationComponent
       this.scenarioStatus === 'DRAFT'
     ) {
       this.newScenarioState.setDraftFinished(true);
+      if (this.scenarioName !== this.form.get('scenarioName')?.value) {
+        this.handleNameChange(
+          this.form.get('scenarioName')?.value ?? this.scenarioName
+        );
+      }
       this.showRunScenarioConfirmation();
     } else {
       this.finishFromFullConfig();
+    }
+  }
+
+  async handleNameChange(newName: string) {
+    if (newName !== null) {
+      const nameValidated = await this.refreshScenarioNameValidator();
+      if (nameValidated) {
+        this.scenarioService
+          .editScenarioName(this.scenarioId, newName, this.planId)
+          .subscribe({
+            next: () => {},
+            error: (e) => {},
+          });
+      }
     }
   }
 
