@@ -2,8 +2,9 @@ from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from climate_foresight.models import ClimateForesightRun
+from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
 from climate_foresight.serializers import (
+    ClimateForesightPillarSerializer,
     ClimateForesightRunSerializer,
     ClimateForesightRunListSerializer,
 )
@@ -67,3 +68,49 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
         )
         serializer = BrowseDataLayerSerializer(datalayers, many=True)
         return Response(serializer.data)
+
+
+class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
+    """ViewSet for ClimateForesightPillar CRUD operations."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ClimateForesightPillarSerializer
+
+    def get_queryset(self):
+        """
+        Return pillars available to the user.
+        - Global pillars (run=None) are visible to all
+        - Custom pillars are only visible if the user owns the associated run
+        - Ordered with custom pillars first, then global pillars, both by order field
+        """
+        user = self.request.user
+        run_id = self.request.query_params.get("run")
+
+        if run_id:
+            return ClimateForesightPillar.objects.filter(
+                models.Q(run_id__isnull=True)
+                | models.Q(run_id=run_id, run__created_by=user)
+            ).order_by(
+                models.Case(
+                    models.When(run_id__isnull=True, then=1),
+                    models.When(run_id__isnull=False, then=0),
+                    output_field=models.IntegerField(),
+                ),
+                "order",
+                "name",
+            )
+
+        return ClimateForesightPillar.objects.filter(run_id__isnull=True).order_by(
+            "order", "name"
+        )
+
+    def perform_destroy(self, instance):
+        """Only allow deletion of custom pillars when run is in draft mode."""
+        if not instance.can_delete():
+            if not instance.is_custom:
+                raise PermissionDenied("Global pillars cannot be deleted.")
+            raise PermissionDenied(
+                "Pillars can only be deleted when the analysis is in draft mode."
+            )
+
+        super().perform_destroy(instance)

@@ -1,12 +1,17 @@
 from django.test import TestCase
 from django.db import IntegrityError
+from django.db.models import ProtectedError
 from climate_foresight.models import (
+    ClimateForesightPillar,
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
+    ClimateForesightRunStatus,
 )
 from climate_foresight.tests.factories import (
+    ClimateForesightPillarFactory,
     ClimateForesightRunFactory,
     ClimateForesightRunInputDataLayerFactory,
+    GlobalClimateForesightPillarFactory,
 )
 from datasets.tests.factories import DataLayerFactory
 from planning.tests.factories import PlanningAreaFactory
@@ -171,26 +176,26 @@ class ClimateForesightRunInputDataLayerTest(TestCase):
         self.datalayer = DataLayerFactory()
 
     def test_create_input_datalayer(self):
+        pillar = GlobalClimateForesightPillarFactory(name="Ecological")
         input_dl = ClimateForesightRunInputDataLayer.objects.create(
             run=self.run,
             datalayer=self.datalayer,
             favor_high=True,
-            pillar="Ecological",
+            pillar_id=pillar,
         )
 
         self.assertEqual(input_dl.run, self.run)
         self.assertEqual(input_dl.datalayer, self.datalayer)
         self.assertTrue(input_dl.favor_high)
-        self.assertEqual(input_dl.pillar, "Ecological")
+        self.assertEqual(input_dl.pillar_id, pillar)
         self.assertIsNotNone(input_dl.created_at)
 
     def test_string_representation(self):
         input_dl = ClimateForesightRunInputDataLayerFactory(
             run=self.run,
             datalayer=self.datalayer,
-            pillar="Social",
         )
-        expected = f"{self.run.name} - {self.datalayer.name} (Social)"
+        expected = self.datalayer.name
         self.assertEqual(str(input_dl), expected)
 
     def test_unique_constraint(self):
@@ -198,7 +203,6 @@ class ClimateForesightRunInputDataLayerTest(TestCase):
             run=self.run,
             datalayer=self.datalayer,
             favor_high=True,
-            pillar="Ecological",
         )
 
         with self.assertRaises(IntegrityError):
@@ -206,7 +210,6 @@ class ClimateForesightRunInputDataLayerTest(TestCase):
                 run=self.run,
                 datalayer=self.datalayer,
                 favor_high=False,
-                pillar="Social",
             )
 
     def test_cascade_delete_with_run(self):
@@ -240,3 +243,170 @@ class ClimateForesightRunInputDataLayerTest(TestCase):
         ClimateForesightRunInputDataLayerFactory(run=self.run)
 
         self.assertEqual(self.run.input_datalayers.count(), 2)
+
+
+class ClimateForesightPillarModelTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.run = ClimateForesightRunFactory(
+            created_by=self.user, status=ClimateForesightRunStatus.DRAFT
+        )
+
+    def test_create_global_pillar(self):
+        """Test creating a global pillar (run_id=None)."""
+        pillar = ClimateForesightPillar.objects.create(
+            run_id=None,
+            name="Fire Dynamics",
+            order=1,
+            created_by=self.user,
+        )
+
+        self.assertIsNone(pillar.run_id)
+        self.assertEqual(pillar.name, "Fire Dynamics")
+        self.assertEqual(pillar.order, 1)
+        self.assertFalse(pillar.is_custom)
+        self.assertFalse(pillar.can_delete())
+
+    def test_create_custom_pillar(self):
+        """Test creating a custom (run-specific) pillar."""
+        pillar = ClimateForesightPillarFactory(
+            run_id=self.run,
+            name="Custom Analysis Category",
+            order=1,
+        )
+
+        self.assertEqual(pillar.run_id, self.run)
+        self.assertEqual(pillar.name, "Custom Analysis Category")
+        self.assertTrue(pillar.is_custom)
+        self.assertTrue(pillar.can_delete())
+
+    def test_global_pillar_string_representation(self):
+        """Test string representation of global pillar."""
+        pillar = GlobalClimateForesightPillarFactory(name="Air Quality")
+        expected = "Air Quality (Global)"
+        self.assertEqual(str(pillar), expected)
+
+    def test_custom_pillar_string_representation(self):
+        """Test string representation of custom pillar."""
+        pillar = ClimateForesightPillarFactory(run_id=self.run, name="My Pillar")
+        expected = "My Pillar (Custom)"
+        self.assertEqual(str(pillar), expected)
+
+    def test_global_pillar_cannot_be_deleted(self):
+        """Test that global pillars cannot be deleted according to business logic."""
+        pillar = GlobalClimateForesightPillarFactory()
+        self.assertFalse(pillar.can_delete())
+        self.assertFalse(pillar.is_custom)
+
+    def test_custom_pillar_can_be_deleted_in_draft_mode(self):
+        """Test that custom pillars can be deleted when run is in draft mode."""
+        draft_run = ClimateForesightRunFactory(status=ClimateForesightRunStatus.DRAFT)
+        pillar = ClimateForesightPillarFactory(run_id=draft_run)
+
+        self.assertTrue(pillar.can_delete())
+        self.assertTrue(pillar.is_custom)
+
+    def test_custom_pillar_cannot_be_deleted_when_running(self):
+        """Test that custom pillars cannot be deleted when run is running."""
+        running_run = ClimateForesightRunFactory(
+            status=ClimateForesightRunStatus.RUNNING
+        )
+        pillar = ClimateForesightPillarFactory(run_id=running_run)
+
+        self.assertFalse(pillar.can_delete())
+        self.assertTrue(pillar.is_custom)
+
+    def test_custom_pillar_cannot_be_deleted_when_done(self):
+        """Test that custom pillars cannot be deleted when run is done."""
+        done_run = ClimateForesightRunFactory(status=ClimateForesightRunStatus.DONE)
+        pillar = ClimateForesightPillarFactory(run_id=done_run)
+
+        self.assertFalse(pillar.can_delete())
+        self.assertTrue(pillar.is_custom)
+
+    def test_global_pillar_unique_name_constraint(self):
+        """Test that global pillar names must be unique."""
+        GlobalClimateForesightPillarFactory(name="Water Security")
+
+        with self.assertRaises(IntegrityError):
+            ClimateForesightPillar.objects.create(
+                run_id=None,
+                name="Water Security",
+                order=2,
+                created_by=self.user,
+            )
+
+    def test_custom_pillar_unique_within_run(self):
+        """Test that custom pillar names must be unique within a run."""
+        ClimateForesightPillarFactory(run_id=self.run, name="Custom Category", order=1)
+
+        with self.assertRaises(IntegrityError):
+            ClimateForesightPillar.objects.create(
+                run_id=self.run,
+                name="Custom Category",
+                order=2,
+                created_by=self.user,
+            )
+
+    def test_custom_pillar_same_name_different_runs(self):
+        """Test that custom pillars with same name can exist in different runs."""
+        run1 = ClimateForesightRunFactory(created_by=self.user)
+        run2 = ClimateForesightRunFactory(created_by=self.user)
+
+        pillar1 = ClimateForesightPillarFactory(
+            run_id=run1, name="Analysis Type A", order=1
+        )
+        pillar2 = ClimateForesightPillarFactory(
+            run_id=run2, name="Analysis Type A", order=1
+        )
+
+        self.assertEqual(pillar1.name, pillar2.name)
+        self.assertNotEqual(pillar1.run_id, pillar2.run_id)
+
+    def test_pillar_cascade_delete_with_run(self):
+        """Test that custom pillars are deleted when their run is deleted."""
+        pillar = ClimateForesightPillarFactory(run_id=self.run)
+        pillar_id = pillar.id
+
+        self.run.delete()
+
+        self.assertFalse(ClimateForesightPillar.objects.filter(id=pillar_id).exists())
+
+    def test_pillar_ordering(self):
+        """Test that pillars are ordered correctly."""
+        pillar3 = GlobalClimateForesightPillarFactory(name="C Pillar", order=3)
+        pillar1 = GlobalClimateForesightPillarFactory(name="A Pillar", order=1)
+        pillar2 = GlobalClimateForesightPillarFactory(name="B Pillar", order=2)
+
+        pillars = ClimateForesightPillar.objects.filter(run_id__isnull=True)
+        self.assertEqual(list(pillars), [pillar1, pillar2, pillar3])
+
+    def test_input_datalayer_with_pillar(self):
+        """Test associating an input datalayer with a pillar."""
+        pillar = GlobalClimateForesightPillarFactory(name="Biodiversity")
+        datalayer = DataLayerFactory()
+
+        input_dl = ClimateForesightRunInputDataLayer.objects.create(
+            run=self.run,
+            datalayer=datalayer,
+            favor_high=True,
+            pillar_id=pillar,
+        )
+
+        self.assertEqual(input_dl.pillar_id, pillar)
+        self.assertEqual(pillar.datalayer_assignments.count(), 1)
+
+    def test_pillar_protect_on_delete_when_in_use(self):
+        """Test that pillars cannot be deleted when assigned to input datalayers."""
+        pillar = GlobalClimateForesightPillarFactory()
+        datalayer = DataLayerFactory()
+
+        ClimateForesightRunInputDataLayer.objects.create(
+            run=self.run,
+            datalayer=datalayer,
+            favor_high=True,
+            pillar_id=pillar,
+        )
+
+        with self.assertRaises(ProtectedError):
+            pillar.delete()

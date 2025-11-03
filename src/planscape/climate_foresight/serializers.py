@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from climate_foresight.models import (
+    ClimateForesightPillar,
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
 )
@@ -20,7 +21,7 @@ class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
             "id",
             "datalayer",
             "favor_high",
-            "pillar",
+            "pillar_id",
             "normalized_datalayer_id",
             "statistics",
         ]
@@ -184,3 +185,63 @@ class ClimateForesightRunListSerializer(serializers.ModelSerializer):
         if obj.created_by.first_name and obj.created_by.last_name:
             return f"{obj.created_by.first_name} {obj.created_by.last_name}"
         return obj.created_by.username
+
+
+class ClimateForesightPillarSerializer(serializers.ModelSerializer):
+    """Serializer for ClimateForesightPillar model."""
+
+    created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    is_custom = serializers.BooleanField(read_only=True)
+    can_delete = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = ClimateForesightPillar
+        fields = [
+            "id",
+            "run_id",
+            "name",
+            "order",
+            "created_by",
+            "created_at",
+            "is_custom",
+            "can_delete",
+        ]
+        read_only_fields = ["id", "created_at", "is_custom", "can_delete"]
+
+    def validate_run_id(self, value):
+        """
+        Validate that the run is provided for custom pillars.
+        Users cannot create global pillars (run=None) via the API.
+        """
+        if value is None:
+            raise serializers.ValidationError(
+                "Custom pillars must be associated with an analysis. "
+                "Global pillars can only be created by system administrators."
+            )
+
+        user = self.context["request"].user
+        if value.created_by != user:
+            raise serializers.ValidationError(
+                "You don't have permission to create pillars for this run."
+            )
+
+        return value
+
+    def validate(self, attrs):
+        """Additional validation for pillar creation/update."""
+        run = attrs.get("run_id")
+
+        if self.instance and not run:
+            run = self.instance.run_id
+
+        if self.instance and not self.instance.is_custom:
+            raise serializers.ValidationError(
+                "Global pillars cannot be modified via the API."
+            )
+
+        if run and run.status != ClimateForesightRunStatus.DRAFT:
+            raise serializers.ValidationError(
+                "Pillars can only be created or modified when the analysis is in draft mode."
+            )
+
+        return attrs

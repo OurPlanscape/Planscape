@@ -7,6 +7,7 @@ from climate_foresight.serializers import (
 from climate_foresight.tests.factories import (
     ClimateForesightRunFactory,
     ClimateForesightRunInputDataLayerFactory,
+    GlobalClimateForesightPillarFactory,
 )
 from datasets.tests.factories import DataLayerFactory
 from planning.tests.factories import PlanningAreaFactory
@@ -176,11 +177,13 @@ class ClimateForesightRunSerializerTest(TestCase):
         )
         datalayer1 = DataLayerFactory()
         datalayer2 = DataLayerFactory()
+        pillar1 = GlobalClimateForesightPillarFactory(name="Ecological")
+        pillar2 = GlobalClimateForesightPillarFactory(name="Social")
         ClimateForesightRunInputDataLayerFactory(
-            run=run, datalayer=datalayer1, favor_high=True, pillar="Ecological"
+            run=run, datalayer=datalayer1, favor_high=True, pillar_id=pillar1
         )
         ClimateForesightRunInputDataLayerFactory(
-            run=run, datalayer=datalayer2, favor_high=False, pillar="Social"
+            run=run, datalayer=datalayer2, favor_high=False, pillar_id=pillar2
         )
 
         request = self.factory.get("/")
@@ -193,7 +196,7 @@ class ClimateForesightRunSerializerTest(TestCase):
         self.assertEqual(len(data["input_datalayers"]), 2)
         self.assertEqual(data["input_datalayers"][0]["datalayer"], datalayer1.id)
         self.assertEqual(data["input_datalayers"][0]["favor_high"], True)
-        self.assertEqual(data["input_datalayers"][0]["pillar"], "Ecological")
+        self.assertEqual(data["input_datalayers"][0]["pillar_id"], pillar1.id)
 
     def test_create_with_input_datalayers(self):
         request = self.factory.post("/")
@@ -201,6 +204,8 @@ class ClimateForesightRunSerializerTest(TestCase):
 
         datalayer1 = DataLayerFactory()
         datalayer2 = DataLayerFactory()
+        pillar1 = GlobalClimateForesightPillarFactory(name="Ecological")
+        pillar2 = GlobalClimateForesightPillarFactory(name="Economic")
 
         data = {
             "name": "New Run",
@@ -210,9 +215,13 @@ class ClimateForesightRunSerializerTest(TestCase):
                 {
                     "datalayer": datalayer1.id,
                     "favor_high": True,
-                    "pillar": "Ecological",
+                    "pillar_id": pillar1.id,
                 },
-                {"datalayer": datalayer2.id, "favor_high": False, "pillar": "Economic"},
+                {
+                    "datalayer": datalayer2.id,
+                    "favor_high": False,
+                    "pillar_id": pillar2.id,
+                },
             ],
         }
 
@@ -226,27 +235,33 @@ class ClimateForesightRunSerializerTest(TestCase):
         self.assertEqual(instance.input_datalayers.count(), 2)
         input_dl1 = instance.input_datalayers.get(datalayer=datalayer1)
         self.assertTrue(input_dl1.favor_high)
-        self.assertEqual(input_dl1.pillar, "Ecological")
+        self.assertEqual(input_dl1.pillar_id, pillar1)
 
     def test_update_with_input_datalayers(self):
         run = ClimateForesightRunFactory(
             planning_area=self.planning_area, created_by=self.user
         )
         old_datalayer = DataLayerFactory()
+        old_pillar = GlobalClimateForesightPillarFactory(name="Ecological")
         ClimateForesightRunInputDataLayerFactory(
-            run=run, datalayer=old_datalayer, favor_high=True, pillar="Ecological"
+            run=run, datalayer=old_datalayer, favor_high=True, pillar_id=old_pillar
         )
 
         request = self.factory.put("/")
         request.user = self.user
 
         new_datalayer = DataLayerFactory()
+        new_pillar = GlobalClimateForesightPillarFactory(name="Social")
         data = {
             "name": run.name,
             "planning_area": self.planning_area.id,
             "status": run.status,
             "input_datalayers": [
-                {"datalayer": new_datalayer.id, "favor_high": False, "pillar": "Social"}
+                {
+                    "datalayer": new_datalayer.id,
+                    "favor_high": False,
+                    "pillar_id": new_pillar.id,
+                }
             ],
         }
 
@@ -261,7 +276,7 @@ class ClimateForesightRunSerializerTest(TestCase):
         input_dl = instance.input_datalayers.first()
         self.assertEqual(input_dl.datalayer, new_datalayer)
         self.assertFalse(input_dl.favor_high)
-        self.assertEqual(input_dl.pillar, "Social")
+        self.assertEqual(input_dl.pillar_id, new_pillar)
 
 
 class ClimateForesightRunListSerializerTest(TestCase):

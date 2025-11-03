@@ -70,6 +70,78 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
         return f"{self.name} - {self.planning_area.name}"
 
 
+class ClimateForesightPillar(CreatedAtMixin, models.Model):
+    """
+    Represents pillars for organizing climate foresight data layers.
+
+    Global pillars (null run_id) represent the 10 pillars of fire resilience and cannot be deleted.
+    Run-specific pillars are custom pillars created by users and can only be deleted
+    when the run is in draft mode.
+    """
+
+    run_id = models.ForeignKey(
+        ClimateForesightRun,
+        on_delete=models.CASCADE,
+        related_name="custom_pillars",
+        null=True,
+        blank=True,
+        db_column="run_id",
+        help_text="If null, this is a global/shared pillar. If set, it's specific to that run.",
+    )
+
+    name = models.CharField(max_length=255, help_text="Name of the pillar")
+
+    order = models.IntegerField(default=0, help_text="Display order for the pillar")
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="created_climate_foresight_pillars",
+        help_text="User who created this pillar",
+    )
+
+    class Meta:
+        ordering = ["order", "name"]
+        verbose_name = "Climate Foresight Pillar"
+        verbose_name_plural = "Climate Foresight Pillars"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"],
+                condition=models.Q(run_id__isnull=True),
+                name="unique_global_climate_foresight_pillar_name",
+            ),
+            models.UniqueConstraint(
+                fields=["run_id", "name"],
+                condition=models.Q(run_id__isnull=False),
+                name="unique_run_climate_foresight_pillar_name",
+            ),
+        ]
+
+    def __str__(self):
+        scope = "Custom" if self.is_custom else "Global"
+        return f"{self.name} ({scope})"
+
+    @property
+    def is_custom(self) -> bool:
+        """Returns True if this is a custom (run-specific) pillar."""
+        return self.run_id is not None
+
+    def can_delete(self) -> bool:
+        """
+        Determines if this pillar can be deleted.
+
+        Global pillars cannot be deleted.
+        Run-specific pillars can only be deleted if the run is in draft mode.
+        """
+        if not self.is_custom:
+            return False
+        return self.run_id.status == ClimateForesightRunStatus.DRAFT
+
+    def clean(self):
+        """Clean the pillar."""
+        super().clean()
+
+
 class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     """Represents a data layer selected for a climate foresight run with its configuration."""
 
@@ -93,19 +165,21 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="True if high values are favorable, False if low values are favorable",
     )
 
+    pillar_id = models.ForeignKey(
+        ClimateForesightPillar,
+        on_delete=models.PROTECT,
+        null=True,
+        db_column="pillar_id",
+        related_name="datalayer_assignments",
+        help_text="Optional pillar assignment for this data layer",
+    )
+
     normalized_datalayer = models.ForeignKey(
         DataLayer,
         on_delete=models.SET_NULL,
         related_name="climate_foresight_normalized_for",
         null=True,
         help_text="The normalized version of this input data layer (for Climate Foresight analysis only)",
-    )
-
-    pillar = models.CharField(
-        max_length=255,
-        blank=True,
-        default="",
-        help_text="The pillar/category assignment for this layer",
     )
 
     statistics = models.JSONField(

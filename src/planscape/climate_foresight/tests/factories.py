@@ -1,6 +1,7 @@
 import factory
 import factory.fuzzy
 from climate_foresight.models import (
+    ClimateForesightPillar,
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
 )
@@ -19,13 +20,33 @@ class ClimateForesightRunFactory(factory.django.DjangoModelFactory):
     status = factory.fuzzy.FuzzyChoice(["draft", "running", "done"])
 
 
+class ClimateForesightPillarFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ClimateForesightPillar
+
+    run_id = factory.SubFactory(ClimateForesightRunFactory)
+    name = factory.Sequence(lambda n: "Custom Pillar %s" % n)
+    order = factory.Sequence(lambda n: n)
+    created_by = factory.SubFactory(UserFactory)
+
+
+class GlobalClimateForesightPillarFactory(factory.django.DjangoModelFactory):
+    """Factory for creating global (shared) pillars."""
+
+    class Meta:
+        model = ClimateForesightPillar
+
+    run_id = None
+    name = factory.Sequence(lambda n: "Global Pillar %s" % n)
+    order = factory.Sequence(lambda n: n)
+    created_by = factory.SubFactory(UserFactory)
+
+
 class ClimateForesightRunInputDataLayerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ClimateForesightRunInputDataLayer
 
     run = factory.SubFactory(ClimateForesightRunFactory)
     datalayer = factory.SubFactory(DataLayerFactory)
-    favor_high = factory.fuzzy.FuzzyChoice([True, False])
-    pillar = factory.fuzzy.FuzzyChoice(
-        ["Ecological", "Social", "Economic", "Operational"]
-    )
+    favor_high = factory.fuzzy.FuzzyChoice([True, False, None])
+    pillar_id = None
