@@ -1,0 +1,96 @@
+<div class="assign-favorability-container">
+  <div class="left-panel-container">
+    <div class="left-panel">
+      <sg-panel [showDivider]="false">
+        <div panel-title class="panel-header">
+          <h3>ASSIGN FAVORABILITY</h3>
+          <button sg-button icon="help_outline" variant="link"></button>
+        </div>
+        <p>
+          For each data layer, indicate whether high values or low values are
+          favorable for your analysis.
+        </p>
+
+        <div panel-content class="panel-body">
+          <div class="data-layers-list">
+            <div *ngIf="selectedDataLayers.length === 0" class="no-selection">
+              <p>No Data Layers Available</p>
+            </div>
+
+            <div
+              *ngIf="selectedDataLayers.length > 0"
+              class="layers-with-favorability">
+              <div
+                *ngFor="let layer of selectedDataLayers; let i = index"
+                class="layer-favorability-item"
+                [class.active]="i === currentLayerIndex"
+                (click)="selectLayer(i)">
+                <div class="layer-info">
+                  <span class="layer-name">{{ layer.name }}</span>
+                  <div class="favorability-options">
+                    <mat-radio-group
+                      [value]="getFavorability(layer.id)"
+                      (change)="setFavorability(layer.id, $event.value)"
+                      class="favorability-radio-group">
+                      <mat-radio-button [value]="true" class="radio-option">
+                        High Values
+                      </mat-radio-button>
+                      <mat-radio-button [value]="false" class="radio-option">
+                        Low Values
+                      </mat-radio-button>
+                    </mat-radio-group>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sg-panel>
+    </div>
+    <ng-content select="[actions]"></ng-content>
+  </div>
+
+  <div class="right-panel">
+    <div class="chart-card" *ngIf="currentLayer">
+      <div class="chart-header">
+        <button
+          mat-icon-button
+          [disabled]="!hasPreviousLayer"
+          (click)="previousLayer()"
+          class="nav-button">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <h3 class="chart-title">{{ currentLayer.name }}</h3>
+        <button
+          mat-icon-button
+          [disabled]="!hasNextLayer"
+          (click)="nextLayer()"
+          class="nav-button">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <div class="chart-content">
+        <div class="chart-loading" *ngIf="!isCurrentLayerStatisticsReady">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p>Calculating statistics for this layer...</p>
+        </div>
+
+        <div
+          class="chart-wrapper"
+          *ngIf="isCurrentLayerStatisticsReady && chartData && chartOptions">
+          <canvas
+            baseChart
+            [data]="chartData"
+            [options]="chartOptions"
+            [type]="'bar'">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-layer-selected" *ngIf="!currentLayer">
+      <p>Select a data layer to view its distribution</p>
+    </div>
+  </div>
+</div>

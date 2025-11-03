@@ -432,6 +432,8 @@ describe('ClimateForesightComponent', () => {
           created_at: '2024-01-01',
           creator: 'Test Creator',
           status: 'draft' as const,
+          current_step: 1,
+          furthest_step: 2,
         },
       ])
     );
