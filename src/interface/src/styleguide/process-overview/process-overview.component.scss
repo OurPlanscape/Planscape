@@ -1,0 +1,152 @@
+@import "colors";
+
+$circle-size: 40px;
+$line-width: 2px;
+$line-top-offset: 17px;
+$arrow-icon: '/assets/svg/icons/overview/arrowhead.svg';
+$arrow-icon-width: 9px;
+$arrow-icon-height: 16px;
+$icon-white-padding: 20px;
+
+
+@mixin arrowIcon() {
+  position: absolute;
+  content: "";
+  width: $arrow-icon-width;
+  height: $arrow-icon-height;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-image: url($arrow-icon);
+}
+
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  min-width: 320px;
+}
+
+.title {
+  color: #000;
+  text-align: right;
+  /* Label/Top-level */
+
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 14px; /* 100% */
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+
+.steps {
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: 1fr;
+  justify-content: space-between;
+  flex: 1;
+  position: relative;
+
+  // this is the border that wraps the whole list
+  &::before {
+    position: absolute;
+    outline: 2px solid #B6C9CC; // instead of border
+    // subtract half the circle size and half the line width so it looks centered relative
+    // to the circle.
+    width: calc(100% - #{($circle-size + $line-width  ) / 2 });
+    height: calc(100% - $line-top-offset);
+    content: "";
+    border-radius: 14px;
+    top: $line-top-offset;
+  }
+}
+
+.step {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 5px;
+  align-items: flex-end;
+  // min height before the arrow breaks
+  min-height: 70px;
+}
+
+
+.name {
+  color: $color-black;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 22px;
+  text-transform: uppercase;
+  text-align: right;
+  padding-inline: 16px;
+  z-index: 12;
+  position: relative;
+
+  &.first {
+    background-color: $color-white;
+  }
+
+  // add the arrowhead next to the first item name
+  &.first::after {
+    @include arrowIcon();
+    left: -#{$arrow-icon-width - $line-width};
+    top: 3px;
+  }
+}
+
+.description {
+  color: $color-md-gray;
+  text-align: right;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  padding-inline: 16px;
+}
+
+.icon-wrapper {
+  position: relative;
+
+  &.arrow::after {
+    @include arrowIcon();
+    transform: rotate(90deg);
+    left: #{ ($circle-size - $arrow-icon-width ) / 2};
+    top: - $icon-white-padding;
+  }
+}
+
+.icon-wrapper::before {
+  content: "";
+  position: absolute;
+  background-color: $color-white;
+  width: #{$circle-size + $icon-white-padding};
+  height: #{$circle-size + $icon-white-padding};
+  border-radius: 100%;
+  top: -#{$icon-white-padding / 2 };
+  left: -#{$icon-white-padding / 2 };
+}
+
+
+.icon {
+  width: $circle-size;
+  height: $circle-size;
+  border-radius: 100%;
+  background-color: #356A72; //teal
+  position: relative;
+  background-size: $circle-size $circle-size;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+
