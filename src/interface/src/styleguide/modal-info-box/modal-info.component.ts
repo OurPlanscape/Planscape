@@ -12,8 +12,9 @@ export type ModalAlertVariant =
   | 'complete';
 
 /**
- * Modal Info Box
- * A component to be used within the modal body to express various states
+ * A component to be used within the modal body to express various states.
+ * For the component to render between the title and the modal body, use
+ * `modalInfoBox` attribute on the sg-modal-info element.
  */
 @Component({
   selector: 'sg-modal-info',
@@ -42,22 +43,27 @@ export class ModalInfoComponent {
   get isInProgress() {
     return this.infoType === 'inProgress';
   }
+
   @HostBinding('class.info')
   get isInfo() {
     return this.infoType === 'info';
   }
+
   @HostBinding('class.banner')
   get isBanner() {
     return this.infoType === 'banner';
   }
+
   @HostBinding('class.error')
   get isError() {
     return this.infoType === 'error';
   }
+
   @HostBinding('class.warning')
   get isWarning() {
     return this.infoType === 'warning';
   }
+
   @HostBinding('class.complete')
   get isComplete() {
     return this.infoType === 'complete';

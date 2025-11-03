@@ -9,15 +9,16 @@
     <div>{{ title }}</div>
   </div>
   <div class="title-buttons">
-    <button>
-      <mat-icon *ngIf="hasTooltipContent" [matMenuTriggerFor]="tooltipMenu"
-        >help_outline
-      </mat-icon>
-      <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
-        <ng-content class="tooltip-content" select="[tooltipContent]">
-        </ng-content>
-      </mat-menu>
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="tooltipMenu"
+      *ngIf="hasTooltipContent">
+      <mat-icon>help_outline</mat-icon>
     </button>
+    <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
+      <div [innerHTML]="tooltipContent" class="tooltip-content"></div>
+    </mat-menu>
+
     <button
       mat-icon-button
       (click)="handleCloseButton()"
@@ -27,11 +28,12 @@
     </button>
   </div>
 </section>
+<ng-content select="[modalInfoBox]"></ng-content>
 <main
   class="modal-body"
   [ngClass]="{
     scrollable: scrollableContent,
-    padded: padBody,
+    short: shortHeader,
   }">
   <ng-content select="[modalBodyContent]"></ng-content>
 </main>

@@ -1,30 +1,31 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DeleteDialogComponent } from './delete-dialog.component';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-describe('DeleteDialogComponent', () => {
-  let component: DeleteDialogComponent;
-  let fixture: ComponentFixture<DeleteDialogComponent>;
-  let fakeDialogRef: MatDialogRef<DeleteDialogComponent>;
+import { ConfirmationDialogComponent } from './confirmation-dialog.component';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ModalComponent } from '@styleguide';
+
+describe('ConfirmationDialogComponent', () => {
+  let component: ConfirmationDialogComponent;
+  let fixture: ComponentFixture<ConfirmationDialogComponent>;
 
   beforeEach(async () => {
-    fakeDialogRef = jasmine.createSpyObj('MatDialogRef', {
-      close: null,
-    });
-
     await TestBed.configureTestingModule({
+      imports: [ConfirmationDialogComponent, ModalComponent],
       providers: [
         {
           provide: MAT_DIALOG_DATA,
           useValue: { data: { body: 'the body', title: 'the title' } },
         },
-        { provide: MatDialogRef, useValue: fakeDialogRef },
+        {
+          provide: MatDialogRef,
+          useValue: {
+            close: () => {},
+          },
+        },
       ],
-
-      imports: [DeleteDialogComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DeleteDialogComponent);
+    fixture = TestBed.createComponent(ConfirmationDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

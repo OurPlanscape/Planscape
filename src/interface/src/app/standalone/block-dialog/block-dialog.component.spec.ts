@@ -1,30 +1,31 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DeleteDialogComponent } from './delete-dialog.component';
+
+import { BlockDialogComponent } from './block-dialog.component';
+import { ModalComponent } from '@styleguide';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-describe('DeleteDialogComponent', () => {
-  let component: DeleteDialogComponent;
-  let fixture: ComponentFixture<DeleteDialogComponent>;
-  let fakeDialogRef: MatDialogRef<DeleteDialogComponent>;
+describe('BlockDialogComponent', () => {
+  let component: BlockDialogComponent;
+  let fixture: ComponentFixture<BlockDialogComponent>;
 
   beforeEach(async () => {
-    fakeDialogRef = jasmine.createSpyObj('MatDialogRef', {
-      close: null,
-    });
-
     await TestBed.configureTestingModule({
+      imports: [BlockDialogComponent, ModalComponent],
       providers: [
         {
           provide: MAT_DIALOG_DATA,
           useValue: { data: { body: 'the body', title: 'the title' } },
         },
-        { provide: MatDialogRef, useValue: fakeDialogRef },
+        {
+          provide: MatDialogRef,
+          useValue: {
+            close: () => {},
+          },
+        },
       ],
-
-      imports: [DeleteDialogComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DeleteDialogComponent);
+    fixture = TestBed.createComponent(BlockDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

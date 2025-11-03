@@ -3,9 +3,8 @@
   [shortHeader]="true"
   [showBorders]="false"
   [showClose]="false"
-  primaryButtonText="Delete"
-  primaryButtonVariant="negative"
-  (clickedSecondary)="cancel()"
-  (clickedPrimary)="confirm()">
+  [primaryButtonText]="data.primaryCta ? data.primaryCta : 'Ok'"
+  [hasSecondaryButton]="false"
+  (clickedPrimary)="close()">
   <div modalBodyContent [innerHTML]="data.body"></div>
 </sg-modal>

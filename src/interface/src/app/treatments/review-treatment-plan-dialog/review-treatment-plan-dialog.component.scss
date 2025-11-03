@@ -1,7 +1,6 @@
 @import "colors";
 
 .review-content {
-  padding: 24px;
   color: $color-dark-gray;
 
   p + p {
@@ -46,7 +45,7 @@
     align-items: center;
     justify-content: space-between;
 
-    
+
   }
 
 }

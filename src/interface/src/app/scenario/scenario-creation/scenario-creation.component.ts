@@ -38,7 +38,6 @@ import {
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
-import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
@@ -55,9 +54,10 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
-import { RunScenarioModalComponent } from '../run-scenario-modal/run-scenario-modal.component';
 import { filter } from 'rxjs/operators';
 import { ScenarioState } from '../scenario.state';
+import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
+import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 
 enum ScenarioTabs {
   CONFIG,
@@ -209,7 +209,9 @@ export class ScenarioCreationComponent
     if (this.newScenarioState.isDraftFinishedSnapshot()) {
       return true;
     }
-    const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: EXIT_SCENARIO_MODAL,
+    });
     return dialogRef.afterClosed();
   }
 
@@ -291,7 +293,15 @@ export class ScenarioCreationComponent
 
   showRunScenarioConfirmation() {
     this.dialog
-      .open(RunScenarioModalComponent)
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Ready to run the scenario?',
+          body: `You're about to run the scenario as it's currently set up. Once the analysis starts, you won't be able to make changes.
+                 <br><br>
+                 Are you sure you want to proceed?`,
+          primaryCta: 'Run Scenario',
+        },
+      })
       .afterClosed()
       .pipe(filter((confirmed) => !!confirmed))
       .subscribe(() => this.runScenario());
