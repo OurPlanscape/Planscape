@@ -1,4 +1,5 @@
 import { Component, inject, Inject, OnInit } from '@angular/core';
+import { NgIf } from '@angular/common';
 import {
   InputDirective,
   InputFieldComponent,
@@ -14,14 +15,19 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
-import { Router } from '@angular/router';
-import { Scenario } from '@types';
+import { Router, UrlTree } from '@angular/router';
+import { Scenario, ScenarioDraftConfig, ScenarioDraftPayload } from '@types';
+import { map, take } from 'rxjs';
+import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
+import { ForsysService } from '@services/forsys.service';
+import { ForsysData } from '../../types/module.types';
 
 @Component({
   selector: 'app-scenario-setup-modal',
   standalone: true,
   imports: [
     ModalComponent,
+    NgIf,
     InputDirective,
     ReactiveFormsModule,
     InputFieldComponent,
@@ -33,20 +39,37 @@ export class ScenarioSetupModalComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<ScenarioSetupModalComponent>);
 
   scenarioNameForm = new FormGroup({
-    scenarioName: new FormControl('', Validators.required),
+    scenarioName: new FormControl(
+      this.data.defaultName ?? '',
+      Validators.required
+    ),
   });
   submitting = false;
   errorMessage: string = '';
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public data: { planId: number; scenario?: Scenario }, // Access the passed data
+    public data: {
+      planId: number;
+      fromClone: boolean;
+      scenario?: Scenario;
+      defaultName?: string;
+    },
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private forsysService: ForsysService
+  ) {
+    this.forsysService.forsysData$
+      .pipe(take(1))
+      .subscribe((forsys: ForsysData) => {
+        this.thresholdsData = forsys.thresholds;
+      });
+  }
+
+  thresholdsData: any = null;
 
   get editMode(): boolean {
-    return this.data.scenario !== undefined;
+    return this.data.scenario !== undefined && this.data.fromClone !== true;
   }
 
   get primaryCTA(): string {
@@ -85,8 +108,50 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
+  copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
+    let newPayload: Partial<ScenarioDraftPayload> = {};
+    if (oldScenario.version === 'V3') {
+      const oldConfig: Partial<ScenarioDraftConfig> =
+        oldScenario.configuration as ScenarioDraftConfig;
+      newPayload = {
+        configuration: oldConfig,
+      };
+    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
+      const oldConfig: Partial<ScenarioDraftConfig> = oldScenario.configuration;
+      const thresholdsIdMap = new Map<string, number>();
+      thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
+      thresholdsIdMap.set(
+        'distance_to_roads',
+        this.thresholdsData.distance_from_roads?.id
+      );
+      newPayload = convertFlatConfigurationToDraftPayload(
+        oldConfig,
+        thresholdsIdMap
+      );
+    }
+    if (Number(oldScenario.treatment_goal?.id)) {
+      const num = Number(oldScenario.treatment_goal?.id);
+      newPayload.treatment_goal = num;
+    }
+    this.scenarioService
+      .patchScenarioConfig(newScenario.id!, newPayload)
+      .pipe(
+        map((result) => {
+          this.reloadTo(
+            `/plan/${newScenario.planning_area}/scenario/${result.id}`
+          );
+        })
+      )
+      .subscribe();
+  }
+
+  async reloadTo(url: string | UrlTree) {
+    // Force reload a url route
+    await this.router.navigateByUrl('/', { skipLocationChange: true });
+    await this.router.navigateByUrl(url);
+  }
+
   private createScenario(name: string) {
-    // TODO: cannot submit without required values yet
     if (!this.data.planId) {
       this.dialogRef.close();
       return;
@@ -96,7 +161,12 @@ export class ScenarioSetupModalComponent implements OnInit {
       next: (result) => {
         this.dialogRef.close(result);
         this.submitting = false;
-        if (result) {
+
+        //for cloned scenarios, we copy configuration, then redirect
+        if (this.data.fromClone && result.id && this.data.scenario) {
+          this.copyConfiguration(this.data.scenario, result);
+        }
+        if (result.id && this.data.fromClone === false) {
           this.router.navigate(['plan', planId, 'scenario', result.id]);
         }
       },

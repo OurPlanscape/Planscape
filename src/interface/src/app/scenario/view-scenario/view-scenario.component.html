@@ -20,7 +20,7 @@
         </app-scenario-results>
         <app-scenario-failure
           *ngIf="scenarioHasFailed(scenario)"
-          (tryAgain)="goToConfig()"
+          (tryAgain)="handleTryAgain(scenario)"
           (goBack)="goToPlan()"
           [scenarioName]="scenario.name"
           [scenarioId]="scenarioId!"

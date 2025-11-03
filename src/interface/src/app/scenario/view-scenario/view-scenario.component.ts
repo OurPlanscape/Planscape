@@ -134,15 +134,19 @@ export class ViewScenarioComponent {
     );
   }
 
-  goToConfig() {
+  handleTryAgain(scenario: Scenario) {
     if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       this.dialog.open(ScenarioSetupModalComponent, {
         maxWidth: '560px',
         data: {
           planId: this.planId,
+          defaultName: '', // TODO: this is a placeholder for future name option
+          fromClone: true,
+          scenario: scenario,
         },
       });
     } else {
+      //we just go to the scenario list page
       this.router.navigate(['plan', this.planId, 'scenario']);
     }
   }

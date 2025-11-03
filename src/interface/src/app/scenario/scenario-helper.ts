@@ -79,7 +79,7 @@ export function scenarioCanHaveTreatmentPlans(
   return false;
 }
 
-export function convertFormOutputToDraftPayload(
+export function convertFlatConfigurationToDraftPayload(
   formData: Partial<ScenarioCreation>,
   thresholdIds: Map<string, number>
 ): Partial<ScenarioDraftPayload> {
@@ -116,6 +116,7 @@ export function convertFormOutputToDraftPayload(
   }
   // Constraints
   const constraints: Constraint[] = [];
+
   const roadLayerId = thresholdIds.get('distance_to_roads');
   if (formData.min_distance_from_road && roadLayerId) {
     constraints.push({
@@ -132,6 +133,7 @@ export function convertFormOutputToDraftPayload(
       value: formData.max_slope,
     });
   }
+
   if (constraints.length > 0) {
     config.constraints = constraints;
   }

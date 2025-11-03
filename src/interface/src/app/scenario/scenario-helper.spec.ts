@@ -1,7 +1,7 @@
 import {
   getGroupedGoals,
   getScenarioCreationPayloadScenarioCreation,
-  convertFormOutputToDraftPayload,
+  convertFlatConfigurationToDraftPayload,
   getNamedConstraints,
 } from './scenario-helper';
 import { Constraint, ScenarioCreation, ScenarioGoal } from '@types';
@@ -165,7 +165,7 @@ describe('getGroupedGoals', () => {
   });
 });
 
-describe('convertFormOutputToDraftPayload', () => {
+describe('convertFlatConfigurationToDraftPayload', () => {
   const mockThresholdIds = new Map<string, number>([
     ['distance_to_roads', 100],
     ['slope', 200],
@@ -175,7 +175,7 @@ describe('convertFormOutputToDraftPayload', () => {
       stand_size: 'LARGE',
       treatment_goal: 1,
     };
-    const payloadResult = convertFormOutputToDraftPayload(
+    const payloadResult = convertFlatConfigurationToDraftPayload(
       formData,
       mockThresholdIds
     );
@@ -189,7 +189,7 @@ describe('convertFormOutputToDraftPayload', () => {
     const formData: Partial<ScenarioCreation> = {
       excluded_areas: [555, 444, 333],
     };
-    const payloadResult = convertFormOutputToDraftPayload(
+    const payloadResult = convertFlatConfigurationToDraftPayload(
       formData,
       mockThresholdIds
     );
@@ -202,7 +202,7 @@ describe('convertFormOutputToDraftPayload', () => {
     const formData: Partial<ScenarioCreation> = {
       excluded_areas: [],
     };
-    const payloadResult = convertFormOutputToDraftPayload(
+    const payloadResult = convertFlatConfigurationToDraftPayload(
       formData,
       mockThresholdIds
     );
@@ -216,7 +216,7 @@ describe('convertFormOutputToDraftPayload', () => {
       min_distance_from_road: 100,
       max_slope: 99,
     };
-    const payloadResult = convertFormOutputToDraftPayload(
+    const payloadResult = convertFlatConfigurationToDraftPayload(
       formData,
       mockThresholdIds
     );
@@ -238,7 +238,7 @@ describe('convertFormOutputToDraftPayload', () => {
       max_project_count: 10,
       estimated_cost: 2470,
     };
-    const payloadResult = convertFormOutputToDraftPayload(
+    const payloadResult = convertFlatConfigurationToDraftPayload(
       formData,
       mockThresholdIds
     );
