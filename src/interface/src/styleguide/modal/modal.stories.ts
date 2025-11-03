@@ -4,7 +4,7 @@ import {
   moduleMetadata,
   StoryObj,
 } from '@storybook/angular';
-import { ModalComponent, TooltipContentDirective } from './modal.component';
+import { ModalComponent } from './modal.component';
 import { ModalInfoComponent } from '../modal-info-box/modal-info.component';
 import {
   MAT_DIALOG_DATA,
@@ -30,7 +30,6 @@ const meta: Meta<ModalComponent> = {
         MatInputModule,
         InputFieldComponent,
         InputDirective,
-        TooltipContentDirective,
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },

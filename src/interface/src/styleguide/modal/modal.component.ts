@@ -1,6 +1,5 @@
 import {
   Component,
-  Directive,
   EventEmitter,
   HostBinding,
   Input,
@@ -14,10 +13,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { ButtonComponent, ButtonVariant } from '../button/button.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
-
-// eslint-disable-next-line @angular-eslint/directive-selector
-@Directive({ selector: '[tooltipContent]', standalone: true })
-export class TooltipContentDirective {}
 
 @Component({
   selector: 'sg-modal',
@@ -34,7 +29,6 @@ export class TooltipContentDirective {}
     MatMenuModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    TooltipContentDirective,
   ],
 })
 export class ModalComponent {
