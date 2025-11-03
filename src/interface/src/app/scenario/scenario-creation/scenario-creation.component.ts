@@ -238,6 +238,11 @@ export class ScenarioCreationComponent
           this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
           this.scenarioStatus === 'DRAFT'
         ) {
+          if (this.scenarioName !== this.form.get('scenarioName')?.value) {
+            this.handleNameChange(
+              this.form.get('scenarioName')?.value ?? this.scenarioName
+            );
+          }
           return this.savePatch(data).pipe(catchError(() => of(false)));
         }
 
@@ -286,11 +291,6 @@ export class ScenarioCreationComponent
       this.scenarioStatus === 'DRAFT'
     ) {
       this.newScenarioState.setDraftFinished(true);
-      if (this.scenarioName !== this.form.get('scenarioName')?.value) {
-        this.handleNameChange(
-          this.form.get('scenarioName')?.value ?? this.scenarioName
-        );
-      }
       this.showRunScenarioConfirmation();
     } else {
       this.finishFromFullConfig();
@@ -304,7 +304,12 @@ export class ScenarioCreationComponent
         this.scenarioService
           .editScenarioName(this.scenarioId, newName, this.planId)
           .subscribe({
-            next: () => {},
+            next: () => {
+              this.breadcrumbService.updateBreadCrumb({
+                label: 'Scenario: ' + newName,
+                backUrl: getPlanPath(this.planId),
+              });
+            },
             error: (e) => {},
           });
       }
