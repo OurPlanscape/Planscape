@@ -1,0 +1,15 @@
+<div class="list-header">
+  <div class="select-title">Select</div>
+  <div>View Layer</div>
+</div>
+<form>
+  <div *ngFor="let item of items" class="list-row">
+    <div class="select">
+      <button class="select-button" (click)="selectItem(item)">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    <mat-checkbox class="view-checkbox">{{ item.name }}</mat-checkbox>
+  </div>
+</form>

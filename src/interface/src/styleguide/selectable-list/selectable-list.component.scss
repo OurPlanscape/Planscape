@@ -1,0 +1,84 @@
+@import "colors";
+
+$select-width: 50px;
+$colum-gap: 16px;
+$material-checkbox-padding: 8px;
+
+
+:host {
+  box-sizing: border-box;
+  position: relative;
+
+  &:after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    background-color: #e1e1e1;
+    top: 0;
+    left: #{$select-width + $colum-gap}
+  }
+
+  .view-checkbox {
+    padding-left: 0;
+    flex: 1
+  }
+
+  ::ng-deep {
+    .mdc-form-field {
+      align-items: flex-start;
+    }
+
+    .mdc-label {
+      margin-top: $material-checkbox-padding;
+    }
+
+  }
+}
+
+
+.list-row, .list-header {
+  display: flex;
+
+  gap: #{ $colum-gap * 2 - $material-checkbox-padding};
+  margin-bottom: 16px;
+}
+
+.list-row {
+  align-items: flex-start;
+}
+
+.list-header {
+  gap: #{ $colum-gap * 2};
+  align-items: center;
+}
+
+.list-header {
+  margin-bottom: 24px;
+}
+
+.select-title, .select {
+  width: 50px;
+  text-align: center;
+}
+
+.select {
+  margin-top: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+
+.select-button {
+  display: block;
+  padding: 0;
+  border: none;
+  margin: 0 auto;
+  border-radius: 100%;
+  height: 24px;
+  width: 24px;
+  color: $color-white;
+  background-color: $color-standard-blue;
+  cursor: pointer;
+}
