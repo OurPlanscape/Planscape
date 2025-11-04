@@ -1,0 +1,8 @@
+Dear {{ user_full_name }},
+
+Your Planscape scenario is ready. {{ scenario_link }}
+
+If you have questions or need help, please refer to the User Guide (https://www.planscape.org/documentation/user-guide/).
+
+Thank you,
+Team Planscape
