@@ -22,7 +22,6 @@ from planning.tests.factories import (
     PlanningAreaFactory,
 )
 from planscape.exceptions import ForsysException, ForsysTimeoutException
-from unittest import mock
 
 
 class AsyncCalculateStandMetricsTest(TestCase):
