@@ -31,20 +31,13 @@
           {{ c.value | number: '1.0-2' }} yds
         </div>
       </dd>
+      <dd *ngIf="configuration?.constraints?.length === 0">--</dd>
       <dt>Treatment Target:</dt>
-      <dd>
-        @if (configuration?.targets?.max_area) {
-          Planning Area Acres
-          {{ configuration?.targets?.max_area | number: '1.0-0' }}
-        } @else if (configuration?.targets?.max_budget) {
-          Planning Area Budget ${{
-            configuration?.targets?.max_budget | number: '1.0-2'
-          }}
-        } @else if (configuration?.targets?.max_project_count) {
-          Max Project Count ${{
-            configuration?.targets?.max_project_count | number: '1.0-2'
-          }}
-        }
+      <dd *ngIf="configuration">
+        {{ configuration.targets.max_project_count | number: '1.0-2' }} project
+        areas of {{ configuration.targets.max_area | number: '1.0-2' }} acres
+        &#64; ${{ configuration.targets.estimated_cost | number: '1.0-2' }} /
+        acre
       </dd>
     </dl>
   </div>

@@ -1117,9 +1117,11 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         scenario.save(update_fields=["geopackage_status", "updated_at"])
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
-        export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
-        export_scenario_stand_outputs_to_geopackage(scenario, temp_file, stand_inputs)
+        
+        if scenario.result_status == ScenarioResultStatus.SUCCESS:
+            export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+            export_scenario_stand_outputs_to_geopackage(scenario, temp_file, stand_inputs)
 
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"

@@ -261,6 +261,17 @@ class TriggerGeopackageGenerationTestCase(TestCase):
         mock_async_generate.assert_called_once_with(scenario.pk)
 
     @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation_falied_scenario(self, mock_async_generate):
+        scenario = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.FAILURE,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+
+        trigger_geopackage_generation()
+
+        mock_async_generate.assert_called_once_with(scenario.pk)
+
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
     def test_trigger_geopackage_generation_no_pending(self, mock_async_generate):
         ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
@@ -295,7 +306,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
             geopackage_status=GeoPackageStatus.PENDING,
         )
         ScenarioFactory.create(
-            result_status=ScenarioResultStatus.FAILURE,
+            result_status=ScenarioResultStatus.PANIC,
             geopackage_status=GeoPackageStatus.PENDING,
         )
 

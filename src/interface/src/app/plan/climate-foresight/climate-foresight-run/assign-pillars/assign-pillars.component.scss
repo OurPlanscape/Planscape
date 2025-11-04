@@ -1,0 +1,153 @@
+@use '@angular/material' as mat;
+@import 'colors';
+@import 'mixins';
+
+.container {
+  display: flex;
+  flex-direction: row;
+  padding: 16px;
+  min-height: 100%;
+  box-sizing: border-box;
+  background-color: $color-soft-purple;
+  gap: 16px;
+}
+
+.datalayers-section {
+  display: flex;
+}
+
+.col.left-panel {
+  display: flex;
+  width: 300px;
+
+  .description {
+    margin-bottom: 24px;
+
+    @include small-paragraph();
+    color: $color-dark-gray;
+  }
+
+  p.description:last-of-type {
+    margin-bottom: 16px;
+  }
+}
+
+.col.dataLayers {
+  flex: 1;
+  background-color: $color-white;
+  padding: 16px;
+  border: 1px solid $color-light-purple;
+  border-radius: 4px;
+}
+
+.dataLayers {
+  &-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .title {
+      font-size: 14px;
+      font-weight: 700;
+      color: $color-black;
+      text-transform: uppercase;
+    }
+  }
+}
+
+.expandible-group {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+  background: $color-lighter-gray;
+
+  &-title {
+    display: flex;
+    align-items: center;
+
+    @include small-input-label();
+  }
+
+  div.datalayers-box:first-of-type {
+    margin-top: 16px;
+  }
+
+  &-desc {
+    margin-left: 8px;
+
+    @include small-input-label();
+    color: $color-md-gray;
+  }
+}
+
+.datalayers-box {
+  padding: 20px 10px;
+  border: solid 1px #ccc;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  box-sizing: border-box;
+  cursor: move;
+  background: $color-white;
+  gap: 8px;
+  min-height: 56px;
+  margin-bottom: 8px;
+
+  @include small-input-label();
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  @include mat.elevation(2);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.datalayers-list.cdk-drop-list-dragging
+  .datalayers-box:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.expandible-group-title {
+  &::before {
+    display: inline-block;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    content: '';
+    background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>')
+      no-repeat 50% 50%;
+    background-size: 6px;
+  }
+
+  &.open {
+    &::before {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.empty-datalayers {
+  padding: 16px;
+  padding-bottom: 0;
+  color: $color-md-gray;
+}
+
+.datalayers-list {
+  min-height: 120px; // if the list is empty we need to keep the drop area
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}

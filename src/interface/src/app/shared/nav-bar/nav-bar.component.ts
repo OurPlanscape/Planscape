@@ -22,7 +22,8 @@ export class NavBarComponent implements OnInit {
     | 'SCENARIO'
     | 'TREATMENTS'
     | 'TREATMENTS_PROJECT_AREA'
-    | 'DIRECT_IMPACTS' = 'EXPLORE';
+    | 'DIRECT_IMPACTS'
+    | 'CLIMATE_FORESIGHT' = 'EXPLORE';
 
   params: Params | null = null;
 
@@ -62,15 +63,16 @@ export class NavBarComponent implements OnInit {
   }
 
   showPrintButton() {
-    return !(
-      this.area === 'TREATMENTS' ||
-      this.area === 'TREATMENTS_PROJECT_AREA' ||
-      this.area === 'EXPLORE'
-    );
+    return ![
+      'TREATMENTS',
+      'TREATMENTS_PROJECT_AREA',
+      'EXPLORE',
+      'CLIMATE_FORESIGHT',
+    ].some((area) => area === this.area);
   }
 
   showTooltip() {
-    // should hide if its on area explore
-    return this.area !== 'EXPLORE';
+    // should hide if its on area explore or climate
+    return !['EXPLORE', 'CLIMATE_FORESIGHT'].some((area) => area === this.area);
   }
 }

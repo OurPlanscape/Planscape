@@ -9,12 +9,13 @@
   (clickedPrimary)="handleCreateButton()"
   [hasPrimarySpinner]="true"
   [isInSpinState]="uploadingData">
+  <sg-modal-info
+    modalInfoBox
+    infoType="info"
+    leadingIcon="info_filled"
+    message="Project area(s) must be within the planning area.">
+  </sg-modal-info>
   <div modalBodyContent>
-    <sg-modal-info
-      infoType="info"
-      leadingIcon="info_filled"
-      message="Project area(s) must be within the planning area.">
-    </sg-modal-info>
     <form [formGroup]="uploadProjectsForm!" class="upload-scenario-form">
       <app-form-message
         [messageType]="FormMessageType.ERROR"
@@ -38,6 +39,7 @@
           showSupportMessage="on-error">
           <input
             sgInput
+            cdkFocusInitial
             placeholder="Scenario name"
             name="scenarioName"
             formControlName="scenarioName"
@@ -83,7 +85,10 @@
             </div>
           </mat-menu>
         </div>
-        <mat-form-field class="stand-picker-field" appearance="outline">
+        <mat-form-field
+          class="stand-picker-field"
+          appearance="outline"
+          subscriptSizing="dynamic">
           <mat-select name="standSize" formControlName="standSize">
             <mat-option class="nav-page-item" value="SMALL"
               >Small (10 acres)

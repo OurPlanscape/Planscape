@@ -356,7 +356,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
 @app.task()
 def trigger_geopackage_generation():
     scenarios = Scenario.objects.filter(
-        result_status=ScenarioResultStatus.SUCCESS,
+        result_status__in=(ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE),
         geopackage_status=GeoPackageStatus.PENDING,
     ).values_list("id", flat=True)
     log.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
@@ -373,9 +373,9 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     """
     log.info(f"Generating geopackage for scenario {scenario_id}")
     scenario = Scenario.objects.get(id=scenario_id)
-    if scenario.result_status != ScenarioResultStatus.SUCCESS:
+    if scenario.result_status not in (ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE):
         log.warning(
-            f"Scenario {scenario_id} is not in a successful state. Current status: {scenario.result_status}"
+            f"Scenario {scenario_id} is not in successful or final failure state. Current status: {scenario.result_status}"
         )
         return
 

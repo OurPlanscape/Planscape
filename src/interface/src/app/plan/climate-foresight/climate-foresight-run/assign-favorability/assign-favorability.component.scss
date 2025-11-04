@@ -1,0 +1,246 @@
+@import 'variables';
+@import 'colors';
+
+:host {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
+
+.assign-favorability-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.left-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 360px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+
+  .left-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    height: 100%;
+    background-color: $color-soft-purple;
+
+    sg-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      border-color: $color-light-purple;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+
+      h3 {
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase;
+        margin: 0;
+        color: $color-dark-gray;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+
+      .info-button {
+        color: $color-dark-gray;
+      }
+    }
+
+    p {
+      font-size: 14px;
+      color: $color-dark-gray;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .panel-body {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .data-layers-list {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+
+    .no-selection {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+
+      p {
+        font-size: 14px;
+        margin: 0;
+      }
+    }
+
+    .layers-with-favorability {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .layer-favorability-item {
+      background-color: white;
+      border-radius: 4px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+
+      &:hover {
+        background-color: $color-lighter-gray;
+      }
+
+      &.active {
+        border-color: $color-standard-blue;
+        background-color: $color-soft-purple-light;
+      }
+
+      .layer-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .layer-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: $color-dark-gray;
+        }
+
+        .favorability-options {
+          .favorability-radio-group {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+
+            .radio-option {
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  padding: 32px;
+  background-color: $color-lighter-gray;
+
+  .chart-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: 100%;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 32px;
+      border-bottom: 1px solid $color-soft-gray;
+
+      .nav-button {
+        flex-shrink: 0;
+        color: $color-standard-blue;
+
+        &:disabled {
+          color: $color-soft-gray;
+        }
+
+        mat-icon {
+          font-size: 28px;
+          width: 28px;
+          height: 28px;
+        }
+      }
+
+      .chart-title {
+        flex: 1;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 500;
+        margin: 0;
+        color: $color-dark-gray;
+      }
+    }
+
+    .chart-content {
+      flex: 1;
+      display: flex;
+      padding: 32px;
+      overflow: hidden;
+
+      .chart-loading {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+
+        p {
+          font-size: 14px;
+          color: $color-md-gray;
+          margin: 0;
+        }
+      }
+
+      .chart-wrapper {
+        flex: 1;
+        position: relative;
+        min-height: 0;
+      }
+    }
+  }
+
+  .no-layer-selected {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+    p {
+      font-size: 16px;
+      color: $color-md-gray;
+    }
+  }
+}
+
+::ng-deep {
+  sg-steps-actions {
+    z-index: 4;
+  }
+
+  .mat-mdc-radio-button .mdc-radio {
+    padding: 0;
+  }
+
+  .mat-mdc-radio-button .mdc-form-field {
+    padding: 0;
+  }
+}

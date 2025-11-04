@@ -1,0 +1,11 @@
+<sg-modal
+  [title]="data.title"
+  [shortHeader]="true"
+  [showBorders]="false"
+  [showClose]="false"
+  [primaryButtonText]="data.primaryCta ? data.primaryCta : 'Ok'"
+  [secondaryButtonText]="data.secondaryCta ? data.secondaryCta : 'Cancel'"
+  (clickedSecondary)="cancel()"
+  (clickedPrimary)="confirm()">
+  <div modalBodyContent [innerHTML]="data.body"></div>
+</sg-modal>
