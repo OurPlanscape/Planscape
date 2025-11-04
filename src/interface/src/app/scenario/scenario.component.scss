@@ -1,4 +1,5 @@
 @import 'variables';
+@import "colors";
 
 .scenario-content {
   width: 100%;
@@ -9,11 +10,10 @@
 
 .scenario-content-panel {
   height: 100%;
-  width: 45%;
-  min-width: 450px;
-  max-width: 800px;
   display: flex;
   flex-direction: column;
+  border-right: 1px $color-soft-gray solid;
+  width: $scenario-sidebar-width;
 }
 
 .scenario-map-container {
