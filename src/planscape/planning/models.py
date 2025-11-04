@@ -22,8 +22,8 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Case, Count, IntegerField, Max, Q, QuerySet, When
-from django.db.models.functions import Coalesce
+from django.db.models import Case, Count, F, IntegerField, Max, Q, QuerySet, When
+from django.db.models.functions import Coalesce, Greatest
 from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
 from stands.models import Stand, StandSizeChoices
@@ -68,8 +68,9 @@ class PlanningAreaManager(AliveObjectsManager):
                 )
             )
             .annotate(
-                scenario_latest_updated_at=Coalesce(
-                    Max("scenarios__updated_at"), "updated_at"
+                scenario_latest_updated_at=Greatest(
+                    Coalesce(Max("scenarios__updated_at"), F("updated_at")),
+                    F("updated_at"),
                 )
             )
             .order_by("-scenario_latest_updated_at")
