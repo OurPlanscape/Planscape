@@ -76,7 +76,6 @@ enum ScenarioTabs {
     MatTabsModule,
     ReactiveFormsModule,
     NgIf,
-    MatSnackBar,
     DataLayersComponent,
     StepsComponent,
     CdkStepperModule,
