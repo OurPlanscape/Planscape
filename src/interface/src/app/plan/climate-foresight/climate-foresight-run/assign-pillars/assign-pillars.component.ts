@@ -11,6 +11,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { NamePillarModalComponent } from '../../name-pillar-modal/name-pillar-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-assign-pillars',
@@ -23,6 +24,8 @@ import { MatDialog } from '@angular/material/dialog';
     CdkDropList,
     CdkDrag,
     NamePillarModalComponent,
+    DeleteDialogComponent,
+    ButtonComponent,
   ],
   templateUrl: './assign-pillars.component.html',
   styleUrl: './assign-pillars.component.scss',
@@ -90,6 +93,18 @@ export class AssignPillarsComponent {
   addPillar() {
     this.dialog
       .open(NamePillarModalComponent)
+      .afterClosed()
+      .subscribe((modalResponse: any) => {});
+  }
+
+  deletePillar() {
+    this.dialog
+      .open(DeleteDialogComponent, {
+        data: {
+          title: 'Delete pillar',
+          body: 'This will remove the pillar, but all data layers inside will remain and return to the selected data layers list. Are you sure you want to delete this pillar?',
+        },
+      })
       .afterClosed()
       .subscribe((modalResponse: any) => {});
   }
