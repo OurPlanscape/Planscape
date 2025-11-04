@@ -58,6 +58,8 @@ import { filter } from 'rxjs/operators';
 import { ScenarioState } from '../scenario.state';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
+import { SNACK_ERROR_CONFIG } from '@shared';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 enum ScenarioTabs {
   CONFIG,
@@ -74,6 +76,7 @@ enum ScenarioTabs {
     MatTabsModule,
     ReactiveFormsModule,
     NgIf,
+    MatSnackBar,
     DataLayersComponent,
     StepsComponent,
     CdkStepperModule,
@@ -143,7 +146,8 @@ export class ScenarioCreationComponent
     private router: Router,
     private featureService: FeatureService,
     private breadcrumbService: BreadcrumbService,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private matSnackBar: MatSnackBar
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -313,7 +317,13 @@ export class ScenarioCreationComponent
                 backUrl: getPlanPath(this.planId),
               });
             },
-            error: (e) => {},
+            error: (e) => {
+              this.matSnackBar.open(
+                '[Error] Unable to update name due to a backend error.',
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
           });
       }
     }
