@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { NewScenarioState } from './new-scenario.state';
-import { ScenarioState } from './scenario.state';
 
 @Component({
   selector: 'app-scenario',
@@ -9,7 +8,5 @@ import { ScenarioState } from './scenario.state';
   providers: [NewScenarioState],
 })
 export class ScenarioComponent {
-  scenarioHasResults$ = this.scenarioService.isScenarioSuccessful$;
-
-  constructor(private scenarioService: ScenarioState) {}
+  constructor() {}
 }

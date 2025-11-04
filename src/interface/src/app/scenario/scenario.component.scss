@@ -10,15 +10,10 @@
 
 .scenario-content-panel {
   height: 100%;
-  width: $scenario-config-sidebar;
   display: flex;
   flex-direction: column;
   border-right: 1px $color-soft-gray solid;
-  transition: width 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.scenario-content-panel.with-results {
-  width: $scenario-results-sidebar;
+  width: $scenario-sidebar-width;
 }
 
 .scenario-map-container {

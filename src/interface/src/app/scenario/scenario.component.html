@@ -1,9 +1,7 @@
 <!-- Navbar -->
 <app-nav-bar area="SCENARIO"></app-nav-bar>
 <div class="scenario-content">
-  <div
-    class="scenario-content-panel"
-    [ngClass]="{ 'with-results': scenarioHasResults$ | async }">
+  <div class="scenario-content-panel">
     <!-- Scenario creation or scenario view -->
     <router-outlet></router-outlet>
   </div>
