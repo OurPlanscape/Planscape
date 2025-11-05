@@ -7,7 +7,6 @@ import {
   MatCheckboxChange,
 } from '@angular/material/checkbox';
 import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
-import { ScenarioService } from '@services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()
@@ -21,6 +20,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 export class ScenarioMetricsLegendComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
   @Input() scenarioId!: number;
+  @Input() usageTypes: UsageType[] | null = [];
 
   @Output() handleCheckbox = new EventEmitter<MatCheckboxChange>();
   assignedColors: { [name: string]: string } = {};
@@ -34,7 +34,6 @@ export class ScenarioMetricsLegendComponent implements OnInit {
 
   constructor(
     private chartService: ScenarioResultsChartsService,
-    private scenarioService: ScenarioService
   ) {}
 
   ngOnInit() {
@@ -52,22 +51,17 @@ export class ScenarioMetricsLegendComponent implements OnInit {
         this.selectedMetrics = m;
       });
 
-    this.scenarioService
-      .getScenario(this.scenarioId)
-      .pipe(untilDestroyed(this))
-      .subscribe((scenario) => {
-        if (scenario.usage_types) {
-          this.divideMetricsIntoUsageTypes(scenario.usage_types);
-        }
-      });
+      if (this.usageTypes && this.usageTypes?.length > 0) {
+        this.divideMetricsIntoUsageTypes();
+      }
   }
 
   // divide metrics into priorities and cobenefits,
   // based on usage types for scenario treatment goal
-  divideMetricsIntoUsageTypes(usageTypes: UsageType[]) {
+  divideMetricsIntoUsageTypes() {
     this.priorities = [];
     this.cobenefits = [];
-    const priorityLayers = usageTypes
+    const priorityLayers = this.usageTypes
       ?.filter((ut) => ut.usage_type === 'PRIORITY')
       .map((m) => m.datalayer);
     this.metrics.forEach((m: string) => {

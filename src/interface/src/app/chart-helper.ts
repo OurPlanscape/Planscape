@@ -211,9 +211,8 @@ export function getChartDatasetsFromFeatures(
       stack: 'Stack 0',
     });
   });
-
-  const sortedResults = result.sort(sortByTypeAndName);
-  return sortedResults;
+  
+  return result.sort(sortByTypeAndName);
 }
 
 export function convertTo2DecimalsNumbers(value: number): number {
