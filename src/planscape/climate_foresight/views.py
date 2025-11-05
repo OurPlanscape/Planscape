@@ -1,11 +1,18 @@
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
+from django.db import models
 from django.shortcuts import get_object_or_404
-from climate_foresight.models import ClimateForesightRun
+from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
 from climate_foresight.serializers import (
+    ClimateForesightPillarSerializer,
     ClimateForesightRunSerializer,
     ClimateForesightRunListSerializer,
+)
+from climate_foresight.filters import (
+    ClimateForesightRunFilterSet,
+    ClimateForesightPillarFilterSet,
 )
 from planning.models import PlanningArea
 from datasets.models import DataLayer, DataLayerStatus
@@ -16,16 +23,11 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     """ViewSet for ClimateForesightRun CRUD operations."""
 
     permission_classes = [permissions.IsAuthenticated]
+    filterset_class = ClimateForesightRunFilterSet
 
     def get_queryset(self):
-        """Filter runs by current user and optionally by planning area."""
-        queryset = ClimateForesightRun.objects.list_by_user(self.request.user)
-
-        planning_area_id = self.request.query_params.get("planning_area")
-        if planning_area_id:
-            queryset = queryset.filter(planning_area_id=planning_area_id)
-
-        return queryset
+        """Filter runs by current user."""
+        return ClimateForesightRun.objects.list_by_user(self.request.user)
 
     def get_serializer_class(self):
         """Use different serializers for list vs detail views."""
@@ -67,3 +69,33 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
         )
         serializer = BrowseDataLayerSerializer(datalayers, many=True)
         return Response(serializer.data)
+
+
+class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
+    """ViewSet for ClimateForesightPillar CRUD operations."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ClimateForesightPillarSerializer
+    filterset_class = ClimateForesightPillarFilterSet
+
+    def get_queryset(self):
+        """
+        Return pillars available to the user.
+        - Global pillars (run=None) are visible to all
+        - Custom pillars are only visible if the user owns the associated run
+        """
+        user = self.request.user
+        return ClimateForesightPillar.objects.filter(
+            models.Q(run__isnull=True) | models.Q(run__created_by=user)
+        ).order_by("order", "name")
+
+    def perform_destroy(self, instance):
+        """Only allow deletion of custom pillars when run is in draft mode."""
+        if not instance.can_delete():
+            if not instance.is_custom:
+                raise PermissionDenied("Global pillars cannot be deleted.")
+            raise PermissionDenied(
+                "Pillars can only be deleted when the analysis is in draft mode."
+            )
+
+        super().perform_destroy(instance)

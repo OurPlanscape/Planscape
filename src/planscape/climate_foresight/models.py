@@ -70,6 +70,87 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
         return f"{self.name} - {self.planning_area.name}"
 
 
+class ClimateForesightPillar(CreatedAtMixin, models.Model):
+    """
+    Represents pillars for organizing climate foresight data layers.
+
+    Global pillars (null run) represent the 10 pillars of fire resilience and cannot be deleted.
+    Run-specific pillars are custom pillars created by users and can only be deleted
+    when the run is in draft mode.
+    """
+
+    run = models.ForeignKey(
+        ClimateForesightRun,
+        on_delete=models.CASCADE,
+        related_name="custom_pillars",
+        null=True,
+        help_text="If null, this is a global/shared pillar. If set, it's specific to that run.",
+    )
+
+    name = models.CharField(max_length=255, help_text="Name of the pillar")
+
+    order = models.IntegerField(default=0, help_text="Display order for the pillar")
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="created_climate_foresight_pillars",
+        help_text="User who created this pillar",
+    )
+
+    class Meta:
+        ordering = ["order", "name"]
+        verbose_name = "Climate Foresight Pillar"
+        verbose_name_plural = "Climate Foresight Pillars"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"],
+                condition=models.Q(run__isnull=True),
+                name="unique_global_climate_foresight_pillar_name",
+            ),
+            models.UniqueConstraint(
+                fields=["run", "name"],
+                condition=models.Q(run__isnull=False),
+                name="unique_run_climate_foresight_pillar_name",
+            ),
+        ]
+
+    def __str__(self):
+        scope = "Custom" if self.is_custom else "Global"
+        return f"{self.name} ({scope})"
+
+    @property
+    def is_custom(self) -> bool:
+        """Returns True if this is a custom (run-specific) pillar."""
+        return self.run is not None
+
+    def can_delete(self) -> bool:
+        """
+        Determines if this pillar can be deleted.
+
+        Global pillars cannot be deleted.
+        Run-specific pillars can only be deleted if the run is in draft mode.
+        """
+        if not self.is_custom:
+            return False
+        return self.run.status == ClimateForesightRunStatus.DRAFT
+
+    def delete(self, using=None, keep_parents=False):
+        """
+        Override delete to enforce deletion rules.
+
+        Raises ValueError if the pillar cannot be deleted according to can_delete() rules.
+        """
+        if not self.can_delete():
+            if not self.is_custom:
+                raise ValueError("Global pillars cannot be deleted.")
+            raise ValueError(
+                f"Custom pillars can only be deleted when the run is in draft mode. "
+                f"Current status: {self.run.status}"
+            )
+        return super().delete(using=using, keep_parents=keep_parents)
+
+
 class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     """Represents a data layer selected for a climate foresight run with its configuration."""
 
@@ -93,19 +174,20 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="True if high values are favorable, False if low values are favorable",
     )
 
+    pillar = models.ForeignKey(
+        ClimateForesightPillar,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="datalayer_assignments",
+        help_text="Optional pillar assignment for this data layer",
+    )
+
     normalized_datalayer = models.ForeignKey(
         DataLayer,
         on_delete=models.SET_NULL,
         related_name="climate_foresight_normalized_for",
         null=True,
         help_text="The normalized version of this input data layer (for Climate Foresight analysis only)",
-    )
-
-    pillar = models.CharField(
-        max_length=255,
-        blank=True,
-        default="",
-        help_text="The pillar/category assignment for this layer",
     )
 
     statistics = models.JSONField(
@@ -126,4 +208,4 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         ]
 
     def __str__(self):
-        return f"{self.run.name} - {self.datalayer.name} ({self.pillar})"
+        return self.datalayer.name
