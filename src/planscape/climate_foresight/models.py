@@ -74,18 +74,16 @@ class ClimateForesightPillar(CreatedAtMixin, models.Model):
     """
     Represents pillars for organizing climate foresight data layers.
 
-    Global pillars (null run_id) represent the 10 pillars of fire resilience and cannot be deleted.
+    Global pillars (null run) represent the 10 pillars of fire resilience and cannot be deleted.
     Run-specific pillars are custom pillars created by users and can only be deleted
     when the run is in draft mode.
     """
 
-    run_id = models.ForeignKey(
+    run = models.ForeignKey(
         ClimateForesightRun,
         on_delete=models.CASCADE,
         related_name="custom_pillars",
         null=True,
-        blank=True,
-        db_column="run_id",
         help_text="If null, this is a global/shared pillar. If set, it's specific to that run.",
     )
 
@@ -107,12 +105,12 @@ class ClimateForesightPillar(CreatedAtMixin, models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["name"],
-                condition=models.Q(run_id__isnull=True),
+                condition=models.Q(run__isnull=True),
                 name="unique_global_climate_foresight_pillar_name",
             ),
             models.UniqueConstraint(
-                fields=["run_id", "name"],
-                condition=models.Q(run_id__isnull=False),
+                fields=["run", "name"],
+                condition=models.Q(run__isnull=False),
                 name="unique_run_climate_foresight_pillar_name",
             ),
         ]
@@ -124,7 +122,7 @@ class ClimateForesightPillar(CreatedAtMixin, models.Model):
     @property
     def is_custom(self) -> bool:
         """Returns True if this is a custom (run-specific) pillar."""
-        return self.run_id is not None
+        return self.run is not None
 
     def can_delete(self) -> bool:
         """
@@ -135,11 +133,7 @@ class ClimateForesightPillar(CreatedAtMixin, models.Model):
         """
         if not self.is_custom:
             return False
-        return self.run_id.status == ClimateForesightRunStatus.DRAFT
-
-    def clean(self):
-        """Clean the pillar."""
-        super().clean()
+        return self.run.status == ClimateForesightRunStatus.DRAFT
 
 
 class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
@@ -169,7 +163,6 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         ClimateForesightPillar,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,
         related_name="datalayer_assignments",
         help_text="Optional pillar assignment for this data layer",
     )

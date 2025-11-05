@@ -12,12 +12,6 @@ from planning.models import PlanningArea
 class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
     """Serializer for ClimateForesightRunInputDataLayer model."""
 
-    pillar_id = serializers.PrimaryKeyRelatedField(
-        queryset=ClimateForesightPillar.objects.all(),
-        source="pillar",
-        required=False,
-        allow_null=True,
-    )
     normalized_datalayer_id = serializers.IntegerField(
         source="normalized_datalayer.id", read_only=True, allow_null=True
     )
@@ -28,7 +22,7 @@ class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
             "id",
             "datalayer",
             "favor_high",
-            "pillar_id",
+            "pillar",
             "normalized_datalayer_id",
             "statistics",
         ]
@@ -205,7 +199,7 @@ class ClimateForesightPillarSerializer(serializers.ModelSerializer):
         model = ClimateForesightPillar
         fields = [
             "id",
-            "run_id",
+            "run",
             "name",
             "order",
             "created_by",
@@ -236,10 +230,10 @@ class ClimateForesightPillarSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Additional validation for pillar creation/update."""
-        run = attrs.get("run_id")
+        run = attrs.get("run")
 
         if self.instance and not run:
-            run = self.instance.run_id
+            run = self.instance.run
 
         if self.instance and not self.instance.is_custom:
             raise serializers.ValidationError(

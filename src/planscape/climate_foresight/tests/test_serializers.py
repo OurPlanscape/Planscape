@@ -196,7 +196,7 @@ class ClimateForesightRunSerializerTest(TestCase):
         self.assertEqual(len(data["input_datalayers"]), 2)
         self.assertEqual(data["input_datalayers"][0]["datalayer"], datalayer1.id)
         self.assertEqual(data["input_datalayers"][0]["favor_high"], True)
-        self.assertEqual(data["input_datalayers"][0]["pillar_id"], pillar1.id)
+        self.assertEqual(data["input_datalayers"][0]["pillar"], pillar1.id)
 
     def test_create_with_input_datalayers(self):
         request = self.factory.post("/")
@@ -215,12 +215,12 @@ class ClimateForesightRunSerializerTest(TestCase):
                 {
                     "datalayer": datalayer1.id,
                     "favor_high": True,
-                    "pillar_id": pillar1.id,
+                    "pillar": pillar1.id,
                 },
                 {
                     "datalayer": datalayer2.id,
                     "favor_high": False,
-                    "pillar_id": pillar2.id,
+                    "pillar": pillar2.id,
                 },
             ],
         }
@@ -260,7 +260,7 @@ class ClimateForesightRunSerializerTest(TestCase):
                 {
                     "datalayer": new_datalayer.id,
                     "favor_high": False,
-                    "pillar_id": new_pillar.id,
+                    "pillar": new_pillar.id,
                 }
             ],
         }

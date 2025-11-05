@@ -24,7 +24,7 @@ class ClimateForesightPillarFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ClimateForesightPillar
 
-    run_id = factory.SubFactory(ClimateForesightRunFactory)
+    run = factory.SubFactory(ClimateForesightRunFactory)
     name = factory.Sequence(lambda n: "Custom Pillar %s" % n)
     order = factory.Sequence(lambda n: n)
     created_by = factory.SubFactory(UserFactory)
@@ -36,7 +36,7 @@ class GlobalClimateForesightPillarFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ClimateForesightPillar
 
-    run_id = None
+    run = None
     name = factory.Sequence(lambda n: "Global Pillar %s" % n)
     order = factory.Sequence(lambda n: n)
     created_by = factory.SubFactory(UserFactory)

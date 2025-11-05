@@ -45,10 +45,8 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "run_id",
+                    "run",
                     models.ForeignKey(
-                        blank=True,
-                        db_column="run_id",
                         help_text="If null, this is a global/shared pillar. If set, it's specific to that run.",
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
@@ -66,7 +64,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="climateforesightpillar",
             constraint=models.UniqueConstraint(
-                condition=models.Q(("run_id__isnull", True)),
+                condition=models.Q(("run__isnull", True)),
                 fields=("name",),
                 name="unique_global_climate_foresight_pillar_name",
             ),
@@ -74,8 +72,8 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="climateforesightpillar",
             constraint=models.UniqueConstraint(
-                condition=models.Q(("run_id__isnull", False)),
-                fields=("run_id", "name"),
+                condition=models.Q(("run__isnull", False)),
+                fields=("run", "name"),
                 name="unique_run_climate_foresight_pillar_name",
             ),
         ),
@@ -89,7 +87,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 help_text="Optional pillar assignment for this data layer",
                 null=True,
-                blank=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="datalayer_assignments",
                 to="climate_foresight.climateforesightpillar",
