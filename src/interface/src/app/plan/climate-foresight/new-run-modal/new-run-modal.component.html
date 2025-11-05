@@ -1,39 +1,31 @@
 <sg-modal
   title="New Analysis"
   [shortHeader]="false"
-  [showBorders]="false"
-  [centerFooter]="false"
+  [showBorders]="true"
   primaryButtonText="Done"
   secondaryButtonText="Cancel"
-  [primaryButtonDisabled]="!form.valid"
+  [primaryButtonDisabled]="form.invalid"
   (clickedPrimary)="onSubmit()"
   (clickedSecondary)="onCancel()"
   (clickedClose)="onCancel()">
   <div modalBodyContent>
     <form [formGroup]="form" class="new-run-form">
-      <div class="field-row">
-        <div class="field-label-required">
-          Analysis Name
-          <div class="required-star">*</div>
-        </div>
-        <sg-input-field
-          [disabled]="false"
-          class="run-input"
-          showSupportMessage="on-error">
-          <input
-            sgInput
-            name="name"
-            formControlName="name"
-            placeholder="Enter analysis name"
-            maxlength="255"
-            class="name-field"
-            autocomplete="off"
-            cdkFocusInitial />
-        </sg-input-field>
-      </div>
-      <mat-error *ngIf="form.get('name')?.hasError('required')">
-        Analysis name is required
-      </mat-error>
+      <sg-input-field
+        label="Analysis Name"
+        [error]="!!form.get('name')?.hasError('required')"
+        showSupportMessage="on-error"
+        supportMessage="Analysis name is required"
+        size="full">
+        <input
+          sgInput
+          placeholder="Enter analysis name"
+          name="name"
+          cdkFocusInitial
+          [required]="true"
+          maxlength="255"
+          autocomplete="off"
+          formControlName="name" />
+      </sg-input-field>
     </form>
   </div>
 </sg-modal>
