@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { SectionComponent, ButtonComponent } from '@styleguide';
 import {
   CdkDragDrop,
@@ -9,6 +9,8 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
+import { NamePillarModalComponent } from '../../name-pillar-modal/name-pillar-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-assign-pillars',
@@ -20,6 +22,7 @@ import {
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
+    NamePillarModalComponent,
   ],
   templateUrl: './assign-pillars.component.html',
   styleUrl: './assign-pillars.component.scss',
@@ -65,6 +68,8 @@ export class AssignPillarsComponent {
     },
   ];
 
+  private dialog: MatDialog = inject(MatDialog);
+
   drop(event: CdkDragDrop<any[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(
@@ -80,5 +85,12 @@ export class AssignPillarsComponent {
         event.currentIndex
       );
     }
+  }
+
+  addPillar() {
+    this.dialog
+      .open(NamePillarModalComponent)
+      .afterClosed()
+      .subscribe((modalResponse: any) => {});
   }
 }

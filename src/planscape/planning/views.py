@@ -7,8 +7,8 @@ from collaboration.permissions import (
     ScenarioPermission,
 )
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Max
-from django.db.models.functions import Coalesce
+from django.db.models import Count, F, Max
+from django.db.models.functions import Coalesce, Greatest
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -297,8 +297,9 @@ def get_planning_area_by_id(request: Request) -> Response:
             PlanningArea.objects.filter(id=request.GET["id"])
             .annotate(scenario_count=Count("scenarios", distinct=True))
             .annotate(
-                scenario_latest_updated_at=Coalesce(
-                    Max("scenarios__updated_at"), "updated_at"
+                scenario_latest_updated_at=Greatest(
+                    Coalesce(Max("scenarios__updated_at"), F("updated_at")),
+                    F("updated_at"),
                 )
             )
             .first()

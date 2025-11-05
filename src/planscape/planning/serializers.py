@@ -70,9 +70,10 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
         return get_acreage(instance.geometry)
 
     def get_latest_updated(self, instance):
-        return (
-            getattr(instance, "scenario_latest_updated_at", None) or instance.updated_at
-        )
+        latest_from_scenarios = getattr(instance, "scenario_latest_updated_at", None)
+        if latest_from_scenarios is None:
+            return instance.updated_at
+        return max(latest_from_scenarios, instance.updated_at)
 
     def get_role(self, instance):
         user = self.context["request"].user or self.request.user

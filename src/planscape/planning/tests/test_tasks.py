@@ -9,6 +9,7 @@ from django.test import TestCase, override_settings
 from planning.models import ScenarioResultStatus, GeoPackageStatus
 from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
+    async_send_email_scenario_finished,
     async_forsys_run,
     async_pre_forsys_process,
     trigger_geopackage_generation,
@@ -311,3 +312,55 @@ class TriggerGeopackageGenerationTestCase(TestCase):
 
         trigger_geopackage_generation()
         mock_async_generate.assert_not_called()
+
+
+class AsyncSendEmailScenarioFinishedTest(TestCase):
+    def setUp(self):
+        self.scenario = ScenarioFactory.create(
+            user__email="owner@example.com",
+            name="My Scenario",
+        )
+        self.user = self.scenario.user
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    def test_trigger_email(self, send_email_mock):
+        async_send_email_scenario_finished(self.scenario.pk)
+
+        self.assertTrue(send_email_mock.called)
+        send_email_mock.assert_called_once_with(
+            subject="Planscape Scenario is Ready",
+            from_email=mock.ANY,
+            recipient_list=[self.user.email],
+            message=mock.ANY,
+            html_message=mock.ANY,
+        )
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    def test_dont_send_email_if_scenario_deleted(self, send_email_mock):
+        self.scenario.delete()
+        async_send_email_scenario_finished(self.scenario.pk)
+        self.assertFalse(send_email_mock.called)
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    def test_dont_send_email_if_user_missing(self, send_email_mock):
+        scen = ScenarioFactory.create()
+        scen.user = None
+        scen.save(update_fields=["user"])
+        async_send_email_scenario_finished(scen.pk)
+        self.assertFalse(send_email_mock.called)
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    def test_dont_send_email_if_user_has_no_email(self, send_email_mock):
+        scen = ScenarioFactory.create()
+        scen.user.email = ""
+        scen.user.save(update_fields=["email"])
+        async_send_email_scenario_finished(scen.pk)
+        self.assertFalse(send_email_mock.called)
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    def test_dont_send_email_if_user_email_is_whitespace(self, send_email_mock):
+        scen = ScenarioFactory.create()
+        scen.user.email = "   "
+        scen.user.save(update_fields=["email"])
+        async_send_email_scenario_finished(scen.pk)
+        self.assertFalse(send_email_mock.called)

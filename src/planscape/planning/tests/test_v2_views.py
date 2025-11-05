@@ -4,6 +4,7 @@ from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.db import connection
 from django.urls import reverse
 from impacts.permissions import (
     COLLABORATOR_PERMISSIONS,
@@ -1030,6 +1031,61 @@ class UpdatePlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.planning_area.refresh_from_db()
         self.assertEqual(self.planning_area.name, "Renamed Area")
+
+    def test_rename_updates_latest_updated_ordering(self):
+        other_area = PlanningAreaFactory.create(
+            user=self.creator,
+            name="Secondary Area",
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+        scenario_primary = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={},
+            user=self.creator,
+            notes="",
+        )
+        scenario_secondary = ScenarioFactory.create(
+            planning_area=other_area,
+            configuration={},
+            user=self.creator,
+            notes="",
+        )
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE planning_scenario SET updated_at = %s WHERE id = %s",
+                ["2010-01-01 00:01:01-05", scenario_primary.id],
+            )
+            cursor.execute(
+                "UPDATE planning_scenario SET updated_at = %s WHERE id = %s",
+                ["2010-03-01 00:01:01-05", scenario_secondary.id],
+            )
+            cursor.execute(
+                "UPDATE planning_planningarea SET updated_at = %s WHERE id = %s",
+                ["2010-01-01 00:01:01-05", self.planning_area.id],
+            )
+            cursor.execute(
+                "UPDATE planning_planningarea SET updated_at = %s WHERE id = %s",
+                ["2010-01-01 00:01:01-05", other_area.id],
+            )
+
+        list_url = reverse("api:planning:planningareas-list")
+        self.client.force_authenticate(self.creator)
+        initial_response = self.client.get(list_url, {}, format="json")
+        self.assertEqual(initial_response.status_code, status.HTTP_200_OK)
+        initial_results = initial_response.json()["results"]
+        initial_ids = [pa["id"] for pa in initial_results]
+        self.assertEqual(initial_ids[:2], [other_area.id, self.planning_area.id])
+
+        rename_response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(rename_response.status_code, status.HTTP_200_OK)
+
+        reordered_response = self.client.get(list_url, {}, format="json")
+        self.assertEqual(reordered_response.status_code, status.HTTP_200_OK)
+        reordered_results = reordered_response.json()["results"]
+        self.assertEqual(reordered_results[0]["id"], self.planning_area.id)
 
 
 class DeletePlanningAreaTest(APITestCase):

@@ -19,6 +19,7 @@ import { AvailableStands } from '@types';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
 import { FeaturesModule } from 'src/app/features/features.module';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -29,6 +30,7 @@ describe('ScenarioCreationComponent', () => {
       imports: [
         HttpClientTestingModule,
         ScenarioCreationComponent,
+        MatSnackBarModule,
         NgxMaskModule.forRoot(),
         NoopAnimationsModule,
       ],
