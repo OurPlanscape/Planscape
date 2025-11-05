@@ -39,7 +39,6 @@ $material-checkbox-padding: 8px;
 
 .list-row, .list-header {
   display: flex;
-
   gap: #{ $colum-gap * 2 - $material-checkbox-padding};
   margin-bottom: 16px;
 }
@@ -49,13 +48,18 @@ $material-checkbox-padding: 8px;
 }
 
 .list-header {
+  margin-bottom: 15px;
   gap: #{ $colum-gap * 2};
   align-items: center;
+  color: $color-md-gray;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+  text-transform: capitalize;
+
 }
 
-.list-header {
-  margin-bottom: 24px;
-}
 
 .select-title, .select {
   width: 50px;

@@ -35,7 +35,9 @@ const meta: Meta<DemoInterface> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div style='width: 400px; padding: 20px;  border: 1px solid #d0d0d0; resize: both; overflow: auto'><sg-selectable-list ${argsToTemplate(args)}></sg-selectable-list></div>`,
+    template: `<div style='width: 400px; padding: 20px;  border: 1px solid #d0d0d0; resize: both; overflow: auto'>
+                 <sg-selectable-list ${argsToTemplate(args)}></sg-selectable-list>
+               </div>`,
   }),
 };
 
@@ -72,31 +74,31 @@ interface ComplexDemoInterface {
     properties: {
       color: string;
     };
-  };
+  }[];
 }
 
 const complexItems: ComplexDemoInterface[] = [
-  { id: 1, name: 'First Item', nested: { properties: { color: '#123d81' } } },
+  { id: 1, name: 'First Item', nested: [{ properties: { color: '#123d81' } }] },
   {
     id: 2,
     name: 'Second Item',
-    nested: { properties: { color: '#1b86e4' } },
+    nested: [{ properties: { color: '#1b86e4' } }],
   },
   {
     id: 3,
     name: 'Third item',
-    nested: { properties: { color: '#4854c0' } },
+    nested: [{ properties: { color: '#4854c0' } }],
   },
   {
     id: 4,
     name: 'Fourth Item',
-    nested: { properties: { color: '#7946e6' } },
+    nested: [{ properties: { color: '#7946e6' } }],
   },
 ];
 
 export const WithCustomColorPath: Story = {
   args: {
     items: complexItems,
-    colorPath: 'nested.properties.color',
+    colorPath: 'nested[0].properties.color',
   },
 };

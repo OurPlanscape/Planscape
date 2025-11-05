@@ -12,7 +12,7 @@ interface Item {
 
 /** Displays a list of items, with the option to select and or toggle view on each.
  *
- * Items can be of any type as long as they extend from a basic `Item` interface:
+ * Items can be of any type as long as they match a basic `Item` interface:
  *
  * ```ts
  * interface Item {
@@ -21,6 +21,8 @@ interface Item {
  * }
  * ```
  *
+ * To provide where the component should look for the legend color, use `colorPath`
+ * and provide a string with the path (example `nested.styles.color` or even `nested[0].styles.color`)
  *
  * Has `selectedItemsChanged` and `viewedItemsChanged` event emitters to listen for to changes.
  *
@@ -45,15 +47,16 @@ export class SelectableListComponent<T extends Item> {
   /** @ignore - default legend color */
   defaultColor = 'transparent';
 
-  /** all the items */
+  /** all the items in the list */
   @Input() items: T[] = [];
 
-  /** the selected items */
+  /** the selected items, optional */
   @Input() selectedItems: T[] = [];
-  /* the view items */
+
+  /** the viewed items, optional */
   @Input() viewedItems: T[] = [];
 
-  /** the property to look up color for the legend */
+  /** the property or path to look up color for the legend */
   @Input() colorPath?: string;
 
   /** Emits when an item is selected */
@@ -98,7 +101,8 @@ export class SelectableListComponent<T extends Item> {
   getColor(item: any): string {
     if (!this.colorPath) return this.defaultColor;
 
-    const val = this.colorPath.split('.').reduce((v, k) => v?.[k], item);
+    const tokens = this.tokenizePath(this.colorPath);
+    const val = tokens.reduce<any>((acc, key) => acc?.[key as any], item);
 
     if (val == null) {
       console.error(
@@ -107,7 +111,18 @@ export class SelectableListComponent<T extends Item> {
       );
       return this.defaultColor;
     }
+    return String(val);
+  }
 
-    return val;
+  /** @ignore supports: "color", "styles.color", "nested[0].properties.color" */
+  private tokenizePath(path: string): Array<string | number> {
+    const re = /[^.[\]]+|\[(\d+)\]/g; // words or [digits]
+    const out: Array<string | number> = [];
+    let m: RegExpExecArray | null;
+
+    while ((m = re.exec(path))) {
+      out.push(m[1] !== undefined ? Number(m[1]) : m[0]);
+    }
+    return out;
   }
 }

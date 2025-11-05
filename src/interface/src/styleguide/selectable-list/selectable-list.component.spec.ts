@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { SelectableListComponent } from './selectable-list.component';
 
-// rename to avoid confusion with the component's Item
 interface DemoItem {
   id: number;
   name: string;
@@ -206,6 +205,45 @@ describe('SelectableListComponent', () => {
 
       const color = component.getColor(D as DemoItem);
       expect(color).toBe('#123456');
+    });
+
+    it('reads array index in very nested paths: "nested[0].properties.color"', () => {
+      // Arrange: item with array nesting
+      const withArray: DemoItem & {
+        nested: Array<{ properties: { color: string } }>;
+      } = {
+        id: 7,
+        name: 'Eta',
+        nested: [{ properties: { color: '#abcdef' } }],
+      };
+      component.colorPath = 'nested[0].properties.color';
+
+      // Act
+      const color = (component as any).getColor(withArray);
+
+      // Assert
+      expect(color).toBe('#abcdef');
+    });
+
+    it('returns defaultColor + logs when array index is out of bounds', () => {
+      const spyErr = spyOn(console, 'error');
+      const withArray: DemoItem & {
+        nested: Array<{ properties?: { color?: string } }>;
+      } = {
+        id: 8,
+        name: 'Theta',
+        nested: [], // empty
+      };
+      component.colorPath = 'nested[0].properties.color';
+      component.defaultColor = 'transparent';
+
+      const color = (component as any).getColor(withArray);
+
+      expect(color).toBe('transparent');
+      expect(spyErr).toHaveBeenCalledTimes(1);
+      expect(String(spyErr.calls.mostRecent().args[0])).toContain(
+        'colorPath "nested[0].properties.color" not found'
+      );
     });
 
     it('logs an error if path is missing/undefined', () => {
