@@ -47,7 +47,7 @@
   </div>
 
   <app-section-loader
-    *ngIf="planningAreaIsReady"
+    *ngIf="planningAreaIsReady && !planningAreaIsLarge"
     [isLoading]="loading"
     [hasData]="totalScenarios > 0"
     [ngClass]="{
@@ -147,11 +147,11 @@
     </mat-tab-group>
   </app-section-loader>
 
-  <div *ngIf="planningAreaIsLarge" class="large-message">
-    <h4>Your Planning Area is greater than 3 million acres.</h4>
+  <div *ngIf="planningAreaIsLarge && !loading" class="large-message">
     <p>
-      The Planscape team would like to work with you to ensure we're meeting
-      your scenario planning needs. Please contact
+      Your Planning Area is greater than 3 million acres. The Planscape team
+      would like to work with you to ensure we're meeting your scenario planning
+      needs. Please contact
       <a href="mailto:support@planscape.org">support&#64;planscape.org</a> to
       move forward with scenario planning.
     </p>

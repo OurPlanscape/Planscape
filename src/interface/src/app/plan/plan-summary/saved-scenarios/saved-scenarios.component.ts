@@ -174,19 +174,19 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
-  //TODO: placeholder until we know if the BE sends an actual attribute
+  // Check PA for acreage, and if it doesn't have active scenarios
   get planningAreaIsLarge() {
     const acres = this.plan?.area_acres ?? 0;
-    return acres >= 3000000;
+    return this.plan?.scenario_count === 0 && acres >= 3000000;
   }
 
   get scenarioDisabledTooltipReason() {
     if (this.planningAreaIsLarge) {
-      return 'Please contact us....';
+      return 'New Scenario not available';
     } else if (!this.planningAreaIsReady) {
       return 'Your Planning Area is being prepared';
     } else {
-      return 'Your Planning Area is being prepared';
+      return 'Planning Area is less than 100 acres';
     }
   }
 
