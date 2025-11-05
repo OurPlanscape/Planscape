@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.db import IntegrityError
-from django.db.models import ProtectedError
 from climate_foresight.models import (
     ClimateForesightPillar,
     ClimateForesightRun,
@@ -181,13 +180,13 @@ class ClimateForesightRunInputDataLayerTest(TestCase):
             run=self.run,
             datalayer=self.datalayer,
             favor_high=True,
-            pillar_id=pillar,
+            pillar=pillar,
         )
 
         self.assertEqual(input_dl.run, self.run)
         self.assertEqual(input_dl.datalayer, self.datalayer)
         self.assertTrue(input_dl.favor_high)
-        self.assertEqual(input_dl.pillar_id, pillar)
+        self.assertEqual(input_dl.pillar, pillar)
         self.assertIsNotNone(input_dl.created_at)
 
     def test_string_representation(self):
@@ -390,23 +389,25 @@ class ClimateForesightPillarModelTest(TestCase):
             run=self.run,
             datalayer=datalayer,
             favor_high=True,
-            pillar_id=pillar,
+            pillar=pillar,
         )
 
-        self.assertEqual(input_dl.pillar_id, pillar)
+        self.assertEqual(input_dl.pillar, pillar)
         self.assertEqual(pillar.datalayer_assignments.count(), 1)
 
-    def test_pillar_protect_on_delete_when_in_use(self):
-        """Test that pillars cannot be deleted when assigned to input datalayers."""
+    def test_pillar_set_null_on_delete_when_in_use(self):
+        """Test that deleting a pillar sets the pillar field to null on assigned input datalayers."""
         pillar = GlobalClimateForesightPillarFactory()
         datalayer = DataLayerFactory()
 
-        ClimateForesightRunInputDataLayer.objects.create(
+        input_dl = ClimateForesightRunInputDataLayer.objects.create(
             run=self.run,
             datalayer=datalayer,
             favor_high=True,
-            pillar_id=pillar,
+            pillar=pillar,
         )
 
-        with self.assertRaises(ProtectedError):
-            pillar.delete()
+        pillar.delete()
+
+        input_dl.refresh_from_db()
+        self.assertIsNone(input_dl.pillar)

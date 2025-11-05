@@ -79,22 +79,20 @@ class Migration(migrations.Migration):
                 name="unique_run_climate_foresight_pillar_name",
             ),
         ),
-        # Cleanup existing pillar field
-        migrations.AddField(
-            model_name="climateforesightruninputdatalayer",
-            name="pillar_id",
-            field=models.ForeignKey(
-                blank=True,
-                db_column="pillar_id",
-                help_text="Optional pillar assignment for this data layer",
-                null=True,
-                on_delete=django.db.models.deletion.PROTECT,
-                related_name="datalayer_assignments",
-                to="climate_foresight.climateforesightpillar",
-            ),
-        ),
         migrations.RemoveField(
             model_name="climateforesightruninputdatalayer",
             name="pillar",
+        ),
+        migrations.AddField(
+            model_name="climateforesightruninputdatalayer",
+            name="pillar",
+            field=models.ForeignKey(
+                help_text="Optional pillar assignment for this data layer",
+                null=True,
+                blank=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="datalayer_assignments",
+                to="climate_foresight.climateforesightpillar",
+            ),
         ),
     ]

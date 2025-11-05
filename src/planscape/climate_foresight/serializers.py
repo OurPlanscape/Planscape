@@ -12,6 +12,12 @@ from planning.models import PlanningArea
 class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
     """Serializer for ClimateForesightRunInputDataLayer model."""
 
+    pillar_id = serializers.PrimaryKeyRelatedField(
+        queryset=ClimateForesightPillar.objects.all(),
+        source="pillar",
+        required=False,
+        allow_null=True,
+    )
     normalized_datalayer_id = serializers.IntegerField(
         source="normalized_datalayer.id", read_only=True, allow_null=True
     )

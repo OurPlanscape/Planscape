@@ -49,4 +49,4 @@ class ClimateForesightRunInputDataLayerFactory(factory.django.DjangoModelFactory
     run = factory.SubFactory(ClimateForesightRunFactory)
     datalayer = factory.SubFactory(DataLayerFactory)
     favor_high = factory.fuzzy.FuzzyChoice([True, False, None])
-    pillar_id = None
+    pillar = None

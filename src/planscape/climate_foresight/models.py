@@ -165,11 +165,11 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="True if high values are favorable, False if low values are favorable",
     )
 
-    pillar_id = models.ForeignKey(
+    pillar = models.ForeignKey(
         ClimateForesightPillar,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         null=True,
-        db_column="pillar_id",
+        blank=True,
         related_name="datalayer_assignments",
         help_text="Optional pillar assignment for this data layer",
     )
@@ -200,4 +200,4 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         ]
 
     def __str__(self):
-        return f"{self.run.name} - {self.datalayer.name} ({self.pillar})"
+        return self.datalayer.name
