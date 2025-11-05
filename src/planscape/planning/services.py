@@ -13,7 +13,6 @@ import fiona
 from actstream import action
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
 from datasets.services import get_datalayer_by_module_atribute
