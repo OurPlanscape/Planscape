@@ -1,1 +1,18 @@
-<p>run-analysis-modal works!</p>
+<sg-modal
+  title="Ready to run the analysis?"
+  primaryButtonText="Run Analysis"
+  [showBorders]="false"
+  [shortHeader]="true"
+  [showClose]="false"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="runAnalysis()"
+  (clickedSecondary)="cancel()">
+  <div modalBodyContent>
+    <p>
+      You are about to run the analysis using the selected data layers,
+      thresholds, and pillar assignments. Once the analysis starts, these
+      settings cannot be modified.
+    </p>
+    <p>Are you sure you want to proceed?</p>
+  </div>
+</sg-modal>
