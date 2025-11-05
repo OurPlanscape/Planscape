@@ -184,6 +184,10 @@ export class ScenarioCreationComponent
           backUrl: getPlanPath(this.planId),
         });
         this.scenarioName = scenario.name;
+        //this loads the list of scenario names and looks for dupes.
+        //we pass an id to avoid matching against this current scenario id name
+        this.refreshScenarioNameValidator(scenario.id);
+
         this.form.controls.scenarioName.setValue(scenario.name);
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
@@ -305,7 +309,12 @@ export class ScenarioCreationComponent
 
   async handleNameChange(newName: string) {
     if (newName !== null) {
-      const nameValidated = await this.refreshScenarioNameValidator();
+      //this loads the list of scenario names and looks for dupes.
+      // we pass an id here, to ensure that a recently changed scenario name for this scenario
+      // is also not included in the duplicates comparison list
+      const nameValidated = await this.refreshScenarioNameValidator(
+        this.scenarioId
+      );
       if (nameValidated) {
         this.scenarioService
           .editScenarioName(this.scenarioId, newName, this.planId)
@@ -315,6 +324,7 @@ export class ScenarioCreationComponent
                 label: 'Scenario: ' + newName,
                 backUrl: getPlanPath(this.planId),
               });
+              this.scenarioName = newName;
             },
             error: (e) => {
               this.matSnackBar.open(
@@ -429,20 +439,27 @@ export class ScenarioCreationComponent
   }
 
   // Adds the name validator and return true or returns false in case there is an error getting scenarios
-  async refreshScenarioNameValidator(): Promise<boolean> {
+  async refreshScenarioNameValidator(currentId?: number): Promise<boolean> {
     try {
       const scenarios = await firstValueFrom(
         this.scenarioService.getScenariosForPlan(this.planId)
       );
-
-      const names = scenarios.map((s) => s.name);
+      //get all scenario names, but omit any related to this scenario id
+      const names = scenarios
+        .filter((s) => {
+          if (currentId) {
+            return s.id !== currentId;
+          } else {
+            return true;
+          }
+        })
+        .map((s) => s.name);
       const ctrl = this.form.get('scenarioName')!;
 
       ctrl.setValidators([
         Validators.required,
         this.scenarioNameMustBeUnique(names),
       ]);
-
       ctrl.updateValueAndValidity({ emitEvent: false });
       return true;
     } catch {
