@@ -46,41 +46,40 @@ log = logging.getLogger(__name__)
 
 @app.task()
 def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> None:
-    if feature_enabled("AUTO_CREATE_STANDS"):
-        try:
-            planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-            log.info(
-                f"Creating stands for {planning_area_id} for stand size {stand_size}"
-            )
+    try:
+        planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
+        log.info(
+            f"Creating stands for {planning_area_id} for stand size {stand_size}"
+        )
 
-            other_stands = Stand.objects.filter(
-                size=stand_size, geometry__intersects=planning_area.geometry
-            ).aggregate(union=UnionOp("geometry"))["union"]
-            actual_geometry = planning_area.geometry
+        other_stands = Stand.objects.filter(
+            size=stand_size, geometry__intersects=planning_area.geometry
+        ).aggregate(union=UnionOp("geometry"))["union"]
+        actual_geometry = planning_area.geometry
 
-            if other_stands:
-                actual_geometry = planning_area.geometry.difference(other_stands)
+        if other_stands:
+            actual_geometry = planning_area.geometry.difference(other_stands)
 
-            if not actual_geometry:
-                log.info("actual_geometry null, all good.")
+        if not actual_geometry:
+            log.info("actual_geometry null, all good.")
 
-            if actual_geometry.empty:
-                log.info("No need to create stands, all good.")
+        if actual_geometry.empty:
+            log.info("No need to create stands, all good.")
+            return
+
+        match actual_geometry.geom_type:
+            case "Polygon":
+                actual_geometry = MultiPolygon([actual_geometry])
+            case "MultiPolygon":
+                pass
+            case _:
                 return
 
-            match actual_geometry.geom_type:
-                case "Polygon":
-                    actual_geometry = MultiPolygon([actual_geometry])
-                case "MultiPolygon":
-                    pass
-                case _:
-                    return
-
-            for polygon in actual_geometry:
-                create_stands_for_geometry(polygon, stand_size)
-        except PlanningArea.DoesNotExist:
-            log.warning(f"Planning Area with {planning_area_id} does not exist.")
-            raise
+        for polygon in actual_geometry:
+            create_stands_for_geometry(polygon, stand_size)
+    except PlanningArea.DoesNotExist:
+        log.warning(f"Planning Area with {planning_area_id} does not exist.")
+        raise
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -156,12 +155,11 @@ def async_calculate_vector_metrics(
     stand_ids: list[int],
     datalayer_id: int,
 ) -> None:
-    if feature_enabled("AUTO_CREATE_STANDS"):
-        datalayer = DataLayer.objects.get(id=datalayer_id)
-        calculate_stand_vector_stats_with_stand_list(
-            stand_ids=stand_ids,
-            datalayer=datalayer,
-        )
+    datalayer = DataLayer.objects.get(id=datalayer_id)
+    calculate_stand_vector_stats_with_stand_list(
+        stand_ids=stand_ids,
+        datalayer=datalayer,
+    )
 
 
 @app.task(max_retries=3, retry_backoff=True)

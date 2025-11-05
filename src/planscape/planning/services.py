@@ -150,8 +150,7 @@ def create_planning_area(
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
-    if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: stands_workflow.apply_async())
+    transaction.on_commit(lambda: stands_workflow.apply_async())
     return planning_area
 
 
