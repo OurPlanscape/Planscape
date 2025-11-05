@@ -21,7 +21,7 @@ $material-checkbox-padding: 8px;
 
   .view-checkbox {
     padding-left: 0;
-    flex: 1
+    flex: 1;
   }
 
   ::ng-deep {
@@ -30,7 +30,7 @@ $material-checkbox-padding: 8px;
     }
 
     .mdc-label {
-      margin-top: $material-checkbox-padding;
+      margin-top: #{$material-checkbox-padding + 1};
     }
 
   }
@@ -86,4 +86,16 @@ $material-checkbox-padding: 8px;
     background-color: #5892EE;
   }
 
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  visibility: hidden;
+  margin-top: 12px;
+
+  &.selected {
+    visibility: visible;
+  }
 }
