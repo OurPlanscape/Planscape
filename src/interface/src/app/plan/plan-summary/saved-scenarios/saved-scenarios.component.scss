@@ -151,7 +151,8 @@ app-section-loader {
   margin: 40px auto;
 }
 
-.pending-message {
+
+.pending-message, .large-message {
   text-align: center;
 
   h4 {
@@ -163,4 +164,8 @@ app-section-loader {
   p {
     color: $color-md-gray;
   }
+}
+
+.large-message {
+  margin-top: 32px;
 }

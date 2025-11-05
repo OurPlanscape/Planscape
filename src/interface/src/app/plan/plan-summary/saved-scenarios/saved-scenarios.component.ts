@@ -174,6 +174,22 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
+  //TODO: placeholder until we know if the BE sends an actual attribute
+  get planningAreaIsLarge() {
+    const acres = this.plan?.area_acres ?? 0;
+    return acres >= 3000000;
+  }
+
+  get scenarioDisabledTooltipReason() {
+    if (this.planningAreaIsLarge) {
+      return 'Please contact us....';
+    } else if (!this.planningAreaIsReady) {
+      return 'Your Planning Area is being prepared';
+    } else {
+      return 'Your Planning Area is being prepared';
+    }
+  }
+
   get planningAreaIsReady() {
     return this.plan && planningAreaMetricsAreReady(this.plan);
   }
