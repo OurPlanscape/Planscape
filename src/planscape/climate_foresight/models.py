@@ -135,6 +135,21 @@ class ClimateForesightPillar(CreatedAtMixin, models.Model):
             return False
         return self.run.status == ClimateForesightRunStatus.DRAFT
 
+    def delete(self, using=None, keep_parents=False):
+        """
+        Override delete to enforce deletion rules.
+
+        Raises ValueError if the pillar cannot be deleted according to can_delete() rules.
+        """
+        if not self.can_delete():
+            if not self.is_custom:
+                raise ValueError("Global pillars cannot be deleted.")
+            raise ValueError(
+                f"Custom pillars can only be deleted when the run is in draft mode. "
+                f"Current status: {self.run.status}"
+            )
+        return super().delete(using=using, keep_parents=keep_parents)
+
 
 class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     """Represents a data layer selected for a climate foresight run with its configuration."""

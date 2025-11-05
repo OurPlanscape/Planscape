@@ -323,6 +323,49 @@ class ClimateForesightPillarModelTest(TestCase):
         self.assertFalse(pillar.can_delete())
         self.assertTrue(pillar.is_custom)
 
+    def test_delete_raises_error_for_global_pillar(self):
+        """Test that calling delete() on a global pillar raises ValueError."""
+        pillar = GlobalClimateForesightPillarFactory()
+
+        with self.assertRaises(ValueError) as context:
+            pillar.delete()
+
+        self.assertIn("Global pillars cannot be deleted", str(context.exception))
+
+    def test_delete_raises_error_for_custom_pillar_when_running(self):
+        """Test that calling delete() on a custom pillar when run is running raises ValueError."""
+        running_run = ClimateForesightRunFactory(
+            status=ClimateForesightRunStatus.RUNNING
+        )
+        pillar = ClimateForesightPillarFactory(run=running_run)
+
+        with self.assertRaises(ValueError) as context:
+            pillar.delete()
+
+        self.assertIn("draft mode", str(context.exception))
+        self.assertIn("running", str(context.exception))
+
+    def test_delete_raises_error_for_custom_pillar_when_done(self):
+        """Test that calling delete() on a custom pillar when run is done raises ValueError."""
+        done_run = ClimateForesightRunFactory(status=ClimateForesightRunStatus.DONE)
+        pillar = ClimateForesightPillarFactory(run=done_run)
+
+        with self.assertRaises(ValueError) as context:
+            pillar.delete()
+
+        self.assertIn("draft mode", str(context.exception))
+        self.assertIn("done", str(context.exception))
+
+    def test_delete_succeeds_for_custom_pillar_in_draft_mode(self):
+        """Test that calling delete() on a custom pillar in draft mode succeeds."""
+        draft_run = ClimateForesightRunFactory(status=ClimateForesightRunStatus.DRAFT)
+        pillar = ClimateForesightPillarFactory(run=draft_run)
+        pillar_id = pillar.id
+
+        pillar.delete()
+
+        self.assertFalse(ClimateForesightPillar.objects.filter(id=pillar_id).exists())
+
     def test_global_pillar_unique_name_constraint(self):
         """Test that global pillar names must be unique."""
         GlobalClimateForesightPillarFactory(name="Water Security")
@@ -397,7 +440,8 @@ class ClimateForesightPillarModelTest(TestCase):
 
     def test_pillar_set_null_on_delete_when_in_use(self):
         """Test that deleting a pillar sets the pillar field to null on assigned input datalayers."""
-        pillar = GlobalClimateForesightPillarFactory()
+        draft_run = ClimateForesightRunFactory(status=ClimateForesightRunStatus.DRAFT)
+        pillar = ClimateForesightPillarFactory(run=draft_run)
         datalayer = DataLayerFactory()
 
         input_dl = ClimateForesightRunInputDataLayer.objects.create(
