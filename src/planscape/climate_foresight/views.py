@@ -10,6 +10,10 @@ from climate_foresight.serializers import (
     ClimateForesightRunSerializer,
     ClimateForesightRunListSerializer,
 )
+from climate_foresight.filters import (
+    ClimateForesightRunFilterSet,
+    ClimateForesightPillarFilterSet,
+)
 from planning.models import PlanningArea
 from datasets.models import DataLayer, DataLayerStatus
 from datasets.serializers import BrowseDataLayerSerializer
@@ -19,16 +23,11 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     """ViewSet for ClimateForesightRun CRUD operations."""
 
     permission_classes = [permissions.IsAuthenticated]
+    filterset_class = ClimateForesightRunFilterSet
 
     def get_queryset(self):
-        """Filter runs by current user and optionally by planning area."""
-        queryset = ClimateForesightRun.objects.list_by_user(self.request.user)
-
-        planning_area_id = self.request.query_params.get("planning_area")
-        if planning_area_id:
-            queryset = queryset.filter(planning_area_id=planning_area_id)
-
-        return queryset
+        """Filter runs by current user."""
+        return ClimateForesightRun.objects.list_by_user(self.request.user)
 
     def get_serializer_class(self):
         """Use different serializers for list vs detail views."""
@@ -77,34 +76,18 @@ class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ClimateForesightPillarSerializer
+    filterset_class = ClimateForesightPillarFilterSet
 
     def get_queryset(self):
         """
         Return pillars available to the user.
         - Global pillars (run=None) are visible to all
         - Custom pillars are only visible if the user owns the associated run
-        - Ordered with custom pillars first, then global pillars, both by order field
         """
         user = self.request.user
-        run_id = self.request.query_params.get("run")
-
-        if run_id:
-            return ClimateForesightPillar.objects.filter(
-                models.Q(run_id__isnull=True)
-                | models.Q(run_id=run_id, run__created_by=user)
-            ).order_by(
-                models.Case(
-                    models.When(run_id__isnull=True, then=1),
-                    models.When(run_id__isnull=False, then=0),
-                    output_field=models.IntegerField(),
-                ),
-                "order",
-                "name",
-            )
-
-        return ClimateForesightPillar.objects.filter(run_id__isnull=True).order_by(
-            "order", "name"
-        )
+        return ClimateForesightPillar.objects.filter(
+            models.Q(run__isnull=True) | models.Q(run__created_by=user)
+        ).order_by("order", "name")
 
     def perform_destroy(self, instance):
         """Only allow deletion of custom pillars when run is in draft mode."""
