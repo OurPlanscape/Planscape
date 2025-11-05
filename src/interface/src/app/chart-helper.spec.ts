@@ -2,6 +2,8 @@ import {
   getChartDatasetsFromFeatures,
   convertTo2DecimalsNumbers,
   getProjectAreaLabelsFromFeatures,
+  CustomChartDataset,
+  sortByTypeAndName,
 } from './chart-helper';
 
 describe('Chart helpers', () => {
@@ -30,6 +32,71 @@ describe('Chart helpers', () => {
       const features = [{}, {}, {}, {}, {}, {}, {}]; // 7 features
       const labels = getProjectAreaLabelsFromFeatures(features as any);
       expect(labels).toEqual(['1', '2', '3', '4', '5', '6', '7']);
+    });
+  });
+
+  describe('sortByTypeAndName', () => {
+    it('should sort chartdatasets by type if it exists, then by name', () => {
+      const exampleDataset: CustomChartDataset[] = [
+        {
+          data: [1, 2, 3],
+          extraInfo: 'ZZZ NO USAGE TYPE',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'ZZZ SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'BBB SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'CCC SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'AAA NO USAGE TYPE',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'AAA SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          usageType: 'PRIMARY',
+          extraInfo: 'ZZ PRIMARY',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          usageType: 'PRIMARY',
+          extraInfo: 'AA PRIMARY',
+          stack: 'Stack 0',
+        },
+      ];
+
+      const sortedExample = exampleDataset.sort(sortByTypeAndName);
+      expect(sortedExample.map((attainment) => attainment.extraInfo)).toEqual([
+        'AA PRIMARY',
+        'ZZ PRIMARY',
+        'AAA SECONDARY',
+        'BBB SECONDARY',
+        'CCC SECONDARY',
+        'ZZZ SECONDARY',
+        'AAA NO USAGE TYPE',
+        'ZZZ NO USAGE TYPE',
+      ]);
     });
   });
 

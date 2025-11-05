@@ -109,7 +109,6 @@ export class TreatmentOpportunityChartComponent implements OnInit {
       this.scenarioResult.result.features,
       this.usageTypes ?? []
     );
-    console.log('here are the chart datasets:', chartDatasets);
     //assign colors from color service
     chartDatasets.map((r) => {
       r.backgroundColor = this.chartService.getOrAddColor(r.extraInfo ?? '');
@@ -118,7 +117,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
       labels: getProjectAreaLabelsFromFeatures(
         this.scenarioResult.result.features
       ),
-      datasets: chartDatasets.reverse(), // TODO: WHYyyyyyyyyyyyy
+      datasets: chartDatasets.reverse(), // the chart is apparently drawn from bottom to top
     };
 
     const selectedData = {

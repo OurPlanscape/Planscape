@@ -28,34 +28,34 @@ export const getChartBorderDash = (): any => {
 export const getSharedGridConfig = (yAxis = true): any =>
   yAxis
     ? {
-      drawBorder: false, // Remove the border along the y-axis
-      drawTicks: false,
-      lineWidth: 1, // Set line width for dotted lines
-      color: '#979797', // Dotted line color
-      borderDash: getChartBorderDash(),
-    }
+        drawBorder: false, // Remove the border along the y-axis
+        drawTicks: false,
+        lineWidth: 1, // Set line width for dotted lines
+        color: '#979797', // Dotted line color
+        borderDash: getChartBorderDash(),
+      }
     : {
-      display: false, // Disable grid lines for the x-axis
-      drawBorder: false, // Remove the bottom border (x-axis line)
-      drawTicks: false, // Remove the tick marks on the x-axis
-    };
+        display: false, // Disable grid lines for the x-axis
+        drawBorder: false, // Remove the bottom border (x-axis line)
+        drawTicks: false, // Remove the tick marks on the x-axis
+      };
 
 export const getSharedTicksConfig = (yAxis = true): any =>
   yAxis
     ? {
-      color: '#4A4A4A',
-      font: baseFont as any,
-      padding: 24,
-      stepSize: 50,
-      callback: (value: any) => `${value}%`,
-    }
+        color: '#4A4A4A',
+        font: baseFont as any,
+        padding: 24,
+        stepSize: 50,
+        callback: (value: any) => `${value}%`,
+      }
     : {
-      autoSkip: false,
-      maxRotation: 0,
-      minRotation: 0,
-      font: baseFont,
-      padding: 24,
-    };
+        autoSkip: false,
+        maxRotation: 0,
+        minRotation: 0,
+        font: baseFont,
+        padding: 24,
+      };
 
 export const getSharedDataLabelsConfig = (): any => ({
   color: '#000',
@@ -80,15 +80,15 @@ export const getSharedDataLabelsConfig = (): any => ({
 export const getSharedTitleConfig = (yAxis = true): any => {
   return yAxis
     ? {
-      display: false,
-    }
+        display: false,
+      }
     : {
-      display: true,
-      text: '(Immediately post-treatment)',
-      align: 'start',
-      color: '#898989', // Text color
-      font: { ...baseFont, ...{ style: 'italic' } },
-    };
+        display: true,
+        text: '(Immediately post-treatment)',
+        align: 'start',
+        color: '#898989', // Text color
+        font: { ...baseFont, ...{ style: 'italic' } },
+      };
 };
 
 export const updateYAxisRange = (
@@ -165,20 +165,26 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
 }
 
 function lookupUsageTypeByName(layer: string, usageTypes: UsageType[]): string {
-  console.log('here are the usagetypes:', usageTypes);
-  return usageTypes.find(usage => usage.datalayer === layer)?.usage_type ?? '';
-
+  return (
+    usageTypes.find((usage) => usage.datalayer === layer)?.usage_type ?? ''
+  );
 }
 
-//TODO: add tests for this
-function sortByTypeAndName(a: CustomChartDataset, b: CustomChartDataset): number {
+export function sortByTypeAndName(
+  a: CustomChartDataset,
+  b: CustomChartDataset
+): number {
   const typeOrder: String[] = ['PRIORITY', 'SECONDARY_METRIC'];
 
-  const aTypeIndex = a.usageType ? typeOrder.indexOf(a.usageType) : -1; // Treat undefined as -1
-  const bTypeIndex = b.usageType ? typeOrder.indexOf(b.usageType) : -1; // Treat undefined as -1
+  // if the type is undefined, score its precedence 1 worse than all other entries
+  const aTypeIndex = a.usageType
+    ? typeOrder.indexOf(a.usageType)
+    : typeOrder.length + 1;
+  const bTypeIndex = b.usageType
+    ? typeOrder.indexOf(b.usageType)
+    : typeOrder.length + 1;
   const aName = a.extraInfo ?? '';
-  const bName = b.extraInfo ?? ''
-  console.log('comparing ', a.usageType, ' of index:', aTypeIndex,' with ', b.usageType, ' of index:', bTypeIndex);
+  const bName = b.extraInfo ?? '';
 
   // Compare the types first
   if (aTypeIndex !== bTypeIndex) {
@@ -198,7 +204,6 @@ export function getChartDatasetsFromFeatures(
   const groupedAttainment = getGroupedAttainment(features);
 
   Object.keys(groupedAttainment).forEach((key, _) => {
-    console.log('what is the key for these attainments?', key);
     result.push({
       data: groupedAttainment[key],
       usageType: usageTypes ? lookupUsageTypeByName(key, usageTypes) : '',
@@ -208,7 +213,6 @@ export function getChartDatasetsFromFeatures(
   });
 
   const sortedResults = result.sort(sortByTypeAndName);
-  console.log('here is the sorted result:', sortedResults);
   return sortedResults;
 }
 
