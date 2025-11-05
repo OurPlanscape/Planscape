@@ -81,4 +81,9 @@ $material-checkbox-padding: 8px;
   color: $color-white;
   background-color: $color-standard-blue;
   cursor: pointer;
+
+  &.selected {
+    background-color: #5892EE;
+  }
+
 }
