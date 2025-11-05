@@ -77,6 +77,9 @@ export class ScenarioMetricsLegendComponent implements OnInit {
         this.cobenefits.push(m);
       }
     });
+    //sort these alphabetically
+    this.priorities.sort();
+    this.cobenefits.sort();
   }
 
   isSelected(metric: string) {
