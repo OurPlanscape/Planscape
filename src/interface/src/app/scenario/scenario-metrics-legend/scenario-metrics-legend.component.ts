@@ -32,9 +32,7 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   priorities: string[] = [];
   cobenefits: string[] = [];
 
-  constructor(
-    private chartService: ScenarioResultsChartsService,
-  ) {}
+  constructor(private chartService: ScenarioResultsChartsService) {}
 
   ngOnInit() {
     this.assignedColors = this.chartService.getAssignedColors();
@@ -51,9 +49,9 @@ export class ScenarioMetricsLegendComponent implements OnInit {
         this.selectedMetrics = m;
       });
 
-      if (this.usageTypes && this.usageTypes?.length > 0) {
-        this.divideMetricsIntoUsageTypes();
-      }
+    if (this.usageTypes && this.usageTypes?.length > 0) {
+      this.divideMetricsIntoUsageTypes();
+    }
   }
 
   // divide metrics into priorities and cobenefits,

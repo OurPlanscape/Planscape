@@ -211,7 +211,7 @@ export function getChartDatasetsFromFeatures(
       stack: 'Stack 0',
     });
   });
-  
+
   return result.sort(sortByTypeAndName);
 }
 
