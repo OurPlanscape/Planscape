@@ -64,11 +64,10 @@ export class SelectableListComponent<T extends Item> {
 
   /** @ignore */
   selectItem(item: T) {
-    // // toggle if same item
-    const isSelected = this.selectedItems.includes(item);
+    const exists = this.selectedItems.some((i) => i.id === item.id);
 
-    this.selectedItems = isSelected
-      ? this.selectedItems.filter((i) => i !== item)
+    this.selectedItems = exists
+      ? this.selectedItems.filter((i) => i.id !== item.id)
       : [...this.selectedItems, item];
 
     this.selectedItemsChanged.emit(this.selectedItems);
@@ -76,10 +75,10 @@ export class SelectableListComponent<T extends Item> {
 
   /** @ignore */
   viewItem(item: T) {
-    // // toggle if same item
-    const isSelected = this.viewedItems.includes(item);
-    this.viewedItems = isSelected
-      ? this.viewedItems.filter((i) => i !== item)
+    const exists = this.viewedItems.some((i) => i.id === item.id);
+
+    this.viewedItems = exists
+      ? this.viewedItems.filter((i) => i.id !== item.id)
       : [...this.viewedItems, item];
 
     this.viewedItemsChanged.emit(this.viewedItems);
