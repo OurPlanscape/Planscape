@@ -1,15 +1,12 @@
 <sg-modal
-  title="New Analysis"
-  [shortHeader]="false"
-  [showBorders]="true"
-  primaryButtonText="Done"
-  secondaryButtonText="Cancel"
+  title="New analysis"
+  [showClose]="false"
   [primaryButtonDisabled]="form.invalid"
   (clickedPrimary)="onSubmit()"
   (clickedSecondary)="onCancel()"
   (clickedClose)="onCancel()">
   <div modalBodyContent>
-    <form [formGroup]="form" class="new-run-form">
+    <form [formGroup]="form">
       <sg-input-field
         label="Analysis Name"
         [error]="!!form.get('name')?.hasError('required')"
