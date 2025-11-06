@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { ScenarioResult } from '@types';
+import { ScenarioResult, UsageType } from '@types';
 import { ChartData, ChartOptions } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import {
@@ -27,6 +27,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 })
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
+  @Input() usageTypes: UsageType[] | null = [];
 
   public barChartType: 'bar' = 'bar';
 
@@ -105,7 +106,8 @@ export class TreatmentOpportunityChartComponent implements OnInit {
 
   ngOnInit(): void {
     const chartDatasets = getChartDatasetsFromFeatures(
-      this.scenarioResult.result.features
+      this.scenarioResult.result.features,
+      this.usageTypes ?? []
     );
     //assign colors from color service
     chartDatasets.map((r) => {
@@ -115,7 +117,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
       labels: getProjectAreaLabelsFromFeatures(
         this.scenarioResult.result.features
       ),
-      datasets: chartDatasets,
+      datasets: chartDatasets.reverse(), // the chart is apparently drawn from bottom to top
     };
 
     const selectedData = {

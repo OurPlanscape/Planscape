@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { ScenarioResult } from '@types';
+import { ScenarioResult, UsageType } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
@@ -40,6 +40,7 @@ export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
   @Input() priorities: string[] = [];
+  @Input() usageTypes: UsageType[] | null = [];
 
   areas: ProjectAreaReport[] = [];
 
