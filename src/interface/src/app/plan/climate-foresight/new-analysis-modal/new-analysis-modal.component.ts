@@ -19,13 +19,13 @@ import {
   ModalComponent,
 } from '@styleguide';
 
-export interface NewRunModalData {
+export interface NewAnalysisModalData {
   planningAreaId: number;
   planningAreaName: string;
 }
 
 @Component({
-  selector: 'app-new-run-modal',
+  selector: 'app-new-analysis-modal',
   standalone: true,
   imports: [
     CommonModule,
@@ -37,16 +37,16 @@ export interface NewRunModalData {
     InputFieldComponent,
     ModalComponent,
   ],
-  templateUrl: './new-run-modal.component.html',
-  styleUrls: ['./new-run-modal.component.scss'],
+  templateUrl: './new-analysis-modal.component.html',
+  styleUrls: ['./new-analysis-modal.component.scss'],
 })
-export class NewRunModalComponent {
+export class NewAnalysisModalComponent {
   form: FormGroup;
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<NewRunModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: NewRunModalData
+    private dialogRef: MatDialogRef<NewAnalysisModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: NewAnalysisModalData
   ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(255)]],

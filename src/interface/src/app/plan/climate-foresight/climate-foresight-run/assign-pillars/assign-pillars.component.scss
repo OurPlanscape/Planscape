@@ -151,3 +151,15 @@
   display: flex;
   flex-direction: column;
 }
+
+.expandible-actions {
+  display: flex;
+  margin-left: auto;
+  gap: 4px;
+}
+
+:host .expandible-actions ::ng-deep button.icon-button .mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}

@@ -50,6 +50,19 @@
             <span class="expandible-group-desc">
               ({{ group.dataLayers.length }} data layers)</span
             >
+            <span class="expandible-actions">
+              <button
+                sg-button
+                (click)="deletePillar()"
+                variant="icon-only"
+                [outlined]="true"
+                icon="delete"></button>
+              <button
+                sg-button
+                [outlined]="true"
+                variant="icon-only"
+                icon="edit"></button>
+            </span>
           </span>
           <!-- Draggable datalayer component -->
           <ng-container *ngIf="group.isOpen === true">
