@@ -1,4 +1,4 @@
-import { FeatureCollection } from '@types';
+import { FeatureCollection, UsageType } from '@types';
 import { ChartConfiguration, ChartDataset } from 'chart.js';
 
 // Base font configuration
@@ -140,6 +140,7 @@ export const getBasicChartOptions =
 // Adding extra info to set the key and use that on the tooltip
 export interface CustomChartDataset extends ChartDataset<'bar', number[]> {
   extraInfo?: string;
+  usageType?: string;
 }
 
 export function getGroupedAttainment(features: FeatureCollection[]) {
@@ -163,8 +164,40 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
   return groupedAttainment;
 }
 
+function lookupUsageTypeByName(layer: string, usageTypes: UsageType[]): string {
+  return (
+    usageTypes.find((usage) => usage.datalayer === layer)?.usage_type ?? ''
+  );
+}
+
+export function sortByTypeAndName(
+  a: CustomChartDataset,
+  b: CustomChartDataset
+): number {
+  const typeOrder: String[] = ['PRIORITY', 'SECONDARY_METRIC'];
+
+  // if the type is undefined, score its precedence 1 worse than all other entries
+  const aTypeIndex = a.usageType
+    ? typeOrder.indexOf(a.usageType)
+    : typeOrder.length + 1;
+  const bTypeIndex = b.usageType
+    ? typeOrder.indexOf(b.usageType)
+    : typeOrder.length + 1;
+  const aName = a.extraInfo ?? '';
+  const bName = b.extraInfo ?? '';
+
+  // Compare the types first
+  if (aTypeIndex !== bTypeIndex) {
+    return aTypeIndex - bTypeIndex;
+  }
+
+  // If types are the same, then compare by name
+  return aName.localeCompare(bName);
+}
+
 export function getChartDatasetsFromFeatures(
-  features: FeatureCollection[]
+  features: FeatureCollection[],
+  usageTypes?: UsageType[]
 ): CustomChartDataset[] {
   const result: CustomChartDataset[] = [];
 
@@ -173,12 +206,13 @@ export function getChartDatasetsFromFeatures(
   Object.keys(groupedAttainment).forEach((key, _) => {
     result.push({
       data: groupedAttainment[key],
+      usageType: usageTypes ? lookupUsageTypeByName(key, usageTypes) : '',
       extraInfo: key, // this will be used on the tooltip to set the title
       stack: 'Stack 0',
     });
   });
 
-  return result;
+  return result.sort(sortByTypeAndName);
 }
 
 export function convertTo2DecimalsNumbers(value: number): number {

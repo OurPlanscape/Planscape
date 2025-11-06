@@ -13,7 +13,6 @@ import fiona
 from actstream import action
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
 from datasets.services import get_datalayer_by_module_atribute
@@ -150,8 +149,7 @@ def create_planning_area(
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
-    if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: stands_workflow.apply_async())
+    transaction.on_commit(lambda: stands_workflow.apply_async())
     return planning_area
 
 
