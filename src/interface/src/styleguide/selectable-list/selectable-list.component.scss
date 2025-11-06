@@ -3,7 +3,7 @@
 $select-width: 50px;
 $colum-gap: 16px;
 $material-checkbox-padding: 8px;
-
+$select-button-selected-color: #5892EE;
 
 :host {
   box-sizing: border-box;
@@ -14,7 +14,7 @@ $material-checkbox-padding: 8px;
     position: absolute;
     width: 1px;
     height: 100%;
-    background-color: #e1e1e1;
+    background-color: $color-soft-gray;
     top: 0;
     left: #{$select-width + $colum-gap}
   }
@@ -86,8 +86,13 @@ $material-checkbox-padding: 8px;
   background-color: $color-standard-blue;
   cursor: pointer;
 
+
   &.selected {
-    background-color: #5892EE;
+    background-color: $select-button-selected-color;
+  }
+
+  &:hover {
+    background-color: $color-main-blue;
   }
 
 }
