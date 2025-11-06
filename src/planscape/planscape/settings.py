@@ -362,6 +362,9 @@ if SENTRY_DSN is not None:
         traces_sample_rate=0.05,
     )
 
+# Planning area settings
+OVERSIZE_PLANNING_AREA_ACRES = config("OVERSIZE_PLANNING_AREA_ACRES", 3_000_000, cast=int)
+
 # Scenario planning settings
 DEFAULT_MAX_PROJECT_COUNT = config("DEFAULT_MAX_PROJECT_COUNT", 10, cast=int)
 MIN_AREA_PROJECT_SMALL = config("MIN_AREA_PROJECT_SMALL", 10, cast=int)
