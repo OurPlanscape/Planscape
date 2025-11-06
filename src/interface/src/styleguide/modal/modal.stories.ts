@@ -168,7 +168,10 @@ For this specific modal configuration, use \`DeleteDialogComponent\`
     props: args,
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
-        <div modalBodyContent>Are you sure you want to delete this?</div>
+        <div modalBodyContent>Are you sure you want to delete this?
+        <p>Please note, For this specific modal configuration, use \`DeleteDialogComponent\`</p>
+
+        </div>
       </sg-modal><div>`,
   }),
 };
@@ -204,7 +207,9 @@ For this specific modal configuration, use \`ConfirmationDialogComponent\`
     props: args,
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
-        <div modalBodyContent>A message that informs the users about a situation that requires acknowledgement</div>
+        <div modalBodyContent>A message that informs the users about a situation that requires acknowledgement.
+        <p>Please note, for this specific modal configuration, use \`ConfirmationDialogComponent\`</p>
+        </div>
       </sg-modal><div>`,
   }),
 };
@@ -241,7 +246,10 @@ For this specific modal configuration, use \`BlockDialogComponent\`
     props: args,
     template: `<div ${containerStyle}>
       <sg-modal ${argsToTemplate(args)}>
-        <div modalBodyContent>A message that informs the users about a situation that requires acknowledgement</div>
+        <div modalBodyContent>A message that informs the users about a situation that requires acknowledgement.
+
+        <p>Please note, for this specific modal configuration, use \`BlockDialogComponent\`</p>
+        </div>
       </sg-modal><div>`,
   }),
 };

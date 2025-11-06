@@ -134,14 +134,17 @@ export class ModalComponent {
     return !!this.tooltipContent;
   }
 
+  /** @ignore */
   handleCloseButton(): void {
     this.clickedClose.emit();
   }
 
+  /** @ignore */
   handleSecondaryButton(): void {
     this.clickedSecondary.emit();
   }
 
+  /** @ignore */
   handlePrimaryButton(): void {
     this.clickedPrimary.emit();
   }
