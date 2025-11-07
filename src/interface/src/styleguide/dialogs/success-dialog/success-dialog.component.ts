@@ -1,20 +1,22 @@
 import { Component, Inject } from '@angular/core';
-import { ModalComponent } from '../../modal/modal.component';
-import { ModalConfirmationDialogComponent } from '../../modal-dialog-section/modal-confirmation-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DialogData } from '../dialogs';
+import {
+  DialogData,
+  ModalComponent,
+  ModalConfirmationDialogComponent,
+} from '@styleguide';
 
 @Component({
-  selector: 'sg-error-dialog',
+  selector: 'sg-success-dialog',
   standalone: true,
   imports: [ModalComponent, ModalConfirmationDialogComponent],
-  templateUrl: './error-dialog.component.html',
+  templateUrl: './success-dialog.component.html',
 })
-export class ErrorDialogComponent {
+export class SuccessDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: DialogData,
-    public dialogRef: MatDialogRef<ErrorDialogComponent>
+    public dialogRef: MatDialogRef<SuccessDialogComponent>
   ) {}
 
   close(): void {

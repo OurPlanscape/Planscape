@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 import { concatMap, EMPTY, interval, Observable, switchMap, take } from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
@@ -21,6 +21,8 @@ import {
   POLLING_INTERVAL,
 } from './plan-helpers';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
+import { filter } from 'rxjs/operators';
+import { SuccessDialogComponent } from '../../styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -64,6 +66,17 @@ export class PlanComponent implements OnInit {
         return this.authService.getUser(plan.user);
       })
     );
+
+    this.router.events
+      .pipe(filter((e): e is NavigationStart => e instanceof NavigationStart))
+      .subscribe(() => {
+        // show now for testing
+        // const nav = this.router.getCurrentNavigation();
+        // if (nav?.extras.state?.['showInProgressModal'] === true) {
+        //   this.showInProgressModal();
+        //   // TODO would be cool to kill once done
+        // }
+      });
   }
 
   currentPlan$ = this.planState.currentPlan$;
@@ -78,6 +91,9 @@ export class PlanComponent implements OnInit {
   ngOnInit() {
     this.loadNotes();
     this.pollForChanges();
+
+    // show for testing
+    this.showInProgressModal();
   }
 
   backToOverview() {
@@ -163,5 +179,15 @@ export class PlanComponent implements OnInit {
 
   private isPlanMapStatusReady(plan: Plan) {
     return planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan);
+  }
+
+  private showInProgressModal() {
+    this.dialog.open(SuccessDialogComponent, {
+      data: {
+        headline: 'Your Scenario Analysis is in Progress',
+        message:
+          'Your scenario analysis is in progress You’ll be notified when it’s ready, the completed scenario can be viewed in planning area dashboard.',
+      },
+    });
   }
 }

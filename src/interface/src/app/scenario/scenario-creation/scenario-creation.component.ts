@@ -55,7 +55,6 @@ import { getPlanPath } from 'src/app/plan/plan-helpers';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
-import { ScenarioState } from '../scenario.state';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -145,7 +144,7 @@ export class ScenarioCreationComponent
     private router: Router,
     private featureService: FeatureService,
     private breadcrumbService: BreadcrumbService,
-    private scenarioState: ScenarioState,
+    // private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar
   ) {
     this.dataLayersStateService.paths$
@@ -365,16 +364,13 @@ export class ScenarioCreationComponent
       )
       .subscribe({
         next: (result) => {
-          if (result.id) {
-            this.scenarioState.setScenarioId(result.id);
-            this.scenarioState.reloadScenario();
-          }
-          this.router.navigate([
-            'plan',
-            result.planning_area,
-            'scenario',
-            result.id,
-          ]);
+          // if (result.id) {
+          //   this.scenarioState.setScenarioId(result.id);
+          //   this.scenarioState.reloadScenario();
+          // }
+          this.router.navigate(['plan', result.planning_area], {
+            state: { showInProgressModal: true },
+          });
         },
         error: (e) => {
           this.dialog.open(ScenarioErrorModalComponent);

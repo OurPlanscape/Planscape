@@ -12,6 +12,7 @@ import { ModalComponent } from './../modal/modal.component';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 import { PendingDialogComponent } from './pending-dialog/pending-dialog.component';
 import { DialogData } from './dialogs';
+import { SuccessDialogComponent } from './success-dialog/success-dialog.component';
 
 // Common styles for both stories
 const containerStyle = `style="background-color: gray;
@@ -35,6 +36,7 @@ const meta: Meta<ErrorDialogComponent | PendingDialogComponent> = {
         MatProgressSpinnerModule,
         ErrorDialogComponent,
         PendingDialogComponent,
+        SuccessDialogComponent,
       ],
       providers: [
         { provide: MatDialogRef, useValue: {} }, // Provide a dummy MatDialogRef
@@ -101,5 +103,27 @@ export const PendingDialog: Story = {
   render: ({ ...args }) => ({
     props: args,
     template: `<div ${containerStyle}><sg-pending-dialog></sg-pending-dialog></div>`,
+  }),
+};
+
+// Story for Success
+export const SuccessDialog: Story = {
+  decorators: [
+    moduleMetadata({
+      providers: [
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {
+            primaryButtonText: 'Close',
+            headline: 'Success',
+            message: 'Everything worked just fine. Congrats.',
+          } as DialogData,
+        },
+      ],
+    }),
+  ],
+  render: ({ ...args }) => ({
+    props: args,
+    template: `<div ${containerStyle}><sg-success-dialog></sg-success-dialog></div>`,
   }),
 };

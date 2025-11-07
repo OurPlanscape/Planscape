@@ -10,7 +10,6 @@ import { ModalConfirmationDialogComponent } from '../../modal-dialog-section/mod
   standalone: true,
   imports: [ModalComponent, ModalConfirmationDialogComponent],
   templateUrl: './pending-dialog.component.html',
-  styleUrl: './pending-dialog.component.scss',
 })
 export class PendingDialogComponent {
   constructor(
