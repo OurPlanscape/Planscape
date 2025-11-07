@@ -59,6 +59,7 @@ import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialo
 import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ScenarioState } from '../scenario.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -144,7 +145,7 @@ export class ScenarioCreationComponent
     private router: Router,
     private featureService: FeatureService,
     private breadcrumbService: BreadcrumbService,
-    // private scenarioState: ScenarioState,
+    private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar
   ) {
     this.dataLayersStateService.paths$
@@ -364,10 +365,10 @@ export class ScenarioCreationComponent
       )
       .subscribe({
         next: (result) => {
-          // if (result.id) {
-          //   this.scenarioState.setScenarioId(result.id);
-          //   this.scenarioState.reloadScenario();
-          // }
+          if (result.id) {
+            this.scenarioState.setScenarioId(result.id);
+            this.scenarioState.reloadScenario();
+          }
           this.router.navigate(['plan', result.planning_area], {
             state: { showInProgressModal: true },
           });

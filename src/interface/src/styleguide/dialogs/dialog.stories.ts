@@ -69,7 +69,8 @@ export const ErrorDialog: Story = {
         {
           provide: MAT_DIALOG_DATA,
           useValue: {
-            primaryButtonText: 'primary action',
+            primaryButtonText: 'Try Again',
+            secondaryButtonText: 'Dismiss',
             headline: 'Unable to create resource',
             message:
               'There was an error. Please check your internet connection and try again.',
