@@ -56,12 +56,10 @@ const containerStyle = `style="background-color: white;
       justify-content: center;
       align-items: center;"`;
 
-export const InfoBox: Story = {
+export const PendingBox: Story = {
   args: {
-    headline: 'Information Title',
-    message:
-      'Insert a message to inform users about a situation that requires acknowledgement.',
-    infoType: 'alert',
+    headline: 'Pending Action Title',
+    message: 'Insert a message about the performed action in progress.',
   },
 };
 
@@ -79,13 +77,5 @@ export const SuccessBox: Story = {
     message:
       'Insert a message about the performed action was completed/successful.',
     infoType: 'success',
-  },
-};
-
-export const PendingBox: Story = {
-  args: {
-    headline: 'Pending Action Title',
-    message: 'Insert a message about the performed action in progress.',
-    infoType: 'pending',
   },
 };

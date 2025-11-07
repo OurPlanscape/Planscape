@@ -3,7 +3,7 @@ import { NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-export type ModalDialogVariant = 'success' | 'error' | 'pending' | 'alert';
+export type ModalDialogVariant = 'success' | 'error' | 'pending';
 
 /**
  * A component that can be used within the modal body as a confirmation dialog.
@@ -22,7 +22,7 @@ export class ModalConfirmationDialogComponent {
   /**
    * The variant of the dialog
    */
-  @Input() infoType: ModalDialogVariant = 'alert';
+  @Input() infoType: ModalDialogVariant = 'pending';
   /**
    * Icon to display, if not one of the defaults for this variant
    */
@@ -37,9 +37,8 @@ export class ModalConfirmationDialogComponent {
   @Input() message?: string | null = '';
   readonly IconByVariant: Record<ModalDialogVariant, string | null> = {
     success: 'check_circle',
-    error: 'error',
+    error: 'warning',
     pending: 'pending_actions',
-    alert: null,
   };
 
   // if there an icon specified, use the default for the dialog variant
@@ -63,10 +62,5 @@ export class ModalConfirmationDialogComponent {
   @HostBinding('class.pending')
   get isWarning() {
     return this.infoType === 'pending';
-  }
-
-  @HostBinding('class.alert')
-  get isComplete() {
-    return this.infoType === 'alert';
   }
 }

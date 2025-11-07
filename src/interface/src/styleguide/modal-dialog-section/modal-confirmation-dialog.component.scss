@@ -14,26 +14,16 @@
   text-align: center;
   // need to push the modal footer 8px up
   margin-bottom: -8px;
-
-  &.alert {
-    justify-content: left;
-    text-align: left;
-    height: 80px;
-    margin: 0;
-
-    .message {
-      text-align: left;
-    }
-  }
+  color: $color-dark-yellow;
 
   &.error {
-    color: $color-dark-red;
+    color: $color-error;
     justify-content: center;
     text-align: center;
   }
 
   &.success {
-    color: $color-brand-green;
+    color: $color-brand-teal;
   }
 
   .headline {
