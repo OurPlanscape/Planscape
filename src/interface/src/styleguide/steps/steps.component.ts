@@ -114,6 +114,8 @@ export class StepsComponent<T> extends CdkStepper {
       }
     } else {
       control.markAllAsTouched();
+      const firstInvalid = document.querySelector('.ng-invalid:not(form)');
+      firstInvalid?.scrollIntoView({ behavior: 'smooth' });
     }
   }
 
