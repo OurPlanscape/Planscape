@@ -1,0 +1,9 @@
+<p>{{ user_email }} has created a planning area larger than the allowed max acreage.</p>
+
+<ul>
+  <li><strong>Name:</strong> {{ planning_area_name }}</li>
+  <li><strong>Area (acres):</strong> {{ acres|floatformat:0 }}</li>
+  <li><strong>Link:</strong> <a href="{{ planning_area_link }}" target="_blank">Open planning area</a></li>
+</ul>
+
+<p>— Planscape</p>

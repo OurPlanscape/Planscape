@@ -256,6 +256,9 @@ AUTHENTICATION_BACKENDS = [
     "users.backends.PlanscapeAuthBackend",
 ]
 
+# Who should receive internal alert emails
+SUPPORT_EMAIL = config("SUPPORT_EMAIL", default="support@planscape.org")
+
 # allauth
 
 SITE_ID = 1
@@ -282,6 +285,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default=DEFAULT_FROM_EMAIL)
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
+
 
 PLANSCAPE_BASE_URL = config("PLANSCAPE_BASE_URL", default="localhost")
 
@@ -363,7 +367,9 @@ if SENTRY_DSN is not None:
     )
 
 # Planning area settings
-OVERSIZE_PLANNING_AREA_ACRES = config("OVERSIZE_PLANNING_AREA_ACRES", 3_000_000, cast=int)
+OVERSIZE_PLANNING_AREA_ACRES = config(
+    "OVERSIZE_PLANNING_AREA_ACRES", 3_000_000, cast=int
+)
 
 # Scenario planning settings
 DEFAULT_MAX_PROJECT_COUNT = config("DEFAULT_MAX_PROJECT_COUNT", 10, cast=int)

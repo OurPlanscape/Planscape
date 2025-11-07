@@ -1,0 +1,9 @@
+Large Planning Area Created
+
+{{ user_email }} has created a planning area larger than the allowed max acreage.
+
+Name: {{ planning_area_name }}
+Area (acres): {{ acres|floatformat:0 }}
+Link: {{ planning_area_link }}
+
+— Planscape
