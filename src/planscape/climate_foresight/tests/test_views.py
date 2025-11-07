@@ -2,8 +2,12 @@ from planning.tests.factories import PlanningAreaFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from climate_foresight.models import ClimateForesightRun
-from climate_foresight.tests.factories import ClimateForesightRunFactory
+from climate_foresight.models import ClimateForesightRun, ClimateForesightPillar
+from climate_foresight.tests.factories import (
+    ClimateForesightRunFactory,
+    ClimateForesightPillarFactory,
+    GlobalClimateForesightPillarFactory,
+)
 from planscape.tests.factories import UserFactory
 
 
@@ -288,3 +292,153 @@ class ClimateForesightRunViewSetTest(APITestCase):
 
         self.assertEqual(data[0]["name"], "Newest Run")
         self.assertEqual(data[-1]["name"], "User Run 1")
+
+
+class ClimateForesightPillarViewSetTest(APITestCase):
+    def setUp(self):
+        from django.contrib.contenttypes.models import ContentType
+
+        ContentType.objects.get_or_create(app_label="planning", model="planningarea")
+
+        self.user = UserFactory(
+            username="testuser", first_name="Test", last_name="User"
+        )
+        self.other_user = UserFactory(
+            username="otheruser", first_name="Other", last_name="Person"
+        )
+
+        self.planning_area = PlanningAreaFactory(user=self.user)
+
+        self.user_run1 = ClimateForesightRunFactory(
+            planning_area=self.planning_area,
+            created_by=self.user,
+            name="User Run 1",
+            status="draft",
+        )
+        self.user_run2 = ClimateForesightRunFactory(
+            planning_area=self.planning_area,
+            created_by=self.user,
+            name="User Run 2",
+            status="draft",
+        )
+
+        # create global pillars
+        self.global_pillar1 = GlobalClimateForesightPillarFactory(
+            name="Global Pillar 1", order=1, created_by=self.user
+        )
+        self.global_pillar2 = GlobalClimateForesightPillarFactory(
+            name="Global Pillar 2", order=2, created_by=self.user
+        )
+
+        # create custom pillars for run1
+        self.custom_pillar1_run1 = ClimateForesightPillarFactory(
+            run=self.user_run1,
+            name="Custom Pillar 1",
+            order=1,
+            created_by=self.user,
+        )
+        self.custom_pillar2_run1 = ClimateForesightPillarFactory(
+            run=self.user_run1,
+            name="Custom Pillar 2",
+            order=2,
+            created_by=self.user,
+        )
+
+        # create custom pillar for run2
+        self.custom_pillar1_run2 = ClimateForesightPillarFactory(
+            run=self.user_run2,
+            name="Custom Pillar 1",
+            order=1,
+            created_by=self.user,
+        )
+
+        self.base_url = "/planscape-backend/v2/climate-foresight-pillars/"
+
+    def test_unauthenticated_access(self):
+        response = self.client.get(self.base_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_all_pillars_without_filter(self):
+        """Test listing pillars without run filter returns only global pillars."""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.base_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        # Should return only 2 global pillars (custom pillars are run-specific)
+        self.assertEqual(len(data), 2)
+        pillar_names = [p["name"] for p in data]
+        self.assertIn("Global Pillar 1", pillar_names)
+        self.assertIn("Global Pillar 2", pillar_names)
+        # Custom pillars should NOT appear without run filter
+        self.assertNotIn("Custom Pillar 1", pillar_names)
+        self.assertNotIn("Custom Pillar 2", pillar_names)
+
+    def test_list_pillars_filtered_by_run(self):
+        """Test filtering pillars by run parameter returns global + custom for that run."""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.base_url, {"run": self.user_run1.id})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        # should return 2 global + 2 custom for run1 = 4 total
+        self.assertEqual(len(data), 4)
+        pillar_names = [p["name"] for p in data]
+        self.assertIn("Global Pillar 1", pillar_names)
+        self.assertIn("Global Pillar 2", pillar_names)
+        self.assertIn("Custom Pillar 1", pillar_names)
+        self.assertIn("Custom Pillar 2", pillar_names)
+
+    def test_pillar_ordering_with_run_filter(self):
+        """Test that custom pillars come before global pillars when filtering by run."""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.base_url, {"run": self.user_run1.id})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        pillar_names = [p["name"] for p in data]
+
+        # first two should be custom pillars
+        self.assertEqual(pillar_names[0], "Custom Pillar 1")
+        self.assertEqual(pillar_names[1], "Custom Pillar 2")
+
+        # last two should be global pillars
+        self.assertEqual(pillar_names[2], "Global Pillar 1")
+        self.assertEqual(pillar_names[3], "Global Pillar 2")
+
+    def test_user_cannot_see_other_users_custom_pillars(self):
+        """Test that users only see global pillars without run filter (no custom pillars from any user)."""
+        other_user_run = ClimateForesightRunFactory(
+            planning_area=PlanningAreaFactory(user=self.other_user),
+            created_by=self.other_user,
+            name="Other User Run",
+        )
+        ClimateForesightPillarFactory(
+            run=other_user_run,
+            name="Other Custom Pillar",
+            created_by=self.other_user,
+        )
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.base_url)
+
+        data = response.json()
+        pillar_names = [p["name"] for p in data]
+
+        self.assertNotIn("Other Custom Pillar", pillar_names)
+
+    def test_cannot_filter_by_other_users_run(self):
+        """Test that filtering by another user's run returns validation error."""
+        other_user_run = ClimateForesightRunFactory(
+            planning_area=PlanningAreaFactory(user=self.other_user),
+            created_by=self.other_user,
+            name="Other User Run",
+        )
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.base_url, {"run": other_user_run.id})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
