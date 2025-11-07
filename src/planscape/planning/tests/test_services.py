@@ -21,7 +21,12 @@ from stands.models import StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
 
-from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType, PlanningAreaMapStatus
+from planning.models import (
+    PlanningArea,
+    ScenarioResultStatus,
+    TreatmentGoalUsageType,
+    PlanningAreaMapStatus,
+)
 from planning.services import (
     create_scenario,
     export_planning_area_to_geopackage,
