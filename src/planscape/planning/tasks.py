@@ -38,6 +38,7 @@ from planning.services import (
     create_metrics_task,
     export_to_geopackage,
     get_available_stand_ids,
+    get_acreage,
 )
 
 log = logging.getLogger(__name__)
@@ -237,12 +238,19 @@ def prepare_planning_area(planning_area_id: int) -> int:
         PlanningAreaMapStatus.FAILED,
     )
 
+    body = chain(
+        set_map_status_done,
+        async_send_email_large_planning_area.si(planning_area.pk),
+    )
+
     log.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
 
     stand_metrics_workflow = chord(
-        header=group(create_stand_metrics_jobs), body=set_map_status_done
+        header=group(create_stand_metrics_jobs),
+        body=body,
     ).on_error(set_map_status_failed)
     stand_metrics_workflow.apply_async()
+
     log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
     return len(create_stand_metrics_jobs)
 
@@ -456,4 +464,57 @@ def async_send_email_scenario_finished(scenario_id: int) -> None:
         log.exception(
             "Unexpected error while sending scenario-finished email.",
             extra={"scenario_id": scenario_id},
+        )
+
+
+@app.task()
+def async_send_email_large_planning_area(planning_area_id: int) -> None:
+    try:
+        planning_area = PlanningArea.objects.select_related("user").get(
+            pk=planning_area_id
+        )
+    except PlanningArea.DoesNotExist:
+        log.warning(
+            "Planning Area %s does not exist; cannot send oversize alert.",
+            planning_area_id,
+        )
+        return
+
+    acres = get_acreage(planning_area.geometry)
+    if acres <= settings.OVERSIZE_PLANNING_AREA_ACRES:
+        return
+
+    user_email = (
+        (planning_area.user.email or "").strip() if planning_area.user else "(unknown)"
+    )
+    link = urljoin(settings.PLANSCAPE_BASE_URL, f"plan/{planning_area.pk}")
+
+    context = {
+        "user_email": user_email,
+        "planning_area_name": planning_area.name or f"Planning Area {planning_area.pk}",
+        "acres": acres,
+        "planning_area_link": link,
+    }
+
+    subject = "Large Planning Area Created"
+    txt = render_to_string("email/planning/oversize_planning_area.txt", context)
+    html = render_to_string("email/planning/oversize_planning_area.html", context)
+
+    try:
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.SUPPORT_EMAIL],
+            message=txt,
+            html_message=html,
+        )
+        log.info(
+            "Sent oversize planning area alert for PA %s to %s",
+            planning_area.pk,
+            settings.SUPPORT_EMAIL,
+        )
+    except Exception:
+        log.exception(
+            "Failed sending oversize planning area alert.",
+            extra={"planning_area_id": planning_area_id},
         )

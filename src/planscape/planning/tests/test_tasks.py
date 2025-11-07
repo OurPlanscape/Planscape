@@ -16,6 +16,7 @@ from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
     async_forsys_run,
     async_pre_forsys_process,
+    async_send_email_large_planning_area,
     async_send_email_scenario_finished,
     trigger_geopackage_generation,
     trigger_scenario_ready_emails,
@@ -382,3 +383,56 @@ class TriggerScenarioReadyEmailsTestCase(TestCase):
 
         scenario_blank_email.refresh_from_db()
         self.assertIsNone(scenario_blank_email.ready_email_sent_at)
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    def test_dont_send_email_if_user_email_is_whitespace(self, send_email_mock):
+        scen = ScenarioFactory.create()
+        scen.user.email = "   "
+        scen.user.save(update_fields=["email"])
+        async_send_email_scenario_finished(scen.pk)
+        self.assertFalse(send_email_mock.called)
+
+
+@override_settings(
+    OVERSIZE_PLANNING_AREA_ACRES=100, SUPPORT_EMAIL="support@example.com"
+)
+class AsyncSendEmailLargePlanningAreaTest(TestCase):
+    def setUp(self):
+        self.pa = PlanningAreaFactory.create(
+            user__email="owner@example.com", name="Big PA"
+        )
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    @mock.patch("planning.tasks.get_acreage", return_value=150)
+    def test_trigger_email_when_oversize(self, _mock_acreage, send_email_mock):
+        async_send_email_large_planning_area(self.pa.pk)
+
+        self.assertTrue(send_email_mock.called)
+        send_email_mock.assert_called_once_with(
+            subject="Large Planning Area Created",
+            from_email=mock.ANY,
+            recipient_list=["support@example.com"],
+            message=mock.ANY,
+            html_message=mock.ANY,
+        )
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    @mock.patch("planning.tasks.get_acreage", return_value=100)
+    def test_dont_send_email_when_equal_to_threshold(
+        self, _mock_acreage, send_email_mock
+    ):
+        async_send_email_large_planning_area(self.pa.pk)
+        self.assertFalse(send_email_mock.called)
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    @mock.patch("planning.tasks.get_acreage", return_value=50)
+    def test_dont_send_email_when_below_threshold(self, _mock_acreage, send_email_mock):
+        async_send_email_large_planning_area(self.pa.pk)
+        self.assertFalse(send_email_mock.called)
+
+    @mock.patch("planning.tasks.send_mail", return_value=True)
+    def test_dont_send_email_if_planning_area_deleted(self, send_email_mock):
+        pk = self.pa.pk
+        self.pa.delete()
+        async_send_email_large_planning_area(pk)
+        self.assertFalse(send_email_mock.called)
