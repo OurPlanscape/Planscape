@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { concatMap, EMPTY, interval, Observable, switchMap, take } from 'rxjs';
 import { Plan, User } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
@@ -21,7 +21,6 @@ import {
   POLLING_INTERVAL,
 } from './plan-helpers';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
-import { filter } from 'rxjs/operators';
 import { SuccessDialogComponent } from '../../styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
@@ -67,16 +66,7 @@ export class PlanComponent implements OnInit {
       })
     );
 
-    this.router.events
-      .pipe(filter((e): e is NavigationStart => e instanceof NavigationStart))
-      .subscribe(() => {
-        // show now for testing
-        // const nav = this.router.getCurrentNavigation();
-        // if (nav?.extras.state?.['showInProgressModal'] === true) {
-        //   this.showInProgressModal();
-        //   // TODO would be cool to kill once done
-        // }
-      });
+    this.checkForInProgressModal();
   }
 
   currentPlan$ = this.planState.currentPlan$;
@@ -91,9 +81,6 @@ export class PlanComponent implements OnInit {
   ngOnInit() {
     this.loadNotes();
     this.pollForChanges();
-
-    // show for testing
-    this.showInProgressModal();
   }
 
   backToOverview() {
@@ -179,6 +166,18 @@ export class PlanComponent implements OnInit {
 
   private isPlanMapStatusReady(plan: Plan) {
     return planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan);
+  }
+
+  private checkForInProgressModal() {
+    const nav = this.router.getCurrentNavigation();
+    let flag = nav?.extras.state?.['showInProgressModal'];
+
+    if (flag) {
+      this.showInProgressModal();
+      // Clear so it won't persist on refresh/back
+      const { showInProgressModal, ...rest } = history.state ?? {};
+      history.replaceState(rest, document.title);
+    }
   }
 
   private showInProgressModal() {
