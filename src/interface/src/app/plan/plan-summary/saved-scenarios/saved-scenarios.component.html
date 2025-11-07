@@ -34,14 +34,10 @@
     </button>
     <button
       sg-button
-      [matTooltip]="
-        planningAreaIsReady
-          ? 'Planning Area is Less than 100 Acres'
-          : 'Your Planning Area is being prepared'
-      "
+      [matTooltip]="scenarioDisabledTooltipReason"
       [matTooltipDisabled]="isValidPlanningArea"
       *ngIf="canAddScenarioForPlan"
-      [disabled]="!isValidPlanningArea"
+      [disabled]="!isValidPlanningArea || planningAreaIsLarge"
       data-id="new-scenario"
       (click)="handleNewScenarioButton()"
       icon="add"
@@ -51,7 +47,7 @@
   </div>
 
   <app-section-loader
-    *ngIf="planningAreaIsReady"
+    *ngIf="planningAreaIsReady && !planningAreaIsLarge"
     [isLoading]="loading"
     [hasData]="totalScenarios > 0"
     [ngClass]="{
@@ -151,8 +147,18 @@
     </mat-tab-group>
   </app-section-loader>
 
+  <div *ngIf="planningAreaIsLarge && !loading" class="large-message">
+    <p>
+      Your Planning Area is greater than 3 million acres. The Planscape team
+      would like to work with you to ensure we're meeting your scenario planning
+      needs.<br />Please contact
+      <a href="mailto:support@planscape.org">support&#64;planscape.org</a> to
+      move forward with scenario planning.
+    </p>
+  </div>
+
   <div
-    *ngIf="!planningAreaIsReady && !planningAreaFailed"
+    *ngIf="!planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed"
     class="pending-message">
     <mat-spinner diameter="32" class="spinner"></mat-spinner>
     <h4>Your Planning Area is being prepared for Scenario Planning</h4>
