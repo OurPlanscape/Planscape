@@ -185,7 +185,7 @@ export class PlanComponent implements OnInit {
       data: {
         headline: 'Your Scenario Analysis is in Progress',
         message:
-          'Your scenario analysis is in progress You’ll be notified when it’s ready, the completed scenario can be viewed in planning area dashboard.',
+          'You’ll be notified when it’s ready, the completed scenario can be viewed in planning area dashboard.',
       },
     });
   }
