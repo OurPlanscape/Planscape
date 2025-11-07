@@ -21,7 +21,12 @@ from stands.models import StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
 
-from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType, PlanningAreaMapStatus
+from planning.models import (
+    PlanningArea,
+    ScenarioResultStatus,
+    TreatmentGoalUsageType,
+    PlanningAreaMapStatus,
+)
 from planning.services import (
     create_scenario,
     export_planning_area_to_geopackage,
@@ -724,6 +729,7 @@ class TestRemoveExcludes(TestCase):
         self.assertEquals(17, len(stands))
         self.assertLess(len(stand_ids), len(stands))
 
+
 class ValidateScenarioConfigurationTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
@@ -735,7 +741,9 @@ class ValidateScenarioConfigurationTest(TestCase):
         )
 
     def test_missing_stand_size(self):
-        self.scenario.configuration = {"targets": {"max_area": 500, "max_project_count": 2}}
+        self.scenario.configuration = {
+            "targets": {"max_area": 500, "max_project_count": 2}
+        }
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Configuration field `stand_size` is required.", errors)
 
@@ -776,14 +784,18 @@ class ValidateScenarioConfigurationTest(TestCase):
         }
         with mock.patch("planning.services.get_available_stand_ids", return_value=[]):
             errors = validate_scenario_configuration(self.scenario)
-            self.assertIn("No stands are available with the current configuration.", errors)
+            self.assertIn(
+                "No stands are available with the current configuration.", errors
+            )
 
     def test_insufficient_available_stands(self):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 99},
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2]):
+        with mock.patch(
+            "planning.services.get_available_stand_ids", return_value=[1, 2]
+        ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertIn("Not enough stands are available", " ".join(errors))
 
@@ -792,7 +804,9 @@ class ValidateScenarioConfigurationTest(TestCase):
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3]):
+        with mock.patch(
+            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+        ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertEqual(errors, [])
 
