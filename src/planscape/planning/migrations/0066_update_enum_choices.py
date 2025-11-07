@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning", "0061_rebin_conus_goals_timber_crown_mortality"),
+        ("planning", "0065_backfill_ready_email_sent_at"),
     ]
 
     operations = [
