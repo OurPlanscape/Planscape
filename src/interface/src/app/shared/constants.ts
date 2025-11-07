@@ -1,6 +1,7 @@
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
 
 export const DEFAULT_TX_COST_PER_ACRE: number = 2470;
+export const PLANNINGAREA_SIZE_ALERT_THRESHOLD: number = 3000000;
 
 /**
  * @desc Error message indicating some unknown error occurred while attempting a
