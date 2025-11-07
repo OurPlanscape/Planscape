@@ -9,7 +9,7 @@
   Click on a Treatment Goal option to see full scenario details.">
   <form [formGroup]="form">
     <span
-      class="error-message"
+      class="error-message ng-invalid"
       *ngIf="
         form.get('treatment_goal')?.touched &&
         form.get('treatment_goal')?.hasError('required')
@@ -78,7 +78,7 @@
 <!-- Stand size -->
 <sg-section headline="Stand Size" class="stand-step" [required]="true">
   <div class="stand-label">
-    <mat-icon class="stand-icon">hexagon </mat-icon>
+    <mat-icon class="stand-icon">hexagon</mat-icon>
     <div>
       Choose the stand size ForSys will use to evaluate your planning area.
       Stands are standarized hexagonal units that represent potential treatment
