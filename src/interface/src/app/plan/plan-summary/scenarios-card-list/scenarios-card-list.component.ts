@@ -64,7 +64,7 @@ export class ScenariosCardListComponent {
     private route: ActivatedRoute,
     private overlayLoaderService: OverlayLoaderService,
     private dialog: MatDialog,
-    private analyticsService: AnalyticsService,
+    private analyticsService: AnalyticsService
   ) {}
 
   numberOfAreas(scenario: Scenario) {
@@ -80,9 +80,7 @@ export class ScenariosCardListComponent {
   }
 
   isDraftByOtherUser(row: ScenarioRow, userId?: number): boolean {
-    return (
-      this.isDraft(row) && !this.isCreator(row, userId)
-    );
+    return this.isDraft(row) && !this.isCreator(row, userId);
   }
 
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {

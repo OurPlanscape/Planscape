@@ -120,8 +120,8 @@ export class SavedScenariosComponent implements OnInit {
       .pipe(
         take(1),
         tap((rawScenarios) => {
-          const scenarios = rawScenarios.filter((scenario) =>
-            scenario.scenario_result?.status !== 'DRAFT'
+          const scenarios = rawScenarios.filter(
+            (scenario) => scenario.scenario_result?.status !== 'DRAFT'
           );
 
           this.totalScenarios = scenarios.length;
@@ -207,7 +207,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   handleNewScenarioButton(configId?: number): void {
-      this.openScenarioSetupDialog();
+    this.openScenarioSetupDialog();
   }
 
   openConfig(configId?: number): void {

@@ -61,10 +61,7 @@ export class ScenarioRoutePlaceholderComponent
   isDraft = false;
 
   canDeactivate(): Observable<boolean> | boolean {
-    if (
-      this.isDraft &&
-      !this.newScenarioState.isDraftFinishedSnapshot()
-    ) {
+    if (this.isDraft && !this.newScenarioState.isDraftFinishedSnapshot()) {
       const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
         data: EXIT_SCENARIO_MODAL,
       });

@@ -93,7 +93,8 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate {
+  implements OnInit, CanComponentDeactivate
+{
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioDraftConfig> = {};
@@ -224,9 +225,7 @@ export class ScenarioCreationComponent
         this.newScenarioState.setScenarioConfig(this.config);
         // TODO: we can remove both of these conditions when the FF is removed,
         //. but it's helpful for testing different routes
-        if (
-          this.scenarioStatus === 'DRAFT'
-        ) {
+        if (this.scenarioStatus === 'DRAFT') {
           if (
             this.scenarioName !== this.form.get('scenarioName')?.value &&
             this.form.get('scenarioName')?.value !== null
@@ -278,9 +277,7 @@ export class ScenarioCreationComponent
     this.newScenarioState.setLoading(false);
     // TODO: we can remove both of these conditions when the FF is removed,
     //. but it's helpful for testing different routes
-    if (
-      this.scenarioStatus === 'DRAFT'
-    ) {
+    if (this.scenarioStatus === 'DRAFT') {
       this.newScenarioState.setDraftFinished(true);
       this.showRunScenarioConfirmation();
     } else {
