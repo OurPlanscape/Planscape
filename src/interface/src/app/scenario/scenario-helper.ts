@@ -1,13 +1,13 @@
 import {
   Constraint,
+  NamedConstraint,
+  Scenario,
   ScenarioConfigPayload,
   ScenarioCreation,
   ScenarioCreationPayload,
   ScenarioDraftConfig,
   ScenarioDraftPayload,
   ScenarioGoal,
-  Scenario,
-  NamedConstraint,
 } from '@types';
 
 /**
@@ -153,4 +153,8 @@ export function getNamedConstraints(
       operator: c.operator,
     };
   });
+}
+
+export function isScenarioPending(scenario: Scenario) {
+  return scenario.scenario_result?.status === 'PENDING';
 }
