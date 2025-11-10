@@ -1,3 +1,5 @@
+from collaboration.models import Role, UserObjectRole
+from collaboration.services import get_content_type
 from datasets.tests.factories import DataLayerFactory
 from django.db.utils import IntegrityError
 from django.test import TestCase
@@ -43,6 +45,8 @@ class PlanningAreaModelTest(TestCase):
         planning_area = PlanningAreaFactory(user=user)
 
         scenarios = ScenarioFactory.create_batch(size=5, planning_area=planning_area)
+        planning_area.scenario_count = 5
+        planning_area.save(update_fields=["updated_at", "scenario_count"])
 
         planning_areas = PlanningArea.objects.list_for_api(user)
 
@@ -52,8 +56,27 @@ class PlanningAreaModelTest(TestCase):
         scenarios[1].status = ScenarioStatus.ARCHIVED
         scenarios[1].save()
         planning_areas = PlanningArea.objects.list_for_api(user)
-
+        planning_area.scenario_count = 3
+        planning_area.save(update_fields=["updated_at", "scenario_count"])
         self.assertEqual(planning_areas.first().scenario_count, 3)
+
+    def test_list_by_user_does_not_duplicate_areas(self):
+        user1 = UserFactory()
+        user2 = UserFactory()
+        planning_area1 = PlanningAreaFactory(user=user1)
+        planning_area2 = PlanningAreaFactory(user=user2)
+        content_type = get_content_type("planningarea")
+        user_object_role = UserObjectRole.objects.create(
+            inviter=user2,
+            email=user1.email,
+            content_type=content_type,
+            role=Role.OWNER,
+            object_pk=planning_area2.pk,
+            collaborator=user1,
+        )
+
+        planning_areas = PlanningArea.objects.list_for_api(user1)
+        self.assertEqual(planning_areas.count(), 2)
 
 
 class TreatmentGoalUsesDataLayerTest(TestCase):

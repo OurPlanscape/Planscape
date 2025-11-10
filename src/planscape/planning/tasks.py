@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 import rasterio
 from celery import chord, group, chain
@@ -20,7 +21,6 @@ from stands.services import (
     create_stands_for_geometry,
     get_missing_stand_ids_for_datalayer_within_geometry,
 )
-from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
 
 from planning.models import (
@@ -37,7 +37,6 @@ from planning.services import (
     export_to_geopackage,
     get_available_stand_ids,
 )
-
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 
@@ -290,6 +289,9 @@ def async_change_scenario_status(
         with transaction.atomic():
             scenario = Scenario.objects.select_for_update().get(pk=scenario_id)
             scenario.result_status = status
+            planning_area = scenario.planning_area
+            planning_area.updated_at = timezone.now()
+            planning_area.save(update_fields=["updated_at"])
             scenario.save(update_fields=["result_status", "updated_at"])
             if hasattr(scenario, "results"):
                 scenario.results.status = status

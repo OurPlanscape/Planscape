@@ -6,6 +6,7 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import StandSizeChoices
@@ -30,11 +31,6 @@ from planscape.exceptions import InvalidGeometry
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
-    scenario_count = serializers.IntegerField(
-        read_only=True,
-        required=False,
-        help_text="Number of scenarios executed on the Planning Area.",
-    )
     region_name = serializers.SerializerMethodField(
         help_text="Region choice name of the Planning Area."
     )
@@ -70,10 +66,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
         return get_acreage(instance.geometry)
 
     def get_latest_updated(self, instance):
-        latest_from_scenarios = getattr(instance, "scenario_latest_updated_at", None)
-        if latest_from_scenarios is None:
-            return instance.updated_at
-        return max(latest_from_scenarios, instance.updated_at)
+        return instance.updated_at
 
     def get_role(self, instance):
         user = self.context["request"].user or self.request.user
@@ -187,6 +180,7 @@ class UpdatePlanningAreaSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get("name")
+        instance.updated_at = timezone.now()
         instance.save(update_fields=["name", "updated_at"])
         return instance
 
