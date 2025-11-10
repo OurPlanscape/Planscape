@@ -60,6 +60,7 @@ import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
+import { ExcludeAreasSelectorComponent } from '../exclude-areas-selector/exclude-areas-selector.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -89,6 +90,7 @@ enum ScenarioTabs {
     BaseLayersComponent,
     JsonPipe,
     FeaturesModule,
+    ExcludeAreasSelectorComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
