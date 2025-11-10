@@ -98,10 +98,19 @@ def async_forsys_run(scenario_id: int) -> None:
                 scenario.pk, ScenarioResultStatus.SUCCESS
             )
         scenario.save()
+
+        delay_seconds = 30 if feature_enabled("FORSYS_VIA_API") else 0
+
         async_generate_scenario_geopackage.apply_async(
             args=(scenario.pk,),
-            countdown=30 if feature_enabled("FORSYS_VIA_API") else 0,
+            countdown=delay_seconds,
         )
+        if feature_enabled("FORSYS_VIA_API"):
+            async_send_email_scenario_finished.apply_async(
+                args=(scenario.pk,),
+                countdown=delay_seconds,
+            )
+
     except ForsysTimeoutException:
         # this case should not happen as is, as the default parameter
         # for call_forsys timeout is None.
