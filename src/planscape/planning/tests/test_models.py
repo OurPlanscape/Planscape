@@ -63,10 +63,10 @@ class PlanningAreaModelTest(TestCase):
     def test_list_by_user_does_not_duplicate_areas(self):
         user1 = UserFactory()
         user2 = UserFactory()
-        planning_area1 = PlanningAreaFactory(user=user1)
+        _ = PlanningAreaFactory(user=user1)
         planning_area2 = PlanningAreaFactory(user=user2)
         content_type = get_content_type("planningarea")
-        user_object_role = UserObjectRole.objects.create(
+        _ = UserObjectRole.objects.create(
             inviter=user2,
             email=user1.email,
             content_type=content_type,
