@@ -8,6 +8,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
 from planning.models import ScenarioResultStatus, GeoPackageStatus
 from planning.tasks import (
+    async_change_scenario_status,
     async_calculate_stand_metrics_with_stand_list,
     async_send_email_scenario_finished,
     async_forsys_run,
@@ -157,18 +158,20 @@ class AsyncCallForsysCommandLine(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()
 
-    @mock.patch(
-        "utils.cli_utils._call_forsys_via_command_line",
-        return_value=True,
-    )
-    @mock.patch(
-        "planning.tasks.async_generate_scenario_geopackage.apply_async",
-    )
-    def test_async_call_forsys_command_line(self, mock_geopackage, mock_cmd_line):
+    @mock.patch("planning.tasks.async_change_scenario_status.delay")
+    @mock.patch("utils.cli_utils._call_forsys_via_command_line", return_value=True)
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.apply_async")
+    def test_async_call_forsys_command_line(
+        self, mock_geopackage, mock_cmd_line, mock_status_delay
+    ):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.SUCCESS)
-        self.assertTrue(mock_geopackage.called)
+
+        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        mock_geopackage.assert_called_once()
+        mock_status_delay.assert_called_once_with(
+            self.scenario.pk, ScenarioResultStatus.SUCCESS
+        )
 
     @mock.patch(
         "utils.cli_utils._call_forsys_via_command_line",
@@ -206,18 +209,17 @@ class AsyncCallForsysViaAPI(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()
 
-    @mock.patch(
-        "utils.cli_utils._call_forsys_via_api",
-        return_value=True,
-    )
-    @mock.patch(
-        "planning.tasks.async_generate_scenario_geopackage.apply_async",
-    )
-    def test_async_call_forsys_via_api(self, mock_geopackage, mock_api_call):
+    @mock.patch("planning.tasks.async_change_scenario_status.delay")
+    @mock.patch("utils.cli_utils._call_forsys_via_api", return_value=True)
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.apply_async")
+    def test_async_call_forsys_via_api(
+        self, mock_geopackage, mock_api_call, mock_status_delay
+    ):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
-        self.assertTrue(mock_geopackage.called)
+        mock_geopackage.assert_called_once()
+        mock_status_delay.assert_not_called()
 
     @mock.patch(
         "utils.cli_utils._call_forsys_via_api",
@@ -312,6 +314,34 @@ class TriggerGeopackageGenerationTestCase(TestCase):
 
         trigger_geopackage_generation()
         mock_async_generate.assert_not_called()
+
+
+class AsyncChangeScenarioStatusTest(TestCase):
+    def setUp(self):
+        self.scenario = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.RUNNING,
+            user__email="owner@example.com",
+        )
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_success_transition_sends_email_once(self, email_delay):
+        async_change_scenario_status(self.scenario.pk, ScenarioResultStatus.SUCCESS)
+        email_delay.assert_called_once_with(self.scenario.pk)
+
+        self.scenario.refresh_from_db()
+        email_delay.reset_mock()
+        async_change_scenario_status(self.scenario.pk, ScenarioResultStatus.SUCCESS)
+        email_delay.assert_not_called()
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_non_success_statuses_do_not_send_email(self, email_delay):
+        async_change_scenario_status(self.scenario.pk, ScenarioResultStatus.PANIC)
+        email_delay.assert_not_called()
+
+    def test_status_is_persisted(self):
+        async_change_scenario_status(self.scenario.pk, ScenarioResultStatus.SUCCESS)
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.SUCCESS)
 
 
 class AsyncSendEmailScenarioFinishedTest(TestCase):
