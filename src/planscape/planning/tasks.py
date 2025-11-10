@@ -1,7 +1,7 @@
 import logging
 
 import rasterio
-from celery import chord, group
+from celery import chord, group, chain
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
@@ -94,21 +94,30 @@ def async_forsys_run(scenario_id: int) -> None:
         call_forsys(scenario.pk)
 
         if not feature_enabled("FORSYS_VIA_API"):
-            async_change_scenario_status.delay(
-                scenario.pk, ScenarioResultStatus.SUCCESS
+            chain(
+                async_generate_scenario_geopackage.si(scenario.pk),
+                async_change_scenario_status.si(
+                    scenario.pk, ScenarioResultStatus.SUCCESS
+                ),
+            ).apply_async(
+                countdown=0,
+                link_error=async_change_scenario_status.si(
+                    scenario.pk, ScenarioResultStatus.PANIC
+                ),
             )
-        scenario.save()
 
-        delay_seconds = 30 if feature_enabled("FORSYS_VIA_API") else 0
-
-        async_generate_scenario_geopackage.apply_async(
-            args=(scenario.pk,),
-            countdown=delay_seconds,
-        )
         if feature_enabled("FORSYS_VIA_API"):
-            async_send_email_scenario_finished.apply_async(
-                args=(scenario.pk,),
+            delay_seconds = 30
+            chain(
+                async_generate_scenario_geopackage.si(scenario.pk),
+                async_change_scenario_status.si(
+                    scenario.pk, ScenarioResultStatus.SUCCESS
+                ),
+            ).apply_async(
                 countdown=delay_seconds,
+                link_error=async_change_scenario_status.si(
+                    scenario.pk, ScenarioResultStatus.PANIC
+                ),
             )
 
     except ForsysTimeoutException:
@@ -387,6 +396,7 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     log.info(f"Generating geopackage for scenario {scenario_id}")
     scenario = Scenario.objects.get(id=scenario_id)
     if scenario.result_status not in (
+        ScenarioResultStatus.RUNNING,
         ScenarioResultStatus.SUCCESS,
         ScenarioResultStatus.FAILURE,
     ):
