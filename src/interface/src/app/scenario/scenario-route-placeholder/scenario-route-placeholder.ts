@@ -25,6 +25,7 @@ import { NewScenarioState } from '../new-scenario.state';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
+import { isScenarioPending } from '../scenario-helper';
 
 @UntilDestroy()
 @Component({
@@ -96,6 +97,12 @@ export class ScenarioRoutePlaceholderComponent
 
       // If SCENARIO_DRAFTS is disabled and the scenario is not a draft we return false
       if (!scenarioDraftsEnabled) {
+        return false;
+      }
+
+      // if scenario is pending redirect the user
+      if (isScenarioPending(scenario)) {
+        this.router.navigate(['/plan', scenario?.planning_area]);
         return false;
       }
 
