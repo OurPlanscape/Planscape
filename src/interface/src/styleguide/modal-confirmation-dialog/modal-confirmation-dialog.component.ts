@@ -3,11 +3,13 @@ import { NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-export type ModalDialogVariant = 'success' | 'error' | 'pending' | 'alert';
+export type ModalDialogVariant = 'success' | 'error' | 'pending';
 
 /**
- * Modal Confirmation Dialog
- * A component that can be used within the modal body as a confirmation dialog
+ * A component that can be used within the modal body as a confirmation dialog.
+ * This component _is not_ another modal, just the formatted body with corresponding icon.
+ *
+ * To use specific modals for this use cases, check `Dialogs`
  */
 @Component({
   selector: 'sg-modal-confirmation-dialog',
@@ -20,7 +22,7 @@ export class ModalConfirmationDialogComponent {
   /**
    * The variant of the dialog
    */
-  @Input() infoType: ModalDialogVariant = 'alert';
+  @Input() infoType: ModalDialogVariant = 'pending';
   /**
    * Icon to display, if not one of the defaults for this variant
    */
@@ -35,9 +37,8 @@ export class ModalConfirmationDialogComponent {
   @Input() message?: string | null = '';
   readonly IconByVariant: Record<ModalDialogVariant, string | null> = {
     success: 'check_circle',
-    error: 'error',
+    error: 'warning',
     pending: 'pending_actions',
-    alert: null,
   };
 
   // if there an icon specified, use the default for the dialog variant
@@ -52,16 +53,14 @@ export class ModalConfirmationDialogComponent {
   get isInfo() {
     return this.infoType === 'success';
   }
+
   @HostBinding('class.error')
   get isError() {
     return this.infoType === 'error';
   }
+
   @HostBinding('class.pending')
   get isWarning() {
     return this.infoType === 'pending';
-  }
-  @HostBinding('class.alert')
-  get isComplete() {
-    return this.infoType === 'alert';
   }
 }

@@ -25,7 +25,6 @@ import { TreatmentsTabComponent } from 'src/app/scenario/treatments-tab/treatmen
 import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers.component';
 import { ScenarioFailureComponent } from '../scenario-failure/scenario-failure.component';
 import { ScenarioResultsComponent } from '../scenario-results/scenario-results.component';
-import { ScenarioPendingComponent } from '../scenario-pending/scenario-pending.component';
 import { userCanAddTreatmentPlan } from 'src/app/plan/permissions';
 import { PlanState } from 'src/app/plan/plan.state';
 import { getPlanPath, POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
@@ -57,8 +56,6 @@ enum ScenarioTabs {
     DataLayersComponent,
     ScenarioFailureComponent,
     ScenarioResultsComponent,
-    ScenarioPendingComponent,
-    ScenarioPendingComponent,
     BaseLayersComponent,
     MatTooltipModule,
     NgClass,

@@ -1,14 +1,14 @@
 import {
-  Meta,
-  StoryObj,
-  moduleMetadata,
   argsToTemplate,
+  Meta,
+  moduleMetadata,
+  StoryObj,
 } from '@storybook/angular';
 import { ModalComponent } from '../modal/modal.component';
 import { ModalConfirmationDialogComponent } from './modal-confirmation-dialog.component';
 import {
-  MatDialogModule,
   MAT_DIALOG_DATA,
+  MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -36,15 +36,11 @@ const meta: Meta<ModalConfirmationDialogComponent> = {
   render: ({ ...args }) => ({
     props: args,
     template: `<div ${containerStyle}>
-        <sg-modal title=""
-        [shortHeader]="true"
-        [showBorders]="false"
-        [centerFooter]="true">
-        <div modalBodyContent>
+
           <sg-modal-confirmation-dialog ${argsToTemplate(args)}>
           </sg-modal-confirmation-dialog>
-          </div>
-        </sg-modal><div>`,
+
+        <div>`,
   }),
 };
 
@@ -52,7 +48,7 @@ export default meta;
 
 type Story = StoryObj<ModalConfirmationDialogComponent>;
 
-const containerStyle = `style="background-color: gray;
+const containerStyle = `style="background-color: white;
       height: 400px;
       align-content: center;
       display: flex;
@@ -60,12 +56,10 @@ const containerStyle = `style="background-color: gray;
       justify-content: center;
       align-items: center;"`;
 
-export const InfoBox: Story = {
+export const PendingBox: Story = {
   args: {
-    headline: 'Information Title',
-    message:
-      'Insert a message to inform users about a situation that requires acknowledgement.',
-    infoType: 'alert',
+    headline: 'Pending Action Title',
+    message: 'Insert a message about the performed action in progress.',
   },
 };
 
@@ -83,13 +77,5 @@ export const SuccessBox: Story = {
     message:
       'Insert a message about the performed action was completed/successful.',
     infoType: 'success',
-  },
-};
-
-export const PendingBox: Story = {
-  args: {
-    headline: 'Pending Action Title',
-    message: 'Insert a message about the performed action in progress.',
-    infoType: 'pending',
   },
 };
