@@ -53,6 +53,7 @@ import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialo
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
+import { ExcludeAreasSelectorComponent } from '../exclude-areas-selector/exclude-areas-selector.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -80,6 +81,7 @@ enum ScenarioTabs {
     TreatmentTargetComponent,
     BaseLayersComponent,
     FeaturesModule,
+    ExcludeAreasSelectorComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
