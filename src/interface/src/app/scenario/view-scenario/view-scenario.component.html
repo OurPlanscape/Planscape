@@ -6,10 +6,6 @@
     [(selectedIndex)]="selectedTab">
     <mat-tab label="Results">
       <div class="results-container">
-        <app-scenario-pending
-          *ngIf="scenarioIsPending(scenario)"
-          (goBack)="goToPlan()"></app-scenario-pending>
-
         <app-scenario-results
           *ngIf="scenarioHasResults(scenario)"
           [scenarioVersion]="scenario.version || ''"

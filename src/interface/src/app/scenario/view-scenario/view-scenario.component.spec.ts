@@ -12,7 +12,6 @@ import { ScenarioState } from '../../scenario/scenario.state';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { MOCK_SCENARIO } from '@services/mocks';
-import { ScenarioPendingComponent } from '../scenario-pending/scenario-pending.component';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { Scenario, ScenarioResult } from '@types';
 import { ScenarioResultsComponent } from '../scenario-results/scenario-results.component';
@@ -54,7 +53,6 @@ describe('ViewScenarioComponent (polling)', () => {
       imports: [
         MatDialogModule,
         RouterTestingModule,
-        ScenarioPendingComponent,
         ScenarioResultsComponent,
         TreatmentsTabComponent,
         ViewScenarioComponent,

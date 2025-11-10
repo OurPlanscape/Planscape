@@ -21,6 +21,7 @@ import {
   POLLING_INTERVAL,
 } from './plan-helpers';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
+import { SuccessDialogComponent } from '../../styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -64,6 +65,8 @@ export class PlanComponent implements OnInit {
         return this.authService.getUser(plan.user);
       })
     );
+
+    this.checkForInProgressModal();
   }
 
   currentPlan$ = this.planState.currentPlan$;
@@ -163,5 +166,27 @@ export class PlanComponent implements OnInit {
 
   private isPlanMapStatusReady(plan: Plan) {
     return planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan);
+  }
+
+  private checkForInProgressModal() {
+    const nav = this.router.getCurrentNavigation();
+    let flag = nav?.extras.state?.['showInProgressModal'];
+
+    if (flag) {
+      this.showInProgressModal();
+      // Clear so it won't persist on refresh/back
+      const { showInProgressModal, ...rest } = history.state ?? {};
+      history.replaceState(rest, document.title);
+    }
+  }
+
+  private showInProgressModal() {
+    this.dialog.open(SuccessDialogComponent, {
+      data: {
+        headline: 'Your Scenario Analysis is in Progress',
+        message:
+          'You’ll be notified when it’s ready, the completed scenario can be viewed in planning area dashboard.',
+      },
+    });
   }
 }

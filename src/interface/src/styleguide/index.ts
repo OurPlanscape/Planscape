@@ -12,7 +12,7 @@ export * from './filter-dropdown/filter-dropdown.component';
 export * from './highlighter/highlighter.directive';
 export * from './input/input-field.component';
 export * from './input/input.directive';
-export * from './modal-dialog-section/modal-confirmation-dialog.component';
+export * from './modal-confirmation-dialog/modal-confirmation-dialog.component';
 export * from './modal-info-box/modal-info.component';
 export * from './modal/modal.component';
 export * from './no-results/no-results.component';
