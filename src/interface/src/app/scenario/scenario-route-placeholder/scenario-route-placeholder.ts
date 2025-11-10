@@ -84,11 +84,6 @@ export class ScenarioRoutePlaceholderComponent
     map(([user, scenario]) => {
       this.isDraft = scenario?.scenario_result?.status === 'DRAFT';
 
-      if (this.isDraft) {
-        this.router.navigate(['/plan', scenario?.planning_area]);
-        return false;
-      }
-
       // if scenario is pending redirect the user
       if (isScenarioPending(scenario)) {
         this.router.navigate(['/plan', scenario?.planning_area]);
