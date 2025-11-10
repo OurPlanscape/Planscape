@@ -3,6 +3,7 @@ import logging
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, pagination, permissions, status, viewsets
@@ -31,22 +32,22 @@ from planning.serializers import (
     AvailableStandsSerializer,
     CreatePlanningAreaSerializer,
     CreateScenarioV2Serializer,
-    UpdatePlanningAreaSerializer,
     GetAvailableStandsSerializer,
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    PatchScenarioV3Serializer,
     PlanningAreaSerializer,
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
     ScenarioSerializer,
     ScenarioV2Serializer,
+    ScenarioV3Serializer,
     TreatmentGoalSerializer,
+    UpdatePlanningAreaSerializer,
     UploadedScenarioDataSerializer,
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
-    ScenarioV3Serializer,
-    PatchScenarioV3Serializer,
 )
 from planning.services import (
     create_planning_area,
@@ -56,8 +57,8 @@ from planning.services import (
     delete_scenario,
     get_available_stands,
     toggle_scenario_status,
-    validate_scenario_configuration,
     trigger_scenario_run,
+    validate_scenario_configuration,
 )
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -126,6 +127,12 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         user = self.request.user
         qs = PlanningArea.objects.list_for_api(user=user).select_related("user")
         return qs
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        instance.updated_at = timezone.now()
+        instance.save(update_fields=["updated_at"])
+        super().perform_update(serializer)
 
     @extend_schema(description="Create Planning Area.")
     def create(self, request, *args, **kwargs):
@@ -329,6 +336,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         response_serializer = ScenarioV2Serializer(instance)
+        planning_area = instance.planning_area
+        planning_area.updated_at = timezone.now()
+        planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
 
     @action(methods=["patch"], detail=True, url_path="draft")
@@ -340,6 +350,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         response_serializer = ScenarioV3Serializer(instance)
+        planning_area = instance.planning_area
+        planning_area.updated_at = timezone.now()
+        planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
@@ -414,4 +427,3 @@ class TreatmentGoalViewSet(
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
-

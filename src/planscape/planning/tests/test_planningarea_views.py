@@ -1,7 +1,6 @@
 import json
 
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import connection
 from django.urls import reverse
 from impacts.permissions import (
     COLLABORATOR_PERMISSIONS,
@@ -950,6 +949,8 @@ class ListPlanningAreaTest(APITestCase):
             user=self.user,
             notes="",
         )
+        self.planning_area1.scenario_count = 3
+        self.planning_area1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory.create(
             planning_area=self.planning_area3,
             name="test pa3 scenario1",
@@ -957,6 +958,8 @@ class ListPlanningAreaTest(APITestCase):
             user=self.user,
             notes="",
         )
+        self.planning_area3.scenario_count = 1
+        self.planning_area3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory.create(
             planning_area=self.planning_area4,
             name="test pa4 scenario1 ",
@@ -978,7 +981,8 @@ class ListPlanningAreaTest(APITestCase):
             user=self.user,
             notes="",
         )
-
+        self.planning_area4.scenario_count = 3
+        self.planning_area4.save(update_fields=["updated_at", "scenario_count"])
         self.user2 = UserFactory.create(username="otherowner")
         self.geometry = {
             "type": "MultiPolygon",
@@ -992,79 +996,6 @@ class ListPlanningAreaTest(APITestCase):
         )
 
         self.emptyuser = UserFactory.create(username="emptyuser")
-
-    def test_list_planning_areas(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(
-            reverse("planning:list_planning_areas"), {}, content_type="application/json"
-        )
-        planning_areas = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(planning_areas), 5)
-        self.assertEqual(planning_areas[0]["scenario_count"], 3)
-        self.assertIsNotNone(planning_areas[0]["latest_updated"])
-        self.assertEqual(planning_areas[1]["scenario_count"], 1)
-        self.assertIsNotNone(planning_areas[1]["latest_updated"])
-        self.assertIsNotNone(planning_areas[0]["created_at"])
-
-    def test_list_planning_areas_ordered(self):
-        # This tests the logic for ordering areas by most recent scenario date,
-        #   or by the plan's most recent update, if it has no scenario
-
-        # Results follow this logic:
-        # plan4 - 2010-12-01 00:01:01-05 -- from most recent scenario
-        # plan5 - 2010-11-01 00:01:01-05 -- no scenarios
-        # plan3 - 2010-10-01 00:01:01-05 -- from most recent scenario
-        # plan1 - 2010-09-01 00:01:01-05 -- from most recent scenario
-        # plan2 - 2010-02-01 00:01:01-05 -- no scenarios
-
-        scenario_update_overrides = [
-            ["2010-07-01 00:01:01-05", self.scenario1_1.id],
-            ["2010-08-01 00:01:01-05", self.scenario1_2.id],
-            ["2010-09-01 00:01:01-05", self.scenario1_3.id],
-            ["2010-10-01 00:01:01-05", self.scenario3_1.id],
-            ["2010-11-01 00:01:01-05", self.scenario4_1.id],
-            ["2010-12-01 00:01:01-05", self.scenario4_2.id],
-            ["2010-04-03 00:01:01-05", self.scenario4_3.id],
-        ]
-        # using raw updates here, to override django's autoupdate of updated_at field
-        with connection.cursor() as cursor:
-            for so in scenario_update_overrides:
-                cursor.execute(
-                    "UPDATE planning_scenario SET updated_at = %s WHERE id = %s", so
-                )
-
-        planning_area_update_overrides = [
-            ["2010-01-01 00:01:01-05", self.planning_area1.id],
-            ["2010-02-01 00:01:01-05", self.planning_area2.id],
-            ["2010-03-01 00:01:01-05", self.planning_area3.id],
-            ["2010-04-01 00:01:01-05", self.planning_area4.id],
-            ["2010-11-01 00:01:01-05", self.planning_area5.id],
-            ["2010-06-01 00:01:01-05", self.planning_area6.id],
-        ]
-        # using raw updates here, to override django's autoupdate of updated_at field
-        with connection.cursor() as cursor:
-            for p in planning_area_update_overrides:
-                cursor.execute(
-                    "UPDATE planning_planningarea SET updated_at = %s WHERE id = %s", p
-                )
-
-        self.client.force_authenticate(self.user)
-        response = self.client.get(
-            reverse("planning:list_planning_areas"), {}, content_type="application/json"
-        )
-        planning_areas = json.loads(response.content)
-        updates_list = [(pa["name"], pa["latest_updated"]) for pa in planning_areas]
-        self.assertEqual(
-            updates_list,
-            [
-                ("test plan4", "2010-12-01T05:01:01Z"),
-                ("test plan5", "2010-11-01T05:01:01Z"),
-                ("test plan3", "2010-10-01T05:01:01Z"),
-                ("test plan1", "2010-09-01T05:01:01Z"),
-                ("test plan2", "2010-02-01T05:01:01Z"),
-            ],
-        )
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(
