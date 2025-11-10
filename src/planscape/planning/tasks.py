@@ -1,7 +1,7 @@
 import logging
 
 import rasterio
-from celery import chord, group
+from celery import chord, group, chain
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
@@ -48,7 +48,9 @@ log = logging.getLogger(__name__)
 def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> None:
     try:
         planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-        log.info(f"Creating stands for {planning_area_id} for stand size {stand_size}")
+        log.info(
+            f"Creating stands for {planning_area_id} for stand size {stand_size}"
+        )
 
         other_stands = Stand.objects.filter(
             size=stand_size, geometry__intersects=planning_area.geometry
@@ -94,9 +96,7 @@ def async_forsys_run(scenario_id: int) -> None:
         call_forsys(scenario.pk)
 
         if not feature_enabled("FORSYS_VIA_API"):
-            async_change_scenario_status.delay(
-                scenario.pk, ScenarioResultStatus.SUCCESS
-            )
+            scenario.result_status = ScenarioResultStatus.SUCCESS
         scenario.save()
         async_generate_scenario_geopackage.apply_async(
             args=(scenario.pk,),
@@ -289,26 +289,14 @@ def async_change_scenario_status(
     try:
         with transaction.atomic():
             scenario = Scenario.objects.select_for_update().get(pk=scenario_id)
-            prev_status = scenario.result_status
-
             scenario.result_status = status
             scenario.save(update_fields=["result_status", "updated_at"])
-
             if hasattr(scenario, "results"):
                 scenario.results.status = status
                 scenario.results.save()
-
             log.info("Scenario %s status set to %s", scenario_id, status)
-
     except Scenario.DoesNotExist:
         log.exception("Scenario %s does not exist", scenario_id)
-        return
-
-    if (
-        status == ScenarioResultStatus.SUCCESS
-        and prev_status != ScenarioResultStatus.SUCCESS
-    ):
-        async_send_email_scenario_finished.delay(scenario_id)
 
 
 @app.task()
@@ -351,7 +339,13 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
         scenario_id=scenario.pk, status=ScenarioResultStatus.PANIC
     )
 
-    body = async_forsys_run.si(scenario_id=scenario.pk)
+    body = chain(
+        async_forsys_run.si(scenario_id=scenario.pk),
+        async_change_scenario_status.si(
+            scenario_id=scenario.pk, status=ScenarioResultStatus.SUCCESS
+        ),
+        async_send_email_scenario_finished.si(scenario_id=scenario.pk),
+    )
 
     chord(header=group(tasks), body=body).on_error(workflow_failed_task).apply_async()
     log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
@@ -377,10 +371,7 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     """
     log.info(f"Generating geopackage for scenario {scenario_id}")
     scenario = Scenario.objects.get(id=scenario_id)
-    if scenario.result_status not in (
-        ScenarioResultStatus.SUCCESS,
-        ScenarioResultStatus.FAILURE,
-    ):
+    if scenario.result_status not in (ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE):
         log.warning(
             f"Scenario {scenario_id} is not in successful or final failure state. Current status: {scenario.result_status}"
         )
