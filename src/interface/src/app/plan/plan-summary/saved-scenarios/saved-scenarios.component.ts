@@ -31,7 +31,6 @@ import { UploadProjectAreasModalComponent } from '../../upload-project-areas-mod
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { FeatureService } from 'src/app/features/feature.service';
 import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { PlanState } from '../../plan.state';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -73,7 +72,6 @@ export class SavedScenariosComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService,
     private planState: PlanState
   ) {}
 
@@ -122,11 +120,8 @@ export class SavedScenariosComponent implements OnInit {
       .pipe(
         take(1),
         tap((rawScenarios) => {
-          // If SCENARIO_DRAFT is disabled we filter the scenarios so we dont display the drafts
           const scenarios = rawScenarios.filter((scenario) =>
-            this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
-              ? true
-              : scenario.scenario_result?.status !== 'DRAFT'
+            scenario.scenario_result?.status !== 'DRAFT'
           );
 
           this.totalScenarios = scenarios.length;
@@ -212,11 +207,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   handleNewScenarioButton(configId?: number): void {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
       this.openScenarioSetupDialog();
-    } else {
-      this.openConfig(configId);
-    }
   }
 
   openConfig(configId?: number): void {

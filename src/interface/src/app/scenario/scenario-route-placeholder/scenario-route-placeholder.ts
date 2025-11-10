@@ -16,7 +16,6 @@ import { ResourceUnavailableComponent } from '../../shared/resource-unavailable/
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
 import { ScenarioCreationComponent } from '../scenario-creation/scenario-creation.component';
-import { FeatureService } from 'src/app/features/feature.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -55,7 +54,6 @@ export class ScenarioRoutePlaceholderComponent
     private router: Router,
     private dialog: MatDialog,
     private scenarioState: ScenarioState,
-    private featureService: FeatureService,
     private newScenarioState: NewScenarioState
   ) {}
 
@@ -63,7 +61,6 @@ export class ScenarioRoutePlaceholderComponent
 
   canDeactivate(): Observable<boolean> | boolean {
     if (
-      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
       this.isDraft &&
       !this.newScenarioState.isDraftFinishedSnapshot()
     ) {
@@ -84,18 +81,10 @@ export class ScenarioRoutePlaceholderComponent
     untilDestroyed(this),
     filter(([user]) => !!user),
     map(([user, scenario]) => {
-      const scenarioDraftsEnabled =
-        this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
       this.isDraft = scenario?.scenario_result?.status === 'DRAFT';
 
-      // If SCENARIO_DRAFTS is disabled and the scenario is a DRAFT we redirect to planning areas
-      if (!scenarioDraftsEnabled && this.isDraft) {
+      if (this.isDraft) {
         this.router.navigate(['/plan', scenario?.planning_area]);
-        return false;
-      }
-
-      // If SCENARIO_DRAFTS is disabled and the scenario is not a draft we return false
-      if (!scenarioDraftsEnabled) {
         return false;
       }
 

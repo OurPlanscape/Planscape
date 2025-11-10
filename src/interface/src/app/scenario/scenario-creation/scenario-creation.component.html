@@ -2,42 +2,26 @@
   <!-- Scenario name input -->
   <form *ngIf="form.get('scenarioName')" [formGroup]="form!">
     <mat-form-field class="scenario-name-input">
-      <input
-        formControlName="scenarioName"
-        matInput
-        placeholder="Scenario Name:" />
+      <input formControlName="scenarioName" matInput placeholder="Scenario Name:" />
     </mat-form-field>
   </form>
   <!-- Scenario name errors -->
-  <div
-    *ngIf="
+  <div *ngIf="
       form.get('scenarioName')?.invalid &&
       form.get('scenarioName')?.touched &&
       form.get('scenarioName')?.errors?.['required']
-    "
-    class="error">
+    " class="error">
     Please enter scenario name above
   </div>
   <div *ngIf="form.get('scenarioName')?.errors?.['duplicate']" class="error">
     This name is already used by another scenario.
   </div>
 </div>
-<mat-tab-group
-  #tabGroup
-  mat-stretch-tabs="false"
-  mat-align-tabs="start"
-  class="scenario-tabs">
+<mat-tab-group #tabGroup mat-stretch-tabs="false" mat-align-tabs="start" class="scenario-tabs">
   <mat-tab label="Configurations">
-    <sg-steps
-      linear
-      finishLabel="Save & Run Scenario"
-      [continueLabel]="continueLabel"
-      [save]="saveStep.bind(this)"
-      (selectedIndexChange)="stepChanged($event)"
-      (finished)="onFinish()"
-      [outerForm]="form"
-      [savingStep]="(loading$ | async) ?? false"
-      [disabled]="(loading$ | async) || false">
+    <sg-steps linear finishLabel="Save & Run Scenario" continueLabel="Save & Continue" [save]="saveStep.bind(this)"
+      (selectedIndexChange)="stepChanged($event)" (finished)="onFinish()" [outerForm]="form"
+      [savingStep]="(loading$ | async) ?? false" [disabled]="(loading$ | async) || false">
       <sg-step>
         <app-step1 #step1></app-step1>
       </sg-step>
@@ -48,13 +32,7 @@
         <app-stand-level-constraints></app-stand-level-constraints>
       </sg-step>
       <sg-step>
-        <app-treatment-target
-          #step4
-          *appFeatureFlag="'SCENARIO_DRAFTS'"></app-treatment-target>
-        <app-step4-legacy
-          #step4
-          [maxAreaValue]="(treatable_area$ | async) ?? 0"
-          *appFeatureFlag="'SCENARIO_DRAFTS'; hide: true"></app-step4-legacy>
+        <app-treatment-target #step4></app-treatment-target>
       </sg-step>
     </sg-steps>
   </mat-tab>

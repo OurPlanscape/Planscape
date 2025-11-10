@@ -48,7 +48,6 @@ import {
 } from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
-import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
@@ -94,8 +93,7 @@ enum ScenarioTabs {
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate
-{
+  implements OnInit, CanComponentDeactivate {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioDraftConfig> = {};
@@ -109,10 +107,6 @@ export class ScenarioCreationComponent
   form = new FormGroup({
     scenarioName: new FormControl('', [Validators.required]),
   });
-
-  continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
-    ? 'Save & Continue'
-    : 'Next';
 
   treatable_area$ = this.newScenarioState.availableStands$.pipe(
     map((s) => s.summary.treatable_area)
@@ -143,7 +137,6 @@ export class ScenarioCreationComponent
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
     private router: Router,
-    private featureService: FeatureService,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar
@@ -158,18 +151,8 @@ export class ScenarioCreationComponent
   }
 
   ngOnInit(): void {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      if (this.scenarioId) {
-        this.loadExistingScenario();
-      }
-    } else {
-      // Adding scenario name validator
-      this.refreshScenarioNameValidator();
-      // Setting up the breadcrumb
-      this.breadcrumbService.updateBreadCrumb({
-        label: 'Scenario: New Scenario',
-        backUrl: getPlanPath(this.planId),
-      });
+    if (this.scenarioId) {
+      this.loadExistingScenario();
     }
   }
 
@@ -242,7 +225,6 @@ export class ScenarioCreationComponent
         // TODO: we can remove both of these conditions when the FF is removed,
         //. but it's helpful for testing different routes
         if (
-          this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
           this.scenarioStatus === 'DRAFT'
         ) {
           if (
@@ -297,7 +279,6 @@ export class ScenarioCreationComponent
     // TODO: we can remove both of these conditions when the FF is removed,
     //. but it's helpful for testing different routes
     if (
-      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
       this.scenarioStatus === 'DRAFT'
     ) {
       this.newScenarioState.setDraftFinished(true);
