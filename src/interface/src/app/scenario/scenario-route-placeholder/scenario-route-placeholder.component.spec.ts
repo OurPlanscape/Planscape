@@ -13,8 +13,6 @@ import { ScenarioCreationComponent } from '../scenario-creation/scenario-creatio
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
 
-// import { FeatureService } from 'src/app/features/feature.service';
-// import { FeaturesModule } from 'src/app/features/features.module';
 import { NewScenarioState } from '../new-scenario.state';
 
 import { ScenarioState } from '../scenario.state';
@@ -47,7 +45,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
         BrowserAnimationsModule,
         HttpClientTestingModule,
         RouterTestingModule,
-        // FeaturesModule,
         ScenarioRoutePlaceholderComponent,
       ],
       declarations: [
@@ -60,7 +57,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
       ],
       providers: [
         { provide: Router, useValue: routerSpy },
-        // FeatureService,
         MockProvider(CurrencyPipe),
         MockProvider(AuthService, { loggedInUser$: mockUser$ }),
         MockProvider(NewScenarioState, {}),

@@ -42,10 +42,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
-import {
-  convertFlatConfigurationToDraftPayload,
-  getScenarioCreationPayloadScenarioCreation,
-} from '../scenario-helper';
+import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -223,8 +220,7 @@ export class ScenarioCreationComponent
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
-        // TODO: we can remove both of these conditions when the FF is removed,
-        //. but it's helpful for testing different routes
+
         if (this.scenarioStatus === 'DRAFT') {
           if (
             this.scenarioName !== this.form.get('scenarioName')?.value &&
@@ -275,14 +271,9 @@ export class ScenarioCreationComponent
 
   async onFinish() {
     this.newScenarioState.setLoading(false);
-    // TODO: we can remove both of these conditions when the FF is removed,
-    //. but it's helpful for testing different routes
-    if (this.scenarioStatus === 'DRAFT') {
-      this.newScenarioState.setDraftFinished(true);
-      this.showRunScenarioConfirmation();
-    } else {
-      this.finishFromFullConfig();
-    }
+
+    this.newScenarioState.setDraftFinished(true);
+    this.showRunScenarioConfirmation();
   }
 
   async handleNameChange(newName: string) {
@@ -359,41 +350,6 @@ export class ScenarioCreationComponent
           this.newScenarioState.setLoading(false);
         },
       });
-  }
-
-  async finishFromFullConfig() {
-    const payload = getScenarioCreationPayloadScenarioCreation({
-      ...this.config,
-      name: this.form.getRawValue().scenarioName || '',
-      planning_area: this.planId,
-    });
-    this.newScenarioState.setLoading(true);
-    // Firing scenario name validation before finish
-    const validated = await this.refreshScenarioNameValidator();
-
-    if (validated && this.form.valid) {
-      this.scenarioService
-        .createScenarioFromSteps(payload)
-        .pipe(
-          finalize(() => {
-            this.newScenarioState.setLoading(false);
-          })
-        )
-        .subscribe({
-          next: (result) => {
-            this.newScenarioState.setDraftFinished(true);
-            this.router.navigate([result.id], { relativeTo: this.route });
-          },
-          error: () => {
-            this.dialog.open(ScenarioErrorModalComponent);
-          },
-          complete: () => {
-            this.newScenarioState.setLoading(false);
-          },
-        });
-    } else {
-      this.newScenarioState.setLoading(false);
-    }
   }
 
   stepChanged(i: number) {

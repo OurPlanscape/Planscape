@@ -119,11 +119,7 @@ export class SavedScenariosComponent implements OnInit {
       .getScenariosForPlan(this.planId!, this.sortSelection)
       .pipe(
         take(1),
-        tap((rawScenarios) => {
-          const scenarios = rawScenarios.filter(
-            (scenario) => scenario.scenario_result?.status !== 'DRAFT'
-          );
-
+        tap((scenarios) => {
           this.totalScenarios = scenarios.length;
 
           this.scenariosForUser = this.showOnlyMyScenarios
@@ -208,18 +204,6 @@ export class SavedScenariosComponent implements OnInit {
 
   handleNewScenarioButton(configId?: number): void {
     this.openScenarioSetupDialog();
-  }
-
-  openConfig(configId?: number): void {
-    if (!configId) {
-      this.router.navigate(['scenario'], {
-        relativeTo: this.route,
-      });
-    } else {
-      this.router.navigate(['scenario', configId], {
-        relativeTo: this.route,
-      });
-    }
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
