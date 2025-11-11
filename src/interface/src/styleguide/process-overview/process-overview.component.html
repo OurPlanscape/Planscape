@@ -3,7 +3,7 @@
   <div class="step" *ngFor="let step of steps; let i = index">
     <div class="step-info">
       <div class="name" [ngClass]="{ first: i === 0 }">
-        {{ step.name }}
+        {{ step.label }}
       </div>
       <div class="description">{{ step.description }}</div>
     </div>

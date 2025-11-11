@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
 import { NgClass, NgForOf } from '@angular/common';
 
+// TODO move this out of storybook. its not reusable.
 export interface OverviewStep {
   icon: string;
-  name: string;
+  label: string;
   description: string;
 }
 
@@ -16,4 +17,5 @@ export interface OverviewStep {
 })
 export class ProcessOverviewComponent {
   @Input() steps: OverviewStep[] = [];
+  protected readonly atob = atob;
 }
