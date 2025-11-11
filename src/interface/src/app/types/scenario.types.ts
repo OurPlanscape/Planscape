@@ -84,7 +84,7 @@ export interface ScenarioConfigPayload {
   max_project_count?: number;
 }
 
-export interface ScenarioDraftConfig {
+export interface ScenarioV3Config {
   excluded_areas: number[];
   stand_size: STAND_SIZE;
   includes: number[];
@@ -93,13 +93,12 @@ export interface ScenarioDraftConfig {
   targets: {
     estimated_cost: number;
     max_area: number;
-    max_budget?: number;
     max_project_count: number;
   };
 }
 
-export interface ScenarioDraftPayload {
-  configuration: Partial<ScenarioDraftConfig>;
+export interface ScenarioV3Payload {
+  configuration: Partial<ScenarioV3Config>;
   name: string;
   planning_area: number;
   treatment_goal: number;
