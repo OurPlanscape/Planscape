@@ -84,9 +84,8 @@ class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
         - Global pillars (run=None) are visible to all
         - Custom pillars are only visible if the user owns the associated run
         """
-        user = self.request.user
         return ClimateForesightPillar.objects.filter(
-            models.Q(run__isnull=True) | models.Q(run__created_by=user)
+            models.Q(run__isnull=True)
         ).order_by("order", "name")
 
     def perform_destroy(self, instance):
