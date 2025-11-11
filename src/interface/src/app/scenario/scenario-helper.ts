@@ -3,8 +3,8 @@ import {
   NamedConstraint,
   Scenario,
   ScenarioCreation,
-  ScenarioDraftConfig,
-  ScenarioDraftPayload,
+  ScenarioV3Config,
+  ScenarioV3Payload,
   ScenarioGoal,
 } from '@types';
 
@@ -55,9 +55,9 @@ export function scenarioCanHaveTreatmentPlans(
 export function convertFlatConfigurationToDraftPayload(
   formData: Partial<ScenarioCreation>,
   thresholdIds: Map<string, number>
-): Partial<ScenarioDraftPayload> {
-  const payload: Partial<ScenarioDraftPayload> = {};
-  const config: Partial<ScenarioDraftConfig> = {};
+): Partial<ScenarioV3Payload> {
+  const payload: Partial<ScenarioV3Payload> = {};
+  const config: Partial<ScenarioV3Config> = {};
   if (formData.treatment_goal !== undefined) {
     payload.treatment_goal = formData.treatment_goal;
   }
@@ -77,9 +77,6 @@ export function convertFlatConfigurationToDraftPayload(
   }
   if (formData.max_area !== undefined) {
     targets.max_area = formData.max_area;
-  }
-  if (formData.max_budget !== undefined) {
-    targets.max_budget = formData.max_budget;
   }
   if (formData.max_project_count !== undefined) {
     targets.max_project_count = formData.max_project_count;
