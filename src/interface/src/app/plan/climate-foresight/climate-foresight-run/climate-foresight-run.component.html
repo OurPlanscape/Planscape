@@ -53,9 +53,10 @@
     </sg-step>
 
     <cdk-step label="Assign Pillars" [stepControl]="pillarsForm!">
-      <div class="step-layout">
+      <!-- NgIf to prevent drawing if we are not on this step -->
+      <div class="step-layout" *ngIf="currentStepIndex === 2">
         <div class="step-content">
-          <app-assign-pillars></app-assign-pillars>
+          <app-assign-pillars [run]="currentRun"></app-assign-pillars>
         </div>
       </div>
     </cdk-step>

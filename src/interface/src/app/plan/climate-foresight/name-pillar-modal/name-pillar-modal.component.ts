@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { ClimateForesightService } from '@services';
 import {
   InputDirective,
   InputFieldComponent,
@@ -37,6 +38,7 @@ export class NamePillarModalComponent {
   });
 
   readonly dialogRef = inject(MatDialogRef<NamePillarModalComponent>);
+  climateService: ClimateForesightService = inject(ClimateForesightService);
 
   submitting = false;
   displayError = false;
@@ -57,11 +59,18 @@ export class NamePillarModalComponent {
     /**
      * TODO: Integrate with backend once API is ready
      * Validate the name doesn't exist
-     * Call backend
-     * If Success - Close modal - refresh list (on parent)
-     * If Error - Display error - Try again
      */
-    this.dialogRef.close();
+    this.climateService
+      .createPillar(this.form.getRawValue().pillarName)
+      .subscribe({
+        next: () => {
+          this.displayError = false;
+          this.dialogRef.close(true);
+        },
+        error: () => {
+          this.displayError = true;
+        },
+      });
   }
 
   edit() {
@@ -76,7 +85,7 @@ export class NamePillarModalComponent {
   }
 
   cancel() {
-    this.dialogRef.close();
+    this.dialogRef.close(false);
   }
 
   get editMode(): boolean {

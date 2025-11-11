@@ -5,6 +5,7 @@ import {
   ClimateForesightRun,
   CreateClimateForesightRunPayload,
   DataLayer,
+  Pillar,
 } from '@types';
 import { environment } from '../../environments/environment';
 
@@ -14,6 +15,8 @@ import { environment } from '../../environments/environment';
 export class ClimateForesightService {
   readonly basePath =
     environment.backend_endpoint + '/v2/climate-foresight-runs/';
+
+  readonly pillarsPath = environment.backend_endpoint + '/v2/climate-foresight';
 
   constructor(private http: HttpClient) {}
 
@@ -76,6 +79,35 @@ export class ClimateForesightService {
     return this.http.get<DataLayer[]>(`${this.basePath}datalayers/`, {
       withCredentials: true,
     });
+  }
+
+  /**
+   * Get the list of pillars
+   */
+  getPillars(run_id: number): Observable<Pillar[]> {
+    return this.http.get<Pillar[]>(
+      `${this.pillarsPath}-pillars?run=${run_id}`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Create a custom pillar
+   */
+  createPillar(name: string) {
+    return this.http.post<Pillar>(
+      `${this.pillarsPath}-pillars/`,
+      {
+        run: 1, // 0 default, 1: custom pillar
+        name,
+        order: 0,
+      },
+      {
+        withCredentials: true,
+      }
+    );
   }
 
   /**

@@ -21,7 +21,7 @@
         (cdkDropListDropped)="drop($event)">
         <div class="datalayers-box" *ngFor="let item of datalayers" cdkDrag>
           <span class="material-symbols-outlined"> drag_indicator </span>
-          {{ item.title }}
+          {{ item.name }}
         </div>
       </div>
     </sg-section>
@@ -46,7 +46,7 @@
             class="expandible-group-title"
             [ngClass]="{ open: group.isOpen }"
             (click)="group.isOpen = group.isOpen ? false : true">
-            {{ group.title }}
+            {{ group.name }}
             <span class="expandible-group-desc">
               ({{ group.dataLayers.length }} data layers)</span
             >
@@ -76,7 +76,7 @@
               *ngFor="let i of group.dataLayers"
               cdkDrag>
               <span class="material-symbols-outlined"> drag_indicator </span>
-              {{ i.title }}
+              {{ i.name }}
             </div>
           </ng-container>
         </div>
