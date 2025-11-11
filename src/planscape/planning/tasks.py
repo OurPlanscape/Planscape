@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urljoin
 
 import rasterio
 from celery import chord, group
@@ -11,6 +10,8 @@ from django.contrib.gis.geos import MultiPolygon
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
+from planscape.celery import app
+from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats_with_stand_list,
@@ -35,8 +36,6 @@ from planning.services import (
     export_to_geopackage,
     get_available_stand_ids,
 )
-from planscape.celery import app
-from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
 
@@ -45,9 +44,7 @@ log = logging.getLogger(__name__)
 def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> None:
     try:
         planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-        log.info(
-            f"Creating stands for {planning_area_id} for stand size {stand_size}"
-        )
+        log.info(f"Creating stands for {planning_area_id} for stand size {stand_size}")
 
         other_stands = Stand.objects.filter(
             size=stand_size, geometry__intersects=planning_area.geometry
@@ -367,7 +364,10 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     """
     log.info(f"Generating geopackage for scenario {scenario_id}")
     scenario = Scenario.objects.get(id=scenario_id)
-    if scenario.result_status not in (ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE):
+    if scenario.result_status not in (
+        ScenarioResultStatus.SUCCESS,
+        ScenarioResultStatus.FAILURE,
+    ):
         log.warning(
             f"Scenario {scenario_id} is not in successful or final failure state. Current status: {scenario.result_status}"
         )
