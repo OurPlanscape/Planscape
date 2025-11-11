@@ -72,14 +72,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     }).compileComponents();
   });
 
-  // it('should create', () => {
-  //   TestBed.overrideProvider(FEATURES_JSON, {
-  //     useValue: { SCENARIO_DRAFTS: false },
-  //   });
-  //   createComp();
-  //   expect(component).toBeTruthy();
-  // });
-
   it('should return false if the scenario is not a DRAFT', async () => {
     mockScenario$.next({
       scenario_result: { status: 'SUCCESS' }, // Not a draft

@@ -67,11 +67,9 @@ export class ScenarioRoutePlaceholderComponent
       });
       return dialogRef.afterClosed();
     }
-
     return true;
   }
 
-  // We are going to display scenario creation just if we have SCENARIO_DRAFTS FF enabled and the creator is the same as the logged in user
   canViewScenarioCreation$ = combineLatest([
     this.authService.loggedInUser$,
     this.scenarioState.currentScenario$,
