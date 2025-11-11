@@ -1,0 +1,57 @@
+@import "variables";
+@import "colors";
+@import "media";
+
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+sg-steps-nav {
+  display: block;
+  z-index: 10;
+  box-shadow: 1px 4px 3px 0 rgba(0, 0, 0, 0.12), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.20);
+}
+
+.container {
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+  @include on-small() {
+    display: block;
+    overflow: initial;
+    height: initial;
+  }
+}
+
+.sidebar {
+  max-width: $scenario-sidebar-width;
+  margin: 0 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  @include on-small() {
+    max-width: initial;
+  }
+}
+
+sg-process-overview {
+  padding: 24px 40px;
+  flex: 1;
+}
+
+.main {
+  background-color: #d0d0d0;
+  flex: 1;
+  min-width: $scenario-sidebar-width;
+  overflow-y: auto;
+}
+
+.step-in-main {
+  display: block;
+  margin: 0 auto;
+  max-width: 680px;
+  padding: 16px;
+}

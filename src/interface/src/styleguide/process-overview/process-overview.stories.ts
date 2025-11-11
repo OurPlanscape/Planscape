@@ -22,18 +22,18 @@ type Story = StoryObj<ProcessOverviewComponent>;
 
 const steps: OverviewStep[] = [
   {
-    name: 'Treatment Goal',
+    label: 'Treatment Goal',
     description:
       'Select important data layers that will be used throughout the workflow.',
     icon: '/assets/svg/icons/overview/treatment-goal.svg',
   },
   {
-    name: 'Exclude Areas',
+    label: 'Exclude Areas',
     description: 'Include and exclude specific areas based on your plan.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
   },
   {
-    name: 'Stand-level Constraints',
+    label: 'Stand-level Constraints',
     description:
       'Define the minimum or maximum values for key factors to guide decision-making.',
     icon: '/assets/svg/icons/overview/stand-level.svg',
@@ -43,13 +43,13 @@ const steps: OverviewStep[] = [
 const allSteps: OverviewStep[] = [
   ...steps,
   {
-    name: 'Treatment Target',
+    label: 'Treatment Target',
     description:
       'Set limits on treatment areas to align with real-world restrictions.',
     icon: '/assets/svg/icons/overview/treatment-target.svg',
   },
   {
-    name: 'Generate Output',
+    label: 'Generate Output',
     description: 'View scenario results from Forsys.',
     icon: '/assets/svg/icons/overview/generate-output.svg',
   },

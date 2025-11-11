@@ -26,6 +26,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
+import { CreateScenarioComponent } from '../create-scenario/create-scenario.component';
 
 @UntilDestroy()
 @Component({
@@ -38,10 +39,13 @@ import { isScenarioPending } from '../scenario-helper';
     UploadedScenarioViewComponent,
     ScenarioCreationComponent,
     ViewScenarioComponent,
+    CreateScenarioComponent,
   ],
   selector: 'app-scenario-route-placeholder',
   templateUrl: './scenario-route-placeholder.component.html',
   styleUrl: './scenario-route-placeholder.component.scss',
+  // needs to be fflaged?
+  providers: [NewScenarioState],
 })
 export class ScenarioRoutePlaceholderComponent
   implements CanComponentDeactivate
