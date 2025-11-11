@@ -8,7 +8,7 @@ import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
 import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { ScenarioDraftConfig } from '@types';
+import { ScenarioV3Config } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -32,7 +32,7 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   currentScenario$ = this.scenarioState.currentScenario$;
   excludedAreas$ = this.forsysService.excludedAreas$;
 
-  configuration: ScenarioDraftConfig | null = null;
+  configuration: ScenarioV3Config | null = null;
   slopeId: number | null = null;
   distanceToRoadsId: number | null = null;
 
@@ -53,7 +53,7 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
     map(([scenario, excludedAreas]) => {
       //TODO: when we have a ScenarioBase type and a way to query just config
       // we should replace this cast
-      this.configuration = scenario.configuration as ScenarioDraftConfig;
+      this.configuration = scenario.configuration as ScenarioV3Config;
 
       const ids = this.configuration.excluded_areas ?? [];
       const labels = ids
