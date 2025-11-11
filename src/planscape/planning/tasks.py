@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 import rasterio
 from celery import chord, group
@@ -286,6 +287,9 @@ def async_change_scenario_status(
         with transaction.atomic():
             scenario = Scenario.objects.select_for_update().get(pk=scenario_id)
             scenario.result_status = status
+            planning_area = scenario.planning_area
+            planning_area.updated_at = timezone.now()
+            planning_area.save(update_fields=["updated_at"])
             scenario.save(update_fields=["result_status", "updated_at"])
             if hasattr(scenario, "results"):
                 scenario.results.status = status

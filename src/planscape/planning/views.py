@@ -7,8 +7,6 @@ from collaboration.permissions import (
     ScenarioPermission,
 )
 from django.db import IntegrityError, transaction
-from django.db.models import Count, F, Max
-from django.db.models.functions import Coalesce, Greatest
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -293,17 +291,7 @@ def get_planning_area_by_id(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        planning_area = (
-            PlanningArea.objects.filter(id=request.GET["id"])
-            .annotate(scenario_count=Count("scenarios", distinct=True))
-            .annotate(
-                scenario_latest_updated_at=Greatest(
-                    Coalesce(Max("scenarios__updated_at"), F("updated_at")),
-                    F("updated_at"),
-                )
-            )
-            .first()
-        )
+        planning_area = PlanningArea.objects.filter(id=request.GET["id"]).first()
 
         if not planning_area:
             return Response(
@@ -347,7 +335,9 @@ def list_planning_areas(request: Request) -> Response:
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        planning_areas = PlanningArea.objects.list_for_api(user)
+        planning_areas = PlanningArea.objects.list_for_api(user).order_by(
+            "-latest_updated"
+        )
         serializer = ListPlanningAreaSerializer(
             instance=planning_areas, many=True, context={"request": request}
         )

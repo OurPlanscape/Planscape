@@ -38,6 +38,8 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: "planning area %s" % n)
 
+    scenario_count = 0
+
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
     @factory.post_generation
