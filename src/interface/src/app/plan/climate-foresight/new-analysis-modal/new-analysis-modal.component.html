@@ -9,7 +9,9 @@
     <form [formGroup]="form">
       <sg-input-field
         label="Analysis Name"
-        [error]="!!form.get('name')?.hasError('required')"
+        [error]="
+          !!form.get('name')?.hasError('required') && !!form.get('name')?.dirty
+        "
         showSupportMessage="on-error"
         supportMessage="Analysis name is required"
         size="full">

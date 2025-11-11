@@ -12,9 +12,12 @@
 
   <sg-steps
     #stepsComponent
-    [save]="saveStepData"
+    [save]="saveStepData.bind(this)"
     [savingStep]="savingStep"
     [showActions]="currentStepIndex !== 0"
+    [continueLabel]="
+      currentStepIndex === 2 ? 'Save & Run Analysis' : 'Save & Continue'
+    "
     [disabled]="!canGoNext"
     (finished)="onFinished()">
     <sg-step label="Select Data Layers">
@@ -52,15 +55,15 @@
       </app-assign-favorability>
     </sg-step>
 
-    <cdk-step label="Assign Pillars" [stepControl]="pillarsForm!">
+    <sg-step label="Assign Pillars">
       <div class="step-layout">
         <div class="step-content">
-          <app-assign-pillars></app-assign-pillars>
+          <app-assign-pillars [run]="currentRun!"></app-assign-pillars>
         </div>
       </div>
-    </cdk-step>
+    </sg-step>
 
-    <cdk-step label="Run & Risk Assessment" [stepControl]="assessmentForm!">
+    <cdk-step label="Run & Risk Assessment">
       <div class="step-layout">
         <div class="step-content"></div>
       </div>

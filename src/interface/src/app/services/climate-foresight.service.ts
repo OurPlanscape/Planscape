@@ -5,6 +5,7 @@ import {
   ClimateForesightRun,
   CreateClimateForesightRunPayload,
   DataLayer,
+  Pillar,
 } from '@types';
 import { environment } from '../../environments/environment';
 
@@ -14,6 +15,8 @@ import { environment } from '../../environments/environment';
 export class ClimateForesightService {
   readonly basePath =
     environment.backend_endpoint + '/v2/climate-foresight-runs/';
+
+  readonly pillarsPath = environment.backend_endpoint + '/v2/climate-foresight';
 
   constructor(private http: HttpClient) {}
 
@@ -74,6 +77,56 @@ export class ClimateForesightService {
    */
   getDataLayers(): Observable<DataLayer[]> {
     return this.http.get<DataLayer[]>(`${this.basePath}datalayers/`, {
+      withCredentials: true,
+    });
+  }
+
+  /**
+   * Get the list of pillars
+   */
+  getPillars(run_id: number): Observable<Pillar[]> {
+    return this.http.get<Pillar[]>(
+      `${this.pillarsPath}-pillars?run=${run_id}`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Create a custom pillar
+   */
+  createPillar(name: string, runId: number) {
+    return this.http.post<Pillar>(
+      `${this.pillarsPath}-pillars/`,
+      {
+        run: runId,
+        name,
+        order: 0,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Edit a custom pillar
+   */
+  editPillar(name: string, pillarId: number, runId: number) {
+    return this.http.patch<Pillar>(
+      `${this.pillarsPath}-pillars/${pillarId}?run=${runId}`,
+      {
+        name,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  deletePillar(id: number, run_id: number) {
+    return this.http.delete(`${this.pillarsPath}-pillars/${id}?run=${run_id}`, {
       withCredentials: true,
     });
   }
