@@ -2,7 +2,7 @@ import logging
 from urllib.parse import urljoin
 
 import rasterio
-from celery import chord, group, chain
+from celery import chain, chord, group
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
@@ -47,9 +47,7 @@ log = logging.getLogger(__name__)
 def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> None:
     try:
         planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-        log.info(
-            f"Creating stands for {planning_area_id} for stand size {stand_size}"
-        )
+        log.info(f"Creating stands for {planning_area_id} for stand size {stand_size}")
 
         other_stands = Stand.objects.filter(
             size=stand_size, geometry__intersects=planning_area.geometry
@@ -198,6 +196,14 @@ def prepare_planning_area(planning_area_id: int) -> int:
         distance_from_roads,
     ]
     datalayers = list(filter(None, datalayers))
+
+    if feature_enabled("CALCULATE_INCLUSION_ZONE"):
+        includes = list(
+            DataLayer.objects.all().by_meta_capability(
+                TreatmentGoalUsageType.INCLUSION_ZONE
+            )
+        )
+        datalayers.extend(includes)
 
     create_stand_metrics_jobs = []
 
@@ -373,7 +379,10 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     """
     log.info(f"Generating geopackage for scenario {scenario_id}")
     scenario = Scenario.objects.get(id=scenario_id)
-    if scenario.result_status not in (ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE):
+    if scenario.result_status not in (
+        ScenarioResultStatus.SUCCESS,
+        ScenarioResultStatus.FAILURE,
+    ):
         log.warning(
             f"Scenario {scenario_id} is not in successful or final failure state. Current status: {scenario.result_status}"
         )
