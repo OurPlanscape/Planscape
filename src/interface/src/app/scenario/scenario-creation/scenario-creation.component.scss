@@ -59,3 +59,16 @@
 .error {
   color: $color-error-secondary;
 }
+
+
+// new scenario ui
+
+.container {
+  display: flex;
+}
+
+sg-steps-nav {
+  display: block;
+  z-index: 10;
+  box-shadow: 1px 4px 3px 0 rgba(0, 0, 0, 0.12), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.20);
+}

@@ -21,17 +21,17 @@
         else checkOrigin
       ">
       <!-- Displaying drafts if we can edit drafts -->
-      <!--      <app-scenario-creation-->
-      <!--        *ngIf="-->
-      <!--          canViewScenarioCreation === true;-->
-      <!--          else checkOrigin-->
-      <!--        "></app-scenario-creation>-->
-
-      <app-create-scenario
+      <app-scenario-creation
         *ngIf="
           canViewScenarioCreation === true;
           else checkOrigin
-        "></app-create-scenario>
+        "></app-scenario-creation>
+
+      <!--      <app-create-scenario-->
+      <!--        *ngIf="-->
+      <!--          canViewScenarioCreation === true;-->
+      <!--          else checkOrigin-->
+      <!--        "></app-create-scenario>-->
     </ng-container>
 
     <ng-template #checkOrigin>
