@@ -22,8 +22,7 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Case, Count, IntegerField, Max, Q, QuerySet, When
-from django.db.models.functions import Coalesce
+from django.db.models import F, Q, QuerySet
 from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
 from stands.models import Stand, StandSizeChoices
@@ -53,27 +52,10 @@ class PlanningAreaManager(AliveObjectsManager):
         return super().get_queryset().filter(id__in=ids)
 
     def list_for_api(self, user: User) -> QuerySet:
-        queryset = PlanningArea.objects.list_by_user(user)
-        return (
-            queryset.annotate(
-                scenario_count=Count(
-                    Case(
-                        When(
-                            Q(scenarios__status=ScenarioStatus.ACTIVE)
-                            & Q(scenarios__deleted_at__isnull=True),
-                            then=1,
-                        ),
-                        output_field=IntegerField(),
-                    )
-                )
-            )
-            .annotate(
-                scenario_latest_updated_at=Coalesce(
-                    Max("scenarios__updated_at"), "updated_at"
-                )
-            )
-            .order_by("-scenario_latest_updated_at")
+        queryset = PlanningArea.objects.list_by_user(user).annotate(
+            latest_updated=F("updated_at")
         )
+        return queryset
 
 
 class RegionChoices(models.TextChoices):
@@ -124,6 +106,8 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         null=True,
         help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
     )
+
+    scenario_count = models.IntegerField(null=True)
 
     stands_ready_at = models.DateTimeField(null=True)
     metrics_ready_at = models.DateTimeField(null=True)

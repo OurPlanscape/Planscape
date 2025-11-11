@@ -14,7 +14,6 @@ import { SharedModule } from '../../shared/shared.module';
 import { Plan, ClimateForesightRun } from '@types';
 import { take, map } from 'rxjs/operators';
 import { ClimateForesightService } from '@services/climate-foresight.service';
-import { NewRunModalComponent } from './new-run-modal/new-run-modal.component';
 import { DeleteRunModalComponent } from './delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { ButtonComponent } from '@styleguide';
@@ -32,6 +31,7 @@ import {
 } from '../../maplibre-map/maplibre.helper';
 import { FrontendConstants } from '../../map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-modal.component';
 
 @Component({
   selector: 'app-climate-foresight',
@@ -151,7 +151,7 @@ export class ClimateForesightComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(NewRunModalComponent, {
+    const dialogRef = this.dialog.open(NewAnalysisModalComponent, {
       data: {
         planningAreaId: this.currentPlan.id,
         planningAreaName: this.currentPlan.name,

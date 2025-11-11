@@ -1,12 +1,14 @@
 <sg-modal
   title=""
-  [shortHeader]="true"
+  [showClose]="false"
+  [hasHeader]="false"
   [showBorders]="false"
   [centerFooter]="true"
   (clickedClose)="close()"
   (clickedPrimary)="confirm()"
   (clickedSecondary)="close()"
-  [primaryButtonText]="data.primaryButtonText">
+  [primaryButtonText]="data.primaryButtonText"
+  [secondaryButtonText]="data.secondaryButtonText">
   <div modalBodyContent>
     <sg-modal-confirmation-dialog
       [headline]="data.headline"

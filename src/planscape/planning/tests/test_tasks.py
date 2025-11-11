@@ -6,21 +6,22 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
-from planning.models import ScenarioResultStatus, GeoPackageStatus
+from planscape.exceptions import ForsysException, ForsysTimeoutException
+from stands.models import Stand, StandMetric, StandSizeChoices
+from stands.tests.factories import StandFactory
+
+from planning.models import GeoPackageStatus, ScenarioResultStatus
 from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
     async_forsys_run,
     async_pre_forsys_process,
     trigger_geopackage_generation,
 )
-from stands.models import Stand, StandMetric, StandSizeChoices
-from stands.tests.factories import StandFactory
 from planning.tests.factories import (
+    PlanningAreaFactory,
     ScenarioFactory,
     TreatmentGoalFactory,
-    PlanningAreaFactory,
 )
-from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 
 class AsyncCalculateStandMetricsTest(TestCase):
@@ -260,6 +261,17 @@ class TriggerGeopackageGenerationTestCase(TestCase):
         mock_async_generate.assert_called_once_with(scenario.pk)
 
     @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
+    def test_trigger_geopackage_generation_falied_scenario(self, mock_async_generate):
+        scenario = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.FAILURE,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+
+        trigger_geopackage_generation()
+
+        mock_async_generate.assert_called_once_with(scenario.pk)
+
+    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
     def test_trigger_geopackage_generation_no_pending(self, mock_async_generate):
         ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
@@ -294,7 +306,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
             geopackage_status=GeoPackageStatus.PENDING,
         )
         ScenarioFactory.create(
-            result_status=ScenarioResultStatus.FAILURE,
+            result_status=ScenarioResultStatus.PANIC,
             geopackage_status=GeoPackageStatus.PENDING,
         )
 

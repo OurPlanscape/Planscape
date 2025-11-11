@@ -1,6 +1,7 @@
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
 
 export const DEFAULT_TX_COST_PER_ACRE: number = 2470;
+export const PLANNINGAREA_SIZE_ALERT_THRESHOLD: number = 3000000;
 
 /**
  * @desc Error message indicating some unknown error occurred while attempting a
@@ -121,3 +122,8 @@ export const BASE_LAYERS_DEFAULT = {
  * that's accepted by Angular is rejected by the backend.
  */
 export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
+
+export const NOTE_DELETE_DIALOG = {
+  title: 'Permanently delete note?',
+  body: 'Are you sure you want to delete this note?',
+};

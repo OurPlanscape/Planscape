@@ -19,11 +19,13 @@ import { ScenarioCreationComponent } from '../scenario-creation/scenario-creatio
 import { FeatureService } from 'src/app/features/feature.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@services';
-import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { NewScenarioState } from '../new-scenario.state';
 import { MatDialog } from '@angular/material/dialog';
-import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
+import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
+import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
+import { isScenarioPending } from '../scenario-helper';
 
 @UntilDestroy()
 @Component({
@@ -48,6 +50,7 @@ export class ScenarioRoutePlaceholderComponent
     // complete this stream after the resource is loaded.
     takeWhile((resource) => resource.isLoading, true)
   );
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -65,7 +68,9 @@ export class ScenarioRoutePlaceholderComponent
       this.isDraft &&
       !this.newScenarioState.isDraftFinishedSnapshot()
     ) {
-      const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        data: EXIT_SCENARIO_MODAL,
+      });
       return dialogRef.afterClosed();
     }
 
@@ -92,6 +97,12 @@ export class ScenarioRoutePlaceholderComponent
 
       // If SCENARIO_DRAFTS is disabled and the scenario is not a draft we return false
       if (!scenarioDraftsEnabled) {
+        return false;
+      }
+
+      // if scenario is pending redirect the user
+      if (isScenarioPending(scenario)) {
+        this.router.navigate(['/plan', scenario?.planning_area]);
         return false;
       }
 

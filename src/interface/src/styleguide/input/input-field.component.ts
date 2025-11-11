@@ -79,9 +79,15 @@ export class InputFieldComponent implements AfterContentInit {
   @Input() showSupportMessage: ShowSupportMessage = 'always';
 
   /**
-   * Determines the height of the input field
+   * Determines the width of the input field
    */
-  @Input() size: 'regular' | 'small' = 'regular';
+  @Input() size: 'regular' | 'full' = 'regular';
+
+  /**
+   * Optionally, this can take a label.
+   */
+
+  @Input() label = '';
 
   @HostBinding('class.error')
   get hasError() {
@@ -98,9 +104,9 @@ export class InputFieldComponent implements AfterContentInit {
     return this.highlighted;
   }
 
-  @HostBinding('class.small')
+  @HostBinding('class.full')
   get isSmall() {
-    return this.size === 'small';
+    return this.size === 'full';
   }
 
   /**
@@ -123,10 +129,18 @@ export class InputFieldComponent implements AfterContentInit {
     );
   }
 
+  get hasLabel() {
+    return !!this.label;
+  }
+
   /**
    * @ignore
    */
   focusInput(): void {
     this.inputDirective?.focus();
+  }
+
+  get isRequired() {
+    return this.inputDirective?.isRequired;
   }
 }

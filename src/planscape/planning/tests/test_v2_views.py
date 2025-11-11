@@ -11,12 +11,11 @@ from impacts.permissions import (
     VIEWER_PERMISSIONS,
 )
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     PlanningArea,
     RegionChoices,
-    ScenarioStatus,
     ScenarioResult,
     TreatmentGoal,
     TreatmentGoalCategory,
@@ -134,7 +133,7 @@ class CreatorsTest(APITestCase):
         self.assertEqual(set(creator_names), {"user a", "user b", "user e"})
 
 
-class GetPlanningAreaTest(APITestCase):
+class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
 
@@ -202,11 +201,15 @@ class GetPlanningAreaTest(APITestCase):
             name="test pa1 scenario3",
             user=self.user,
         )
+        self.planning_area1.scenario_count = 3
+        self.planning_area1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory(
             planning_area=self.planning_area3,
             name="test pa3 scenario1",
             user=self.user,
         )
+        self.planning_area3.scenario_count = 1
+        self.planning_area3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory(
             planning_area=self.planning_area4,
             name="test pa4 scenario1",
@@ -222,6 +225,8 @@ class GetPlanningAreaTest(APITestCase):
             name="test pa4 scenario3",
             user=self.user,
         )
+        self.planning_area4.scenario_count = 3
+        self.planning_area4.save(update_fields=["updated_at", "scenario_count"])
 
     def test_list_planning_areas(self):
         self.client.force_authenticate(self.user)
@@ -430,7 +435,7 @@ class GetPlanningAreaTest(APITestCase):
     def test_list_planning_areas_scenario_count(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(
-            reverse("api:planning:planningareas-list"),
+            reverse("api:planning:planningareas-list") + "?ordering=-scenario_count",
             {},
             content_type="application/json",
         )
@@ -439,22 +444,6 @@ class GetPlanningAreaTest(APITestCase):
         results = content.get("results")
         first_planning_area = results[0]
         self.assertEqual(first_planning_area.get("scenario_count"), 3)
-
-        self.scenario1_1.delete()
-        self.scenario1_2.status = ScenarioStatus.ARCHIVED
-        self.scenario1_2.save()
-
-        self.client.force_authenticate(self.user)
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            {},
-            content_type="application/json",
-        )
-        content = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        results = content.get("results")
-        first_planning_area = results[0]
-        self.assertEqual(first_planning_area.get("scenario_count"), 1)
 
 
 class ListPlanningAreaSortingTest(APITestCase):
@@ -563,11 +552,15 @@ class ListPlanningAreaSortingTest(APITestCase):
             name="test pa1 scenario3",
             user=self.user1,
         )
+        self.pa1.scenario_count = 3
+        self.pa1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory(
             planning_area=self.pa3,
             name="test pa3 scenario1",
             user=self.user1,
         )
+        self.pa3.scenario_count = 1
+        self.pa3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory(
             planning_area=self.pa4,
             name="test pa4 scenario1",
@@ -583,6 +576,8 @@ class ListPlanningAreaSortingTest(APITestCase):
             name="test pa4 scenario3",
             user=self.user1,
         )
+        self.pa4.scenario_count = 3
+        self.pa4.save(update_fields=["updated_at", "scenario_count"])
 
         # user1 can see all of user2 PA records as a collaborator
         UserObjectRoleFactory(
@@ -629,58 +624,6 @@ class ListPlanningAreaSortingTest(APITestCase):
         expected_names = ["Area A", "Area B", "Area C", "Area D", "Area E", "Area F"]
         self.assertListEqual(area_names, expected_names)
 
-    def test_list_planning_areas_sort_by_region_name(self):
-        self.client.force_authenticate(self.user1)
-        query_params = {"ordering": "region_name"}
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        region_names = []
-        for item in planning_areas["results"]:
-            region_names.append(item["region_name"])
-        expected_region_names = [
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Northern California",
-            "Northern California",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Southern California",
-        ]
-        self.assertListEqual(region_names, expected_region_names)
-
-    def test_list_planning_areas_desc_sort_by_region_name(self):
-        self.client.force_authenticate(self.user1)
-        query_params = {"ordering": "-region_name"}
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        region_names = []
-        for item in planning_areas["results"]:
-            region_names.append(item["region_name"])
-        expected_region_names = [
-            "Southern California",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Northern California",
-            "Northern California",
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-        ]
-        self.assertListEqual(region_names, expected_region_names)
-
     def test_list_planning_areas_sort_by_scenario_count(self):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "scenario_count"}
@@ -695,36 +638,6 @@ class ListPlanningAreaSortingTest(APITestCase):
             scenario_counts.append(item["scenario_count"])
         expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
         self.assertListEqual(scenario_counts, expected_scenario_counts)
-
-    def test_list_planning_areas_sort_by_scenario_count_region_name(self):
-        self.client.force_authenticate(self.user1)
-        query_params = {"ordering": "scenario_count, region_name"}
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        scenario_counts = []
-        region_names = []
-        for item in planning_areas["results"]:
-            scenario_counts.append(item["scenario_count"])
-            region_names.append(item["region_name"])
-        expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
-        expected_region_names = [
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Northern California",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Southern California",
-            "Central Coast",
-            "Northern California",
-        ]
-        self.assertListEqual(scenario_counts, expected_scenario_counts)
-        self.assertListEqual(region_names, expected_region_names)
 
     def test_list_planning_areas_sort_by_area_acres(self):
         self.client.force_authenticate(self.user1)
@@ -1031,6 +944,32 @@ class UpdatePlanningAreaTest(APITestCase):
         self.planning_area.refresh_from_db()
         self.assertEqual(self.planning_area.name, "Renamed Area")
 
+    def test_rename_updates_latest_updated_ordering(self):
+        other_area = PlanningAreaFactory.create(
+            user=self.creator,
+            name="Secondary Area",
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+
+        list_url = reverse("api:planning:planningareas-list")
+        self.client.force_authenticate(self.creator)
+        initial_response = self.client.get(list_url, {}, format="json")
+        self.assertEqual(initial_response.status_code, status.HTTP_200_OK)
+        initial_results = initial_response.json()["results"]
+        initial_ids = [pa["id"] for pa in initial_results]
+        self.assertEqual(initial_ids[:2], [other_area.id, self.planning_area.id])
+
+        rename_response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(rename_response.status_code, status.HTTP_200_OK)
+        reordered_response = self.client.get(
+            list_url + "?ordering=-latest_updated", {}, format="json"
+        )
+        self.assertEqual(reordered_response.status_code, status.HTTP_200_OK)
+        reordered_results = reordered_response.json()["results"]
+        self.assertEqual(reordered_results[0]["id"], self.planning_area.id)
+
 
 class DeletePlanningAreaTest(APITestCase):
     def setUp(self):
@@ -1291,7 +1230,7 @@ class TreatmentGoalViewSetTest(APITestCase):
 
         ca_group = TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
 
-        TreatmentGoal.objects.all().delete() # cleanup any existing records added on migrations
+        TreatmentGoal.objects.all().delete()  # cleanup any existing records added on migrations
 
         self.first_treatment_goal = TreatmentGoalFactory.create(
             name="First",

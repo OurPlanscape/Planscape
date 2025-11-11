@@ -7,4 +7,6 @@ import { NewScenarioState } from './new-scenario.state';
   styleUrl: './scenario.component.scss',
   providers: [NewScenarioState],
 })
-export class ScenarioComponent {}
+export class ScenarioComponent {
+  constructor() {}
+}

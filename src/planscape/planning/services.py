@@ -13,7 +13,6 @@ import fiona
 from actstream import action
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
 from datasets.services import get_datalayer_by_module_atribute
@@ -26,6 +25,7 @@ from django.contrib.gis.measure import A
 from django.db import transaction
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
+from django.utils import timezone
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
@@ -150,8 +150,7 @@ def create_planning_area(
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
-    if feature_enabled("AUTO_CREATE_STANDS"):
-        transaction.on_commit(lambda: stands_workflow.apply_async())
+    transaction.on_commit(lambda: stands_workflow.apply_async())
     return planning_area
 
 
@@ -230,6 +229,11 @@ def create_scenario(user: User, **kwargs) -> Scenario:
     scenario = Scenario.objects.create(**data)
     scenario.capabilities = compute_scenario_capabilities(scenario)
     scenario.save(update_fields=["capabilities"])
+    planning_area = scenario.planning_area
+    planning_area.scenario_count = (
+        planning_area.scenario_count + 1 if planning_area.scenario_count else 1
+    )
+    planning_area.save(update_fields=["updated_at", "scenario_count"])
     ScenarioResult.objects.create(scenario=scenario)
     # george created scenario 1234 on planning area XYZ
     action.send(
@@ -338,7 +342,8 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     )
     scenario.capabilities = compute_scenario_capabilities(scenario)
     scenario.save(update_fields=["capabilities"])
-
+    planning_area.updated_at = now()
+    planning_area.save(update_fields=["updated_at"])
     transaction.on_commit(
         partial(
             action.send,
@@ -407,7 +412,12 @@ def delete_scenario(
         target=scenario.planning_area,
     )
     right_now = now()
+    planning_area: PlanningArea = scenario.planning_area
     scenario.delete()
+    planning_area.scenario_count = (
+        planning_area.scenario_count - 1 if planning_area.scenario_count else 0
+    )
+    planning_area.save(update_fields=["updated_at", "scenario_count"])
     ScenarioResult.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     ProjectArea.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     track_openpanel(
@@ -1117,9 +1127,13 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         scenario.save(update_fields=["geopackage_status", "updated_at"])
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
-        export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
-        export_scenario_stand_outputs_to_geopackage(scenario, temp_file, stand_inputs)
+
+        if scenario.result_status == ScenarioResultStatus.SUCCESS:
+            export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+            export_scenario_stand_outputs_to_geopackage(
+                scenario, temp_file, stand_inputs
+            )
 
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
@@ -1161,6 +1175,9 @@ def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
         else ScenarioStatus.ARCHIVED
     )
     verb = "activated" if scenario.status == ScenarioStatus.ARCHIVED else "archived"
+    pa = scenario.planning_area
+    pa.updated_at = timezone.now()
+    pa.save(update_fields=["updated_at"])
     scenario.status = new_status
     scenario.save()
     action.send(user, verb=verb, action_object=scenario)

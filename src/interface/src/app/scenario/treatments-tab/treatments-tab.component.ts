@@ -130,7 +130,8 @@ export class TreatmentsTabComponent implements OnInit {
       DeleteDialogComponent,
       {
         data: {
-          name: '"' + treatment.name + '"',
+          title: 'Delete "' + treatment.name + '"?',
+          body: `<b>Warning</b>: This operation cannot be reversed.`,
         },
       }
     );

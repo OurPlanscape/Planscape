@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { ModalComponent } from '../../modal/modal.component';
-import { ModalConfirmationDialogComponent } from '../../modal-dialog-section/modal-confirmation-dialog.component';
+import { ModalConfirmationDialogComponent } from '../../modal-confirmation-dialog/modal-confirmation-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DialogData } from '../dialogs';
 
@@ -9,7 +9,6 @@ import { DialogData } from '../dialogs';
   standalone: true,
   imports: [ModalComponent, ModalConfirmationDialogComponent],
   templateUrl: './error-dialog.component.html',
-  styleUrl: './error-dialog.component.scss',
 })
 export class ErrorDialogComponent {
   constructor(

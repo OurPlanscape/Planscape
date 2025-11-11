@@ -38,7 +38,6 @@ import {
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
-import { ExitWorkflowModalComponent } from '../exit-workflow-modal/exit-workflow-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
@@ -55,8 +54,11 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
-import { RunScenarioModalComponent } from '../run-scenario-modal/run-scenario-modal.component';
 import { filter } from 'rxjs/operators';
+import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
+import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
+import { SNACK_ERROR_CONFIG } from '@shared';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
 
 enum ScenarioTabs {
@@ -102,6 +104,7 @@ export class ScenarioCreationComponent
   scenarioId = this.route.snapshot.data['scenarioId'];
   // TODO: we can remove this status check when the DRAFTS FF is removed
   scenarioStatus = 'NOT_STARTED';
+  scenarioName = '';
 
   form = new FormGroup({
     scenarioName: new FormControl('', [Validators.required]),
@@ -142,7 +145,8 @@ export class ScenarioCreationComponent
     private router: Router,
     private featureService: FeatureService,
     private breadcrumbService: BreadcrumbService,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private matSnackBar: MatSnackBar
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -179,6 +183,10 @@ export class ScenarioCreationComponent
           label: 'Scenario: ' + scenario.name,
           backUrl: getPlanPath(this.planId),
         });
+        this.scenarioName = scenario.name;
+        //this loads the list of scenario names and looks for dupes.
+        //we pass an id to avoid matching against this current scenario id name
+        this.refreshScenarioNameValidator(scenario.id);
 
         this.form.controls.scenarioName.setValue(scenario.name);
         // Mapping the backend object to the frontend configuration
@@ -207,7 +215,9 @@ export class ScenarioCreationComponent
     if (this.newScenarioState.isDraftFinishedSnapshot()) {
       return true;
     }
-    const dialogRef = this.dialog.open(ExitWorkflowModalComponent);
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: EXIT_SCENARIO_MODAL,
+    });
     return dialogRef.afterClosed();
   }
 
@@ -233,6 +243,14 @@ export class ScenarioCreationComponent
           this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
           this.scenarioStatus === 'DRAFT'
         ) {
+          if (
+            this.scenarioName !== this.form.get('scenarioName')?.value &&
+            this.form.get('scenarioName')?.value !== null
+          ) {
+            this.handleNameChange(
+              this.form.get('scenarioName')?.value ?? this.scenarioName
+            );
+          }
           return this.savePatch(data).pipe(catchError(() => of(false)));
         }
 
@@ -287,9 +305,48 @@ export class ScenarioCreationComponent
     }
   }
 
+  async handleNameChange(newName: string) {
+    if (newName !== null) {
+      //this loads the list of scenario names and looks for dupes.
+      // we pass an id here, to ensure that a recently changed scenario name for this scenario
+      // is also not included in the duplicates comparison list
+      const nameValidated = await this.refreshScenarioNameValidator(
+        this.scenarioId
+      );
+      if (nameValidated) {
+        this.scenarioService
+          .editScenarioName(this.scenarioId, newName, this.planId)
+          .subscribe({
+            next: () => {
+              this.breadcrumbService.updateBreadCrumb({
+                label: 'Scenario: ' + newName,
+                backUrl: getPlanPath(this.planId),
+              });
+              this.scenarioName = newName;
+            },
+            error: (e) => {
+              this.matSnackBar.open(
+                '[Error] Unable to update name due to a backend error.',
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
+      }
+    }
+  }
+
   showRunScenarioConfirmation() {
     this.dialog
-      .open(RunScenarioModalComponent)
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Ready to run the scenario?',
+          body: `You're about to run the scenario as it's currently set up. Once the analysis starts, you won't be able to make changes.
+                 <br><br>
+                 Are you sure you want to proceed?`,
+          primaryCta: 'Run Scenario',
+        },
+      })
       .afterClosed()
       .pipe(filter((confirmed) => !!confirmed))
       .subscribe(() => this.runScenario());
@@ -310,12 +367,9 @@ export class ScenarioCreationComponent
             this.scenarioState.setScenarioId(result.id);
             this.scenarioState.reloadScenario();
           }
-          this.router.navigate([
-            'plan',
-            result.planning_area,
-            'scenario',
-            result.id,
-          ]);
+          this.router.navigate(['plan', result.planning_area], {
+            state: { showInProgressModal: true },
+          });
         },
         error: (e) => {
           this.dialog.open(ScenarioErrorModalComponent);
@@ -380,20 +434,27 @@ export class ScenarioCreationComponent
   }
 
   // Adds the name validator and return true or returns false in case there is an error getting scenarios
-  async refreshScenarioNameValidator(): Promise<boolean> {
+  async refreshScenarioNameValidator(currentId?: number): Promise<boolean> {
     try {
       const scenarios = await firstValueFrom(
         this.scenarioService.getScenariosForPlan(this.planId)
       );
-
-      const names = scenarios.map((s) => s.name);
+      //get all scenario names, but omit any related to this scenario id
+      const names = scenarios
+        .filter((s) => {
+          if (currentId) {
+            return s.id !== currentId;
+          } else {
+            return true;
+          }
+        })
+        .map((s) => s.name);
       const ctrl = this.form.get('scenarioName')!;
 
       ctrl.setValidators([
         Validators.required,
         this.scenarioNameMustBeUnique(names),
       ]);
-
       ctrl.updateValueAndValidity({ emitEvent: false });
       return true;
     } catch {

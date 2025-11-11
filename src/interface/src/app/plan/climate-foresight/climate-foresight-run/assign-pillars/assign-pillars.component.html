@@ -1,0 +1,86 @@
+<div class="container" cdkDropListGroup>
+  <div class="col left-panel">
+    <sg-section
+      headline="Assign dataLayers (optional)"
+      [required]="false"
+      class="datalayers-section"
+      tooltipContent="Tooltip placeholder">
+      <!-- Section description paragraph -->
+      <p class="description">
+        You can categorize data layers under pillars to aggregate the translated
+        layers into a single layer. You may use existing pillars or create your
+        own. This step is optional — layers that are not categorized will not be
+        aggregated.
+      </p>
+      <p class="description">Drag and drop data layers in pillars.</p>
+      <!-- List of unassigned dataLayers -->
+      <div
+        class="datalayers-list"
+        cdkDropList
+        [cdkDropListData]="datalayers"
+        (cdkDropListDropped)="drop($event)">
+        <div class="datalayers-box" *ngFor="let item of datalayers" cdkDrag>
+          <span class="material-symbols-outlined"> drag_indicator </span>
+          {{ item.title }}
+        </div>
+      </div>
+    </sg-section>
+  </div>
+  <div class="col dataLayers">
+    <div class="dataLayers-header">
+      <span class="title">Pillars</span>
+      <button sg-button icon="add" variant="primary" (click)="addPillar()">
+        Custom Pillar
+      </button>
+    </div>
+    <div class="dataLayers-content">
+      <!-- List of groups -->
+      <ng-container *ngFor="let group of pillars">
+        <!-- Expandible group component -->
+        <div
+          class="expandible-group"
+          cdkDropList
+          [cdkDropListData]="group.dataLayers"
+          (cdkDropListDropped)="drop($event)">
+          <span
+            class="expandible-group-title"
+            [ngClass]="{ open: group.isOpen }"
+            (click)="group.isOpen = group.isOpen ? false : true">
+            {{ group.title }}
+            <span class="expandible-group-desc">
+              ({{ group.dataLayers.length }} data layers)</span
+            >
+            <span class="expandible-actions">
+              <button
+                sg-button
+                (click)="deletePillar()"
+                variant="icon-only"
+                [outlined]="true"
+                icon="delete"></button>
+              <button
+                sg-button
+                [outlined]="true"
+                variant="icon-only"
+                icon="edit"></button>
+            </span>
+          </span>
+          <!-- Draggable datalayer component -->
+          <ng-container *ngIf="group.isOpen === true">
+            <ng-container *ngIf="group.dataLayers.length === 0">
+              <div class="empty-datalayers">
+                No data layers assigned to this pillar
+              </div>
+            </ng-container>
+            <div
+              class="datalayers-box"
+              *ngFor="let i of group.dataLayers"
+              cdkDrag>
+              <span class="material-symbols-outlined"> drag_indicator </span>
+              {{ i.title }}
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

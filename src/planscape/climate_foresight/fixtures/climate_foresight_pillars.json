@@ -1,0 +1,112 @@
+[
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 1,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Air Quality",
+      "order": 1,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 2,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Biodiversity Conservation",
+      "order": 2,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 3,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Carbon Sequestration",
+      "order": 3,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 4,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Economic Diversity",
+      "order": 4,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 5,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Fire-Adapted Communities",
+      "order": 5,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 6,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Fire Dynamics",
+      "order": 6,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 7,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Forest and Shrubland Resilience",
+      "order": 7,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 8,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Wetland Integrity",
+      "order": 8,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 9,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Social and Cultural Well-Being",
+      "order": 9,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "climate_foresight.climateforesightpillar",
+    "pk": 10,
+    "fields": {
+      "created_at": "2025-10-30T00:00:00.000Z",
+      "run_id": null,
+      "name": "Water Security",
+      "order": 10,
+      "created_by": 1
+    }
+  }
+]

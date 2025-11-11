@@ -10,6 +10,8 @@ from django.contrib.gis.geos import MultiPolygon
 from django.db import transaction
 from django.utils import timezone
 from gis.core import get_storage_session
+from planscape.celery import app
+from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandSizeChoices
 from stands.services import (
     calculate_stand_vector_stats_with_stand_list,
@@ -34,49 +36,44 @@ from planning.services import (
     export_to_geopackage,
     get_available_stand_ids,
 )
-from planscape.celery import app
-from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 log = logging.getLogger(__name__)
 
 
 @app.task()
 def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> None:
-    if feature_enabled("AUTO_CREATE_STANDS"):
-        try:
-            planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
-            log.info(
-                f"Creating stands for {planning_area_id} for stand size {stand_size}"
-            )
+    try:
+        planning_area: PlanningArea = PlanningArea.objects.get(id=planning_area_id)
+        log.info(f"Creating stands for {planning_area_id} for stand size {stand_size}")
 
-            other_stands = Stand.objects.filter(
-                size=stand_size, geometry__intersects=planning_area.geometry
-            ).aggregate(union=UnionOp("geometry"))["union"]
-            actual_geometry = planning_area.geometry
+        other_stands = Stand.objects.filter(
+            size=stand_size, geometry__intersects=planning_area.geometry
+        ).aggregate(union=UnionOp("geometry"))["union"]
+        actual_geometry = planning_area.geometry
 
-            if other_stands:
-                actual_geometry = planning_area.geometry.difference(other_stands)
+        if other_stands:
+            actual_geometry = planning_area.geometry.difference(other_stands)
 
-            if not actual_geometry:
-                log.info("actual_geometry null, all good.")
+        if not actual_geometry:
+            log.info("actual_geometry null, all good.")
 
-            if actual_geometry.empty:
-                log.info("No need to create stands, all good.")
+        if actual_geometry.empty:
+            log.info("No need to create stands, all good.")
+            return
+
+        match actual_geometry.geom_type:
+            case "Polygon":
+                actual_geometry = MultiPolygon([actual_geometry])
+            case "MultiPolygon":
+                pass
+            case _:
                 return
 
-            match actual_geometry.geom_type:
-                case "Polygon":
-                    actual_geometry = MultiPolygon([actual_geometry])
-                case "MultiPolygon":
-                    pass
-                case _:
-                    return
-
-            for polygon in actual_geometry:
-                create_stands_for_geometry(polygon, stand_size)
-        except PlanningArea.DoesNotExist:
-            log.warning(f"Planning Area with {planning_area_id} does not exist.")
-            raise
+        for polygon in actual_geometry:
+            create_stands_for_geometry(polygon, stand_size)
+    except PlanningArea.DoesNotExist:
+        log.warning(f"Planning Area with {planning_area_id} does not exist.")
+        raise
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -152,12 +149,11 @@ def async_calculate_vector_metrics(
     stand_ids: list[int],
     datalayer_id: int,
 ) -> None:
-    if feature_enabled("AUTO_CREATE_STANDS"):
-        datalayer = DataLayer.objects.get(id=datalayer_id)
-        calculate_stand_vector_stats_with_stand_list(
-            stand_ids=stand_ids,
-            datalayer=datalayer,
-        )
+    datalayer = DataLayer.objects.get(id=datalayer_id)
+    calculate_stand_vector_stats_with_stand_list(
+        stand_ids=stand_ids,
+        datalayer=datalayer,
+    )
 
 
 @app.task(max_retries=3, retry_backoff=True)
@@ -288,6 +284,9 @@ def async_change_scenario_status(
         with transaction.atomic():
             scenario = Scenario.objects.select_for_update().get(pk=scenario_id)
             scenario.result_status = status
+            planning_area = scenario.planning_area
+            planning_area.updated_at = timezone.now()
+            planning_area.save(update_fields=["updated_at"])
             scenario.save(update_fields=["result_status", "updated_at"])
             if hasattr(scenario, "results"):
                 scenario.results.status = status
@@ -348,7 +347,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
 @app.task()
 def trigger_geopackage_generation():
     scenarios = Scenario.objects.filter(
-        result_status=ScenarioResultStatus.SUCCESS,
+        result_status__in=(ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE),
         geopackage_status=GeoPackageStatus.PENDING,
     ).values_list("id", flat=True)
     log.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
@@ -365,9 +364,12 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     """
     log.info(f"Generating geopackage for scenario {scenario_id}")
     scenario = Scenario.objects.get(id=scenario_id)
-    if scenario.result_status != ScenarioResultStatus.SUCCESS:
+    if scenario.result_status not in (
+        ScenarioResultStatus.SUCCESS,
+        ScenarioResultStatus.FAILURE,
+    ):
         log.warning(
-            f"Scenario {scenario_id} is not in a successful state. Current status: {scenario.result_status}"
+            f"Scenario {scenario_id} is not in successful or final failure state. Current status: {scenario.result_status}"
         )
         return
 

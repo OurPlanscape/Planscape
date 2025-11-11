@@ -7,12 +7,10 @@ from django.db.models import (
     F,
     FloatField,
     Func,
-    Max,
     Q,
     QuerySet,
     Value,
 )
-from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.request import Request
@@ -53,11 +51,7 @@ class PlanningAreaOrderingFilter(OrderingFilter):
 
                 if field_name == "latest_updated":
                     direction = "-" if reverse else ""
-                    queryset = queryset.annotate(
-                        latest_updated=Coalesce(
-                            Max("scenarios__updated_at"), "updated_at"
-                        )
-                    ).order_by(f"{direction}latest_updated")
+                    queryset = queryset.order_by(f"{direction}updated_at")
 
         return super().filter_queryset(request, queryset, view)
 

@@ -1,0 +1,54 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { NamePillarModalComponent } from './name-pillar-modal.component';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { DrawService } from 'src/app/maplibre-map/draw.service';
+
+describe('NamePillarModalComponent', () => {
+  let component: NamePillarModalComponent;
+  let fixture: ComponentFixture<NamePillarModalComponent>;
+
+  beforeEach(async () => {
+    const fakeDrawService = {
+      getCurrentAcreageValue: jasmine
+        .createSpy('getCurrentAcreageValue')
+        .and.returnValue(101),
+    };
+    const fakeDialogRef = jasmine.createSpyObj(
+      'MatDialogRef',
+      {
+        close: undefined,
+      },
+      {}
+    );
+    await TestBed.configureTestingModule({
+      imports: [NamePillarModalComponent, MatDialogModule],
+      providers: [
+        {
+          provide: DrawService,
+          useValue: fakeDrawService,
+        },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: { drawService: fakeDrawService },
+        },
+        {
+          provide: MatDialogRef<NamePillarModalComponent>,
+          useValue: fakeDialogRef,
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(NamePillarModalComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
