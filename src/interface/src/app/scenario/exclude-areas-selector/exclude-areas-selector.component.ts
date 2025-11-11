@@ -14,6 +14,7 @@ import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { filter, take } from 'rxjs';
+import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
 
 @UntilDestroy()
 @Component({
@@ -24,6 +25,7 @@ import { filter, take } from 'rxjs';
     MatCheckboxModule,
     SectionComponent,
     ReactiveFormsModule,
+    SelectableListComponent,
   ],
   providers: [
     { provide: StepDirective, useExisting: ExcludeAreasSelectorComponent },
