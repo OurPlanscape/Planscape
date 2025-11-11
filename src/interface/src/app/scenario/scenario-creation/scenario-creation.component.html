@@ -1,4 +1,4 @@
-<div class="scenario-name">
+<div class="scenario-name" *ngIf="!withDynamicScenarioUi">
   <!-- Scenario name input -->
   <form *ngIf="form.get('scenarioName')" [formGroup]="form!">
     <mat-form-field class="scenario-name-input">
@@ -23,6 +23,7 @@
   </div>
 </div>
 <mat-tab-group
+  *ngIf="!withDynamicScenarioUi"
   #tabGroup
   mat-stretch-tabs="false"
   mat-align-tabs="start"
@@ -59,3 +60,44 @@
     <app-base-layers class="white-background"></app-base-layers>
   </mat-tab>
 </mat-tab-group>
+
+<!--New scenario ui flow-->
+<sg-steps-nav
+  [steps]="steps"
+  [selectedIndex]="0"
+  [allowNavigation]="false"></sg-steps-nav>
+<section class="container">
+  <sg-steps
+    *ngIf="withDynamicScenarioUi"
+    linear
+    finishLabel="Save & Run Scenario"
+    [continueLabel]="continueLabel"
+    [save]="saveStep.bind(this)"
+    (selectedIndexChange)="stepChanged($event)"
+    (finished)="onFinish()"
+    [outerForm]="form"
+    [savingStep]="(loading$ | async) ?? false"
+    [disabled]="(loading$ | async) || false">
+    <sg-step>
+      <app-step1-with-overview></app-step1-with-overview>
+    </sg-step>
+    <sg-step>
+      <app-step2 #step2></app-step2>
+    </sg-step>
+    <sg-step>
+      <app-stand-level-constraints></app-stand-level-constraints>
+    </sg-step>
+    <sg-step>
+      <app-treatment-target
+        #step4
+        *appFeatureFlag="'SCENARIO_DRAFTS'"></app-treatment-target>
+      <app-step4-legacy
+        #step4
+        [maxAreaValue]="(treatable_area$ | async) ?? 0"
+        *appFeatureFlag="'SCENARIO_DRAFTS'; hide: true"></app-step4-legacy>
+    </sg-step>
+  </sg-steps>
+
+  <app-scenario-map
+    *ngIf="(isFirstIndex$ | async) === false"></app-scenario-map>
+</section>
