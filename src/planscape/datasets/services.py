@@ -416,13 +416,14 @@ def find_anything(
     term: str,
     type: Optional[str] = None,
 ) -> Dict[str, SearchResult]:
+    layer_type = type or DataLayerType.RASTER
+
     datalayer_filter = {
         "name__icontains": term,
         "dataset__visibility": VisibilityOptions.PUBLIC,
         "status": DataLayerStatus.READY,
+        "type": layer_type,
     }
-    if type:
-        datalayer_filter["type"] = type
     raw_results = [
         [
             organization_to_search_result(x)

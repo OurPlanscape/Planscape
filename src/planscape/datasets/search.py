@@ -5,6 +5,7 @@ from datasets.models import (
     Category,
     DataLayer,
     DataLayerStatus,
+    DataLayerType,
     Dataset,
     SearchResult,
     VisibilityOptions,
@@ -47,6 +48,7 @@ def category_to_search_result(category: Category) -> Collection[SearchResult]:
     datalayers |= category.datalayers.filter(
         status=DataLayerStatus.READY,
         dataset__visibility=VisibilityOptions.PUBLIC,
+        type=DataLayerType.RASTER,
     )
 
     # what is this madness for python?
@@ -56,6 +58,7 @@ def category_to_search_result(category: Category) -> Collection[SearchResult]:
         datalayers |= child_category.datalayers.filter(
             status=DataLayerStatus.READY,
             dataset__visibility=VisibilityOptions.PUBLIC,
+            type=DataLayerType.RASTER,
         )
 
     return [datalayer_to_search_result(x) for x in datalayers]

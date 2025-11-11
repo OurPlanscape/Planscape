@@ -241,13 +241,14 @@ REST_AUTH = {
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
     "LANGUAGE_CODE": "en-us",
-    "SESSION_LOGIN": False,
+    "SESSION_LOGIN": True,
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=3),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
     "ROTATE_REFRESH_TOKENS": True,  # ensure the Refresh token is invalidated at each login
+    "UPDATE_LAST_LOGIN": True,
 }
 
 AUTHENTICATION_BACKENDS = [

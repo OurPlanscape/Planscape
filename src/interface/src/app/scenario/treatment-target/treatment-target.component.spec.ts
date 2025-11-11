@@ -79,4 +79,32 @@ describe('Step4LegacyComponent', () => {
     const result = validator(updateForm(2, 400)); // 800 < 1000
     expect(result).toBeNull();
   });
+
+  it('should return error when target acres does not meet minimum for medium stand size', () => {
+    const validator = (component as any).minAreaValidator();
+    component.minAcreage = 100;
+    const result = validator(updateForm(9, 90)); // 90 < 100
+    expect(result).toEqual({ invalidMinAcres: true });
+  });
+
+  it('should return error when target acres does not meet minimum for large stand size', () => {
+    const validator = (component as any).minAreaValidator();
+    component.minAcreage = 500;
+    const result = validator(updateForm(9, 400)); // 400 < 500
+    expect(result).toEqual({ invalidMinAcres: true });
+  });
+
+  it('should return error if proj area field is empty but target is less than large stand size', () => {
+    const validator = (component as any).minAreaValidator();
+    component.minAcreage = 500;
+    const result = validator(updateForm(undefined, 400)); // 400 < 500
+    expect(result).toEqual({ invalidMinAcres: true });
+  });
+
+  it('should not return error when target acres meets minimum area', () => {
+    const validator = (component as any).minAreaValidator();
+    component.minAcreage = 100;
+    const result = validator(updateForm(9, 101)); // 360 > 100
+    expect(result).toBeNull();
+  });
 });

@@ -5,7 +5,7 @@
   <div class="content" *ngIf="currentScenario$ | async as scenario">
     <dl>
       <dt>Stand Size:</dt>
-      <dd *ngIf="configuration?.stand_size as stand_size">
+      <dd *ngIf="scenario.configuration?.stand_size as stand_size">
         {{
           standSizeOptions[stand_size].label +
             ' (' +

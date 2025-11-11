@@ -154,7 +154,7 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
         }
         const _value = Number(value);
         // Preventing "NaN"
-        if (_value) {
+        if (_value || value === 0) {
           groupedAttainment[key].push(convertTo2DecimalsNumbers(_value));
         }
       }

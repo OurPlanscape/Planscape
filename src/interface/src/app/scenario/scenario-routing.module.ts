@@ -27,6 +27,7 @@ const routes: Routes = [
         path: ':scenarioId',
         component: ScenarioRoutePlaceholderComponent,
         title: 'Scenario Configuration',
+        canDeactivate: [canDeactivateGuard],
         resolve: {
           scenarioId: scenarioLoaderResolver,
           dataLayerInit: resetDatalayerResolver,

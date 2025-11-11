@@ -2,13 +2,13 @@ import { Component, Input } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 
 @Component({
-  selector: 'app-process-overview',
+  selector: 'app-scenario-summary',
   standalone: true,
   imports: [SectionComponent],
-  templateUrl: './process-overview.component.html',
-  styleUrl: './process-overview.component.scss',
+  templateUrl: './scenario-summary.component.html',
+  styleUrl: './scenario-summary.component.scss',
 })
-export class ProcessOverviewComponent {
+export class ScenarioSummaryComponent {
   @Input() title: string = '';
 
   @Input() treatmentGoal: string = '';

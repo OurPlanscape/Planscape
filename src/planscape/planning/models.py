@@ -22,7 +22,7 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Case, Count, Max, Q, QuerySet, When, IntegerField
+from django.db.models import Case, Count, IntegerField, Max, Q, QuerySet, When
 from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
@@ -36,15 +36,21 @@ class PlanningAreaManager(AliveObjectsManager):
     def list_by_user(self, user: User) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
         qs = super().get_queryset()
-        filtered_qs = qs.filter(
-            Q(user=user)
-            | Q(
-                pk__in=UserObjectRole.objects.filter(
-                    collaborator_id=user, content_type_id=content_type_pk
-                ).values_list("object_pk", flat=True)
+
+        ids = (
+            qs.filter(
+                Q(user=user)
+                | Q(
+                    pk__in=UserObjectRole.objects.filter(
+                        collaborator_id=user, content_type_id=content_type_pk
+                    ).values_list("object_pk", flat=True)
+                )
             )
+            .values_list("id", flat=True)
+            .distinct("id")
+            .order_by("id")
         )
-        return filtered_qs
+        return super().get_queryset().filter(id__in=ids)
 
     def list_for_api(self, user: User) -> QuerySet:
         queryset = PlanningArea.objects.list_by_user(user)
@@ -278,15 +284,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[
-        DataLayer, models.Model
-    ] = models.ManyToManyField(
-        to=DataLayer,
-        through="TreatmentGoalUsesDataLayer",
-        through_fields=(
-            "treatment_goal",
-            "datalayer",
-        ),
+    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
+        models.ManyToManyField(
+            to=DataLayer,
+            through="TreatmentGoalUsesDataLayer",
+            through_fields=(
+                "treatment_goal",
+                "datalayer",
+            ),
+        )
     )
 
     geometry = models.MultiPolygonField(
@@ -300,7 +306,9 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         return self.datalayers.filter(used_by_treatment_goals__deleted_at__isnull=True)
 
     def get_coverage(self) -> GEOSGeometry:
-        return self.active_datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
+        return self.active_datalayers.all().geometric_intersection(
+            geometry_field="outline"
+        )  # type: ignore
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(

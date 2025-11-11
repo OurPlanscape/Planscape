@@ -62,7 +62,7 @@ export class Step1Component
 
   readonly standSizeOptions = STAND_OPTIONS;
 
-  planId = this.route.snapshot.data['planId'];
+  planId = this.route.parent?.snapshot.data['planId'];
 
   categorizedStatewideGoals$ = this.treatmentGoalsService
     .getTreatmentGoals(this.planId)
