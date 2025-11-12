@@ -35,7 +35,7 @@ export class Step2Component
 {
   constructor(
     private newScenarioState: NewScenarioState,
-    private forsysService: ForsysService,
+    private forsysService: ForsysService
   ) {
     super();
   }
@@ -99,5 +99,4 @@ export class Step2Component
   getData() {
     return { excluded_areas: this.getSelectedExcludedAreas() };
   }
-
 }
