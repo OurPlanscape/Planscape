@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 import rasterio
 from celery import chord, group
@@ -7,7 +8,10 @@ from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import MultiPolygon
+from django.core.cache import cache
+from django.core.mail import send_mail
 from django.db import transaction
+from django.template.loader import render_to_string
 from django.utils import timezone
 from gis.core import get_storage_session
 from planscape.celery import app
@@ -382,3 +386,79 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     geopackage_path = export_to_geopackage(scenario)
     log.info(f"Geopackage generated at {geopackage_path}")
     return
+
+
+@app.task()
+def async_send_email_scenario_finished(scenario_id: int) -> None:
+    """
+    Sends the 'Scenario is ready' email exactly once per scenario.
+    """
+    sent_key = f"scenario:{scenario_id}:ready_email_sent"
+    if not cache.add(sent_key, True, timeout=None):
+        return
+
+    try:
+        scenario = Scenario.objects.select_related("planning_area", "user").get(
+            pk=scenario_id
+        )
+
+        user = scenario.user
+        email = (user.email or "").strip() if user else ""
+        if not user or not email:
+            log.info(
+                "Scenario %s finished but user has no email; skipping.", scenario_id
+            )
+            cache.add(f"{sent_key}:skip", True, timeout=24 * 60 * 60)
+            return
+
+        link = urljoin(
+            settings.PLANSCAPE_BASE_URL,
+            f"plan/{scenario.planning_area_id}/scenario/{scenario.pk}",
+        )
+
+        context = {
+            "user_full_name": user.get_full_name(),
+            "scenario_name": scenario.name,
+            "scenario_link": link,
+        }
+
+        subject = "Planscape Scenario is Ready"
+        txt = render_to_string("email/scenario/scenario_completed.txt", context)
+        html = render_to_string("email/scenario/scenario_completed.html", context)
+
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            message=txt,
+            html_message=html,
+        )
+        log.info("Email sent informing user that Scenario %s is finished.", scenario.pk)
+    except Scenario.DoesNotExist:
+        log.warning(
+            "Scenario with pk %s does not exist. Cannot send email.", scenario_id
+        )
+    except Exception:
+        log.exception(
+            "Unexpected error while sending scenario-finished email.",
+            extra={"scenario_id": scenario_id},
+        )
+
+
+@app.task()
+def trigger_ready_email_notifications() -> None:
+    """
+    Scans for finished scenarios and triggers the email task.
+    """
+    finished = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS
+    ).values_list("id", flat=True)
+
+    count = 0
+    for scenario_id in finished:
+        if cache.get(f"scenario:{scenario_id}:ready_email_sent"):
+            continue
+        async_send_email_scenario_finished.delay(scenario_id)
+        count += 1
+
+    log.info("Queued %s ready-email notifications.", count)
