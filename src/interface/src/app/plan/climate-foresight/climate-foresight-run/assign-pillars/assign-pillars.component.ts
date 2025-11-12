@@ -14,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
 import { ClimateForesightService } from '@services';
 import { ClimateForesightRun, DataLayer, Pillar } from '@types';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-assign-pillars',
@@ -28,18 +29,22 @@ import { ClimateForesightRun, DataLayer, Pillar } from '@types';
     NamePillarModalComponent,
     DeleteDialogComponent,
     ButtonComponent,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './assign-pillars.component.html',
   styleUrl: './assign-pillars.component.scss',
 })
 export class AssignPillarsComponent implements OnInit {
-  @Input() datalayers: DataLayer[] = [];
   @Input() run: ClimateForesightRun | null = null;
 
   private dialog: MatDialog = inject(MatDialog);
   climateService: ClimateForesightService = inject(ClimateForesightService);
 
+  datalayers: DataLayer[] = [];
   pillars: Pillar[] = [];
+
+  loadingDatalayers = false;
+  loadingPillars = false;
 
   ngOnInit(): void {
     this.getDataLayers();
@@ -64,17 +69,42 @@ export class AssignPillarsComponent implements OnInit {
   }
 
   addPillar() {
-    this.dialog
-      .open(NamePillarModalComponent)
-      .afterClosed()
-      .subscribe((modalResponse: any) => {
-        if (modalResponse) {
-          this.getPillars();
-        }
-      });
+    if (this.run?.id) {
+      this.dialog
+        .open(NamePillarModalComponent, {
+          data: {
+            runId: this.run.id,
+          },
+        })
+        .afterClosed()
+        .subscribe((modalResponse: any) => {
+          if (modalResponse) {
+            this.getPillars();
+          }
+        });
+    }
   }
 
-  deletePillar() {
+  editPillar(pillar: Pillar) {
+    if (this.run?.id) {
+      this.dialog
+        .open(NamePillarModalComponent, {
+          data: {
+            pillar: pillar,
+            runId: this.run.id,
+          },
+        })
+        .afterClosed()
+        .subscribe((modalResponse: any) => {
+          debugger;
+          if (modalResponse) {
+            this.getPillars();
+          }
+        });
+    }
+  }
+
+  deletePillar(id: number) {
     this.dialog
       .open(DeleteDialogComponent, {
         data: {
@@ -83,30 +113,42 @@ export class AssignPillarsComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe((modalResponse: any) => {});
+      .subscribe((modalResponse: any) => {
+        if (this.run?.id && modalResponse === true) {
+          this.climateService.deletePillar(id, this.run.id).subscribe((res) => {
+            this.getPillars();
+          });
+        }
+      });
   }
 
   getDataLayers() {
+    this.loadingDatalayers = true;
     this.climateService
       .getDataLayers()
       .pipe()
-      .subscribe((datalayers) => {
-        console.log('Datalayers', datalayers);
-        // Filtering just the enabled datalayers
-        const enabledLayers =
-          datalayers.filter(
-            (dl: any) =>
-              dl.metadata?.modules?.['climate_foresight']?.enabled === true
-          ) || [];
-        // geting the selected datalayers id
-        const availableLayerIDs = this.run?.input_datalayers?.map(
-          (dl) => dl.datalayer
-        );
-        // Filtering just the available datalayers
-        const availableLayers = enabledLayers.filter((dl) =>
-          availableLayerIDs?.includes(dl.id)
-        );
-        this.datalayers = availableLayers;
+      .subscribe({
+        next: (datalayers) => {
+          // Filtering just the enabled datalayers
+          const enabledLayers =
+            datalayers.filter(
+              (dl: any) =>
+                dl.metadata?.modules?.['climate_foresight']?.enabled === true
+            ) || [];
+          // geting the selected datalayers id
+          const availableLayerIDs = this.run?.input_datalayers?.map(
+            (dl) => dl.datalayer
+          );
+          // Filtering just the available datalayers
+          const availableLayers = enabledLayers.filter((dl) =>
+            availableLayerIDs?.includes(dl.id)
+          );
+          this.datalayers = availableLayers;
+          this.loadingDatalayers = false;
+        },
+        error: () => {
+          this.loadingDatalayers = false;
+        },
       });
   }
 
@@ -114,9 +156,21 @@ export class AssignPillarsComponent implements OnInit {
     if (!this.run?.id) {
       return;
     }
-    this.climateService.getPillars(this.run?.id).subscribe((res) => {
-      console.log('Pillars', res);
-      this.pillars = this.pillars;
+    this.loadingPillars = true;
+    this.climateService.getPillars(this.run?.id).subscribe({
+      next: (res) => {
+        this.pillars = res.map((p) => {
+          p.isOpen = false;
+          // TODO: Getting the pre-selected datalayers for this pillar
+          const preSelectedLayers: any[] = [];
+          p.dataLayers = preSelectedLayers;
+          return p;
+        });
+        this.loadingPillars = false;
+      },
+      error: () => {
+        this.loadingPillars = false;
+      },
     });
   }
 }

@@ -96,11 +96,11 @@ export class ClimateForesightService {
   /**
    * Create a custom pillar
    */
-  createPillar(name: string) {
+  createPillar(name: string, runId: number) {
     return this.http.post<Pillar>(
       `${this.pillarsPath}-pillars/`,
       {
-        run: 1, // 0 default, 1: custom pillar
+        run: runId,
         name,
         order: 0,
       },
@@ -108,6 +108,27 @@ export class ClimateForesightService {
         withCredentials: true,
       }
     );
+  }
+
+  /**
+   * Edit a custom pillar
+   */
+  editPillar(name: string, pillarId: number, runId: number) {
+    return this.http.patch<Pillar>(
+      `${this.pillarsPath}-pillars/${pillarId}?run=${runId}`,
+      {
+        name,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  deletePillar(id: number, run_id: number) {
+    return this.http.delete(`${this.pillarsPath}-pillars/${id}?run=${run_id}`, {
+      withCredentials: true,
+    });
   }
 
   /**

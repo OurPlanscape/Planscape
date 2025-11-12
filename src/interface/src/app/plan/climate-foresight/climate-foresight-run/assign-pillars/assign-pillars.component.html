@@ -14,7 +14,11 @@
       </p>
       <p class="description">Drag and drop data layers in pillars.</p>
       <!-- List of unassigned dataLayers -->
+      <div class="loading-box" *ngIf="loadingDatalayers">
+        <mat-spinner diameter="24"> </mat-spinner>
+      </div>
       <div
+        *ngIf="!loadingDatalayers"
         class="datalayers-list"
         cdkDropList
         [cdkDropListData]="datalayers"
@@ -33,7 +37,10 @@
         Custom Pillar
       </button>
     </div>
-    <div class="dataLayers-content">
+    <div class="loading-box" *ngIf="loadingPillars">
+      <mat-spinner diameter="24"> </mat-spinner>
+    </div>
+    <div class="dataLayers-content" *ngIf="!loadingPillars">
       <!-- List of groups -->
       <ng-container *ngFor="let group of pillars">
         <!-- Expandible group component -->
@@ -53,12 +60,13 @@
             <span class="expandible-actions">
               <button
                 sg-button
-                (click)="deletePillar()"
+                (click)="deletePillar(group.id)"
                 variant="icon-only"
                 [outlined]="true"
                 icon="delete"></button>
               <button
                 sg-button
+                (click)="editPillar(group)"
                 [outlined]="true"
                 variant="icon-only"
                 icon="edit"></button>
