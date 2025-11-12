@@ -7,6 +7,7 @@ import {
   map,
   Observable,
   of,
+  take,
   shareReplay,
   takeWhile,
 } from 'rxjs';
@@ -71,10 +72,14 @@ export class ScenarioRoutePlaceholderComponent
       const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
         data: EXIT_SCENARIO_MODAL,
       });
-      return dialogRef.afterClosed();
+      return dialogRef.afterClosed().pipe(
+        take(1),
+        // false we stay, true we leave, black is white, night is day
+        map((result) => !result)
+      );
+    } else {
+      return true;
     }
-
-    return true;
   }
 
   // We are going to display scenario creation just if we have SCENARIO_DRAFTS FF enabled and the creator is the same as the logged in user
