@@ -55,7 +55,9 @@ class ClimateForesightPillarFilterSet(filters.FilterSet):
         - Orders custom pillars first, then global pillars, both by order field
         """
         if value:
-            return queryset.filter(Q(run__isnull=True) | Q(run=value)).order_by(
+            return ClimateForesightPillar.objects.filter(
+                Q(run__isnull=True) | Q(run=value)
+            ).order_by(
                 Case(
                     When(run__isnull=True, then=1),
                     When(run__isnull=False, then=0),

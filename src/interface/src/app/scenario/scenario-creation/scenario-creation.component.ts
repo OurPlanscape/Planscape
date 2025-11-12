@@ -32,8 +32,8 @@ import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
   Scenario,
   ScenarioCreation,
-  ScenarioDraftConfig,
-  ScenarioDraftPayload,
+  ScenarioV3Config,
+  ScenarioV3Payload,
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
@@ -98,7 +98,7 @@ export class ScenarioCreationComponent
 {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
-  config: Partial<ScenarioDraftConfig> = {};
+  config: Partial<ScenarioV3Config> = {};
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
@@ -198,9 +198,7 @@ export class ScenarioCreationComponent
       });
   }
 
-  convertSavedConfigToNewConfig(
-    scenario: Scenario
-  ): Partial<ScenarioDraftConfig> {
+  convertSavedConfigToNewConfig(scenario: Scenario): Partial<ScenarioV3Config> {
     const newState = Object.fromEntries(
       Object.entries(scenario.configuration)
         .filter(([_, value]) => value != null)
@@ -262,7 +260,7 @@ export class ScenarioCreationComponent
     );
   }
 
-  savePatch(data: Partial<ScenarioDraftPayload>): Observable<boolean> {
+  savePatch(data: Partial<ScenarioV3Payload>): Observable<boolean> {
     this.newScenarioState.setLoading(true);
     const thresholdsIdMap = new Map<string, number>();
     thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());

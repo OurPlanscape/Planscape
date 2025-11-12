@@ -4,7 +4,7 @@ import {
   Constraint,
   NamedConstraint,
   ScenarioCreation,
-  ScenarioDraftConfig,
+  ScenarioV3Config,
 } from '@types';
 import {
   BehaviorSubject,
@@ -33,9 +33,7 @@ import { getNamedConstraints } from './scenario-helper';
 export class NewScenarioState {
   planId = this.route.snapshot.data['planId'];
 
-  private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioDraftConfig>>(
-    {}
-  );
+  private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioV3Config>>({});
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
 
   // user selected excluded areas
