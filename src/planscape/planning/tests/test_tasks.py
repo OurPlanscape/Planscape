@@ -5,6 +5,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandMetric, StandSizeChoices
@@ -16,6 +17,7 @@ from planning.tasks import (
     async_forsys_run,
     async_pre_forsys_process,
     trigger_geopackage_generation,
+    trigger_ready_email_notifications,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -312,3 +314,39 @@ class TriggerGeopackageGenerationTestCase(TestCase):
 
         trigger_geopackage_generation()
         mock_async_generate.assert_not_called()
+
+
+class TriggerReadyEmailNotificationsTestCase(TestCase):
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_triggers_for_finished_scenarios_once(self, mock_delay):
+        scen = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            user__email="owner@example.com",
+        )
+
+        trigger_ready_email_notifications()
+        mock_delay.assert_called_once_with(scen.pk)
+        cache.set(f"scenario:{scen.pk}:ready_email_sent", True, None)
+
+        mock_delay.reset_mock()
+        trigger_ready_email_notifications()
+        mock_delay.assert_not_called()
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_does_not_trigger_for_failure(self, mock_delay):
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.FAILURE,
+            user__email="owner@example.com",
+        )
+
+        trigger_ready_email_notifications()
+        mock_delay.assert_not_called()
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_does_not_trigger_for_non_finished_states(self, mock_delay):
+        ScenarioFactory.create(result_status=ScenarioResultStatus.PENDING)
+        ScenarioFactory.create(result_status=ScenarioResultStatus.RUNNING)
+        ScenarioFactory.create(result_status=ScenarioResultStatus.PANIC)
+
+        trigger_ready_email_notifications()
+        mock_delay.assert_not_called()
