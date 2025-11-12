@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { AfterContentInit, Component, ViewChild } from '@angular/core';
 import { Step1Component } from '../step1/step1.component';
 import {
   OverviewStep,
   ProcessOverviewComponent,
 } from '../../../styleguide/process-overview/process-overview.component';
+import { StepDirective } from '@styleguide';
+import { ScenarioCreation } from '@types';
+import { FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-step1-with-overview',
@@ -11,8 +14,15 @@ import {
   imports: [Step1Component, ProcessOverviewComponent],
   templateUrl: './step1-with-overview.component.html',
   styleUrl: './step1-with-overview.component.scss',
+  // required to "import" current step1
+  providers: [
+    { provide: StepDirective, useExisting: Step1WithOverviewComponent },
+  ],
 })
-export class Step1WithOverviewComponent {
+export class Step1WithOverviewComponent
+  extends StepDirective<ScenarioCreation>
+  implements AfterContentInit
+{
   steps: OverviewStep[] = [
     {
       label: 'Treatment Goal',
@@ -43,4 +53,26 @@ export class Step1WithOverviewComponent {
       icon: '/assets/svg/icons/overview/generate-output.svg',
     },
   ];
+
+  // Find Step1
+  // TODO- we might want to not do this at all when we implement this step
+  // with different order, and remove step1 completely.
+  // For now, to avoid duplication, just using step1.
+  @ViewChild(Step1Component, { static: true }) inner!: Step1Component;
+
+  ngAfterContentInit() {
+    if (!this.inner) {
+      throw new Error(
+        'Step1WithOverviewLogic: inner AppStep1Component not found'
+      );
+    }
+  }
+
+  get form(): FormGroup {
+    return this.inner!.form;
+  }
+
+  getData() {
+    return this.inner!.getData();
+  }
 }

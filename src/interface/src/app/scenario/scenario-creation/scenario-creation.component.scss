@@ -63,8 +63,19 @@
 
 // new scenario ui
 
+.full-screen-steps {
+  width: 100%;
+}
+
+.container ::ng-deep .step {
+  padding: 0;
+  overflow: hidden;
+}
+
 .container {
   display: flex;
+  height: 100%;
+  overflow: hidden;
 }
 
 sg-steps-nav {
