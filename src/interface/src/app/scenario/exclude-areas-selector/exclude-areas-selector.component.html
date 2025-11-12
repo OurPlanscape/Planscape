@@ -9,11 +9,13 @@ For more information regarding Protected Areas, click <a href='https://www.usgs.
   <section class="area-selection">
     <form [formGroup]="form">
       <sg-selectable-list
-     [items]="(excludedAreas$ | async) ?? []">
+     [items]="(excludedAreas$ | async) ?? []"
+     (selectedItemsChanged)="handleSelectedItemsChange($event)"
+     (viewedItemsChanged)="handleViewedItemsChange($event)">
 
 
       </sg-selectable-list>
-      <div formArrayName="excluded_areas" class="checkbox-column">
+      <!-- <div formArrayName="excluded_areas" class="checkbox-column">
         <div *ngFor="let area of excludedAreas$ | async; let i = index">
           <mat-checkbox
             [color]="'primary'"
@@ -22,7 +24,7 @@ For more information regarding Protected Areas, click <a href='https://www.usgs.
             >{{ area.name }}</mat-checkbox
           >
         </div>
-      </div>
+      </div> -->
     </form>
   </section>
 </sg-section>
