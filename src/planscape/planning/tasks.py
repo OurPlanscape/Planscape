@@ -1,7 +1,7 @@
 import logging
 
 import rasterio
-from celery import chain, chord, group
+from celery import chord, group
 from core.flags import feature_enabled
 from datasets.models import DataLayer
 from django.conf import settings
