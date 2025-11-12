@@ -1,5 +1,5 @@
 <sg-section
-  headline="Exclude Areas (OPTIONAL)"
+  headline="Select Areas To Exclude (OPTIONAL)"
   tooltipContent="Choose to exclude areas from your planning scenarios based on Protected Area Status. If you choose to exclude these areas, project areas will not be assigned on these lands.
   
 For more information regarding Protected Areas, click <a href='https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-statistics-dashboard' target='_blank'>here</a>.">
@@ -8,6 +8,11 @@ For more information regarding Protected Areas, click <a href='https://www.usgs.
   </div>
   <section class="area-selection">
     <form [formGroup]="form">
+      <sg-selectable-list
+     [items]="(excludedAreas$ | async) ?? []">
+
+
+      </sg-selectable-list>
       <div formArrayName="excluded_areas" class="checkbox-column">
         <div *ngFor="let area of excludedAreas$ | async; let i = index">
           <mat-checkbox
