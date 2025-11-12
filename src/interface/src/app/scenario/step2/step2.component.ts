@@ -14,6 +14,7 @@ import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { filter, take } from 'rxjs';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -35,7 +36,8 @@ export class Step2Component
 {
   constructor(
     private newScenarioState: NewScenarioState,
-    private forsysService: ForsysService
+    private forsysService: ForsysService,
+    private featureService: FeatureService
   ) {
     super();
   }
@@ -98,5 +100,22 @@ export class Step2Component
 
   getData() {
     return { excluded_areas: this.getSelectedExcludedAreas() };
+  }
+
+  get tooltipContent() {
+    if (this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI')) {
+      return `<b>What does it mean to exclude areas?</b>
+Excluding areas lets you remove specific lands from your planning scenarios based on their Protected Area Status.
+
+<b>What happens when I exclude areas?</b>
+If you exclude areas, ForSys will not assign project areas or treatments on those lands. The acreage associated with the excluded lands will be removed from your Potential Treatable Area, and those stands will not be considered in the final scenario results.
+
+<b>Where can I learn more about Protected Areas?</b>
+For more information on Protected Area Status, visit the <a href='https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-statistics-dashboard' target='_blank'>USGS Protected Areas Database.</a>`;
+    } else {
+      return `Choose to exclude areas from your planning scenarios based on Protected Area Status. If you choose to exclude these areas, project areas will not be assigned on these lands.
+  
+For more information regarding Protected Areas, click <a href='https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-statistics-dashboard' target='_blank'>here</a>.`;
+    }
   }
 }
