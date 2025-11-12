@@ -36,8 +36,7 @@ import { SelectableListComponent } from '../../../styleguide/selectable-list/sel
 })
 export class ExcludeAreasSelectorComponent
   extends StepDirective<ScenarioCreation>
-  implements OnInit
-{
+  implements OnInit {
   constructor(
     private newScenarioState: NewScenarioState,
     private forsysService: ForsysService
@@ -50,13 +49,15 @@ export class ExcludeAreasSelectorComponent
   });
   excludedAreas$ = this.forsysService.excludedAreas$;
   excludedAreas: IdNamePair[] = [];
+  selectedKeys: number[] = [];
+viewedKeys: number[] = [];
 
   ngOnInit() {
     this.excludedAreas$.subscribe((areas) => {
       this.excludedAreas = areas;
       this.createFormControls();
       this.form.get('excluded_areas')?.valueChanges.subscribe(() => {
-        this.newScenarioState.setExcludedAreas(this.getSelectedExcludedAreas());
+        this.newScenarioState.setExcludedAreas(this.getViewedExcludedAreas());
       });
       this.prefillExcludedAreas();
     });
@@ -89,16 +90,26 @@ export class ExcludeAreasSelectorComponent
       excludedAreasFormArray.push(new FormControl(false));
     });
   }
+  handleSelectedItemsChange(selectedItems: IdNamePair[]) {
+    console.log('select items:', selectedItems);
+    this.selectedKeys = [];
+    selectedItems.forEach(s => { this.selectedKeys.push(s.id); })
+  }
+  
+  handleViewedItemsChange(viewedItems: IdNamePair[]) {
+    console.log('something changed here with viewed items:', viewedItems);
+    viewedItems.forEach(s => { this.viewedKeys.push(s.id); })
+    this.newScenarioState.setExcludedAreas(this.getViewedExcludedAreas());
+  }
+
+  getViewedExcludedAreas(): number[] {
+    console.log('selected Excluded areas:', this.selectedKeys);
+    return this.viewedKeys;
+  }
 
   getSelectedExcludedAreas(): number[] {
-    const excludedAreasFormArray = this.form.get('excluded_areas') as FormArray;
-    const selectedKeys: number[] = [];
-    excludedAreasFormArray.controls.forEach((control, index) => {
-      if (control.value) {
-        selectedKeys.push(this.excludedAreas[index].id);
-      }
-    });
-    return selectedKeys;
+    console.log('selected Excluded areas:', this.selectedKeys);
+    return this.selectedKeys;
   }
 
   getData() {
