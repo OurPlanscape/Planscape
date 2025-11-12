@@ -1,3 +1,44 @@
+@import "variables";
+@import "media";
+@import "colors";
+
 :host {
   display: flex;
+  height: 100%;
 }
+
+
+.sidebar {
+  max-width: $scenario-sidebar-width;
+  margin: 0 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  //@include on-small() {
+  //  max-width: initial;
+  //}
+}
+
+
+sg-process-overview {
+  padding: 24px 40px 32px;
+  flex: 1;
+}
+
+
+.main {
+  background-color: $color-soft-purple;
+  flex: 1;
+  min-width: $scenario-sidebar-width;
+  overflow-y: auto;
+}
+
+
+app-step1 {
+  display: block;
+  margin: 0 auto;
+  max-width: 680px;
+  padding: 16px;
+}
+
+

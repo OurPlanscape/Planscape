@@ -68,6 +68,7 @@
   [allowNavigation]="false"></sg-steps-nav>
 <section class="container">
   <sg-steps
+    class="full-screen-steps"
     *ngIf="withDynamicScenarioUi"
     linear
     finishLabel="Save & Run Scenario"
@@ -78,11 +79,14 @@
     [outerForm]="form"
     [savingStep]="(loading$ | async) ?? false"
     [disabled]="(loading$ | async) || false">
-    <sg-step>
+    <sg-step class="full-screen-step">
+      <!--      Used to be..-->
+      <!--      <app-step1></app-step1>-->
+      <!--      and now is-->
       <app-step1-with-overview></app-step1-with-overview>
     </sg-step>
     <sg-step>
-      <app-step2 #step2></app-step2>
+      <app-step2></app-step2>
     </sg-step>
     <sg-step>
       <app-stand-level-constraints></app-stand-level-constraints>
