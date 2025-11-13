@@ -7,6 +7,7 @@ import {
   map,
   Observable,
   of,
+  take,
   shareReplay,
   takeWhile,
 } from 'rxjs';
@@ -24,7 +25,7 @@ import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { NewScenarioState } from '../new-scenario.state';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
-import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
+import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
 
 @UntilDestroy()
@@ -61,6 +62,7 @@ export class ScenarioRoutePlaceholderComponent
   ) {}
 
   isDraft = false;
+  scenarioName = '';
 
   canDeactivate(): Observable<boolean> | boolean {
     if (
@@ -69,12 +71,16 @@ export class ScenarioRoutePlaceholderComponent
       !this.newScenarioState.isDraftFinishedSnapshot()
     ) {
       const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-        data: EXIT_SCENARIO_MODAL,
+        data: exitModalData(this.scenarioName),
       });
-      return dialogRef.afterClosed();
+      return dialogRef.afterClosed().pipe(
+        take(1),
+        // false we stay, true we leave, black is white, night is day
+        map((result) => !result)
+      );
+    } else {
+      return true;
     }
-
-    return true;
   }
 
   // We are going to display scenario creation just if we have SCENARIO_DRAFTS FF enabled and the creator is the same as the logged in user
@@ -88,7 +94,7 @@ export class ScenarioRoutePlaceholderComponent
       const scenarioDraftsEnabled =
         this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
       this.isDraft = scenario?.scenario_result?.status === 'DRAFT';
-
+      this.scenarioName = scenario.name;
       // If SCENARIO_DRAFTS is disabled and the scenario is a DRAFT we redirect to planning areas
       if (!scenarioDraftsEnabled && this.isDraft) {
         this.router.navigate(['/plan', scenario?.planning_area]);
