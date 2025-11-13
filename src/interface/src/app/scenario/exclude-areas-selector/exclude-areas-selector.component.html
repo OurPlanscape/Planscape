@@ -9,9 +9,11 @@ For more information regarding Protected Areas, click <a href='https://www.usgs.
   <section class="area-selection">
     <form [formGroup]="form">
       <sg-selectable-list
-     [items]="(excludedAreas$ | async) ?? []"
+     [items]="(excludableAreas$ | async) ?? []"
      (selectedItemsChanged)="handleSelectedItemsChange($event)"
-     (viewedItemsChanged)="handleViewedItemsChange($event)">
+     (viewedItemsChanged)="handleViewedItemsChange($event)"
+     [selectedItems]="selectedAreas"
+     >
 
 
       </sg-selectable-list>
