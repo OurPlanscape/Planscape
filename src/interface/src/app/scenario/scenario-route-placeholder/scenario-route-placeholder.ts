@@ -117,4 +117,8 @@ export class ScenarioRoutePlaceholderComponent
     }),
     shareReplay(1)
   );
+
+  get configUiFlagIsOn() {
+    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
+  }
 }

@@ -50,12 +50,15 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
+
+import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
+
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
-import { OverviewStep } from '../../../styleguide/process-overview/process-overview.component';
 import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
+import { FeatureService } from '../../features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -113,36 +116,7 @@ export class ScenarioCreationComponent implements OnInit {
 
   isFirstIndex$ = this.newScenarioState.stepIndex$.pipe(map((i) => i === 0));
 
-  steps: OverviewStep[] = [
-    {
-      label: 'Treatment Goal',
-      description:
-        'Select important data layers that will be used throughout the workflow.',
-      icon: '/assets/svg/icons/overview/treatment-goal.svg',
-    },
-    {
-      label: 'Exclude Areas',
-      description: 'Include and exclude specific areas based on your plan.',
-      icon: '/assets/svg/icons/overview/exclude-areas.svg',
-    },
-    {
-      label: 'Stand-level Constraints',
-      description:
-        'Define the minimum or maximum values for key factors to guide decision-making.',
-      icon: '/assets/svg/icons/overview/stand-level.svg',
-    },
-    {
-      label: 'Treatment Target',
-      description:
-        'Set limits on treatment areas to align with real-world restrictions.',
-      icon: '/assets/svg/icons/overview/treatment-target.svg',
-    },
-    {
-      label: 'Generate Output',
-      description: 'View scenario results from Forsys.',
-      icon: '/assets/svg/icons/overview/generate-output.svg',
-    },
-  ];
+  steps = SCENARIO_OVERVIEW_STEPS;
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -169,7 +143,8 @@ export class ScenarioCreationComponent implements OnInit {
     private router: Router,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private featureService: FeatureService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -419,7 +394,6 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   // remove when flag is published
-
   get withDynamicScenarioUi() {
     return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
   }
