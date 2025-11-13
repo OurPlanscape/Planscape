@@ -4,7 +4,6 @@ import { resetDatalayerResolver } from '../resolvers/reset-datalayer.resolver';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
 import { ScenarioComponent } from './scenario.component';
-import { ScenarioCreationComponent } from './scenario-creation/scenario-creation.component';
 import { canDeactivateGuard } from '@services/can-deactivate.guard';
 
 const routes: Routes = [
@@ -14,13 +13,11 @@ const routes: Routes = [
     title: 'Scenario Configuration',
     children: [
       {
+        // for this path, we use scenarioLoaderResolver to force redirect to /plan/:planId
         path: '',
-        component: ScenarioCreationComponent,
-        title: 'Scenario Configuration',
-        canDeactivate: [canDeactivateGuard],
+        component: ScenarioComponent,
         resolve: {
           scenarioId: scenarioLoaderResolver,
-          dataLayerInit: resetDatalayerResolver,
         },
       },
       {
