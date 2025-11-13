@@ -7,6 +7,7 @@ import { ScenarioComponent } from './scenario.component';
 import { canDeactivateGuard } from '@services/can-deactivate.guard';
 
 const routes: Routes = [
+  // TODO remove this route completely?
   {
     path: '',
     component: ScenarioComponent,

@@ -36,14 +36,17 @@
 
     <ng-template #checkOrigin>
       <!-- Displaying uploaded scenario if the origin is USER -->
-      <app-uploaded-scenario-view
-        [scenario]="scenarioResource.data"
-        *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
-      </app-uploaded-scenario-view>
+      <app-scenario>
+        <app-uploaded-scenario-view
+          [scenario]="scenarioResource.data"
+          *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
+        </app-uploaded-scenario-view>
+      </app-scenario>
     </ng-template>
 
     <ng-template #createScenario>
       <!-- Displaying scenario view if canViewScenarioCreation$ --if not, means canViewScenarioCreation didn't emit yet and we should display loading-->
+
       <app-view-scenario
         *ngIf="
           (canViewScenarioCreation$ | async) === false;

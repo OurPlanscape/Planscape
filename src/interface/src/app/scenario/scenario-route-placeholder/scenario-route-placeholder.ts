@@ -27,6 +27,7 @@ import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialo
 import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
 import { CreateScenarioComponent } from '../create-scenario/create-scenario.component';
+import { ScenarioComponent } from '../scenario.component';
 
 @UntilDestroy()
 @Component({
@@ -40,6 +41,7 @@ import { CreateScenarioComponent } from '../create-scenario/create-scenario.comp
     ScenarioCreationComponent,
     ViewScenarioComponent,
     CreateScenarioComponent,
+    ScenarioComponent,
   ],
   selector: 'app-scenario-route-placeholder',
   templateUrl: './scenario-route-placeholder.component.html',
