@@ -17,6 +17,7 @@ from planning.tasks import (
     async_change_scenario_status,
     async_forsys_run,
     async_pre_forsys_process,
+    async_send_email_scenario_finished,
     trigger_geopackage_generation,
 )
 from planning.tests.factories import (
@@ -376,3 +377,24 @@ class ScenarioEmailOnStatusChangeTestCase(TestCase):
         async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
         scenario.refresh_from_db()
         mock_delay.assert_not_called()
+
+
+@override_settings(ENV="staging")
+@mock.patch("planning.tasks.send_mail")
+class ScenarioEmailLinkTestCase(TestCase):
+    def test_ready_email_contains_frontend_link(self, mock_send_mail):
+        scenario = ScenarioFactory.create(user__email="owner@example.com")
+
+        async_send_email_scenario_finished(scenario.pk)
+
+        _, kwargs = mock_send_mail.call_args
+        html_body = kwargs["html_message"]
+        txt_body = kwargs["message"]
+
+        expected_base = "https://staging.planscape.org"
+        expected_path = f"/plan/{scenario.planning_area_id}/scenario/{scenario.pk}"
+
+        self.assertIn(expected_base, html_body)
+        self.assertIn(expected_path, html_body)
+        self.assertIn(expected_base, txt_body)
+        self.assertIn(expected_path, txt_body)
