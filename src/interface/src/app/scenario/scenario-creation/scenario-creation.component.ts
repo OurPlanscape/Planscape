@@ -37,7 +37,6 @@ import {
 } from '@types';
 import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
-import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
 import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
@@ -56,7 +55,6 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
-import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
@@ -93,9 +91,7 @@ enum ScenarioTabs {
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
-export class ScenarioCreationComponent
-  implements OnInit, CanComponentDeactivate
-{
+export class ScenarioCreationComponent implements OnInit {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   config: Partial<ScenarioV3Config> = {};
@@ -208,17 +204,6 @@ export class ScenarioCreationComponent
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     return newState as Partial<ScenarioCreation>;
-  }
-
-  // TODO: we can remove this entire method once we remove SCENARIO_DRAFTS FF
-  canDeactivate(): Observable<boolean> | boolean {
-    if (this.newScenarioState.isDraftFinishedSnapshot()) {
-      return true;
-    }
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: EXIT_SCENARIO_MODAL,
-    });
-    return dialogRef.afterClosed();
   }
 
   saveStep(data: Partial<ScenarioCreation>): Observable<boolean> {
