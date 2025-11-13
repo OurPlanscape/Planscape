@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
-  FormArray,
-  FormControl,
   FormGroup,
+  // FormArray,
+  // FormControl,
+  // FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -44,21 +45,18 @@ export class ExcludeAreasSelectorComponent
     super();
   }
 
-  form = new FormGroup({
-    excluded_areas: new FormArray<FormControl<boolean>>([]),
-  });
-  excludedAreas$ = this.forsysService.excludedAreas$;
-  excludedAreas: IdNamePair[] = [];
-  selectedKeys: number[] = [];
-viewedKeys: number[] = [];
+  form = new FormGroup({}); // keeping the inheritance happy
+  excludableAreas$ = this.forsysService.excludedAreas$;
+  excludableAreas: IdNamePair[] = [];
+  
+  selectedAreas: IdNamePair[] = [];
+  viewingAreas: IdNamePair[] = [];
+
+
 
   ngOnInit() {
-    this.excludedAreas$.subscribe((areas) => {
-      this.excludedAreas = areas;
-      this.createFormControls();
-      this.form.get('excluded_areas')?.valueChanges.subscribe(() => {
-        this.newScenarioState.setExcludedAreas(this.getViewedExcludedAreas());
-      });
+    this.excludableAreas$.subscribe((areas) => {
+      this.excludableAreas = areas;
       this.prefillExcludedAreas();
     });
   }
@@ -72,47 +70,39 @@ viewedKeys: number[] = [];
         take(1)
       )
       .subscribe((config) => {
-        let excluded_areas_value: boolean[] = [];
-        this.excludedAreas.forEach((area) => {
-          if (config.excluded_areas?.includes(area.id)) {
-            excluded_areas_value.push(true);
-          } else {
-            excluded_areas_value.push(false);
-          }
+        // let excluded_areas_value: boolean[] = [];
+        this.selectedAreas = [];
+        this.excludableAreas.forEach((area) => {
+            if (config.excluded_areas?.includes(area.id)) {
+            
+              this.selectedAreas.push(area);
+            }
+          });
         });
-        this.form.get('excluded_areas')?.setValue(excluded_areas_value);
-      });
   }
 
-  private createFormControls() {
-    const excludedAreasFormArray = this.form.get('excluded_areas') as FormArray;
-    this.excludedAreas.forEach((area) => {
-      excludedAreasFormArray.push(new FormControl(false));
-    });
-  }
   handleSelectedItemsChange(selectedItems: IdNamePair[]) {
-    console.log('select items:', selectedItems);
-    this.selectedKeys = [];
-    selectedItems.forEach(s => { this.selectedKeys.push(s.id); })
+    this.selectedAreas = [];
+    selectedItems.forEach(s => { this.selectedAreas.push(s); })
+
   }
-  
+
   handleViewedItemsChange(viewedItems: IdNamePair[]) {
-    console.log('something changed here with viewed items:', viewedItems);
-    viewedItems.forEach(s => { this.viewedKeys.push(s.id); })
-    this.newScenarioState.setExcludedAreas(this.getViewedExcludedAreas());
+    this.viewingAreas = [];
+    viewedItems.forEach(s => { this.viewingAreas.push(s); })
+    this.newScenarioState.setExcludedAreas(this.getAreasBeingViewed());
   }
 
-  getViewedExcludedAreas(): number[] {
-    console.log('selected Excluded areas:', this.selectedKeys);
-    return this.viewedKeys;
+  getAreasBeingViewed(): number[] {
+    return this.viewingAreas.map(a => a.id);
   }
 
-  getSelectedExcludedAreas(): number[] {
-    console.log('selected Excluded areas:', this.selectedKeys);
-    return this.selectedKeys;
+  getSelectedExcludedAreaIds(): number[] {
+    console.log('selected Excluded areas:', this.selectedAreas);
+    return this.selectedAreas.map(s => s.id);
   }
 
   getData() {
-    return { excluded_areas: this.getSelectedExcludedAreas() };
+    return { excluded_areas: this.getSelectedExcludedAreaIds() };
   }
 }
