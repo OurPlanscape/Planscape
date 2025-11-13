@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urljoin
 
 import rasterio
 from celery import chord, group
@@ -24,6 +23,7 @@ from stands.services import (
     get_missing_stand_ids_for_datalayer_within_geometry,
 )
 from utils.cli_utils import call_forsys
+from utils.frontend import get_frontend_url
 
 from planning.models import (
     GeoPackageStatus,
@@ -428,9 +428,8 @@ def async_send_email_scenario_finished(scenario_id: int) -> None:
             )
             return
 
-        link = urljoin(
-            settings.PLANSCAPE_BASE_URL,
-            f"plan/{scenario.planning_area_id}/scenario/{scenario.pk}",
+        link = get_frontend_url(
+            f"plan/{scenario.planning_area_id}/scenario/{scenario.pk}"
         )
 
         context = {
