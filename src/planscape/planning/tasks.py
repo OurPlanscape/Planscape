@@ -199,6 +199,14 @@ def prepare_planning_area(planning_area_id: int) -> int:
     ]
     datalayers = list(filter(None, datalayers))
 
+    if feature_enabled("CALCULATE_INCLUSION_ZONE"):
+        includes = list(
+            DataLayer.objects.all().by_meta_capability(
+                TreatmentGoalUsageType.INCLUSION_ZONE
+            )
+        )
+        datalayers.extend(includes)
+
     create_stand_metrics_jobs = []
 
     for datalayer in datalayers:

@@ -16,7 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
 import { Router, UrlTree } from '@angular/router';
-import { Scenario, ScenarioDraftConfig, ScenarioDraftPayload } from '@types';
+import { Scenario, ScenarioV3Config, ScenarioV3Payload } from '@types';
 import { map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
@@ -109,15 +109,15 @@ export class ScenarioSetupModalComponent implements OnInit {
   }
 
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
-    let newPayload: Partial<ScenarioDraftPayload> = {};
+    let newPayload: Partial<ScenarioV3Payload> = {};
     if (oldScenario.version === 'V3') {
-      const oldConfig: Partial<ScenarioDraftConfig> =
-        oldScenario.configuration as ScenarioDraftConfig;
+      const oldConfig: Partial<ScenarioV3Config> =
+        oldScenario.configuration as ScenarioV3Config;
       newPayload = {
         configuration: oldConfig,
       };
     } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
-      const oldConfig: Partial<ScenarioDraftConfig> = oldScenario.configuration;
+      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
       const thresholdsIdMap = new Map<string, number>();
       thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
       thresholdsIdMap.set(
