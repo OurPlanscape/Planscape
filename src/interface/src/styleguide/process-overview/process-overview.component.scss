@@ -54,7 +54,7 @@ $icon-white-padding: 20px;
     outline: 2px solid #B6C9CC; // instead of border
     // subtract half the circle size and half the line width so it looks centered relative
     // to the circle.
-    width: calc(100% - #{($circle-size + $line-width  ) / 2 });
+    width: calc(100% - #{($circle-size + $line-width) * 0.5});
     height: calc(100% - $line-top-offset);
     content: "";
     border-radius: 14px;
@@ -119,7 +119,7 @@ $icon-white-padding: 20px;
   &.arrow::after {
     @include arrowIcon();
     transform: rotate(90deg);
-    left: #{ ($circle-size - $arrow-icon-width ) / 2};
+    left: ($circle-size - $arrow-icon-width) * 0.5;
     top: - $icon-white-padding;
   }
 }
@@ -131,8 +131,8 @@ $icon-white-padding: 20px;
   width: #{$circle-size + $icon-white-padding};
   height: #{$circle-size + $icon-white-padding};
   border-radius: 100%;
-  top: -#{$icon-white-padding / 2 };
-  left: -#{$icon-white-padding / 2 };
+  top: -$icon-white-padding * 0.5; // half
+  left: -$icon-white-padding * 0.5; // half
 }
 
 
