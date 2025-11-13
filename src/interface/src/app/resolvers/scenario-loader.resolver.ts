@@ -7,18 +7,20 @@ export const scenarioLoaderResolver: ResolveFn<number | null> = (
 ) => {
   const scenarioState = inject(ScenarioState);
   const router = inject(Router);
-  const planId = route.paramMap.get('planId');
+  const planId = route.paramMap.get('planId') ?? '';
   const scenarioIdParam = route.paramMap.get('scenarioId');
 
   if (!scenarioIdParam) {
     scenarioState.resetScenarioId();
     router.navigate(['/plan', planId]);
+    return null;
   }
   const scenarioId = parseInt(scenarioIdParam!, 10);
 
   if (!scenarioId) {
     scenarioState.resetScenarioId();
     router.navigate(['/plan', planId]);
+    return null;
   }
 
   scenarioState.setScenarioId(scenarioId);
