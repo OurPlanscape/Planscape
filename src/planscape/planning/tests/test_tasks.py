@@ -5,8 +5,8 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.core.cache import cache
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
@@ -14,10 +14,10 @@ from stands.tests.factories import StandFactory
 from planning.models import GeoPackageStatus, ScenarioResultStatus
 from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
+    async_change_scenario_status,
     async_forsys_run,
     async_pre_forsys_process,
     trigger_geopackage_generation,
-    trigger_ready_email_notifications,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -316,37 +316,63 @@ class TriggerGeopackageGenerationTestCase(TestCase):
         mock_async_generate.assert_not_called()
 
 
-class TriggerReadyEmailNotificationsTestCase(TestCase):
-    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
-    def test_triggers_for_finished_scenarios_once(self, mock_delay):
-        scen = ScenarioFactory.create(
-            result_status=ScenarioResultStatus.SUCCESS,
-            user__email="owner@example.com",
+class ScenarioEmailOnStatusChangeTestCase(TestCase):
+    def _make_scenario(self, **kwargs):
+        return ScenarioFactory.create(
+            result_status=ScenarioResultStatus.PENDING, **kwargs
         )
 
-        trigger_ready_email_notifications()
-        mock_delay.assert_called_once_with(scen.pk)
-        cache.set(f"scenario:{scen.pk}:ready_email_sent", True, None)
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_email_sent_once_on_success(self, mock_delay):
+        scenario = self._make_scenario(user__email="owner@example.com")
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
+        scenario.refresh_from_db()
+        self.assertIsNotNone(scenario.ready_email_sent_at)
+        mock_delay.assert_called_once_with(scenario.pk)
 
         mock_delay.reset_mock()
-        trigger_ready_email_notifications()
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
         mock_delay.assert_not_called()
 
     @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
-    def test_does_not_trigger_for_failure(self, mock_delay):
-        ScenarioFactory.create(
-            result_status=ScenarioResultStatus.FAILURE,
-            user__email="owner@example.com",
+    def test_no_email_if_user_missing_or_blank(self, mock_delay):
+        scenario_no_user = self._make_scenario(user=None)
+        async_change_scenario_status(scenario_no_user.pk, ScenarioResultStatus.SUCCESS)
+        scenario_no_user.refresh_from_db()
+        self.assertIsNone(scenario_no_user.ready_email_sent_at)
+        mock_delay.assert_not_called()
+
+        mock_delay.reset_mock()
+        scenario_blank_email = self._make_scenario()
+        scenario_blank_email.user.email = ""
+        scenario_blank_email.user.save(update_fields=["email"])
+        async_change_scenario_status(
+            scenario_blank_email.pk, ScenarioResultStatus.SUCCESS
         )
-
-        trigger_ready_email_notifications()
+        scenario_blank_email.refresh_from_db()
+        self.assertIsNone(scenario_blank_email.ready_email_sent_at)
         mock_delay.assert_not_called()
 
     @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
-    def test_does_not_trigger_for_non_finished_states(self, mock_delay):
-        ScenarioFactory.create(result_status=ScenarioResultStatus.PENDING)
-        ScenarioFactory.create(result_status=ScenarioResultStatus.RUNNING)
-        ScenarioFactory.create(result_status=ScenarioResultStatus.PANIC)
+    def test_no_email_on_failure_or_other_states(self, mock_delay):
+        for status in (
+            ScenarioResultStatus.PENDING,
+            ScenarioResultStatus.RUNNING,
+            ScenarioResultStatus.PANIC,
+            ScenarioResultStatus.FAILURE,
+            ScenarioResultStatus.TIMED_OUT,
+        ):
+            scenario = self._make_scenario(user__email="owner@example.com")
+            async_change_scenario_status(scenario.pk, status)
+            scenario.refresh_from_db()
+            self.assertIsNone(scenario.ready_email_sent_at)
+        mock_delay.assert_not_called()
 
-        trigger_ready_email_notifications()
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_no_resend_if_already_marked_sent(self, mock_delay):
+        scenario = self._make_scenario(user__email="owner@example.com")
+        scenario.ready_email_sent_at = timezone.now()
+        scenario.save(update_fields=["ready_email_sent_at"])
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
+        scenario.refresh_from_db()
         mock_delay.assert_not_called()
