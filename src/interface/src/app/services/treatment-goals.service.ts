@@ -11,7 +11,8 @@ export class TreatmentGoalsService {
 
   getTreatmentGoals(planning_area?: number) {
     return this.http.get<ScenarioGoal[]>(
-      `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${planning_area ? '?planning_area=' + planning_area : ''}`
+      `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${planning_area ? '?planning_area=' + planning_area : ''}`,
+      { withCredentials: true }
     );
   }
 }

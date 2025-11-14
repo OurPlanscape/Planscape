@@ -100,9 +100,9 @@ services:
       - db
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db/postgres
-    command: --config /usr/src/app/martin.yaml
+    command: ["--config", "/usr/src/app/martin.yaml"]
     volumes:
-      - .:/app
+      - .:/usr/src/app
   forsys:
     build:
       context: .
