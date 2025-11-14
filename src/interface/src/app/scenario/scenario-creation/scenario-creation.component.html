@@ -32,7 +32,7 @@
       <sg-steps
         linear
         finishLabel="Save & Run Scenario"
-        [continueLabel]="continueLabel"
+        continueLabel="Save & Continue"
         [save]="saveStep.bind(this)"
         (selectedIndexChange)="stepChanged($event)"
         (finished)="onFinish()"
@@ -75,7 +75,6 @@
     [selectedIndex]="0"
     [allowNavigation]="false"></sg-steps-nav>
   <section class="container">
-    Este?
     <sg-steps
       class="full-screen-steps"
       linear
