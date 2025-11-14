@@ -45,7 +45,6 @@ import { FeatureService } from '../../features/feature.service';
   selector: 'app-scenario-route-placeholder',
   templateUrl: './scenario-route-placeholder.component.html',
   styleUrl: './scenario-route-placeholder.component.scss',
-  // needs to be fflaged?
   providers: [NewScenarioState],
 })
 export class ScenarioRoutePlaceholderComponent

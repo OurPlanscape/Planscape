@@ -72,11 +72,13 @@
   <!--New scenario ui flow-->
   <sg-steps-nav
     [steps]="steps"
-    [selectedIndex]="0"
+    [selectedIndex]="(stepIndex$ | async) ?? 0"
     [allowNavigation]="false"></sg-steps-nav>
   <section class="container">
     <sg-steps
-      class="full-screen-steps"
+      class="new-scenario-ui"
+      [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"
+      [showStepIndex]="false"
       linear
       finishLabel="Save & Run Scenario"
       continueLabel="Save & Continue"
