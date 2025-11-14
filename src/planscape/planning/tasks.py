@@ -90,38 +90,32 @@ def async_forsys_run(scenario_id: int) -> None:
         raise
     try:
         log.info(f"Running scenario {scenario_id}")
+
         scenario.result_status = ScenarioResultStatus.RUNNING
-        scenario.save()
+        scenario.save(update_fields=["result_status", "updated_at"])
+
         call_forsys(scenario.pk)
 
-        if not feature_enabled("FORSYS_VIA_API"):
-            scenario.result_status = ScenarioResultStatus.SUCCESS
-        scenario.save()
-        async_generate_scenario_geopackage.apply_async(
-            args=(scenario.pk,),
-            countdown=30 if feature_enabled("FORSYS_VIA_API") else 0,
-        )
+        if feature_enabled("FORSYS_VIA_API"):
+            async_change_scenario_status.delay(
+                scenario.pk, ScenarioResultStatus.SUCCESS
+            )
+            async_generate_scenario_geopackage.delay(scenario.pk)
+            return
+
+        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.SUCCESS)
+        async_generate_scenario_geopackage.apply_async(args=(scenario.pk,), countdown=0)
+
     except ForsysTimeoutException:
-        # this case should not happen as is, as the default parameter
-        # for call_forsys timeout is None.
-        scenario.result_status = ScenarioResultStatus.TIMED_OUT
-        scenario.save()
-        if hasattr(scenario, "results"):
-            scenario.results.status = ScenarioResultStatus.TIMED_OUT
-            scenario.results.save()
-        # this error WILL be reported by default to Sentry
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.TIMED_OUT)
         log.error(
-            f"Running forsys for scenario {scenario_id} timed-out. Might be too big."
+            "Running forsys for scenario %s timed-out. Might be too big.", scenario_id
         )
+
     except ForsysException:
-        scenario.result_status = ScenarioResultStatus.PANIC
-        scenario.save()
-        if hasattr(scenario, "results"):
-            scenario.results.status = ScenarioResultStatus.PANIC
-            scenario.results.save()
-        # this error WILL be reported by default to Sentry
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.PANIC)
         log.error(
-            f"A panic error happened while trying to call forsys for {scenario_id}"
+            "A panic error happened while trying to call forsys for %s", scenario_id
         )
 
 
