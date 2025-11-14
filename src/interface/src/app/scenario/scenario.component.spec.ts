@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ScenarioComponent } from './scenario.component';
-import { MockDeclarations } from 'ng-mocks';
+import { MockComponents, MockDeclarations } from 'ng-mocks';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
-import { RouterModule } from '@angular/router';
-import { NavBarComponent } from '@shared';
+
+import { NavBarComponent, SharedModule } from '@shared';
 import { GoalOverlayComponent } from '../plan/goal-overlay/goal-overlay.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ScenarioComponent', () => {
   let component: ScenarioComponent;
@@ -14,14 +15,10 @@ describe('ScenarioComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
-        ScenarioComponent,
-        MockDeclarations(
-          ScenarioMapComponent,
-          NavBarComponent,
-          GoalOverlayComponent
-        ),
+        MockComponents(ScenarioMapComponent, GoalOverlayComponent),
+        MockDeclarations(NavBarComponent),
       ],
-      imports: [RouterModule],
+      imports: [ScenarioComponent, RouterTestingModule, SharedModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioComponent);

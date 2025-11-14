@@ -25,7 +25,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
-import { CreateScenarioComponent } from '../create-scenario/create-scenario.component';
 import { ScenarioComponent } from '../scenario.component';
 import { FeatureService } from '../../features/feature.service';
 
@@ -40,7 +39,6 @@ import { FeatureService } from '../../features/feature.service';
     UploadedScenarioViewComponent,
     ScenarioCreationComponent,
     ViewScenarioComponent,
-    CreateScenarioComponent,
     ScenarioComponent,
   ],
   selector: 'app-scenario-route-placeholder',
