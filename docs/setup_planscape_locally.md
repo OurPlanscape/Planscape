@@ -2,7 +2,7 @@
 
 ## Introduction - Local Planscape Setup
 
-The following are instructions for getting **[Planscape](https://www.planscape.org/)** running on your machine for development. Let's get started.
+The following are instructions for getting **[Planscape](https://www.planscape.org/)** running on your machine for development.
 
 ## Planscape Docs Organization
 
