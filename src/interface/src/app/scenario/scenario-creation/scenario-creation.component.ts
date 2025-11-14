@@ -1,8 +1,8 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgClass, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { StepComponent, StepsComponent } from '@styleguide';
+import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
@@ -52,10 +52,16 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
-import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
+import {
+  EXIT_SCENARIO_MODAL,
+  SCENARIO_OVERVIEW_STEPS,
+} from '../scenario.constants';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
+import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
+import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
+import { FeatureService } from '../../features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -85,6 +91,10 @@ enum ScenarioTabs {
     BaseLayersComponent,
     JsonPipe,
     FeaturesModule,
+    StepsNavComponent,
+    ScenarioMapComponent,
+    Step1WithOverviewComponent,
+    NgClass,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -112,6 +122,12 @@ export class ScenarioCreationComponent
 
   loading$ = this.newScenarioState.loading$;
 
+  stepIndex$ = this.newScenarioState.stepIndex$;
+
+  isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
+
+  steps = SCENARIO_OVERVIEW_STEPS;
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -137,7 +153,8 @@ export class ScenarioCreationComponent
     private router: Router,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private featureService: FeatureService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -395,5 +412,10 @@ export class ScenarioCreationComponent
       this.dialog.open(ScenarioErrorModalComponent);
       return false;
     }
+  }
+
+  // remove when flag is published
+  get withDynamicScenarioUi() {
+    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
   }
 }

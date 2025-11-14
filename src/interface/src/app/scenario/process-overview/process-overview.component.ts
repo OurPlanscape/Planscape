@@ -3,7 +3,7 @@ import { NgClass, NgForOf } from '@angular/common';
 
 export interface OverviewStep {
   icon: string;
-  name: string;
+  label: string;
   description: string;
 }
 

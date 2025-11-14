@@ -25,6 +25,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
+import { ScenarioComponent } from '../scenario.component';
+import { FeatureService } from '../../features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -37,10 +39,12 @@ import { isScenarioPending } from '../scenario-helper';
     UploadedScenarioViewComponent,
     ScenarioCreationComponent,
     ViewScenarioComponent,
+    ScenarioComponent,
   ],
   selector: 'app-scenario-route-placeholder',
   templateUrl: './scenario-route-placeholder.component.html',
   styleUrl: './scenario-route-placeholder.component.scss',
+  providers: [NewScenarioState],
 })
 export class ScenarioRoutePlaceholderComponent
   implements CanComponentDeactivate
@@ -55,7 +59,8 @@ export class ScenarioRoutePlaceholderComponent
     private router: Router,
     private dialog: MatDialog,
     private scenarioState: ScenarioState,
-    private newScenarioState: NewScenarioState
+    private newScenarioState: NewScenarioState,
+    private featureService: FeatureService
   ) {}
 
   isDraft = false;
@@ -104,4 +109,8 @@ export class ScenarioRoutePlaceholderComponent
     }),
     shareReplay(1)
   );
+
+  get configUiFlagIsOn() {
+    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
+  }
 }
