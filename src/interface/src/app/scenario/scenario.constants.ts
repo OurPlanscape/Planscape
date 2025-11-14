@@ -5,13 +5,6 @@ export const exitModalData = (scenarioName: string) => ({
   secondaryCta: 'Exit Workflow',
 });
 
-export const EXIT_SCENARIO_MODAL = {
-  title: 'Exit Workflow?',
-  body: 'Are you sure you want to exit "Create New Scenario"? All unsaved changes will be lost.',
-  primaryCta: 'Leave',
-  secondaryCta: 'Keep Editing',
-};
-
 export const SCENARIO_OVERVIEW_STEPS = [
   {
     label: 'Treatment Goal',
