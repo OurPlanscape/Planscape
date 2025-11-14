@@ -100,21 +100,9 @@ class AsyncCalculateStandMetricsTest(TestCase):
 
 class AsyncPreForsysProcessTest(TestCase):
     def setUp(self):
-        configuration = {
-            "stand_size": StandSizeChoices.LARGE,
-            "max_treatment_area_ratio": 0.3,
-            "max_project_count": 10,
-            "seed": 42,
-            "max_slope": 25,
-            "min_distance_from_road": 50,
-            "max_area": 40000,
-        }
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
         self.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
-        self.scenario = ScenarioFactory.create(
-            treatment_goal=self.treatment_goal, configuration=configuration
-        )
-        self.slop_datalayer = DataLayerFactory.create(
+        self.slope_datalayer = DataLayerFactory.create(
             name="Slope",
             metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
         )
@@ -125,6 +113,29 @@ class AsyncPreForsysProcessTest(TestCase):
                     "forsys": {"name": "distance_from_roads", "metric_column": "min"}
                 }
             },
+        )
+        configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {
+                "max_project_count": 10,
+                "max_area": 4000,
+            },
+            "constraints": [
+                {
+                    "datalayer": self.slope_datalayer.id,
+                    "operator": "lte",
+                    "value": "25",
+                },
+                {
+                    "datalayer": self.distance_from_road_datalayer.id,
+                    "operator": "gte",
+                    "value": "50",
+                },
+            ],
+            "seed": 42,
+        }
+        self.scenario = ScenarioFactory.create(
+            treatment_goal=self.treatment_goal, configuration=configuration
         )
 
     def test_async_pre_forsys_process(self):
@@ -152,7 +163,7 @@ class AsyncPreForsysProcessTest(TestCase):
         variables = self.scenario.forsys_input["variables"]
         self.assertEqual(variables["number_of_projects"], 10)
         self.assertEqual(variables["min_area_project"], 500)
-        self.assertEqual(variables["max_area_project"], 40000 / 10)
+        self.assertEqual(variables["max_area_project"], 4000)
 
 
 @override_settings(FEATURE_FLAGS="")

@@ -706,10 +706,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     bbox = serializers.SerializerMethodField()
 
     def get_max_treatment_area(self, obj):
-        cfg = obj.configuration or {}
-        if "targets" in cfg and isinstance(cfg["targets"], dict):
-            return cfg["targets"].get("max_area")
-        return cfg.get("max_treatment_area_ratio")
+        return (obj.configuration or {}).get("targets", {}).get("max_area")
 
     def get_bbox(self, instance) -> Optional[List[float]]:
         geometries = list(

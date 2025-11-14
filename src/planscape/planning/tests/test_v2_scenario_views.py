@@ -247,19 +247,17 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         )
 
         self.configuration = {
-            "question_id": 1,
             "weights": [],
-            "est_cost": 2000,
-            "max_budget": None,
-            "max_slope": None,
-            "min_distance_from_road": None,
+            "targets": {
+                "estimated_cost": 2000,
+                "max_area": 40000,
+            },
             "stand_size": "LARGE",
             "excluded_areas": [],
             "stand_thresholds": [],
             "global_thresholds": [],
             "scenario_priorities": ["prio1"],
             "scenario_output_fields": ["out1"],
-            "max_treatment_area_ratio": 40000,
         }
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
@@ -424,7 +422,9 @@ class ListScenariosForPlanningAreaTest(APITestCase):
     def test_sort_scenario_by_reverse_acres(self):
         for acres in range(100, 105):
             budget_conf = copy.copy(self.configuration)
-            budget_conf["max_treatment_area_ratio"] = acres
+            budget_conf["targets"] = {
+                "max_area": acres,
+            }
             ScenarioFactory.create(
                 planning_area=self.planning_area,
                 name=f"scenario {acres}",
@@ -478,49 +478,23 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
         self.assertEqual(budget_results, expected_acres_order)
 
-    def test_sort_scenario_by_reverse_budget(self):
-        for b in range(100, 105):
-            budget_conf = copy.copy(self.configuration)
-            budget_conf["max_budget"] = b
-            ScenarioFactory.create(
-                planning_area=self.planning_area,
-                name=f"scenario {b}",
-                configuration=budget_conf,
-                user=self.owner_user,
-            )
-
-        self.client.force_authenticate(self.owner_user)
-        query_params = {"ordering": "-budget", "planning_area": self.planning_area.pk}
-        response = self.client.get(
-            reverse(
-                "api:planning:scenarios-list",
-            ),
-            query_params,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        response_data = response.json()
-        expected_budget_order = [104, 103, 102, 101, 100, None, None, None]
-        budget_results = [s["max_budget"] for s in response_data]
-        self.assertEquals(budget_results, expected_budget_order)
-
     def test_sort_scenario_by_multiple_fields(self):
         for a in range(1, 4):
-            for b in range(100, 104):
-                for n in ["aaaa", "bbbb", "cccc"]:
-                    budget_conf = copy.copy(self.configuration)
-                    budget_conf["max_budget"] = b
-                    budget_conf["max_treatment_area_ratio"] = a
-                    ScenarioFactory.create(
-                        planning_area=self.planning_area,
-                        name=f"{n} scenario,a{a}-b{b}",
-                        configuration=budget_conf,
-                        user=self.owner_user,
-                    )
+            for n in ["aaaa", "bbbb", "cccc"]:
+                v3_conf = copy.deepcopy(self.configuration)
+                v3_conf["targets"] = {
+                    "max_area": a,
+                }
+                ScenarioFactory.create(
+                    planning_area=self.planning_area,
+                    name=f"{n} scenario,a{a}",
+                    configuration=v3_conf,
+                    user=self.owner_user,
+                )
         self.client.force_authenticate(self.owner_user)
 
         # sort by rev budget, then acres, then name
-        query_params = {"ordering": "-budget,acres,-name"}
+        query_params = {"ordering": "acres,-name"}
         response = self.client.get(
             reverse(
                 "api:planning:scenarios-list",
@@ -532,43 +506,16 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         response_data = response.json()
 
         expected_names = [
-            "cccc scenario,a1-b103",
-            "bbbb scenario,a1-b103",
-            "aaaa scenario,a1-b103",
-            "cccc scenario,a2-b103",
-            "bbbb scenario,a2-b103",
-            "aaaa scenario,a2-b103",
-            "cccc scenario,a3-b103",
-            "bbbb scenario,a3-b103",
-            "aaaa scenario,a3-b103",
-            "cccc scenario,a1-b102",
-            "bbbb scenario,a1-b102",
-            "aaaa scenario,a1-b102",
-            "cccc scenario,a2-b102",
-            "bbbb scenario,a2-b102",
-            "aaaa scenario,a2-b102",
-            "cccc scenario,a3-b102",
-            "bbbb scenario,a3-b102",
-            "aaaa scenario,a3-b102",
-            "cccc scenario,a1-b101",
-            "bbbb scenario,a1-b101",
-            "aaaa scenario,a1-b101",
-            "cccc scenario,a2-b101",
-            "bbbb scenario,a2-b101",
-            "aaaa scenario,a2-b101",
-            "cccc scenario,a3-b101",
-            "bbbb scenario,a3-b101",
-            "aaaa scenario,a3-b101",
-            "cccc scenario,a1-b100",
-            "bbbb scenario,a1-b100",
-            "aaaa scenario,a1-b100",
-            "cccc scenario,a2-b100",
-            "bbbb scenario,a2-b100",
-            "aaaa scenario,a2-b100",
-            "cccc scenario,a3-b100",
-            "bbbb scenario,a3-b100",
-            "aaaa scenario,a3-b100",
-            # these initial records have None for budget and acres
+            "cccc scenario,a1",
+            "bbbb scenario,a1",
+            "aaaa scenario,a1",
+            "cccc scenario,a2",
+            "bbbb scenario,a2",
+            "aaaa scenario,a2",
+            "cccc scenario,a3",
+            "bbbb scenario,a3",
+            "aaaa scenario,a3",
+            # these initial records have None for acres
             "test scenario3",
             "test scenario2",
             "test scenario",
@@ -613,10 +560,10 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         )
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data.get("version"), ScenarioVersion.V1)
+        self.assertEqual(data.get("version"), ScenarioVersion.V3)
 
         configuration = self.scenario.configuration.copy()
-        configuration.pop("question_id")
+        configuration.pop("targets")
         self.scenario.configuration = configuration
         self.scenario.save()
 
@@ -934,7 +881,11 @@ class PatchScenarioConfigurationTest(APITestCase):
     def test_patch_scenario_configuration_success(self):
         payload = {
             "configuration": {
-                "targets": {"estimated_cost": 12345, "max_area": 11111, "max_project_count": 10},
+                "targets": {
+                    "estimated_cost": 12345,
+                    "max_area": 11111,
+                    "max_project_count": 10,
+                },
                 "stand_size": "SMALL",
             }
         }
@@ -974,7 +925,11 @@ class PatchScenarioConfigurationTest(APITestCase):
             "min_distance_from_road": 100,
             "max_project_count": 5,
             "configuration": {
-                "targets": {"estimated_cost": 12345, "max_area": 11111, "max_project_count": 10},
+                "targets": {
+                    "estimated_cost": 12345,
+                    "max_area": 11111,
+                    "max_project_count": 10,
+                },
             },
         }
         self.client.force_authenticate(self.user)
@@ -985,7 +940,9 @@ class PatchScenarioConfigurationTest(APITestCase):
         targets = config.get("targets", {})
         self.assertEqual(targets.get("estimated_cost"), 12345)
         self.assertEqual(targets.get("max_area"), 11111)
-        self.assertNotIn("stand_size", config, "The 'stand_size' key should not have a default.")
+        self.assertNotIn(
+            "stand_size", config, "The 'stand_size' key should not have a default."
+        )
 
         # second patch - modify stand_size + add excluded_areas
         payload2 = {
