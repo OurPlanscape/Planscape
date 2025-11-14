@@ -20,6 +20,7 @@
         canViewScenarioCreation$ | async as canViewScenarioCreation;
         else checkOrigin
       ">
+      <!-- with the new config-->
       <ng-container *ngIf="configUiFlagIsOn">
         <!-- Displaying drafts if we can edit drafts -->
         <app-scenario-creation
@@ -29,7 +30,7 @@
           "></app-scenario-creation>
       </ng-container>
 
-      <!--  remove after cleaning flag-->
+      <!-- version without config ui - remove after cleaning flag-->
       <ng-container *ngIf="!configUiFlagIsOn">
         <app-scenario>
           <!-- Displaying drafts if we can edit drafts -->
