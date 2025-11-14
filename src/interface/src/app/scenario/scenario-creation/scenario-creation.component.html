@@ -89,9 +89,6 @@
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
       <sg-step class="full-screen-step">
-        <!--      Used to be..-->
-        <!--      <app-step1></app-step1>-->
-        <!--      and now is-->
         <app-step1-with-overview></app-step1-with-overview>
       </sg-step>
       <sg-step>

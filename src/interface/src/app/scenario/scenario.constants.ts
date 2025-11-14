@@ -1,4 +1,4 @@
-import { OverviewStep } from '../../styleguide/process-overview/process-overview.component';
+import { OverviewStep } from './process-overview/process-overview.component';
 
 export const EXIT_SCENARIO_MODAL = {
   title: 'Exit Workflow?',
