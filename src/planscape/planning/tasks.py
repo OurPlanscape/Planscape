@@ -96,24 +96,17 @@ def async_forsys_run(scenario_id: int) -> None:
 
         call_forsys(scenario.pk)
 
-        if feature_enabled("FORSYS_VIA_API"):
-            async_change_scenario_status.delay(
-                scenario.pk, ScenarioResultStatus.SUCCESS
-            )
-            async_generate_scenario_geopackage.delay(scenario.pk)
-            return
-
-        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
-        async_generate_scenario_geopackage.apply_async(args=(scenario.pk,), countdown=0)
+        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.SUCCESS)
+        async_generate_scenario_geopackage.delay(scenario.pk)
 
     except ForsysTimeoutException:
-        async_change_scenario_status(scenario.pk, ScenarioResultStatus.TIMED_OUT)
+        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.TIMED_OUT)
         log.error(
             "Running forsys for scenario %s timed-out. Might be too big.", scenario_id
         )
 
     except ForsysException:
-        async_change_scenario_status(scenario.pk, ScenarioResultStatus.PANIC)
+        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.PANIC)
         log.error(
             "A panic error happened while trying to call forsys for %s", scenario_id
         )
