@@ -5,6 +5,10 @@
 :host {
   display: flex;
   height: 100%;
+
+  @include on-small() {
+    display: block;
+  }
 }
 
 
@@ -14,15 +18,17 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  //@include on-small() {
-  //  max-width: initial;
-  //}
+  background-color: $color-white;
+  @include on-small() {
+    max-width: initial;
+  }
 }
 
 
 sg-process-overview {
   padding: 24px 40px 32px;
   flex: 1;
+  border-right: 1px solid $color-light-purple;
 }
 
 
@@ -31,6 +37,9 @@ sg-process-overview {
   flex: 1;
   min-width: $scenario-sidebar-width;
   overflow-y: auto;
+  @include on-small() {
+    overflow-y: initial;
+  }
 }
 
 

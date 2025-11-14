@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgClass, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
@@ -94,6 +94,7 @@ enum ScenarioTabs {
     StepsNavComponent,
     ScenarioMapComponent,
     Step1WithOverviewComponent,
+    NgClass,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -121,7 +122,9 @@ export class ScenarioCreationComponent
 
   loading$ = this.newScenarioState.loading$;
 
-  isFirstIndex$ = this.newScenarioState.stepIndex$.pipe(map((i) => i === 0));
+  stepIndex$ = this.newScenarioState.stepIndex$;
+
+  isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
 
   steps = SCENARIO_OVERVIEW_STEPS;
 

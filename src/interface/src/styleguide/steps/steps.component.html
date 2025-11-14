@@ -5,7 +5,7 @@
 </div>
 
 <div class="actions" *ngIf="showActions">
-  <div class="step-count">
+  <div class="step-count" *ngIf="showStepIndex">
     Step {{ selectedIndex + 1 }} of {{ steps.length }}
   </div>
   <button sg-button [disabled]="selectedIndex === 0" (click)="goBack()">
