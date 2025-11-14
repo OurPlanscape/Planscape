@@ -103,7 +103,7 @@ def async_forsys_run(scenario_id: int) -> None:
             async_generate_scenario_geopackage.delay(scenario.pk)
             return
 
-        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.SUCCESS)
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
         async_generate_scenario_geopackage.apply_async(args=(scenario.pk,), countdown=0)
 
     except ForsysTimeoutException:
