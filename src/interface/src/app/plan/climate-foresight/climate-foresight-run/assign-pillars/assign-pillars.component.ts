@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { SectionComponent, ButtonComponent } from '@styleguide';
 import {
   CdkDragDrop,
@@ -12,6 +12,9 @@ import {
 import { NamePillarModalComponent } from '../../name-pillar-modal/name-pillar-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
+import { ClimateForesightService } from '@services';
+import { ClimateForesightRun, DataLayer, Pillar } from '@types';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-assign-pillars',
@@ -26,52 +29,27 @@ import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-d
     NamePillarModalComponent,
     DeleteDialogComponent,
     ButtonComponent,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './assign-pillars.component.html',
   styleUrl: './assign-pillars.component.scss',
 })
-export class AssignPillarsComponent {
-  datalayers = [
-    { title: 'Probability of High Severity Fire' },
-    { title: 'Wildlife Species Richness' },
-  ];
-
-  pillars: {
-    title: string;
-    isOpen: boolean;
-    dataLayers: { title: string }[];
-  }[] = [
-    {
-      title: 'Air Quality',
-      isOpen: false,
-      dataLayers: [
-        { title: 'Potential Total Smoke Production' },
-        { title: 'Potential Avoided Smoke Production' },
-        { title: 'Heavy Fuel Load' },
-      ],
-    },
-    {
-      title: 'Carbon Sequestration',
-      isOpen: false,
-      dataLayers: [
-        { title: 'Large Tree Carbon' },
-        { title: 'Dead and Down Carbon' },
-        { title: 'Total Carbon (F3)' },
-      ],
-    },
-    {
-      title: 'Fire-Adapted Communities',
-      isOpen: false,
-      dataLayers: [],
-    },
-    {
-      title: 'Forest Resilience',
-      isOpen: false,
-      dataLayers: [],
-    },
-  ];
+export class AssignPillarsComponent implements OnInit {
+  @Input() run: ClimateForesightRun | null = null;
 
   private dialog: MatDialog = inject(MatDialog);
+  climateService: ClimateForesightService = inject(ClimateForesightService);
+
+  datalayers: DataLayer[] = [];
+  pillars: Pillar[] = [];
+
+  loadingDatalayers = false;
+  loadingPillars = false;
+
+  ngOnInit(): void {
+    this.getDataLayers();
+    this.getPillars();
+  }
 
   drop(event: CdkDragDrop<any[]>) {
     if (event.previousContainer === event.container) {
@@ -91,13 +69,42 @@ export class AssignPillarsComponent {
   }
 
   addPillar() {
-    this.dialog
-      .open(NamePillarModalComponent)
-      .afterClosed()
-      .subscribe((modalResponse: any) => {});
+    if (this.run?.id) {
+      this.dialog
+        .open(NamePillarModalComponent, {
+          data: {
+            runId: this.run.id,
+          },
+        })
+        .afterClosed()
+        .subscribe((modalResponse: any) => {
+          if (modalResponse) {
+            this.getPillars();
+          }
+        });
+    }
   }
 
-  deletePillar() {
+  editPillar(pillar: Pillar) {
+    if (this.run?.id) {
+      this.dialog
+        .open(NamePillarModalComponent, {
+          data: {
+            pillar: pillar,
+            runId: this.run.id,
+          },
+        })
+        .afterClosed()
+        .subscribe((modalResponse: any) => {
+          debugger;
+          if (modalResponse) {
+            this.getPillars();
+          }
+        });
+    }
+  }
+
+  deletePillar(id: number) {
     this.dialog
       .open(DeleteDialogComponent, {
         data: {
@@ -106,6 +113,64 @@ export class AssignPillarsComponent {
         },
       })
       .afterClosed()
-      .subscribe((modalResponse: any) => {});
+      .subscribe((modalResponse: any) => {
+        if (this.run?.id && modalResponse === true) {
+          this.climateService.deletePillar(id, this.run.id).subscribe((res) => {
+            this.getPillars();
+          });
+        }
+      });
+  }
+
+  getDataLayers() {
+    this.loadingDatalayers = true;
+    this.climateService
+      .getDataLayers()
+      .pipe()
+      .subscribe({
+        next: (datalayers) => {
+          // Filtering just the enabled datalayers
+          const enabledLayers =
+            datalayers.filter(
+              (dl: any) =>
+                dl.metadata?.modules?.['climate_foresight']?.enabled === true
+            ) || [];
+          // geting the selected datalayers id
+          const availableLayerIDs = this.run?.input_datalayers?.map(
+            (dl) => dl.datalayer
+          );
+          // Filtering just the available datalayers
+          const availableLayers = enabledLayers.filter((dl) =>
+            availableLayerIDs?.includes(dl.id)
+          );
+          this.datalayers = availableLayers;
+          this.loadingDatalayers = false;
+        },
+        error: () => {
+          this.loadingDatalayers = false;
+        },
+      });
+  }
+
+  getPillars() {
+    if (!this.run?.id) {
+      return;
+    }
+    this.loadingPillars = true;
+    this.climateService.getPillars(this.run?.id).subscribe({
+      next: (res) => {
+        this.pillars = res.map((p) => {
+          p.isOpen = false;
+          // TODO: Getting the pre-selected datalayers for this pillar
+          const preSelectedLayers: any[] = [];
+          p.dataLayers = preSelectedLayers;
+          return p;
+        });
+        this.loadingPillars = false;
+      },
+      error: () => {
+        this.loadingPillars = false;
+      },
+    });
   }
 }

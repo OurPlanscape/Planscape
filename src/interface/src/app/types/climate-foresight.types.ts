@@ -1,3 +1,5 @@
+import { DataLayer } from './data-sets';
+
 export type ClimateForesightRunStatus = 'draft' | 'running' | 'done';
 
 export interface Percentiles {
@@ -36,6 +38,18 @@ export interface ClimateForesightRun {
   current_step: number;
   furthest_step: number;
   input_datalayers?: InputDatalayer[];
+}
+
+export interface Pillar {
+  id: number;
+  run: number;
+  name: string;
+  order: number;
+  created_at: string;
+  is_custom: boolean;
+  can_delete: boolean;
+  isOpen: boolean; // Frontend only to expand or collapse pillar
+  dataLayers: DataLayer[]; // Frontend only to reflect the assigned layers
 }
 
 export interface CreateClimateForesightRunPayload {

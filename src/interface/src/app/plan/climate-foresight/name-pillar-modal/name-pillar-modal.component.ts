@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject, Input } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -8,11 +8,13 @@ import {
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { ClimateForesightService } from '@services';
 import {
   InputDirective,
   InputFieldComponent,
   ModalComponent,
 } from '@styleguide';
+import { Pillar } from '@types';
 
 @Component({
   selector: 'app-name-pillar-modal',
@@ -28,23 +30,31 @@ import {
   templateUrl: './name-pillar-modal.component.html',
   styleUrl: './name-pillar-modal.component.scss',
 })
-export class NamePillarModalComponent {
-  // TODO: Add type once we have the interface for pillars
-  @Input() pillar = null;
-
+export class NamePillarModalComponent implements OnInit {
   form: FormGroup = new FormGroup({
     pillarName: new FormControl(null, [Validators.required]),
   });
 
   readonly dialogRef = inject(MatDialogRef<NamePillarModalComponent>);
+  climateService: ClimateForesightService = inject(ClimateForesightService);
 
   submitting = false;
   displayError = false;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
+  constructor(
+    @Inject(MAT_DIALOG_DATA)
+    public data: { pillar: Pillar | null; runId: number }
+  ) {}
+
+  ngOnInit(): void {
+    if (this.editMode) {
+      this.form.get('pillarName')?.setValue(this.data.pillar?.name);
+    }
+  }
 
   handleSubmit() {
     if (this.form.valid && !this.submitting) {
+      this.submitting = true;
       if (this.editMode) {
         this.edit();
       } else {
@@ -54,33 +64,51 @@ export class NamePillarModalComponent {
   }
 
   create() {
-    /**
-     * TODO: Integrate with backend once API is ready
-     * Validate the name doesn't exist
-     * Call backend
-     * If Success - Close modal - refresh list (on parent)
-     * If Error - Display error - Try again
-     */
-    this.dialogRef.close();
+    if (this.data.runId && this.form.valid) {
+      this.climateService
+        .createPillar(this.form.getRawValue().pillarName, this.data.runId)
+        .subscribe({
+          next: () => {
+            this.displayError = false;
+            this.submitting = false;
+            this.dialogRef.close(true);
+          },
+          error: () => {
+            this.submitting = false;
+            this.displayError = true;
+          },
+        });
+    }
   }
 
   edit() {
-    /**
-     * TODO: Integrate with backend once API is ready
-     * Validate the name doesn't exist
-     * Call backend
-     * If Success - Close modal - refresh list (on parent)
-     * If Error - Display error - Try again
-     */
-    this.dialogRef.close();
+    if (this.form.valid && this.data.runId && this.data.pillar) {
+      this.climateService
+        .editPillar(
+          this.form.getRawValue().pillarName,
+          this.data.pillar.id,
+          this.data.runId
+        )
+        .subscribe({
+          next: () => {
+            this.submitting = false;
+            this.displayError = false;
+            this.dialogRef.close(true);
+          },
+          error: () => {
+            this.submitting = false;
+            this.displayError = true;
+          },
+        });
+    }
   }
 
   cancel() {
-    this.dialogRef.close();
+    this.dialogRef.close(false);
   }
 
   get editMode(): boolean {
-    return this.pillar !== null;
+    return this.data.pillar !== null;
   }
 
   get primaryCTA(): string {
