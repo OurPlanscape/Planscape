@@ -62,7 +62,7 @@ export class ScenarioRoutePlaceholderComponent
   isDraft = false;
   scenarioName = '';
 
-   canDeactivate(): Observable<boolean> | boolean {
+  canDeactivate(): Observable<boolean> | boolean {
     if (this.isDraft && !this.newScenarioState.isDraftFinishedSnapshot()) {
       const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
         data: exitModalData(this.scenarioName),
@@ -84,6 +84,7 @@ export class ScenarioRoutePlaceholderComponent
     filter(([user]) => !!user),
     map(([user, scenario]) => {
       this.isDraft = scenario?.scenario_result?.status === 'DRAFT';
+      this.scenarioName = scenario.name;
 
       // if scenario is pending redirect the user
       if (isScenarioPending(scenario)) {
