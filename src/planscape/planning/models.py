@@ -464,6 +464,10 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Geopackage URL of the Scenario.",
     )
 
+    ready_email_sent_at = models.DateTimeField(
+        null=True, help_text="When the ready email was sent."
+    )
+
     @cached_property
     def version(self):
         cfg = self.configuration or {}

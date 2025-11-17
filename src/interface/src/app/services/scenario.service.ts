@@ -6,7 +6,7 @@ import {
   Constraint,
   Scenario,
   ScenarioCreationPayload,
-  ScenarioDraftPayload,
+  ScenarioV3Payload,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -103,7 +103,7 @@ export class ScenarioService {
   // returns success or failure, based on backend results
   patchScenarioConfig(
     scenarioId: number,
-    configPayload: Partial<ScenarioDraftPayload>
+    configPayload: Partial<ScenarioV3Payload>
   ) {
     return this.http
       .patch<Scenario>(this.v2Path + scenarioId + '/draft/', configPayload, {

@@ -118,6 +118,7 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
         map_status=PlanningAreaMapStatus.PENDING,
+        scenario_count=0,
     )
     set_map_status_stands_done = async_set_planning_area_status.si(
         planning_area.pk,
