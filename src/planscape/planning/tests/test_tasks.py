@@ -6,6 +6,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
@@ -13,8 +14,10 @@ from stands.tests.factories import StandFactory
 from planning.models import GeoPackageStatus, ScenarioResultStatus
 from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
+    async_change_scenario_status,
     async_forsys_run,
     async_pre_forsys_process,
+    async_send_email_scenario_finished,
     trigger_geopackage_generation,
 )
 from planning.tests.factories import (
@@ -312,3 +315,86 @@ class TriggerGeopackageGenerationTestCase(TestCase):
 
         trigger_geopackage_generation()
         mock_async_generate.assert_not_called()
+
+
+class ScenarioEmailOnStatusChangeTestCase(TestCase):
+    def _make_scenario(self, **kwargs):
+        return ScenarioFactory.create(
+            result_status=ScenarioResultStatus.PENDING, **kwargs
+        )
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_email_sent_once_on_success(self, mock_delay):
+        scenario = self._make_scenario(user__email="owner@example.com")
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
+        scenario.refresh_from_db()
+        self.assertIsNotNone(scenario.ready_email_sent_at)
+        mock_delay.assert_called_once_with(scenario.pk)
+
+        mock_delay.reset_mock()
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
+        mock_delay.assert_not_called()
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_no_email_if_user_missing_or_blank(self, mock_delay):
+        scenario_no_user = self._make_scenario(user=None)
+        async_change_scenario_status(scenario_no_user.pk, ScenarioResultStatus.SUCCESS)
+        scenario_no_user.refresh_from_db()
+        self.assertIsNone(scenario_no_user.ready_email_sent_at)
+        mock_delay.assert_not_called()
+
+        mock_delay.reset_mock()
+        scenario_blank_email = self._make_scenario()
+        scenario_blank_email.user.email = ""
+        scenario_blank_email.user.save(update_fields=["email"])
+        async_change_scenario_status(
+            scenario_blank_email.pk, ScenarioResultStatus.SUCCESS
+        )
+        scenario_blank_email.refresh_from_db()
+        self.assertIsNone(scenario_blank_email.ready_email_sent_at)
+        mock_delay.assert_not_called()
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_no_email_on_failure_or_other_states(self, mock_delay):
+        for status in (
+            ScenarioResultStatus.PENDING,
+            ScenarioResultStatus.RUNNING,
+            ScenarioResultStatus.PANIC,
+            ScenarioResultStatus.FAILURE,
+            ScenarioResultStatus.TIMED_OUT,
+        ):
+            scenario = self._make_scenario(user__email="owner@example.com")
+            async_change_scenario_status(scenario.pk, status)
+            scenario.refresh_from_db()
+            self.assertIsNone(scenario.ready_email_sent_at)
+        mock_delay.assert_not_called()
+
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
+    def test_no_resend_if_already_marked_sent(self, mock_delay):
+        scenario = self._make_scenario(user__email="owner@example.com")
+        scenario.ready_email_sent_at = timezone.now()
+        scenario.save(update_fields=["ready_email_sent_at"])
+        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
+        scenario.refresh_from_db()
+        mock_delay.assert_not_called()
+
+
+@override_settings(ENV="staging")
+@mock.patch("planning.tasks.send_mail")
+class ScenarioEmailLinkTestCase(TestCase):
+    def test_ready_email_contains_frontend_link(self, mock_send_mail):
+        scenario = ScenarioFactory.create(user__email="owner@example.com")
+
+        async_send_email_scenario_finished(scenario.pk)
+
+        _, kwargs = mock_send_mail.call_args
+        html_body = kwargs["html_message"]
+        txt_body = kwargs["message"]
+
+        expected_base = "https://staging.planscape.org"
+        expected_path = f"/plan/{scenario.planning_area_id}/scenario/{scenario.pk}"
+
+        self.assertIn(expected_base, html_body)
+        self.assertIn(expected_path, html_body)
+        self.assertIn(expected_base, txt_body)
+        self.assertIn(expected_path, txt_body)
