@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepComponent, StepsComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
@@ -39,15 +39,10 @@ import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service
 import { Step1Component } from '../step1/step1.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Step2Component } from '../step2/step2.component';
-import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
-import {
-  convertFlatConfigurationToDraftPayload,
-  getScenarioCreationPayloadScenarioCreation,
-} from '../scenario-helper';
+import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
-import { FeatureService } from 'src/app/features/feature.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
@@ -83,9 +78,7 @@ enum ScenarioTabs {
     Step2Component,
     StandLevelConstraintsComponent,
     TreatmentTargetComponent,
-    Step4LegacyComponent,
     BaseLayersComponent,
-    JsonPipe,
     FeaturesModule,
   ],
   templateUrl: './scenario-creation.component.html',
@@ -105,10 +98,6 @@ export class ScenarioCreationComponent implements OnInit {
   form = new FormGroup({
     scenarioName: new FormControl('', [Validators.required]),
   });
-
-  continueLabel = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')
-    ? 'Save & Continue'
-    : 'Next';
 
   treatable_area$ = this.newScenarioState.availableStands$.pipe(
     map((s) => s.summary.treatable_area)
@@ -139,7 +128,6 @@ export class ScenarioCreationComponent implements OnInit {
     private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
     private router: Router,
-    private featureService: FeatureService,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar
@@ -154,18 +142,8 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      if (this.scenarioId) {
-        this.loadExistingScenario();
-      }
-    } else {
-      // Adding scenario name validator
-      this.refreshScenarioNameValidator();
-      // Setting up the breadcrumb
-      this.breadcrumbService.updateBreadCrumb({
-        label: 'Scenario: New Scenario',
-        backUrl: getPlanPath(this.planId),
-      });
+    if (this.scenarioId) {
+      this.loadExistingScenario();
     }
   }
 
@@ -222,12 +200,8 @@ export class ScenarioCreationComponent implements OnInit {
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
-        // TODO: we can remove both of these conditions when the FF is removed,
-        //. but it's helpful for testing different routes
-        if (
-          this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
-          this.scenarioStatus === 'DRAFT'
-        ) {
+
+        if (this.scenarioStatus === 'DRAFT') {
           if (
             this.scenarioName !== this.form.get('scenarioName')?.value &&
             this.form.get('scenarioName')?.value !== null
@@ -277,17 +251,9 @@ export class ScenarioCreationComponent implements OnInit {
 
   async onFinish() {
     this.newScenarioState.setLoading(false);
-    // TODO: we can remove both of these conditions when the FF is removed,
-    //. but it's helpful for testing different routes
-    if (
-      this.featureService.isFeatureEnabled('SCENARIO_DRAFTS') &&
-      this.scenarioStatus === 'DRAFT'
-    ) {
-      this.newScenarioState.setDraftFinished(true);
-      this.showRunScenarioConfirmation();
-    } else {
-      this.finishFromFullConfig();
-    }
+
+    this.newScenarioState.setDraftFinished(true);
+    this.showRunScenarioConfirmation();
   }
 
   async handleNameChange(newName: string) {
@@ -364,41 +330,6 @@ export class ScenarioCreationComponent implements OnInit {
           this.newScenarioState.setLoading(false);
         },
       });
-  }
-
-  async finishFromFullConfig() {
-    const payload = getScenarioCreationPayloadScenarioCreation({
-      ...this.config,
-      name: this.form.getRawValue().scenarioName || '',
-      planning_area: this.planId,
-    });
-    this.newScenarioState.setLoading(true);
-    // Firing scenario name validation before finish
-    const validated = await this.refreshScenarioNameValidator();
-
-    if (validated && this.form.valid) {
-      this.scenarioService
-        .createScenarioFromSteps(payload)
-        .pipe(
-          finalize(() => {
-            this.newScenarioState.setLoading(false);
-          })
-        )
-        .subscribe({
-          next: (result) => {
-            this.newScenarioState.setDraftFinished(true);
-            this.router.navigate([result.id], { relativeTo: this.route });
-          },
-          error: () => {
-            this.dialog.open(ScenarioErrorModalComponent);
-          },
-          complete: () => {
-            this.newScenarioState.setLoading(false);
-          },
-        });
-    } else {
-      this.newScenarioState.setLoading(false);
-    }
   }
 
   stepChanged(i: number) {

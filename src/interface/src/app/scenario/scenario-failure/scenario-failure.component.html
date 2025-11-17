@@ -47,18 +47,7 @@
     <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
       Return to Plan Overview
     </a>
-    <a
-      *appFeatureFlag="'SCENARIO_DRAFTS'; hide: true"
-      (click)="tryAgain.emit()"
-      sg-button
-      variant="primary">
-      Try Again
-    </a>
-    <a
-      *appFeatureFlag="'SCENARIO_DRAFTS'"
-      (click)="tryAgain.emit()"
-      sg-button
-      variant="primary">
+    <a (click)="tryAgain.emit()" sg-button variant="primary">
       Copy Scenario & Edit
     </a>
   </div>

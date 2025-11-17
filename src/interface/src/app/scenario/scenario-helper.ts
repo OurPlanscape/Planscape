@@ -2,38 +2,11 @@ import {
   Constraint,
   NamedConstraint,
   Scenario,
-  ScenarioConfigPayload,
   ScenarioCreation,
-  ScenarioCreationPayload,
   ScenarioV3Config,
   ScenarioV3Payload,
   ScenarioGoal,
 } from '@types';
-
-/**
- * The idea of this method is: Based on a ScenarioCreation return a ScenarioCreationPayload
- * @param scenario : Scenario creation object
- * @returns a ScenarioCreationPayload ready to send to the backend
- */
-export function getScenarioCreationPayloadScenarioCreation(
-  scenario: Partial<ScenarioCreation>
-): ScenarioCreationPayload {
-  const result: Partial<ScenarioCreationPayload> = {
-    configuration: {
-      estimated_cost: scenario.estimated_cost,
-      excluded_areas: scenario.excluded_areas,
-      max_area: scenario.max_area,
-      max_budget: scenario.max_budget,
-      max_slope: scenario.max_slope,
-      min_distance_from_road: scenario.min_distance_from_road,
-      stand_size: scenario.stand_size,
-    } as ScenarioConfigPayload,
-    name: scenario.name,
-    planning_area: scenario.planning_area,
-    treatment_goal: scenario.treatment_goal,
-  };
-  return result as ScenarioCreationPayload;
-}
 
 /**
  * This method will get a list of scenarioGoal and will return the grouped version of it
