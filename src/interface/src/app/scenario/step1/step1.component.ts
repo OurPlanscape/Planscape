@@ -26,7 +26,6 @@ import { getGroupedGoals } from '../scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
-
 @UntilDestroy()
 @Component({
   selector: 'app-step1',
