@@ -11,7 +11,7 @@ from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
 
-from planning.models import GeoPackageStatus, ScenarioResultStatus
+from planning.models import GeoPackageStatus, ScenarioResult, ScenarioResultStatus
 from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
     async_change_scenario_status,
@@ -19,6 +19,7 @@ from planning.tasks import (
     async_pre_forsys_process,
     async_send_email_scenario_finished,
     trigger_geopackage_generation,
+    trigger_scenario_ready_emails,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -159,118 +160,80 @@ class AsyncPreForsysProcessTest(TestCase):
 class AsyncCallForsysCommandLine(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()
+        self.scenario_result = ScenarioResult.objects.create(scenario=self.scenario)
 
-    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
-    @mock.patch("planning.tasks.async_change_scenario_status.delay")
-    @mock.patch("utils.cli_utils._call_forsys_via_command_line", return_value=True)
-    def test_async_call_forsys_command_line(
-        self, mock_cmd_line, mock_status_delay, mock_geopackage_delay
-    ):
+    @mock.patch(
+        "utils.cli_utils._call_forsys_via_command_line",
+        return_value=True,
+    )
+    def test_async_call_forsys_command_line(self, mock_cmd_line):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
 
-        mock_status_delay.assert_called_once_with(
-            self.scenario.pk, ScenarioResultStatus.SUCCESS
-        )
-        mock_geopackage_delay.assert_called_once_with(self.scenario.pk)
-
-    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
-    @mock.patch("planning.tasks.async_change_scenario_status.delay")
     @mock.patch(
         "utils.cli_utils._call_forsys_via_command_line",
         side_effect=ForsysTimeoutException(
             "Forsys command line call timed out after 60000 seconds."
         ),
     )
-    def test_async_call_forsys_command_line_timeout(
-        self, mock_cmd_line, mock_status_delay, mock_geopackage_delay
-    ):
+    def test_async_call_forsys_command_line_timeout(self, mock_cmd_line):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        self.scenario_result.refresh_from_db()
+        self.assertEqual(self.scenario_result.status, ScenarioResultStatus.TIMED_OUT)
 
-        mock_status_delay.assert_called_once_with(
-            self.scenario.pk, ScenarioResultStatus.TIMED_OUT
-        )
-        mock_geopackage_delay.assert_not_called()
-
-    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
-    @mock.patch("planning.tasks.async_change_scenario_status.delay")
     @mock.patch(
         "utils.cli_utils._call_forsys_via_command_line",
         side_effect=ForsysException("Forsys command line call failed"),
     )
-    def test_async_call_forsys_command_line_panic(
-        self, mock_cmd_line, mock_status_delay, mock_geopackage_delay
-    ):
+    def test_async_call_forsys_command_line_panic(self, mock_cmd_line):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
-
-        mock_status_delay.assert_called_once_with(
-            self.scenario.pk, ScenarioResultStatus.PANIC
-        )
-        mock_geopackage_delay.assert_not_called()
+        self.scenario_result.refresh_from_db()
+        self.assertEqual(self.scenario_result.status, ScenarioResultStatus.PANIC)
 
 
 @override_settings(FEATURE_FLAGS="FORSYS_VIA_API")
 class AsyncCallForsysViaAPI(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()
+        self.scenario_result = ScenarioResult.objects.create(scenario=self.scenario)
 
-    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
-    @mock.patch("planning.tasks.async_change_scenario_status.delay")
-    @mock.patch("utils.cli_utils._call_forsys_via_api", return_value=True)
-    def test_async_call_forsys_via_api(
-        self, mock_api_call, mock_status_delay, mock_geopackage_delay
-    ):
+    @mock.patch(
+        "utils.cli_utils._call_forsys_via_api",
+        return_value=True,
+    )
+    def test_async_call_forsys_via_api(self, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
-        mock_status_delay.assert_called_once_with(
-            self.scenario.pk, ScenarioResultStatus.SUCCESS
-        )
-        mock_geopackage_delay.assert_called_once_with(self.scenario.pk)
 
-    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
-    @mock.patch("planning.tasks.async_change_scenario_status.delay")
     @mock.patch(
         "utils.cli_utils._call_forsys_via_api",
         side_effect=ForsysTimeoutException(
             "Forsys API call timed out after 60000 seconds."
         ),
     )
-    def test_async_call_forsys_via_api_timeout(
-        self, mock_api_call, mock_status_delay, mock_geopackage_delay
-    ):
+    def test_async_call_forsys_via_api_timeout(self, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
-        mock_status_delay.assert_called_once_with(
-            self.scenario.pk, ScenarioResultStatus.TIMED_OUT
-        )
-        mock_geopackage_delay.assert_not_called()
+        self.scenario_result.refresh_from_db()
+        self.assertEqual(self.scenario_result.status, ScenarioResultStatus.TIMED_OUT)
 
-    @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
-    @mock.patch("planning.tasks.async_change_scenario_status.delay")
     @mock.patch(
         "utils.cli_utils._call_forsys_via_api",
         side_effect=ForsysException("Forsys API call failed"),
     )
-    def test_async_call_forsys_via_api_panic(
-        self, mock_api_call, mock_status_delay, mock_geopackage_delay
-    ):
+    def test_async_call_forsys_via_api_panic(self, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
-        mock_status_delay.assert_called_once_with(
-            self.scenario.pk, ScenarioResultStatus.PANIC
-        )
-        mock_geopackage_delay.assert_not_called()
+        self.scenario_result.refresh_from_db()
+        self.assertEqual(self.scenario_result.status, ScenarioResultStatus.PANIC)
 
 
 class TriggerGeopackageGenerationTestCase(TestCase):
@@ -280,7 +243,9 @@ class TriggerGeopackageGenerationTestCase(TestCase):
             result_status=ScenarioResultStatus.SUCCESS,
             geopackage_status=GeoPackageStatus.PENDING,
         )
+
         trigger_geopackage_generation()
+
         mock_async_generate.assert_called_once_with(scenario.pk)
 
     @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
@@ -289,7 +254,9 @@ class TriggerGeopackageGenerationTestCase(TestCase):
             result_status=ScenarioResultStatus.FAILURE,
             geopackage_status=GeoPackageStatus.PENDING,
         )
+
         trigger_geopackage_generation()
+
         mock_async_generate.assert_called_once_with(scenario.pk)
 
     @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
@@ -310,6 +277,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
             result_status=ScenarioResultStatus.SUCCESS,
             geopackage_status=None,
         )
+
         trigger_geopackage_generation()
         mock_async_generate.assert_not_called()
 
@@ -329,6 +297,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
             result_status=ScenarioResultStatus.PANIC,
             geopackage_status=GeoPackageStatus.PENDING,
         )
+
         trigger_geopackage_generation()
         mock_async_generate.assert_not_called()
 
@@ -414,3 +383,46 @@ class ScenarioEmailLinkTestCase(TestCase):
         self.assertIn(expected_path, html_body)
         self.assertIn(expected_base, txt_body)
         self.assertIn(expected_path, txt_body)
+
+
+class TriggerScenarioReadyEmailsTestCase(TestCase):
+    @mock.patch("planning.tasks.async_change_scenario_status.delay")
+    def test_triggers_for_success_scenarios_without_ready_timestamp(
+        self, mock_status_delay
+    ):
+        scenario_ok = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            ready_email_sent_at=None,
+            user__email="owner@example.com",
+        )
+
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.PENDING,
+            ready_email_sent_at=None,
+            user__email="owner@example.com",
+        )
+
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            ready_email_sent_at=timezone.now(),
+            user__email="owner@example.com",
+        )
+
+        ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            ready_email_sent_at=None,
+            user=None,
+        )
+
+        scenario_blank_email = ScenarioFactory.create(
+            result_status=ScenarioResultStatus.SUCCESS,
+            ready_email_sent_at=None,
+        )
+        scenario_blank_email.user.email = ""
+        scenario_blank_email.user.save(update_fields=["email"])
+
+        trigger_scenario_ready_emails()
+
+        mock_status_delay.assert_called_once_with(
+            scenario_ok.pk, ScenarioResultStatus.SUCCESS
+        )
