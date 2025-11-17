@@ -49,13 +49,7 @@
           <app-stand-level-constraints></app-stand-level-constraints>
         </sg-step>
         <sg-step>
-          <app-treatment-target
-            #step4
-            *appFeatureFlag="'SCENARIO_DRAFTS'"></app-treatment-target>
-          <app-step4-legacy
-            #step4
-            [maxAreaValue]="(treatable_area$ | async) ?? 0"
-            *appFeatureFlag="'SCENARIO_DRAFTS'; hide: true"></app-step4-legacy>
+          <app-treatment-target #step4></app-treatment-target>
         </sg-step>
       </sg-steps>
     </mat-tab>
