@@ -96,19 +96,22 @@ def async_forsys_run(scenario_id: int) -> None:
 
         call_forsys(scenario.pk)
 
-        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.SUCCESS)
-        async_generate_scenario_geopackage.delay(scenario.pk)
-
     except ForsysTimeoutException:
-        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.TIMED_OUT)
+        if hasattr(scenario, "results"):
+            scenario.results.status = ScenarioResultStatus.TIMED_OUT
+            scenario.results.save()
         log.error(
-            "Running forsys for scenario %s timed-out. Might be too big.", scenario_id
+            "Running forsys for scenario %s timed-out. Might be too big.",
+            scenario_id,
         )
 
     except ForsysException:
-        async_change_scenario_status.delay(scenario.pk, ScenarioResultStatus.PANIC)
+        if hasattr(scenario, "results"):
+            scenario.results.status = ScenarioResultStatus.PANIC
+            scenario.results.save()
         log.error(
-            "A panic error happened while trying to call forsys for %s", scenario_id
+            "A panic error happened while trying to call forsys for %s",
+            scenario_id,
         )
 
 
@@ -446,3 +449,26 @@ def async_send_email_scenario_finished(scenario_id: int) -> None:
             "Unexpected error while sending scenario-finished email.",
             extra={"scenario_id": scenario_id},
         )
+
+
+@app.task()
+def trigger_scenario_ready_emails():
+    """
+    Periodic task: find finished scenarios that still need a 'Scenario is ready'
+    email and enqueue status-change tasks for them.
+    """
+    scenarios = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS,
+        ready_email_sent_at__isnull=True,
+        user__isnull=False,
+    ).exclude(user__email__exact="")
+
+    count = scenarios.count()
+    log.info("Found %s scenarios pending ready-email.", count)
+
+    for scenario_id in scenarios.values_list("id", flat=True):
+        async_change_scenario_status.delay(
+            scenario_id,
+            ScenarioResultStatus.SUCCESS,
+        )
+        log.info("Queued ready-email/status-change for scenario %s.", scenario_id)
