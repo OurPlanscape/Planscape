@@ -26,7 +26,6 @@ import {
   canEditScenarioName,
   userCanAddTreatmentPlan,
 } from '../../permissions';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
@@ -54,8 +53,6 @@ export class ScenariosCardListComponent {
   @Output() triggerEdit = new EventEmitter();
   @Output() scenarioDeleted = new EventEmitter<ScenarioRow>();
 
-  draftsEnabled = this.featureService.isFeatureEnabled('SCENARIO_DRAFTS');
-
   open_statuses = ['SUCCESS', 'FAILURE', 'PANIC', 'DRAFT'];
 
   constructor(
@@ -67,8 +64,7 @@ export class ScenariosCardListComponent {
     private route: ActivatedRoute,
     private overlayLoaderService: OverlayLoaderService,
     private dialog: MatDialog,
-    private analyticsService: AnalyticsService,
-    private featureService: FeatureService
+    private analyticsService: AnalyticsService
   ) {}
 
   numberOfAreas(scenario: Scenario) {
@@ -84,9 +80,7 @@ export class ScenariosCardListComponent {
   }
 
   isDraftByOtherUser(row: ScenarioRow, userId?: number): boolean {
-    return (
-      this.draftsEnabled && this.isDraft(row) && !this.isCreator(row, userId)
-    );
+    return this.isDraft(row) && !this.isCreator(row, userId);
   }
 
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {

@@ -13,9 +13,6 @@ import { ScenarioCreationComponent } from '../scenario-creation/scenario-creatio
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
 
-import { FeatureService } from 'src/app/features/feature.service';
-import { FEATURES_JSON } from 'src/app/features/features-config';
-import { FeaturesModule } from 'src/app/features/features.module';
 import { NewScenarioState } from '../new-scenario.state';
 
 import { ScenarioState } from '../scenario.state';
@@ -48,7 +45,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
         BrowserAnimationsModule,
         HttpClientTestingModule,
         RouterTestingModule,
-        FeaturesModule,
         ScenarioRoutePlaceholderComponent,
       ],
       declarations: [
@@ -61,7 +57,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
       ],
       providers: [
         { provide: Router, useValue: routerSpy },
-        FeatureService,
         MockProvider(CurrencyPipe),
         MockProvider(AuthService, { loggedInUser$: mockUser$ }),
         MockProvider(NewScenarioState, {}),
@@ -73,55 +68,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     }).compileComponents();
   });
 
-  it('should create', () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: false },
-    });
-    createComp();
-    expect(component).toBeTruthy();
-  });
-
-  it('should return false if SCENARIO_DRAFTS is disabled and the scenario is NOT a draft', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: false },
-    });
-    mockUser$.next({ id: 1 });
-    mockScenario$.next({
-      user: 2,
-      planning_area: 5,
-      scenario_result: { status: 'SUCCESS' },
-    } as any);
-    createComp();
-
-    const canViewScenarioCreation = await firstValueFrom(
-      component.canViewScenarioCreation$
-    );
-
-    expect(canViewScenarioCreation).toBeFalse();
-  });
-
-  it('should return false if SCENARIO_DRAFTS is disabled and the scenario is a DRAFT and redirect to planning area', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: false },
-    });
-    mockScenario$.next({
-      scenario_result: { status: 'DRAFT' },
-      planning_area: 1,
-    } as any);
-    createComp();
-
-    const canViewScenarioCreation = await firstValueFrom(
-      component.canViewScenarioCreation$
-    );
-
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/plan', 1]);
-    expect(canViewScenarioCreation).toBeFalse();
-  });
-
-  it('should return false if SCENARIO_DRAFTS is enabled and the scenario is not a DRAFT', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
+  it('should return false if the scenario is not a DRAFT', async () => {
     mockScenario$.next({
       scenario_result: { status: 'SUCCESS' }, // Not a draft
     } as any);
@@ -135,10 +82,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     expect(canViewScenarioCreation).toBeFalse();
   });
 
-  it('should return false if SCENARIO_DRAFTS is enabled but the draft was not created by the logged in user and navigate to planning area', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
+  it('should return false if the draft was not created by the logged in user and navigate to planning area', async () => {
     mockUser$.next({ id: 1 });
     mockScenario$.next({
       user: 2,
@@ -155,10 +99,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
     expect(canViewScenarioCreation).toBeFalse();
   });
 
-  it('should return true if SCENARIO_DRAFTS is enabled and the draft was created by the logged in user', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
+  it('should return true if the draft was created by the logged in user', async () => {
     mockUser$.next({ id: 1 });
     mockScenario$.next({
       user: 1,
@@ -178,9 +119,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   // Navigation tests
 
   it('should show loading spinner when resource is loading', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
     mockScenarioResource$.next({ isLoading: true });
     createComp();
     const spinner =
@@ -189,9 +127,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   });
 
   it('should show app-scenario-creation when scenario is DRAFT and user is owner', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
     mockScenarioResource$.next({ isLoading: false });
     mockUser$.next({ id: 1 });
     mockScenario$.next({
@@ -209,10 +144,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   });
 
   it('should show resource unavailable component on error', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
-
     mockScenarioResource$.next({
       isLoading: true,
       error: { name: 'terrible error', message: 'something failed' },
@@ -224,9 +155,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   });
 
   it('should show scenario view if scenario was not uploaded and status is SUCCESS', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
     mockScenarioResource$.next({
       isLoading: false,
     });
@@ -241,9 +169,6 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   });
 
   it('should show scenario view if scenario was not uploaded and status is PENDING', async () => {
-    TestBed.overrideProvider(FEATURES_JSON, {
-      useValue: { SCENARIO_DRAFTS: true },
-    });
     mockScenarioResource$.next({
       isLoading: false,
     });

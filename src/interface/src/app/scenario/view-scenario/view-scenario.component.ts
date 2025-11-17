@@ -31,7 +31,6 @@ import { getPlanPath, POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
-import { FeatureService } from 'src/app/features/feature.service';
 import { ScenarioSetupModalComponent } from '../scenario-setup-modal/scenario-setup-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -93,7 +92,6 @@ export class ViewScenarioComponent {
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
     private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService,
     private dialog: MatDialog
   ) {
     // go to data layers tab when the user clicks the data layer name legend on the map
@@ -132,20 +130,15 @@ export class ViewScenarioComponent {
   }
 
   handleTryAgain(scenario: Scenario) {
-    if (this.featureService.isFeatureEnabled('SCENARIO_DRAFTS')) {
-      this.dialog.open(ScenarioSetupModalComponent, {
-        maxWidth: '560px',
-        data: {
-          planId: this.planId,
-          defaultName: '', // TODO: this is a placeholder for future name option
-          fromClone: true,
-          scenario: scenario,
-        },
-      });
-    } else {
-      //we just go to the scenario list page
-      this.router.navigate(['plan', this.planId, 'scenario']);
-    }
+    this.dialog.open(ScenarioSetupModalComponent, {
+      maxWidth: '560px',
+      data: {
+        planId: this.planId,
+        defaultName: '', // TODO: this is a placeholder for future name option
+        fromClone: true,
+        scenario: scenario,
+      },
+    });
   }
 
   goToPlan() {
