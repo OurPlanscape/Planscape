@@ -1,4 +1,5 @@
 <!-- Treatment goals -->
+<ng-template #treatmentGoals>
 <sg-section
   headline="Treatment Goals"
   [required]="true"
@@ -74,8 +75,10 @@
     </mat-radio-group>
   </form>
 </sg-section>
+</ng-template>
 
 <!-- Stand size -->
+<ng-template #standSizes>
 <sg-section headline="Stand Size" class="stand-step" [required]="true">
   <div class="stand-label">
     <mat-icon class="stand-icon">hexagon</mat-icon>
@@ -113,3 +116,14 @@
     </mat-form-field>
   </form>
 </sg-section>
+</ng-template>
+
+<ng-container *appFeatureFlag="'SCENARIO_CONFIG_UI'; hide: true">
+  <ng-container *ngTemplateOutlet="treatmentGoals"></ng-container>
+  <ng-container *ngTemplateOutlet="standSizes"></ng-container>
+</ng-container>
+
+<ng-container *appFeatureFlag="'SCENARIO_CONFIG_UI'">
+  <ng-container *ngTemplateOutlet="standSizes"></ng-container>
+  <ng-container *ngTemplateOutlet="treatmentGoals"></ng-container>
+</ng-container>
