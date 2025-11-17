@@ -14,7 +14,6 @@ from stands.tests.factories import StandFactory
 from planning.models import GeoPackageStatus, ScenarioResult, ScenarioResultStatus
 from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
-    async_change_scenario_status,
     async_forsys_run,
     async_pre_forsys_process,
     async_send_email_scenario_finished,
@@ -180,7 +179,7 @@ class AsyncCallForsysCommandLine(TestCase):
     def test_async_call_forsys_command_line_timeout(self, mock_cmd_line):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.TIMED_OUT)
         self.scenario_result.refresh_from_db()
         self.assertEqual(self.scenario_result.status, ScenarioResultStatus.TIMED_OUT)
 
@@ -191,7 +190,7 @@ class AsyncCallForsysCommandLine(TestCase):
     def test_async_call_forsys_command_line_panic(self, mock_cmd_line):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
         self.scenario_result.refresh_from_db()
         self.assertEqual(self.scenario_result.status, ScenarioResultStatus.PANIC)
 
@@ -220,7 +219,7 @@ class AsyncCallForsysViaAPI(TestCase):
     def test_async_call_forsys_via_api_timeout(self, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.TIMED_OUT)
         self.scenario_result.refresh_from_db()
         self.assertEqual(self.scenario_result.status, ScenarioResultStatus.TIMED_OUT)
 
@@ -231,7 +230,7 @@ class AsyncCallForsysViaAPI(TestCase):
     def test_async_call_forsys_via_api_panic(self, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
         self.scenario_result.refresh_from_db()
         self.assertEqual(self.scenario_result.status, ScenarioResultStatus.PANIC)
 
@@ -302,68 +301,6 @@ class TriggerGeopackageGenerationTestCase(TestCase):
         mock_async_generate.assert_not_called()
 
 
-class ScenarioEmailOnStatusChangeTestCase(TestCase):
-    def _make_scenario(self, **kwargs):
-        return ScenarioFactory.create(
-            result_status=ScenarioResultStatus.PENDING, **kwargs
-        )
-
-    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
-    def test_email_sent_once_on_success(self, mock_delay):
-        scenario = self._make_scenario(user__email="owner@example.com")
-        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
-        scenario.refresh_from_db()
-        self.assertIsNotNone(scenario.ready_email_sent_at)
-        mock_delay.assert_called_once_with(scenario.pk)
-
-        mock_delay.reset_mock()
-        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
-        mock_delay.assert_not_called()
-
-    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
-    def test_no_email_if_user_missing_or_blank(self, mock_delay):
-        scenario_no_user = self._make_scenario(user=None)
-        async_change_scenario_status(scenario_no_user.pk, ScenarioResultStatus.SUCCESS)
-        scenario_no_user.refresh_from_db()
-        self.assertIsNone(scenario_no_user.ready_email_sent_at)
-        mock_delay.assert_not_called()
-
-        mock_delay.reset_mock()
-        scenario_blank_email = self._make_scenario()
-        scenario_blank_email.user.email = ""
-        scenario_blank_email.user.save(update_fields=["email"])
-        async_change_scenario_status(
-            scenario_blank_email.pk, ScenarioResultStatus.SUCCESS
-        )
-        scenario_blank_email.refresh_from_db()
-        self.assertIsNone(scenario_blank_email.ready_email_sent_at)
-        mock_delay.assert_not_called()
-
-    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
-    def test_no_email_on_failure_or_other_states(self, mock_delay):
-        for status in (
-            ScenarioResultStatus.PENDING,
-            ScenarioResultStatus.RUNNING,
-            ScenarioResultStatus.PANIC,
-            ScenarioResultStatus.FAILURE,
-            ScenarioResultStatus.TIMED_OUT,
-        ):
-            scenario = self._make_scenario(user__email="owner@example.com")
-            async_change_scenario_status(scenario.pk, status)
-            scenario.refresh_from_db()
-            self.assertIsNone(scenario.ready_email_sent_at)
-        mock_delay.assert_not_called()
-
-    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
-    def test_no_resend_if_already_marked_sent(self, mock_delay):
-        scenario = self._make_scenario(user__email="owner@example.com")
-        scenario.ready_email_sent_at = timezone.now()
-        scenario.save(update_fields=["ready_email_sent_at"])
-        async_change_scenario_status(scenario.pk, ScenarioResultStatus.SUCCESS)
-        scenario.refresh_from_db()
-        mock_delay.assert_not_called()
-
-
 @override_settings(ENV="staging")
 @mock.patch("planning.tasks.send_mail")
 class ScenarioEmailLinkTestCase(TestCase):
@@ -386,43 +323,51 @@ class ScenarioEmailLinkTestCase(TestCase):
 
 
 class TriggerScenarioReadyEmailsTestCase(TestCase):
-    @mock.patch("planning.tasks.async_change_scenario_status.delay")
+    @mock.patch("planning.tasks.async_send_email_scenario_finished.delay")
     def test_triggers_for_success_scenarios_without_ready_timestamp(
-        self, mock_status_delay
+        self, mock_email_delay
     ):
         scenario_ok = ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
             ready_email_sent_at=None,
             user__email="owner@example.com",
         )
-
-        ScenarioFactory.create(
+        scenario_pending = ScenarioFactory.create(
             result_status=ScenarioResultStatus.PENDING,
             ready_email_sent_at=None,
             user__email="owner@example.com",
         )
-
-        ScenarioFactory.create(
+        scenario_already_sent = ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
             ready_email_sent_at=timezone.now(),
             user__email="owner@example.com",
         )
-
-        ScenarioFactory.create(
+        scenario_no_user = ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
             ready_email_sent_at=None,
             user=None,
         )
-
         scenario_blank_email = ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
             ready_email_sent_at=None,
         )
+
         scenario_blank_email.user.email = ""
         scenario_blank_email.user.save(update_fields=["email"])
-
         trigger_scenario_ready_emails()
 
-        mock_status_delay.assert_called_once_with(
-            scenario_ok.pk, ScenarioResultStatus.SUCCESS
-        )
+        mock_email_delay.assert_called_once_with(scenario_ok.pk)
+        scenario_ok.refresh_from_db()
+        self.assertIsNotNone(scenario_ok.ready_email_sent_at)
+
+        scenario_pending.refresh_from_db()
+        self.assertIsNone(scenario_pending.ready_email_sent_at)
+
+        scenario_already_sent.refresh_from_db()
+        self.assertIsNotNone(scenario_already_sent.ready_email_sent_at)
+
+        scenario_no_user.refresh_from_db()
+        self.assertIsNone(scenario_no_user.ready_email_sent_at)
+
+        scenario_blank_email.refresh_from_db()
+        self.assertIsNone(scenario_blank_email.ready_email_sent_at)
