@@ -2,6 +2,7 @@ import {
   getGroupedGoals,
   convertFlatConfigurationToDraftPayload,
   getNamedConstraints,
+  suggestNewName,
 } from './scenario-helper';
 import { Constraint, ScenarioCreation, ScenarioGoal } from '@types';
 
@@ -253,5 +254,49 @@ describe('getNamedConstraints', () => {
       { name: 'maxSlope', operator: 'lt', value: 50 },
       { name: 'distanceToRoads', operator: 'lte', value: 200 },
     ]);
+  });
+});
+
+describe('suggestNewName', () => {
+  it('should append a number if the name exists', () => {
+    const origName = 'some name';
+    const existingNames = ['a name', 'another name', 'some name'];
+
+    const nameResult = suggestNewName(origName, existingNames);
+    expect(nameResult).toEqual('some name 1');
+  });
+
+  it('should append a number if the name exists with subsequent numbers', () => {
+    const origName = 'some name';
+    const existingNames = [
+      'some name',
+      'some name 1',
+      'some name 2',
+      'some name 3',
+      'some name 4',
+      'some name 5',
+    ];
+
+    const nameResult = suggestNewName(origName, existingNames);
+    expect(nameResult).toEqual('some name 6');
+  });
+
+  it('should increment the name if it already contains a number at the end', () => {
+    const origName = 'some name 5';
+    const existingNames = [
+      'some name',
+      'some name 1',
+      'some name 2',
+      'some name 3',
+      'some name 4',
+      'some name 5',
+      'some name 6',
+      'some name 7',
+      'some name 8',
+      'some name 9',
+    ];
+
+    const nameResult = suggestNewName(origName, existingNames);
+    expect(nameResult).toEqual('some name 10');
   });
 });
