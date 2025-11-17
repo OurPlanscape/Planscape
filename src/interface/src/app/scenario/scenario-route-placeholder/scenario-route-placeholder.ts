@@ -7,6 +7,7 @@ import {
   map,
   Observable,
   of,
+  take,
   shareReplay,
   takeWhile,
 } from 'rxjs';
@@ -23,7 +24,7 @@ import { CanComponentDeactivate } from '@services/can-deactivate.guard';
 import { NewScenarioState } from '../new-scenario.state';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
-import { EXIT_SCENARIO_MODAL } from '../scenario.constants';
+import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
 
 @UntilDestroy()
@@ -59,13 +60,18 @@ export class ScenarioRoutePlaceholderComponent
   ) {}
 
   isDraft = false;
+  scenarioName = '';
 
   canDeactivate(): Observable<boolean> | boolean {
     if (this.isDraft && !this.newScenarioState.isDraftFinishedSnapshot()) {
       const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-        data: EXIT_SCENARIO_MODAL,
+        data: exitModalData(this.scenarioName),
       });
-      return dialogRef.afterClosed();
+      return dialogRef.afterClosed().pipe(
+        take(1),
+        // false we stay, true we leave, black is white, night is day
+        map((result) => !result)
+      );
     }
     return true;
   }
@@ -78,6 +84,7 @@ export class ScenarioRoutePlaceholderComponent
     filter(([user]) => !!user),
     map(([user, scenario]) => {
       this.isDraft = scenario?.scenario_result?.status === 'DRAFT';
+      this.scenarioName = scenario.name;
 
       // if scenario is pending redirect the user
       if (isScenarioPending(scenario)) {
