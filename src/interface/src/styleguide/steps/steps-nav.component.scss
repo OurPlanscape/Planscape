@@ -64,7 +64,7 @@
 
   &.future {
     .step-circle {
-      background-color: white;
+      background-color: $color-lighter-gray;
       border-color: transparent; // avoid border shift when changing color
       color: $color-text-gray;
     }
