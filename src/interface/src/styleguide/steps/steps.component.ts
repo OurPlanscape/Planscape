@@ -51,6 +51,10 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() genericErrorMsg = 'Unknown error';
   @Input() errorKey = 'invalid';
   @Input() showActions = true;
+
+  // remove showing step index when removing `SCENARIO_CONFIG_UI` flag
+  @Input() showStepIndex = true;
+
   // save callback
   @Input() save?: (data: Partial<T>) => Observable<boolean>;
   // outer form, optional, that should check validity / mark as touched when saving
