@@ -15,7 +15,7 @@ def load_standard_pillars(apps, schema_editor):
         "climate_foresight", "ClimateForesightPillar"
     )
     User = apps.get_model("auth", "User")
-    user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+    user = User.objects.filter(email=settings.DEFAULT_ADMIN_EMAIL).first()
 
     pillars = [
         {"name": "Air Quality", "order": 1},

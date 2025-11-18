@@ -2,7 +2,7 @@ from planning.tests.factories import PlanningAreaFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from climate_foresight.models import ClimateForesightRun, ClimateForesightPillar
+from climate_foresight.models import ClimateForesightRun
 from climate_foresight.tests.factories import (
     ClimateForesightRunFactory,
     ClimateForesightPillarFactory,
