@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
-import {
-  FormGroup,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { IdNamePair, ScenarioCreation } from '@types';
@@ -34,7 +31,8 @@ import { SelectableListComponent } from '../../../styleguide/selectable-list/sel
 })
 export class ExcludeAreasSelectorComponent
   extends StepDirective<ScenarioCreation>
-  implements OnInit {
+  implements OnInit
+{
   constructor(
     private newScenarioState: NewScenarioState,
     private forsysService: ForsysService
@@ -45,7 +43,7 @@ export class ExcludeAreasSelectorComponent
   form = new FormGroup({}); // keeping the inheritance happy
   excludableAreas$ = this.forsysService.excludedAreas$;
   excludableAreas: IdNamePair[] = [];
-  
+
   selectedAreas: IdNamePair[] = [];
   viewingAreas: IdNamePair[] = [];
 
@@ -66,33 +64,35 @@ export class ExcludeAreasSelectorComponent
       )
       .subscribe((config) => {
         this.selectedAreas = [];
-        this.excludableAreas.forEach((area) => {      
-            if (config.excluded_areas?.includes(area.id)) {
-            
-              this.selectedAreas.push(area);
-            }
-          });
+        this.excludableAreas.forEach((area) => {
+          if (config.excluded_areas?.includes(area.id)) {
+            this.selectedAreas.push(area);
+          }
         });
+      });
   }
 
   handleSelectedItemsChange(selectedItems: IdNamePair[]) {
     this.selectedAreas = [];
-    selectedItems.forEach(s => { this.selectedAreas.push(s); })
+    selectedItems.forEach((s) => {
+      this.selectedAreas.push(s);
+    });
     this.newScenarioState.setExcludedAreas(this.getSelectedExcludedAreaIds());
   }
 
   handleViewedItemsChange(viewedItems: IdNamePair[]) {
     this.viewingAreas = [];
-    viewedItems.forEach(s => { this.viewingAreas.push(s); })
+    viewedItems.forEach((s) => {
+      this.viewingAreas.push(s);
+    });
   }
 
   getAreasBeingViewed(): number[] {
-    return this.viewingAreas.map(a => a.id);
+    return this.viewingAreas.map((a) => a.id);
   }
 
   getSelectedExcludedAreaIds(): number[] {
-    console.log('selected Excluded areas:', this.selectedAreas);
-    return this.selectedAreas.map(s => s.id);
+    return this.selectedAreas.map((s) => s.id);
   }
 
   getData() {
