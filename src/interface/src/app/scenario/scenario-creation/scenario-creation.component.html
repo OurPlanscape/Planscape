@@ -1,3 +1,4 @@
+<!--Flow without new scenario ui-->
 <ng-container *ngIf="!withDynamicScenarioUi">
   <div class="scenario-name">
     <!-- Scenario name input -->
@@ -62,6 +63,7 @@
   </mat-tab-group>
 </ng-container>
 
+<!--New flow with scenario ui-->
 <ng-container *ngIf="withDynamicScenarioUi">
   <!--New scenario ui flow-->
   <sg-steps-nav
