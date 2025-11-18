@@ -4,7 +4,7 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MockDeclarations, MockProvider } from 'ng-mocks';
+import { MockComponents, MockProvider } from 'ng-mocks';
 import { CurrencyPipe } from '@angular/common';
 
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder';
@@ -14,16 +14,19 @@ import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploade
 import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
 
 import { NewScenarioState } from '../new-scenario.state';
-
 import { ScenarioState } from '../scenario.state';
 import { AuthService } from '@services';
 import { Resource, Scenario } from '@types';
+import { ScenarioComponent } from '../scenario.component';
+import { FeatureService } from '../../features/feature.service';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('ScenarioRoutePlaceholderComponent', () => {
   let fixture: ComponentFixture<ScenarioRoutePlaceholderComponent>;
   let component: ScenarioRoutePlaceholderComponent;
 
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
+  let navigateSpy: jasmine.Spy;
 
   const mockUser$ = new BehaviorSubject<any>({ id: 1 });
   const mockScenarioResource$ = new BehaviorSubject<Resource<Scenario>>(
@@ -38,25 +41,24 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   };
 
   beforeEach(async () => {
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
     await TestBed.configureTestingModule({
       imports: [
         BrowserAnimationsModule,
         HttpClientTestingModule,
-        RouterTestingModule,
+        RouterTestingModule, // real test router
         ScenarioRoutePlaceholderComponent,
+        MatSnackBarModule,
       ],
       declarations: [
-        MockDeclarations(
-          ResourceUnavailableComponent,
+        MockComponents(
           ScenarioCreationComponent,
+          ViewScenarioComponent,
+          ResourceUnavailableComponent,
           UploadedScenarioViewComponent,
-          ViewScenarioComponent
+          ScenarioComponent
         ),
       ],
       providers: [
-        { provide: Router, useValue: routerSpy },
         MockProvider(CurrencyPipe),
         MockProvider(AuthService, { loggedInUser$: mockUser$ }),
         MockProvider(NewScenarioState, {}),
@@ -64,8 +66,13 @@ describe('ScenarioRoutePlaceholderComponent', () => {
           currentScenarioResource$: mockScenarioResource$,
           currentScenario$: mockScenario$,
         }),
+        MockProvider(FeatureService),
       ],
     }).compileComponents();
+
+    // get the real router from RouterTestingModule and spy on navigate
+    router = TestBed.inject(Router);
+    navigateSpy = spyOn(router, 'navigate');
   });
 
   it('should return false if the scenario is not a DRAFT', async () => {
@@ -78,7 +85,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
       component.canViewScenarioCreation$
     );
 
-    expect(routerSpy.navigate).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
     expect(canViewScenarioCreation).toBeFalse();
   });
 
@@ -95,7 +102,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
       component.canViewScenarioCreation$
     );
 
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/plan', 5]);
+    expect(navigateSpy).toHaveBeenCalledWith(['/plan', 5]);
     expect(canViewScenarioCreation).toBeFalse();
   });
 
@@ -112,14 +119,14 @@ describe('ScenarioRoutePlaceholderComponent', () => {
       component.canViewScenarioCreation$
     );
 
-    expect(routerSpy.navigate).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
     expect(canViewScenarioCreation).toBeTrue();
   });
 
   // Navigation tests
 
   it('should show loading spinner when resource is loading', async () => {
-    mockScenarioResource$.next({ isLoading: true });
+    mockScenarioResource$.next({ isLoading: true } as any);
     createComp();
     const spinner =
       fixture.debugElement.nativeElement.querySelector('mat-spinner');
@@ -127,7 +134,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   });
 
   it('should show app-scenario-creation when scenario is DRAFT and user is owner', async () => {
-    mockScenarioResource$.next({ isLoading: false });
+    mockScenarioResource$.next({ isLoading: false } as any);
     mockUser$.next({ id: 1 });
     mockScenario$.next({
       user: 1,
@@ -137,17 +144,17 @@ describe('ScenarioRoutePlaceholderComponent', () => {
 
     createComp();
 
-    const component = fixture.debugElement.nativeElement.querySelector(
+    const el = fixture.debugElement.nativeElement.querySelector(
       'app-scenario-creation'
     );
-    expect(component).toBeTruthy();
+    expect(el).toBeTruthy();
   });
 
   it('should show resource unavailable component on error', async () => {
     mockScenarioResource$.next({
       isLoading: true,
       error: { name: 'terrible error', message: 'something failed' },
-    });
+    } as any);
     createComp();
     const spinner =
       fixture.debugElement.nativeElement.querySelector('mat-spinner');
@@ -157,29 +164,29 @@ describe('ScenarioRoutePlaceholderComponent', () => {
   it('should show scenario view if scenario was not uploaded and status is SUCCESS', async () => {
     mockScenarioResource$.next({
       isLoading: false,
-    });
+    } as any);
     mockScenario$.next({
       user: 1,
       scenario_result: { status: 'SUCCESS', completed_at: '' },
     } as any);
     createComp();
-    const component =
+    const el =
       fixture.debugElement.nativeElement.querySelector('app-view-scenario');
-    expect(component).toBeTruthy();
+    expect(el).toBeTruthy();
   });
 
   it('should show scenario view if scenario was not uploaded and status is PENDING', async () => {
     mockScenarioResource$.next({
       isLoading: false,
-    });
+    } as any);
     mockScenario$.next({
       user: 1,
       scenario_result: { status: 'PENDING', completed_at: '' },
     } as any);
     createComp();
 
-    const component =
+    const el =
       fixture.debugElement.nativeElement.querySelector('app-view-scenario');
-    expect(component).toBeTruthy();
+    expect(el).toBeTruthy();
   });
 });

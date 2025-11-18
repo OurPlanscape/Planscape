@@ -15,6 +15,10 @@ beat_schedule = {
         "task": "planning.tasks.trigger_geopackage_generation",
         "schedule": 10.0,  # runs every 10 seconds
     },
+    "trigger-scenario-ready-emails": {
+        "task": "planning.tasks.trigger_scenario_ready_emails",
+        "schedule": 10.0,
+    },
 }
 
 if settings.E2E_TESTS_ENABLED:
