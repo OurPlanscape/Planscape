@@ -3,9 +3,6 @@ import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
   FormGroup,
-  // FormArray,
-  // FormControl,
-  // FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -52,8 +49,6 @@ export class ExcludeAreasSelectorComponent
   selectedAreas: IdNamePair[] = [];
   viewingAreas: IdNamePair[] = [];
 
-
-
   ngOnInit() {
     this.excludableAreas$.subscribe((areas) => {
       this.excludableAreas = areas;
@@ -70,9 +65,8 @@ export class ExcludeAreasSelectorComponent
         take(1)
       )
       .subscribe((config) => {
-        // let excluded_areas_value: boolean[] = [];
         this.selectedAreas = [];
-        this.excludableAreas.forEach((area) => {
+        this.excludableAreas.forEach((area) => {      
             if (config.excluded_areas?.includes(area.id)) {
             
               this.selectedAreas.push(area);
@@ -84,13 +78,12 @@ export class ExcludeAreasSelectorComponent
   handleSelectedItemsChange(selectedItems: IdNamePair[]) {
     this.selectedAreas = [];
     selectedItems.forEach(s => { this.selectedAreas.push(s); })
-
+    this.newScenarioState.setExcludedAreas(this.getSelectedExcludedAreaIds());
   }
 
   handleViewedItemsChange(viewedItems: IdNamePair[]) {
     this.viewingAreas = [];
     viewedItems.forEach(s => { this.viewingAreas.push(s); })
-    this.newScenarioState.setExcludedAreas(this.getAreasBeingViewed());
   }
 
   getAreasBeingViewed(): number[] {
