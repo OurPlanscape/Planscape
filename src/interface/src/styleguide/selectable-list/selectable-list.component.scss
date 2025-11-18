@@ -9,6 +9,15 @@ $select-button-selected-color: #5892EE;
   box-sizing: border-box;
   position: relative;
 
+  &:after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    background-color: $color-soft-gray;
+    top: 0;
+    left: #{$select-width + $colum-gap}
+  }
 
   .view-checkbox {
     padding-left: 0;
@@ -28,9 +37,10 @@ $select-button-selected-color: #5892EE;
 }
 
 
-.list-row,
-.list-header {
+.list-row, .list-header {
   display: flex;
+  gap: #{ $colum-gap * 2 - $material-checkbox-padding};
+  margin-bottom: 16px;
 }
 
 .list-row {
@@ -38,6 +48,8 @@ $select-button-selected-color: #5892EE;
 }
 
 .list-header {
+  margin-bottom: 15px;
+  gap: #{ $colum-gap * 2};
   align-items: center;
   color: $color-md-gray;
   font-size: 16px;
@@ -48,14 +60,19 @@ $select-button-selected-color: #5892EE;
 
 }
 
-.select-title {
-  padding-right: 20px;
-  margin-top: 0;
-  display: flex;
-  align-items: center;
+
+.select-title, .select {
   width: 50px;
   text-align: center;
 }
+
+.select {
+  margin-top: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
 
 .select-button {
   display: block;
@@ -78,33 +95,6 @@ $select-button-selected-color: #5892EE;
     background-color: $color-main-blue;
   }
 
-}
-
-.table {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 0px;
-}
-
-.left-column {
-  flex: 0;
-  padding: 10px;
-}
-
-.right-column {
-  flex: 2;
-  padding: 10px;
-  border-left: 1px $color-soft-gray solid;
-}
-
-.select {
-  padding: 10px;
-  margin-top: 0;
-  display: flex;
-  align-items: center;
-  width: 50px;
-  text-align: center;
 }
 
 .color-box {
