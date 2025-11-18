@@ -1,4 +1,3 @@
-
 from datasets.models import DataLayer
 from datasets.serializers import BrowseDataLayerSerializer
 from rest_framework import serializers
