@@ -9,19 +9,12 @@ $select-button-selected-color: #5892EE;
   box-sizing: border-box;
   position: relative;
 
-  &:after {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: $color-soft-gray;
-    top: 0;
-    left: #{$select-width + $colum-gap}
-  }
 
   .view-checkbox {
     padding-left: 0;
     flex: 1;
+    padding-bottom: 16px;
+    border-left: 1px $color-soft-gray solid;
   }
 
   ::ng-deep {
@@ -40,7 +33,11 @@ $select-button-selected-color: #5892EE;
 .list-row, .list-header {
   display: flex;
   gap: #{ $colum-gap * 2 - $material-checkbox-padding};
-  margin-bottom: 16px;
+
+}
+
+.list-header {
+  height: 40px;
 }
 
 .list-row {
@@ -48,8 +45,7 @@ $select-button-selected-color: #5892EE;
 }
 
 .list-header {
-  margin-bottom: 15px;
-  gap: #{ $colum-gap * 2};
+  gap: 24px;
   align-items: center;
   color: $color-md-gray;
   font-size: 16px;
@@ -60,6 +56,11 @@ $select-button-selected-color: #5892EE;
 
 }
 
+.layer-title {
+  border-left: 1px $color-soft-gray solid;
+  padding-bottom: 20px;
+  padding-left: 10px;
+}
 
 .select-title, .select {
   width: 50px;
