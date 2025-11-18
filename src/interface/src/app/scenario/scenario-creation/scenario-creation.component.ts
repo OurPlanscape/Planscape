@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 
-import { AsyncPipe, NgClass, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgClass, NgIf } from '@angular/common';
 
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
@@ -27,7 +27,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { ScenarioService } from '@services';
+import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
@@ -61,6 +61,7 @@ import { ScenarioState } from '../scenario.state';
 import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
 import { FeatureService } from '../../features/feature.service';
+import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -92,6 +93,8 @@ enum ScenarioTabs {
     ScenarioMapComponent,
     Step1WithOverviewComponent,
     NgClass,
+    ScenarioSummaryComponent,
+    JsonPipe,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -123,6 +126,20 @@ export class ScenarioCreationComponent implements OnInit {
 
   steps = SCENARIO_OVERVIEW_STEPS;
 
+  standSize$ = this.newScenarioState.scenarioConfig$.pipe(
+    map((config) => config.stand_size)
+  );
+
+  treatmentGoalName$ = this.newScenarioState.scenarioConfig$.pipe(
+    map((config) => config.treatment_goal),
+    switchMap((id) =>
+      this.treatmentGoalsService
+        .getTreatmentGoals(this.planId)
+        .pipe(map((goals) => goals.find((goal) => goal.id == id)))
+    ),
+    map((goal) => goal?.name)
+  );
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -149,7 +166,8 @@ export class ScenarioCreationComponent implements OnInit {
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private treatmentGoalsService: TreatmentGoalsService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))

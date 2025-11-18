@@ -1,4 +1,5 @@
 <div class="step">
+  <ng-content select="[preStep]"></ng-content>
   <ng-container
     *ngIf="selected"
     [ngTemplateOutlet]="selected.content"></ng-container>

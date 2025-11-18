@@ -84,6 +84,15 @@
       [outerForm]="form"
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
+      <app-scenario-summary
+        *ngIf="!(isFirstIndex$ | async)"
+        preStep
+        [title]="scenarioName"
+        [standSize]="(standSize$ | async) || ''"
+        [treatmentGoal]="
+          (treatmentGoalName$ | async) || ''
+        "></app-scenario-summary>
+
       <sg-step class="full-screen-step">
         <app-step1-with-overview></app-step1-with-overview>
       </sg-step>

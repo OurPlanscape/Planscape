@@ -112,5 +112,9 @@ sg-steps-nav {
 app-scenario-map {
   flex: 1;
   min-width: $scenario-sidebar-width;
+}
 
+app-scenario-summary {
+  display: block;
+  margin-bottom: 16px;
 }
