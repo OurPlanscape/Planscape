@@ -366,14 +366,17 @@ class ClimateForesightPillarViewSetTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
-        # Should return only 2 global pillars (custom pillars are run-specific)
-        self.assertEqual(len(data), 2)
+        self.assertGreaterEqual(len(data), 10)
+
         pillar_names = [p["name"] for p in data]
+
+        self.assertIn("Air Quality", pillar_names)
+        self.assertIn("Fire Dynamics", pillar_names)
+        self.assertIn("Water Security", pillar_names)
+
+        # Check test global pillars are included
         self.assertIn("Global Pillar 1", pillar_names)
         self.assertIn("Global Pillar 2", pillar_names)
-        # Custom pillars should NOT appear without run filter
-        self.assertNotIn("Custom Pillar 1", pillar_names)
-        self.assertNotIn("Custom Pillar 2", pillar_names)
 
     def test_list_pillars_filtered_by_run(self):
         """Test filtering pillars by run parameter returns global + custom for that run."""
@@ -383,13 +386,18 @@ class ClimateForesightPillarViewSetTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
-        # should return 2 global + 2 custom for run1 = 4 total
-        self.assertEqual(len(data), 4)
+        self.assertGreaterEqual(len(data), 12)
+
         pillar_names = [p["name"] for p in data]
-        self.assertIn("Global Pillar 1", pillar_names)
-        self.assertIn("Global Pillar 2", pillar_names)
         self.assertIn("Custom Pillar 1", pillar_names)
         self.assertIn("Custom Pillar 2", pillar_names)
+        self.assertIn("Air Quality", pillar_names)
+        self.assertIn("Fire Dynamics", pillar_names)
+
+        custom_pillars = [p for p in data if p["is_custom"]]
+        custom_pillar_names = [p["name"] for p in custom_pillars]
+        self.assertIn("Custom Pillar 1", custom_pillar_names)
+        self.assertIn("Custom Pillar 2", custom_pillar_names)
 
     def test_pillar_ordering_with_run_filter(self):
         """Test that custom pillars come before global pillars when filtering by run."""
@@ -400,14 +408,20 @@ class ClimateForesightPillarViewSetTest(APITestCase):
         data = response.json()
 
         pillar_names = [p["name"] for p in data]
+        pillar_is_custom = [p["is_custom"] for p in data]
 
         # first two should be custom pillars
         self.assertEqual(pillar_names[0], "Custom Pillar 1")
         self.assertEqual(pillar_names[1], "Custom Pillar 2")
+        self.assertTrue(pillar_is_custom[0])
+        self.assertTrue(pillar_is_custom[1])
 
         # last two should be global pillars
-        self.assertEqual(pillar_names[2], "Global Pillar 1")
-        self.assertEqual(pillar_names[3], "Global Pillar 2")
+        for i in range(2, len(pillar_is_custom)):
+            self.assertFalse(
+                pillar_is_custom[i],
+                f"Pillar at index {i} ({pillar_names[i]}) should be global",
+            )
 
     def test_user_cannot_see_other_users_custom_pillars(self):
         """Test that users only see global pillars without run filter (no custom pillars from any user)."""
