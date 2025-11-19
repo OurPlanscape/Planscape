@@ -56,7 +56,7 @@ import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialo
 
 import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
 
-import { SNACK_ERROR_CONFIG } from '@shared';
+import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
 import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
@@ -95,6 +95,7 @@ enum ScenarioTabs {
     Step1WithOverviewComponent,
     NgClass,
     ScenarioSummaryComponent,
+    SharedModule,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
