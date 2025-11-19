@@ -706,9 +706,12 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     bbox = serializers.SerializerMethodField()
 
     def get_max_treatment_area(self, obj):
-        cfg = obj.configuration or {}
-        if "targets" in cfg and isinstance(cfg["targets"], dict):
-            return cfg["targets"].get("max_area")
+        cfg = obj.configuration
+        if not isinstance(cfg, dict):
+            return None
+        targets = cfg.get("targets")
+        if isinstance(targets, dict):
+            return targets.get("max_area")
         return cfg.get("max_treatment_area_ratio")
 
     def get_bbox(self, instance) -> Optional[List[float]]:
