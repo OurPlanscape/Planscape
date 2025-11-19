@@ -2,7 +2,6 @@ from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from django.db import models
 from django.shortcuts import get_object_or_404
 from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
 from climate_foresight.serializers import (
@@ -80,13 +79,12 @@ class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Return pillars available to the user.
-        - Global pillars (run=None) are visible to all
-        - Custom pillars are only visible if the user owns the associated run
+        Return global pillars only. When filtering by run (via query param), the filter will add
+        custom pillars for that specific run.
         """
-        return ClimateForesightPillar.objects.filter(
-            models.Q(run__isnull=True)
-        ).order_by("order", "name")
+        return ClimateForesightPillar.objects.filter(run__isnull=True).order_by(
+            "order", "name"
+        )
 
     def perform_destroy(self, instance):
         """Only allow deletion of custom pillars when run is in draft mode."""
