@@ -86,7 +86,7 @@
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary
-        preStep
+        sharedHeading
         *ngIf="(isFirstIndex$ | async) === false"
         [title]="scenarioName"
         [standSize]="(standSize$ | async) || ''"

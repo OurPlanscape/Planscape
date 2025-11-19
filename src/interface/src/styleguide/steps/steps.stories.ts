@@ -148,7 +148,7 @@ export const Default: Story = {
   args: {},
 };
 
-export const WithPreStep: Story = {
+export const WithSharedHeading: Story = {
   args: {},
   render: ({ ...args }) => ({
     props: {
@@ -169,7 +169,7 @@ export const WithPreStep: Story = {
   <div>Index is {{index || 0}}</div>
   <sg-steps ${argsToTemplate(args)} linear (selectedIndexChange)='index = $event' [save]='saveData'
   style='background-color: #d0d0d0;padding:20px;'>
-  <div preStep style='border: 1px solid black; padding: 10px;'> You can project any random content at
+  <div sharedHeading style='border: 1px solid black; padding: 10px;'> You can project any random content at
   the top of the steps, for all steps, using the attribute "preStep"</div>
     <cdk-step>
       <div style='line-height: 40px;'>
