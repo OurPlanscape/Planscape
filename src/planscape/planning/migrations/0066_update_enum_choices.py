@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                     ("STANDS_DONE", "Stands Done"),
                     ("DONE", "Done"),
                     ("FAILED", "Failed"),
-                    ("OVERSIZE", "Oversize (>3M Acres)"),
+                    ("OVERSIZE", "Oversize"),
                 ],
                 help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
                 null=True,

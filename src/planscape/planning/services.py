@@ -31,6 +31,8 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import compute_scenario_capabilities
+from planscape.exceptions import InvalidGeometry
+from planscape.openpanel import track_openpanel
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
@@ -51,8 +53,6 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalUsageType,
 )
-from planscape.exceptions import InvalidGeometry
-from planscape.openpanel import track_openpanel
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +88,7 @@ def get_truncated_stands_grid_keys(
     )
     return list(truncated_stand_grid_keys)
 
+
 @transaction.atomic()
 def create_planning_area(
     user: User,
@@ -98,6 +99,7 @@ def create_planning_area(
 ) -> PlanningArea:
     from planning.tasks import (
         async_create_stands,
+        async_send_email_large_planning_area,
         async_set_planning_area_status,
         prepare_planning_area,
     )
@@ -128,6 +130,9 @@ def create_planning_area(
             name="planning.planning_area.created",
             properties={"region": region_name, "email": user.email if user else None},
             user_id=user.pk,
+        )
+        transaction.on_commit(
+            lambda: async_send_email_large_planning_area.delay(planning_area.pk)
         )
         return planning_area
 
@@ -222,7 +227,7 @@ def get_treatment_goal_from_configuration(
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import prepare_scenarios_for_forsys_and_run
-    
+
     planning_area = kwargs.get("planning_area")
     if isinstance(planning_area, int):
         planning_area = PlanningArea.objects.get(pk=planning_area)
@@ -358,7 +363,6 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         raise ValueError(
             f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
         )
-
 
     scenario = Scenario.objects.create(
         name=validated_data["name"],
@@ -668,8 +672,6 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         raise ValueError(
             f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
         )
-
-
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal

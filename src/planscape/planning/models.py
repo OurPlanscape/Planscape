@@ -71,7 +71,7 @@ class PlanningAreaMapStatus(models.TextChoices):
     STANDS_DONE = "STANDS_DONE", "Stands Done"
     DONE = "DONE", "Done"
     FAILED = "FAILED", "Failed"
-    OVERSIZE = "OVERSIZE", "Oversize (>3M Acres)"
+    OVERSIZE = "OVERSIZE", "Oversize"
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
