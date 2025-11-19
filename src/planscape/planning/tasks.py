@@ -37,8 +37,8 @@ from planning.services import (
     build_run_configuration,
     create_metrics_task,
     export_to_geopackage,
-    get_available_stand_ids,
     get_acreage,
+    get_available_stand_ids,
 )
 
 log = logging.getLogger(__name__)
