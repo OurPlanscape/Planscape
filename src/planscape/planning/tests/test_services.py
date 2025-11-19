@@ -17,7 +17,6 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
 from django.test import TestCase, override_settings
 from fiona.crs import to_string
-from planscape.tests.factories import UserFactory
 from stands.models import StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
