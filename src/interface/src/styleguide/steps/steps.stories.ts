@@ -147,3 +147,40 @@ type Story = StoryObj<StepsComponent<Person>>;
 export const Default: Story = {
   args: {},
 };
+
+export const WithSharedHeading: Story = {
+  args: {},
+  render: ({ ...args }) => ({
+    props: {
+      ...args,
+      index: 0,
+      saveData: (data: Partial<Person>) => {
+        return timer(1000).pipe(
+          mergeMap(() => {
+            return data.name === 'fail'
+              ? throwError(() => new Error('Oh no, some errors while saving!'))
+              : of(true);
+          })
+        );
+      },
+    },
+    template: `
+<section style='height: 250px; background-color: #f0f0f0'>
+  <div>Index is {{index || 0}}</div>
+  <sg-steps ${argsToTemplate(args)} linear (selectedIndexChange)='index = $event' [save]='saveData'
+  style='background-color: #d0d0d0;padding:20px;'>
+  <div sharedHeading style='border: 1px solid black; padding: 10px;'> You can project any random content at
+  the top of the steps, for all steps, using the attribute "preStep"</div>
+    <cdk-step>
+      <div style='line-height: 40px;'>
+        Some <br> long <br>  step <br>  that <br>  does <br>  not <br>  have a  <br> form
+      </div>
+    </cdk-step>
+    <sg-step><sg-step-demo-1></sg-step-demo-1></sg-step>
+    <sg-step><sg-step-demo-3></sg-step-demo-3></sg-step>
+    <sg-step><sg-step-demo-2></sg-step-demo-2></sg-step>
+    <cdk-step>Bye</cdk-step>
+  </sg-steps>
+</section>`,
+  }),
+};

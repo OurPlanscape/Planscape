@@ -47,6 +47,7 @@ describe('ScenarioCreationComponent', () => {
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),
           stepIndex$: of(0),
+          scenarioConfig$: of({}),
         }),
       ],
       declarations: [

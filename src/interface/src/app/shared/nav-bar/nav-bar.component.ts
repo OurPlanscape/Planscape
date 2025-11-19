@@ -19,7 +19,8 @@ export class NavBarComponent implements OnInit {
   @Input() area:
     | 'SCENARIOS'
     | 'EXPLORE'
-    | 'SCENARIO'
+    | 'SCENARIO' // remove after SCENARIO_CONFIG_UI
+    | 'NEW_SCENARIO'
     | 'TREATMENTS'
     | 'TREATMENTS_PROJECT_AREA'
     | 'DIRECT_IMPACTS'
@@ -68,11 +69,14 @@ export class NavBarComponent implements OnInit {
       'TREATMENTS_PROJECT_AREA',
       'EXPLORE',
       'CLIMATE_FORESIGHT',
+      'NEW_SCENARIO',
     ].some((area) => area === this.area);
   }
 
   showTooltip() {
     // should hide if its on area explore or climate
-    return !['EXPLORE', 'CLIMATE_FORESIGHT'].some((area) => area === this.area);
+    return !['EXPLORE', 'CLIMATE_FORESIGHT', 'NEW_SCENARIO'].some(
+      (area) => area === this.area
+    );
   }
 }
