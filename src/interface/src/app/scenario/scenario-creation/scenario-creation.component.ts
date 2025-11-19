@@ -14,6 +14,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   skip,
   switchMap,
   take,
@@ -130,12 +131,19 @@ export class ScenarioCreationComponent implements OnInit {
     map((config) => config.stand_size)
   );
 
-  treatmentGoalName$ = this.newScenarioState.scenarioConfig$.pipe(
-    map((config) => config.treatment_goal),
+  treatmentGoals$ = this.treatmentGoalsService
+    .getTreatmentGoals(this.planId)
+    .pipe(shareReplay(1));
+
+  treatmentGoalId$ = this.newScenarioState.scenarioConfig$.pipe(
+    map((config) => config.treatment_goal)
+  );
+
+  treatmentGoalName$ = this.treatmentGoalId$.pipe(
     switchMap((id) =>
-      this.treatmentGoalsService
-        .getTreatmentGoals(this.planId)
-        .pipe(map((goals) => goals.find((goal) => goal.id == id)))
+      this.treatmentGoals$.pipe(
+        map((goals) => goals.find((goal) => goal.id == id))
+      )
     ),
     map((goal) => goal?.name)
   );
@@ -176,6 +184,9 @@ export class ScenarioCreationComponent implements OnInit {
           this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
         }
       });
+
+    // pre load goals
+    this.treatmentGoals$.pipe(take(1)).subscribe();
   }
 
   ngOnInit(): void {

@@ -85,8 +85,8 @@
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary
-        *ngIf="!(isFirstIndex$ | async)"
         preStep
+        *ngIf="(isFirstIndex$ | async) === false"
         [title]="scenarioName"
         [standSize]="(standSize$ | async) || ''"
         [treatmentGoal]="
