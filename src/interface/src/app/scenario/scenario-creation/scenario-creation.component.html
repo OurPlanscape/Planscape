@@ -70,7 +70,7 @@
     [steps]="steps"
     [selectedIndex]="(stepIndex$ | async) ?? 0"
     [allowNavigation]="false"></sg-steps-nav>
-  <section class="container">
+  <section class="container" [ngClass]="{ first: isFirstIndex$ | async }">
     <sg-steps
       class="new-scenario-ui"
       [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"

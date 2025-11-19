@@ -77,6 +77,14 @@ sg-steps.new-scenario-ui {
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
   z-index: $sg-steps-index;
 
+  &:not(.full-screen-steps) {
+    @include on-small() {
+      height: initial;
+      max-width: initial;
+    }
+
+  }
+
   &.full-screen-steps {
     width: 100%;
     max-width: 100%;
@@ -97,9 +105,13 @@ sg-steps.new-scenario-ui {
   height: 100%;
   overflow: hidden;
 
+
   @include on-small() {
     overflow: initial;
+    flex-direction: column-reverse;
+    height: initial;
   }
+
 }
 
 sg-steps-nav {
@@ -112,6 +124,12 @@ sg-steps-nav {
 app-scenario-map {
   flex: 1;
   min-width: $scenario-sidebar-width;
+
+
+  @include on-small() {
+    height: 400px;
+    flex: initial;
+  }
 }
 
 app-scenario-summary {

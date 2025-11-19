@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 
-import { AsyncPipe, JsonPipe, NgClass, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
@@ -95,7 +95,6 @@ enum ScenarioTabs {
     Step1WithOverviewComponent,
     NgClass,
     ScenarioSummaryComponent,
-    JsonPipe,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
