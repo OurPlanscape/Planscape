@@ -238,19 +238,12 @@ def prepare_planning_area(planning_area_id: int) -> int:
         PlanningAreaMapStatus.FAILED,
     )
 
-    body = chain(
-        set_map_status_done,
-        async_send_email_large_planning_area.si(planning_area.pk),
-    )
-
     log.info(f"Lining up {len(create_stand_metrics_jobs)} for metrics.")
 
     stand_metrics_workflow = chord(
-        header=group(create_stand_metrics_jobs),
-        body=body,
+        header=group(create_stand_metrics_jobs), body=set_map_status_done
     ).on_error(set_map_status_failed)
     stand_metrics_workflow.apply_async()
-
     log.info(f"Triggered preparation workflow for planning area {planning_area_id}")
     return len(create_stand_metrics_jobs)
 
@@ -487,7 +480,7 @@ def async_send_email_large_planning_area(planning_area_id: int) -> None:
     user_email = (
         (planning_area.user.email or "").strip() if planning_area.user else "(unknown)"
     )
-    link = urljoin(settings.PLANSCAPE_BASE_URL, f"plan/{planning_area.pk}")
+    link = get_frontend_url(f"plan/{planning_area.pk}")
 
     context = {
         "user_email": user_email,

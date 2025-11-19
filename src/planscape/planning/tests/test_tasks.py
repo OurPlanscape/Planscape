@@ -394,7 +394,9 @@ class TriggerScenarioReadyEmailsTestCase(TestCase):
 
 
 @override_settings(
-    OVERSIZE_PLANNING_AREA_ACRES=100, SUPPORT_EMAIL="support@example.com"
+    ENV="staging",
+    OVERSIZE_PLANNING_AREA_ACRES=100,
+    SUPPORT_EMAIL="support@example.com",
 )
 class AsyncSendEmailLargePlanningAreaTest(TestCase):
     def setUp(self):
@@ -415,6 +417,19 @@ class AsyncSendEmailLargePlanningAreaTest(TestCase):
             message=mock.ANY,
             html_message=mock.ANY,
         )
+
+        # Inspect email body for correct frontend link
+        _, kwargs = send_email_mock.call_args
+        html_body = kwargs["html_message"]
+        txt_body = kwargs["message"]
+
+        expected_base = "https://staging.planscape.org"
+        expected_path = f"/plan/{self.pa.pk}"
+
+        self.assertIn(expected_base, html_body)
+        self.assertIn(expected_path, html_body)
+        self.assertIn(expected_base, txt_body)
+        self.assertIn(expected_path, txt_body)
 
     @mock.patch("planning.tasks.send_mail", return_value=True)
     @mock.patch("planning.tasks.get_acreage", return_value=100)

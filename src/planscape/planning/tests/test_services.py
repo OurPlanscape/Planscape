@@ -15,19 +15,21 @@ from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from fiona.crs import to_string
+from planscape.tests.factories import UserFactory
 from stands.models import StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planning.models import (
     PlanningArea,
+    PlanningAreaMapStatus,
     ScenarioResultStatus,
     TreatmentGoalUsageType,
-    PlanningAreaMapStatus,
 )
 from planning.services import (
+    create_planning_area,
     create_scenario,
     export_planning_area_to_geopackage,
     export_to_geopackage,
@@ -41,6 +43,7 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
+    trigger_scenario_run,
     validate_scenario_configuration,
     validate_scenario_treatment_ratio,
 )
@@ -50,8 +53,8 @@ from planning.tests.factories import (
     ScenarioFactory,
     ScenarioResultFactory,
     TreatmentGoalFactory,
+    UserFactory,
 )
-from planscape.tests.factories import UserFactory
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -844,4 +847,49 @@ class CreateScenarioGuardTest(TestCase):
                     "targets": {"max_area": 500, "max_project_count": 2},
                 },
             )
+        self.assertIn("oversize", str(ctx.exception).lower())
+
+
+@override_settings(OVERSIZE_PLANNING_AREA_ACRES=100)
+class CreatePlanningAreaOversizeTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.geom = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 2, 2 2, 2 0, 0 0)))", srid=4269
+        )
+
+    @mock.patch("planning.services.get_acreage", return_value=150)
+    def test_oversize_planning_area_sets_status_oversize(self, _mock_get_acreage):
+        pa = create_planning_area(
+            user=self.user,
+            name="Oversize PA",
+            region_name="sierra-nevada",
+            geometry=self.geom,
+        )
+
+        pa.refresh_from_db()
+        self.assertEqual(pa.map_status, PlanningAreaMapStatus.OVERSIZE)
+
+
+class TriggerScenarioRunGuardTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.planning_area_oversize = PlanningAreaFactory.create(
+            map_status=PlanningAreaMapStatus.OVERSIZE
+        )
+
+    def test_blocks_trigger_run_on_oversize_planning_area(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area_oversize,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "targets": {"max_area": 500, "max_project_count": 2},
+            },
+        )
+
+        with self.assertRaises(ValueError) as ctx:
+            trigger_scenario_run(scenario, self.user)
+
         self.assertIn("oversize", str(ctx.exception).lower())
