@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { SectionComponent, ButtonComponent } from '@styleguide';
+import {
+  Component,
+  inject,
+  Input,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
+import { SectionComponent, ButtonComponent, StepDirective } from '@styleguide';
 import {
   CdkDragDrop,
   CdkDrag,
@@ -12,6 +18,11 @@ import {
 import { NamePillarModalComponent } from '../../name-pillar-modal/name-pillar-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
+import { ClimateForesightService } from '@services';
+import { ClimateForesightRun, DataLayer, InputDatalayer, Pillar } from '@types';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FormGroup } from '@angular/forms';
+import { PillarDragAndDrop } from '../climate-foresight-run.component';
 
 @Component({
   selector: 'app-assign-pillars',
@@ -23,55 +34,40 @@ import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-d
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
-    NamePillarModalComponent,
-    DeleteDialogComponent,
     ButtonComponent,
+    MatProgressSpinnerModule,
   ],
+  providers: [{ provide: StepDirective, useExisting: AssignPillarsComponent }],
   templateUrl: './assign-pillars.component.html',
   styleUrl: './assign-pillars.component.scss',
 })
-export class AssignPillarsComponent {
-  datalayers = [
-    { title: 'Probability of High Severity Fire' },
-    { title: 'Wildlife Species Richness' },
-  ];
-
-  pillars: {
-    title: string;
-    isOpen: boolean;
-    dataLayers: { title: string }[];
-  }[] = [
-    {
-      title: 'Air Quality',
-      isOpen: false,
-      dataLayers: [
-        { title: 'Potential Total Smoke Production' },
-        { title: 'Potential Avoided Smoke Production' },
-        { title: 'Heavy Fuel Load' },
-      ],
-    },
-    {
-      title: 'Carbon Sequestration',
-      isOpen: false,
-      dataLayers: [
-        { title: 'Large Tree Carbon' },
-        { title: 'Dead and Down Carbon' },
-        { title: 'Total Carbon (F3)' },
-      ],
-    },
-    {
-      title: 'Fire-Adapted Communities',
-      isOpen: false,
-      dataLayers: [],
-    },
-    {
-      title: 'Forest Resilience',
-      isOpen: false,
-      dataLayers: [],
-    },
-  ];
+export class AssignPillarsComponent
+  extends StepDirective<any>
+  implements OnChanges
+{
+  @Input({ required: true }) run!: ClimateForesightRun;
 
   private dialog: MatDialog = inject(MatDialog);
+  climateService: ClimateForesightService = inject(ClimateForesightService);
+
+  datalayers: DataLayer[] = [];
+  pillars: PillarDragAndDrop[] = [];
+
+  loadingDatalayers = false;
+  loadingPillars = false;
+
+  form: FormGroup = new FormGroup({});
+
+  constructor() {
+    super();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['run'] && this.run) {
+      this.getDataLayers();
+      this.getPillars();
+    }
+  }
 
   drop(event: CdkDragDrop<any[]>) {
     if (event.previousContainer === event.container) {
@@ -92,12 +88,36 @@ export class AssignPillarsComponent {
 
   addPillar() {
     this.dialog
-      .open(NamePillarModalComponent)
+      .open(NamePillarModalComponent, {
+        data: {
+          runId: this.run.id,
+        },
+      })
       .afterClosed()
-      .subscribe((modalResponse: any) => {});
+      .subscribe((modalResponse: any) => {
+        if (modalResponse) {
+          this.getPillars();
+        }
+      });
   }
 
-  deletePillar() {
+  editPillar(pillar: Pillar) {
+    this.dialog
+      .open(NamePillarModalComponent, {
+        data: {
+          pillar: pillar,
+          runId: this.run.id,
+        },
+      })
+      .afterClosed()
+      .subscribe((modalResponse: any) => {
+        if (modalResponse) {
+          this.getPillars();
+        }
+      });
+  }
+
+  deletePillar(id: number) {
     this.dialog
       .open(DeleteDialogComponent, {
         data: {
@@ -106,6 +126,79 @@ export class AssignPillarsComponent {
         },
       })
       .afterClosed()
-      .subscribe((modalResponse: any) => {});
+      .subscribe((modalResponse: any) => {
+        if (modalResponse === true) {
+          this.climateService.deletePillar(id, this.run.id).subscribe((res) => {
+            this.getPillars();
+          });
+        }
+      });
+  }
+
+  getDataLayers() {
+    this.loadingDatalayers = true;
+    this.climateService.getDataLayers().subscribe({
+      next: (datalayers) => {
+        // Filtering just the enabled datalayers
+        const enabledLayers =
+          datalayers.filter(
+            (dl: any) =>
+              dl.metadata?.modules?.['climate_foresight']?.enabled === true
+          ) || [];
+        // geting the selected datalayers id
+        const availableLayerIDs = this.run.input_datalayers?.map(
+          (dl) => dl.datalayer
+        );
+        // Filtering just the available datalayers
+        const availableLayers = enabledLayers.filter((dl: DataLayer) =>
+          availableLayerIDs?.includes(dl.id)
+        );
+        this.datalayers = availableLayers;
+        this.loadingDatalayers = false;
+      },
+      error: () => {
+        this.loadingDatalayers = false;
+      },
+    });
+  }
+
+  getPillars() {
+    this.loadingPillars = true;
+    this.climateService.getPillars(this.run.id).subscribe({
+      next: (res) => {
+        this.pillars = res.map((p) => {
+          const obj: PillarDragAndDrop = {
+            ...p,
+            isOpen: false,
+            dataLayers: [],
+          };
+          return obj;
+        });
+        this.loadingPillars = false;
+      },
+      error: () => {
+        this.loadingPillars = false;
+      },
+    });
+  }
+
+  getData() {
+    return this.assignPillarsToInputLayers(this.pillars);
+  }
+
+  assignPillarsToInputLayers(
+    pillars: PillarDragAndDrop[]
+  ): Partial<InputDatalayer>[] {
+    let inputDatalayers: Partial<InputDatalayer>[] = [];
+    pillars.forEach((pillar) => {
+      pillar.dataLayers.forEach((dl: DataLayer) => {
+        const inputDl: Partial<InputDatalayer> = {
+          datalayer: dl.id,
+          pillar: pillar.id,
+        };
+        inputDatalayers.push(inputDl);
+      });
+    });
+    return inputDatalayers;
   }
 }

@@ -20,7 +20,7 @@ export interface InputDatalayer {
   id?: number;
   datalayer: number;
   favor_high: boolean | null;
-  pillar: string;
+  pillar: number | null;
   normalized_datalayer_id?: number | null;
   statistics: LayerStatistics | null;
 }
@@ -36,6 +36,16 @@ export interface ClimateForesightRun {
   current_step: number;
   furthest_step: number;
   input_datalayers?: InputDatalayer[];
+}
+
+export interface Pillar {
+  id: number;
+  run: number;
+  name: string;
+  order: number;
+  created_at: string;
+  is_custom: boolean;
+  can_delete: boolean;
 }
 
 export interface CreateClimateForesightRunPayload {
