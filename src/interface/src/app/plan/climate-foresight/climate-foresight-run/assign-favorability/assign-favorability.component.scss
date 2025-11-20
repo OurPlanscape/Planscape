@@ -141,7 +141,7 @@
 .right-panel {
   flex: 1;
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: center;
   padding: 32px;
   background-color: $color-lighter-gray;

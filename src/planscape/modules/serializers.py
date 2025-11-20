@@ -1,6 +1,7 @@
 from datasets.models import DataLayer
 from rest_framework import serializers
-
+from datasets.serializers import BrowseDataLayerSerializer
+from core.flags import feature_enabled
 
 class OptionDataLayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,7 +19,10 @@ class OptionThresholdsSerializer(serializers.Serializer):
 
 class ForsysOptionsSerializer(serializers.Serializer):
     inclusions = serializers.ListField(child=OptionDataLayerSerializer())
-    exclusions = serializers.ListField(child=OptionDataLayerSerializer())
+    if feature_enabled("SCENARIO_CONFIG_UI"):
+        exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
+    else:
+        exclusions = serializers.ListField(child=OptionDataLayerSerializer())
     thresholds = OptionThresholdsSerializer()
 
 

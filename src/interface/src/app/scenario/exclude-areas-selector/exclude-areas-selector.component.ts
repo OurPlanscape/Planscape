@@ -4,12 +4,13 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StepDirective } from '../../../styleguide/steps/step.component';
-import { IdNamePair, ScenarioCreation } from '@types';
+import { BaseLayer, IdNamePair, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { filter, take } from 'rxjs';
 import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
+import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
 @UntilDestroy()
 @Component({
@@ -35,20 +36,22 @@ export class ExcludeAreasSelectorComponent
 {
   constructor(
     private newScenarioState: NewScenarioState,
-    private forsysService: ForsysService
+    private forsysService: ForsysService,
+    private baseLayersStateService: BaseLayersStateService
   ) {
+    baseLayersStateService.enableBaseLayerHover(false);
     super();
   }
 
   form = new FormGroup({}); // keeping the inheritance happy
   excludableAreas$ = this.forsysService.excludedAreas$;
-  excludableAreas: IdNamePair[] = [];
+  excludableAreas: BaseLayer[] = [];
 
   selectedAreas: IdNamePair[] = [];
   viewingAreas: IdNamePair[] = [];
 
   ngOnInit() {
-    this.excludableAreas$.subscribe((areas) => {
+    this.excludableAreas$.pipe(take(1)).subscribe((areas) => {
       this.excludableAreas = areas;
       this.prefillExcludedAreas();
     });
@@ -69,6 +72,9 @@ export class ExcludeAreasSelectorComponent
             this.selectedAreas.push(area);
           }
         });
+        this.newScenarioState.setExcludedAreas(
+          this.getSelectedExcludedAreaIds()
+        );
       });
   }
 
@@ -85,6 +91,10 @@ export class ExcludeAreasSelectorComponent
     viewedItems.forEach((s) => {
       this.viewingAreas.push(s);
     });
+    const baseLayersToView = this.excludableAreas.filter((ea) =>
+      viewedItems.map((vi) => vi.id).includes(ea.id)
+    );
+    this.baseLayersStateService.setBaseLayers(baseLayersToView);
   }
 
   getAreasBeingViewed(): number[] {

@@ -20,29 +20,47 @@
         canViewScenarioCreation$ | async as canViewScenarioCreation;
         else checkOrigin
       ">
-      <!-- Displaying drafts if we can edit drafts -->
-      <app-scenario-creation
-        *ngIf="
-          canViewScenarioCreation === true;
-          else checkOrigin
-        "></app-scenario-creation>
+      <!-- with the new config-->
+      <ng-container *ngIf="configUiFlagIsOn">
+        <!-- Displaying drafts if we can edit drafts -->
+        <app-scenario-creation
+          *ngIf="
+            canViewScenarioCreation === true;
+            else checkOrigin
+          "></app-scenario-creation>
+      </ng-container>
+
+      <!-- version without config ui - remove after cleaning flag-->
+      <ng-container *ngIf="!configUiFlagIsOn">
+        <app-scenario>
+          <!-- Displaying drafts if we can edit drafts -->
+          <app-scenario-creation
+            *ngIf="
+              canViewScenarioCreation === true;
+              else checkOrigin
+            "></app-scenario-creation>
+        </app-scenario>
+      </ng-container>
     </ng-container>
 
     <ng-template #checkOrigin>
       <!-- Displaying uploaded scenario if the origin is USER -->
-      <app-uploaded-scenario-view
-        [scenario]="scenarioResource.data"
-        *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
-      </app-uploaded-scenario-view>
-    </ng-template>
+      <app-scenario>
+        <app-uploaded-scenario-view
+          [scenario]="scenarioResource.data"
+          *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
+        </app-uploaded-scenario-view>
 
-    <ng-template #createScenario>
-      <!-- Displaying scenario view if canViewScenarioCreation$ --if not, means canViewScenarioCreation didn't emit yet and we should display loading-->
-      <app-view-scenario
-        *ngIf="
-          (canViewScenarioCreation$ | async) === false;
-          else loading
-        "></app-view-scenario>
+        <ng-template #createScenario>
+          <!-- Displaying scenario view if canViewScenarioCreation$ --if not, means canViewScenarioCreation didn't emit yet and we should display loading-->
+
+          <app-view-scenario
+            *ngIf="
+              (canViewScenarioCreation$ | async) === false;
+              else loading
+            "></app-view-scenario>
+        </ng-template>
+      </app-scenario>
     </ng-template>
 
     <!-- Loading for the case where canViewScenarioCreation$ didn't emit yet -->

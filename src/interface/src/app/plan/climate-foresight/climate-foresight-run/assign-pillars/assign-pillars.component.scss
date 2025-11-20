@@ -64,11 +64,19 @@
   border: 1px solid $color-soft-gray;
   background: $color-lighter-gray;
 
-  &-title {
+  &-header {
     display: flex;
     align-items: center;
 
     @include small-input-label();
+  }
+
+  &-title {
+    display: flex;
+
+    .material-symbols-outlined {
+      cursor: pointer;
+    }
   }
 
   div.datalayers-box:first-of-type {
@@ -90,7 +98,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   box-sizing: border-box;
   cursor: move;
   background: $color-white;
@@ -120,25 +128,6 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-.expandible-group-title {
-  &::before {
-    display: inline-block;
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
-    content: '';
-    background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>')
-      no-repeat 50% 50%;
-    background-size: 6px;
-  }
-
-  &.open {
-    &::before {
-      transform: rotate(90deg);
-    }
-  }
-}
-
 .empty-datalayers {
   padding: 16px;
   padding-bottom: 0;
@@ -162,4 +151,10 @@
   width: 20px;
   height: 20px;
   font-size: 20px;
+}
+
+.loading-box {
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }

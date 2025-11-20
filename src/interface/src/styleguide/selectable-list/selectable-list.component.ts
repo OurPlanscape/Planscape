@@ -46,6 +46,7 @@ interface Item {
 export class SelectableListComponent<T extends Item> {
   /** @ignore - default legend color */
   defaultColor = 'transparent';
+  defaultOutlineColor = 'transparent';
 
   /** all the items in the list */
   @Input() items: T[] = [];
@@ -58,6 +59,7 @@ export class SelectableListComponent<T extends Item> {
 
   /** the property or path to look up color for the legend */
   @Input() colorPath?: string;
+  @Input() outlineColorPath?: string;
 
   /** Emits when an item is selected */
   @Output() selectedItemsChanged = new EventEmitter<T[]>();
@@ -107,6 +109,22 @@ export class SelectableListComponent<T extends Item> {
     if (val == null) {
       console.error(
         `SelectableListComponent: colorPath "${this.colorPath}" not found`,
+        item
+      );
+      return this.defaultColor;
+    }
+    return String(val);
+  }
+
+  getOutlineColor(item: any): string {
+    if (!this.outlineColorPath) return this.defaultOutlineColor;
+
+    const tokens = this.tokenizePath(this.outlineColorPath);
+    const val = tokens.reduce<any>((acc, key) => acc?.[key as any], item);
+
+    if (val == null) {
+      console.error(
+        `SelectableListComponent: outlineColorPath "${this.outlineColorPath}" not found`,
         item
       );
       return this.defaultColor;

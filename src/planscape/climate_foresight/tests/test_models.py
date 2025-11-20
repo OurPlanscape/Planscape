@@ -255,14 +255,14 @@ class ClimateForesightPillarModelTest(TestCase):
         """Test creating a global pillar (run=None)."""
         pillar = ClimateForesightPillar.objects.create(
             run=None,
-            name="Fire Dynamics",
-            order=1,
+            name="Test Global Pillar",
+            order=100,
             created_by=self.user,
         )
 
         self.assertIsNone(pillar.run)
-        self.assertEqual(pillar.name, "Fire Dynamics")
-        self.assertEqual(pillar.order, 1)
+        self.assertEqual(pillar.name, "Test Global Pillar")
+        self.assertEqual(pillar.order, 100)
         self.assertFalse(pillar.is_custom)
         self.assertFalse(pillar.can_delete())
 
@@ -281,8 +281,8 @@ class ClimateForesightPillarModelTest(TestCase):
 
     def test_global_pillar_string_representation(self):
         """Test string representation of global pillar."""
-        pillar = GlobalClimateForesightPillarFactory(name="Air Quality")
-        expected = "Air Quality (Global)"
+        pillar = GlobalClimateForesightPillarFactory(name="Test Pillar String Rep")
+        expected = "Test Pillar String Rep (Global)"
         self.assertEqual(str(pillar), expected)
 
     def test_custom_pillar_string_representation(self):
@@ -368,12 +368,12 @@ class ClimateForesightPillarModelTest(TestCase):
 
     def test_global_pillar_unique_name_constraint(self):
         """Test that global pillar names must be unique."""
-        GlobalClimateForesightPillarFactory(name="Water Security")
+        GlobalClimateForesightPillarFactory(name="Unique Test Pillar Name")
 
         with self.assertRaises(IntegrityError):
             ClimateForesightPillar.objects.create(
                 run=None,
-                name="Water Security",
+                name="Unique Test Pillar Name",
                 order=2,
                 created_by=self.user,
             )
@@ -416,11 +416,13 @@ class ClimateForesightPillarModelTest(TestCase):
 
     def test_pillar_ordering(self):
         """Test that pillars are ordered correctly."""
-        pillar3 = GlobalClimateForesightPillarFactory(name="C Pillar", order=3)
-        pillar1 = GlobalClimateForesightPillarFactory(name="A Pillar", order=1)
-        pillar2 = GlobalClimateForesightPillarFactory(name="B Pillar", order=2)
+        pillar3 = GlobalClimateForesightPillarFactory(name="C Test Pillar", order=103)
+        pillar1 = GlobalClimateForesightPillarFactory(name="A Test Pillar", order=101)
+        pillar2 = GlobalClimateForesightPillarFactory(name="B Test Pillar", order=102)
 
-        pillars = ClimateForesightPillar.objects.filter(run__isnull=True)
+        pillars = ClimateForesightPillar.objects.filter(
+            run__isnull=True, name__contains="Test Pillar"
+        ).order_by("order")
         self.assertEqual(list(pillars), [pillar1, pillar2, pillar3])
 
     def test_input_datalayer_with_pillar(self):

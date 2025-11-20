@@ -1,8 +1,10 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { AsyncPipe, NgIf } from '@angular/common';
+
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
+
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { StepComponent, StepsComponent } from '@styleguide';
+import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
@@ -12,6 +14,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   skip,
   switchMap,
   take,
@@ -25,7 +28,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { ScenarioService } from '@services';
+import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
@@ -50,10 +53,17 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
-import { SNACK_ERROR_CONFIG } from '@shared';
+
+import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
+
+import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
 import { ExcludeAreasSelectorComponent } from '../exclude-areas-selector/exclude-areas-selector.component';
+import { ScenarioMapComponent } from 'src/app/maplibre-map/scenario-map/scenario-map.component';
+import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
+import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
+import { FeatureService } from 'src/app/features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -82,6 +92,12 @@ enum ScenarioTabs {
     BaseLayersComponent,
     FeaturesModule,
     ExcludeAreasSelectorComponent,
+    StepsNavComponent,
+    ScenarioMapComponent,
+    Step1WithOverviewComponent,
+    NgClass,
+    ScenarioSummaryComponent,
+    SharedModule,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -106,6 +122,33 @@ export class ScenarioCreationComponent implements OnInit {
   );
 
   loading$ = this.newScenarioState.loading$;
+
+  stepIndex$ = this.newScenarioState.stepIndex$;
+
+  isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
+
+  steps = SCENARIO_OVERVIEW_STEPS;
+
+  standSize$ = this.newScenarioState.scenarioConfig$.pipe(
+    map((config) => config.stand_size)
+  );
+
+  treatmentGoals$ = this.treatmentGoalsService
+    .getTreatmentGoals(this.planId)
+    .pipe(shareReplay(1));
+
+  treatmentGoalId$ = this.newScenarioState.scenarioConfig$.pipe(
+    map((config) => config.treatment_goal)
+  );
+
+  treatmentGoalName$ = this.treatmentGoalId$.pipe(
+    switchMap((id) =>
+      this.treatmentGoals$.pipe(
+        map((goals) => goals.find((goal) => goal.id == id))
+      )
+    ),
+    map((goal) => goal?.name)
+  );
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -132,7 +175,9 @@ export class ScenarioCreationComponent implements OnInit {
     private router: Router,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private featureService: FeatureService,
+    private treatmentGoalsService: TreatmentGoalsService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -141,6 +186,9 @@ export class ScenarioCreationComponent implements OnInit {
           this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
         }
       });
+
+    // pre load goals
+    this.treatmentGoals$.pipe(take(1)).subscribe();
   }
 
   ngOnInit(): void {
@@ -379,5 +427,10 @@ export class ScenarioCreationComponent implements OnInit {
       this.dialog.open(ScenarioErrorModalComponent);
       return false;
     }
+  }
+
+  // remove when flag is published
+  get withDynamicScenarioUi() {
+    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
   }
 }

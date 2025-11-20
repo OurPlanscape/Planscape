@@ -1,5 +1,5 @@
 <sg-modal
-  [title]="editMode ? 'Rename Scenario' : 'Scenario Setup'"
+  [title]="editMode ? 'Rename Scenario' : 'Name your scenario'"
   [showClose]="false"
   [primaryButtonText]="primaryCTA"
   secondaryButtonText="Cancel"
@@ -17,13 +17,12 @@
       <sg-input-field
         [disabled]="false"
         showSupportMessage="on-error"
-        label="Name Your Scenario"
+        label="Scenario Name"
         [error]="this.errorMessage !== ''"
         [supportMessage]="errorMessage"
         size="full">
         <input
           sgInput
-          placeholder="e.g., High Severity Fire"
           required
           name="scenarioName"
           cdkFocusInitial
