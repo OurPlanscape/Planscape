@@ -6,6 +6,7 @@ from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
@@ -60,7 +61,6 @@ from planning.services import (
     trigger_scenario_run,
     validate_scenario_configuration,
 )
-from planscape.serializers import BaseErrorMessageSerializer
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
