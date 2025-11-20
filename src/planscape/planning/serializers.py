@@ -7,6 +7,7 @@ from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.utils import timezone
+from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import StandSizeChoices
@@ -27,7 +28,6 @@ from planning.models import (
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
-from planscape.exceptions import InvalidGeometry
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
