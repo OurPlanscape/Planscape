@@ -60,10 +60,10 @@ import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
 import { ExcludeAreasSelectorComponent } from '../exclude-areas-selector/exclude-areas-selector.component';
-import { ScenarioMapComponent } from 'src/app/maplibre-map/scenario-map/scenario-map.component';
+import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
+import { FeatureService } from '../../features/feature.service';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
-import { FeatureService } from 'src/app/features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
