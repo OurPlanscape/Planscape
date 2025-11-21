@@ -16,6 +16,7 @@ export class ScenarioFailureComponent {
   @Input() scenarioName = '';
   @Input() scenarioId: number | undefined = undefined;
   @Input() scenarioState: ScenarioResultStatus = 'FAILURE';
+  @Input() loadingCopyDialog = false;
   @Output() goBack = new EventEmitter();
   @Output() tryAgain = new EventEmitter();
 

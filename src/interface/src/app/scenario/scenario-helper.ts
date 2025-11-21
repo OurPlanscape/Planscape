@@ -1,3 +1,4 @@
+import { isNumber } from '@turf/helpers';
 import {
   Constraint,
   NamedConstraint,
@@ -123,6 +124,21 @@ export function getNamedConstraints(
       operator: c.operator,
     };
   });
+}
+
+export function suggestUniqueName(providedName: string, knownNames: string[]) {
+  let suggestedName = providedName;
+  const lastSpace = suggestedName.lastIndexOf(' ');
+  let baseName = suggestedName.substring(0, lastSpace);
+  const anySuffix = suggestedName.substring(lastSpace);
+  if (!isNumber(Number(anySuffix))) {
+    baseName = providedName;
+  }
+  let i = 1;
+  while (knownNames.includes(suggestedName)) {
+    suggestedName = `${baseName} ${i++}`;
+  }
+  return suggestedName;
 }
 
 export function isScenarioPending(scenario: Scenario) {
