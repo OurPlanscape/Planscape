@@ -80,11 +80,6 @@ body.no-scroll-bounce {
   outline: none;
 }
 
-.mat-mdc-menu-panel:has(.wider-tooltip) {
-  min-width: 500px;
-  width: 500px;
-}
-
 // Geoman drawing vertex styling
 .marker-icon,
 .marker-icon:focus {

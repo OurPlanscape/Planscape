@@ -15,8 +15,8 @@
       [outlined]="true"
       icon="info"
       [matMenuTriggerFor]="tooltipMenu">
-      <mat-menu #tooltipMenu="matMenu">
-        <div class="tooltip wider-tooltip" [innerHTML]="tooltipContent"></div>
+      <mat-menu #tooltipMenu="matMenu" class="wider-tooltip">
+        <div class="tooltip" [innerHTML]="tooltipContent"></div>
       </mat-menu>
     </button>
   </mat-expansion-panel-header>

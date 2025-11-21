@@ -68,3 +68,8 @@
 .required {
   color: $color-error;
 }
+
+::ng-deep .wider-tooltip.mat-mdc-menu-panel {
+  width: 500px;
+  max-width: 500px;
+}
