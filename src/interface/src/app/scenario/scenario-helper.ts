@@ -126,7 +126,7 @@ export function getNamedConstraints(
   });
 }
 
-export function suggestNewName(providedName: string, knownNames: string[]) {
+export function suggestUniqueName(providedName: string, knownNames: string[]) {
   let suggestedName = providedName;
   const lastSpace = suggestedName.lastIndexOf(' ');
   let baseName = suggestedName.substring(0, lastSpace);

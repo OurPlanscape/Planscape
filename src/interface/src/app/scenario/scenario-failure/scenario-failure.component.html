@@ -47,8 +47,13 @@
     <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
       Return to Plan Overview
     </a>
-    <a (click)="tryAgain.emit()" sg-button variant="primary">
+    <button
+      (click)="tryAgain.emit()"
+      class="white-spinner"
+      sg-button
+      [loading]="loadingCopyDialog"
+      variant="primary">
       Copy Scenario & Edit
-    </a>
+    </button>
   </div>
 </section>

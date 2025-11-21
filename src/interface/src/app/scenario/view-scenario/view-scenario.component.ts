@@ -7,8 +7,11 @@ import {
   interval,
   map,
   Observable,
+  of,
   skip,
+  catchError,
   switchMap,
+  take,
   takeUntil,
   tap,
 } from 'rxjs';
@@ -30,10 +33,14 @@ import { PlanState } from 'src/app/plan/plan.state';
 import { getPlanPath, POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
 import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
+import {
+  scenarioCanHaveTreatmentPlans,
+  suggestUniqueName,
+} from '../scenario-helper';
 import { ScenarioSetupModalComponent } from '../scenario-setup-modal/scenario-setup-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ScenarioService } from '@services';
 
 enum ScenarioTabs {
   RESULTS,
@@ -82,6 +89,7 @@ export class ViewScenarioComponent {
         this.scenarioCanHaveTreatmentPlans(scenario)
     )
   );
+  isLoadingDialog = false;
 
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
@@ -89,6 +97,7 @@ export class ViewScenarioComponent {
     private route: ActivatedRoute,
     private planState: PlanState,
     private scenarioState: ScenarioState,
+    private scenarioService: ScenarioService,
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
     private breadcrumbService: BreadcrumbService,
@@ -130,15 +139,32 @@ export class ViewScenarioComponent {
   }
 
   handleTryAgain(scenario: Scenario) {
-    this.dialog.open(ScenarioSetupModalComponent, {
-      maxWidth: '560px',
-      data: {
-        planId: this.planId,
-        defaultName: '', // TODO: this is a placeholder for future name option
-        fromClone: true,
-        scenario: scenario,
-      },
-    });
+    this.isLoadingDialog = true;
+    this.scenarioService
+      .getScenariosForPlan(this.planId)
+      .pipe(
+        take(1),
+        map((scenarios) => scenarios.map((s) => s.name)),
+        catchError((error) => {
+          return of([]);
+        })
+      )
+      .subscribe((existingNames: string[]) => {
+        const suggestedName =
+          existingNames.length > 0
+            ? suggestUniqueName(scenario.name, existingNames)
+            : '';
+        this.isLoadingDialog = false;
+        this.dialog.open(ScenarioSetupModalComponent, {
+          maxWidth: '560px',
+          data: {
+            planId: this.planId,
+            defaultName: suggestedName,
+            fromClone: true,
+            scenario: scenario,
+          },
+        });
+      });
   }
 
   goToPlan() {

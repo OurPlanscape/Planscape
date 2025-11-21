@@ -2,7 +2,7 @@ import {
   getGroupedGoals,
   convertFlatConfigurationToDraftPayload,
   getNamedConstraints,
-  suggestNewName,
+  suggestUniqueName,
 } from './scenario-helper';
 import { Constraint, ScenarioCreation, ScenarioGoal } from '@types';
 
@@ -257,12 +257,12 @@ describe('getNamedConstraints', () => {
   });
 });
 
-describe('suggestNewName', () => {
+describe('suggestUniqueName', () => {
   it('should append a number if the name exists', () => {
     const origName = 'some name';
     const existingNames = ['a name', 'another name', 'some name'];
 
-    const nameResult = suggestNewName(origName, existingNames);
+    const nameResult = suggestUniqueName(origName, existingNames);
     expect(nameResult).toEqual('some name 1');
   });
 
@@ -277,7 +277,7 @@ describe('suggestNewName', () => {
       'some name 5',
     ];
 
-    const nameResult = suggestNewName(origName, existingNames);
+    const nameResult = suggestUniqueName(origName, existingNames);
     expect(nameResult).toEqual('some name 6');
   });
 
@@ -296,7 +296,7 @@ describe('suggestNewName', () => {
       'some name 9',
     ];
 
-    const nameResult = suggestNewName(origName, existingNames);
+    const nameResult = suggestUniqueName(origName, existingNames);
     expect(nameResult).toEqual('some name 10');
   });
 });
