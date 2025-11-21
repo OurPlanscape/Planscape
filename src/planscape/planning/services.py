@@ -15,7 +15,6 @@ from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
-from datasets.services import get_datalayer_by_module_atribute
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -31,6 +30,8 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import compute_scenario_capabilities
+from planscape.exceptions import InvalidGeometry
+from planscape.openpanel import track_openpanel
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
@@ -51,8 +52,6 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalUsageType,
 )
-from planscape.exceptions import InvalidGeometry
-from planscape.openpanel import track_openpanel
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +98,7 @@ def create_planning_area(
 ) -> PlanningArea:
     from planning.tasks import (
         async_create_stands,
+        async_send_email_large_planning_area,
         async_set_planning_area_status,
         prepare_planning_area,
     )
@@ -120,6 +120,21 @@ def create_planning_area(
         map_status=PlanningAreaMapStatus.PENDING,
         scenario_count=0,
     )
+    acres = get_acreage(planning_area.geometry)
+    if acres >= settings.OVERSIZE_PLANNING_AREA_ACRES:
+        planning_area.map_status = PlanningAreaMapStatus.OVERSIZE
+        planning_area.save(update_fields=["map_status"])
+        action.send(user, verb="created", action_object=planning_area)
+        track_openpanel(
+            name="planning.planning_area.created",
+            properties={"region": region_name, "email": user.email if user else None},
+            user_id=user.pk,
+        )
+        transaction.on_commit(
+            lambda: async_send_email_large_planning_area.delay(planning_area.pk)
+        )
+        return planning_area
+
     set_map_status_stands_done = async_set_planning_area_status.si(
         planning_area.pk,
         PlanningAreaMapStatus.STANDS_DONE,
@@ -211,6 +226,15 @@ def get_treatment_goal_from_configuration(
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import prepare_scenarios_for_forsys_and_run
+
+    planning_area = kwargs.get("planning_area")
+    if isinstance(planning_area, int):
+        planning_area = PlanningArea.objects.get(pk=planning_area)
+        kwargs["planning_area"] = planning_area
+    if planning_area and planning_area.map_status == PlanningAreaMapStatus.OVERSIZE:
+        raise ValueError(
+            f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
+        )
 
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
@@ -334,6 +358,11 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     feature_collection = validated_data["geometry"]
 
+    if planning_area.map_status == PlanningAreaMapStatus.OVERSIZE:
+        raise ValueError(
+            f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
+        )
+
     scenario = Scenario.objects.create(
         name=validated_data["name"],
         planning_area=planning_area,
@@ -445,6 +474,7 @@ def zip_directory(file_obj, source_dir):
 
 
 def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
+    # treatment goal datalayers
     tx_goal = scenario.treatment_goal
 
     datalayers = []
@@ -462,83 +492,40 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             for tgudl in tx_goal.datalayer_usages.all()
         ]
 
-    cfg = dict(getattr(scenario, "configuration", {}) or {})
-    if "constraints" in cfg and isinstance(cfg.get("constraints"), list):
-        OPERATOR_MAP = {
-            "eq": "=",
-            "lt": "<",
-            "lte": "<=",
-            "gt": ">",
-            "gte": ">=",
-        }
+    # constraints datalayers from scenario configuration
+    OPERATOR_MAP = {
+        "eq": "=",
+        "lt": "<",
+        "lte": "<=",
+        "gt": ">",
+        "gte": ">=",
+    }
+    cfg = getattr(scenario, "configuration", {}) or {}
+    constraints = cfg.get("constraints") or []
 
-        for constraint in cfg.get("constraints", []):
-            datalayer_id = constraint.get("datalayer")
-            operator = constraint.get("operator")
-            value = constraint.get("value")
+    for constraint in constraints:
+        datalayer_id = constraint.get("datalayer")
+        operator = constraint.get("operator")
+        value = constraint.get("value")
 
-            if datalayer_id and operator and value is not None:
-                dl = DataLayer.objects.get(pk=datalayer_id)
-                datalayers.append(
-                    {
-                        "id": dl.pk,
-                        "name": dl.name,
-                        "metric": get_datalayer_metric(dl),
-                        "type": dl.type,
-                        "geometry_type": dl.geometry_type,
-                        "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
-                        "usage_type": "THRESHOLD",
-                    }
-                )
-    else:
-        max_slope = cfg.get("max_slope")
-        if max_slope:
-            slope = get_datalayer_by_module_atribute("forsys", "name", "slope")
+        if datalayer_id and operator and value is not None:
+            dl = DataLayer.objects.get(pk=datalayer_id)
             datalayers.append(
                 {
-                    "id": slope.pk,
-                    "name": slope.name,
-                    "metric": get_datalayer_metric(slope),
-                    "type": slope.type,
-                    "geometry_type": slope.geometry_type,
-                    "threshold": f"value <= {max_slope}",
+                    "id": dl.pk,
+                    "name": dl.name,
+                    "metric": get_datalayer_metric(dl),
+                    "type": dl.type,
+                    "geometry_type": dl.geometry_type,
+                    "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
                     "usage_type": "THRESHOLD",
                 }
             )
 
-        distance_from_roads = cfg.get("min_distance_from_road")
-        if distance_from_roads:
-            roads = get_datalayer_by_module_atribute(
-                "forsys", "name", "distance_from_roads"
-            )
-            distance_from_roads_meters = distance_from_roads / 1.094
-            datalayers.append(
-                {
-                    "id": roads.pk,
-                    "name": roads.name,
-                    "metric": get_datalayer_metric(roads),
-                    "type": roads.type,
-                    "geometry_type": roads.geometry_type,
-                    "threshold": f"value <= {distance_from_roads_meters}",
-                    "usage_type": "THRESHOLD",
-                }
-            )
-
-    number_of_projects = cfg.get(
-        "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
-    )
-
-    if "targets" in cfg and isinstance(cfg.get("targets"), dict):
-        number_of_projects = cfg.get("targets", {}).get(
-            "max_project_count", settings.DEFAULT_MAX_PROJECT_COUNT
-        )
+    number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
 
     min_area_project = get_min_project_area(scenario)
-
-    max_area_project = get_max_area_project(
-        scenario=scenario,
-        number_of_projects=number_of_projects,
-    )
+    max_area_project = get_max_area_project(scenario=scenario)
 
     sdw = settings.FORSYS_SDW
     epw = settings.FORSYS_EPW
@@ -638,6 +625,11 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     from planning.tasks import prepare_scenarios_for_forsys_and_run
 
+    if scenario.planning_area.map_status == PlanningAreaMapStatus.OVERSIZE:
+        raise ValueError(
+            f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
+        )
+
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
     track_openpanel(
@@ -675,27 +667,14 @@ def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
     return float(configuration.get("max_treatment_area_ratio"))
 
 
-def get_max_area_project(scenario: Scenario, number_of_projects: int) -> float:
-    configuration = scenario.configuration
-    if "targets" in configuration:  # differentiate between the "new" config and old
-        targets = configuration.get("targets", {}) or {}
-        max_area = targets.get("max_area")
-        if max_area:
-            return float(max_area)
-        max_acres = get_min_project_area(scenario)
-        return float(max_acres)
-
-    max_budget = configuration.get("max_budget")
-    cost_per_acre = get_cost_per_acre(configuration=configuration)
-    if max_budget and cost_per_acre > 0:
-        return (max_budget / cost_per_acre) / number_of_projects
-
-    max_area = configuration.get("max_area")
-    if max_area:
-        return max_area / number_of_projects
-
-    max_acres = get_min_project_area(scenario)
-    return float(max_acres)
+def get_max_area_project(scenario: Scenario) -> float:
+    targets = (scenario.configuration or {}).get("targets") or {}
+    max_area = targets.get("max_area")
+    return (
+        float(max_area)
+        if max_area is not None
+        else float(get_min_project_area(scenario))
+    )
 
 
 def get_max_treatable_stand_count(

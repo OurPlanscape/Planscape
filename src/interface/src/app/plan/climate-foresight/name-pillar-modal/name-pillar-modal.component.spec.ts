@@ -7,6 +7,8 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
+import { MockProvider } from 'ng-mocks';
+import { ClimateForesightService } from '@services';
 
 describe('NamePillarModalComponent', () => {
   let component: NamePillarModalComponent;
@@ -28,6 +30,7 @@ describe('NamePillarModalComponent', () => {
     await TestBed.configureTestingModule({
       imports: [NamePillarModalComponent, MatDialogModule],
       providers: [
+        MockProvider(ClimateForesightService),
         {
           provide: DrawService,
           useValue: fakeDrawService,

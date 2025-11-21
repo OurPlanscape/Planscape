@@ -37,12 +37,11 @@ from planning.services import (
     build_run_configuration,
     create_metrics_task,
     export_to_geopackage,
+    get_acreage,
     get_available_stand_ids,
 )
 
 log = logging.getLogger(__name__)
-
-TERMINAL_STATUSES_FOR_EMAIL = (ScenarioResultStatus.SUCCESS,)
 
 
 @app.task()
@@ -90,38 +89,32 @@ def async_forsys_run(scenario_id: int) -> None:
         raise
     try:
         log.info(f"Running scenario {scenario_id}")
+
         scenario.result_status = ScenarioResultStatus.RUNNING
-        scenario.save()
+        scenario.save(update_fields=["result_status", "updated_at"])
+
         call_forsys(scenario.pk)
 
-        if not feature_enabled("FORSYS_VIA_API"):
-            scenario.result_status = ScenarioResultStatus.SUCCESS
-        scenario.save()
-        async_generate_scenario_geopackage.apply_async(
-            args=(scenario.pk,),
-            countdown=30 if feature_enabled("FORSYS_VIA_API") else 0,
-        )
     except ForsysTimeoutException:
-        # this case should not happen as is, as the default parameter
-        # for call_forsys timeout is None.
         scenario.result_status = ScenarioResultStatus.TIMED_OUT
-        scenario.save()
+        scenario.save(update_fields=["result_status", "updated_at"])
         if hasattr(scenario, "results"):
             scenario.results.status = ScenarioResultStatus.TIMED_OUT
             scenario.results.save()
-        # this error WILL be reported by default to Sentry
         log.error(
-            f"Running forsys for scenario {scenario_id} timed-out. Might be too big."
+            "Running forsys for scenario %s timed-out. Might be too big.",
+            scenario_id,
         )
+
     except ForsysException:
         scenario.result_status = ScenarioResultStatus.PANIC
-        scenario.save()
+        scenario.save(update_fields=["result_status", "updated_at"])
         if hasattr(scenario, "results"):
             scenario.results.status = ScenarioResultStatus.PANIC
             scenario.results.save()
-        # this error WILL be reported by default to Sentry
         log.error(
-            f"A panic error happened while trying to call forsys for {scenario_id}"
+            "A panic error happened while trying to call forsys for %s",
+            scenario_id,
         )
 
 
@@ -289,41 +282,6 @@ def async_pre_forsys_process(scenario_id: int) -> None:
 
 
 @app.task()
-def async_change_scenario_status(
-    scenario_id: int, status: ScenarioResultStatus
-) -> None:
-    try:
-        with transaction.atomic():
-            scenario = Scenario.objects.select_for_update().get(pk=scenario_id)
-            scenario.result_status = status
-
-            should_email = (
-                status in TERMINAL_STATUSES_FOR_EMAIL
-                and scenario.ready_email_sent_at is None
-                and scenario.user
-                and (scenario.user.email or "").strip()
-            )
-
-            planning_area = scenario.planning_area
-            planning_area.updated_at = timezone.now()
-            planning_area.save(update_fields=["updated_at"])
-
-            update_fields = ["result_status", "updated_at"]
-            if should_email:
-                scenario.ready_email_sent_at = timezone.now()
-                update_fields.append("ready_email_sent_at")
-
-            scenario.save(update_fields=update_fields)
-
-        if should_email:
-            async_send_email_scenario_finished.delay(scenario.pk)
-
-        log.info("Scenario %s status set to %s", scenario_id, status)
-    except Scenario.DoesNotExist:
-        log.exception("Scenario %s does not exist", scenario_id)
-
-
-@app.task()
 def prepare_scenarios_for_forsys_and_run(scenario_id: int):
     log.info(f"Preparing scenario {scenario_id} for Forsys run.")
     scenario = Scenario.objects.get(id=scenario_id)
@@ -359,9 +317,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
                     )
                 )
 
-    workflow_failed_task = async_change_scenario_status.si(
-        scenario_id=scenario.pk, status=ScenarioResultStatus.PANIC
-    )
+    workflow_failed_task = async_mark_scenario_panic.si(scenario.pk)
     forsys_task = async_forsys_run.si(scenario_id=scenario.pk)
 
     workflow = chord(header=group(tasks), body=forsys_task).on_error(
@@ -369,6 +325,17 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
     )
     workflow.apply_async()
     log.info(f"Prepared scenario {scenario_id} for Forsys run and triggered the run.")
+
+
+@app.task()
+def async_mark_scenario_panic(scenario_id: int) -> None:
+    try:
+        scenario = Scenario.objects.get(pk=scenario_id)
+        scenario.result_status = ScenarioResultStatus.PANIC
+        scenario.save(update_fields=["result_status", "updated_at"])
+        log.info("Scenario %s marked as PANIC due to workflow error.", scenario_id)
+    except Scenario.DoesNotExist:
+        log.exception("Scenario %s does not exist (mark PANIC).", scenario_id)
 
 
 @app.task()
@@ -409,6 +376,38 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
     geopackage_path = export_to_geopackage(scenario)
     log.info(f"Geopackage generated at {geopackage_path}")
     return
+
+
+@app.task()
+def trigger_scenario_ready_emails():
+    """
+    Periodic task: find finished scenarios that still need a 'Scenario is ready'
+    email and enqueue the send e-mail task for them.
+    """
+    scenarios = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS,
+        ready_email_sent_at__isnull=True,
+        user__isnull=False,
+    ).exclude(user__email__exact="")
+
+    count = scenarios.count()
+    log.info("Found %s scenarios pending ready-email.", count)
+
+    for scenario in scenarios:
+        with transaction.atomic():
+            scenario_for_update = Scenario.objects.select_for_update().get(
+                pk=scenario.pk
+            )
+            if scenario_for_update.ready_email_sent_at is not None:
+                continue
+
+            scenario_for_update.ready_email_sent_at = timezone.now()
+            scenario_for_update.save(
+                update_fields=["ready_email_sent_at", "updated_at"]
+            )
+
+        async_send_email_scenario_finished.delay(scenario.pk)
+        log.info("Queued ready-email for scenario %s.", scenario.pk)
 
 
 @app.task()
@@ -458,4 +457,57 @@ def async_send_email_scenario_finished(scenario_id: int) -> None:
         log.exception(
             "Unexpected error while sending scenario-finished email.",
             extra={"scenario_id": scenario_id},
+        )
+
+
+@app.task()
+def async_send_email_large_planning_area(planning_area_id: int) -> None:
+    try:
+        planning_area = PlanningArea.objects.select_related("user").get(
+            pk=planning_area_id
+        )
+    except PlanningArea.DoesNotExist:
+        log.warning(
+            "Planning Area %s does not exist; cannot send oversize alert.",
+            planning_area_id,
+        )
+        return
+
+    acres = get_acreage(planning_area.geometry)
+    if acres <= settings.OVERSIZE_PLANNING_AREA_ACRES:
+        return
+
+    user_email = (
+        (planning_area.user.email or "").strip() if planning_area.user else "(unknown)"
+    )
+    link = get_frontend_url(f"plan/{planning_area.pk}")
+
+    context = {
+        "user_email": user_email,
+        "planning_area_name": planning_area.name or f"Planning Area {planning_area.pk}",
+        "acres": acres,
+        "planning_area_link": link,
+    }
+
+    subject = "Large Planning Area Created"
+    txt = render_to_string("email/planning/oversize_planning_area.txt", context)
+    html = render_to_string("email/planning/oversize_planning_area.html", context)
+
+    try:
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.SUPPORT_EMAIL],
+            message=txt,
+            html_message=html,
+        )
+        log.info(
+            "Sent oversize planning area alert for PA %s to %s",
+            planning_area.pk,
+            settings.SUPPORT_EMAIL,
+        )
+    except Exception:
+        log.exception(
+            "Failed sending oversize planning area alert.",
+            extra={"planning_area_id": planning_area_id},
         )

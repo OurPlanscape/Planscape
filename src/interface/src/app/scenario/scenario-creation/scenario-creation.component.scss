@@ -1,4 +1,11 @@
 @import 'colors';
+@import "media";
+@import "variables";
+
+// indexes on this page: nav on top, then sidebar, then map.
+$sg-navs-index: 50;
+$sg-steps-index: 30;
+
 
 :host {
   display: flex;
@@ -58,4 +65,74 @@
 
 .error {
   color: $color-error-secondary;
+}
+
+
+// new scenario ui
+
+
+sg-steps.new-scenario-ui {
+  max-width: $scenario-sidebar-width;
+  background-color: $color-soft-purple;
+  box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+  z-index: $sg-steps-index;
+
+  &:not(.full-screen-steps) {
+    @include on-small() {
+      height: initial;
+      max-width: initial;
+    }
+
+  }
+
+  &.full-screen-steps {
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+
+    ::ng-deep .step {
+      padding: 0;
+      overflow: hidden;
+      @include on-small() {
+        overflow: initial;
+      }
+    }
+  }
+}
+
+.container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+
+
+  @include on-small() {
+    overflow: initial;
+    flex-direction: column-reverse;
+    height: initial;
+  }
+
+}
+
+sg-steps-nav {
+  display: block;
+  z-index: $sg-navs-index;
+  box-shadow: 1px 4px 3px 0 rgba(0, 0, 0, 0.12), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.20);
+}
+
+
+app-scenario-map {
+  flex: 1;
+  min-width: $scenario-sidebar-width;
+
+
+  @include on-small() {
+    height: 400px;
+    flex: initial;
+  }
+}
+
+app-scenario-summary {
+  display: block;
+  margin-bottom: 16px;
 }

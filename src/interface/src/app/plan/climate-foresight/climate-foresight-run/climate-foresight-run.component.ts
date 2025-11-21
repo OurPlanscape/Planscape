@@ -16,12 +16,26 @@ import {
 import { SharedModule } from '../../../shared/shared.module';
 import { PlanState } from '../../plan.state';
 import { ClimateForesightService } from '@services/climate-foresight.service';
-import { Plan, ClimateForesightRun, InputDatalayer } from '@types';
+import {
+  Plan,
+  ClimateForesightRun,
+  InputDatalayer,
+  Pillar,
+  DataLayer,
+} from '@types';
 import { DataLayerSelectionComponent } from './data-layer-selection/data-layer-selection.component';
 import { AssignFavorabilityComponent } from './assign-favorability/assign-favorability.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AssignPillarsComponent } from './assign-pillars/assign-pillars.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dialog/confirmation-dialog.component';
+import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
+
+export interface PillarDragAndDrop extends Pillar {
+  isOpen: boolean;
+  dataLayers: DataLayer[];
+}
 
 type SaveStepData = {
   dataLayers: Partial<InputDatalayer>[];
@@ -62,7 +76,7 @@ export class ClimateForesightRunComponent implements OnInit {
 
   dataLayersForm: FormGroup | null = null;
   favorabilityForm: FormGroup | null = null;
-  pillarsForm: FormGroup | null = null;
+  pillarsForm: FormGroup | null = new FormGroup({});
   assessmentForm: FormGroup | null = null;
 
   stepData: Record<number, SaveStepData> = {};
@@ -96,6 +110,8 @@ export class ClimateForesightRunComponent implements OnInit {
         return this.dataLayerSelectionComponent?.form?.valid || false;
       case 1:
         return this.assignFavorabilityComponent?.canProceed || false;
+      case 2:
+        return true;
       default:
         return false;
     }
@@ -107,7 +123,8 @@ export class ClimateForesightRunComponent implements OnInit {
     private router: Router,
     private planState: PlanState,
     private climateForesightService: ClimateForesightService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -202,6 +219,10 @@ export class ClimateForesightRunComponent implements OnInit {
         return this.saveDataLayers(data);
       case 1:
         return this.saveFavorability(data);
+      case 2:
+        this.savePillars(data as any);
+        // Return false since we don't want to move the stepper
+        return of(false);
       default:
         this.savingStep = false;
         return of(false);
@@ -220,7 +241,7 @@ export class ClimateForesightRunComponent implements OnInit {
     const inputDatalayers = data.dataLayers.map(
       (layer: Partial<InputDatalayer>) => ({
         datalayer: layer.id,
-        pillar: '',
+        pillar: null,
       })
     );
 
@@ -329,5 +350,89 @@ export class ClimateForesightRunComponent implements OnInit {
           },
         });
     });
+  }
+
+  savePillars(updatedPillars: any[]): void {
+    const currentStep = (this.currentStepIndex || 0) + 1;
+    const inputDatalayers = this.currentRun?.input_datalayers || [];
+
+    // Assign pillar for each input datalayer
+    inputDatalayers.forEach((input) => {
+      const updatedPillar = updatedPillars.find(
+        (p) => p.datalayer === input.datalayer
+      );
+      input.pillar = updatedPillar?.pillar || null;
+    });
+
+    this.dialog
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Ready to run the analysis?',
+          body: '<p>You are about to run the analysis using the selected data layers, thresholds, and pillar assignments. Once the analysis starts, these settings cannot be modified.</p><p>Are you sure you want to proceed?</p>',
+          primaryCta: 'Run Analysis',
+        },
+      })
+      .afterClosed()
+      .subscribe((modalResponse: any) => {
+        if (modalResponse) {
+          // newFurthestStep and next step is the same as current step since step 4 is not a real step
+          this.saveRun(inputDatalayers, currentStep, currentStep);
+        } else {
+          this.savingStep = false;
+        }
+      });
+  }
+
+  saveRun(
+    inputDatalayers: InputDatalayer[],
+    nextStep: number,
+    newFurthestStep: number
+  ): void {
+    this.climateForesightService
+      .updateRun(this.runId!, {
+        input_datalayers: inputDatalayers,
+        current_step: nextStep,
+        furthest_step: newFurthestStep,
+      })
+      .subscribe({
+        next: (updatedRun) => {
+          this.currentRun = updatedRun;
+          this.runAnalysis();
+        },
+        error: (error) => {
+          console.error('Error saving pillars:', error);
+          this.snackBar.open(
+            'Failed to save pillars: ' +
+              (error?.error?.detail || error?.message || 'Unknown error'),
+            'Close',
+            { duration: 5000 }
+          );
+          this.savingStep = false;
+        },
+      });
+  }
+
+  runAnalysis(): void {
+    // TODO: Execute analysis
+    // On success display success dialog
+    this.displaySuccessDialog();
+  }
+
+  displaySuccessDialog() {
+    this.dialog
+      .open(SuccessDialogComponent, {
+        data: {
+          infoType: 'success',
+          headline: 'Your analysis is in progress',
+          message:
+            "You'll be notified when it's ready, translated data can be viewed in the Data Viewer.",
+        },
+      })
+      .afterClosed()
+      .subscribe(() => {
+        this.savingStep = false;
+        // On modal closed go to the climate home page
+        this.onFinished();
+      });
   }
 }

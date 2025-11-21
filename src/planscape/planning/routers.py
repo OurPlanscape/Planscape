@@ -1,11 +1,12 @@
+from rest_framework import routers
+
 from planning.views_v2 import (
-    PlanningAreaViewSet,
-    ScenarioViewSet,
     CreatorViewSet,
+    PlanningAreaViewSet,
     ProjectAreaViewSet,
+    ScenarioViewSet,
     TreatmentGoalViewSet,
 )
-from rest_framework import routers
 
 router = routers.SimpleRouter()
 router.register(

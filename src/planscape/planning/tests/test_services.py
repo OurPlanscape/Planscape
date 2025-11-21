@@ -15,14 +15,21 @@ from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from fiona.crs import to_string
 from stands.models import StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
 
-from planning.models import PlanningArea, ScenarioResultStatus, TreatmentGoalUsageType
+from planning.models import (
+    PlanningArea,
+    PlanningAreaMapStatus,
+    ScenarioResultStatus,
+    TreatmentGoalUsageType,
+)
 from planning.services import (
+    create_planning_area,
+    create_scenario,
     export_planning_area_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
@@ -35,6 +42,7 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
+    trigger_scenario_run,
     validate_scenario_configuration,
     validate_scenario_treatment_ratio,
 )
@@ -44,8 +52,8 @@ from planning.tests.factories import (
     ScenarioFactory,
     ScenarioResultFactory,
     TreatmentGoalFactory,
+    UserFactory,
 )
-from planscape.tests.factories import UserFactory
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -75,41 +83,27 @@ class MaxAreaProjectTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
 
-    def test_get_max_area_project__max_budget_and_cost_per_acre(self):
-        scenario = ScenarioFactory.create(
-            planning_area=self.planning_area,
-            configuration={
-                "max_budget": 10000000,
-                "est_cost": 2470,
-                "max_project_count": 10,
-            },
-        )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
-        self.assertAlmostEqual(max_project_area, 404.858, places=3)
-
     def test_get_max_area_project__max_area_and_number_of_projects(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
-            configuration={"max_area": 40000, "max_project_count": 10},
+            configuration={
+                "targets": {
+                    "max_area": 40000,
+                    "max_project_count": 10,
+                },
+            },
         )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
-        self.assertEqual(max_project_area, 4000)
+        max_project_area = get_max_area_project(scenario=scenario)
+        self.assertAlmostEqual(max_project_area, 40000.0)
 
     def test_get_max_area_project__min_project_area_and_number_of_projects(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             configuration={
                 "stand_size": StandSizeChoices.LARGE,
-                "max_project_count": 10,
             },
         )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
+        max_project_area = get_max_area_project(scenario=scenario)
         self.assertEqual(max_project_area, 500)
 
 
@@ -723,6 +717,7 @@ class TestRemoveExcludes(TestCase):
         self.assertEquals(17, len(stands))
         self.assertLess(len(stand_ids), len(stands))
 
+
 class ValidateScenarioConfigurationTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
@@ -734,7 +729,9 @@ class ValidateScenarioConfigurationTest(TestCase):
         )
 
     def test_missing_stand_size(self):
-        self.scenario.configuration = {"targets": {"max_area": 500, "max_project_count": 2}}
+        self.scenario.configuration = {
+            "targets": {"max_area": 500, "max_project_count": 2}
+        }
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Configuration field `stand_size` is required.", errors)
 
@@ -775,14 +772,18 @@ class ValidateScenarioConfigurationTest(TestCase):
         }
         with mock.patch("planning.services.get_available_stand_ids", return_value=[]):
             errors = validate_scenario_configuration(self.scenario)
-            self.assertIn("No stands are available with the current configuration.", errors)
+            self.assertIn(
+                "No stands are available with the current configuration.", errors
+            )
 
     def test_insufficient_available_stands(self):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 99},
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2]):
+        with mock.patch(
+            "planning.services.get_available_stand_ids", return_value=[1, 2]
+        ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertIn("Not enough stands are available", " ".join(errors))
 
@@ -791,6 +792,103 @@ class ValidateScenarioConfigurationTest(TestCase):
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3]):
+        with mock.patch(
+            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+        ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertEqual(errors, [])
+
+
+class CreateScenarioGuardTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.planning_area_ok = PlanningAreaFactory.create()
+        self.planning_area_oversize = PlanningAreaFactory.create()
+        self.planning_area_oversize.map_status = PlanningAreaMapStatus.OVERSIZE
+        self.planning_area_oversize.save(update_fields=["map_status"])
+
+    def test_accepts_planning_area_as_object(self):
+        scenario = create_scenario(
+            user=self.user,
+            name="ok-object",
+            planning_area=self.planning_area_ok,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "targets": {"max_area": 500, "max_project_count": 2},
+            },
+        )
+        self.assertIsNotNone(scenario.id)
+
+    def test_accepts_planning_area_as_id(self):
+        scenario = create_scenario(
+            user=self.user,
+            name="ok-id",
+            planning_area=self.planning_area_ok.pk,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "targets": {"max_area": 500, "max_project_count": 2},
+            },
+        )
+        self.assertIsNotNone(scenario.id)
+
+    def test_blocks_oversize_planning_area(self):
+        with self.assertRaises(ValueError) as ctx:
+            create_scenario(
+                user=self.user,
+                name="blocked",
+                planning_area=self.planning_area_oversize,
+                treatment_goal=self.treatment_goal,
+                configuration={
+                    "stand_size": "LARGE",
+                    "targets": {"max_area": 500, "max_project_count": 2},
+                },
+            )
+        self.assertIn("oversize", str(ctx.exception).lower())
+
+
+@override_settings(OVERSIZE_PLANNING_AREA_ACRES=100)
+class CreatePlanningAreaOversizeTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.geom = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 2, 2 2, 2 0, 0 0)))", srid=4269
+        )
+
+    @mock.patch("planning.services.get_acreage", return_value=150)
+    def test_oversize_planning_area_sets_status_oversize(self, _mock_get_acreage):
+        pa = create_planning_area(
+            user=self.user,
+            name="Oversize PA",
+            region_name="sierra-nevada",
+            geometry=self.geom,
+        )
+
+        pa.refresh_from_db()
+        self.assertEqual(pa.map_status, PlanningAreaMapStatus.OVERSIZE)
+
+
+class TriggerScenarioRunGuardTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.planning_area_oversize = PlanningAreaFactory.create(
+            map_status=PlanningAreaMapStatus.OVERSIZE
+        )
+
+    def test_blocks_trigger_run_on_oversize_planning_area(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area_oversize,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "targets": {"max_area": 500, "max_project_count": 2},
+            },
+        )
+
+        with self.assertRaises(ValueError) as ctx:
+            trigger_scenario_run(scenario, self.user)
+
+        self.assertIn("oversize", str(ctx.exception).lower())

@@ -7,6 +7,7 @@ from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.utils import timezone
+from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import StandSizeChoices
@@ -27,7 +28,6 @@ from planning.models import (
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
-from planscape.exceptions import InvalidGeometry
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
@@ -706,9 +706,12 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     bbox = serializers.SerializerMethodField()
 
     def get_max_treatment_area(self, obj):
-        cfg = obj.configuration or {}
-        if "targets" in cfg and isinstance(cfg["targets"], dict):
-            return cfg["targets"].get("max_area")
+        cfg = obj.configuration
+        if not isinstance(cfg, dict):
+            return None
+        targets = cfg.get("targets")
+        if isinstance(targets, dict):
+            return targets.get("max_area")
         return cfg.get("max_treatment_area_ratio")
 
     def get_bbox(self, instance) -> Optional[List[float]]:
