@@ -117,7 +117,7 @@ export class SelectableListComponent<T extends Item> {
   }
 
   getOutlineColor(item: any): string {
-    if (!this.outlineColorPath) return this.defaultOutlineColor;
+    if (!this.outlineColorPath) return this.colorPath || this.defaultColor;
 
     const tokens = this.tokenizePath(this.outlineColorPath);
     const val = tokens.reduce<any>((acc, key) => acc?.[key as any], item);

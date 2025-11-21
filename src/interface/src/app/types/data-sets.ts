@@ -117,7 +117,7 @@ export interface BaseLayer
   storage_type?: string;
   styles: [
     {
-      id?: string | number;
+      id?: number;
       data: {
         [key: string]: string;
       };

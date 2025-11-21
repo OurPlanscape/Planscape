@@ -97,10 +97,6 @@ export class ExcludeAreasSelectorComponent
     this.baseLayersStateService.setBaseLayers(baseLayersToView);
   }
 
-  getAreasBeingViewed(): number[] {
-    return this.viewingAreas.map((a) => a.id);
-  }
-
   getSelectedExcludedAreaIds(): number[] {
     return this.selectedAreas.map((s) => s.id);
   }
