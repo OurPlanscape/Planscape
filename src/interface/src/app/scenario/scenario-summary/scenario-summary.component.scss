@@ -1,8 +1,16 @@
 @import 'mixins';
 
+:host {
+  ::ng-deep .panel-header[aria-disabled='true'] {
+    height: auto;
+    padding: 16px 16px 12px 16px;
+  }
+}
+
 .list {
   display: grid;
-  row-gap: 8px;
+  row-gap: 12px;
+  margin: 0;
 
   &-row {
     display: flex;
@@ -28,5 +36,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+}
+
+.capitalize {
+  text-transform: lowercase;
+
+  &::first-letter {
+    text-transform: uppercase;
   }
 }

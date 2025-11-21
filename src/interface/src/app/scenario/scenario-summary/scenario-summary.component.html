@@ -1,16 +1,16 @@
 <sg-section [isCollapsible]="false" [headline]="title">
   <dl class="list">
     <div class="list-row">
-      <dt class="list-label">Treatment Goal:</dt>
-      <dd class="list-value">{{ treatmentGoal }}</dd>
-    </div>
-
-    <div class="list-row">
       <dt class="list-label">Stand Size:</dt>
       <dd class="list-value">
         <img src="assets/svg/icons/stand_size.svg" alt="Stand size" />
-        <span>{{ standSize }}</span>
+        <span class="capitalize">{{ standSize }}</span>
       </dd>
+    </div>
+
+    <div class="list-row">
+      <dt class="list-label">Treatment Goal:</dt>
+      <dd class="list-value">{{ treatmentGoal }}</dd>
     </div>
   </dl>
 </sg-section>
