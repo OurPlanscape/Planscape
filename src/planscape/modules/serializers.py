@@ -1,6 +1,7 @@
+from core.flags import feature_enabled
 from datasets.models import DataLayer
+from datasets.serializers import BrowseDataLayerSerializer
 from rest_framework import serializers
-
 
 class OptionDataLayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,7 +11,6 @@ class OptionDataLayerSerializer(serializers.ModelSerializer):
         )
         model = DataLayer
 
-
 class OptionThresholdsSerializer(serializers.Serializer):
     slope = OptionDataLayerSerializer()
     distance_from_roads = OptionDataLayerSerializer()
@@ -18,7 +18,10 @@ class OptionThresholdsSerializer(serializers.Serializer):
 
 class ForsysOptionsSerializer(serializers.Serializer):
     inclusions = serializers.ListField(child=OptionDataLayerSerializer())
-    exclusions = serializers.ListField(child=OptionDataLayerSerializer())
+    if feature_enabled("SCENARIO_CONFIG_UI"):
+        exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
+    else:
+        exclusions = serializers.ListField(child=OptionDataLayerSerializer())
     thresholds = OptionThresholdsSerializer()
 
 
