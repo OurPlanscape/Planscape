@@ -29,6 +29,10 @@ sg-process-overview {
   padding: 24px 40px 32px;
   flex: 1;
   border-right: 1px solid $color-light-purple;
+  @include on-small() {
+    border-right: none;
+    border-bottom: 1px solid $color-light-purple;;
+  }
 }
 
 
@@ -39,6 +43,7 @@ sg-process-overview {
   overflow-y: auto;
   @include on-small() {
     overflow-y: initial;
+    min-width: initial;
   }
 }
 

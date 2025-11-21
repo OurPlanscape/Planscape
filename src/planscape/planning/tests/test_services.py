@@ -83,41 +83,27 @@ class MaxAreaProjectTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
 
-    def test_get_max_area_project__max_budget_and_cost_per_acre(self):
-        scenario = ScenarioFactory.create(
-            planning_area=self.planning_area,
-            configuration={
-                "max_budget": 10000000,
-                "est_cost": 2470,
-                "max_project_count": 10,
-            },
-        )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
-        self.assertAlmostEqual(max_project_area, 404.858, places=3)
-
     def test_get_max_area_project__max_area_and_number_of_projects(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
-            configuration={"max_area": 40000, "max_project_count": 10},
+            configuration={
+                "targets": {
+                    "max_area": 40000,
+                    "max_project_count": 10,
+                },
+            },
         )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
-        self.assertEqual(max_project_area, 4000)
+        max_project_area = get_max_area_project(scenario=scenario)
+        self.assertAlmostEqual(max_project_area, 40000.0)
 
     def test_get_max_area_project__min_project_area_and_number_of_projects(self):
         scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             configuration={
                 "stand_size": StandSizeChoices.LARGE,
-                "max_project_count": 10,
             },
         )
-        max_project_area = get_max_area_project(
-            scenario=scenario, number_of_projects=10
-        )
+        max_project_area = get_max_area_project(scenario=scenario)
         self.assertEqual(max_project_area, 500)
 
 

@@ -78,7 +78,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     } else if (this.editMode) {
       return 'Done';
     }
-    return 'Create';
+    return 'Get Started';
   }
 
   ngOnInit(): void {

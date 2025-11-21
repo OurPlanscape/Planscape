@@ -1,10 +1,18 @@
 import json
 
 from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
+from impacts.permissions import (
+    COLLABORATOR_PERMISSIONS,
+    OWNER_PERMISSIONS,
+    VIEWER_PERMISSIONS,
+)
+from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
 
-from planning.models import UserPrefs
+from planning.models import PlanningAreaNote
+from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planning.tests.test_geometry import read_shapefile, to_geometry
 
 
@@ -66,368 +74,502 @@ class ValidatePlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class CreateSharedLinkTest(APITestCase):
+class ListPlanningAreaTest(APITestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
-
-    def test_create_shared_link(self):
-        view_state = {
-            "page_attributes": ["a", "b", "c", "d"],
-            "control_values": [
-                {"question1": "yes"},
-                {"question2": "no"},
-                {"question3": "maybe"},
-            ],
-            "long": "-100.00",
-            "lat": "-100.01",
-            "zoom": "+500",
+        self.user = UserFactory.create(username="testuser")
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
-        view_json = json.dumps(view_state)
-        self.client.force_authenticate(self.user)
-        # generate the new link with a 'view-state'
-        payload = json.dumps({"view_state": view_json})
-        response = self.client.post(
-            reverse("planning:create_shared_link"),
-            payload,
-            content_type="application/json",
-        )
-        json_response = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(
-            json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
-        )
-        self.assertEqual(json_response["user_id"], self.user.pk)
-
-    def test_create_shared_link_without_auth(self):
-        view_state = {
-            "page_attributes": ["x", "y", "z", "1"],
-            "control_values": [
-                {"question1": "ok"},
-                {"question2": "sure"},
-                {"question3": "yes"},
-            ],
-            "long": "-200.00",
-            "lat": "-200.01",
-            "zoom": "+1",
-        }
-        view_json = json.dumps(view_state)
-        # generate the new link with a 'view-state'
-        payload = json.dumps({"view_state": view_json})
-        response = self.client.post(
-            reverse("planning:create_shared_link"),
-            payload,
-            content_type="application/json",
-        )
-        json_response = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(
-            json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
-        )
-        self.assertEqual(json_response["user_id"], None)
-
-    def test_getting_new_link(self):
-        view_state = {
-            "page_attributes": ["a", "b", "c", "d"],
-            "control_values": [
-                {"question1": "yes"},
-                {"question2": "no"},
-                {"question3": "maybe"},
-            ],
-            "long": "-100.00",
-            "lat": "-100.01",
-            "zoom": "+500",
-        }
-        view_json = json.dumps(view_state)
-        self.client.force_authenticate(self.user)
-        # generate the new link with a 'view-state'
-        payload = json.dumps({"view_state": view_json})
-        response = self.client.post(
-            reverse("planning:create_shared_link"),
-            payload,
-            content_type="application/json",
-        )
-        # then fetch the data with the new url
-        json_response = json.loads(response.content)
-        link_code = json_response["link_code"]
-        shared_link_response = self.client.get(
-            reverse("planning:get_shared_link", kwargs={"link_code": link_code}),
-            content_type="application/json",
-        )
-        json_get_response = json.loads(shared_link_response.content)
-        self.assertEqual(shared_link_response.status_code, 200)
-        self.assertJSONEqual(json_get_response["view_state"], view_state)
-
-    def test_getting_link_created_by_unauthd_user(self):
-        view_state = {
-            "page_attributes": ["w", "x", "y", "z"],
-            "control_values": [
-                {"question1": "hella"},
-                {"question2": "hola"},
-                {"question3": "olá"},
-            ],
-            "long": "-60.00",
-            "lat": "-60.01",
-            "zoom": "+300",
-        }
-        view_json = json.dumps(view_state)
-        # generate the new link with a 'view-state'
-        payload = json.dumps({"view_state": view_json})
-        response = self.client.post(
-            reverse("planning:create_shared_link"),
-            payload,
-            content_type="application/json",
-        )
-        json_response = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        link_code = json_response["link_code"]
-
-        # then fetch the data with the new url
-        shared_link_response = self.client.get(
-            reverse("planning:get_shared_link", kwargs={"link_code": link_code}),
-            content_type="application/json",
-        )
-        json_get_response = json.loads(shared_link_response.content)
-        self.assertEqual(shared_link_response.status_code, 200)
-        self.assertJSONEqual(json_get_response["view_state"], view_state)
-
-    def test_retrieving_bad_link(self):
-        # then fetch the data with a bad link code
-        shared_link_response = self.client.get(
-            reverse("planning:get_shared_link", kwargs={"link_code": "madeuplink"}),
-            content_type="application/json",
-        )
-        self.assertEqual(shared_link_response.status_code, 404)
-
-
-class UserPrefsViewTest(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="12345")
-        self.userpref = UserPrefs.objects.create(
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.planning_area1 = PlanningAreaFactory.create(
             user=self.user,
-            preferences={
-                "hello": "is it me you're looking for",
-                "what": "what is this",
-            },
+            name="test plan1",
+            geometry=stored_geometry,
+        )
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan2",
+            geometry=stored_geometry,
+        )
+        self.planning_area3 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan3",
+            geometry=stored_geometry,
+        )
+        self.planning_area4 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan4",
+            geometry=stored_geometry,
+        )
+        self.planning_area5 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan5",
+            geometry=stored_geometry,
+        )
+        self.scenario1_1 = ScenarioFactory.create(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario1 ",
+            configuration={},
+            user=self.user,
+            notes="",
+        )
+        self.scenario1_2 = ScenarioFactory.create(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario2",
+            configuration={},
+            user=self.user,
+            notes="",
+        )
+        self.scenario1_3 = ScenarioFactory.create(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario3",
+            configuration={},
+            user=self.user,
+            notes="",
+        )
+        self.planning_area1.scenario_count = 3
+        self.planning_area1.save(update_fields=["updated_at", "scenario_count"])
+        self.scenario3_1 = ScenarioFactory.create(
+            planning_area=self.planning_area3,
+            name="test pa3 scenario1",
+            configuration={},
+            user=self.user,
+            notes="",
+        )
+        self.planning_area3.scenario_count = 1
+        self.planning_area3.save(update_fields=["updated_at", "scenario_count"])
+        self.scenario4_1 = ScenarioFactory.create(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario1 ",
+            configuration={},
+            user=self.user,
+            notes="",
+        )
+        self.scenario4_2 = ScenarioFactory.create(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario2",
+            configuration={},
+            user=self.user,
+            notes="",
+        )
+        self.scenario4_3 = ScenarioFactory.create(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario3",
+            configuration={},
+            user=self.user,
+            notes="",
+        )
+        self.planning_area4.scenario_count = 3
+        self.planning_area4.save(update_fields=["updated_at", "scenario_count"])
+        self.user2 = UserFactory.create(username="otherowner")
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.planning_area6 = PlanningAreaFactory.create(
+            user=self.user2,
+            name="test plan3",
+            geometry=stored_geometry,
         )
 
-    def test_getting_user_prefs(self):
-        self.client.force_authenticate(self.user)
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
+        self.emptyuser = UserFactory.create(username="emptyuser")
+
+    def test_list_planning_areas_not_logged_in(self):
+        response = self.client.get(
+            reverse("planning:list_planning_areas"), {}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
+
+    def test_list_planning_areas_empty_user(self):
+        self.client.force_authenticate(self.emptyuser)
+        response = self.client.get(
+            reverse("planning:list_planning_areas"), {}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
+
+
+class ListPlanningAreasWithPermissionsTest(APITestCase):
+    def setUp(self):
+        self.creator_user = UserFactory.create(
+            username="makerofthings",
+            email="creator@test.test",
+            first_name="Creaty",
+            last_name="Creatington",
+        )
+
+        self.collab_user = UserFactory.create(
+            username="collaboratorofthings",
+            email="collab@test.test",
+            first_name="Collaby",
+            last_name="Collabington",
+        )
+
+        self.viewer_user = UserFactory.create(
+            username="viewerofthings",
+            email="viewer@test.test",
+            first_name="Viewy",
+            last_name="Viewington",
+        )
+
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.planning_area_w_collab = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Shared with Collaborator",
+            geometry=stored_geometry,
+        )
+        self.planning_area_w_viewer = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Area Shared with Viewer",
+            geometry=stored_geometry,
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
+        )
+        self.planning_area_notshared = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Not Shared Area",
+            geometry=stored_geometry,
+        )
+
+    def test_planningareas_list_for_creator(self):
+        self.client.force_authenticate(self.creator_user)
+        response = self.client.get(
+            reverse("planning:list_planning_areas"),
+            {},
             content_type="application/json",
         )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertEqual(
-            "is it me you're looking for",
-            response_data["preferences"]["hello"],
-        )
-        self.assertEqual(
-            "what is this",
-            response_data["preferences"]["what"],
-        )
+        planning_areas = json.loads(response.content)
+        expected_perms = OWNER_PERMISSIONS
+        self.assertEqual(len(planning_areas), 3)
+        self.assertEqual(planning_areas[0]["role"], "Creator")
+        self.assertEqual(planning_areas[1]["role"], "Creator")
+        self.assertEqual(planning_areas[2]["role"], "Creator")
+        self.assertCountEqual(planning_areas[0]["permissions"], expected_perms)
+        self.assertCountEqual(planning_areas[1]["permissions"], expected_perms)
+        self.assertCountEqual(planning_areas[2]["permissions"], expected_perms)
 
-    def test_adding_a_value_ignoring_others(self):
-        self.client.force_authenticate(self.user)
-        payload = json.dumps({"show_delete_note_warning": False})
-        user_prefs_response = self.client.patch(
-            reverse("planning:get_userprefs"),
-            payload,
+    def test_planningareas_list_for_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:list_planning_areas"),
+            {},
             content_type="application/json",
         )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(len(planning_areas), 1)
+        the_area = planning_areas[0]
+        self.assertEqual(the_area["role"], "Collaborator")
+        self.assertCountEqual(
+            the_area["permissions"],
+            COLLABORATOR_PERMISSIONS,
+        )
 
-        self.assertEqual(200, user_prefs_response.status_code)
-
-        # and now we get the user prefs again
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
+    def test_planningareas_list_for_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse("planning:list_planning_areas"),
+            {},
             content_type="application/json",
         )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertEqual(
-            "is it me you're looking for",
-            response_data["preferences"]["hello"],
-        )
-        self.assertEqual(
-            "what is this",
-            response_data["preferences"]["what"],
-        )
-        self.assertEqual(
-            False,
-            response_data["preferences"]["show_delete_note_warning"],
+        planning_areas = json.loads(response.content)
+        self.assertEqual(len(planning_areas), 1)
+        the_area = planning_areas[0]
+        self.assertEqual(the_area["role"], "Viewer")
+        self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
+
+
+class CreatePlanningAreaNote(APITestCase):
+    def setUp(self):
+        self.owner_user = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+
+        self.planningarea = PlanningAreaFactory.create(
+            user=self.owner_user,
+            region_name="foo",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
-    def test_updating_an_existing_value(self):
-        self.client.force_authenticate(self.user)
-        payload = json.dumps({"hello": "I just called to say...hello"})
-        user_prefs_response = self.client.patch(
-            reverse("planning:get_userprefs"),
-            payload,
-            content_type="application/json",
-        )
-
-        self.assertEqual(200, user_prefs_response.status_code)
-
-        # and now we get the user prefs again
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
-            content_type="application/json",
-        )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertEqual(
-            "I just called to say...hello",
-            response_data["preferences"]["hello"],
-        )
-        self.assertEqual(
-            "what is this",
-            response_data["preferences"]["what"],
-        )
-
-    def test_updating_one_value_and_adding_another(self):
-        self.client.force_authenticate(self.user)
-        payload = json.dumps(
+    def test_create_note_for_planningarea(self):
+        self.client.force_authenticate(self.owner_user)
+        payload_create_note = json.dumps(
             {
-                "hello": "Is a friendly greeting",
-                "goodbye": "Goodbye is not hello.",
+                "content": "Here is a note about a planning area.",
             }
         )
-        user_prefs_response = self.client.patch(
-            reverse("planning:get_userprefs"),
-            payload,
-            content_type="application/json",
-        )
-
-        self.assertEqual(200, user_prefs_response.status_code)
-
-        # and now we get the user prefs again
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
-            content_type="application/json",
-        )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertEqual(
-            "Is a friendly greeting",
-            response_data["preferences"]["hello"],
-        )
-        self.assertEqual(
-            "what is this",
-            response_data["preferences"]["what"],
-        )
-        self.assertEqual(
-            "Goodbye is not hello.",
-            response_data["preferences"]["goodbye"],
-        )
-
-    def test_deleting_an_attribute(self):
-        self.client.force_authenticate(self.user)
-        user_prefs_response = self.client.delete(
+        response = self.client.post(
             reverse(
-                "planning:delete_userprefs",
-                kwargs={"preference_key": "hello"},
+                "planning:create_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
             ),
+            payload_create_note,
             content_type="application/json",
         )
-
-        self.assertEqual(200, user_prefs_response.status_code)
-
-        # and now we get the user prefs again
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
-            content_type="application/json",
-        )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertNotIn("hello", response_data["preferences"])
+        self.assertEqual(response.status_code, 201)
+        planning_area_note = response.json()
         self.assertEqual(
-            "what is this",
-            response_data["preferences"]["what"],
+            planning_area_note["content"], "Here is a note about a planning area."
         )
 
-    def test_deleting_nonexistent_attribute(self):
-        self.client.force_authenticate(self.user)
-        user_prefs_response = self.client.delete(
+    def test_create_note_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload_create_note = json.dumps(
+            {
+                "content": "Here is a note from a viewer.",
+            }
+        )
+        response = self.client.post(
             reverse(
-                "planning:delete_userprefs",
-                kwargs={"preference_key": "this_doesnt_exist"},
+                "planning:create_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
             ),
+            payload_create_note,
             content_type="application/json",
         )
+        self.assertEqual(response.status_code, 201)
+        planning_area_note = response.json()
+        self.assertEqual(planning_area_note["content"], "Here is a note from a viewer.")
 
-        self.assertEqual(200, user_prefs_response.status_code)
-
-        # and now we get the user prefs again
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
+    def test_create_note_unauthenticated(self):
+        payload_create_note = json.dumps(
+            {
+                "content": "Lets create a note without authentication",
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "planning:create_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            payload_create_note,
             content_type="application/json",
         )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertNotIn("this_doesnt_exist", response_data["preferences"])
-        self.assertEqual(
-            "what is this",
-            response_data["preferences"]["what"],
-        )
-        self.assertEqual(
-            "is it me you're looking for",
-            response_data["preferences"]["hello"],
-        )
+        self.assertEqual(response.status_code, 401)
 
 
-class EmptyUserPrefsAPIViewTest(APITestCase):
+class GetPlanningAreaNotes(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="12345")
+        self.owner_user = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unassociated_user = UserFactory()  # no perms for Planning Area
 
-    def test_getting_empty_user_prefs(self):
-        self.client.force_authenticate(self.user)
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
-            content_type="application/json",
+        self.planningarea = PlanningAreaFactory.create(
+            user=self.owner_user,
+            region_name="foo",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
+        )
+        self.note = PlanningAreaNote.objects.create(
+            user=self.owner_user,
+            planning_area=self.planningarea,
+            content="Just a comment about this planning area.",
+        )
+        self.note2 = PlanningAreaNote.objects.create(
+            user=self.collab_user,
+            planning_area=self.planningarea,
+            content="Collaborator comment -- so much to say.",
+        )
+        self.note3 = PlanningAreaNote.objects.create(
+            user=self.viewer_user,
+            planning_area=self.planningarea,
+            content="Viewer comment, just commenting",
         )
 
-        response_data = json.loads(user_prefs_response.content)
-        self.assertIsNone(
-            response_data["preferences"],
-        )
-
-    def test_updating_an_empty_userpref(self):
-        self.client.force_authenticate(self.user)
-        payload = json.dumps({"hello": "I just called to say...hello"})
-        user_prefs_response = self.client.patch(
-            reverse("planning:get_userprefs"),
-            payload,
-            content_type="application/json",
-        )
-
-        self.assertEqual(200, user_prefs_response.status_code)
-
-        # and now we get the user prefs again
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
-            content_type="application/json",
-        )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertEqual(
-            "I just called to say...hello",
-            response_data["preferences"]["hello"],
-        )
-
-    def test_deleting_from_empty_userpref(self):
-        self.client.force_authenticate(self.user)
-        user_prefs_response = self.client.delete(
+    def test_get_all_notes_for_a_planningarea(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
             reverse(
-                "planning:delete_userprefs",
-                kwargs={"preference_key": "hello"},
+                "planning:get_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
             ),
             content_type="application/json",
         )
+        self.assertEqual(response.status_code, 200)
+        planning_area_notes = response.json()
+        self.assertEqual(len(planning_area_notes), 3)
+        # these should be ordered by created_at, latest on top
+        # so we ought to be able to test by index id
+        self.assertEqual(
+            planning_area_notes[0]["content"],
+            "Viewer comment, just commenting",
+        )
+        self.assertEqual(
+            planning_area_notes[2]["content"],
+            "Just a comment about this planning area.",
+        )
+        self.assertEqual(
+            planning_area_notes[0]["user_id"],
+            self.viewer_user.pk,
+        )
+        self.assertEqual(
+            planning_area_notes[2]["user_id"],
+            self.owner_user.pk,
+        )
 
-        self.assertEqual(200, user_prefs_response.status_code)
-
-        # and now we get the user prefs again
-        user_prefs_response = self.client.get(
-            reverse("planning:get_userprefs"),
+    def test_get_note_delete_permissions(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
             content_type="application/json",
         )
-        response_data = json.loads(user_prefs_response.content)
-        self.assertIsNone(
-            response_data["preferences"],
+        self.assertEqual(response.status_code, 200)
+        planning_area_notes = response.json()
+        self.assertEqual(len(planning_area_notes), 3)
+        self.assertEqual(planning_area_notes[0]["can_delete"], False)
+        # note owned by collab_user, so can delete
+        self.assertEqual(planning_area_notes[1]["can_delete"], True)
+        self.assertEqual(planning_area_notes[2]["can_delete"], False)
+
+    def test_get_notes_unauthenticated(self):
+        response = self.client.post(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            content_type="application/json",
         )
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_specific_note_for_a_planningarea(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.note2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        planning_area_note = response.json()
+        self.assertEqual(
+            planning_area_note["content"], "Collaborator comment -- so much to say."
+        )
+
+    def test_get_specific_note_for_noncollaborator(self):
+        self.client.force_authenticate(self.unassociated_user)
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.note2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_specific_note_unauthenticated(self):
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.note2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+
+class DeletePlanningAreaNotes(APITestCase):
+    def setUp(self):
+        self.owner_user = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unassociated_user = UserFactory()  # no perms for Planning Area
+
+        self.planningarea = PlanningAreaFactory.create(
+            user=self.owner_user,
+            region_name="foo",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
+        )
+        self.owner_note = PlanningAreaNote.objects.create(
+            user=self.owner_user,
+            planning_area=self.planningarea,
+            content="Just a comment about this planning area.",
+        )
+        self.collab_note = PlanningAreaNote.objects.create(
+            user=self.collab_user,
+            planning_area=self.planningarea,
+            content="Collaborator comment -- so much to say.",
+        )
+        self.viewer_note = PlanningAreaNote.objects.create(
+            user=self.viewer_user,
+            planning_area=self.planningarea,
+            content="Viewer comment, just commenting",
+        )
+
+    def test_delete_note_as_owner(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.owner_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_note_as_nonauthor_planningarea_owner(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.collab_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_note_as_nonauthor_nonowner(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.viewer_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_note_as_author_nonowner(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.viewer_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)

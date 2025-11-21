@@ -65,12 +65,13 @@
 
 <!--New flow with scenario ui-->
 <ng-container *ngIf="withDynamicScenarioUi">
+  <app-nav-bar area="NEW_SCENARIO"></app-nav-bar>
   <!--New scenario ui flow-->
   <sg-steps-nav
     [steps]="steps"
     [selectedIndex]="(stepIndex$ | async) ?? 0"
     [allowNavigation]="false"></sg-steps-nav>
-  <section class="container">
+  <section class="container" [ngClass]="{ first: isFirstIndex$ | async }">
     <sg-steps
       class="new-scenario-ui"
       [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"
@@ -84,6 +85,15 @@
       [outerForm]="form"
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
+      <app-scenario-summary
+        sharedHeading
+        *ngIf="(isFirstIndex$ | async) === false"
+        [title]="scenarioName"
+        [standSize]="(standSize$ | async) || ''"
+        [treatmentGoal]="
+          (treatmentGoalName$ | async) || ''
+        "></app-scenario-summary>
+
       <sg-step class="full-screen-step">
         <app-step1-with-overview></app-step1-with-overview>
       </sg-step>
