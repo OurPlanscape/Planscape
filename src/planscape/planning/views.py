@@ -1,4 +1,3 @@
-import json
 import logging
 
 from collaboration.permissions import (
@@ -20,12 +19,11 @@ from planning.models import (
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
-    SharedLink,
 )
 from planning.serializers import (
+    ListPlanningAreaSerializer,
     PlanningAreaNoteListSerializer,
     PlanningAreaNoteSerializer,
-    SharedLinkSerializer,
     ValidatePlanningAreaOutputSerializer,
     ValidatePlanningAreaSerializer,
 )
@@ -46,6 +44,40 @@ def validate_planning_area(request: Request) -> Response:
     data = {"area_acres": get_acreage(geometry)}
     out_serializer = ValidatePlanningAreaOutputSerializer(instance=data)
     return Response(out_serializer.data)
+
+
+# No Params expected, since we're always using the logged in user.
+@api_view(["GET"])
+def list_planning_areas(request: Request) -> Response:
+    """
+    Retrieves all planning areas for a user.
+    Requires a logged in user.  Users can see only their owned planning_areas.
+
+    Returns: A list of planning areas in JSON form.  Each planning area JSON will also include
+        two metadata fields:
+      scenario_count: number of scenarios for the planning area returned.
+      latest_updated: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
+        PlanningArea updated_at if no scenarios
+
+    Required params: none
+    """
+    try:
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        planning_areas = PlanningArea.objects.list_for_api(user).order_by(
+            "-latest_updated"
+        )
+        serializer = ListPlanningAreaSerializer(
+            instance=planning_areas, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+    except Exception as e:
+        logger.error(f"Error: Failed to list planning areas: {e}")
+        raise
 
 
 @api_view(["GET"])
@@ -166,114 +198,6 @@ def download_shapefile(request: Request) -> Response:
         )
     except Exception as e:
         logger.error("Error in downloading shapefile %s", e)
-        raise
-
-
-# TODO: add more things to update other than state
-# Unlike other routines, this does not require a user login context, as it is expected to be called
-# by the EP.
-#
-# TODO: require credential from EP so that random people cannot call this endpoint.
-@api_view(["GET", "POST"])
-def update_scenario_result(request: Request) -> Response:
-    """
-    Updates a ScenarioResult's status.
-    Requires a logged in user, as a scenario must be associated with a user's planning area.
-    Throws an error if no scenario/ScenarioResult owned by the user can be found with the desired ID.
-    This does not modify the Scenario object itself.
-    A ScenarioResult's status can be updated only in the following directions:
-       PENDING -> RUNNING | FAILURE
-       RUNNING -> SUCCESS | FAILURE
-
-    Returns: id: the ID of the Scenario whose ScenarioResult was updated.
-
-    Required params:
-      scenario_id (int): The scenario ID whose ScenarioResult is meant to be updated.
-
-    Optional params:
-      status (ScenarioResultStatus): The new status of the ScenarioResult.
-      result (JSON str): Details of the run.
-      run_details (JSON str): Even more verbose details of the run.
-    """
-    try:
-        body = json.loads(request.body)
-        scenario_id = body.get("scenario_id")
-
-        scenario_result = ScenarioResult.objects.get(scenario__id=scenario_id)
-
-        new_status = body.get("status")
-        old_status = scenario_result.status
-
-        if new_status is not None:
-            match new_status:
-                case ScenarioResultStatus.RUNNING:
-                    if old_status != ScenarioResultStatus.PENDING:
-                        return Response(
-                            {"error": "Invalid new state."},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-                case ScenarioResultStatus.SUCCESS:
-                    if old_status != ScenarioResultStatus.RUNNING:
-                        return Response(
-                            {"error": "Invalid new state."},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-                case _:
-                    if new_status != ScenarioResultStatus.FAILURE:
-                        return Response(
-                            {"error": "Invalid new state."},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-            scenario_result.status = new_status
-
-        if (run_details := body.get("run_details")) is not None:
-            scenario_result.run_details = run_details
-
-        if (result := body.get("result")) is not None:
-            scenario_result.result = result
-
-        scenario_result.save()
-
-        return Response({"id": scenario_id}, content_type="application/json")
-    except ScenarioResult.DoesNotExist:
-        return Response(
-            {"error": "Scenario result matching query does not exist."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-    except Exception as e:
-        logger.error("Error updating scenario result: %s", e)
-        raise
-
-
-#### SHARED LINK Handlers ####
-@api_view(["GET"])
-def get_shared_link(request: Request, link_code: str) -> Response:
-    try:
-        link_obj = SharedLink.objects.get(link_code=link_code)
-    except SharedLink.DoesNotExist:
-        # Handle the case where the object doesn't exist
-        return Response(
-            {"error": "This link does not exist"}, status=status.HTTP_404_NOT_FOUND
-        )
-    serializer = SharedLinkSerializer(link_obj)
-    return Response(serializer.data, content_type="application/json")
-
-
-@api_view(["POST"])
-def create_shared_link(request: Request) -> Response:
-    try:
-        user = request.user
-
-        body = json.loads(request.body)
-        serializer = SharedLinkSerializer(data=body, context={"user": user})
-        serializer.is_valid(raise_exception=True)
-        shared_link = serializer.save()
-
-        serializer = SharedLinkSerializer(shared_link)
-        return Response(serializer.data, content_type="application/json")
-
-    except Exception as e:
-        logger.error("Error creating shared link: %s", e)
         raise
 
 

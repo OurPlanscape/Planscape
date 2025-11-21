@@ -3,14 +3,11 @@ from django.urls import path
 
 from planning.views import (
     PlanningAreaNotes,
-    create_shared_link,
     download_csv,
     download_shapefile,
-    get_shared_link,
-    update_scenario_result,
+    list_planning_areas,
     validate_planning_area,
 )
-from planning.views_userprefs import UserPreferencesView
 
 app_name = "planning"
 
@@ -24,6 +21,12 @@ urlpatterns = [
         name="validate_planning_area",
     ),
     path(
+        "list_planning_areas/",
+        list_planning_areas,
+        name="list_planning_areas",
+    ),
+    # Scenarios
+    path(
         # TODO change this to download_csv url
         "get_scenario_download_by_id/",
         download_csv,
@@ -33,22 +36,6 @@ urlpatterns = [
         "download_shapefile/",
         download_shapefile,
         name="download_shapefile",
-    ),
-    path(
-        "update_scenario_result/",
-        update_scenario_result,
-        name="update_scenario_result",
-    ),
-    # Project Areas
-    path(
-        "create_link/",
-        create_shared_link,
-        name="create_shared_link",
-    ),
-    path(
-        "shared_link/<str:link_code>",
-        get_shared_link,
-        name="get_shared_link",
     ),
     # Planning Area Notes C/R/D
     path(
@@ -71,12 +58,4 @@ urlpatterns = [
         PlanningAreaNotes.as_view(),
         name="delete_planningareanote",
     ),
-    # UserPrefs
-    path(
-        "user_prefs/<str:preference_key>/",
-        UserPreferencesView.as_view(),
-        name="delete_userprefs",
-    ),
-    path("user_prefs/", UserPreferencesView.as_view(), name="get_userprefs"),
-    path("user_prefs/", UserPreferencesView.as_view(), name="patch_userprefs"),
 ]
