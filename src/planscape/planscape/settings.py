@@ -225,6 +225,7 @@ REST_FRAMEWORK = {
         "%Y-%m-%dT%H:%M:%SZ",  # Optional: to accept inputs with 'Z' indicating UTC time
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "core.exception_handler.planscape_api_exception_handler",
 }
 
 REST_AUTH = {
