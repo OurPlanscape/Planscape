@@ -4,7 +4,6 @@ from rest_framework.response import Response
 
 def planscape_api_exception_handler(exc, context):
     if isinstance(exc, ValidationError):
-        # Customize ValidationError response structure
         if isinstance(exc.detail, dict):
             customized_detail = {
                 "detail": exc.detail.get("detail", "Validation error."),
