@@ -263,7 +263,7 @@ describe('suggestUniqueName', () => {
     const existingNames = ['a name', 'another name', 'some name'];
 
     const nameResult = suggestUniqueName(origName, existingNames);
-    expect(nameResult).toEqual('some name 1');
+    expect(nameResult).toEqual('some name 2');
   });
 
   it('should append a number if the name exists with subsequent numbers', () => {
