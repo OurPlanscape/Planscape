@@ -44,6 +44,7 @@ export class ExcludeAreasSelectorComponent
   }
 
   form = new FormGroup({}); // keeping the inheritance happy
+  // excludedAreas here are the list of available exclusion areas
   excludableAreas$ = this.forsysService.excludedAreas$;
   excludableAreas: BaseLayer[] = [];
 
@@ -51,7 +52,7 @@ export class ExcludeAreasSelectorComponent
   viewingAreas: IdNamePair[] = [];
 
   ngOnInit() {
-    this.excludableAreas$.pipe(take(1)).subscribe((areas) => {
+    this.forsysService.excludedAreas$.pipe(take(1)).subscribe((areas) => {
       this.excludableAreas = areas;
       this.prefillExcludedAreas();
     });
@@ -64,41 +65,33 @@ export class ExcludeAreasSelectorComponent
         untilDestroyed(this),
         filter((c) => !!c?.excluded_areas),
         take(1)
-      )
+      ) // set the local selectedAreas to what was read from the config
       .subscribe((config) => {
-        this.selectedAreas = [];
-        this.excludableAreas.forEach((area) => {
-          if (config.excluded_areas?.includes(area.id)) {
-            this.selectedAreas.push(area);
-          }
-        });
+        this.selectedAreas = this.excludableAreas.filter((ea) =>
+          config.excluded_areas?.includes(ea.id)
+        );
+        // then update excludedareas with stored data, to trigger map drawing
         this.newScenarioState.setExcludedAreas(
-          this.getSelectedExcludedAreaIds()
+          this.selectedAreas.map((sa) => sa.id)
         );
       });
   }
 
   handleSelectedItemsChange(selectedItems: IdNamePair[]) {
-    this.selectedAreas = [];
-    selectedItems.forEach((s) => {
-      this.selectedAreas.push(s);
-    });
+    this.selectedAreas = [...selectedItems];
     this.newScenarioState.setExcludedAreas(this.getSelectedExcludedAreaIds());
-  }
-
-  handleViewedItemsChange(viewedItems: IdNamePair[]) {
-    this.viewingAreas = [];
-    viewedItems.forEach((s) => {
-      this.viewingAreas.push(s);
-    });
-    const baseLayersToView = this.excludableAreas.filter((ea) =>
-      viewedItems.map((vi) => vi.id).includes(ea.id)
-    );
-    this.baseLayersStateService.setBaseLayers(baseLayersToView);
   }
 
   getSelectedExcludedAreaIds(): number[] {
     return this.selectedAreas.map((s) => s.id);
+  }
+
+  handleViewedItemsChange(viewedItems: IdNamePair[]) {
+    this.viewingAreas = [...viewedItems];
+    const baseLayersToView = this.excludableAreas.filter((ea) =>
+      viewedItems.some((vi) => vi.id === ea.id)
+    );
+    this.baseLayersStateService.setBaseLayers(baseLayersToView);
   }
 
   getData() {
