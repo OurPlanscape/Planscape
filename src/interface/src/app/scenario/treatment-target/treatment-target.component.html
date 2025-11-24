@@ -78,12 +78,10 @@ Treatment cost per acre does not affect how project areas are created but is inc
       </div>
     </div>
 
-    <div class="form-row">
+    <div>
       <!-- Help text % of available acreage treated -->
       <div>
-      Total Areas Targeted: <div class="help-text" *ngIf="form.valid">
-        {{ getTotalTreated() | number: '1.0-2' }}
-      </div>
+      Total Areas Targeted: {{ getTotalTreated() | number: '1.0-2' }}
     </div>
       <div class="help-text error" *ngIf="form.hasError('invalidWorkingArea')">
         Your target exceeds the treatable area (Max:
