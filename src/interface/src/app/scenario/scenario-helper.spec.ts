@@ -258,45 +258,78 @@ describe('getNamedConstraints', () => {
 });
 
 describe('suggestUniqueName', () => {
-  it('should append a number if the name exists', () => {
+  it('should should name the copy "Copy of <basename>"', () => {
     const origName = 'some name';
     const existingNames = ['a name', 'another name', 'some name'];
 
     const nameResult = suggestUniqueName(origName, existingNames);
-    expect(nameResult).toEqual('some name 2');
+    expect(nameResult).toEqual("Copy of 'some name'");
   });
 
-  it('should append a number if the name exists with subsequent numbers', () => {
+  it('should append a numeral if the name exists but doesnt end in a numeral', () => {
     const origName = 'some name';
     const existingNames = [
+      'a name',
+      'another name',
       'some name',
-      'some name 1',
-      'some name 2',
-      'some name 3',
-      'some name 4',
-      'some name 5',
+      "Copy of 'some name'",
     ];
 
     const nameResult = suggestUniqueName(origName, existingNames);
-    expect(nameResult).toEqual('some name 6');
+    expect(nameResult).toEqual("Copy of 'some name' 2");
+  });
+
+  it('should append a numeral if the name exists with subsequent numbers', () => {
+    const origName = 'some name';
+    const existingNames = [
+      'some name',
+      'some name 2',
+      "Copy of 'some name'",
+      "Copy of 'some name' 2",
+      "Copy of 'some name' 3",
+      "Copy of 'some name' 4",
+      "Copy of 'some name' 5",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 6");
   });
 
   it('should increment the name if it already contains a number at the end', () => {
     const origName = 'some name 5';
     const existingNames = [
       'some name',
-      'some name 1',
-      'some name 2',
-      'some name 3',
-      'some name 4',
-      'some name 5',
-      'some name 6',
-      'some name 7',
-      'some name 8',
-      'some name 9',
+      "Copy of 'some name'",
+      "Copy of 'some name' 2",
+      "Copy of 'some name' 3",
+      "Copy of 'some name' 4",
+      "Copy of 'some name' 5",
+      "Copy of 'some name' 6",
+      "Copy of 'some name' 7",
+      "Copy of 'some name' 8",
+      "Copy of 'some name' 9",
     ];
 
     const nameResult = suggestUniqueName(origName, existingNames);
-    expect(nameResult).toEqual('some name 10');
+    expect(nameResult).toEqual("Copy of 'some name' 10");
+  });
+
+  it('should not prepend "Copy of" if that text already exists', () => {
+    const origName = "Copy of 'some name' 5";
+    const existingNames = [
+      'some name',
+      "Copy of 'some name'",
+      "Copy of 'some name' 2",
+      "Copy of 'some name' 3",
+      "Copy of 'some name' 4",
+      "Copy of 'some name' 5",
+      "Copy of 'some name' 6",
+      "Copy of 'some name' 7",
+      "Copy of 'some name' 8",
+      "Copy of 'some name' 9",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 10");
   });
 });
