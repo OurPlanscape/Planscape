@@ -70,10 +70,6 @@ export class ExcludeAreasSelectorComponent
         this.selectedAreas = this.excludableAreas.filter((ea) =>
           config.excluded_areas?.includes(ea.id)
         );
-        // then update excludedareas with stored data, to trigger map drawing
-        this.newScenarioState.setExcludedAreas(
-          this.selectedAreas.map((sa) => sa.id)
-        );
       });
   }
 
