@@ -134,7 +134,7 @@ export function suggestUniqueName(providedName: string, knownNames: string[]) {
   if (!isNumber(Number(anySuffix))) {
     baseName = providedName;
   }
-  let i = 1;
+  let i = 2;
   while (knownNames.includes(suggestedName)) {
     suggestedName = `${baseName} ${i++}`;
   }
