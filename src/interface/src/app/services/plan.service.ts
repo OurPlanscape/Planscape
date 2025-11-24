@@ -8,7 +8,7 @@ import {
   Plan,
   PreviewPlan,
 } from '@types';
-import { GeoJSON, GeoJsonObject } from 'geojson';
+import { GeoJsonObject } from 'geojson';
 import { environment } from '../../environments/environment';
 import { Params } from '@angular/router';
 
@@ -81,19 +81,6 @@ export class PlanService {
     return this.http.get<Creator[]>(url, {
       withCredentials: true,
     });
-  }
-
-  getTotalArea(shape: GeoJSON) {
-    return this.http
-      .post<{
-        area_acres: number;
-      }>(
-        environment.backend_endpoint.concat(
-          `/planning/validate_planning_area/`
-        ),
-        { geometry: shape }
-      )
-      .pipe(map((result) => Math.round(result.area_acres)));
   }
 
   //TODO: This might be better in its own Service file
