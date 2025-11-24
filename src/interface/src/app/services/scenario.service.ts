@@ -173,9 +173,10 @@ export class ScenarioService {
     return this.http.post<AvailableStands>(
       url,
       {
-        stand_size,
-        excludes,
-        constraints,
+        stand_size: 'WRONG SIZE TO TEST ERROR',
+        //stand_size,
+        //excludes,
+        // constraints,
       },
       {
         withCredentials: true,

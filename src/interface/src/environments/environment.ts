@@ -14,7 +14,7 @@ export const environment = {
   open_panel_enabled: false,
   debug_layers: false,
   sentry: {
-    dsn_url: '',
+    dsn_url: 'https://32e5d13c21a124b4e4e8a774a535962d@sentry.sig-gis.com/10',
     // See Sentry javascript integrations for details
     enable_extra_error_data: true,
     enable_httpclient: true,

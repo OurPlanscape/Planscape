@@ -12,6 +12,7 @@ if (environment.production) {
 const sentryConfig = createSentryConfig();
 
 if (environment.sentry.dsn_url !== undefined) {
+  console.log('sentry inits', sentryConfig);
   Sentry.init(sentryConfig);
 }
 
