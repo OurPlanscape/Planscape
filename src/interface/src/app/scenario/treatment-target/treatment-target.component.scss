@@ -100,4 +100,25 @@
 
 .form-row {
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: flex-end;
 }
+
+.field-column {
+  width: 100%;
+}
+
+.multiplication-separator {
+  @include standard-label();
+  padding-bottom: 40px;
+
+}
+
+
+.input-label {
+  @include small-input-label();
+  color: $color-dark-gray
+}
+
