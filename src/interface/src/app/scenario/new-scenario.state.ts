@@ -177,7 +177,7 @@ export class NewScenarioState {
 
   setScenarioConfig(config: Partial<ScenarioCreation>) {
     this._scenarioConfig$.next(config);
-    if (config.excluded_areas){
+    if (config.excluded_areas) {
       this.setExcludedAreas(config.excluded_areas);
     }
   }
