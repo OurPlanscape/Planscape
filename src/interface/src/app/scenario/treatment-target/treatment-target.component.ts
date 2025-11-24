@@ -137,6 +137,15 @@ export class TreatmentTargetComponent
     );
   }
 
+    getTotalTreated(): number {
+    const formValues = this.form.value;
+    if (!this.maxAreaValue || this.maxAreaValue === 0) {
+      return 0;
+    }
+    // Calculating the percentage based on the max_area ( acres per project area ) and the  max_project_count
+    return (formValues.max_area * formValues.max_project_count);
+  }
+
   private minAreaValidator(): ValidatorFn {
     return (form): ValidationErrors | null => {
       const acresPerProjectArea = form.get('max_area');
