@@ -40,6 +40,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dialog/confirmation-dialog.component';
 import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -70,6 +71,7 @@ type SaveStepData = {
   ],
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],
+  providers: [DataLayersStateService],
 })
 export class ClimateForesightRunComponent implements OnInit {
   @ViewChild(StepsComponent) stepsComponent?: StepsComponent<SaveStepData>;
@@ -106,16 +108,12 @@ export class ClimateForesightRunComponent implements OnInit {
     return this.stepsComponent?.selectedIndex ?? 0;
   }
 
-  get totalSteps(): number {
-    return this.stepsComponent?.steps?.length ?? 0;
-  }
-
   get canGoBack(): boolean {
     return this.currentStepIndex > 0;
   }
 
   get isLastStep(): boolean {
-    return this.currentStepIndex === this.totalSteps - 1;
+    return this.currentStepIndex === this.stepsList.length - 1;
   }
 
   get canGoNext(): boolean {

@@ -127,3 +127,6 @@ export const NOTE_DELETE_DIALOG = {
   title: 'Permanently delete note?',
   body: 'Are you sure you want to delete this note?',
 };
+
+// constant for now --we might need to do this dynamic in the future in such case move this to datalayers.state
+export const MAX_CLIMATE_DATALAYERS = 10;
