@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
@@ -60,6 +60,8 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
+  @Input() displayAddButton = false;
+
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   loading$ = this.dataLayersStateService.loading$;

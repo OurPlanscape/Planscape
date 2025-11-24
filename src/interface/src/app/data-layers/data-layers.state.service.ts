@@ -15,6 +15,7 @@ import {
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
+import { MAX_CLIMATE_DATALAYERS } from '@shared';
 
 @Injectable()
 export class DataLayersStateService {
@@ -38,8 +39,26 @@ export class DataLayersStateService {
   private _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
+  // Datalayers applied to the map
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
+
+  // Datalayers added to a particular analysis - used on climate
+  private _addedDataLayer$ = new BehaviorSubject<DataLayer[] | []>([]);
+  addedDataLayer$ = this._addedDataLayer$.asObservable();
+
+  // Added datalayers count - used on climate
+  addedCount$ = this.addedDataLayer$.pipe(map((items) => items.length));
+
+  // can proceed, we can proceed just if we have more that 1 addded datalayer - used on climate
+  hasAddedDatalayers$ = this.addedDataLayer$.pipe(
+    map((items) => items.length > 0)
+  );
+
+  // can add more layers - used on climate
+  canAddMoreDatalayers$ = this.addedDataLayer$.pipe(
+    map((items) => items.length < MAX_CLIMATE_DATALAYERS)
+  );
 
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
     switchMap((layer) => {
@@ -205,5 +224,32 @@ export class DataLayersStateService {
     this.resetPath();
     this.clearDataLayer();
     this.clearSearch();
+  }
+
+  // Checking if the layer is already in the addedList - used on climate
+  isAddedLayer(layer: DataLayer) {
+    return this._addedDataLayer$.value.some((l) => l.id === layer.id);
+  }
+
+  // Remove a layer from the added list - used on climate
+  removeAddedLayer(layer: DataLayer) {
+    const updatedAddedDatalayers = this._addedDataLayer$.value.filter(
+      (l) => l.id !== layer.id
+    );
+    this._addedDataLayer$.next(updatedAddedDatalayers);
+  }
+
+  // Adding or removing an item to the added list - used on climate
+  toggleLayerAdition(layer: DataLayer) {
+    if (this.isAddedLayer(layer)) {
+      this.removeAddedLayer(layer);
+    } else if (this._addedDataLayer$.value.length < MAX_CLIMATE_DATALAYERS) {
+      this._addedDataLayer$.next([...this._addedDataLayer$.value, layer]);
+    }
+  }
+
+  // Setting the list of added layers with a pre-loaded list - used on climate
+  updateAddedLayers(layers: DataLayer[]) {
+    this._addedDataLayer$.next(layers);
   }
 }
