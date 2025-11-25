@@ -314,13 +314,9 @@ describe('suggestUniqueName', () => {
     expect(nameResult).toEqual("Copy of 'some name 5' 10");
   });
 
-
   it('should only increment a number if the name is in "Copy of \'Some Name\'" format', () => {
-
-    const origName = "Scenario 4567";
-    const existingNames = [
-      'Scenario 4567'
-    ];
+    const origName = 'Scenario 4567';
+    const existingNames = ['Scenario 4567'];
     const nameResult = suggestUniqueName(origName, existingNames);
     expect(nameResult).toEqual("Copy of 'Scenario 4567'");
     existingNames.push("Copy of 'Scenario 4567'");
