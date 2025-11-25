@@ -127,21 +127,25 @@ export function getNamedConstraints(
 }
 
 export function suggestUniqueName(providedName: string, knownNames: string[]) {
-  let suggestedName = providedName;
+  let newName = providedName;
+  //wrap in "Copy of '<>'", but only if name doesn't already have that format.
+  if (newName.substring(0, 7) !== 'Copy of') {
+    newName = `Copy of '${newName}'`;
+  }
 
-  const lastSpace = suggestedName.lastIndexOf(' ');
-  let baseName = suggestedName.substring(0, lastSpace);
-  const anySuffix = suggestedName.substring(lastSpace);
+  //strip any trailing number to get the baseName
+  const lastSpace = newName.lastIndexOf(' ');
+  let baseName = newName.substring(0, lastSpace);
+  const anySuffix = newName.substring(lastSpace);
   if (!isNumber(Number(anySuffix))) {
-    baseName = providedName;
-  }
-  //only prepend "Copy of" if name doesn't include it.
-  if (providedName.substring(0, 7) !== 'Copy of') {
-    baseName = `Copy of '${baseName}'`;
-  }
-  suggestedName = baseName;
-  // start numbering with 2
+    // there's no number suffix, so the basename is just the full name
+    baseName = newName;
+  } //otherwise assume the baseName is just the part before the suffix
+
+  let suggestedName = baseName;
+  // any incremented numbering starts with 2
   let i = 2;
+  //keep incrementing until we get a unique name
   while (knownNames.includes(suggestedName)) {
     suggestedName = `${baseName} ${i++}`;
   }
