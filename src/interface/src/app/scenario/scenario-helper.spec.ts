@@ -295,23 +295,38 @@ describe('suggestUniqueName', () => {
     expect(nameResult).toEqual("Copy of 'some name' 6");
   });
 
-  it('should increment the name if it already contains a number at the end', () => {
+  it('should increment the trailing number, but only outside the cloned name', () => {
     const origName = 'some name 5';
     const existingNames = [
       'some name',
-      "Copy of 'some name'",
-      "Copy of 'some name' 2",
-      "Copy of 'some name' 3",
-      "Copy of 'some name' 4",
-      "Copy of 'some name' 5",
-      "Copy of 'some name' 6",
-      "Copy of 'some name' 7",
-      "Copy of 'some name' 8",
-      "Copy of 'some name' 9",
+      "Copy of 'some name 5'",
+      "Copy of 'some name 5' 2",
+      "Copy of 'some name 5' 3",
+      "Copy of 'some name 5' 4",
+      "Copy of 'some name 5' 5",
+      "Copy of 'some name 5' 6",
+      "Copy of 'some name 5' 7",
+      "Copy of 'some name 5' 8",
+      "Copy of 'some name 5' 9",
     ];
 
     const nameResult = suggestUniqueName(origName, existingNames);
-    expect(nameResult).toEqual("Copy of 'some name' 10");
+    expect(nameResult).toEqual("Copy of 'some name 5' 10");
+  });
+
+
+  it('should only increment a number if the name is in "Copy of \'Some Name\'" format', () => {
+
+    const origName = "Scenario 4567";
+    const existingNames = [
+      'Scenario 4567'
+    ];
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'Scenario 4567'");
+    existingNames.push("Copy of 'Scenario 4567'");
+
+    const secondNameResult = suggestUniqueName(origName, existingNames);
+    expect(secondNameResult).toEqual("Copy of 'Scenario 4567' 2");
   });
 
   it('should not prepend "Copy of" if that text already exists', () => {
