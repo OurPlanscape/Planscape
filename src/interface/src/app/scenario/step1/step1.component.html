@@ -65,6 +65,24 @@
                         (click)="selectStatewideGoal(goal)">
                         {{ goal.name }}
                       </mat-radio-button>
+                      <div></div>
+                      <button
+                        sg-button
+                        *ngIf="goal.description"
+                        variant="icon-only"
+                        icon="info"
+                        class="info-icon"
+                        [outlined]="true"
+                        [matMenuTriggerFor]="popoverMenu"
+                        (menuOpened)="infoMenuOpen = true"
+                        (menuClosed)="infoMenuOpen = false"></button>
+                      <mat-menu
+                        #popoverMenu="matMenu"
+                        class="datalayer-tooltip-panel">
+                        <div
+                          class="tooltip"
+                          [innerHTML]="goal.description"></div>
+                      </mat-menu>
                     </div>
                   </mat-expansion-panel>
                 </div>

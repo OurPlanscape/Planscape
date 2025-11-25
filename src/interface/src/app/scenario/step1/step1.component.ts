@@ -25,14 +25,18 @@ import { FeaturesModule } from '../../features/features.module';
 import { getGroupedGoals } from '../scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ButtonComponent } from '@styleguide';
+import { MatMenuModule } from '@angular/material/menu';
 
 @UntilDestroy()
 @Component({
   selector: 'app-step1',
   standalone: true,
   imports: [
+    ButtonComponent,
     CommonModule,
     ReactiveFormsModule,
+    MatMenuModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
     MatLegacyRadioModule,
@@ -63,6 +67,8 @@ export class Step1Component
   readonly standSizeOptions = STAND_OPTIONS;
 
   planId = this.route.parent?.snapshot.data['planId'];
+
+  infoMenuOpen = false;
 
   categorizedStatewideGoals$ = this.treatmentGoalsService
     .getTreatmentGoals(this.planId)
