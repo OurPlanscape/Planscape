@@ -138,6 +138,15 @@ export class ScenariosCardListComponent {
     return user?.id == scenario.user || canEditScenarioName(this.plan, user);
   }
 
+  canShowContextualMenu(scenario: Scenario) {
+    const user = this.authService.currentUser();
+    if (this.isDraft(scenario)) {
+      return user?.id == scenario.user;
+    } else {
+      return true;
+    }
+  }
+
   userCanCreateTreatmentPlan() {
     if (!this.plan) {
       return false;

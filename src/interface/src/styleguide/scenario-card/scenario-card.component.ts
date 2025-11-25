@@ -61,6 +61,7 @@ export class ScenarioCardComponent {
   @Input() userCanDeleteScenario = false;
   @Input() userCanEditScenario = false;
   @Input() showTreatmentPlanButton = false;
+  @Input() contextualMenuEnabled = true;
   @Input() disabled = false;
 
   @Output() openScenario = new EventEmitter();

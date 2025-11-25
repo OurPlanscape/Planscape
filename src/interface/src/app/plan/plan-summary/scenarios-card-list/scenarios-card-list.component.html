@@ -18,6 +18,7 @@
   [userCanArchiveScenario]="userCanArchiveScenario(s)"
   [userCanDeleteScenario]="userCanArchiveScenario(s)"
   [userCanEditScenario]="userCanEditScenario(s)"
+  [contextualMenuEnabled]="canShowContextualMenu(s)"
   [showTreatmentPlanButton]="
     userCanCreateTreatmentPlan() && hasTreatmentPlanCapability(s)
   "
