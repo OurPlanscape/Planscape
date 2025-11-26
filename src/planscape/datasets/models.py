@@ -31,6 +31,16 @@ class VisibilityOptions(models.TextChoices):
     PUBLIC = "PUBLIC", "Public"
 
 
+class SelectionTypeOptions(models.TextChoices):
+    SINGLE = "SINGLE", "Single"
+    MULTIPLE = "MULTIPLE", "Multiple"
+
+
+class PreferredDisplayType(models.TextChoices):
+    MAIN_DATALAYERS = "MAIN_DATALAYERS", "Main DataLayers"
+    BASE_DATALAYERS = "BASE_DATALAYERS", "Base DataLayers"
+
+
 class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
@@ -62,6 +72,18 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     )
     version = models.CharField(
         null=True,
+    )
+
+    selection_type = models.CharField(
+        choices=SelectionTypeOptions.choices,
+        null=True,
+        max_length=32,
+    )
+
+    preferred_display_type = models.CharField(
+        choices=PreferredDisplayType.choices,
+        null=True,
+        max_length=32,
     )
 
     def __str__(self) -> str:
