@@ -38,21 +38,6 @@
   color: $color-error;
 }
 
-.help-placeholder {
-  height: 28px;
-  line-height: 28px;
-}
-
-.or-divider {
-  @include public-sans();
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 20px;
-  text-transform: uppercase;
-  height: 30px;
-}
-
 .prefix {
   padding-left: 8px;
 }
@@ -97,13 +82,17 @@
   align-items: center;
 }
 
+.form-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .form-row {
-  margin-bottom: 16px;
   display: flex;
   flex-direction: row;
   gap: 16px;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 .field-column {
@@ -112,13 +101,25 @@
 
 .multiplication-separator {
   @include standard-label();
-  padding-bottom: 40px;
-
+  height: 100%;
+  padding-top: 70px;
 }
-
 
 .input-label {
   @include small-input-label();
-  color: $color-dark-gray
+  color: $color-dark-gray;
+}
+
+.total-areas-targeted {
+  @include small-input-label();
+  color: $color-dark-gray;
+
+  .calculated-total {
+    color: $color-black;
+  }
+}
+
+.form-divider {
+  padding: 16px 0;
 }
 
