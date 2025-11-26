@@ -785,11 +785,12 @@ def _get_datalayers_id_lookup_table(scenario):
     return dl_lookup
 
 
-def _get_file_content(file_path: Path) -> str:
+def _get_file_content(file_path: Union[Path,str]) -> str:
     if is_gcs_file(str(file_path)):
         content = get_file_content_from_gcs(str(file_path))
-    with open(file_path, "r") as f:
-        content = f.read()
+    else:
+        with open(file_path, "r") as f:
+            content = f.read()
     return content
 
 
@@ -860,7 +861,7 @@ def export_scenario_stand_outputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict]
 ) -> None:
     forsys_folder = scenario.get_forsys_folder()
-    stnd_file = forsys_folder / f"stnd_{scenario.uuid}.csv"
+    stnd_file = f"{forsys_folder}/stnd_{scenario.uuid}.csv"
     scenario_outputs = {}
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
@@ -943,7 +944,7 @@ def export_scenario_inputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> Dict[int, Dict]:
     forsys_folder = scenario.get_forsys_folder()
-    inputs_file = forsys_folder / "inputs.csv"
+    inputs_file = f"{forsys_folder}/inputs.csv"
     scenario_inputs = dict()
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()

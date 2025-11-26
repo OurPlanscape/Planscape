@@ -31,6 +31,8 @@ from planning.services import (
     create_planning_area,
     create_scenario,
     export_planning_area_to_geopackage,
+    export_scenario_inputs_to_geopackage,
+    export_scenario_stand_outputs_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
@@ -336,6 +338,7 @@ class TestExportToGeopackage(TestCase):
             name="s1",
             user=self.user,
             treatment_goal=self.treatment_goal,
+            configuration={"stand_size": self.stand.size}
         )
         data = {
             "foo": "abc",
@@ -355,7 +358,10 @@ class TestExportToGeopackage(TestCase):
             scenario=self.scenario, status=ScenarioResultStatus.SUCCESS
         )
 
-        forsys_folder = self.scenario.get_forsys_folder()
+        self.output_path = Path("test_planning_area.gpkg")
+
+    def _generate_inputs_file(self):
+        forsys_folder = Path(self.scenario.get_forsys_folder())
         if not forsys_folder.exists():
             forsys_folder.mkdir(parents=True, exist_ok=True)
         self.inputs_file = forsys_folder / "inputs.csv"
@@ -392,6 +398,7 @@ class TestExportToGeopackage(TestCase):
             writer = csv.writer(csvfile)
             writer.writerows(inputs_data_rows)
 
+    def _generate_outputs_file(self):
         stnd_data_rows = [
             [
                 "stand_id",
@@ -423,20 +430,20 @@ class TestExportToGeopackage(TestCase):
             ],
         ]
 
-        forsys_folder = self.scenario.get_forsys_folder()
+        forsys_folder = Path(self.scenario.get_forsys_folder())
         self.outputs_file = forsys_folder / f"stnd_{self.scenario.uuid}.csv"
         with open(self.outputs_file, "w") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
-        self.output_path = Path("test_planning_area.gpkg")
-
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage(self, upload_mock):
         invalidate_all()
+        self._generate_inputs_file()
+        self._generate_outputs_file()
         output = export_to_geopackage(self.scenario)
         self.assertIsNotNone(output)
-        self.assertTrue(output.endswith(".gpkg.zip"))
+        self.assertTrue(str(output).endswith(".gpkg.zip"))
         self.assertTrue(upload_mock.called)
 
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
@@ -461,6 +468,77 @@ class TestExportToGeopackage(TestCase):
             )
             feature = next(iter(src))
             self.assertEqual(feature["properties"]["name"], self.planning.name)
+
+    def test_export_scenario_inputs_filesystem(self):
+        self._generate_inputs_file()
+        scenario_inputs = export_scenario_inputs_to_geopackage(scenario=self.scenario, geopackage_path=self.output_path)
+
+        self.assertIsNotNone(scenario_inputs)
+        with fiona.open(self.output_path, layer="stand_inputs") as src:
+            self.assertEqual(1, len(src))
+            self.assertEqual(
+                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+            )
+            feature = next(iter(src))
+            self.assertEqual(feature["properties"]["stand_id"], self.stand.pk)
+
+    @override_settings(FORSYS_OUTPUT_DIR="gs://test-bucket/forsys-output")
+    @mock.patch("planning.services.get_file_content_from_gcs", return_value="" \
+    "WKT,stand_id,stand_size\n" \
+    "\"POLYGON ((-2226358.53928425 1950498.20568641,-2225919.84794646 1949738.37000051,-2225042.46527088 1949738.37000052,-2224603.77393309 1950498.20568641,-2225042.46527088 1951258.0413723,-2225919.84794646 1951258.0413723,-2226358.53928425 1950498.20568641))\",1,LARGE\n")
+    def test_export_scenario_inputs_gcs(self, mock_get_gcs):
+        scenario_inputs = export_scenario_inputs_to_geopackage(scenario=self.scenario, geopackage_path=self.output_path)
+
+        self.assertIsNotNone(scenario_inputs)
+        mock_get_gcs.assert_called_once()
+        with fiona.open(self.output_path, layer="stand_inputs") as src:
+            self.assertEqual(1, len(src))
+            self.assertEqual(
+                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+            )
+            feature = next(iter(src))
+            self.assertEqual(feature["properties"]["stand_id"], 1)
+
+    def test_export_scenario_outputs_filesystem(self):
+        self._generate_inputs_file()
+        self._generate_outputs_file()
+        scenario_inputs = export_scenario_inputs_to_geopackage(scenario=self.scenario, geopackage_path=self.output_path)
+        export_scenario_stand_outputs_to_geopackage(scenario=self.scenario, geopackage_path=self.output_path, stand_inputs=scenario_inputs)
+        with fiona.open(self.output_path, layer="stand_outputs") as src:
+            self.assertEqual(1, len(src))
+            self.assertEqual(
+                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+            )
+            feature = next(iter(src))
+            self.assertEqual(feature["properties"]["stand_id"], self.stand.pk)
+            self.assertEqual(feature["properties"]["area_acres"], 494.193)
+
+    @override_settings(FORSYS_OUTPUT_DIR="gs://test-bucket/forsys-output")
+    @mock.patch("planning.services.get_file_content_from_gcs", return_value="" \
+    "stand_id,proj_id,DoTreat,selected,ETrt_YR,area_acres\n" \
+    "1,1,1,1,1,494.193231036229\n")
+    def test_export_scenario_outputs_gcs(self, mock_get_gcs):
+        scenario_inputs = {
+            1: {
+                'WKT': {
+                    'type': 'MultiPolygon', 
+                    'coordinates': [[[[-121.86087789849803, 37.84713425165387], [-121.85368746775664, 37.8416561074584], [-121.8439919594287, 37.84375920799639], [-121.8414853017694, 37.85134081896673], [-121.84867577027028, 37.856819670722174], [-121.85837285882567, 37.85471620387358], [-121.86087789849803, 37.84713425165387]]]]
+                    }, 
+                    'stand_id': 1, 
+                    'area_acres': 494.193, 
+                    'stand_size': StandSizeChoices.LARGE
+                }
+        }
+        export_scenario_stand_outputs_to_geopackage(scenario=self.scenario, geopackage_path=self.output_path, stand_inputs=scenario_inputs)
+        mock_get_gcs.assert_called_once()
+        with fiona.open(self.output_path, layer="stand_outputs") as src:
+            self.assertEqual(1, len(src))
+            self.assertEqual(
+                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+            )
+            feature = next(iter(src))
+            self.assertEqual(feature["properties"]["stand_id"], 1)
+            self.assertEqual(feature["properties"]["area_acres"], 494.193)
 
     def tearDown(self) -> None:
         self.output_path.unlink(missing_ok=True)

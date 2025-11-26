@@ -392,7 +392,7 @@ FORSYS_VIA_API = config("FORSYS_VIA_API", False, cast=bool)
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = config("OUTPUT_DIR", default=BASE_DIR / "output")
-FORSYS_OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output")
+FORSYS_OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output", cast=str)
 
 DEFAULT_ESTIMATED_COST = config("DEFAULT_ESTIMATED_COST", 2470, cast=float)
 # CACHEOPS

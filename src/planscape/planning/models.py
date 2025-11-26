@@ -484,8 +484,8 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_shapefile_folder(self) -> Path:
         return Path(settings.OUTPUT_DIR) / "shapefile" / Path(str(self.uuid))
 
-    def get_forsys_folder(self) -> Path:
-        return Path(settings.FORSYS_OUTPUT_DIR) / Path(str(self.uuid))
+    def get_forsys_folder(self) -> str:
+        return f"{settings.FORSYS_OUTPUT_DIR}/{str(self.uuid)}"
 
     def get_stand_size(self) -> StandSizeChoices:
         return self.configuration.get("stand_size", {}) or StandSizeChoices.LARGE
