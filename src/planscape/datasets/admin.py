@@ -27,7 +27,13 @@ class DatasetAdmin(admin.ModelAdmin):
     search_fields = ["organization__name__icontains", "name"]
     autocomplete_fields = ["organization"]
     form = DatasetAdminForm
-    list_display = ("id", "name", "visibility", "organization")
+    list_display = (
+        "id",
+        "name",
+        "visibility",
+        "organization",
+        "selection_type",
+    )
     list_display_links = (
         "id",
         "name",
