@@ -115,10 +115,6 @@ export class ScenarioCreationComponent implements OnInit {
     scenarioName: new FormControl('', [Validators.required]),
   });
 
-  treatable_area$ = this.newScenarioState.availableStands$.pipe(
-    map((s) => s.summary.treatable_area)
-  );
-
   loading$ = this.newScenarioState.loading$;
 
   stepIndex$ = this.newScenarioState.stepIndex$;
@@ -196,8 +192,7 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   loadExistingScenario() {
-    this.scenarioService
-      .getScenario(this.scenarioId)
+    this.scenarioState.currentScenario$
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         // Setting up the breadcrumb
