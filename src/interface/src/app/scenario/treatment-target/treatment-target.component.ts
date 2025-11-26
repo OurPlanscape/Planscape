@@ -10,6 +10,7 @@ import { SectionComponent, StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { NgxMaskModule } from 'ngx-mask';
 import {
+  AbstractControl,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -17,6 +18,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
@@ -34,6 +36,7 @@ import { STAND_SIZES } from 'src/app/plan/plan-helpers';
     CommonModule,
     CurrencyPipe,
     DecimalPipe,
+    MatDividerModule,
     MatSelectModule,
     MatInputModule,
     MatFormFieldModule,
@@ -137,13 +140,13 @@ export class TreatmentTargetComponent
     );
   }
 
-    getTotalTreated(): number {
+  getTotalTreated(): number {
     const formValues = this.form.value;
     if (!this.maxAreaValue || this.maxAreaValue === 0) {
       return 0;
     }
     // Calculating the percentage based on the max_area ( acres per project area ) and the  max_project_count
-    return (formValues.max_area * formValues.max_project_count);
+    return formValues.max_area * formValues.max_project_count;
   }
 
   private minAreaValidator(): ValidatorFn {
@@ -175,15 +178,39 @@ export class TreatmentTargetComponent
         !acresPerProjectArea?.value ||
         !maxAreaValue
       ) {
+        this.removeError(projectAreaCount, 'invalidWorkingArea');
+        this.removeError(acresPerProjectArea, 'invalidWorkingArea');
         return null;
       }
 
       if (projectAreaCount?.value * acresPerProjectArea.value > maxAreaValue) {
-        return { invalidWorkingArea: true };
-      }
+        acresPerProjectArea?.markAsTouched();
+        acresPerProjectArea?.setErrors({
+          ...acresPerProjectArea.errors,
+          invalidWorkingArea: true,
+        });
 
+        projectAreaCount?.markAsTouched();
+        projectAreaCount?.setErrors({
+          ...projectAreaCount.errors,
+          invalidWorkingArea: true,
+        });
+        return { invalidWorkingArea: true };
+      } else {
+        this.removeError(projectAreaCount, 'invalidWorkingArea');
+        this.removeError(acresPerProjectArea, 'invalidWorkingArea');
+      }
       return null;
     };
+  }
+
+  private removeError(
+    control: AbstractControl<any, any> | null,
+    errorKey: string
+  ): void {
+    if (!control?.hasError(errorKey)) return;
+    const { [errorKey]: removed, ...rest } = control.errors!;
+    control.setErrors(Object.keys(rest).length ? rest : null);
   }
 
   getData() {
