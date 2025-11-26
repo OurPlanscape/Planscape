@@ -186,3 +186,32 @@ def upload_file_via_api(
                 )
 
     logger.info(f"Uploaded {object_name} done.")
+
+
+def get_file_content_from_gcs(
+    gs_url: str,
+    bucket_name: str = settings.GCS_BUCKET,
+) -> str:
+    """
+    Downloads a file's as text from Google Cloud Storage to a local file.
+
+    Args:
+        gs_url (str): The GCS URL of the file.
+        output_file (str): The path to the local file to save.
+
+    Returns:
+        str: File's content as text.
+    """
+    logger.info(f"Reading file {gs_url} content.")
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+
+    blob_name = gs_url.replace(f"gs://{bucket_name}/", "")
+    blob = bucket.get_blob(blob_name)
+    if not blob:
+        logger.error(f"Blob not found: {blob_name} in bucket {bucket_name}")
+        raise ValueError(f"Blob not found: {blob_name} in bucket {bucket_name}")
+
+    content = blob.download_as_text()
+
+    return content

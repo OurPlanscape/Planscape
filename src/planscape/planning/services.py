@@ -13,7 +13,7 @@ import fiona
 from actstream import action
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from core.gcs import upload_file_via_cli
+from core.gcs import get_file_content_from_gcs, is_gcs_file, upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -785,6 +785,14 @@ def _get_datalayers_id_lookup_table(scenario):
     return dl_lookup
 
 
+def _get_file_content(file_path: Path) -> str:
+    if is_gcs_file(str(file_path)):
+        content = get_file_content_from_gcs(str(file_path))
+    with open(file_path, "r") as f:
+        content = f.read()
+    return content
+
+
 def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     """
     Get the geojson result of a scenario.
@@ -856,35 +864,36 @@ def export_scenario_stand_outputs_to_geopackage(
     scenario_outputs = {}
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
-    with open(stnd_file, "r") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            properties = {}
-            for key, value in row.items():
-                match key:
-                    case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
-                        properties[key] = int(value)
-                    case "DoTreat", "selected":
-                        properties[key] = bool(int(value))
-                    case _:
-                        try:
-                            f = float(value)
-                            f = truncate_result(f, quantize=".001")
-                        except ValueError:
-                            logger.warning(
-                                "Value %s for key %s in scenario %s is not a float.",
-                                value,
-                                key,
-                                scenario.pk,
-                            )
-                            f = None
-                        prop = dl_lookup.get(key, key)
-                        properties[prop] = f
-            stand_id = int(row.get("stand_id"))  # type: ignore
-            geometry = stand_inputs.get(stand_id, {}).get("WKT")
-            properties["WKT"] = geometry
-            properties["stand_size"] = stand_size
-            scenario_outputs[stand_id] = properties
+    csv_content = _get_file_content(stnd_file)
+    csvfile = csv_content.splitlines()
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        properties = {}
+        for key, value in row.items():
+            match key:
+                case "stand_id", "proj_id", "Pr_1_priority", "ETrt_YR":
+                    properties[key] = int(value)
+                case "DoTreat", "selected":
+                    properties[key] = bool(int(value))
+                case _:
+                    try:
+                        f = float(value)
+                        f = truncate_result(f, quantize=".001")
+                    except ValueError:
+                        logger.warning(
+                            "Value %s for key %s in scenario %s is not a float.",
+                            value,
+                            key,
+                            scenario.pk,
+                        )
+                        f = None
+                    prop = dl_lookup.get(key, key)
+                    properties[prop] = f
+        stand_id = int(row.get("stand_id"))  # type: ignore
+        geometry = stand_inputs.get(stand_id, {}).get("WKT")
+        properties["WKT"] = geometry
+        properties["stand_size"] = stand_size
+        scenario_outputs[stand_id] = properties
 
     features = []
     for stand_id, properties in scenario_outputs.items():
@@ -938,44 +947,45 @@ def export_scenario_inputs_to_geopackage(
     scenario_inputs = dict()
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
-    with open(inputs_file, "r") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            properties = {}
-            for key, value in row.items():
-                match key:
-                    case "stand_id":
-                        properties[key] = int(value)
-                    case "WKT":
-                        try:
-                            geom = GEOSGeometry(value, srid=settings.AREA_SRID)
-                            geom_json = geom.transform(
-                                settings.CRS_GEOPACKAGE_EXPORT, clone=True
-                            ).json
-                            geom_json = json.loads(geom_json)
-                            properties[key] = to_multi(geom_json)
-                        except Exception as e:
-                            logger.error(
-                                "Invalid WKT for scenario %s: %s", scenario.pk, e
-                            )
-                            raise InvalidGeometry(f"Invalid WKT: {value}")
-                    case _:
-                        try:
-                            f = float(value)
-                            f = truncate_result(f, quantize=".001")
-                        except ValueError:
-                            logger.warning(
-                                "Value %s for key %s in scenario %s is not a float.",
-                                value,
-                                key,
-                                scenario.pk,
-                            )
-                            f = None
-                        prop_key = dl_lookup.get(key, key)
-                        properties[prop_key] = f
-            properties["stand_size"] = stand_size
-            stand_id = int(row.get("stand_id"))  # type: ignore
-            scenario_inputs[stand_id] = properties
+    csv_content = _get_file_content(inputs_file)
+    csvfile = csv_content.splitlines()
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        properties = {}
+        for key, value in row.items():
+            match key:
+                case "stand_id":
+                    properties[key] = int(value)
+                case "WKT":
+                    try:
+                        geom = GEOSGeometry(value, srid=settings.AREA_SRID)
+                        geom_json = geom.transform(
+                            settings.CRS_GEOPACKAGE_EXPORT, clone=True
+                        ).json
+                        geom_json = json.loads(geom_json)
+                        properties[key] = to_multi(geom_json)
+                    except Exception as e:
+                        logger.error(
+                            "Invalid WKT for scenario %s: %s", scenario.pk, e
+                        )
+                        raise InvalidGeometry(f"Invalid WKT: {value}")
+                case _:
+                    try:
+                        f = float(value)
+                        f = truncate_result(f, quantize=".001")
+                    except ValueError:
+                        logger.warning(
+                            "Value %s for key %s in scenario %s is not a float.",
+                            value,
+                            key,
+                            scenario.pk,
+                        )
+                        f = None
+                    prop_key = dl_lookup.get(key, key)
+                    properties[prop_key] = f
+        properties["stand_size"] = stand_size
+        stand_id = int(row.get("stand_id"))  # type: ignore
+        scenario_inputs[stand_id] = properties
 
     stand_id = next(iter(scenario_inputs))
     feature = scenario_inputs[stand_id].copy()
