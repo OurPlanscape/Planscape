@@ -16,8 +16,7 @@
 
 
   ::ng-deep {
-    .txgoals
-    .mat-expansion-panel-body {
+    .txgoals .mat-expansion-panel-body {
       padding-right: 4px;
     }
   }
@@ -191,3 +190,7 @@ sg-section {
   color: $color-standard-blue;
 }
 
+::ng-deep .goal-tooltip-panel.mat-mdc-menu-panel {
+    width: 520px;
+    max-width: 520px;
+}
