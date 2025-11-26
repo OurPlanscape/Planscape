@@ -68,8 +68,6 @@ export class Step1Component
 
   planId = this.route.parent?.snapshot.data['planId'];
 
-  infoMenuOpen = false;
-
   categorizedStatewideGoals$ = this.treatmentGoalsService
     .getTreatmentGoals(this.planId)
     .pipe(
