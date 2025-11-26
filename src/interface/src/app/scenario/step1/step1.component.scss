@@ -14,9 +14,12 @@
     padding-left: 10px;
   }
 
-  /* todo: isolate this to a style */
-  ::ng-deep .goal-loader .mat-expansion-panel-content.mat-expansion-panel-body {
-    padding-right: 0px;
+
+  ::ng-deep {
+    .txgoals
+    .mat-expansion-panel-body {
+      padding-right: 4px;
+    }
   }
 
   ::ng-deep .mat-radio-label-content {
@@ -185,3 +188,8 @@ sg-section {
   padding: 20px;
   white-space: pre-line;
 }
+
+.info-icon {
+  color: $color-standard-blue;
+}
+
