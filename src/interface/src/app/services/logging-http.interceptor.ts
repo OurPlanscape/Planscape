@@ -20,24 +20,30 @@ export class LoggingHttpInterceptor implements HttpInterceptor {
         error: (err) => {
           if (!(err instanceof HttpErrorResponse)) return;
 
-          // 👇 Build a clean human-readable message
-          const message = `HTTP ${err.status} ${err.statusText || ''} — ${req.method} ${req.urlWithParams}`;
-
-          Sentry.captureMessage(message, {
-            level: 'error',
-            tags: {
-              type: 'http',
-              status: String(err.status),
-              method: req.method,
-              requestUrl: req.urlWithParams,
-            },
-            extra: {
-              httpError: err, // <-- full object here
-              responseBody: err.error, // <-- raw backend body
-            },
-          });
+          this.logHttpError(err, req);
         },
       })
     );
+  }
+
+  // isolated for easier testing
+  private logHttpError(err: HttpErrorResponse, req: HttpRequest<any>): void {
+    const message = `HTTP ${err.status} ${err.statusText || ''} — ${
+      req.method
+    } ${req.urlWithParams}`;
+
+    Sentry.captureMessage(message, {
+      level: 'error',
+      tags: {
+        type: 'http',
+        status: String(err.status),
+        method: req.method,
+        requestUrl: req.urlWithParams,
+      },
+      extra: {
+        httpError: err,
+        responseBody: err.error,
+      },
+    });
   }
 }
