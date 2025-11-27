@@ -24,5 +24,8 @@
   <div
     class="color-box"
     [ngClass]="{ selected: isViewed(item) }"
-    [ngStyle]="{ 'background-color': getColor(item) }"></div>
+    [ngStyle]="{
+      'background-color': getColor(item),
+      'border-color': getOutlineColor(item),
+    }"></div>
 </div>

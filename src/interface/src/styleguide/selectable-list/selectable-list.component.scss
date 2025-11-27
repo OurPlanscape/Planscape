@@ -8,6 +8,7 @@ $select-button-selected-color: #5892EE;
 :host {
   box-sizing: border-box;
   position: relative;
+  display: block;
 
   &:after {
     content: '';
