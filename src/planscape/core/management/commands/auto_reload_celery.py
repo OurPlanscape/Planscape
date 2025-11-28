@@ -1,6 +1,5 @@
 import shlex
 import subprocess
-import sys
 import signal
 import os
 import tempfile
