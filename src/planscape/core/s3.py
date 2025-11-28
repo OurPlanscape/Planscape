@@ -22,12 +22,24 @@ def get_aws_session() -> Session:
     )
 
 
+def get_s3_client():
+    """Get S3 client with optional custom endpoint URL for MinIO support."""
+    client_kwargs = {}
+    if hasattr(settings, "AWS_S3_ENDPOINT_URL") and settings.AWS_S3_ENDPOINT_URL:
+        client_kwargs["endpoint_url"] = settings.AWS_S3_ENDPOINT_URL
+        # For S3-compatible storage (e.g. MinIO), use path-style addressing (https://endpoint/bucket)
+        from botocore.client import Config
+
+        client_kwargs["config"] = Config(s3={"addressing_style": "path"})
+    return boto3.client("s3", **client_kwargs)
+
+
 def create_download_url(
     bucket_name: str,
     object_name: str,
     expiration: int = settings.S3_PUBLIC_URL_TTL,
 ) -> Optional[str]:
-    s3_client = boto3.client("s3")
+    s3_client = get_s3_client()
     try:
         response = s3_client.generate_presigned_url(
             "get_object",
@@ -46,7 +58,7 @@ def get_head(
     bucket_name: str,
     object_name: str,
 ) -> Optional[Dict[str, Any]]:
-    s3_client = boto3.client("s3")
+    s3_client = get_s3_client()
     try:
         response = s3_client.head_object(
             Bucket=bucket_name,
@@ -96,7 +108,7 @@ def create_upload_url(
     fields: Optional[Dict[str, Any]] = None,
     conditions: Optional[List[Any]] = None,
 ) -> Optional[Dict[str, Any]]:
-    s3_client = boto3.client("s3")
+    s3_client = get_s3_client()
     try:
         response = s3_client.generate_presigned_post(
             bucket_name,
@@ -116,7 +128,7 @@ def create_upload_url(
 def upload_file_via_s3_client(object_name: str, input_file: str) -> requests.Response:
     logger.info(f"Uploading file {object_name}.")
 
-    s3_client = boto3.client("s3")
+    s3_client = get_s3_client()
     try:
         response = s3_client.upload_file(input_file, settings.S3_BUCKET, object_name)
         logger.info(f"Uploaded {object_name} done.")
@@ -163,7 +175,15 @@ def list_files(
     extension: Optional[str] = None,
 ) -> List[str]:
     files = []
-    s3 = boto3.resource("s3")
+    resource_kwargs = {}
+    if hasattr(settings, "AWS_S3_ENDPOINT_URL") and settings.AWS_S3_ENDPOINT_URL:
+        resource_kwargs["endpoint_url"] = settings.AWS_S3_ENDPOINT_URL
+        # For MinIO and other S3-compatible storage, use path-style addressing
+        from botocore.client import Config
+
+        resource_kwargs["config"] = Config(s3={"addressing_style": "path"})
+
+    s3 = boto3.resource("s3", **resource_kwargs)
     s3_bucket = s3.Bucket(bucket)
     for object_summary in s3_bucket.objects.filter(Prefix=prefix):
         files.append(object_summary.key)
