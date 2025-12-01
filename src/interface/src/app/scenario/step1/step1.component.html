@@ -66,7 +66,7 @@
                         (click)="selectStatewideGoal(goal)">
                         {{ goal.name }}
                       </mat-radio-button>
-                      <div></div>
+                      <ng-container *appFeatureFlag="'SCENARIO_CONFIG_UI'">
                       <button
                         sg-button
                         *ngIf="goal.description"
@@ -82,6 +82,7 @@
                           class="tooltip"
                           [innerHTML]="goal.description"></div>
                       </mat-menu>
+                      </ng-container>
                     </div>
                   </mat-expansion-panel>
                 </div>
