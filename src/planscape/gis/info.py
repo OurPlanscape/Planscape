@@ -5,10 +5,8 @@ from typing import Any, Dict, Optional
 import fiona
 import rasterio
 from attr import asdict
-from core.s3 import get_aws_session
 from django.conf import settings
 from fiona.errors import DriverError
-from rasterio.session import AWSSession
 from rasterio.transform import from_gcps
 
 logger = logging.getLogger(__name__)
@@ -33,9 +31,6 @@ def get_gdal_env(
 
     match settings.PROVIDER:
         case "aws":
-            boto3_session = get_aws_session()
-            aws_session = AWSSession(boto3_session)
-
             if (
                 hasattr(settings, "AWS_S3_ENDPOINT_URL")
                 and settings.AWS_S3_ENDPOINT_URL
@@ -50,8 +45,6 @@ def get_gdal_env(
 
                 if settings.AWS_S3_ENDPOINT_URL.startswith("http://"):
                     gdal_env["AWS_HTTPS"] = "NO"
-
-            gdal_env["session"] = aws_session
         case "gcp":
             gdal_env["GOOGLE_APPLICATION_CREDENTIALS"] = (
                 settings.GOOGLE_APPLICATION_CREDENTIALS_FILE
