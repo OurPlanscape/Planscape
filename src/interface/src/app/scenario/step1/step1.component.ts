@@ -88,7 +88,7 @@ export class Step1Component
     private scenarioState: ScenarioState,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute,
-    private featureService: FeatureService,
+    private featureService: FeatureService
   ) {
     super();
   }
@@ -113,8 +113,11 @@ export class Step1Component
   }
 
   selectStatewideGoal(goal: ScenarioGoal) {
-    // TODO: note-when we incorporate SCENARIO_CONFIG_UI, also remove the goaloverlay component and service 
-    if (!this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI') && this.form.get('treatment_goal')?.enabled) {
+    // TODO: note-when we incorporate SCENARIO_CONFIG_UI, also remove the goaloverlay component and service
+    if (
+      !this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI') &&
+      this.form.get('treatment_goal')?.enabled
+    ) {
       this.goalOverlayService.setStateWideGoal(goal);
     }
   }
