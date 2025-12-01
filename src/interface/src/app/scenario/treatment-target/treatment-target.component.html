@@ -112,7 +112,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
     <div class="total-areas-targeted">
       Total Areas Targeted:
       <span class="calculated-total">{{
-        getTotalTreated() | number: '1.0-2'
+        getTotalTreated() ? (getTotalTreated() | number: '1.0-2') : ' -- '
       }}</span>
     </div>
     <div class="help-text error" *ngIf="form.hasError('invalidWorkingArea')">

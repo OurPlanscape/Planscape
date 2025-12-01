@@ -11,6 +11,7 @@
 
 .section-label {
   margin: 0 0 16px 0;
+  color: $color-dark-gray;
 }
 
 .input-field {
@@ -100,7 +101,7 @@
 }
 
 .multiplication-separator {
-  @include standard-label();
+  @include small-input-label();
   height: 100%;
   padding-top: 70px;
 }
@@ -120,6 +121,6 @@
 }
 
 .form-divider {
-  padding: 16px 0;
+  margin-top: 8px;
 }
 
