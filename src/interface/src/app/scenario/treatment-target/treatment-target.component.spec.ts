@@ -10,8 +10,9 @@ import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
 import { of } from 'rxjs';
 import { AvailableStands } from '@types';
+import { STAND_SIZE } from '../../plan/plan-helpers';
 
-describe('Step4LegacyComponent', () => {
+describe('TreatmentTargetComponent', () => {
   let component: TreatmentTargetComponent;
   let fixture: ComponentFixture<TreatmentTargetComponent>;
 
@@ -25,7 +26,10 @@ describe('Step4LegacyComponent', () => {
       ],
       providers: [
         MockProvider(NewScenarioState, {
-          availableStands$: of({ summary: {} } as AvailableStands),
+          scenarioConfig$: of({ stand_size: 'LARGE' as STAND_SIZE }),
+          availableStands$: of({
+            summary: { treatable_area: 10000 },
+          } as AvailableStands),
         }),
       ],
     }).compileComponents();
@@ -81,30 +85,33 @@ describe('Step4LegacyComponent', () => {
   });
 
   it('should return error when target acres does not meet minimum for medium stand size', () => {
-    const validator = (component as any).minAreaValidator();
     component.minAcreage = 100;
-    const result = validator(updateForm(9, 90)); // 90 < 100
-    expect(result).toEqual({ invalidMinAcres: true });
+    const maxAreaField = component.form.get('max_area');
+    maxAreaField?.setValue(60);
+    expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(true);
+    expect(component.form?.valid).toEqual(false);
   });
 
   it('should return error when target acres does not meet minimum for large stand size', () => {
-    const validator = (component as any).minAreaValidator();
     component.minAcreage = 500;
-    const result = validator(updateForm(9, 400)); // 400 < 500
-    expect(result).toEqual({ invalidMinAcres: true });
-  });
-
-  it('should return error if proj area field is empty but target is less than large stand size', () => {
-    const validator = (component as any).minAreaValidator();
-    component.minAcreage = 500;
-    const result = validator(updateForm(undefined, 400)); // 400 < 500
-    expect(result).toEqual({ invalidMinAcres: true });
+    const maxAreaField = component.form.get('max_area');
+    maxAreaField?.setValue(499);
+    expect(component.form?.valid).toEqual(false);
+    expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(true);
   });
 
   it('should not return error when target acres meets minimum area', () => {
-    const validator = (component as any).minAreaValidator();
     component.minAcreage = 100;
-    const result = validator(updateForm(9, 101)); // 360 > 100
-    expect(result).toBeNull();
+    const maxAreaField = component.form.get('max_area');
+    maxAreaField?.setValue(101);
+    expect(component.form?.valid).toEqual(false);
+    expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(false);
+  });
+
+  it('should return error if proj area field is empty but target is less than large stand size', () => {
+    component.minAcreage = 100;
+    const maxAreaField = component.form.get('max_area');
+    maxAreaField?.setValue(100);
+    expect(component.form?.valid).toEqual(false);
   });
 });

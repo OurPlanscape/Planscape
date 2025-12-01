@@ -76,7 +76,7 @@ export class TreatmentTargetComponent
       this.form = new FormGroup(
         {
           max_area: new FormControl<number | null>(null, [
-            Validators.min(this.minMaxAreaValue),
+            this.minAreaValidator(),
             Validators.max(this.maxAreaValue),
             Validators.required,
           ]),
@@ -105,7 +105,6 @@ export class TreatmentTargetComponent
           this.minAcreage = config.stand_size
             ? STAND_SIZES[config.stand_size]
             : 0;
-
           if (config.targets) {
             if (config.targets.estimated_cost) {
               this.form
@@ -145,6 +144,19 @@ export class TreatmentTargetComponent
     }
     // Calculating the percentage based on the max_area ( acres per project area ) and the  max_project_count
     return formValues.max_area * formValues.max_project_count;
+  }
+
+  private minAreaValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const acresPerProjectArea = control;
+      if (!acresPerProjectArea?.value) {
+        return null;
+      }
+      if (acresPerProjectArea?.value < this.minAcreage) {
+        return { invalidMinAcres: true };
+      }
+      return null;
+    };
   }
 
   private workingAreaValidator(maxAreaValue: number): ValidatorFn {
