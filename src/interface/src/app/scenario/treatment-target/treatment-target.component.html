@@ -20,7 +20,8 @@ Treatment cost per acre does not affect how project areas are created but is inc
       <!-- Target Number of Acres in Each Project Area-->
       <div class="field-column">
         <label for="max_area" class="input-label">
-          Target Number of Acres in Each Project Area</label
+          Target Number of Acres in Each Project Area
+          <span class="required">*</span></label
         >
         <mat-form-field
           class="input-field"
@@ -50,18 +51,9 @@ Treatment cost per acre does not affect how project areas are created but is inc
                 (form.get('max_area')?.hasError('max') &&
                   !form.hasError('invalidWorkingArea'))
               ">
-              Max acres needs to be between
+              Target acres per project area must be between
               {{ minMaxAreaValue | number: '1.0-0' }} and
               {{ maxAreaValue | number: '1.0-0' }}.
-            </ng-container>
-
-            <ng-container
-              *ngIf="
-                form.get('max_area')?.touched &&
-                form.hasError('invalidMinAcres')
-              ">
-              Target acres per project area must be at least
-              {{ minAcreage }} acres.
             </ng-container>
           </div>
         </div>
@@ -71,7 +63,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
       <!-- Target Number of Project Areas -->
       <div class="field-column">
         <label for="max_area" class="input-label">
-          Target Number of Project Areas</label
+          Target Number of Project Areas <span class="required">*</span></label
         >
         <mat-form-field
           class="input-field"
@@ -124,7 +116,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
     <!-- Treatment Cost Per Acre -->
     <div class="step-row">
       <label for="estimated_cost" class="input-label">
-        Treatment Cost Per Acre</label
+        Treatment Cost Per Acre <span class="required">*</span></label
       >
       <mat-form-field
         class="input-field"

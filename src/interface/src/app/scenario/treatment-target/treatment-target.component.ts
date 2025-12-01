@@ -77,6 +77,7 @@ export class TreatmentTargetComponent
         {
           max_area: new FormControl<number | null>(null, [
             Validators.min(this.minMaxAreaValue),
+            Validators.max(this.maxAreaValue),
             Validators.required,
           ]),
           max_project_count: new FormControl<number | null>(null, [
@@ -90,10 +91,7 @@ export class TreatmentTargetComponent
           ]),
         },
         {
-          validators: [
-            this.workingAreaValidator(this.maxAreaValue),
-            this.minAreaValidator(),
-          ],
+          validators: [this.workingAreaValidator(this.maxAreaValue)],
         }
       );
 
@@ -147,24 +145,6 @@ export class TreatmentTargetComponent
     }
     // Calculating the percentage based on the max_area ( acres per project area ) and the  max_project_count
     return formValues.max_area * formValues.max_project_count;
-  }
-
-  private minAreaValidator(): ValidatorFn {
-    return (form): ValidationErrors | null => {
-      const acresPerProjectArea = form.get('max_area');
-
-      if (!acresPerProjectArea?.value) {
-        return null;
-      }
-      // ensure that the target number of acres per the project area is
-      // at least equal to the min acreage required for the selected stand size.
-      //  For example, if the user selects a medium stand size,
-      //  the target project area acreage must be at least 100 acres.
-      if (acresPerProjectArea?.value < this.minAcreage) {
-        return { invalidMinAcres: true };
-      }
-      return null;
-    };
   }
 
   private workingAreaValidator(maxAreaValue: number): ValidatorFn {

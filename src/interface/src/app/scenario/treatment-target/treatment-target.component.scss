@@ -109,6 +109,10 @@
 .input-label {
   @include small-input-label();
   color: $color-dark-gray;
+
+.required {
+  color: $color-error;
+}
 }
 
 .total-areas-targeted {
