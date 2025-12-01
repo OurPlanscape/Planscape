@@ -10,7 +10,6 @@ import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
 import { of } from 'rxjs';
 import { AvailableStands } from '@types';
-import { STAND_SIZE } from '../../plan/plan-helpers';
 
 describe('TreatmentTargetComponent', () => {
   let component: TreatmentTargetComponent;
@@ -26,7 +25,6 @@ describe('TreatmentTargetComponent', () => {
       ],
       providers: [
         MockProvider(NewScenarioState, {
-          scenarioConfig$: of({ stand_size: 'LARGE' as STAND_SIZE }),
           availableStands$: of({
             summary: { treatable_area: 10000 },
           } as AvailableStands),
@@ -100,18 +98,21 @@ describe('TreatmentTargetComponent', () => {
     expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(true);
   });
 
+  it('should return error if target acres is greater than treatable_area, regardless of other field value', () => {
+    component.minAcreage = 500;
+    const maxAreaField = component.form.get('max_area');
+    const maxProjectCount = component.form.get('max_project_count');
+    maxAreaField?.setValue(10001); // see treatable_area above
+    maxProjectCount?.setValue(undefined);
+    expect(component.form?.valid).toEqual(false);
+    expect(maxAreaField?.hasError('max')).toEqual(true);
+  });
+
   it('should not return error when target acres meets minimum area', () => {
     component.minAcreage = 100;
     const maxAreaField = component.form.get('max_area');
     maxAreaField?.setValue(101);
     expect(component.form?.valid).toEqual(false);
     expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(false);
-  });
-
-  it('should return error if proj area field is empty but target is less than large stand size', () => {
-    component.minAcreage = 100;
-    const maxAreaField = component.form.get('max_area');
-    maxAreaField?.setValue(100);
-    expect(component.form?.valid).toEqual(false);
   });
 });
