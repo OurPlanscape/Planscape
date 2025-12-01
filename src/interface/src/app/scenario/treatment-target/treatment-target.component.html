@@ -19,7 +19,29 @@ Treatment cost per acre does not affect how project areas are created but is inc
     <div class="form-row">
       <!-- Target Number of Acres in Each Project Area-->
       <div class="field-column">
+        <sg-input-field
+          [disabled]="false"
+          appearance="outline"
+          class="input-field"
+          [error]="maxAreaHasErrors"
+          label="Target Number of Acres in Each Project Area"
+          showSupportMessage="on-error"
+          size="full">
+          <input
+            sgInput
+            type="text"
+            mask="separator"
+            placeholder="Min: (Stand Size)"
+            name="planName"
+            cdkFocusInitial
+            formControlName="max_area"
+            class="right-align"
+            required
+            matInput />
+        </sg-input-field>
+        <!-- 
         <label for="max_area" class="input-label">
+          
           Target Number of Acres in Each Project Area</label
         >
         <mat-form-field
@@ -33,8 +55,10 @@ Treatment cost per acre does not affect how project areas are created but is inc
             mask="separator"
             placeholder="Min: (Stand Size)"
             thousandSeparator=","
+            label="Target Number of Acres in Each Project Area"
+            required
             matInput />
-        </mat-form-field>
+        </mat-form-field> -->
 
         <div class="help-placeholder">
           <!-- Errors -->

@@ -6,7 +6,13 @@ import {
   NgClass,
   NgIf,
 } from '@angular/common';
-import { SectionComponent, StepDirective } from '@styleguide';
+
+import {
+  InputDirective,
+  SectionComponent,
+  StepDirective,
+  InputFieldComponent,
+} from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { NgxMaskModule } from 'ngx-mask';
 import {
@@ -36,6 +42,7 @@ import { STAND_SIZES } from 'src/app/plan/plan-helpers';
     CommonModule,
     CurrencyPipe,
     DecimalPipe,
+    InputDirective,
     MatDividerModule,
     MatSelectModule,
     MatInputModule,
@@ -45,6 +52,7 @@ import { STAND_SIZES } from 'src/app/plan/plan-helpers';
     NgxMaskModule,
     ReactiveFormsModule,
     SectionComponent,
+    InputFieldComponent,
   ],
   providers: [
     { provide: StepDirective, useExisting: TreatmentTargetComponent },
@@ -211,6 +219,14 @@ export class TreatmentTargetComponent
     if (!control?.hasError(errorKey)) return;
     const { [errorKey]: removed, ...rest } = control.errors!;
     control.setErrors(Object.keys(rest).length ? rest : null);
+  }
+
+  get maxAreaHasErrors() {
+    return (
+      this.form.get('max_area')?.dirty == true &&
+      (this.form.get('max_area')?.errors !== null ||
+        this.form.hasError('invalidMinAcres'))
+    );
   }
 
   getData() {
