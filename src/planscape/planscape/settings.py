@@ -225,6 +225,7 @@ REST_FRAMEWORK = {
         "%Y-%m-%dT%H:%M:%SZ",  # Optional: to accept inputs with 'Z' indicating UTC time
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "core.exception_handler.planscape_api_exception_handler",
 }
 
 REST_AUTH = {
@@ -487,6 +488,7 @@ S3_BUCKET = config("S3_BUCKET", "planscape-control-dev")
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
+AWS_S3_ENDPOINT_URL = config("AWS_S3_ENDPOINT_URL", default=None)
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
 GEOPACKAGES_FOLDER = "geopackages"
@@ -498,14 +500,14 @@ GCS_MEDIA_BUCKET = config("GCS_MEDIA_BUCKET", f"planscape-media-{ENV}")
 GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
 )
-if PROVIDER == "aws":
-    os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
-    os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
-    os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
-elif PROVIDER == "gcp":
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
-        GOOGLE_APPLICATION_CREDENTIALS_FILE
-    )
+
+os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
+os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
+os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
+if AWS_S3_ENDPOINT_URL:
+    os.environ["AWS_S3_ENDPOINT"] = str(AWS_S3_ENDPOINT_URL)
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(GOOGLE_APPLICATION_CREDENTIALS_FILE)
 
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)

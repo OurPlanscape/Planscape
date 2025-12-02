@@ -4,6 +4,9 @@ from climate_foresight.models import (
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
     ClimateForesightRunStatus,
+    ClimateForesightPillarRollup,
+    ClimateForesightLandscapeRollup,
+    ClimateForesightPromote,
 )
 from climate_foresight.tasks import calculate_climate_foresight_layer_statistics
 from planning.models import PlanningArea
@@ -45,6 +48,9 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
     input_datalayers = ClimateForesightRunInputDataLayerSerializer(
         many=True, required=False
     )
+    pillar_rollups = serializers.SerializerMethodField()
+    landscape_rollup = serializers.SerializerMethodField()
+    promote = serializers.SerializerMethodField()
 
     class Meta:
         model = ClimateForesightRun
@@ -60,14 +66,52 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             "furthest_step",
             "created_at",
             "input_datalayers",
+            "pillar_rollups",
+            "landscape_rollup",
+            "promote",
         ]
-        read_only_fields = ["id", "created_at", "planning_area_name", "creator"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "planning_area_name",
+            "creator",
+            "pillar_rollups",
+            "landscape_rollup",
+            "promote",
+        ]
 
     def get_creator(self, obj):
         """Return the user's full name."""
         if obj.created_by.first_name and obj.created_by.last_name:
             return f"{obj.created_by.first_name} {obj.created_by.last_name}"
         return obj.created_by.username
+
+    def get_pillar_rollups(self, obj):
+        """Return pillar rollup status for this run."""
+        from climate_foresight.serializers import ClimateForesightPillarRollupSerializer
+
+        rollups = obj.pillar_rollups.all()
+        return ClimateForesightPillarRollupSerializer(rollups, many=True).data
+
+    def get_landscape_rollup(self, obj):
+        """Return landscape rollup data if it exists."""
+        from climate_foresight.serializers import (
+            ClimateForesightLandscapeRollupSerializer,
+        )
+
+        try:
+            return ClimateForesightLandscapeRollupSerializer(obj.landscape_rollup).data
+        except ClimateForesightLandscapeRollup.DoesNotExist:
+            return None
+
+    def get_promote(self, obj):
+        """Return PROMOTe analysis data if it exists."""
+        from climate_foresight.serializers import ClimateForesightPromoteSerializer
+
+        try:
+            return ClimateForesightPromoteSerializer(obj.promote).data
+        except (ClimateForesightPromote.DoesNotExist, AttributeError):
+            return None
 
     def validate_planning_area(self, value):
         """Ensure the user has access to the planning area."""
@@ -246,3 +290,126 @@ class ClimateForesightPillarSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class ClimateForesightPillarRollupSerializer(serializers.ModelSerializer):
+    """Serializer for ClimateForesightPillarRollup model."""
+
+    pillar_name = serializers.CharField(source="pillar.name", read_only=True)
+    rollup_datalayer_id = serializers.IntegerField(
+        source="rollup_datalayer.id", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = ClimateForesightPillarRollup
+        fields = [
+            "id",
+            "run",
+            "pillar",
+            "pillar_name",
+            "rollup_datalayer_id",
+            "status",
+            "method",
+            "weights",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "pillar_name",
+            "rollup_datalayer_id",
+            "status",
+            "weights",
+            "created_at",
+        ]
+
+
+class ClimateForesightLandscapeRollupSerializer(serializers.ModelSerializer):
+    """Serializer for ClimateForesightLandscapeRollup model."""
+
+    current_datalayer_id = serializers.IntegerField(
+        source="current_datalayer.id", read_only=True, allow_null=True
+    )
+    future_datalayer_id = serializers.IntegerField(
+        source="future_datalayer.id", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = ClimateForesightLandscapeRollup
+        fields = [
+            "id",
+            "run",
+            "current_datalayer_id",
+            "future_datalayer_id",
+            "status",
+            "future_mapping",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "current_datalayer_id",
+            "future_datalayer_id",
+            "status",
+            "future_mapping",
+            "created_at",
+        ]
+
+
+class ClimateForesightPromoteSerializer(serializers.ModelSerializer):
+    """Serializer for ClimateForesightPromote (MPAT analysis) results."""
+
+    monitor_datalayer_id = serializers.IntegerField(
+        source="monitor_datalayer.id", read_only=True, allow_null=True
+    )
+    protect_datalayer_id = serializers.IntegerField(
+        source="protect_datalayer.id", read_only=True, allow_null=True
+    )
+    adapt_datalayer_id = serializers.IntegerField(
+        source="adapt_datalayer.id", read_only=True, allow_null=True
+    )
+    transform_datalayer_id = serializers.IntegerField(
+        source="transform_datalayer.id", read_only=True, allow_null=True
+    )
+    adapt_protect_datalayer_id = serializers.IntegerField(
+        source="adapt_protect_datalayer.id", read_only=True, allow_null=True
+    )
+    integrated_condition_score_datalayer_id = serializers.IntegerField(
+        source="integrated_condition_score_datalayer.id",
+        read_only=True,
+        allow_null=True,
+    )
+    mpat_matrix_datalayer_id = serializers.IntegerField(
+        source="mpat_matrix_datalayer.id", read_only=True, allow_null=True
+    )
+    mpat_strength_datalayer_id = serializers.IntegerField(
+        source="mpat_strength_datalayer.id", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = ClimateForesightPromote
+        fields = [
+            "id",
+            "run",
+            "status",
+            "monitor_datalayer_id",
+            "protect_datalayer_id",
+            "adapt_datalayer_id",
+            "transform_datalayer_id",
+            "adapt_protect_datalayer_id",
+            "integrated_condition_score_datalayer_id",
+            "mpat_matrix_datalayer_id",
+            "mpat_strength_datalayer_id",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "status",
+            "monitor_datalayer_id",
+            "protect_datalayer_id",
+            "adapt_datalayer_id",
+            "transform_datalayer_id",
+            "adapt_protect_datalayer_id",
+            "integrated_condition_score_datalayer_id",
+            "mpat_matrix_datalayer_id",
+            "mpat_strength_datalayer_id",
+            "created_at",
+        ]

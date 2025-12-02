@@ -1253,7 +1253,7 @@ class RunScenarioEndpointTest(APITestCase):
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa,
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 

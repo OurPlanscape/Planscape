@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { concatMap, EMPTY, interval, Observable, switchMap, take } from 'rxjs';
-import { Plan, User } from '@types';
-import { AuthService, Note, PlanningAreaNotesService } from '@services';
+import { EMPTY, interval, switchMap, take } from 'rxjs';
+import { Plan } from '@types';
+import { Note, PlanningAreaNotesService } from '@services';
 import { NotesSidebarState } from '@styleguide';
 import {
   NOTE_DELETE_DIALOG,
@@ -31,8 +31,13 @@ import { SuccessDialogComponent } from '../../styleguide/dialogs/success-dialog/
   providers: [PlanningAreaNotesService],
 })
 export class PlanComponent implements OnInit {
+  planId = this.route.snapshot.paramMap.get('planId');
+  planNotFound: boolean = !this.planId;
+  sidebarNotes: Note[] = [];
+  notesSidebarState: NotesSidebarState = 'READY';
+  currentPlan$ = this.planState.currentPlan$;
+
   constructor(
-    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private notesService: PlanningAreaNotesService,
@@ -45,9 +50,7 @@ export class PlanComponent implements OnInit {
       this.planNotFound = true;
       return;
     }
-    const plan$ = this.planState.currentPlan$.pipe(take(1));
-
-    plan$.subscribe({
+    this.currentPlan$.pipe(untilDestroyed(this)).subscribe({
       next: (plan) => {
         // Setting up breadcrumbs
         this.breadcrumbService.updateBreadCrumb({
@@ -60,23 +63,8 @@ export class PlanComponent implements OnInit {
       },
     });
 
-    this.planOwner$ = plan$.pipe(
-      concatMap((plan) => {
-        return this.authService.getUser(plan.user);
-      })
-    );
-
     this.checkForInProgressModal();
   }
-
-  currentPlan$ = this.planState.currentPlan$;
-  planOwner$ = new Observable<User | null>();
-
-  planId = this.route.snapshot.paramMap.get('planId');
-  planNotFound: boolean = !this.planId;
-
-  sidebarNotes: Note[] = [];
-  notesSidebarState: NotesSidebarState = 'READY';
 
   ngOnInit() {
     this.loadNotes();
