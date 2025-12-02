@@ -32,6 +32,7 @@ export class DataLayerTooltipComponent implements OnInit {
   filename: string | null = null;
   constructor(private dataLayersService: DataLayersService) {}
 
+  // ERROR_SURVEY - pipe, no error handling
   ngOnInit() {
     this.loadingLink = true;
     this.downloadLink$ = this.dataLayersService

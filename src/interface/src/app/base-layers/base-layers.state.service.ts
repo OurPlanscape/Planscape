@@ -16,6 +16,7 @@ export class BaseLayersStateService {
   constructor(private dataLayersService: DataLayersService) {}
 
   // gets all base layers
+  // ERROR_SURVEY - pipe, no error handling
   baseLayers$ = this.dataLayersService.listBaseLayers().pipe(shareReplay(1));
 
   private _loadingLayers$ = new BehaviorSubject<string[]>([]);

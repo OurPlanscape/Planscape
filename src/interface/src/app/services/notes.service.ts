@@ -21,6 +21,7 @@ export abstract class BaseNotesService {
   protected abstract baseUrl: string;
   protected resource = '/note/';
 
+  // ERROR_SURVEY - passes response up
   getNotes(objectId: string | number) {
     objectId = objectId.toString();
     return this.http.get<Note[]>(
@@ -35,6 +36,7 @@ export abstract class BaseNotesService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   addNote(objectId: string | number, noteContent: string | number) {
     objectId = objectId.toString();
     return this.http.post<Note>(
@@ -50,6 +52,7 @@ export abstract class BaseNotesService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   deleteNote(objectId: string | number, noteId: string | number) {
     objectId = objectId.toString();
     noteId = noteId.toString();

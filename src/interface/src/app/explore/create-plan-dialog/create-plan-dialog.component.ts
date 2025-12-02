@@ -117,6 +117,7 @@ export class CreatePlanDialogComponent implements OnInit {
     }
   }
 
+  // ERROR_SURVEY - shows generic snackbar for ANY error, doesn't use backend error message
   private createPlan(name: string) {
     const shape = this.drawService.getDrawingGeoJSON();
     this.planService
@@ -151,6 +152,7 @@ export class CreatePlanDialogComponent implements OnInit {
       return;
     }
     this.displayError = false;
+    // ERROR_SURVEY - enables error message in template
     this.planService.editPlanName(this.data.planId, name).subscribe({
       next: (result) => {
         this.dialogRef.close(true);

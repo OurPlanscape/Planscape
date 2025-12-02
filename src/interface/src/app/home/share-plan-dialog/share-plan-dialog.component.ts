@@ -38,6 +38,7 @@ export class SharePlanDialogComponent {
   message = '';
   isLoading = true;
 
+  // ERROR_SURVEY - pipe, no error handling
   invites$ = this.inviteService
     .getInvites(this.data.plan.id)
     .pipe(tap((_) => (this.isLoading = false)));
@@ -72,6 +73,7 @@ export class SharePlanDialogComponent {
     this.dialogRef.close();
   }
 
+  // ERROR_SURVEY - shows generic snackbar for ANY error, doesnt use backend data message
   invite() {
     this.submitting = true;
     this.inviteService
@@ -104,6 +106,7 @@ export class SharePlanDialogComponent {
     this.emails = [];
   }
 
+  // ERROR_SURVEY - shows generic snackbar for ANY errors, doesnt use backend error message
   changeRole(invite: Invite, newRole: INVITE_ROLE) {
     this.selectedRole = Roles[newRole];
     this.inviteService.changeRole(invite.id, newRole).subscribe({
@@ -123,6 +126,7 @@ export class SharePlanDialogComponent {
     this.selectedRole = Roles[role];
   }
 
+  // ERROR_SURVEY - shows generic snackbar for ANY error, doesnt use backend data message
   resendCode(invite: Invite) {
     this.inviteService
       .inviteUsers([invite.email], this.selectedRole, this.data.plan.id)
@@ -138,12 +142,14 @@ export class SharePlanDialogComponent {
       });
   }
 
+  // ERROR_SURVEY - pipe, no error handling
   reloadInvites() {
     this.invites$ = this.inviteService
       .getInvites(this.data.plan.id)
       .pipe(tap((_) => (this.isLoading = false)));
   }
 
+  // ERROR_SURVEY - shows generic snackbar for ANY error, doesnt use backend data message
   removeAccess(invite: Invite) {
     this.inviteService.deleteInvite(invite.id).subscribe({
       next: () => {

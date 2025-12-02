@@ -16,6 +16,7 @@ import { map } from 'rxjs';
 export class DataLayersService {
   constructor(private http: HttpClient) {}
 
+  // ERROR_SURVEY - passes response up
   listDataSets(limit: number, offset?: number) {
     return this.http.get<Pagination<DataSet>>(
       environment.backend_endpoint + '/v2/datasets/',
@@ -26,6 +27,7 @@ export class DataLayersService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   listDataLayers(dataSetId: number) {
     return this.http.get<DataLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
@@ -36,6 +38,7 @@ export class DataLayersService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   search(term: string, limit: number, offset?: number) {
     return this.http.get<Pagination<SearchResult>>(
       environment.backend_endpoint + '/v2/datalayers/find_anything/',
@@ -51,6 +54,7 @@ export class DataLayersService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   listBaseLayers() {
     return this.http.get<BaseLayer[]>(
       environment.backend_endpoint + '/v2/datasets/999/browse/',
@@ -61,6 +65,7 @@ export class DataLayersService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   getPublicUrl(id: number) {
     return this.http
       .get<{ layer_url: string }>(

@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 export class InvitesService {
   constructor(private http: HttpClient) {}
 
+  // ERROR_SURVEY - passes response up
   inviteUsers(
     emails: string[],
     role: INVITE_ROLE,
@@ -29,6 +30,7 @@ export class InvitesService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   getInvites(planningAreaId: number) {
     return this.http.get<Invite[]>(
       environment.backend_endpoint.concat(
@@ -40,6 +42,7 @@ export class InvitesService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   changeRole(inviteId: number, newRole: INVITE_ROLE) {
     return this.http.patch<Invite>(
       environment.backend_endpoint.concat(`/invites/invitations/${inviteId}`),
@@ -52,6 +55,7 @@ export class InvitesService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   deleteInvite(inviteId: number) {
     return this.http.delete<Invite[]>(
       environment.backend_endpoint.concat(`/invites/invitations/${inviteId}`),

@@ -20,6 +20,7 @@ export class PlanService {
 
   constructor(private http: HttpClient) {}
 
+  // ERROR_SURVEY - pipe, no error handling
   planNameExists(planName: string) {
     return this.listPlansByUser().pipe(
       map((plans) => plans.some((plan) => plan.name === planName))
@@ -27,6 +28,7 @@ export class PlanService {
   }
 
   /** Makes a request to the backend to create a plan and updates state. */
+  // ERROR_SURVEY - passes response up
   createPlan(payload: CreatePlanPayload): Observable<Plan> {
     return this.http.post<Plan>(this.v2basePath, payload, {
       withCredentials: true,
@@ -34,6 +36,7 @@ export class PlanService {
   }
 
   /** Makes a request to the backend to delete a plan with the given ID. */
+  // ERROR_SURVEY - passes response up
   deletePlan(planId: number): Observable<void> {
     return this.http.delete<void>(this.v2basePath + planId + '/', {
       withCredentials: true,
@@ -41,6 +44,7 @@ export class PlanService {
   }
 
   /** Makes a request to the backend to rename the planning area with the given name */
+  // ERROR_SURVEY - passes response up
   editPlanName(planId: number, planName: string): Observable<any> {
     return this.http.patch(
       this.v2basePath + planId + '/',
@@ -50,6 +54,7 @@ export class PlanService {
   }
 
   /** Makes a request to the backend to fetch a plan with the given ID. */
+  // ERROR_SURVEY - passes response up
   getPlan(planId: string): Observable<Plan> {
     return this.http.get<Plan>(this.v2basePath + planId + '/', {
       withCredentials: true,
@@ -60,6 +65,7 @@ export class PlanService {
    *  If the user is not provided, return all plans with owner=null.
    *  @deprecated use getPlanPreviews
    */
+  // ERROR_SURVEY - passes response up
   listPlansByUser(): Observable<PreviewPlan[]> {
     let url = environment.backend_endpoint.concat(
       '/planning/list_planning_areas'

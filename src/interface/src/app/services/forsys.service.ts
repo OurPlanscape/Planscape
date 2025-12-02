@@ -18,6 +18,7 @@ export class ForsysService {
 
   constructor(private moduleService: ModuleService) {}
 
+  // ERROR_SURVEY - subscription, no error handling
   loadForsysData() {
     this.moduleService
       .getModule<ApiModule<ForsysData>>('forsys')

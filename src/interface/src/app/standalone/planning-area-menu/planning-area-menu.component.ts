@@ -123,6 +123,7 @@ export class PlanningAreaMenuComponent {
         },
       }
     );
+    // ERROR_SURVEY - displays generic snackbar for ANY error, doesn't use backend error message
     dialogRef
       .afterClosed()
       .pipe(take(1))

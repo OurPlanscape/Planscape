@@ -17,6 +17,7 @@ export interface Note {
 export class PlanNotesService {
   constructor(private http: HttpClient) {}
 
+  // ERROR_SURVEY - passes response up
   getNotes(planningAreaId: number) {
     return this.http.get<Note[]>(
       environment.backend_endpoint.concat(
@@ -28,6 +29,7 @@ export class PlanNotesService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   addNote(planningAreaId: number, note: string) {
     return this.http.post<Note>(
       environment.backend_endpoint.concat(
@@ -40,6 +42,7 @@ export class PlanNotesService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   deleteNote(planningAreaId: number, noteId: number) {
     return this.http.delete<Note>(
       environment.backend_endpoint.concat(

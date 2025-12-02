@@ -45,6 +45,7 @@ export class PlanState {
           // when done, emit object with loading false and data
           map((data) => ({ data, isLoading: false }) as LoadedResult<Plan>),
           // when we have errors, emit object with loading false and error
+          // ERROR_SURVEY - emit objects with loading false and backend error object
           catchError((error) => of({ isLoading: false, error: error }))
         )
       );

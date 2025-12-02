@@ -33,12 +33,14 @@ export class AreaNotesComponent implements OnInit {
     this.loadNotes();
   }
 
+  // ERROR_SURVEY - subscription, no error handling
   loadNotes() {
     this.notesService
       .getNotes(this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
 
+  // ERROR_SURVEY - displays generic snackbar for ANY error, doesn't use backend error messages
   openDeleteNoteDialog(note: Note) {
     const dialogRef = this.dialog.open(DeleteDialogComponent, {
       data: NOTE_DELETE_DIALOG,
@@ -69,6 +71,7 @@ export class AreaNotesComponent implements OnInit {
       });
   }
 
+  // ERROR_SURVEY - displays generic snackbar for ANY error, doesn't use backend error messages
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;

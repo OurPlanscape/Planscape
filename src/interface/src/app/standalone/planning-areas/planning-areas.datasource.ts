@@ -153,6 +153,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     this.loadData();
   }
 
+  // ERROR_SURVEY - passes response up
   deletePlan(planId: number) {
     return this.planService.deletePlan(planId).pipe(
       tap(() => {

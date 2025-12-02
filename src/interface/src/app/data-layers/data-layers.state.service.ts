@@ -23,6 +23,7 @@ export class DataLayersStateService {
   private _datasetsCurrentPage$ = new BehaviorSubject(1);
   datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
 
+  // ERROR_SURVEY - no error handling
   dataSets$ = this._datasetsCurrentPage$.pipe(
     distinctUntilChanged(),
     tap(() => this.loadingSubject.next(true)),
@@ -41,6 +42,7 @@ export class DataLayersStateService {
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
 
+  // ERROR_SURVEY - pipe, no error handling
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
     switchMap((layer) => {
       if (!layer) {
@@ -52,6 +54,7 @@ export class DataLayersStateService {
     })
   );
 
+  // ERROR_SURVEY - pipe, no error handling
   dataTree$ = this.selectedDataSet$.pipe(
     switchMap((dataset) => {
       if (!dataset) {
@@ -99,6 +102,7 @@ export class DataLayersStateService {
         this.loadingSubject.next(false);
         return of(null);
       }
+      // ERROR_SURVEY - no error handling
       return this.service.search(term, this.limit, offset).pipe(
         startWith(null),
         map((results) => {

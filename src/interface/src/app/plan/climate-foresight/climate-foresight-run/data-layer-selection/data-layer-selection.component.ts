@@ -438,6 +438,7 @@ export class DataLayerSelectionComponent
     }
   }
 
+  // ERROR_SURVEY - logs error with backend error message
   private loadLayerPreview(layer: DataLayer): void {
     this.dataLayersService.getPublicUrl(layer.id).subscribe({
       next: (url: string) => {

@@ -76,6 +76,7 @@ export class PlanComponent implements OnInit {
   }
 
   //notes handling functions
+  // ERROR_SURVEY - displays generic snackbar for ANY error, doesn't use backend error messages
   addNote(comment: string) {
     this.notesSidebarState = 'SAVING';
     if (this.planId) {
@@ -97,6 +98,7 @@ export class PlanComponent implements OnInit {
     }
   }
 
+  // ERROR_SURVEY - displays generic snackbar for ANY error, doesn't use backend error messages
   handleNoteDelete(n: Note) {
     const dialogRef = this.dialog.open(DeleteDialogComponent, {
       data: NOTE_DELETE_DIALOG,
@@ -127,6 +129,7 @@ export class PlanComponent implements OnInit {
       });
   }
 
+  // ERROR_SURVEY - subscription, no error handling
   loadNotes() {
     if (this.planId) {
       this.notesService.getNotes(this.planId).subscribe((notes: Note[]) => {
