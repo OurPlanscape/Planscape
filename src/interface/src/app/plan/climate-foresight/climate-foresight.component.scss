@@ -3,6 +3,11 @@
 @import 'mixins';
 
 $analyses-header-height: 40px;
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
 .climate-foresight-container {
   flex: 1;
@@ -244,6 +249,7 @@ $analyses-header-height: 40px;
     .analyses-list {
       width: 100%;
       padding: 0;
+      max-height: 100%;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -251,7 +257,6 @@ $analyses-header-height: 40px;
     }
   }
 }
-
 .normal-flex {
   align-items: normal;
 }
