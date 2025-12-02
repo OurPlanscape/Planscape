@@ -85,6 +85,7 @@ export class ScenarioService {
   }
 
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
+  // ERROR_SURVEY - uses backend message directly from global array, or a static string
   createScenarioFromSteps(
     scenarioParameters: ScenarioCreationPayload
   ): Observable<Scenario> {
@@ -106,6 +107,7 @@ export class ScenarioService {
 
   //sends a partial scenario configuration using PATCH
   // returns success or failure, based on backend results
+  // ERROR_SURVEY - uses backend message directly from global array, or a static string
   patchScenarioConfig(
     scenarioId: number,
     configPayload: Partial<ScenarioV3Payload>

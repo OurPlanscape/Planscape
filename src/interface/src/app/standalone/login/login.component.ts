@@ -90,6 +90,8 @@ export class LoginComponent {
     });
   }
 
+  // ERROR_SURVEY - checks backend response for specific errors
+  //  sets UI errormessage to static strings unless cause of error is unknown
   login() {
     if (!this.form.valid) return;
 

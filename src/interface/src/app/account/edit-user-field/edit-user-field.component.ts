@@ -34,6 +34,7 @@ export class EditUserFieldComponent {
     });
   }
 
+  // ERROR_SURVEY - directly passes backend error message to form UI
   saveForm() {
     if (this.form.invalid) return;
     this.state = 'saving';

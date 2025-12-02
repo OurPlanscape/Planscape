@@ -91,6 +91,8 @@ export class PlanService {
     });
   }
 
+  // ERROR_SURVEY - passes response up
+  // TODO: not used anymore?
   getTotalArea(shape: GeoJSON) {
     return this.http
       .post<{

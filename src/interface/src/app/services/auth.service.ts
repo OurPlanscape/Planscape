@@ -62,6 +62,7 @@ export class AuthService {
       .some((cookie) => cookie.trim().startsWith(this.authTokenRefreshKey));
   }
 
+  // ERROR_SURVEY - passes response up 
   login(email: string, password: string) {
     return this.http
       .post(
@@ -87,6 +88,7 @@ export class AuthService {
       );
   }
 
+  // ERROR_SURVEY - passes response up 
   signup(
     email: string,
     password1: string,
@@ -120,6 +122,7 @@ export class AuthService {
     });
   }
 
+  // ERROR_SURVEY - passes response up
   logout() {
     return this.http
       .get<LogoutResponse>(this.API_ROOT.concat('logout/'), {
@@ -134,6 +137,7 @@ export class AuthService {
       );
   }
 
+  // ERROR_SURVEY - on error, just sets validation to false
   validateAccount(token: string): Observable<boolean> {
     return this.http
       .post(this.API_ROOT.concat('registration/account-confirm-email/'), {
@@ -147,6 +151,7 @@ export class AuthService {
       );
   }
 
+  // ERROR_SURVEY - on error, sets loggedinstatus/user to false, no UI message
   private refreshToken() {
     return this.http
       .post(
@@ -188,6 +193,7 @@ export class AuthService {
     this.cookieService.delete(this.authTokenKey);
   }
 
+  // ERROR_SURVEY - passes response up
   public getLoggedInUser(): Observable<User> {
     return this.http
       .get(this.API_ROOT.concat('user/'), { withCredentials: true })
@@ -238,6 +244,7 @@ export class AuthService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   resetPassword(
     userId: string,
     token: string,
@@ -265,6 +272,8 @@ export class AuthService {
   }
 
   /** Gets a user given the id. */
+  // ERROR_SURVEY - no error handling
+  // TODO: This function doesn't appear to be used anywhere
   getUser(userId: number): Observable<User> {
     const url = environment.backend_endpoint.concat(
       `/users/get_user_by_id/?id=${userId}`
@@ -287,6 +296,7 @@ export class AuthService {
       );
   }
 
+  // ERROR_SURVEY - passes response up
   updateUserInfo(newUser: Partial<User>): Observable<User> {
     return this.http
       .patch(
@@ -318,6 +328,7 @@ export class AuthService {
    * @param newUser
    * @param currentPassword
    */
+  // ERROR_SURVEY - passes response up, but this function isnt used anywhere
   updateUser(newUser: User, currentPassword: string): Observable<User> {
     return this.http
       .patch(
@@ -351,6 +362,7 @@ export class AuthService {
    * "Deletes" user from backend. The behavior of this command is to disable the user account,
    *  not fully delete it, so data can be restored later if necessary.
    */
+  // ERROR_SURVEY - passes response up
   deactivateUser(user: User, password: string): Observable<boolean> {
     return this.http
       .post(
@@ -410,6 +422,7 @@ export class AuthGuard {
         }
         return this.authService.getLoggedInUser().pipe(map(() => true));
       }),
+      // ERROR_SURVEY - on error, just redirects to login
       catchError((_) => {
         if (state) {
           this.redirectService.setRedirect(state.url);

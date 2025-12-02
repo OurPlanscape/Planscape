@@ -30,6 +30,7 @@ export class DeleteAccountDialogComponent {
     this.dialogRef.close();
   }
 
+  // ERROR_SURVEY - this selects a frontent UI string based on error code
   deleteAccount(): void {
     this.disableDeleteButton = true;
     this.authService

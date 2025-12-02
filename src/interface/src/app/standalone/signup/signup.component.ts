@@ -103,6 +103,8 @@ export class SignupComponent {
     return null;
   }
 
+  // ERROR_SURVEY - detects specific error cases from backend
+  //  sets UI form errors to specific objects based on specific key words
   signup() {
     if (this.submitting) return;
 

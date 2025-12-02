@@ -14,6 +14,7 @@ export class MenuComponent {
     private route: ActivatedRoute
   ) {}
 
+  // ERROR_SURVEY - no error handling, just redirects user after call
   logout() {
     this.authService.logout().subscribe((_) => {
       this.router.navigate(['/']);

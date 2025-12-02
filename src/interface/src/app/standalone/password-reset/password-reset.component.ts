@@ -83,6 +83,7 @@ export class PasswordResetComponent implements OnInit {
       });
   }
 
+  // ERROR_SURVEY - sets form data to backend error message
   submit() {
     if (!this.form.valid) return;
     const userId: string = this.passwordResetToken!.userId;
