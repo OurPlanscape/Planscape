@@ -56,14 +56,12 @@ export class TreatmentTargetComponent
   extends StepDirective<ScenarioCreation>
   implements OnInit
 {
+  minAcreage: number = 0;
   maxAreaValue: number = 1;
-  minMaxAreaValue = 1;
   maxProjectValue = 1;
   form!: FormGroup;
 
   summary$ = this.newScenarioState.availableStands$.pipe(map((s) => s.summary));
-
-  minAcreage: number = 0;
 
   constructor(private newScenarioState: NewScenarioState) {
     super();
@@ -124,25 +122,11 @@ export class TreatmentTargetComponent
     });
   }
 
-  // Pre-condition: we should have a valid max_area (per project area) and max_project_count
-  getTreatedPercentage(): number {
-    const formValues = this.form.value;
-    if (!this.maxAreaValue || this.maxAreaValue === 0) {
-      return 0;
-    }
-    // Calculating the percentage based on the max_area ( acres per project area ) and the  max_project_count
-    return (
-      (formValues.max_area * formValues.max_project_count * 100) /
-      this.maxAreaValue
-    );
-  }
-
   getTotalTreated(): number {
     const formValues = this.form.value;
     if (!this.maxAreaValue || this.maxAreaValue === 0) {
       return 0;
     }
-    // Calculating the percentage based on the max_area ( acres per project area ) and the  max_project_count
     return formValues.max_area * formValues.max_project_count;
   }
 
