@@ -32,7 +32,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
             formControlName="max_area"
             type="text"
             mask="separator"
-            placeholder="Min: (Stand Size)"
+            placeholder="Min: {{ minAcreage }}"
             thousandSeparator=","
             matInput />
         </mat-form-field>
@@ -75,7 +75,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
             type="text"
             mask="separator"
             thousandSeparator=","
-            placeholder="Max: (# of Stands)"
+            placeholder="Max: {{ maxProjectValue }}"
             matInput />
         </mat-form-field>
         <div class="help-placeholder">
