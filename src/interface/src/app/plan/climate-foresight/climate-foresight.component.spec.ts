@@ -170,7 +170,7 @@ describe('ClimateForesightComponent', () => {
 
     expect(component.currentPlan).toEqual(mockPlan);
     expect(component.planName).toBe('Test Planning Area');
-    expect(component.planAcres).toBe('Acres: 5,000');
+    expect(component.planAcres).toBe('5,000');
   });
 
   it('should handle plan without area_acres', async () => {
@@ -409,7 +409,7 @@ describe('ClimateForesightComponent', () => {
     fixture.detectChanges();
 
     const acresElement = fixture.nativeElement.querySelector('.acres-info');
-    expect(acresElement?.textContent).toContain('Acres: 5,000');
+    expect(acresElement?.textContent).toContain('5,000');
   });
 
   it('should show empty state when no analyses', () => {
@@ -469,7 +469,7 @@ describe('ClimateForesightComponent', () => {
   it('should display Climate Foresight tool information', () => {
     fixture.detectChanges();
 
-    const toolTitle = fixture.nativeElement.querySelector('.tool-header h2');
+    const toolTitle = fixture.nativeElement.querySelector('.tool-title h2');
     const toolDescription = fixture.nativeElement.querySelector(
       '.tool-description p'
     );
