@@ -7,7 +7,7 @@ import { StepDirective } from '../../../styleguide/steps/step.component';
 import { BaseLayer, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
-import { filter, take } from 'rxjs';
+import { filter, switchMap, map, take } from 'rxjs';
 import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
@@ -55,16 +55,20 @@ export class ExcludeAreasSelectorComponent
     this.newScenarioState.scenarioConfig$
       .pipe(
         filter((c) => !!c?.excluded_areas),
-        take(1)
+        take(1),
+        switchMap((config) =>
+          this.forsysService.excludedAreas$.pipe(
+            take(1),
+            map((excludableAreas: BaseLayer[]) =>
+              excludableAreas.filter((ea) =>
+                config.excluded_areas?.includes(ea.id)
+              )
+            )
+          )
+        )
       )
-      .subscribe((config) => {
-        this.forsysService.excludedAreas$
-          .pipe(take(1))
-          .subscribe((excludableAreas) => {
-            this.selectedAreas = excludableAreas.filter((ea) =>
-              config.excluded_areas?.includes(ea.id)
-            );
-          });
+      .subscribe((selectedAreas: BaseLayer[]) => {
+        this.selectedAreas = selectedAreas;
       });
   }
 
