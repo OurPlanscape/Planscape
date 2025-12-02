@@ -8,12 +8,16 @@ import { TreatmentTargetComponent } from './treatment-target.component';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
-import { of } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 import { AvailableStands } from '@types';
+import { STAND_SIZE } from 'src/app/plan/plan-helpers';
 
 describe('TreatmentTargetComponent', () => {
   let component: TreatmentTargetComponent;
   let fixture: ComponentFixture<TreatmentTargetComponent>;
+  const availableStandsData = new BehaviorSubject<AvailableStands>({
+    summary: { treatable_area: 10000, treatable_stand_count: 123456 },
+  } as AvailableStands);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -25,9 +29,8 @@ describe('TreatmentTargetComponent', () => {
       ],
       providers: [
         MockProvider(NewScenarioState, {
-          availableStands$: of({
-            summary: { treatable_area: 10000 },
-          } as AvailableStands),
+          scenarioConfig$: of({ stand_size: 'LARGE' as STAND_SIZE }),
+          availableStands$: availableStandsData.asObservable(),
         }),
       ],
     }).compileComponents();
@@ -82,7 +85,7 @@ describe('TreatmentTargetComponent', () => {
     expect(result).toBeNull();
   });
 
-  it('should return error when target acres does not meet minimum for medium stand size', () => {
+  it('should set an error when target acres does not meet minimum for MEDIUM stand size', () => {
     component.minAcreage = 100;
     const maxAreaField = component.form.get('max_area');
     maxAreaField?.setValue(60);
@@ -90,29 +93,70 @@ describe('TreatmentTargetComponent', () => {
     expect(component.form?.valid).toEqual(false);
   });
 
-  it('should return error when target acres does not meet minimum for large stand size', () => {
+  it('should set an error when target acres does not meet minimum for LARGE stand size', () => {
     component.minAcreage = 500;
     const maxAreaField = component.form.get('max_area');
+    const maxProjectCount = component.form.get('max_project_count');
+    maxProjectCount?.setValue(1);
     maxAreaField?.setValue(499);
     expect(component.form?.valid).toEqual(false);
     expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(true);
   });
 
-  it('should return error if target acres is greater than treatable_area, regardless of other field value', () => {
+  it('should not set an error when target acres meets minimum area', () => {
+    component.minAcreage = 100;
+    const maxAreaField = component.form.get('max_area');
+    const maxProjectCount = component.form.get('max_project_count');
+    maxAreaField?.setValue(101);
+    maxProjectCount?.setValue(1);
+    expect(component.form?.valid).toEqual(true);
+    expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(false);
+  });
+
+  it('should set an error if target project areas is more than the treatable stand count', () => {
+    const maxAreaField = component.form.get('max_area');
+    const maxProjectCount = component.form.get('max_project_count');
+    maxAreaField?.setValue(1);
+    maxProjectCount?.setValue(222222);
+    expect(component.form?.valid).toEqual(false);
+    expect(maxProjectCount?.hasError('max')).toEqual(true);
+  });
+
+  it('should set an error if target project areas is more than the treatable stand count', () => {
+    availableStandsData.next({
+      summary: { treatable_area: 10000, treatable_stand_count: 100 },
+    } as AvailableStands);
+    const maxAreaField = component.form.get('max_area');
+    const maxProjectCount = component.form.get('max_project_count');
+    maxAreaField?.setValue(1);
+    maxProjectCount?.setValue(101);
+    expect(component.form?.valid).toEqual(false);
+    expect(maxProjectCount?.hasError('max')).toEqual(true);
+  });
+
+  it('should not set an error if target project areas is less than the treatable stand count', () => {
+    availableStandsData.next({
+      summary: { treatable_area: 10000, treatable_stand_count: 100 },
+    } as AvailableStands);
+    const maxAreaField = component.form.get('max_area');
+    const maxProjectCount = component.form.get('max_project_count');
+    maxAreaField?.setValue(1);
+    maxProjectCount?.setValue(99);
+    expect(component.form?.valid).toEqual(true);
+    expect(maxProjectCount?.hasError('max')).toEqual(false);
+  });
+
+  it('should set an error if target acres is greater than treatable_area, regardless of other field value', () => {
+    availableStandsData.next({
+      summary: { treatable_area: 10000, treatable_stand_count: 100 },
+    } as AvailableStands);
+
     component.minAcreage = 500;
     const maxAreaField = component.form.get('max_area');
     const maxProjectCount = component.form.get('max_project_count');
-    maxAreaField?.setValue(10001); // see treatable_area above
+    maxAreaField?.setValue(10001);
     maxProjectCount?.setValue(undefined);
     expect(component.form?.valid).toEqual(false);
     expect(maxAreaField?.hasError('max')).toEqual(true);
-  });
-
-  it('should not return error when target acres meets minimum area', () => {
-    component.minAcreage = 100;
-    const maxAreaField = component.form.get('max_area');
-    maxAreaField?.setValue(101);
-    expect(component.form?.valid).toEqual(false);
-    expect(maxAreaField?.hasError('invalidMinAcres')).toEqual(false);
   });
 });
