@@ -4,6 +4,7 @@ from climate_foresight.models import (
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
     ClimateForesightRunStatus,
+    ClimateForesightPillarRollup,
 )
 from climate_foresight.tasks import calculate_climate_foresight_layer_statistics
 from planning.models import PlanningArea
@@ -45,6 +46,7 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
     input_datalayers = ClimateForesightRunInputDataLayerSerializer(
         many=True, required=False
     )
+    pillar_rollups = serializers.SerializerMethodField()
 
     class Meta:
         model = ClimateForesightRun
@@ -60,14 +62,28 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
             "furthest_step",
             "created_at",
             "input_datalayers",
+            "pillar_rollups",
         ]
-        read_only_fields = ["id", "created_at", "planning_area_name", "creator"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "planning_area_name",
+            "creator",
+            "pillar_rollups",
+        ]
 
     def get_creator(self, obj):
         """Return the user's full name."""
         if obj.created_by.first_name and obj.created_by.last_name:
             return f"{obj.created_by.first_name} {obj.created_by.last_name}"
         return obj.created_by.username
+
+    def get_pillar_rollups(self, obj):
+        """Return pillar rollup status for this run."""
+        from climate_foresight.serializers import ClimateForesightPillarRollupSerializer
+
+        rollups = obj.pillar_rollups.all()
+        return ClimateForesightPillarRollupSerializer(rollups, many=True).data
 
     def validate_planning_area(self, value):
         """Ensure the user has access to the planning area."""
@@ -246,3 +262,35 @@ class ClimateForesightPillarSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class ClimateForesightPillarRollupSerializer(serializers.ModelSerializer):
+    """Serializer for ClimateForesightPillarRollup model."""
+
+    pillar_name = serializers.CharField(source="pillar.name", read_only=True)
+    rollup_datalayer_id = serializers.IntegerField(
+        source="rollup_datalayer.id", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = ClimateForesightPillarRollup
+        fields = [
+            "id",
+            "run",
+            "pillar",
+            "pillar_name",
+            "rollup_datalayer_id",
+            "status",
+            "method",
+            "weights",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "pillar_name",
+            "rollup_datalayer_id",
+            "status",
+            "weights",
+            "created_at",
+        ]
+

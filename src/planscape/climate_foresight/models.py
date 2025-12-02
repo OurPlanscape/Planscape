@@ -69,6 +69,24 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
     def __str__(self):
         return f"{self.name} - {self.planning_area.name}"
 
+    def all_pillars_rolled_up(self) -> bool:
+        """Check if all assigned pillars have completed rollup."""
+        assigned_pillars = (
+            self.input_datalayers.exclude(pillar_id__isnull=True)
+            .values_list("pillar_id", flat=True)
+            .distinct()
+        )
+
+        # If no pillars are assigned, consider it ready (landscape will use normalized layers directly)
+        if not assigned_pillars.exists():
+            return True
+
+        completed_rollups = self.pillar_rollups.filter(
+            status=ClimateForesightPillarRollupStatus.COMPLETED
+        ).values_list("pillar_id", flat=True)
+
+        return set(assigned_pillars) == set(completed_rollups)
+
 
 class ClimateForesightPillar(CreatedAtMixin, models.Model):
     """
@@ -151,6 +169,13 @@ class ClimateForesightPillar(CreatedAtMixin, models.Model):
         return super().delete(using=using, keep_parents=keep_parents)
 
 
+class InputDataLayerStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    RUNNING = "running", "Running"
+    COMPLETED = "completed", "Completed"
+    FAILED = "failed", "Failed"
+
+
 class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     """Represents a data layer selected for a climate foresight run with its configuration."""
 
@@ -182,6 +207,13 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="Optional pillar assignment for this data layer",
     )
 
+    status = models.CharField(
+        max_length=20,
+        choices=InputDataLayerStatus.choices,
+        default=InputDataLayerStatus.PENDING,
+        help_text="Current processing status of this input data layer",
+    )
+
     normalized_datalayer = models.ForeignKey(
         DataLayer,
         on_delete=models.SET_NULL,
@@ -193,7 +225,13 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     statistics = models.JSONField(
         null=True,
         blank=True,
-        help_text="Statistics calculated from clipped planning area: {min, max, mean, std, count, percentiles: {p5, p10, p90, p95}}",
+        help_text=(
+            "Statistics and normalization metadata. Structure: "
+            "{"
+            "  'original': {min, max, mean, std, count, percentiles: {p5, p10, p90, p95}}, "
+            "  'normalization': {transformation, original_skew, transformed_skew, outlier_min_p10, outlier_max_p90, favor_high}"
+            "}"
+        ),
     )
 
     class Meta:
@@ -209,3 +247,84 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
 
     def __str__(self):
         return self.datalayer.name
+
+
+class ClimateForesightPillarRollupStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    RUNNING = "running", "Running"
+    COMPLETED = "completed", "Completed"
+    FAILED = "failed", "Failed"
+
+
+class ClimateForesightPillarRollup(CreatedAtMixin, models.Model):
+    """
+    Stores the rolled-up raster for a pillar within a specific run.
+
+    Since pillars are reusable (global pillars) across runs, we need a separate
+    model to track the rollup result for each (run, pillar) combination.
+    """
+
+    run = models.ForeignKey(
+        ClimateForesightRun,
+        on_delete=models.CASCADE,
+        related_name="pillar_rollups",
+        help_text="Climate foresight run this rollup belongs to",
+    )
+
+    pillar = models.ForeignKey(
+        ClimateForesightPillar,
+        on_delete=models.CASCADE,
+        related_name="rollups",
+        help_text="Pillar that was rolled up",
+    )
+
+    rollup_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_pillar_rollup",
+        help_text="The rolled-up raster for this pillar (weighted average of normalized metrics)",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=ClimateForesightPillarRollupStatus.choices,
+        default=ClimateForesightPillarRollupStatus.PENDING,
+        help_text="Current status of the rollup",
+    )
+
+    weights = models.JSONField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Weights used for rollup. Structure: "
+            "{"
+            "  'layer_id': weight_value, "
+            "  'correlation_scores': {layer_id: correlation}, "
+            "  'method': 'optimized' or 'equal'"
+            "}"
+        ),
+    )
+
+    method = models.CharField(
+        max_length=20,
+        choices=[("optimized", "Optimized"), ("equal", "Equal")],
+        default="optimized",
+        help_text="Weight calculation method used for rollup",
+    )
+
+    class Meta:
+        ordering = ["pillar__order", "pillar__name"]
+        verbose_name = "Climate Foresight Pillar Rollup"
+        verbose_name_plural = "Climate Foresight Pillar Rollups"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["run", "pillar"],
+                name="unique_run_pillar_rollup",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.pillar.name} rollup for {self.run.name}"
+
