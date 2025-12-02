@@ -1,7 +1,7 @@
 <!-- Treatment goals -->
 <ng-template #treatmentGoals>
   <sg-section
-    class="txgoals"
+    [ngClass]="{ txgoals: configUiFlagIsOn }"
     headline="Select Treatment Goal"
     [required]="true"
     tooltipContent="Select a Treatment Goal based on your objective for treatment. Each goal includes different Priority Objects, Co-Benefits, and Thresholds aligned with the intent of your objective. ForSys uses these pre-selected parameters to generate project areas.

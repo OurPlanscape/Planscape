@@ -129,4 +129,9 @@ export class Step1Component
   getData() {
     return this.form.value;
   }
+
+  // TODO: remove when SCENARIO_CONFIG_UI is removed
+  get configUiFlagIsOn() {
+    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
+  }
 }
