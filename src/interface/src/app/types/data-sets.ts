@@ -112,7 +112,7 @@ export interface DataLayer {
 
 export interface BaseLayer
   extends Omit<DataLayer, 'styles' | 'info' | 'geometry'> {
-  info: any;
+  info: Info;
   map_url: string;
   storage_type?: string;
   styles: [

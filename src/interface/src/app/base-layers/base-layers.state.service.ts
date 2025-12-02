@@ -26,10 +26,7 @@ export class BaseLayersStateService {
   // base layers grouped by category (one level)
   categorizedBaseLayers$ = this.baseLayers$.pipe(
     filter((layers) =>
-      layers.some(
-        (layer) =>
-          Array.isArray(layer.path) && layer.path.length === 1 && layer.path[0]
-      )
+      layers.some((layer) => layer.path.length === 1 && layer.path[0])
     ),
     map((layers) => {
       const grouped = layers.reduce<Record<string, BaseLayer[]>>(
