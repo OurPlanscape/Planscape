@@ -260,6 +260,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     const filename =
       'treatment_plan_' + this.treatmentsState.getTreatmentPlanId();
 
+    // ERROR_SURVEY - no error handling
     this.treatmentsService
       .downloadTreatment(this.treatmentsState.getTreatmentPlanId())
       .subscribe((data) => {

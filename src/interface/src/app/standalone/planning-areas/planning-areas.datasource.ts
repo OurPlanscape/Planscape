@@ -52,6 +52,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    */
   public hasFilters$ = this._hasFilters$.asObservable();
 
+  // ERROR_SURVEY - pipe, no error handling
   public creators$ = this.planService.getCreators().pipe(
     shareReplay(1) // Caches the result and replays the last emitted value to new subscribers
   );
@@ -113,6 +114,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     );
 
     this._loading.next(true);
+    // ERROR_SURVEY - subscription, no error handling
     this.planService.getPlanPreviews(params).subscribe((data) => {
       this.setPages(data.count);
       this.setData(data.results);

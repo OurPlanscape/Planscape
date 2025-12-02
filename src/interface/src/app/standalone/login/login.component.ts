@@ -72,6 +72,7 @@ export class LoginComponent {
     }
   }
 
+  // ERROR_SURVEY - catches all errors, opens snackbar with the exact backend message
   resendVerification() {
     const email = this.form.get('email')?.value;
     this.authService.resendValidationEmail(email).subscribe({

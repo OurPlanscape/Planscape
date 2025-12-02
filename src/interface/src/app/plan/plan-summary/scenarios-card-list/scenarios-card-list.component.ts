@@ -158,6 +158,7 @@ export class ScenariosCardListComponent {
     return scenarioCanHaveTreatmentPlans(scenario);
   }
 
+  // ERROR_SURVEY - opens generic snackbar for ANY error, doesn't pass backend response to UI
   toggleScenarioStatus(scenario: Scenario) {
     if (scenario.id) {
       const originalStatus = scenario.status;
@@ -201,6 +202,7 @@ export class ScenariosCardListComponent {
     }
   }
 
+  // ERROR_SURVEY - opens generic snackbar, doesn't pass backend response to UI
   private deleteScenario(scenario: Scenario) {
     this.scenarioService.deleteScenario(Number(scenario.id)).subscribe({
       next: () => {
@@ -246,6 +248,7 @@ export class ScenariosCardListComponent {
   createTreatmentPlan(scenarioId: number, name: string) {
     this.overlayLoaderService.showLoader();
 
+    // ERROR_SURVEY - opens snackbar on ANY error, doesn't pass backend error to UI
     this.treatmentsService
       .createTreatmentPlan(Number(scenarioId), name)
       .subscribe({

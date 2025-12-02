@@ -77,6 +77,7 @@ export class ChangePasswordComponent {
     const newPassword = this.form.get('newPassword');
     const passwordConfirm = this.form.get('passwordConfirm');
 
+    // ERROR_SURVEY - handles any error, sets form error with backend error message
     this.authService
       .changePassword(
         current?.value,

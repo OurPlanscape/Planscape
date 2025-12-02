@@ -138,6 +138,7 @@ export class ScenarioCreationComponent implements OnInit {
     map((config) => config.stand_size)
   );
 
+  // ERROR_SURVEY - no error handling
   treatmentGoals$ = this.treatmentGoalsService
     .getTreatmentGoals(this.planId)
     .pipe(shareReplay(1));
@@ -332,6 +333,7 @@ export class ScenarioCreationComponent implements OnInit {
               });
               this.scenarioName = newName;
             },
+            // ERROR_SURVEY - opens generic snackbar, doesnt pass backend error to UI
             error: (e) => {
               this.matSnackBar.open(
                 '[Error] Unable to update name due to a backend error.',
@@ -362,6 +364,7 @@ export class ScenarioCreationComponent implements OnInit {
       .subscribe(() => this.runScenario());
   }
 
+    // ERROR_SURVEY - opens modal on ANY error, doesnt pass along any backend data to UI
   async runScenario() {
     this.newScenarioState.setLoading(true);
     this.scenarioService

@@ -243,6 +243,7 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
+  // ERROR_SURVEY - opens snackbar on ANY error, doesnt pass backend data to UI
   createNewTreatmentPlan(scenarioId: string): void {
     this.treatmentsService
       .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')

@@ -217,6 +217,7 @@ export class TreatmentsState {
       );
   }
 
+  // ERROR_SURVEY - throws JS error
   reloadSummary() {
     this._reloadingSummary$.next(true);
     return this.treatmentsService
@@ -232,6 +233,7 @@ export class TreatmentsState {
       );
   }
 
+  // ERROR_SURVEY - no error catching, no error UI
   private loadTreatmentPlan() {
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
@@ -243,6 +245,7 @@ export class TreatmentsState {
       );
   }
 
+  // ERROR_SURVEY - no error catching, no error UI
   updateTreatmentPlan(treatmentPlan: Partial<TreatmentPlan>) {
     return this.treatmentsService
       .updateTreatmentPlan(this.getTreatmentPlanId(), treatmentPlan)
@@ -277,6 +280,7 @@ export class TreatmentsState {
     return this.treatmentsService
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(
+        // ERROR_SURVEY: rolls back state, throws a JS error but no UI error
         // if setting treatments failed, rollback and throw error
         catchError(() => {
           this._reloadingSummary$.next(false);

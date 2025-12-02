@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 export class TreatmentGoalsService {
   constructor(private http: HttpClient) {}
 
+  // ERROR_SURVEY - passes response up
   getTreatmentGoals(planning_area?: number) {
     return this.http.get<ScenarioGoal[]>(
       `${environment.backend_endpoint ?? ''}/v2/treatment-goals/${planning_area ? '?planning_area=' + planning_area : ''}`

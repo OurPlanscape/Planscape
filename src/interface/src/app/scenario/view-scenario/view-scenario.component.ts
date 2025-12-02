@@ -146,6 +146,7 @@ export class ViewScenarioComponent {
         take(1),
         map((scenarios) => scenarios.map((s) => s.name)),
         catchError((error) => {
+          // ERROR_SURVEY - just sets array to empty, doesnt display an error on UI
           return of([]);
         })
       )

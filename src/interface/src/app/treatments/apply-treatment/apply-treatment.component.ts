@@ -139,6 +139,7 @@ export class ApplyTreatmentComponent {
     this.selectedStandsState.clearStands();
     this.treatmentsState.removeTreatments(stands).subscribe({
       error: (err) => {
+        // ERROR_SURVEY: shows snackbar and displays backend response message
         this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
       },
     });

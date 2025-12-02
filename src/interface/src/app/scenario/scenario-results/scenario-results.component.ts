@@ -65,6 +65,7 @@ export class ScenarioResultsComponent implements OnChanges {
     }
   }
 
+  // ERROR_SURVEY - subscribes to data, no error catching
   downloadCsv() {
     const filename = getSafeFileName(this.scenarioName) + '_csv.zip';
     if (this.scenarioId) {
@@ -79,6 +80,7 @@ export class ScenarioResultsComponent implements OnChanges {
     }
   }
 
+  // ERROR_SURVEY - subscribes to data, no error catching
   downloadShapeFiles() {
     const filename = getSafeFileName(this.scenarioName) + '_shp.zip';
     if (this.scenarioId) {

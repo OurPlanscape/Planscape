@@ -93,6 +93,7 @@ export class NewScenarioState {
         )
         .pipe(
           tap(() => this.setLoading(false)),
+          // ERROR_SURVEY - opens generic snackbar for ANY error, doesnt pass backend error to UI
           catchError(() => {
             this.snackbar.open(
               '[Error] Cannot load map data',

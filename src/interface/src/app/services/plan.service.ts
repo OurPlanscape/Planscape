@@ -69,6 +69,7 @@ export class PlanService {
     });
   }
 
+  // ERROR_SURVEY - passes response up
   getPlanPreviews(params: Params) {
     return this.http.get<Pagination<PreviewPlan>>(this.v2basePath, {
       withCredentials: true,
@@ -76,6 +77,7 @@ export class PlanService {
     });
   }
 
+  // ERROR_SURVEY - passes response up
   getCreators() {
     let url = this.v2basePath + 'creators/';
     return this.http.get<Creator[]>(url, {
@@ -97,6 +99,7 @@ export class PlanService {
   }
 
   //TODO: This might be better in its own Service file
+  // ERROR_SURVEY - passes response up
   uploadGeometryForNewScenario(
     shape: GeoJsonObject,
     scenarioName: string,

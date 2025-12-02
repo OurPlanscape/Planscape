@@ -66,6 +66,7 @@ export class SignupComponent {
     );
   }
 
+    // ERROR_SURVEY - does nothing, but also not called at all?
   resendEmail() {
     const email: string = this.form.get('email')?.value;
     this.authService.resendValidationEmail(email).subscribe();

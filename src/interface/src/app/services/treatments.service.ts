@@ -13,6 +13,7 @@ export class TreatmentsService {
 
   constructor(private http: HttpClient) {}
 
+  // ERROR_SURVEY - passes response up
   createTreatmentPlan(scenarioId: number, name: string) {
     return this.http.post<TreatmentPlan>(
       this.baseUrl,
@@ -23,6 +24,7 @@ export class TreatmentsService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   listTreatmentPlans(scenarioId: number) {
     return this.http.get<TreatmentPlan[]>(this.baseUrl, {
       withCredentials: true,
@@ -33,30 +35,35 @@ export class TreatmentsService {
     });
   }
 
+  // ERROR_SURVEY - passes response up
   updateTreatmentPlan(id: number, changedFields: Partial<TreatmentPlan>) {
     return this.http.patch<TreatmentPlan>(this.baseUrl + id, changedFields, {
       withCredentials: true,
     });
   }
 
+  // ERROR_SURVEY - passes response up
   deleteTreatmentPlan(id: number) {
     return this.http.delete<TreatmentPlan>(this.baseUrl + id + '/', {
       withCredentials: true,
     });
   }
 
+  // ERROR_SURVEY - passes response up
   duplicateTreatmentPlan(id: number) {
     return this.http.post<TreatmentPlan>(this.baseUrl + id + '/clone/', {
       withCredentials: true,
     });
   }
 
+  // ERROR_SURVEY - passes response up
   getTreatmentPlan(id: number) {
     return this.http.get<TreatmentPlan>(this.baseUrl + id + '/', {
       withCredentials: true,
     });
   }
 
+  // ERROR_SURVEY - passes response up
   getTreatmentPlanSummary(id: number, projectArea?: number) {
     return this.http.get<TreatmentSummary>(this.baseUrl + id + '/summary/', {
       withCredentials: true,
@@ -65,6 +72,7 @@ export class TreatmentsService {
     });
   }
 
+  // ERROR_SURVEY - passes response up
   setTreatments(
     treatmentPlanId: number,
     projectAreaId: number,
@@ -84,7 +92,7 @@ export class TreatmentsService {
       }
     );
   }
-
+  // ERROR_SURVEY - passes response up
   removeTreatments(treatmentPlanId: number, standIds: number[]) {
     return this.http.post(
       this.baseUrl +
@@ -100,6 +108,7 @@ export class TreatmentsService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   runTreatmentPlan(treatmentPlanId: number) {
     return this.http.post(
       this.baseUrl + treatmentPlanId + '/run/',
@@ -126,12 +135,14 @@ export class TreatmentsService {
     txTypes.forEach((tx) => {
       variableParams = variableParams.append('actions', tx);
     });
+    // ERROR_SURVEY
     return this.http.get(this.baseUrl + treatmentPlanId + '/plot/', {
       withCredentials: true,
       params: variableParams,
     });
   }
 
+  // ERROR_SURVEY
   getStandResult(treatmentPlanId: number, standId: number) {
     return this.http.get<Record<MetricId, MetricResult>[]>(
       `${this.baseUrl}/${treatmentPlanId}/stand-treatment-results/`,
@@ -144,6 +155,7 @@ export class TreatmentsService {
     );
   }
 
+  // ERROR_SURVEY - 
   downloadTreatment(treatmentPlanId: number) {
     return this.http.get(`${this.baseUrl}/${treatmentPlanId}/download/`, {
       withCredentials: true,

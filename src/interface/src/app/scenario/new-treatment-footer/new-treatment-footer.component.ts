@@ -55,6 +55,7 @@ export class NewTreatmentFooterComponent {
       });
   }
 
+  // ERROR_SURVEY - opens snackbar on any error, doesnt pass backend error to UI
   createTreatmentPlan(name: string) {
     this.creatingTreatment = true;
 

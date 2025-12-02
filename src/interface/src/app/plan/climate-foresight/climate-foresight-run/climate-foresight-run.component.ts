@@ -142,6 +142,7 @@ export class ClimateForesightRunComponent implements OnInit {
       });
   }
 
+  // ERROR_SURVEY - opens generic snackbar for any error, doesnt use backend info 
   private loadRun(): void {
     if (!this.runId) return;
 
@@ -252,6 +253,7 @@ export class ClimateForesightRunComponent implements OnInit {
     const currentFurthestStep = this.currentRun?.furthest_step || 0;
     const newFurthestStep = Math.max(nextStep, currentFurthestStep);
 
+  // ERROR_SURVEY - displays snackbar, logs error, displays error directly from backend
     return new Observable<boolean>((observer) => {
       this.climateForesightService
         .updateRun(this.runId!, {
@@ -316,6 +318,7 @@ export class ClimateForesightRunComponent implements OnInit {
     const currentFurthestStep = this.currentRun?.furthest_step || 0;
     const newFurthestStep = Math.max(nextStep, currentFurthestStep);
 
+  // ERROR_SURVEY - displays snackbar, logs error, displays error directly from backend
     return new Observable<boolean>((observer) => {
       this.climateForesightService
         .updateRun(this.runId!, {
@@ -383,6 +386,7 @@ export class ClimateForesightRunComponent implements OnInit {
       });
   }
 
+  // ERROR_SURVEY - displays snackbar, logs error, displays error directly from backend
   saveRun(
     inputDatalayers: InputDatalayer[],
     nextStep: number,

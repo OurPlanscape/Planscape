@@ -78,6 +78,7 @@ export class ScenarioDownloadFooterComponent {
           });
           this.fileServerService.saveAs(blob, filename);
         },
+        // ERROR_SURVEY - opens generic snackbar, doesn't pass backend response to UI
         error: (e) => {
           this.downloadingScenario = false;
           console.error('Error downloading: ', e);

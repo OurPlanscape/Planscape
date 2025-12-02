@@ -219,6 +219,7 @@ export class DrawService {
     }
   }
 
+  // ERROR_SURVEY - logs error to console, does not display an error to UI
   loadDrawingBoundary(): Observable<GeoJSON | null> {
     if (this._boundaryShape$.value !== null) {
       return this._boundaryShape$.asObservable();

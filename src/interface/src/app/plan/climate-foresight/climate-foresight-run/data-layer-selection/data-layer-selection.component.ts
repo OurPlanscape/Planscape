@@ -231,6 +231,7 @@ export class DataLayerSelectionComponent
     }
   }
 
+  // ERROR_SURVEY - logs error, doesnt display any UI
   private loadSavedDataLayers(): void {
     if (this.run?.input_datalayers) {
       const layerIds = this.run.input_datalayers.map(
@@ -276,6 +277,7 @@ export class DataLayerSelectionComponent
     this.isBrowserOpen = !this.isBrowserOpen;
   }
 
+  // ERROR_SURVEY - logs error, sets loading to false, doesn't display any UI error
   private loadDataLayers(): void {
     this.loadingLayers = true;
     this.climateForesightService.getDataLayers().subscribe({

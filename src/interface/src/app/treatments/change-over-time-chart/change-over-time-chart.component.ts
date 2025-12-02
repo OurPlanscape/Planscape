@@ -166,7 +166,7 @@ export class ChangeOverTimeChartComponent {
         selectedArea = area.project_area_id;
       }
       this.emptyData = false;
-
+      // ERROR_SURVEY - no error catching
       return this.treatmentsService
         .getTreatmentImpactCharts(plan.id, metricsArray, selectedArea, txTypes)
         .pipe(

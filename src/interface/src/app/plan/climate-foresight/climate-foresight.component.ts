@@ -166,6 +166,7 @@ export class ClimateForesightComponent implements OnInit {
     });
   }
 
+  // ERROR_SURVEY - opens snackbar for any error, displays generic error, logs backend error message
   private createRun(payload: { name: string; planning_area: number }): void {
     this.loading = true;
     this.climateForesightService.createRun(payload).subscribe({
@@ -188,6 +189,7 @@ export class ClimateForesightComponent implements OnInit {
     });
   }
 
+  // ERROR_SURVEY - logs error, doesn't display an error or use backend info
   private loadRuns(): void {
     if (!this.currentPlan) {
       return;
@@ -213,6 +215,7 @@ export class ClimateForesightComponent implements OnInit {
     this.router.navigate(['run', run.id], { relativeTo: this.route });
   }
 
+  // ERROR_SURVEY - opens snackbar for any error, displays generic error, logs backend error message
   deleteRun(run: ClimateForesightRun): void {
     const dialogRef = this.dialog.open(DeleteRunModalComponent, {
       data: {

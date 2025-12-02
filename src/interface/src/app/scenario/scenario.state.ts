@@ -46,6 +46,7 @@ export class ScenarioState {
           // when done, emit object with loading false and data
           map((data) => ({ data, isLoading: false }) as LoadedResult<Scenario>),
           // when we have errors, emit object with loading false and error
+          // ERROR_SURVEY - ?????
           catchError((error) => of({ isLoading: false, error }))
         )
       )

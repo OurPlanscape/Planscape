@@ -36,6 +36,7 @@ export class NonForestedDataComponent {
         distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
         tap((_) => (this.loading = true)),
         switchMap((s) =>
+          //ERROR_SURVEY - no error catching
           this.treatmentsService.getStandResult(
             this.treatmentsState.getTreatmentPlanId(),
             (s?.id as number) || 0

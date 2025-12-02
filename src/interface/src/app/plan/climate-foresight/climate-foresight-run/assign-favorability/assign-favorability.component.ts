@@ -322,6 +322,7 @@ export class AssignFavorabilityComponent
     }
   }
 
+  // ERROR_SURVEY - logs error, doesn't display any UI
   private loadDataLayers(): void {
     if (!this.run?.input_datalayers) return;
 

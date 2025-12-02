@@ -63,6 +63,7 @@ export class NamePillarModalComponent implements OnInit {
     }
   }
 
+  // ERROR_SURVEY - enables a 'Something went wrong' error on template
   create() {
     if (this.data.runId && this.form.valid) {
       this.climateService
@@ -81,6 +82,7 @@ export class NamePillarModalComponent implements OnInit {
     }
   }
 
+  // ERROR_SURVEY - enables a 'Something went wrong' error on template
   edit() {
     if (this.form.valid && this.data.runId && this.data.pillar) {
       this.climateService

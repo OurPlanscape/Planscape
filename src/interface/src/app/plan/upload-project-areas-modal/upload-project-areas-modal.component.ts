@@ -187,6 +187,8 @@ export class UploadProjectAreasModalComponent {
             this.dialogRef.close({ response: response });
             this.uploadingData = false;
           },
+          // ERROR_SURVEY - detects specific error types and creates custom error string 
+          // - does not pass backend error to UI
           error: (err: any) => {
             this.uploadingData = false;
             if (!!err.error?.global) {

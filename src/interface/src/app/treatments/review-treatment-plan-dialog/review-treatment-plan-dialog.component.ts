@@ -96,6 +96,7 @@ export class ReviewTreatmentPlanDialogComponent {
   runTreatmentPlan(): void {
     this.submitting = true;
     this.treatmentsState.runTreatmentPlan().subscribe({
+      //ERROR_SURVEY - shows dialog on any error
       error: () => {
         this.dialogRef.close();
         this.dialog

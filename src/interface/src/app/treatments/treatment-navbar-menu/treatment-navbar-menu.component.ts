@@ -75,6 +75,7 @@ export class TreatmentNavbarMenuComponent {
       });
   }
 
+  // ERROR_SURVEY - opens error dialog, doesnt pass backend data to UI
   duplicateTreatmentPlan() {
     this.treatmentsService
       .duplicateTreatmentPlan(this.treatmentsState.getTreatmentPlanId())

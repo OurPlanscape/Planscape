@@ -62,6 +62,7 @@ export class TreatmentsTabComponent implements OnInit {
       .subscribe(() => this.loadTreatments());
   }
 
+  // ERROR_SURVEY - no error catching, no error UI
   loadTreatments() {
     this.treatmentsService
       .listTreatmentPlans(Number(this.scenarioId))
@@ -101,6 +102,7 @@ export class TreatmentsTabComponent implements OnInit {
     );
   }
 
+  // ERROR_SURVEY - opens snackbar for any error, doesnt pass backend error to UI
   deleteTreatment(treatment: TreatmentPlan) {
     const treatmentList = this.treatments;
     this.treatments = this.treatments.filter((t) => t.id != treatment.id);

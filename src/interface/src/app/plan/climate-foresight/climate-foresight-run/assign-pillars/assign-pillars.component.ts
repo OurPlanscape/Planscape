@@ -117,6 +117,7 @@ export class AssignPillarsComponent
       });
   }
 
+  // ERROR_SURVEY - subscribes, doesn't handle error
   deletePillar(id: number) {
     this.dialog
       .open(DeleteDialogComponent, {
@@ -135,6 +136,7 @@ export class AssignPillarsComponent
       });
   }
 
+  // ERROR_SURVEY - doesn't display any UI, just sets loading to false
   getDataLayers() {
     this.loadingDatalayers = true;
     this.climateService.getDataLayers().subscribe({
@@ -162,6 +164,7 @@ export class AssignPillarsComponent
     });
   }
 
+  // ERROR_SURVEY - doesn't display any errors, just sets loading to false
   getPillars() {
     this.loadingPillars = true;
     this.climateService.getPillars(this.run.id).subscribe({

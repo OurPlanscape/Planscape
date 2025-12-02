@@ -69,6 +69,7 @@ export class Step1Component
 
   planId = this.route.parent?.snapshot.data['planId'];
 
+  // ERROR_SURVEY - pipe data, no error handling
   categorizedStatewideGoals$ = this.treatmentGoalsService
     .getTreatmentGoals(this.planId)
     .pipe(

@@ -113,6 +113,7 @@ export class AuthService {
       );
   }
 
+  // ERROR_SURVEY - passes response up
   resendValidationEmail(email: string) {
     return this.http.post(this.API_ROOT.concat('registration/resend-email/'), {
       email,
@@ -205,6 +206,7 @@ export class AuthService {
       );
   }
 
+  // ERROR_SURVEY - passes response up
   changePassword(
     currentPassword: string,
     newPassword1: string,
@@ -223,6 +225,7 @@ export class AuthService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   sendPasswordResetEmail(email: string): Observable<any> {
     return this.http.post(
       this.API_ROOT.concat('password/reset/'),
@@ -370,6 +373,7 @@ export class AuthService {
       );
   }
 
+  // ERROR_SURVEY - passes response up
   validatePasswordResetToken(tokenDetails: PasswordResetToken) {
     return this.http.get(
       this.API_ROOT.concat(

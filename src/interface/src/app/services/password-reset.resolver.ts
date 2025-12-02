@@ -10,6 +10,7 @@ import { catchError, of, map } from 'rxjs';
 import { AuthService, PasswordResetToken } from './auth.service';
 
 /** Resolver to validate the password reset token. */
+// ERROR_SURVEY - catches error but does nothing with it
 export const passwordResetTokenResolver: ResolveFn<
   PasswordResetToken | null
 > = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {

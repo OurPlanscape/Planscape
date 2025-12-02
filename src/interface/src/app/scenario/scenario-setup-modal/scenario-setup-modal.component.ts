@@ -157,6 +157,8 @@ export class ScenarioSetupModalComponent implements OnInit {
       return;
     }
     const planId = this.data.planId;
+    // ERROR_SURVEY - handles specific errors, displays custom error string for each case
+    //    doesnt pass backend error message to UI
     this.scenarioService.createScenarioFromName(name, planId).subscribe({
       next: (result) => {
         this.dialogRef.close(result);
@@ -203,6 +205,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       this.dialogRef.close();
       return;
     }
+    // ERROR_SURVEY - catches specific errors, displays custom error string on UI in each case
     this.scenarioService
       .editScenarioName(this.data.scenario.id, name, this.data.planId)
       .subscribe({

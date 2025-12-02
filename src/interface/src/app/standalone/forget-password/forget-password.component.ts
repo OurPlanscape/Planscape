@@ -70,6 +70,7 @@ export class ForgetPasswordComponent {
     }
   }
 
+  // ERROR_SURVEY - sets static string (RESET_ERROR) to form message
   submit() {
     if (!this.form.valid) return;
 
