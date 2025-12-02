@@ -16,6 +16,7 @@ $analyses-header-height: 40px;
   overflow-y: auto;
   gap: 16px;
   padding: 16px;
+  align-items: flex-start;
 }
 
 .left-panel {
@@ -171,8 +172,6 @@ $analyses-header-height: 40px;
   background: $color-white;
   border-radius: 4px;
   box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
-  min-height: 100%;
-  height: fit-content;
 
   .analysis-header {
     display: flex;
@@ -231,6 +230,7 @@ $analyses-header-height: 40px;
         h4 {
           @include h4();
         }
+
         p {
           @include regular-paragraph();
           color: $color-dark-gray;
