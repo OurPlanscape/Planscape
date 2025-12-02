@@ -4,18 +4,14 @@
 
 $analyses-header-height: 40px;
 
-.scroll {
-  height: calc(100% - $navbar-height);
-  overflow: auto;
-}
-
 .climate-foresight-container {
+  flex: 1;
   display: flex;
-  align-items: flex-start;
   background: $color-soft-white;
   overflow-y: auto;
   gap: 16px;
   padding: 16px;
+  align-items: flex-start;
 }
 
 .left-panel {

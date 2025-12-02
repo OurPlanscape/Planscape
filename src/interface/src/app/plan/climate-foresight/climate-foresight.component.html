@@ -1,114 +1,109 @@
 <app-nav-bar [area]="'CLIMATE_FORESIGHT'"> </app-nav-bar>
 
-<div class="scroll">
-  <div class="climate-foresight-container" [class.normal-flex]="!hasRuns">
-    <div class="left-panel">
-      <div class="left-panel-card">
-        <!-- Header-->
-        <div class="tool-title">
-          <img
-            src="/assets/svg/climate-foresight.svg"
-            alt="Climate Foresight" />
-          <h2>Climate Foresight</h2>
+<div class="climate-foresight-container" [class.normal-flex]="!hasRuns">
+  <div class="left-panel">
+    <div class="left-panel-card">
+      <!-- Header-->
+      <div class="tool-title">
+        <img src="/assets/svg/climate-foresight.svg" alt="Climate Foresight" />
+        <h2>Climate Foresight</h2>
+      </div>
+      <!-- Developed by -->
+      <div class="tool-metadata">
+        <span class="developed-by">
+          Developed by:
+          <img src="assets/svg/icons/usfs.svg" alt="USFS" /> USFS
+        </span>
+        <button mat-icon-button class="info-button">
+          <mat-icon
+            matTooltip="This tool integrates projections of landscape conditions under mid-21st century climate to help identify areas where specific management actions can mitigate risks, enhance future resilience, and achieve or hold favorable conditions over time. The tool offers actionable guidance for land management toward future sustainability, supporting scenario planning and long-term decision-making.">
+            help_outline
+          </mat-icon>
+        </button>
+      </div>
+      <!-- Description -->
+      <div class="tool-description">
+        <p>
+          This tool integrates projections of landscape conditions under
+          mid-21st century climate to help identify areas where specific
+          management actions can mitigate risks, enhance future resilience, and
+          achieve or hold favorable conditions over time. The tool offers
+          actionable guidance for land management toward future sustainability,
+          supporting scenario planning and long-term decision-making
+        </p>
+      </div>
+    </div>
+
+    <!-- Map card -->
+    <div class="left-panel-card map-card">
+      <!-- Header -->
+      <div class="planning-area-section">
+        <div class="planning-area-name">{{ planName }}</div>
+        <div class="map-legend">
+          <div class="legend-symbol"></div>
+          <span class="acres-info">
+            <span class="label">Acres: </span> {{ planAcres }}</span
+          >
         </div>
-        <!-- Developed by -->
-        <div class="tool-metadata">
-          <span class="developed-by">
-            Developed by:
-            <img src="assets/svg/icons/usfs.svg" alt="USFS" /> USFS
-          </span>
-          <button mat-icon-button class="info-button">
-            <mat-icon
-              matTooltip="This tool integrates projections of landscape conditions under mid-21st century climate to help identify areas where specific management actions can mitigate risks, enhance future resilience, and achieve or hold favorable conditions over time. The tool offers actionable guidance for land management toward future sustainability, supporting scenario planning and long-term decision-making.">
-              help_outline
-            </mat-icon>
-          </button>
+      </div>
+
+      <!-- Map -->
+      <div class="map-container">
+        <div class="map-preview">
+          <mgl-map
+            *ngIf="bounds$ | async as bounds"
+            [style]="(baseLayerUrl$ | async) || ''"
+            [transformRequest]="transformRequest"
+            [maxZoom]="maxZoom"
+            [minZoom]="minZoom"
+            [dragRotate]="false"
+            [fitBoundsOptions]="{ padding: 20 }"
+            [fitBounds]="bounds"
+            [interactive]="false"
+            (mapLoad)="mapLoaded($event)">
+            <app-planning-area-layer
+              *ngIf="mapLibreMap"></app-planning-area-layer>
+          </mgl-map>
         </div>
-        <!-- Description -->
-        <div class="tool-description">
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="analysis-header">
+      <h3>Analyses</h3>
+      <button
+        sg-button
+        variant="primary"
+        (click)="startRun()"
+        class="start-analysis-btn">
+        <mat-icon>assignment_add</mat-icon>
+        Start Analysis
+      </button>
+    </div>
+
+    <div class="analysis-content">
+      <div *ngIf="!hasRuns" class="no-analyses">
+        <div class="empty-state-icon">
+          <img src="/assets/svg/icons/analytics.svg" />
+        </div>
+        <div class="no-analyses-text">
+          <h4>No Analyses Yet</h4>
           <p>
-            This tool integrates projections of landscape conditions under
-            mid-21st century climate to help identify areas where specific
-            management actions can mitigate risks, enhance future resilience,
-            and achieve or hold favorable conditions over time. The tool offers
-            actionable guidance for land management toward future
-            sustainability, supporting scenario planning and long-term
-            decision-making
+            You haven't created any analyses yet. Kick things off by clicking
+            the "Start Analysis" button to explore insights and make data-driven
+            decisions.
           </p>
         </div>
       </div>
 
-      <!-- Map card -->
-      <div class="left-panel-card map-card">
-        <!-- Header -->
-        <div class="planning-area-section">
-          <div class="planning-area-name">{{ planName }}</div>
-          <div class="map-legend">
-            <div class="legend-symbol"></div>
-            <span class="acres-info">
-              <span class="label">Acres: </span> {{ planAcres }}</span
-            >
-          </div>
-        </div>
-
-        <!-- Map -->
-        <div class="map-container">
-          <div class="map-preview">
-            <mgl-map
-              *ngIf="bounds$ | async as bounds"
-              [style]="(baseLayerUrl$ | async) || ''"
-              [transformRequest]="transformRequest"
-              [maxZoom]="maxZoom"
-              [minZoom]="minZoom"
-              [dragRotate]="false"
-              [fitBoundsOptions]="{ padding: 20 }"
-              [fitBounds]="bounds"
-              [interactive]="false"
-              (mapLoad)="mapLoaded($event)">
-              <app-planning-area-layer
-                *ngIf="mapLibreMap"></app-planning-area-layer>
-            </mgl-map>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="right-panel">
-      <div class="analysis-header">
-        <h3>Analyses</h3>
-        <button
-          sg-button
-          variant="primary"
-          (click)="startRun()"
-          class="start-analysis-btn">
-          <mat-icon>assignment_add</mat-icon>
-          Start Analysis
-        </button>
-      </div>
-
-      <div class="analysis-content">
-        <div *ngIf="!hasRuns" class="no-analyses">
-          <div class="empty-state-icon">
-            <img src="/assets/svg/icons/analytics.svg" />
-          </div>
-          <div class="no-analyses-text">
-            <h4>No Analyses Yet</h4>
-            <p>
-              You haven't created any analyses yet. Kick things off by clicking
-              the "Start Analysis" button to explore insights and make
-              data-driven decisions.
-            </p>
-          </div>
-        </div>
-
-        <div *ngIf="hasRuns" class="analyses-list">
-          <app-climate-foresight-run-card
-            *ngFor="let run of runs"
-            [run]="run"
-            (delete)="deleteRun($event)"
-            (openRun)="openRun($event)">
-          </app-climate-foresight-run-card>
-        </div>
+      <div *ngIf="hasRuns" class="analyses-list">
+        <app-climate-foresight-run-card
+          *ngFor="let run of runs"
+          [run]="run"
+          (delete)="deleteRun($event)"
+          (openRun)="openRun($event)">
+        </app-climate-foresight-run-card>
       </div>
     </div>
   </div>
