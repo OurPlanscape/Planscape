@@ -10,7 +10,6 @@ from gis.core import get_layer_info, get_random_output_file
 from gis.info import get_gdal_env
 from rasterio.crs import CRS
 from rasterio.features import geometry_mask, shapes, sieve
-from rasterio.transform import from_bounds
 from rasterio.warp import (
     Resampling,
     calculate_default_transform,
@@ -191,6 +190,9 @@ def to_cog_streaming(
         >>> # Direct to GCS
         >>> cog_url = to_cog_streaming("/tmp/normalized.tif", "gs://bucket/path/output.tif")
     """
+    from core.s3 import is_s3_file
+    from gis.core import with_vsi_prefix
+
     log.info(
         f"Converting raster to COG format (streaming): {input_file} -> {output_file}"
     )
@@ -200,9 +202,18 @@ def to_cog_streaming(
 
     config = get_gdal_env()
 
+    # Convert S3 URLs to VSI prefixes for proper MinIO/S3 endpoint handling (e.g. /vsis3/ prefix)
+    output_path = output_file
+    if is_s3_file(output_file):
+        output_path = with_vsi_prefix(output_file)
+
+    input_path = input_file
+    if is_s3_file(input_file):
+        input_path = with_vsi_prefix(input_file)
+
     cog_translate(
-        input_file,
-        output_file,
+        input_path,
+        output_path,
         output_profile,
         config=config,
         in_memory=in_memory,
@@ -286,9 +297,34 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
     else:
         log.info(f"Already a valid COG. Warnings: {warnings}")
         if processing_file != output_file:
-            import shutil
+            from core.gcs import is_gcs_file
+            from core.s3 import is_s3_file
 
-            shutil.copy2(processing_file, output_file)
+            if is_gcs_file(output_file):
+                from core.gcs import get_gcs_session
+
+                with rasterio.Env(session=get_gcs_session()):
+                    with rasterio.open(processing_file) as src:
+                        profile = src.profile.copy()
+                        with rasterio.open(output_file, "w", **profile) as dst:
+                            dst.write(src.read())
+            elif is_s3_file(output_file):
+                from gis.core import with_vsi_prefix
+
+                # Convert S3 URL to VSI prefix for proper MinIO/S3 endpoint handling
+                output_vsi = with_vsi_prefix(output_file)
+                gdal_env = get_gdal_env()
+
+                with rasterio.Env(**gdal_env):
+                    with rasterio.open(processing_file) as src:
+                        profile = src.profile.copy()
+                        with rasterio.open(output_vsi, "w", **profile) as dst:
+                            dst.write(src.read())
+            else:
+                # Fallback to local destinations
+                import shutil
+
+                shutil.copy2(processing_file, output_file)
 
     if warped_file:
         Path(warped_file).unlink(missing_ok=True)
@@ -451,7 +487,17 @@ def read_raster_window_downsampled(
         resampling=resampling,
     )
 
-    output_transform = from_bounds(minx, miny, maxx, maxy, out_width, out_height)
+    window_transform = src.window_transform(window)
+
+    if (out_height, out_width) != (window_height, window_width):
+        # Scale the transform if we downsampled
+        scale_x = window_width / out_width
+        scale_y = window_height / out_height
+        from rasterio.transform import Affine
+
+        output_transform = window_transform * Affine.scale(scale_x, scale_y)
+    else:
+        output_transform = window_transform
 
     geom_mask = geometry_mask(
         [geom_geojson],
@@ -464,5 +510,9 @@ def read_raster_window_downsampled(
         valid_mask = (data != nodata) & geom_mask
     else:
         valid_mask = ~np.isnan(data) & geom_mask
+
+    valid_count = np.sum(valid_mask)
+    if valid_count == 0:
+        log.warning("No valid pixels after masking")
 
     return data, valid_mask, output_transform
