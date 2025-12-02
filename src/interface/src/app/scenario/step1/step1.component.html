@@ -1,7 +1,8 @@
 <!-- Treatment goals -->
 <ng-template #treatmentGoals>
   <sg-section
-    headline="Treatment Goals"
+    [ngClass]="{ txgoals: configUiFlagIsOn }"
+    headline="Select Treatment Goal"
     [required]="true"
     tooltipContent="Select a Treatment Goal based on your objective for treatment. Each goal includes different Priority Objects, Co-Benefits, and Thresholds aligned with the intent of your objective. ForSys uses these pre-selected parameters to generate project areas.
 
@@ -65,6 +66,23 @@
                         (click)="selectStatewideGoal(goal)">
                         {{ goal.name }}
                       </mat-radio-button>
+                      <ng-container *appFeatureFlag="'SCENARIO_CONFIG_UI'">
+                        <button
+                          sg-button
+                          *ngIf="goal.description"
+                          variant="icon-only"
+                          icon="info"
+                          class="info-icon"
+                          [outlined]="true"
+                          [matMenuTriggerFor]="popoverMenu"></button>
+                        <mat-menu
+                          #popoverMenu="matMenu"
+                          class="goal-tooltip-panel">
+                          <div
+                            class="tooltip"
+                            [innerHTML]="goal.description"></div>
+                        </mat-menu>
+                      </ng-container>
                     </div>
                   </mat-expansion-panel>
                 </div>

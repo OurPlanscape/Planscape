@@ -14,6 +14,13 @@
     padding-left: 10px;
   }
 
+
+  ::ng-deep {
+    .txgoals .mat-expansion-panel-body {
+      padding-right: 4px;
+    }
+  }
+
   ::ng-deep .mat-radio-label-content {
     white-space: normal !important;
   }
@@ -47,6 +54,7 @@
 
 .mat-expansion-panel:not([class*='mat-elevation-z']) {
   box-shadow: none;
+  width: 100%;
 }
 
 .mat-radio-group {
@@ -151,6 +159,14 @@ sg-section {
   }
 }
 
+.layer-control-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-right: 0;
+  align-items: center;
+}
+
 .goal-control-container ::ng-deep .mat-expansion-panel-header {
   padding: 0 4px;
 }
@@ -163,4 +179,18 @@ sg-section {
   .mat-mdc-select-trigger {
     padding: $steps-padding;
   }
+}
+
+.tooltip {
+  padding: 20px;
+  white-space: pre-line;
+}
+
+.info-icon {
+  color: $color-standard-blue;
+}
+
+::ng-deep .goal-tooltip-panel.mat-mdc-menu-panel {
+    width: 520px;
+    max-width: 520px;
 }
