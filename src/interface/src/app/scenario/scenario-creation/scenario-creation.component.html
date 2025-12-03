@@ -89,7 +89,7 @@
         sharedHeading
         *ngIf="(isFirstIndex$ | async) === false"
         [title]="scenarioName"
-        [standSize]="(standSize$ | async) || ''"
+        [standSize]="(standSize$ | async) || null"
         [treatmentGoal]="
           (treatmentGoalName$ | async) || ''
         "></app-scenario-summary>

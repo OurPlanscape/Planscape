@@ -1,4 +1,4 @@
-from datasets.models import DataLayer
+from datasets.models import DataLayer, Dataset
 from rest_framework import serializers
 from datasets.serializers import BrowseDataLayerSerializer
 from core.flags import feature_enabled
@@ -26,8 +26,28 @@ class ForsysOptionsSerializer(serializers.Serializer):
     thresholds = OptionThresholdsSerializer()
 
 
+class DatasetMapOptionsSerializer(serializers.ModelSerializer):
+    organization = serializers.CharField(source="organization.name")
+
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "organization",
+            "name",
+            "preferred_display_type",
+            "selection_type",
+        )
+
+
+class MapOptionsSerializer(serializers.Serializer):
+    main_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+    base_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+
+
 OPTIONS_SERIALIZERS = {
     "forsys": ForsysOptionsSerializer,
+    "map": MapOptionsSerializer,
 }
 
 
@@ -40,3 +60,4 @@ class ModuleSerializer(serializers.Serializer):
         self.fields["options"] = self.get_options_serializer(module_name)
 
     name = serializers.CharField()
+    options = serializers.DictField()

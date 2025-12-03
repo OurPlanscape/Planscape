@@ -9,6 +9,8 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     GeometryType,
+    PreferredDisplayType,
+    SelectionTypeOptions,
     StorageTypeChoices,
     Style,
     VisibilityOptions,
@@ -24,6 +26,8 @@ class DatasetFactory(factory.django.DjangoModelFactory):
     created_by = factory.SelfAttribute("organization.created_by")
     name = factory.Sequence(lambda x: f"Dataset {x}")
     visibility = factory.Iterator(VisibilityOptions.values)
+    selection_type = factory.Iterator(SelectionTypeOptions.values)
+    preferred_display_type = factory.Iterator(PreferredDisplayType.values)
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):

@@ -69,6 +69,24 @@ class ClimateForesightRun(CreatedAtMixin, models.Model):
     def __str__(self):
         return f"{self.name} - {self.planning_area.name}"
 
+    def all_pillars_rolled_up(self) -> bool:
+        """Check if all assigned pillars have completed rollup."""
+        assigned_pillars = (
+            self.input_datalayers.exclude(pillar_id__isnull=True)
+            .values_list("pillar_id", flat=True)
+            .distinct()
+        )
+
+        # If no pillars are assigned, consider it ready (landscape will use normalized layers directly)
+        if not assigned_pillars.exists():
+            return True
+
+        completed_rollups = self.pillar_rollups.filter(
+            status=ClimateForesightPillarRollupStatus.COMPLETED
+        ).values_list("pillar_id", flat=True)
+
+        return set(assigned_pillars) == set(completed_rollups)
+
 
 class ClimateForesightPillar(CreatedAtMixin, models.Model):
     """
@@ -151,6 +169,13 @@ class ClimateForesightPillar(CreatedAtMixin, models.Model):
         return super().delete(using=using, keep_parents=keep_parents)
 
 
+class InputDataLayerStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    RUNNING = "running", "Running"
+    COMPLETED = "completed", "Completed"
+    FAILED = "failed", "Failed"
+
+
 class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     """Represents a data layer selected for a climate foresight run with its configuration."""
 
@@ -182,6 +207,13 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
         help_text="Optional pillar assignment for this data layer",
     )
 
+    status = models.CharField(
+        max_length=20,
+        choices=InputDataLayerStatus.choices,
+        default=InputDataLayerStatus.PENDING,
+        help_text="Current processing status of this input data layer",
+    )
+
     normalized_datalayer = models.ForeignKey(
         DataLayer,
         on_delete=models.SET_NULL,
@@ -193,7 +225,13 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
     statistics = models.JSONField(
         null=True,
         blank=True,
-        help_text="Statistics calculated from clipped planning area: {min, max, mean, std, count, percentiles: {p5, p10, p90, p95}}",
+        help_text=(
+            "Statistics and normalization metadata. Structure: "
+            "{"
+            "  'original': {min, max, mean, std, count, percentiles: {p5, p10, p90, p95}}, "
+            "  'normalization': {transformation, original_skew, transformed_skew, outlier_min_p10, outlier_max_p90, favor_high}"
+            "}"
+        ),
     )
 
     class Meta:
@@ -209,3 +247,262 @@ class ClimateForesightRunInputDataLayer(CreatedAtMixin, models.Model):
 
     def __str__(self):
         return self.datalayer.name
+
+
+class ClimateForesightPillarRollupStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    RUNNING = "running", "Running"
+    COMPLETED = "completed", "Completed"
+    FAILED = "failed", "Failed"
+
+
+class ClimateForesightPillarRollup(CreatedAtMixin, models.Model):
+    """
+    Stores the rolled-up raster for a pillar within a specific run.
+
+    Since pillars are reusable (global pillars) across runs, we need a separate
+    model to track the rollup result for each (run, pillar) combination.
+    """
+
+    run = models.ForeignKey(
+        ClimateForesightRun,
+        on_delete=models.CASCADE,
+        related_name="pillar_rollups",
+        help_text="Climate foresight run this rollup belongs to",
+    )
+
+    pillar = models.ForeignKey(
+        ClimateForesightPillar,
+        on_delete=models.CASCADE,
+        related_name="rollups",
+        help_text="Pillar that was rolled up",
+    )
+
+    rollup_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_pillar_rollup",
+        help_text="The rolled-up raster for this pillar (weighted average of normalized metrics)",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=ClimateForesightPillarRollupStatus.choices,
+        default=ClimateForesightPillarRollupStatus.PENDING,
+        help_text="Current status of the rollup",
+    )
+
+    weights = models.JSONField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Weights used for rollup. Structure: "
+            "{"
+            "  'layer_id': weight_value, "
+            "  'correlation_scores': {layer_id: correlation}, "
+            "  'method': 'optimized' or 'equal'"
+            "}"
+        ),
+    )
+
+    method = models.CharField(
+        max_length=20,
+        choices=[("optimized", "Optimized"), ("equal", "Equal")],
+        default="optimized",
+        help_text="Weight calculation method used for rollup",
+    )
+
+    class Meta:
+        ordering = ["pillar__order", "pillar__name"]
+        verbose_name = "Climate Foresight Pillar Rollup"
+        verbose_name_plural = "Climate Foresight Pillar Rollups"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["run", "pillar"],
+                name="unique_run_pillar_rollup",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.pillar.name} rollup for {self.run.name}"
+
+
+class ClimateForesightLandscapeRollupStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    RUNNING = "running", "Running"
+    COMPLETED = "completed", "Completed"
+    FAILED = "failed", "Failed"
+
+
+class ClimateForesightLandscapeRollup(CreatedAtMixin, models.Model):
+    """
+    Stores the landscape-level rollup for a Climate Foresight run.
+
+    This aggregates all pillar rollups into two landscape-level rasters:
+    - current_datalayer: Average of all current condition pillar rollups
+    - future_datalayer: Average of matched future climate condition layers
+
+    These two rasters are inputs to the PROMOTe analysis.
+    """
+
+    run = models.OneToOneField(
+        ClimateForesightRun,
+        on_delete=models.CASCADE,
+        related_name="landscape_rollup",
+        help_text="Climate foresight run this landscape rollup belongs to",
+    )
+
+    current_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_current_landscape",
+        help_text="Aggregated current conditions landscape raster (0-100)",
+    )
+
+    future_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_future_landscape",
+        help_text="Aggregated future conditions landscape raster (0-100)",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=ClimateForesightLandscapeRollupStatus.choices,
+        default=ClimateForesightLandscapeRollupStatus.PENDING,
+        help_text="Current status of the landscape rollup",
+    )
+
+    future_mapping = models.JSONField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Maps pillar_id to future climate layer_id used. "
+            "Structure: {pillar_id: {layer_id: X, matched: true/false, default: true/false}}"
+        ),
+    )
+
+    class Meta:
+        verbose_name = "Climate Foresight Landscape Rollup"
+        verbose_name_plural = "Climate Foresight Landscape Rollups"
+
+    def __str__(self):
+        return f"Landscape rollup for {self.run.name}"
+
+
+class ClimateForesightPromoteStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    RUNNING = "running", "Running"
+    COMPLETED = "completed", "Completed"
+    FAILED = "failed", "Failed"
+
+
+class ClimateForesightPromote(CreatedAtMixin, models.Model):
+    """
+    Stores PROMOTe analysis outputs for a Climate Foresight run.
+
+    PROMOTe (Monitor, Protect, Adapt, Transform) analysis generates multiple
+    output rasters based on current and future landscape conditions.
+    """
+
+    run = models.OneToOneField(
+        ClimateForesightRun,
+        on_delete=models.CASCADE,
+        related_name="promote_analysis",
+        help_text="Climate foresight run this PROMOTe analysis belongs to",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=ClimateForesightPromoteStatus.choices,
+        default=ClimateForesightPromoteStatus.PENDING,
+        help_text="Current status of the PROMOTe analysis",
+    )
+
+    # MPAT strategy scores
+    monitor_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_monitor",
+        help_text="Monitor strategy score (0-100)",
+    )
+
+    protect_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_protect",
+        help_text="Protect strategy score (0-100)",
+    )
+
+    adapt_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_adapt",
+        help_text="Adapt strategy score (0-100)",
+    )
+
+    transform_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_transform",
+        help_text="Transform strategy score (0-100)",
+    )
+
+    # combined scores
+    adapt_protect_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_adapt_protect",
+        help_text="Adapt-Protect score (0-100, rescaled)",
+    )
+
+    integrated_condition_score_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_ics",
+        help_text="Integrated Condition Score (0-100)",
+    )
+
+    # MPAT outputs
+    mpat_matrix_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_mpat_matrix",
+        help_text="MPAT Matrix - categorical (1=Monitor, 2=Protect, 3=Adapt, 4=Transform)",
+    )
+
+    mpat_strength_datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="climate_foresight_mpat_strength",
+        help_text="MPAT with strength classification (weak/strong)",
+    )
+
+    class Meta:
+        verbose_name = "Climate Foresight PROMOTe Analysis"
+        verbose_name_plural = "Climate Foresight PROMOTe Analyses"
+
+    def __str__(self):
+        return f"PROMOTe analysis for {self.run.name}"

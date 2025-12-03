@@ -25,14 +25,19 @@ import { FeaturesModule } from '../../features/features.module';
 import { getGroupedGoals } from '../scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ButtonComponent } from '@styleguide';
+import { MatMenuModule } from '@angular/material/menu';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @UntilDestroy()
 @Component({
   selector: 'app-step1',
   standalone: true,
   imports: [
+    ButtonComponent,
     CommonModule,
     ReactiveFormsModule,
+    MatMenuModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
     MatLegacyRadioModule,
@@ -82,7 +87,8 @@ export class Step1Component
     private treatmentGoalsService: TreatmentGoalsService,
     private scenarioState: ScenarioState,
     private newScenarioState: NewScenarioState,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private featureService: FeatureService
   ) {
     super();
   }
@@ -107,7 +113,11 @@ export class Step1Component
   }
 
   selectStatewideGoal(goal: ScenarioGoal) {
-    if (this.form.get('treatment_goal')?.enabled) {
+    // TODO: note-when we incorporate SCENARIO_CONFIG_UI, also remove the goaloverlay component and service
+    if (
+      !this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI') &&
+      this.form.get('treatment_goal')?.enabled
+    ) {
       this.goalOverlayService.setStateWideGoal(goal);
     }
   }
@@ -118,5 +128,10 @@ export class Step1Component
 
   getData() {
     return this.form.value;
+  }
+
+  // TODO: remove when SCENARIO_CONFIG_UI is removed
+  get configUiFlagIsOn() {
+    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
   }
 }

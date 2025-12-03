@@ -2,7 +2,8 @@
 
 .list {
   display: grid;
-  row-gap: 8px;
+  row-gap: 12px;
+  margin: 0;
 
   &-row {
     display: flex;
@@ -28,5 +29,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+}
+
+.capitalize {
+  text-transform: lowercase;
+
+  &::first-letter {
+    text-transform: uppercase;
   }
 }

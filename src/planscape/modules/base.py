@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Union
 
-from datasets.models import DataLayer
+from datasets.models import DataLayer, Dataset, PreferredDisplayType
 from django.contrib.gis.geos import GEOSGeometry
 from planning.models import (
     PlanningArea,
@@ -84,6 +84,38 @@ class ImpactsModule(BaseModule):
         return self.california.contains(scenario_geometry)
 
 
+class MapModule(BaseModule):
+    name = "map"
+
+    def __init__(self):
+        pass
+
+    def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
+        return True
+
+    def _can_run_scenario(self, runnable: Scenario) -> bool:
+        return True
+
+    def _get_datasets(self, type: PreferredDisplayType):
+        return Dataset.objects.filter(
+            preferred_display_type=type,
+        ).select_related("organization")
+
+    def _get_main_datasets(self):
+        return self._get_datasets(type=PreferredDisplayType.MAIN_DATALAYERS)
+
+    def _get_base_datasets(self):
+        return self._get_datasets(type=PreferredDisplayType.BASE_DATALAYERS)
+
+    def _get_options(self, **kwargs):
+        main_datasets = list(self._get_main_datasets())
+        base_datasets = list(self._get_base_datasets())
+        return {
+            "main_datasets": main_datasets,
+            "base_datasets": base_datasets,
+        }
+
+
 def get_module(module_name: str) -> BaseModule:
     return MODULE_HANDLERS[module_name]
 
@@ -99,4 +131,5 @@ def compute_scenario_capabilities(scenario: Scenario) -> List[ScenarioCapability
 MODULE_HANDLERS = {
     "forsys": ForsysModule(),
     "impacts": ImpactsModule(),
+    "map": MapModule(),
 }

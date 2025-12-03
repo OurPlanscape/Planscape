@@ -19,6 +19,7 @@
           *ngIf="scenarioHasFailed(scenario)"
           (tryAgain)="handleTryAgain(scenario)"
           (goBack)="goToPlan()"
+          [loadingCopyDialog]="isLoadingDialog"
           [scenarioName]="scenario.name"
           [scenarioId]="scenarioId!"
           [scenarioState]="scenarioStatus(scenario)"></app-scenario-failure>

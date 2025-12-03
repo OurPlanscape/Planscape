@@ -68,4 +68,7 @@ b {
   padding-bottom: 16px;
 }
 
+.white-spinner {
+  --mdc-circular-progress-active-indicator-color: $color-white;
+}
 

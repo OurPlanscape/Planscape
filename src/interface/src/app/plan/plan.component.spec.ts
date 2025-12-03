@@ -11,7 +11,7 @@ import { of } from 'rxjs';
 import { Plan } from '@types';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
-import { AuthService, PlanningAreaNotesService } from '@services';
+import { PlanningAreaNotesService } from '@services';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
 import { NavBarComponent } from '@shared';
@@ -25,7 +25,6 @@ describe('PlanComponent', () => {
   let router: Router;
 
   // shared fakes/mocks
-  let mockAuthService: Partial<AuthService>;
   let mockNotesService: PlanningAreaNotesService;
 
   const fakeGeoJson: GeoJSON.GeoJSON = {
@@ -77,8 +76,6 @@ describe('PlanComponent', () => {
       children: [mockChildRoute as any],
     };
 
-    mockAuthService = {};
-
     mockNotesService = jasmine.createSpyObj('PlanningAreaNotesService', [
       'getNotes',
       'addNote',
@@ -112,7 +109,6 @@ describe('PlanComponent', () => {
       ],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
-        { provide: AuthService, useValue: mockAuthService },
         { provide: PlanningAreaNotesService, useValue: mockNotesService },
         {
           provide: MatSnackBar,

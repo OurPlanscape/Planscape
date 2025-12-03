@@ -2,6 +2,7 @@ import {
   getGroupedGoals,
   convertFlatConfigurationToDraftPayload,
   getNamedConstraints,
+  suggestUniqueName,
 } from './scenario-helper';
 import { Constraint, ScenarioCreation, ScenarioGoal } from '@types';
 
@@ -253,5 +254,93 @@ describe('getNamedConstraints', () => {
       { name: 'maxSlope', operator: 'lt', value: 50 },
       { name: 'distanceToRoads', operator: 'lte', value: 200 },
     ]);
+  });
+});
+
+describe('suggestUniqueName', () => {
+  it('should should name the copy "Copy of <basename>"', () => {
+    const origName = 'some name';
+    const existingNames = ['a name', 'another name', 'some name'];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name'");
+  });
+
+  it('should append a numeral if the name exists but doesnt end in a numeral', () => {
+    const origName = 'some name';
+    const existingNames = [
+      'a name',
+      'another name',
+      'some name',
+      "Copy of 'some name'",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 2");
+  });
+
+  it('should append a numeral if the name exists with subsequent numbers', () => {
+    const origName = 'some name';
+    const existingNames = [
+      'some name',
+      'some name 2',
+      "Copy of 'some name'",
+      "Copy of 'some name' 2",
+      "Copy of 'some name' 3",
+      "Copy of 'some name' 4",
+      "Copy of 'some name' 5",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 6");
+  });
+
+  it('should increment the trailing number, but only outside the cloned name', () => {
+    const origName = 'some name 5';
+    const existingNames = [
+      'some name',
+      "Copy of 'some name 5'",
+      "Copy of 'some name 5' 2",
+      "Copy of 'some name 5' 3",
+      "Copy of 'some name 5' 4",
+      "Copy of 'some name 5' 5",
+      "Copy of 'some name 5' 6",
+      "Copy of 'some name 5' 7",
+      "Copy of 'some name 5' 8",
+      "Copy of 'some name 5' 9",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name 5' 10");
+  });
+
+  it('should only increment a number if the name is in "Copy of \'Some Name\'" format', () => {
+    const origName = 'Scenario 4567';
+    const existingNames = ['Scenario 4567'];
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'Scenario 4567'");
+    existingNames.push("Copy of 'Scenario 4567'");
+
+    const secondNameResult = suggestUniqueName(origName, existingNames);
+    expect(secondNameResult).toEqual("Copy of 'Scenario 4567' 2");
+  });
+
+  it('should not prepend "Copy of" if that text already exists', () => {
+    const origName = "Copy of 'some name' 5";
+    const existingNames = [
+      'some name',
+      "Copy of 'some name'",
+      "Copy of 'some name' 2",
+      "Copy of 'some name' 3",
+      "Copy of 'some name' 4",
+      "Copy of 'some name' 5",
+      "Copy of 'some name' 6",
+      "Copy of 'some name' 7",
+      "Copy of 'some name' 8",
+      "Copy of 'some name' 9",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 10");
   });
 });

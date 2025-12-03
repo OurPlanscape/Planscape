@@ -1,3 +1,4 @@
+import { isNumber } from '@turf/helpers';
 import {
   Constraint,
   NamedConstraint,
@@ -123,6 +124,32 @@ export function getNamedConstraints(
       operator: c.operator,
     };
   });
+}
+
+export function suggestUniqueName(providedName: string, knownNames: string[]) {
+  let newName = providedName;
+  //wrap in "Copy of '<>'", but only if name doesn't already have that format.
+  if (newName.substring(0, 7) !== 'Copy of') {
+    newName = `Copy of '${newName}'`;
+  }
+
+  //strip any trailing number to get the baseName
+  const lastSpace = newName.lastIndexOf(' ');
+  let baseName = newName.substring(0, lastSpace);
+  const anySuffix = newName.substring(lastSpace);
+  if (!isNumber(Number(anySuffix))) {
+    // there's no number suffix, so the basename is just the full name
+    baseName = newName;
+  } //otherwise assume the baseName is just the part before the suffix
+
+  let suggestedName = baseName;
+  // any incremented numbering starts with 2
+  let i = 2;
+  //keep incrementing until we get a unique name
+  while (knownNames.includes(suggestedName)) {
+    suggestedName = `${baseName} ${i++}`;
+  }
+  return suggestedName;
 }
 
 export function isScenarioPending(scenario: Scenario) {

@@ -16,7 +16,7 @@ import { take, map } from 'rxjs/operators';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import { DeleteRunModalComponent } from './delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, SectionComponent } from '@styleguide';
 import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
@@ -50,6 +50,7 @@ import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-mod
     MapComponent,
     PlanningAreaLayerComponent,
     ClimateForesightRunCardComponent,
+    SectionComponent,
   ],
   templateUrl: './climate-foresight.component.html',
   styleUrls: ['./climate-foresight.component.scss'],
@@ -99,7 +100,7 @@ export class ClimateForesightComponent implements OnInit {
         this.currentPlan = plan;
         this.planName = plan.name;
         this.planAcres = plan.area_acres
-          ? `Acres: ${plan.area_acres.toLocaleString()}`
+          ? plan.area_acres.toLocaleString()
           : '';
 
         this.breadcrumbService.breadcrumb$

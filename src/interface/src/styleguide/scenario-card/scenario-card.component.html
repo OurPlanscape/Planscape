@@ -21,7 +21,7 @@
     </button>
     <button
       [hidden]="!userCanArchiveScenario && hasFailed"
-      [disabled]="isRunning()"
+      [disabled]="isRunning() || !contextualMenuEnabled"
       [matMenuTriggerFor]="menu"
       aria-label="More scenario options"
       class="more-menu-button"
