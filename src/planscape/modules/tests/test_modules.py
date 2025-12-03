@@ -35,5 +35,5 @@ class MapModuleTest(TestCase):
         main1 = main[0]
         base1 = base[0]
 
-        self.assertEqual(main_dataset.name, main1["name"])
-        self.assertEqual(base_dataset.name, base1["name"])
+        self.assertEqual(main_dataset.name, main1.name)
+        self.assertEqual(base_dataset.name, base1.name)
