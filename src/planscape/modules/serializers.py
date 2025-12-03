@@ -31,7 +31,7 @@ class DatasetMapOptionsSerializer(serializers.ModelSerializer):
             "id",
             "organization",
             "name",
-            "display_type",
+            "preferred_display_type",
             "selection_type",
         )
 
