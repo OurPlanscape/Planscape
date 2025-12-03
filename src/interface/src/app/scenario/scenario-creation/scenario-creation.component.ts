@@ -59,10 +59,12 @@ import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
 import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '../scenario.state';
+import { ExcludeAreasSelectorComponent } from '../exclude-areas-selector/exclude-areas-selector.component';
 import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
 import { FeatureService } from '../../features/feature.service';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
+import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -73,6 +75,7 @@ enum ScenarioTabs {
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-creation',
+  providers: [BaseLayersStateService],
   standalone: true,
   imports: [
     AsyncPipe,
@@ -90,6 +93,7 @@ enum ScenarioTabs {
     TreatmentTargetComponent,
     BaseLayersComponent,
     FeaturesModule,
+    ExcludeAreasSelectorComponent,
     StepsNavComponent,
     ScenarioMapComponent,
     Step1WithOverviewComponent,
