@@ -12,13 +12,13 @@ and rollup_pillar require raster files and are better suited for end-to-end test
 import numpy as np
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.test import TestCase
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import tempfile
 import rasterio
 from rasterio.transform import from_bounds
 
 from climate_foresight.services import calculate_optimized_weights
-from datasets.models import DataLayer, DataLayerType
+from datasets.models import DataLayer
 
 
 class CalculateOptimizedWeightsTest(TestCase):
