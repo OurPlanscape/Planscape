@@ -6,12 +6,26 @@ from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
-from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerHasStyle,
+    Dataset,
+    PreferredDisplayType,
+    SelectionTypeOptions,
+    Style,
+)
 
 
 class DatasetAdminForm(forms.ModelForm):
     description = forms.CharField(widget=forms.Textarea, required=False)
     version = forms.CharField(required=False)
+    selection_type = forms.ChoiceField(
+        choices=SelectionTypeOptions.choices, required=False
+    )
+    preferred_display_type = forms.ChoiceField(
+        choices=PreferredDisplayType.choices, required=False
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

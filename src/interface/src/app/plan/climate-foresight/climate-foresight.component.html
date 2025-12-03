@@ -1,33 +1,27 @@
-<app-nav-bar [area]="'SCENARIOS'"> </app-nav-bar>
+<app-nav-bar [area]="'CLIMATE_FORESIGHT'"> </app-nav-bar>
 
-<div class="climate-foresight-container">
+<div class="climate-foresight-container" [class.normal-flex]="!hasRuns">
   <div class="left-panel">
     <div class="left-panel-card">
-      <div class="tool-header">
-        <div class="tool-title">
-          <div class="tool-icon">
-            <img
-              src="/assets/svg/climate-foresight.svg"
-              alt="Climate Foresight" />
-          </div>
-          <h2>Climate Foresight</h2>
-        </div>
-        <div class="tool-metadata">
-          <span class="developed-by">
-            Developed by:
-            <span class="logo-text"
-              ><img src="assets/svg/icons/usfs.svg" alt="USFS" /> USFS</span
-            >
-          </span>
-          <button mat-icon-button class="info-button">
-            <mat-icon
-              matTooltip="This tool integrates projections of landscape conditions under mid-21st century climate to help identify areas where specific management actions can mitigate risks, enhance future resilience, and achieve or hold favorable conditions over time. The tool offers actionable guidance for land management toward future sustainability, supporting scenario planning and long-term decision-making.">
-              help_outline
-            </mat-icon>
-          </button>
-        </div>
+      <!-- Header-->
+      <div class="tool-title">
+        <img src="/assets/svg/climate-foresight.svg" alt="Climate Foresight" />
+        <h2>Climate Foresight</h2>
       </div>
-
+      <!-- Developed by -->
+      <div class="tool-metadata">
+        <span class="developed-by">
+          Developed by:
+          <img src="assets/svg/icons/usfs.svg" alt="USFS" /> USFS
+        </span>
+        <button mat-icon-button class="info-button">
+          <mat-icon
+            matTooltip="This tool integrates projections of landscape conditions under mid-21st century climate to help identify areas where specific management actions can mitigate risks, enhance future resilience, and achieve or hold favorable conditions over time. The tool offers actionable guidance for land management toward future sustainability, supporting scenario planning and long-term decision-making.">
+            help_outline
+          </mat-icon>
+        </button>
+      </div>
+      <!-- Description -->
       <div class="tool-description">
         <p>
           This tool integrates projections of landscape conditions under
@@ -40,18 +34,21 @@
       </div>
     </div>
 
-    <div class="left-panel-card">
+    <!-- Map card -->
+    <div class="left-panel-card map-card">
+      <!-- Header -->
       <div class="planning-area-section">
         <div class="planning-area-name">{{ planName }}</div>
+        <div class="map-legend">
+          <div class="legend-symbol"></div>
+          <span class="acres-info">
+            <span class="label">Acres: </span> {{ planAcres }}</span
+          >
+        </div>
       </div>
 
+      <!-- Map -->
       <div class="map-container">
-        <div class="map-legend">
-          <div class="legend-item">
-            <span class="legend-symbol planning-area"></span>
-            <span class="acres-info">{{ planAcres }}</span>
-          </div>
-        </div>
         <div class="map-preview">
           <mgl-map
             *ngIf="bounds$ | async as bounds"
@@ -88,14 +85,16 @@
     <div class="analysis-content">
       <div *ngIf="!hasRuns" class="no-analyses">
         <div class="empty-state-icon">
-          <mat-icon>bar_chart</mat-icon>
+          <img src="/assets/svg/icons/analytics.svg" />
         </div>
-        <h4>No Analyses Yet</h4>
-        <p>
-          You haven't created any analyses yet. Kick things off by clicking the
-          "Start Analysis" button to explore insights and make data-driven
-          decisions.
-        </p>
+        <div class="no-analyses-text">
+          <h4>No Analyses Yet</h4>
+          <p>
+            You haven't created any analyses yet. Kick things off by clicking
+            the "Start Analysis" button to explore insights and make data-driven
+            decisions.
+          </p>
+        </div>
       </div>
 
       <div *ngIf="hasRuns" class="analyses-list">

@@ -1,9 +1,10 @@
 @import 'colors';
+@import 'mixins';
 
 .run-card {
   cursor: pointer;
   transition: box-shadow 0.2s ease-in-out;
-  margin-bottom: 16px;
+  margin: 0;
   border-radius: 8px;
   border: 1px solid $color-soft-gray;
   box-shadow: none;
@@ -13,7 +14,7 @@
   }
 
   mat-card-content {
-    padding: 24px !important;
+    padding: 16px !important;
   }
 }
 
@@ -26,8 +27,7 @@
 
 .run-name {
   margin: 0;
-  font-size: 16px;
-  font-weight: 500;
+  @include h5();
 }
 
 .more-button {
@@ -44,7 +44,7 @@
 
 .card-details {
   display: flex;
-  gap: 16px;
+  gap: 36px;
 }
 
 .detail-column {
@@ -56,14 +56,16 @@
 
 .detail-label {
   font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
+  font-weight: 700;
   color: $color-md-gray;
   text-transform: uppercase;
 }
 
 .detail-value {
-  font-size: 14px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  @include xs-label();
 }
 
 .status-badge {
