@@ -1,4 +1,5 @@
 import logging
+from enum import Enum
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional
 
@@ -186,3 +187,46 @@ def upload_file_via_api(
                 )
 
     logger.info(f"Uploaded {object_name} done.")
+
+
+class GCScacheDirective(Enum):
+    NO_STORE = "no-store"
+    NO_CACHE = "no-cache"
+    PRIVATE = "private"
+    PUBLIC = "public"
+
+
+def update_file_cache_control(
+    gs_url: str,
+    directive: GCScacheDirective,
+    max_age: Optional[int] = None,
+    bucket_name: str = settings.GCS_BUCKET,
+):
+    """
+    Updates the cache_control metadata of a GCS file.
+    Args:
+        gs_url (str): The GCS URL of the file.
+        directive (GCScacheDirective): The cache control directive to set.
+        max_age (Optional[int]): The max-age value in seconds.
+        bucket_name (str): The name of the GCS bucket.
+    """
+    if not is_gcs_file(gs_url):
+        raise ValueError(f"Invalid GCS URL: {gs_url}")
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+
+    blob_name = gs_url.replace(f"gs://{bucket_name}/", "")
+    blob = bucket.get_blob(blob_name)
+    if not blob:
+        logger.error(f"Blob not found: {blob_name} in bucket {bucket_name}")
+        return
+    
+    cache_control = directive.value
+
+    if max_age is not None:
+        cache_control += f", max-age={max_age}"
+
+    blob.cache_control = cache_control
+    blob.patch()
+    logger.info(f"Updated cache_control for {gs_url}.")

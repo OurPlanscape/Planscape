@@ -3,7 +3,7 @@ import logging
 from django.db import connection
 
 from core.s3 import is_s3_file, get_s3_hash
-from core.gcs import is_gcs_file, get_gcs_hash
+from core.gcs import is_gcs_file, get_gcs_hash, update_file_cache_control
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
 from gis.vectors import ogr2ogr
@@ -43,6 +43,40 @@ def datalayer_uploaded(
         datalayer.status = DataLayerStatus.FAILED
     finally:
         datalayer.save()
+        datalayer_file_post_process.delay(datalayer_id=datalayer_id)
+
+
+@app.task()
+def datalayer_file_post_process(datalayer_id: int):
+    """
+    Post processing on datalayer's file after upload is complete.
+    
+    :param datalayer: Description
+    :type datalayer: DataLayer
+    """
+
+    try:
+        datalayer = DataLayer.objects.get(pk=datalayer_id)
+    except DataLayer.DoesNotExist:
+        logger.warning("Datalayer %s does not exist", datalayer_id)
+        return
+    
+    if datalayer.status != DataLayerStatus.READY:
+        logger.warning(
+            "Datalayer %s is not in READY status, skipping post processing",
+            datalayer_id,
+        )
+        return
+
+    try:
+        if is_gcs_file(datalayer.url):
+            update_file_cache_control(
+                datalayer.url,
+                directive=settings.GCS_DEFAULT_CACHE_DIRECTIVE,
+                max_age=settings.GCS_DEFAULT_CACHE_MAX_AGE,
+            )
+    except Exception:
+        logger.exception("Failed to set cache control for datalayer %s", datalayer_id)
 
 
 def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
