@@ -14,7 +14,8 @@ For more information regarding Protected Areas, click <a href='https://www.usgs.
         [items]="(excludableAreas$ | async) ?? []"
         (selectedItemsChanged)="handleSelectedItemsChange($event)"
         (viewedItemsChanged)="handleViewedItemsChange($event)"
-        [selectedItems]="selectedAreas">
+        [selectedItems]="selectedAreas"
+        [viewedItems]="viewingAreas">
       </sg-selectable-list>
     </form>
   </section>

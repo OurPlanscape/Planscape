@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -30,7 +30,7 @@ import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.se
 })
 export class ExcludeAreasSelectorComponent
   extends StepDirective<ScenarioCreation>
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   constructor(
     private newScenarioState: NewScenarioState,
@@ -48,7 +48,7 @@ export class ExcludeAreasSelectorComponent
   viewingAreas: BaseLayer[] = [];
 
   ngOnInit() {
-    this.prefillExcludedAreas();
+    this.prefillExcludedAreas;
   }
 
   private prefillExcludedAreas() {
@@ -87,6 +87,25 @@ export class ExcludeAreasSelectorComponent
   }
 
   getData() {
+    this.clearViewedLayers(); // clears layer selection after step in completed
     return { excluded_areas: this.getSelectedExcludedAreaIds() };
+  }
+
+  ngOnDestroy(): void {
+    this.clearViewedLayers();
+  }
+
+  clearViewedLayers() {
+    let layersToShow: BaseLayer[] = [];
+    this.baseLayersStateService.enableBaseLayerHover(false);
+    // remove only the layers that were viewed here
+    this.baseLayersStateService.selectedBaseLayers$
+      .pipe(take(1))
+      .subscribe((layers) => {
+        layersToShow =
+          layers?.filter((item) => !this.viewingAreas.includes(item)) ?? [];
+      });
+    this.baseLayersStateService.setBaseLayers(layersToShow);
+    this.viewingAreas = [];
   }
 }

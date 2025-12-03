@@ -64,6 +64,7 @@ import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-m
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
 import { FeatureService } from '../../features/feature.service';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
+import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -74,6 +75,7 @@ enum ScenarioTabs {
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-creation',
+  providers: [BaseLayersStateService],
   standalone: true,
   imports: [
     AsyncPipe,

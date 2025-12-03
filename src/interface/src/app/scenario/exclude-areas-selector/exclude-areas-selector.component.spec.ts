@@ -5,6 +5,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
 import { BehaviorSubject, of } from 'rxjs';
+import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
 describe('ExcludeAreasSelectorComponent', () => {
   let component: ExcludeAreasSelectorComponent;
@@ -20,9 +21,10 @@ describe('ExcludeAreasSelectorComponent', () => {
       providers: [
         MockProvider(NewScenarioState, {
           excludedAreas$: of([]),
-        }),
-        MockProvider(NewScenarioState, {
           scenarioConfig$: new BehaviorSubject({}),
+        }),
+        MockProvider(BaseLayersStateService, {
+          selectedBaseLayers$: of([]),
         }),
       ],
     }).compileComponents();

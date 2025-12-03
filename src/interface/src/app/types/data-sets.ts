@@ -110,9 +110,7 @@ export interface DataLayer {
   map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
 
-export interface BaseLayer
-  extends Omit<DataLayer, 'styles' | 'info' | 'geometry'> {
-  info: Info;
+export interface BaseLayer extends Omit<DataLayer, 'styles' | 'geometry'> {
   map_url: string;
   storage_type?: string;
   styles: [
