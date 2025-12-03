@@ -107,18 +107,9 @@ class MapModule(BaseModule):
     def _get_base_datasets(self):
         return self._get_datasets(type=PreferredDisplayType.BASE_DATALAYERS)
 
-    def _dataset_to_options(self, dataset: Dataset) -> Dict[str, Any]:
-        return {
-            "id": dataset.pk,
-            "organization": dataset.organization.name if dataset.organization else None,
-            "name": dataset.name,
-            "display_type": dataset.preferred_display_type,
-            "selection_type": dataset.selection_type,
-        }
-
     def _get_options(self, **kwargs):
-        main_datasets = [self._dataset_to_options(d) for d in self._get_main_datasets()]
-        base_datasets = [self._dataset_to_options(d) for d in self._get_base_datasets()]
+        main_datasets = list(self._get_main_datasets())
+        base_datasets = list(self._get_base_datasets())
         return {
             "main_datasets": main_datasets,
             "base_datasets": base_datasets,
