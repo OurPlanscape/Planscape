@@ -1,6 +1,6 @@
 <sg-section
   class="treatment-step"
-  headline="Treatment Target"
+  headline="Apply Treatment Target"
   tooltipContent="<b>What are treatment targets?</b>
 Treatment targets define how much area you want to treat and how ForSys should group those treatments into realistic project areas. These targets help ensure scenarios reflect feasible treatment workloads.
 
@@ -15,108 +15,113 @@ Treatment cost per acre does not affect how project areas are created but is inc
     You can also update Treatment Costs, which will be included in scenario
     reporting to ensure accurate financial results.
   </p>
-  <form *ngIf="form" [formGroup]="form!">
-    <!-- Target Number of Project Areas -->
+  <form *ngIf="form" [formGroup]="form!" class="form-box">
     <div class="form-row">
-      <mat-form-field
-        class="input-field"
-        appearance="outline"
-        floatLabel="always">
-        <mat-label>Target Number of Project Areas</mat-label>
-        <input
-          class="right-align"
-          formControlName="max_project_count"
-          type="text"
-          mask="separator"
-          thousandSeparator=","
-          placeholder="Enter Value"
-          matInput />
-      </mat-form-field>
-      <div class="help-placeholder">
-        <div
-          class="help-text error"
-          *ngIf="
-            form.get('max_project_count')?.touched &&
-            form.get('max_project_count')?.hasError('required')
-          ">
-          Field is required
-        </div>
-        <div
-          class="help-text error"
-          *ngIf="
-            form.get('max_project_count')?.touched &&
-            form.get('max_project_count')?.hasError('max')
-          ">
-          Target exceeds available stands (max:
-          {{ maxProjectValue }}).
+      <!-- Target Number of Acres in Each Project Area-->
+      <div class="field-column">
+        <label for="max_area" class="input-label">
+          Target Number of Acres in Each Project Area
+          <span class="required">*</span></label
+        >
+        <mat-form-field
+          class="input-field"
+          appearance="outline"
+          floatLabel="always">
+          <input
+            class="right-align"
+            formControlName="max_area"
+            type="text"
+            mask="separator"
+            placeholder="Min: {{ minAcreage }}"
+            thousandSeparator=","
+            matInput />
+        </mat-form-field>
+
+        <div class="help-placeholder">
+          <!-- Errors -->
+          <div
+            class="help-text error"
+            *ngIf="form.get('max_area')?.touched && form.invalid">
+            <ng-container *ngIf="form.get('max_area')?.hasError('required')">
+              Field is required
+            </ng-container>
+            <ng-container
+              *ngIf="
+                form.get('max_area')?.hasError('invalidMinAcres') ||
+                (form.get('max_area')?.hasError('max') &&
+                  !form.hasError('invalidWorkingArea'))
+              ">
+              Target acres per project area must be between
+              {{ minAcreage | number: '1.0-0' }} and
+              {{ maxAreaValue | number: '1.0-0' }}.
+            </ng-container>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Target Number of Acres in Each Project Area-->
-    <div class="form-row">
-      <mat-form-field
-        class="input-field"
-        appearance="outline"
-        floatLabel="always">
-        <mat-label>Target Number of Acres in Each Project Area</mat-label>
-        <input
-          class="right-align"
-          formControlName="max_area"
-          type="text"
-          mask="separator"
-          placeholder="Enter Value"
-          thousandSeparator=","
-          matInput />
-      </mat-form-field>
-      <div class="help-placeholder">
-        <!-- Help text % of available acreage treated -->
-        <div class="help-text" *ngIf="form.valid">
-          You are treating {{ getTreatedPercentage() | number: '1.0-2' }}% of
-          the available acreage
-        </div>
-
-        <!-- Errors -->
-        <div
-          class="help-text error"
-          *ngIf="form.get('max_area')?.touched && form.invalid">
-          <ng-container *ngIf="form.get('max_area')?.hasError('required')">
+      <div class="multiplication-separator">X</div>
+      <!-- Target Number of Project Areas -->
+      <div class="field-column">
+        <label for="max_area" class="input-label">
+          Target Number of Project Areas <span class="required">*</span></label
+        >
+        <mat-form-field
+          class="input-field"
+          appearance="outline"
+          floatLabel="always">
+          <input
+            class="right-align"
+            formControlName="max_project_count"
+            type="text"
+            mask="separator"
+            thousandSeparator=","
+            placeholder="Max: {{ maxProjectValue }}"
+            matInput />
+        </mat-form-field>
+        <div class="help-placeholder">
+          <div
+            class="help-text error"
+            *ngIf="
+              form.get('max_project_count')?.touched &&
+              form.get('max_project_count')?.hasError('required')
+            ">
             Field is required
-          </ng-container>
-          <ng-container
+          </div>
+          <div
+            class="help-text error"
             *ngIf="
-              form.get('max_area')?.hasError('min') ||
-              (form.get('max_area')?.hasError('max') &&
-                !form.hasError('invalidWorkingArea'))
+              form.get('max_project_count')?.touched &&
+              form.get('max_project_count')?.hasError('max')
             ">
-            Max acres needs to be between
-            {{ minMaxAreaValue | number: '1.0-0' }} and
-            {{ maxAreaValue | number: '1.0-0' }}.
-          </ng-container>
-
-          <ng-container
-            *ngIf="
-              form.get('max_area')?.touched && form.hasError('invalidMinAcres')
-            ">
-            Target acres per project area must be at least
-            {{ minAcreage }} acres.
-          </ng-container>
-
-          <ng-container *ngIf="form.hasError('invalidWorkingArea')">
-            Your target exceeds the treatable area (Max:
-            {{ maxAreaValue | number: '1.0-0' }}).
-          </ng-container>
+            Target exceeds available stands (max:
+            {{ maxProjectValue }}).
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Help text % of available acreage treated -->
+    <div class="total-areas-targeted">
+      Total Areas Targeted:
+      <span class="calculated-total">{{
+        getTotalTreated() ? (getTotalTreated() | number: '1.0-2') : ' -- '
+      }}</span>
+    </div>
+    <div class="help-text error" *ngIf="form.hasError('invalidWorkingArea')">
+      Your target exceeds the treatable area (Max:
+      {{ maxAreaValue | number: '1.0-0' }}).
+    </div>
+    <mat-divider class="form-divider"></mat-divider>
 
     <!-- Treatment Cost Per Acre -->
-    <div>
+    <div class="step-row">
+      <label for="estimated_cost" class="input-label">
+        Treatment Cost Per Acre <span class="required">*</span></label
+      >
       <mat-form-field
         class="input-field"
         appearance="outline"
         floatLabel="always">
-        <mat-label>Treatment Cost Per Acre</mat-label>
         <input
           id="estimatedCost"
           class="right-align treatment-cost"
