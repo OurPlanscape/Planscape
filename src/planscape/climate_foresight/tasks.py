@@ -3,9 +3,12 @@ from typing import Optional
 from django.db import transaction
 
 from datasets.models import DataLayer
+from climate_foresight.models import (
+    ClimateForesightRunInputDataLayer,
     InputDataLayerStatus,
     ClimateForesightPillarRollup,
     ClimateForesightPillarRollupStatus,
+)
 from climate_foresight.services import (
     calculate_layer_statistics,
     normalize_raster_layer,
