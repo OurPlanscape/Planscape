@@ -69,7 +69,7 @@
   <!--New scenario ui flow-->
   <sg-steps-nav
     [steps]="steps"
-    [selectedIndex]="(stepIndex$ | async) ?? 0"
+    [selectedIndex]="localIndex"
     [allowNavigation]="true"
     [linear]="true"
     (selectionChange)="
