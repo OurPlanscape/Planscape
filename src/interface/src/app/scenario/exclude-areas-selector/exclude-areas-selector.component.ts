@@ -48,7 +48,7 @@ export class ExcludeAreasSelectorComponent
   viewingAreas: BaseLayer[] = [];
 
   ngOnInit() {
-    this.prefillExcludedAreas;
+    this.prefillExcludedAreas();
   }
 
   private prefillExcludedAreas() {
