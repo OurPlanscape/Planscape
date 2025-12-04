@@ -51,10 +51,21 @@
 
     <!--Listing Datasets, no selection yet-->
     <ng-template #listDataSets>
-      <ng-container *ngIf="showDatasets$ | async">
-        <ng-container *ngIf="dataSets$ | async; let dataSets">
+      <ng-container *ngIf="!isUsingMapModule && (showDatasets$ | async)">
+        <ng-container *ngIf="legacyDataSets$ | async; let dataSets">
           <app-data-set
             *ngFor="let dataSet of dataSets.results"
+            (selectDataset)="viewDatasetCategories(dataSet)"
+            [name]="dataSet.name"
+            [organizationName]="dataSet.organization.name">
+          </app-data-set>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *ngIf="isUsingMapModule && (showDatasets$ | async)">
+        <ng-container *ngIf="dataSets$ | async; let dataSets">
+          <app-data-set
+            *ngFor="let dataSet of dataSets"
             (selectDataset)="viewDatasetCategories(dataSet)"
             [name]="dataSet.name"
             [organizationName]="dataSet.organization.name">

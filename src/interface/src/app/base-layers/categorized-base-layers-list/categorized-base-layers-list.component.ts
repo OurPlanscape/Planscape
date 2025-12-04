@@ -10,7 +10,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { BaseDataSet, BaseLayer } from '@types';
+import { BaseLayer, CategorizedBaseLayers } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BASE_LAYERS_DEFAULT } from '@shared';
@@ -18,7 +18,7 @@ import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-base-layers-list',
+  selector: 'app-categorized-base-layers-list',
   standalone: true,
   imports: [
     NgIf,
@@ -28,11 +28,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatCheckboxModule,
     MatProgressSpinnerModule,
   ],
-  templateUrl: './base-layers-list.component.html',
-  styleUrl: './base-layers-list.component.scss',
+  templateUrl: './categorized-base-layers-list.component.html',
+  styleUrl: './categorized-base-layers-list.component.scss',
 })
-export class BaseLayersListComponent implements OnInit, AfterViewInit {
-  @Input() dataSet!: BaseDataSet;
+export class CategorizedBaseLayersListComponent
+  implements OnInit, AfterViewInit
+{
+  @Input() categorizedBaseLayer!: CategorizedBaseLayers;
   @Input() allSelectedLayersIds: number[] = [];
 
   @Output() layerSelected = new EventEmitter<{
@@ -53,11 +55,10 @@ export class BaseLayersListComponent implements OnInit, AfterViewInit {
   loadingLayers$ = this.baseLayerStateService.loadingLayers$;
 
   ngOnInit(): void {
-    console.log('TODO FIX THIS');
     // expand if any selectedLayersId on this categorized list
-    // this.expanded = this.categorizedBaseLayer.layers.some((layer) =>
-    //   this.allSelectedLayersIds.includes(layer.id)
-    // );
+    this.expanded = this.categorizedBaseLayer.layers.some((layer) =>
+      this.allSelectedLayersIds.includes(layer.id)
+    );
   }
 
   ngAfterViewInit(): void {

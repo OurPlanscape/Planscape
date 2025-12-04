@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataSet } from '@types';
+import { BaseDataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
@@ -30,6 +30,7 @@ import { DataSetComponent } from '../data-set/data-set.component';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
+import { FeatureService } from '../../features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -60,16 +61,22 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private featureService: FeatureService
+  ) {}
 
   loading$ = this.dataLayersStateService.loading$;
 
-  dataSets$ = this.dataLayersStateService.dataSets$.pipe(
+  legacyDataSets$ = this.dataLayersStateService.legacyDataSets$.pipe(
     map((dataset) => {
       this.datasetCount = dataset.count;
       return dataset;
     })
   );
+
+  dataSets$ = this.dataLayersStateService.dataSets$;
+
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
@@ -105,7 +112,7 @@ export class DataLayersComponent {
   showFooter$ = combineLatest([
     this.results$,
     this.selectedDataLayer$,
-    this.dataSets$,
+    this.legacyDataSets$,
   ]).pipe(
     map(
       ([results, selectedLayer, datasets]) =>
@@ -113,7 +120,7 @@ export class DataLayersComponent {
     )
   );
 
-  showDatasets$ = combineLatest([this.dataSets$, this.loading$]).pipe(
+  showDatasets$ = combineLatest([this.legacyDataSets$, this.loading$]).pipe(
     map(([dataSets, loading]) => {
       return dataSets?.results.length > 0 && !loading;
     })
@@ -154,7 +161,7 @@ export class DataLayersComponent {
     this.dataLayersStateService.changeDatasetsPage(page);
   }
 
-  viewDatasetCategories(dataSet: DataSet) {
+  viewDatasetCategories(dataSet: BaseDataSet) {
     this.dataLayersStateService.resetPath();
     this.dataLayersStateService.selectDataSet(dataSet);
   }
@@ -169,5 +176,9 @@ export class DataLayersComponent {
 
   clearDataLayer() {
     this.dataLayersStateService.clearDataLayer();
+  }
+
+  get isUsingMapModule() {
+    return this.featureService.isFeatureEnabled('MAP_MODULE');
   }
 }
