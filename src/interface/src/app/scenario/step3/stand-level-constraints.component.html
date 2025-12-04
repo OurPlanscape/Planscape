@@ -31,7 +31,7 @@ They help ensure that only feasible and operationally suitable areas are targete
             max="100"
             matInput
             type="number" />
-
+          <span class="legend">%</span>
           <mat-error
             *ngIf="
               form.get('max_slope')?.touched &&
@@ -40,7 +40,6 @@ They help ensure that only feasible and operationally suitable areas are targete
             Slope cannot exceed 100
           </mat-error>
         </mat-form-field>
-        <span>%</span>
       </div>
     </div>
     <div>
@@ -61,6 +60,7 @@ They help ensure that only feasible and operationally suitable areas are targete
             mask="separator"
             thousandSeparator=","
             [value]="" />
+          <span class="legend">yds</span>
           <mat-error
             *ngIf="
               form.get('min_distance_from_road')?.touched &&
@@ -69,7 +69,6 @@ They help ensure that only feasible and operationally suitable areas are targete
             Max Distance From Roads cannot exceed 100.000 yards
           </mat-error>
         </mat-form-field>
-        <span>yds</span>
       </div>
     </div>
   </form>
