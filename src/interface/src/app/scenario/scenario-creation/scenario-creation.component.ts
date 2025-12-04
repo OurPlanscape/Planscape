@@ -148,6 +148,9 @@ export class ScenarioCreationComponent implements OnInit {
     map((goal) => goal?.name)
   );
 
+  // copy of index locally to show the last step as completed
+  localIndex = 0;
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -335,6 +338,8 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   showRunScenarioConfirmation() {
+    this.localIndex = this.steps.length - 1;
+
     this.dialog
       .open(ConfirmationDialogComponent, {
         data: {
@@ -380,6 +385,7 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   stepChanged(i: number) {
+    this.localIndex = i;
     this.newScenarioState.setStepIndex(i);
     this.goalOverlayService.close();
   }
