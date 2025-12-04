@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -77,6 +77,9 @@ export class StepsNavComponent {
   }
 
   isStepCompleted(index: number): boolean {
+    if (this.linear && index < this.selectedIndex) {
+      return true;
+    }
     const step = this.steps[index];
     return step?.completed || false;
   }
@@ -92,7 +95,7 @@ export class StepsNavComponent {
     if (!step) return false;
 
     if (this.linear) {
-      return index <= this.latestStep + 1;
+      return index <= this.selectedIndex;
     }
 
     return (
