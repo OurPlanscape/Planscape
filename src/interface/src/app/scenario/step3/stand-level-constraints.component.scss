@@ -43,7 +43,7 @@
   }
 
   .mat-mdc-form-field-subscript-wrapper {
-    display: none;
+    font-size: 14px;
   }
 
 }
@@ -51,7 +51,7 @@
 .constraints-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .flex {
@@ -78,4 +78,9 @@
   input[type="number"] {
     -moz-appearance: textfield;
   }
+}
+
+.legend {
+  margin-right: 14px;
+  margin-left: 4px;
 }
