@@ -427,6 +427,15 @@ upsert_scenario_result <- function(
     scenario_id,
     status,
     geojson_result) {
+  if (!is.null(geojson_result$features)) {
+    geojson_result$features <- lapply(
+      geojson_result$features,
+      function(feature) {
+        feature$geometry <- NULL
+        feature
+      }
+    )
+  }
   query <- glue_sql("INSERT into planning_scenarioresult (
     created_at,
     updated_at,
