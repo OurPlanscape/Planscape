@@ -77,12 +77,14 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     selection_type = models.CharField(
         choices=SelectionTypeOptions.choices,
         null=True,
+        blank=True,
         max_length=32,
     )
 
     preferred_display_type = models.CharField(
         choices=PreferredDisplayType.choices,
         null=True,
+        blank=True,
         max_length=32,
     )
 
