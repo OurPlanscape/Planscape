@@ -125,7 +125,14 @@ export class ScenarioCreationComponent implements OnInit {
 
   isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
 
-  steps = SCENARIO_OVERVIEW_STEPS;
+  // last step label on the navigation is different from the overview
+  steps = [
+    ...SCENARIO_OVERVIEW_STEPS.slice(0, -1),
+    {
+      ...SCENARIO_OVERVIEW_STEPS.at(-1)!,
+      label: 'Save & Run Scenario',
+    },
+  ];
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
