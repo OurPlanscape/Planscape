@@ -152,7 +152,7 @@ export class CreatePlanDialogComponent implements OnInit {
       return;
     }
     this.displayError = false;
-    // ERROR_SURVEY - enables error message in template
+    // ERROR_SURVEY - enables static error message in template, doesn't use Backend
     this.planService.editPlanName(this.data.planId, name).subscribe({
       next: (result) => {
         this.dialogRef.close(true);

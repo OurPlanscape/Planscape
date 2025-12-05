@@ -119,6 +119,7 @@ export class TreatmentsService {
     );
   }
 
+    // ERROR_SURVEY - passes response up
   getTreatmentImpactCharts(
     treatmentPlanId: number,
     metrics: string[],
@@ -135,14 +136,13 @@ export class TreatmentsService {
     txTypes.forEach((tx) => {
       variableParams = variableParams.append('actions', tx);
     });
-    // ERROR_SURVEY
     return this.http.get(this.baseUrl + treatmentPlanId + '/plot/', {
       withCredentials: true,
       params: variableParams,
     });
   }
 
-  // ERROR_SURVEY
+  // ERROR_SURVEY - passes response up
   getStandResult(treatmentPlanId: number, standId: number) {
     return this.http.get<Record<MetricId, MetricResult>[]>(
       `${this.baseUrl}/${treatmentPlanId}/stand-treatment-results/`,
@@ -155,7 +155,7 @@ export class TreatmentsService {
     );
   }
 
-  // ERROR_SURVEY - 
+  // ERROR_SURVEY - passes response up
   downloadTreatment(treatmentPlanId: number) {
     return this.http.get(`${this.baseUrl}/${treatmentPlanId}/download/`, {
       withCredentials: true,
