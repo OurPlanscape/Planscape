@@ -20,11 +20,13 @@ from datasets.models import (
 class DatasetAdminForm(forms.ModelForm):
     description = forms.CharField(widget=forms.Textarea, required=False)
     version = forms.CharField(required=False)
-    selection_type = forms.ChoiceField(
-        choices=SelectionTypeOptions.choices, required=False
+    selection_type = forms.TypedChoiceField(
+        choices=SelectionTypeOptions.choices,
+        required=False,
     )
-    preferred_display_type = forms.ChoiceField(
-        choices=PreferredDisplayType.choices, required=False
+    preferred_display_type = forms.TypedChoiceField(
+        choices=PreferredDisplayType.choices,
+        required=False,
     )
 
     def __init__(self, *args, **kwargs):
