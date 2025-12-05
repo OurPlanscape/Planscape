@@ -9,6 +9,8 @@ from rasterio.windows import bounds as window_bounds
 from shapely.geometry import box
 from shapely.ops import unary_union
 
+from gis.geometry import shapely_reproject
+
 Number = Union[int, float]
 
 
@@ -211,7 +213,11 @@ def build_node(
     return node
 
 
-def union_data_area(node: RasterTreeNode):
+def union_data_area(
+    node: RasterTreeNode,
+    input_srid: int = 3857,
+    output_srid: int = 4269,
+):
     def iter_leaves(node):
         if not node.children:
             yield node
@@ -229,8 +235,11 @@ def union_data_area(node: RasterTreeNode):
 
     if not geoms:
         return None
+    geom = unary_union(geoms)
+    if input_srid != output_srid:
+        geom = shapely_reproject(geom, input_srid, output_srid)
 
-    return unary_union(geoms)
+    return geom
 
 
 def plot_tree(node: RasterTreeNode):

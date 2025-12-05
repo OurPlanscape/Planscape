@@ -17,7 +17,9 @@ from rio_cogeo.profiles import cog_profiles
 from shapely.geometry import mapping, shape
 
 from gis.core import get_layer_info, get_random_output_file
+from gis.geometry import to_geodjango_geometry
 from gis.info import get_gdal_env
+from gis.quadtree import build_raster_tree, union_data_area
 
 log = logging.getLogger(__name__)
 Number = Union[int, float]
@@ -333,21 +335,28 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
 
 def data_mask(
     raster_path: str,
-    connectivity: int = 8,
-    min_area_pixels: int = 1000,
-    simplify_tol_pixels=0,
-    target_epsg: int = 4269,
-) -> str | None:
+    output_srid: int = 4269,
+) -> GEOSGeometry:
     """
-    Given a particular raster, returns it's datamask. The region with
-    valid data, excluding nodata.
-    The return is the polygon that composes all of this. INTENSIVE operation,
-    takes a while to finish on large rasters.
-    This does a sieve operation by default. Uses a lot of CPU with large rasters.
-    A LOT.
-    Polygon is returned in `target_epsg`
+    Returns the estimated data mask in a GeoJSON geometry
+    for a raster.
     """
-    pass
+    gdal_env = get_gdal_env()
+    with rasterio.Env(**gdal_env):
+        with rasterio.open(raster_path) as raster:
+            input_srid = raster.crs.to_epsg()
+            root_node = build_raster_tree(
+                raster,
+                max_levels=7,
+                band=1,
+                classify_downsample=4,
+            )
+            shapely_geometry = union_data_area(
+                root_node,
+                input_srid=input_srid,
+                output_srid=output_srid,
+            )
+            return to_geodjango_geometry(shapely_geometry, srid=output_srid)
 
 
 def read_raster_window_downsampled(
