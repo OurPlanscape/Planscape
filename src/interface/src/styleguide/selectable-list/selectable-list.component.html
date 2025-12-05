@@ -15,17 +15,20 @@
     </button>
   </div>
 
-  <mat-checkbox
-    class="view-checkbox"
-    [checked]="isViewed(item)"
-    (change)="viewItem(item)"
-    >{{ item.name }}</mat-checkbox
-  >
-  <div
-    class="color-box"
-    [ngClass]="{ selected: isViewed(item) }"
-    [ngStyle]="{
-      'background-color': getColor(item),
-      'border-color': getOutlineColor(item),
-    }"></div>
+  <div class="right-options">
+    <mat-checkbox
+      class="view-checkbox"
+      [checked]="isViewed(item)"
+      (change)="viewItem(item)"
+      >{{ item.name }}</mat-checkbox
+    >
+    <mat-spinner diameter="20" *ngIf="isLoading(item)"> </mat-spinner>
+    <div
+      class="color-box"
+      [ngClass]="{ selected: isViewed(item) }"
+      [ngStyle]="{
+        'background-color': getColor(item),
+        'border-color': getOutlineColor(item),
+      }"></div>
+  </div>
 </div>

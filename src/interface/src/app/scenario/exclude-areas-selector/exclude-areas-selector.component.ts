@@ -44,6 +44,7 @@ export class ExcludeAreasSelectorComponent
   form = new FormGroup({}); // keeping the inheritance happy
   // excludedAreas here are the list of available exclusion areas
   excludableAreas$ = this.forsysService.excludedAreas$;
+  loadingAreas$ = this.baseLayersStateService.loadingLayers$;
   selectedAreas: BaseLayer[] = [];
   viewingAreas: BaseLayer[] = [];
 
@@ -82,8 +83,14 @@ export class ExcludeAreasSelectorComponent
   }
 
   handleViewedItemsChange(viewedItems: BaseLayer[]) {
+    const newItems = viewedItems.filter(
+      (item) => !this.viewingAreas.includes(item)
+    );
     this.viewingAreas = [...viewedItems];
-    this.baseLayersStateService.setBaseLayers(viewedItems);
+
+    newItems.map((layer) =>
+      this.baseLayersStateService.updateBaseLayers(layer, true)
+    );
   }
 
   getData() {

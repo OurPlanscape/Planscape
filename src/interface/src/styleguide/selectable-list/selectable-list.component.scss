@@ -34,7 +34,18 @@ $select-button-selected-color: #5892EE;
       margin-top: #{$material-checkbox-padding + 1};
     }
 
+    .mat-mdc-progress-spinner {
+      margin-top: 10px;
+    }
+
   }
+}
+
+.right-options {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 8px;
 }
 
 

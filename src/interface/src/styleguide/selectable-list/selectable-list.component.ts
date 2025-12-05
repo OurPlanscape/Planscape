@@ -4,6 +4,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 interface Item {
   id: number;
@@ -31,14 +32,15 @@ interface Item {
   selector: 'sg-selectable-list',
   standalone: true,
   imports: [
-    NgForOf,
-    MatCheckboxModule,
     ButtonComponent,
-    MatIconModule,
-    NgClass,
     MatButtonModule,
-    NgStyle,
+    MatCheckboxModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    NgClass,
+    NgForOf,
     NgIf,
+    NgStyle,
   ],
   templateUrl: './selectable-list.component.html',
   styleUrl: './selectable-list.component.scss',
@@ -56,6 +58,8 @@ export class SelectableListComponent<T extends Item> {
 
   /** the viewed items, optional */
   @Input() viewedItems: T[] = [];
+
+  @Input() loadingItems: string[] = [];
 
   /** the property or path to look up color for the legend */
   @Input() colorPath?: string;
@@ -97,6 +101,11 @@ export class SelectableListComponent<T extends Item> {
   /** @ignore */
   isViewed(item: T) {
     return this.viewedItems.some((i) => i.id === item.id);
+  }
+
+  /** @ignore */
+  isLoading(item: T) {
+    return this.loadingItems.some((i) => i === `source_${item.id}`);
   }
 
   /** @ignore */
