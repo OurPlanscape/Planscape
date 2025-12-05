@@ -3,6 +3,13 @@ from typing import Collection, List, Optional
 from django.contrib.gis.geos import GeometryCollection, GEOSGeometry, Polygon
 
 
+def to_geodjango(shapely_geom, srid=4326):
+    """
+    Converts a shapely geometry to a geodjango geometry
+    """
+    return GEOSGeometry(shapely_geom.wkb, srid=srid)
+
+
 def get_bounding_box(geometries: List[GEOSGeometry]) -> Optional[Collection[float]]:
     if not geometries or len(geometries) <= 0:
         return None
