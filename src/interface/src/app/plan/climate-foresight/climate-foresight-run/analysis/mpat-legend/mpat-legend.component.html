@@ -1,0 +1,9 @@
+<div class="mpat-legend">
+  <div class="legend-title">{{ title }}</div>
+  <div class="legend-entries">
+    <div class="legend-entry" *ngFor="let entry of entries">
+      <div class="color-swatch" [style.backgroundColor]="entry.color"></div>
+      <span class="entry-label">{{ entry.label }}</span>
+    </div>
+  </div>
+</div>
