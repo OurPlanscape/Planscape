@@ -22,6 +22,7 @@ from datasets.serializers import (
 from datasets.services import find_anything
 from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -166,6 +167,12 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datalayers accessible by the organization
+
+        if self.action == "urls":
+            return DataLayer.objects.filter(
+                Q(dataset__visibility=VisibilityOptions.PUBLIC)
+                | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
+            )
 
         queryset = DataLayer.objects.filter(
             dataset__visibility=VisibilityOptions.PUBLIC,
