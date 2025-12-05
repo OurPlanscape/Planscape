@@ -75,7 +75,6 @@ Treatment cost per acre does not affect how project areas are created but is inc
             type="text"
             mask="separator"
             thousandSeparator=","
-            placeholder="Max: {{ maxProjectValue }}"
             matInput />
         </mat-form-field>
         <div class="help-placeholder">
@@ -102,7 +101,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
 
     <!-- Help text % of available acreage treated -->
     <div class="total-areas-targeted">
-      Total Areas Targeted:
+      Total Acres Targeted:
       <span class="calculated-total">{{
         getTotalTreated() ? (getTotalTreated() | number: '1.0-2') : ' -- '
       }}</span>
