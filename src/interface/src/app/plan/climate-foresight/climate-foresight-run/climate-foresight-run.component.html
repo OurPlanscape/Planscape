@@ -31,7 +31,7 @@
             <ng-container actions>
               <sg-steps-actions
                 [currentStep]="currentStepIndex"
-                [totalSteps]="totalSteps"
+                [totalSteps]="this.stepsList.length"
                 [canGoNext]="dataLayerSelectionComponent?.form?.valid || false"
                 [loading]="savingStep"
                 [showBack]="false"
