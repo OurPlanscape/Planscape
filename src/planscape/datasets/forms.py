@@ -23,10 +23,12 @@ class DatasetAdminForm(forms.ModelForm):
     selection_type = forms.TypedChoiceField(
         choices=SelectionTypeOptions.choices,
         required=False,
+        empty_value=None,
     )
     preferred_display_type = forms.TypedChoiceField(
         choices=PreferredDisplayType.choices,
         required=False,
+        empty_value=None,
     )
 
     def __init__(self, *args, **kwargs):
