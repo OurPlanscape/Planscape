@@ -1,7 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, of, take } from 'rxjs';
+import {
+  Observable,
+  of,
+  take,
+  interval,
+  Subject,
+  switchMap,
+  takeUntil,
+} from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormGroup } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
@@ -68,6 +76,8 @@ export class ClimateForesightRunComponent implements OnInit {
   dataLayerSelectionComponent?: DataLayerSelectionComponent;
   @ViewChild('assignFavorability')
   assignFavorabilityComponent?: AssignFavorabilityComponent;
+  @ViewChild('assignPillars')
+  assignPillarsComponent?: AssignPillarsComponent;
 
   currentPlan: Plan | null = null;
   currentRun: ClimateForesightRun | null = null;
@@ -80,6 +90,9 @@ export class ClimateForesightRunComponent implements OnInit {
   assessmentForm: FormGroup | null = null;
 
   stepData: Record<number, SaveStepData> = {};
+
+  private pollingInterval = 5000; // 5 seconds
+  private stopPolling$ = new Subject<void>();
 
   stepsList: StepConfig[] = [
     { label: 'Select Data Layers', completed: false },
@@ -241,7 +254,6 @@ export class ClimateForesightRunComponent implements OnInit {
     const inputDatalayers = data.dataLayers.map(
       (layer: Partial<InputDatalayer>) => ({
         datalayer: layer.id,
-        pillar: null,
       })
     );
 
@@ -413,9 +425,41 @@ export class ClimateForesightRunComponent implements OnInit {
   }
 
   runAnalysis(): void {
-    // TODO: Execute analysis
-    // On success display success dialog
     this.displaySuccessDialog();
+    this.climateForesightService
+      .runAnalysis(this.runId!)
+      .pipe(untilDestroyed(this))
+      .subscribe({
+        next: (runningRun) => {
+          this.currentRun = runningRun;
+          this.snackBar.open(
+            'Analysis started. You will be notified when it completes.',
+            'Close',
+            { duration: 3000 }
+          );
+
+          this.startPollingForRunStatus();
+
+          this.savingStep = false;
+
+          this.router.navigate(
+            [`/plan/${this.currentPlan?.id}/climate-foresight`],
+            {
+              relativeTo: this.route,
+            }
+          );
+        },
+        error: (error) => {
+          console.error('Error triggering analysis:', error);
+          this.snackBar.open(
+            'Failed to trigger analysis: ' +
+              (error?.error?.detail || error?.message || 'Unknown error'),
+            'Close',
+            { duration: 5000 }
+          );
+          this.savingStep = false;
+        },
+      });
   }
 
   displaySuccessDialog() {
@@ -433,6 +477,39 @@ export class ClimateForesightRunComponent implements OnInit {
         this.savingStep = false;
         // On modal closed go to the climate home page
         this.onFinished();
+      });
+  }
+
+  /**
+   * Start polling for run status updates every 5 seconds
+   * Stops when run status becomes 'done' or component is destroyed
+   */
+  private startPollingForRunStatus(): void {
+    if (!this.runId || this.currentRun?.status !== 'running') {
+      return;
+    }
+
+    interval(this.pollingInterval)
+      .pipe(
+        untilDestroyed(this),
+        takeUntil(this.stopPolling$),
+        switchMap(() => this.climateForesightService.getRun(this.runId!))
+      )
+      .subscribe({
+        next: (updatedRun) => {
+          this.currentRun = updatedRun;
+
+          if (updatedRun.status === 'done') {
+            this.stopPolling$.next();
+            this.stopPolling$.complete();
+            this.snackBar.open('Analysis completed successfully!', 'Close', {
+              duration: 3000,
+            });
+          }
+        },
+        error: (err) => {
+          console.error('Error polling for run status:', err);
+        },
       });
   }
 }

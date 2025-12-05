@@ -146,4 +146,28 @@ export class ClimateForesightService {
       }
     );
   }
+
+  /**
+   * Trigger the analysis pipeline for a climate foresight run
+   * This will start the normalization, pillar rollup, landscape rollup, and PROMOTe tasks
+   */
+  runAnalysis(id: number): Observable<ClimateForesightRun> {
+    return this.http.post<ClimateForesightRun>(
+      `${this.basePath}${id}/run_analysis/`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Download the Climate Foresight outputs as a zip file
+   */
+  downloadOutputs(id: number): Observable<Blob> {
+    return this.http.get(`${this.basePath}${id}/download/`, {
+      withCredentials: true,
+      responseType: 'blob',
+    });
+  }
 }
