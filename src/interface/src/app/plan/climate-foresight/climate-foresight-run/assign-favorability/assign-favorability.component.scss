@@ -1,246 +1,205 @@
 @import 'variables';
 @import 'colors';
+@import 'mixins';
+
+$datalayer-name-width: 60%;
+$datalayer-value-width: 20%;
+$datalayer-padding: 16px;
+$left-panel-width: 398px;
 
 :host {
   display: flex;
+  height: 100%;
+}
+
+:host ::ng-deep .mat-mdc-radio-button .mdc-radio {
+  // Overriding radio width and height to match figma
+  --mdc-radio-state-layer-size: 20px;
+}
+
+.favorability {
   flex: 1;
-  height: 100%;
-  position: relative;
-}
-
-.assign-favorability-container {
   display: flex;
-  height: 100%;
+  flex-direction: row;
   width: 100%;
+
+  &-left-panel {
+    width: $left-panel-width;
+    padding: 16px;
+    background: $color-soft-purple;
+    overflow-y: auto;
+  }
+
+  &-right-panel {
+    display: flex;
+    padding: 16px;
+    flex: 1;
+  }
 }
 
-.left-panel-container {
+.favorability-section {
+  flex: 1;
+  display: flex;
+}
+
+.description {
+  @include small-paragraph();
+  color: $color-dark-gray;
+  margin-bottom: 16px;
+}
+
+.data-layers-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .header {
+    color: $color-black;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .title {
+    width: $datalayer-name-width;
+  }
+
+  .value-title {
+    width: $datalayer-value-width;
+    text-align: center;
+  }
+}
+
+.data-layers-list {
+  .no-selection {
+    p {
+      text-align: center;
+    }
+  }
+
+  .layer-favorability-item {
+    //min-height: 54px;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+    padding: 16px;
+    cursor: pointer;
+
+    border-radius: 4px;
+    border: 1px solid $color-soft-gray;
+    background: $color-white;
+
+    .layer-name {
+      display: flex;
+      align-items: center;
+      width: calc($datalayer-name-width + $datalayer-padding);
+      @include small-input-label();
+    }
+
+    .favorability-options {
+      display: flex;
+      width: calc(
+        ($datalayer-value-width + $datalayer-value-width) - $datalayer-padding
+      );
+
+      .favorability-radio-group {
+        display: flex;
+        width: 100%;
+        padding: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+  }
+
+  .layer-favorability-item.active {
+    border-radius: 4px;
+    border: 1px solid $color-standard-blue;
+    background: $color-soft-light-blue;
+  }
+}
+
+.chart-container {
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+  background: $color-white;
+  box-shadow: 1px 2px 6px 0 rgba(0, 0, 0, 0.2);
+
+  width: 100%;
+  flex: 1;
+
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: 360px;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-  z-index: 2;
 
-  .left-panel {
-    display: flex;
-    flex-direction: column;
+  .chart-header {
     padding: 16px;
-    height: 100%;
-    background-color: $color-soft-purple;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid $color-soft-gray;
 
-    sg-panel {
+    .nav-icon {
+      flex-shrink: 0;
+      color: $color-standard-blue;
+      cursor: pointer;
+
+      font-size: 56px;
+      width: 56px;
+      height: 56px;
+    }
+
+    .nav-icon:hover {
+      color: darken($color-standard-blue, 10);
+    }
+
+    .nav-icon.disabled-icon {
+      color: $color-soft-gray;
+    }
+
+    .chart-title {
+      font-size: 24px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 32px;
+      margin: 0;
+      text-align: center;
+    }
+  }
+
+  .chart-content {
+    flex: 1;
+    display: flex;
+    padding: 16px;
+    overflow: hidden;
+
+    .chart-loading {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      flex: 1;
-      border-color: $color-light-purple;
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      justify-content: space-between;
-
-      h3 {
-        font-size: 14px;
-        font-weight: 500;
-        text-transform: uppercase;
-        margin: 0;
-        color: $color-dark-gray;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-      }
-
-      .info-button {
-        color: $color-dark-gray;
-      }
-    }
-
-    p {
-      font-size: 14px;
-      color: $color-dark-gray;
-      margin-bottom: 16px;
-      line-height: 1.4;
-    }
-
-    .panel-body {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .data-layers-list {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 16px;
-    }
-
-    .no-selection {
-      display: flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
+      gap: 16px;
 
       p {
         font-size: 14px;
+        color: $color-md-gray;
         margin: 0;
       }
     }
 
-    .layers-with-favorability {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .layer-favorability-item {
-      background-color: white;
-      border-radius: 4px;
-      padding: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 2px solid transparent;
-
-      &:hover {
-        background-color: $color-lighter-gray;
-      }
-
-      &.active {
-        border-color: $color-standard-blue;
-        background-color: $color-soft-purple-light;
-      }
-
-      .layer-info {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-
-        .layer-name {
-          font-size: 14px;
-          font-weight: 500;
-          color: $color-dark-gray;
-        }
-
-        .favorability-options {
-          .favorability-radio-group {
-            display: flex;
-            flex-direction: row;
-            gap: 16px;
-
-            .radio-option {
-              font-size: 13px;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-.right-panel {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 32px;
-  background-color: $color-lighter-gray;
-
-  .chart-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    height: 100%;
-    max-height: 600px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-
-    .chart-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px 32px;
-      border-bottom: 1px solid $color-soft-gray;
-
-      .nav-button {
-        flex-shrink: 0;
-        color: $color-standard-blue;
-
-        &:disabled {
-          color: $color-soft-gray;
-        }
-
-        mat-icon {
-          font-size: 28px;
-          width: 28px;
-          height: 28px;
-        }
-      }
-
-      .chart-title {
-        flex: 1;
-        text-align: center;
-        font-size: 18px;
-        font-weight: 500;
-        margin: 0;
-        color: $color-dark-gray;
-      }
-    }
-
-    .chart-content {
+    .chart-wrapper {
       flex: 1;
-      display: flex;
-      padding: 32px;
-      overflow: hidden;
-
-      .chart-loading {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-
-        p {
-          font-size: 14px;
-          color: $color-md-gray;
-          margin: 0;
-        }
-      }
-
-      .chart-wrapper {
-        flex: 1;
-        position: relative;
-        min-height: 0;
-      }
-    }
-  }
-
-  .no-layer-selected {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-
-    p {
-      font-size: 16px;
-      color: $color-md-gray;
+      position: relative;
+      min-height: 0;
     }
   }
 }
 
-::ng-deep {
-  sg-steps-actions {
-    z-index: 4;
-  }
-
-  .mat-mdc-radio-button .mdc-radio {
-    padding: 0;
-  }
-
-  .mat-mdc-radio-button .mdc-form-field {
-    padding: 0;
-  }
+.no-datalayers-selected {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  width: 100%;
 }
