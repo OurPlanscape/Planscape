@@ -5,10 +5,10 @@ from core.s3 import get_s3_hash, is_s3_file
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
 from django.db import connection
+from gis.rasters import data_mask
 from gis.vectors import ogr2ogr
 
 from planscape.celery import app
-from planscape.gis.rasters import data_mask
 
 logger = logging.getLogger(__name__)
 
