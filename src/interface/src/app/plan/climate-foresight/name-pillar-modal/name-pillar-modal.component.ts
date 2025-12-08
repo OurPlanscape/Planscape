@@ -108,7 +108,7 @@ export class NamePillarModalComponent implements OnInit {
   }
 
   get editMode(): boolean {
-    return this.data.pillar !== null;
+    return !!this.data.pillar;
   }
 
   get primaryCTA(): string {
