@@ -10,12 +10,14 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { BaseDataSet, BaseLayer } from '@types';
+import { BaseLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BASE_LAYERS_DEFAULT } from '@shared';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DataLayersService } from '@services';
+import { MapDataDataSet } from '../../types/module.types';
 
 @Component({
   selector: 'app-base-layers-list',
@@ -32,7 +34,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   styleUrl: './base-layers-list.component.scss',
 })
 export class BaseLayersListComponent implements OnInit, AfterViewInit {
-  @Input() dataSet!: BaseDataSet;
+  @Input() dataSet!: MapDataDataSet;
   @Input() allSelectedLayersIds: number[] = [];
 
   @Output() layerSelected = new EventEmitter<{
@@ -46,11 +48,15 @@ export class BaseLayersListComponent implements OnInit, AfterViewInit {
     BaseLayersStateService
   );
 
+  private dataLayersService: DataLayersService = inject(DataLayersService);
+
   expanded = false;
 
   BASE_LAYERS_DEFAULT = BASE_LAYERS_DEFAULT;
 
   loadingLayers$ = this.baseLayerStateService.loadingLayers$;
+
+  baseLayers: BaseLayer[] = [];
 
   ngOnInit(): void {
     console.log('TODO FIX THIS');
@@ -85,5 +91,18 @@ export class BaseLayersListComponent implements OnInit, AfterViewInit {
         block: 'center',
       });
     }
+  }
+
+  expandDataSet() {
+    this.expanded = !this.expanded;
+    if (this.noBaseLayers) {
+      this.dataLayersService
+        .listBaseLayersByDataSet(this.dataSet.id)
+        .subscribe((c) => (this.baseLayers = c));
+    }
+  }
+
+  get noBaseLayers() {
+    return this.baseLayers.length == 0;
   }
 }
