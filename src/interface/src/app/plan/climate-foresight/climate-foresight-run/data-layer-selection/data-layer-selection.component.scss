@@ -363,7 +363,8 @@
     .category-icon {
       width: 20px;
       height: 20px;
-      background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>') no-repeat 50% 50%;
+      background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>')
+        no-repeat 50% 50%;
       background-size: 6px;
       transition: transform 100ms linear;
       margin-right: 8px;
@@ -482,4 +483,8 @@
       }
     }
   }
+}
+
+.red-symbol {
+  color: $color-error;
 }
