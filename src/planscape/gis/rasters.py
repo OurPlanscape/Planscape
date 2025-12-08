@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -7,9 +6,10 @@ import rasterio
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from gis.core import get_layer_info, get_random_output_file
+from gis.geometry import to_geodjango_geometry
 from gis.info import get_gdal_env
-from rasterio.crs import CRS
-from rasterio.features import geometry_mask, shapes, sieve
+from gis.quadtree import build_raster_tree, union_data_area
+from rasterio.features import geometry_mask
 from rasterio.warp import (
     Resampling,
     calculate_default_transform,
@@ -19,8 +19,6 @@ from rasterio.warp import (
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
 from shapely.geometry import mapping, shape
-from shapely.ops import unary_union
-from shapely.validation import make_valid
 
 log = logging.getLogger(__name__)
 Number = Union[int, float]
@@ -250,8 +248,8 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
         >>> normalized = "/tmp/normalized.tif"
         >>> final = to_planscape_streaming(normalized, "/tmp/final_cog.tif")
     """
-    from pathlib import Path
     import tempfile
+    from pathlib import Path
 
     log.info(f"Converting raster to Planscape format (streaming): {input_file}")
 
@@ -335,68 +333,28 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
 
 def data_mask(
     raster_path: str,
-    connectivity: int = 8,
-    min_area_pixels: int = 1000,
-    simplify_tol_pixels=0,
-    target_epsg: int = 4269,
-) -> str | None:
+    output_srid: int = 4269,
+) -> GEOSGeometry:
     """
-    Given a particular raster, returns it's datamask. The region with
-    valid data, excluding nodata.
-    The return is the polygon that composes all of this. INTENSIVE operation,
-    takes a while to finish on large rasters.
-    This does a sieve operation by default. Uses a lot of CPU with large rasters.
-    A LOT.
-    Polygon is returned in `target_epsg`
+    Returns the estimated data mask in a GEOSGeometry
+    for a raster.
     """
-
-    with rasterio.Env(**get_gdal_env()):
-        with rasterio.open(raster_path, "r") as ds:
-            src_crs = ds.crs
-            dst_crs = CRS.from_epsg(target_epsg)
-            mask = ds.dataset_mask()  # uint8, shape (H, W)
-
-            if not mask.any():
-                return None
-
-            valid = (mask != 0).astype(np.uint8)
-
-            size = max(1, int(min_area_pixels))
-            if size > 1:
-                valid = sieve(valid, size=size, connectivity=connectivity)
-
-            geoms = []
-            for geom, val in shapes(
-                valid,
-                mask=valid,
-                transform=ds.transform,
-                connectivity=connectivity,
-            ):
-                if val == 1:
-                    geoms.append(shape(geom))
-
-            if not geoms:
-                return None
-
-            if simplify_tol_pixels and simplify_tol_pixels > 0:
-                px = abs(ds.transform.a)
-                py = abs(ds.transform.e)
-                tol = max(px, py) * simplify_tol_pixels
-                geoms = [g.simplify(tol, preserve_topology=True) for g in geoms]
-
-            out_geom = unary_union(geoms)
-            out_geom = make_valid(out_geom)
-            if src_crs != dst_crs:
-                out_geom = shape(
-                    transform_geom(
-                        src_crs,
-                        dst_crs,
-                        mapping(out_geom),
-                        precision=6,
-                    )
-                )
-
-            return json.dumps(mapping(out_geom))
+    gdal_env = get_gdal_env()
+    with rasterio.Env(**gdal_env):
+        with rasterio.open(raster_path) as raster:
+            input_srid = raster.crs.to_epsg()
+            root_node = build_raster_tree(
+                raster,
+                max_levels=7,
+                band=1,
+                classify_downsample=4,
+            )
+            shapely_geometry = union_data_area(
+                root_node,
+                input_srid=input_srid,
+                output_srid=output_srid,
+            )
+            return to_geodjango_geometry(shapely_geometry, srid=output_srid)
 
 
 def read_raster_window_downsampled(
