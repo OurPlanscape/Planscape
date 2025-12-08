@@ -3,13 +3,12 @@ from enum import Enum
 from typing import List, Optional, Union
 
 import numpy as np
+from gis.geometry import shapely_reproject
 from rasterio.io import DatasetReader
 from rasterio.windows import Window
 from rasterio.windows import bounds as window_bounds
 from shapely.geometry import box
 from shapely.ops import unary_union
-
-from gis.geometry import shapely_reproject
 
 Number = Union[int, float]
 
@@ -99,13 +98,13 @@ def classify_window(
     nodata_only = not valid.any()
     all_data = valid.all()
 
-    match nodata_only, all_data:
-        case True, False:
-            return NodeType.NODATA
-        case False, True:
-            return NodeType.DATA
-        case _:
-            return NodeType.MIXED
+    if nodata_only:
+        return NodeType.NODATA
+
+    if all_data:
+        return NodeType.DATA
+
+    return NodeType.MIXED
 
 
 def build_id(current_level: int, current_row: int, current_col: int) -> str:
