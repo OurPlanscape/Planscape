@@ -331,7 +331,7 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
     return output_file
 
 
-def data_mask(
+def get_estimated_mask(
     raster_path: str,
     output_srid: int = 4269,
 ) -> GEOSGeometry:

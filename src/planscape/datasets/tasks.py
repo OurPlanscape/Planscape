@@ -4,8 +4,9 @@ from core.gcs import get_gcs_hash, is_gcs_file
 from core.s3 import get_s3_hash, is_s3_file
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
+from django.contrib.gis.geos import MultiPolygon
 from django.db import connection
-from gis.rasters import data_mask
+from gis.rasters import get_estimated_mask
 from gis.vectors import ogr2ogr
 
 from planscape.celery import app
@@ -32,7 +33,14 @@ def datalayer_uploaded(
         datalayer.status = status
 
         if datalayer.type == DataLayerType.RASTER and datalayer.url:
-            outline = data_mask(datalayer.url)
+            outline = get_estimated_mask(datalayer.url)
+            match outline.geom_type:
+                case "MultiPolygon":
+                    pass
+                case "Polygon":
+                    outline = MultiPolygon([outline])
+                case _:
+                    outline = None
             datalayer.outline = outline
 
         if datalayer.type == DataLayerType.VECTOR and datalayer.url:
