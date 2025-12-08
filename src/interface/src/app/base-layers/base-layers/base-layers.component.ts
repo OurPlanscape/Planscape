@@ -27,6 +27,15 @@ import { CategorizedBaseLayersListComponent } from '../categorized-base-layers-l
 })
 export class BaseLayersComponent {
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
+  selectedLayersDataSet$ = this.selectedLayers$.pipe(
+    map((layers) => {
+      if (layers && layers.length) {
+        return layers[0].dataset.id;
+      }
+      //todo
+      return 0;
+    })
+  );
   selectedLayersId$ = this.selectedLayers$.pipe(
     map((layers) => {
       if (layers && layers.length) {

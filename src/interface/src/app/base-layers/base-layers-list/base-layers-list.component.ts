@@ -6,8 +6,9 @@ import {
   EventEmitter,
   inject,
   Input,
-  OnInit,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { BaseLayer } from '@types';
@@ -33,9 +34,12 @@ import { MapDataDataSet } from '../../types/module.types';
   templateUrl: './base-layers-list.component.html',
   styleUrl: './base-layers-list.component.scss',
 })
-export class BaseLayersListComponent implements OnInit, AfterViewInit {
+export class BaseLayersListComponent implements OnChanges, AfterViewInit {
   @Input() dataSet!: MapDataDataSet;
   @Input() allSelectedLayersIds: number[] = [];
+  @Input() initialExpanded = false;
+
+  expanded = false;
 
   @Output() layerSelected = new EventEmitter<{
     layer: BaseLayer;
@@ -50,25 +54,25 @@ export class BaseLayersListComponent implements OnInit, AfterViewInit {
 
   private dataLayersService: DataLayersService = inject(DataLayersService);
 
-  expanded = false;
-
   BASE_LAYERS_DEFAULT = BASE_LAYERS_DEFAULT;
 
   loadingLayers$ = this.baseLayerStateService.loadingLayers$;
 
   baseLayers: BaseLayer[] = [];
 
-  ngOnInit(): void {
-    console.log('TODO FIX THIS');
-    // expand if any selectedLayersId on this categorized list
-    // this.expanded = this.categorizedBaseLayer.layers.some((layer) =>
-    //   this.allSelectedLayersIds.includes(layer.id)
-    // );
-  }
-
   ngAfterViewInit(): void {
     if (this.expanded) {
-      this.scrollToSelectedItems();
+      this.listBaseLayersByDataSet().subscribe((c) => {
+        this.baseLayers = c;
+        this.scrollToSelectedItems();
+      });
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // only use the very first value from the parent
+    if (changes['initialExpanded']?.firstChange) {
+      this.expanded = this.initialExpanded;
     }
   }
 
@@ -96,10 +100,12 @@ export class BaseLayersListComponent implements OnInit, AfterViewInit {
   expandDataSet() {
     this.expanded = !this.expanded;
     if (this.noBaseLayers) {
-      this.dataLayersService
-        .listBaseLayersByDataSet(this.dataSet.id)
-        .subscribe((c) => (this.baseLayers = c));
+      this.listBaseLayersByDataSet().subscribe((c) => (this.baseLayers = c));
     }
+  }
+
+  private listBaseLayersByDataSet() {
+    return this.dataLayersService.listBaseLayersByDataSet(this.dataSet.id);
   }
 
   get noBaseLayers() {
