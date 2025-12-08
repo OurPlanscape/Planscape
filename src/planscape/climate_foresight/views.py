@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, ValidationError
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
@@ -215,8 +215,6 @@ class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
         user_runs = ClimateForesightRun.objects.list_by_user(self.request.user)
 
         # Return global pillars + custom pillars from user's runs
-        from django.db.models import Q
-
         return ClimateForesightPillar.objects.filter(
             Q(run__isnull=True) | Q(run__in=user_runs)
         ).order_by("order", "name")
