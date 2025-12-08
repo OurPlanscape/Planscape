@@ -125,7 +125,14 @@ export class ScenarioCreationComponent implements OnInit {
 
   isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
 
-  steps = SCENARIO_OVERVIEW_STEPS;
+  // last step label on the navigation is different from the overview
+  steps = [
+    ...SCENARIO_OVERVIEW_STEPS.slice(0, -1),
+    {
+      ...SCENARIO_OVERVIEW_STEPS.at(-1)!,
+      label: 'Save & Run Scenario',
+    },
+  ];
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
@@ -147,6 +154,9 @@ export class ScenarioCreationComponent implements OnInit {
     ),
     map((goal) => goal?.name)
   );
+
+  // copy of index locally to show the last step as completed
+  localIndex = 0;
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -335,6 +345,8 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   showRunScenarioConfirmation() {
+    this.localIndex = this.steps.length - 1;
+
     this.dialog
       .open(ConfirmationDialogComponent, {
         data: {
@@ -380,6 +392,7 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   stepChanged(i: number) {
+    this.localIndex = i;
     this.newScenarioState.setStepIndex(i);
     this.goalOverlayService.close();
   }

@@ -191,11 +191,13 @@ describe('StepsNavComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should only allow navigation to completed steps and next step in linear mode', () => {
+    it('should only allow navigation to previous completed steps in linear mode', () => {
+      component.selectedIndex = 1;
+      fixture.detectChanges();
       const steps = compiled.querySelectorAll('.step-item');
       expect(steps[0].classList.contains('clickable')).toBeTrue(); // completed
       expect(steps[1].classList.contains('clickable')).toBeTrue(); // completed
-      expect(steps[2].classList.contains('clickable')).toBeTrue(); // next step
+      expect(steps[2].classList.contains('clickable')).toBeFalse(); // next step
       expect(steps[3].classList.contains('clickable')).toBeFalse(); // future
     });
 
