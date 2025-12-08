@@ -437,7 +437,8 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         
         if feature_enabled("INTERNAL_RASTER_PROXY"):
             base_url = get_base_url(settings.ENV)
-            download_url = f"{base_url}/datalayers/{self.dataset_id}/{self.uuid}.tif"
+            path_url = self.url.split("/datalayers/")[-1]
+            download_url = f"{base_url}/datalayers/{path_url}"
 
         elif is_s3_file(self.url):
             object_name = self.url.replace(f"s3://{settings.S3_BUCKET}/", "")
