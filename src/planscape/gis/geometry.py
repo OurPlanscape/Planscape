@@ -9,7 +9,7 @@ def to_geodjango_geometry(shapely_geom, srid=4326):
     """
     Converts a shapely geometry to a geodjango geometry
     """
-    return GEOSGeometry(shapely_geom.wkb, srid=srid)
+    return GEOSGeometry(shapely_geom.wkt, srid=srid)
 
 
 def get_bounding_box(geometries: List[GEOSGeometry]) -> Optional[Collection[float]]:
