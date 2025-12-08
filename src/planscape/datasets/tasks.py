@@ -1,14 +1,14 @@
 import logging
 
-from django.db import connection
-
-from core.s3 import is_s3_file, get_s3_hash
-from core.gcs import is_gcs_file, get_gcs_hash
+from core.gcs import get_gcs_hash, is_gcs_file
+from core.s3 import get_s3_hash, is_s3_file
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
+from django.db import connection
 from gis.vectors import ogr2ogr
 
 from planscape.celery import app
+from planscape.gis.rasters import data_mask
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +25,17 @@ def datalayer_uploaded(
         return
 
     try:
-        if is_s3_file(datalayer.url):
+        if is_s3_file(datalayer.url) and datalayer.url:
             datalayer.hash = get_s3_hash(datalayer.url, bucket=settings.S3_BUCKET)
-        elif is_gcs_file(datalayer.url):
+        elif is_gcs_file(datalayer.url) and datalayer.url:
             datalayer.hash = get_gcs_hash(datalayer.url)
         datalayer.status = status
 
-        if datalayer.type == DataLayerType.VECTOR:
+        if datalayer.type == DataLayerType.RASTER and datalayer.url:
+            outline = data_mask(datalayer.url)
+            datalayer.outline = outline
+
+        if datalayer.type == DataLayerType.VECTOR and datalayer.url:
             datastore_table = ogr2ogr(datalayer.url)
             validate_datastore_table(datastore_table, datalayer)
             datalayer.table = datastore_table

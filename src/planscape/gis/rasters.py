@@ -5,6 +5,10 @@ import numpy as np
 import rasterio
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
+from gis.core import get_layer_info, get_random_output_file
+from gis.geometry import to_geodjango_geometry
+from gis.info import get_gdal_env
+from gis.quadtree import build_raster_tree, union_data_area
 from rasterio.features import geometry_mask
 from rasterio.warp import (
     Resampling,
@@ -15,11 +19,6 @@ from rasterio.warp import (
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
 from shapely.geometry import mapping, shape
-
-from gis.core import get_layer_info, get_random_output_file
-from gis.geometry import to_geodjango_geometry
-from gis.info import get_gdal_env
-from gis.quadtree import build_raster_tree, union_data_area
 
 log = logging.getLogger(__name__)
 Number = Union[int, float]
@@ -190,7 +189,6 @@ def to_cog_streaming(
         >>> cog_url = to_cog_streaming("/tmp/normalized.tif", "gs://bucket/path/output.tif")
     """
     from core.s3 import is_s3_file
-
     from gis.core import with_vsi_prefix
 
     log.info(
@@ -338,7 +336,7 @@ def data_mask(
     output_srid: int = 4269,
 ) -> GEOSGeometry:
     """
-    Returns the estimated data mask in a GeoJSON geometry
+    Returns the estimated data mask in a GEOSGeometry
     for a raster.
     """
     gdal_env = get_gdal_env()
