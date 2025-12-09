@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -25,6 +26,8 @@ from django.contrib.gis.geos import MultiPolygon
 from django.db import IntegrityError
 from gis.info import get_gdal_env, info_raster
 from gis.rasters import read_raster_window_downsampled, to_planscape_streaming
+from rasterio.features import geometry_mask
+from rasterio.warp import Resampling, reproject
 from scipy.optimize import minimize
 
 from climate_foresight.normalize import (
@@ -366,11 +369,6 @@ def normalize_raster_layer(
             f"Resampling to reference grid: {ref_width}x{ref_height} "
             f"(original clipped: {clipped_data.shape[1]}x{clipped_data.shape[0]})"
         )
-
-        import json
-
-        from rasterio.features import geometry_mask
-        from rasterio.warp import Resampling, reproject
 
         aligned_data = np.full((ref_height, ref_width), ref_nodata, dtype=np.float32)
 
