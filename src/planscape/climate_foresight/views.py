@@ -3,7 +3,6 @@ import logging
 from datasets.models import DataLayer, DataLayerStatus
 from datasets.serializers import BrowseDataLayerSerializer
 from django.db.models import Prefetch, Q
-from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
@@ -35,7 +34,6 @@ from climate_foresight.serializers import (
     ClimateForesightRunListSerializer,
     ClimateForesightRunSerializer,
 )
-from climate_foresight.services import export_geopackage
 from climate_foresight.tasks import async_generate_climate_foresight_geopackage
 
 log = logging.getLogger(__name__)
