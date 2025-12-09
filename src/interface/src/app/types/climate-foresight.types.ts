@@ -49,7 +49,7 @@ export interface InputDatalayer {
   datalayer: number;
   favor_high: boolean | null;
   pillar: number | null;
-  normalized_datalayer_id?: number | null;
+  normalized_datalayer_id: number | null;
   statistics: LayerStatistics | null;
 }
 
@@ -59,7 +59,7 @@ export interface ClimateForesightPillarRollup {
   pillar: number;
   pillar_name: string;
   rollup_datalayer_id: number | null;
-  rollup_datalayer?: DataLayer | null;
+  rollup_datalayer: DataLayer | null;
   status: string;
   method: string;
   weights: Record<string, number> | null;
@@ -78,7 +78,7 @@ export interface ClimateForesightLandscapeRollup {
   run: number;
   current_datalayer_id: number | null;
   future_datalayer_id: number | null;
-  current_datalayer?: DataLayer | null;
+  current_datalayer: DataLayer | null;
   status: string;
   future_mapping: Record<string, FutureMappingEntry> | null;
   created_at: string;
@@ -96,9 +96,9 @@ export interface ClimateForesightPromote {
   integrated_condition_score_datalayer_id: number | null;
   mpat_matrix_datalayer_id: number | null;
   mpat_strength_datalayer_id: number | null;
-  mpat_strength_datalayer?: DataLayer | null;
-  adapt_protect_datalayer?: DataLayer | null;
-  integrated_condition_score_datalayer?: DataLayer | null;
+  mpat_strength_datalayer: DataLayer | null;
+  adapt_protect_datalayer: DataLayer | null;
+  integrated_condition_score_datalayer: DataLayer | null;
   created_at: string;
 }
 
@@ -112,10 +112,10 @@ export interface ClimateForesightRun {
   status: ClimateForesightRunStatus;
   current_step: number;
   furthest_step: number;
-  input_datalayers?: InputDatalayer[];
-  pillar_rollups?: ClimateForesightPillarRollup[];
-  landscape_rollup?: ClimateForesightLandscapeRollup | null;
-  promote?: ClimateForesightPromote | null;
+  input_datalayers: InputDatalayer[];
+  pillar_rollups: ClimateForesightPillarRollup[];
+  landscape_rollup: ClimateForesightLandscapeRollup | null;
+  promote: ClimateForesightPromote | null;
 }
 
 export interface Pillar {
@@ -131,4 +131,16 @@ export interface Pillar {
 export interface CreateClimateForesightRunPayload {
   name: string;
   planning_area: number;
+}
+
+export type GeoPackageDownloadStatus =
+  | 'ready'
+  | 'processing'
+  | 'pending'
+  | 'error';
+
+export interface GeoPackageDownloadResponse {
+  status: GeoPackageDownloadStatus;
+  download_url?: string;
+  message?: string;
 }

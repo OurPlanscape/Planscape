@@ -1,12 +1,15 @@
 <app-nav-bar [area]="'CLIMATE_FORESIGHT'">
-  <button
-    sg-button
-    variant="primary"
-    icon="download"
-    [disabled]="downloading"
-    (click)="downloadGeopackage()">
-    {{ downloading ? 'Downloading...' : 'Download GeoPackage' }}
-  </button>
+  <div class="download-container">
+    <mat-spinner diameter="24" *ngIf="downloading || downloadStatus === 'processing' || downloadStatus === 'pending'"></mat-spinner>
+    <button
+      sg-button
+      variant="primary"
+      icon="download"
+      [disabled]="downloading || downloadStatus === 'processing' || downloadStatus === 'pending'"
+      (click)="downloadGeopackage()">
+      {{ downloadButtonLabel }}
+    </button>
+  </div>
 </app-nav-bar>
 
 <div class="analysis-container">

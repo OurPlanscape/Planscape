@@ -5,6 +5,7 @@ import {
   ClimateForesightRun,
   CreateClimateForesightRunPayload,
   DataLayer,
+  GeoPackageDownloadResponse,
   Pillar,
 } from '@types';
 import { environment } from '../../environments/environment';
@@ -162,11 +163,22 @@ export class ClimateForesightService {
   }
 
   /**
-   * Download the Climate Foresight outputs as a zip file
+   * Get the download status and URL for Climate Foresight outputs
    */
-  downloadOutputs(id: number): Observable<Blob> {
-    return this.http.get(`${this.basePath}${id}/download/`, {
-      withCredentials: true,
+  getDownloadStatus(id: number): Observable<GeoPackageDownloadResponse> {
+    return this.http.get<GeoPackageDownloadResponse>(
+      `${this.basePath}${id}/download/`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Download a file from a signed URL
+   */
+  downloadFromUrl(url: string): Observable<Blob> {
+    return this.http.get(url, {
       responseType: 'blob',
     });
   }

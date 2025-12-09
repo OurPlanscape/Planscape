@@ -34,6 +34,9 @@ import { FrontendConstants } from '../../map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-modal.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+
+const POLLING_INTERVAL = 5000; // 5 seconds
 
 @UntilDestroy()
 @Component({
@@ -72,7 +75,6 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
 
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
-  private pollingInterval = 5000; // 5 seconds
   private stopPolling$ = new Subject<void>();
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
@@ -179,16 +181,20 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
         this.runs.unshift(run);
         this.hasRuns = true;
         this.loading = false;
-        this.snackBar.open('Run created successfully', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'Run created successfully',
+          'Close',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
         this.openRun(run);
       },
       error: (error) => {
         this.loading = false;
-        this.snackBar.open('Failed to create run', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'Failed to create run',
+          'Close',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
         console.error('Error creating run:', error);
       },
     });
@@ -240,14 +246,18 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
           next: () => {
             this.runs = this.runs.filter((r) => r.id !== run.id);
             this.hasRuns = this.runs.length > 0;
-            this.snackBar.open(`"${run.name}" has been deleted`, 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              `"${run.name}" has been deleted`,
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
           },
           error: (error) => {
-            this.snackBar.open('Failed to delete run', 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              'Failed to delete run',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
             console.error('Error deleting run:', error);
           },
         });
@@ -272,7 +282,7 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
 
     this.stopPolling$.next();
 
-    interval(this.pollingInterval)
+    interval(POLLING_INTERVAL)
       .pipe(
         untilDestroyed(this),
         takeUntil(this.stopPolling$),
@@ -292,9 +302,11 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
 
           if (!stillHasRunningRuns) {
             this.stopPolling$.next();
-            this.snackBar.open('All analyses completed!', 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              'All analyses completed!',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
           }
         },
         error: (err) => {

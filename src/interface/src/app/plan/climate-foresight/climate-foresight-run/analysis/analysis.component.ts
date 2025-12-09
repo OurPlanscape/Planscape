@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject, take } from 'rxjs';
-import { map, filter, takeUntil } from 'rxjs/operators';
+import { Observable, take } from 'rxjs';
+import { map, filter } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -13,7 +13,12 @@ import {
 } from 'maplibregl-mapbox-request-transformer';
 
 import { ButtonComponent } from '@styleguide';
-import { ClimateForesightRun, DataLayer, StyleJson } from '@types';
+import {
+  ClimateForesightRun,
+  DataLayer,
+  GeoPackageDownloadStatus,
+  StyleJson,
+} from '@types';
 import { generateColorFunction as generateColorFunctionFromStyle } from '../../../../data-layers/utilities';
 import { MapConfigState } from '../../../../maplibre-map/map-config.state';
 import { PlanState } from '../../../plan.state';
@@ -38,7 +43,10 @@ import {
   MpatLegendComponent,
   LegendEntry,
 } from './mpat-legend/mpat-legend.component';
-import { SNACK_ERROR_CONFIG } from '../../../../shared/constants';
+import {
+  SNACK_BOTTOM_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+} from '../../../../shared/constants';
 import { SharedModule } from '../../../../shared/shared.module';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -76,13 +84,14 @@ export interface OutputLayer {
   styleUrls: ['./analysis.component.scss'],
 })
 export class AnalysisComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-
   run: ClimateForesightRun | null = null;
   runId: number | null = null;
   planId: number | null = null;
   loading = true;
   downloading = false;
+  downloadStatus: GeoPackageDownloadStatus | null = null;
+  downloadUrl: string | null = null;
+  private downloadPollingInterval: ReturnType<typeof setInterval> | null = null;
 
   mpatMatrixLayer: OutputLayer | null = null;
   adaptProtectLayer: OutputLayer | null = null;
@@ -149,7 +158,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+    this.route.params.pipe(untilDestroyed(this)).subscribe((params) => {
       this.runId = +params['runId'];
       this.planId = +params['planId'];
       this.loadRun();
@@ -157,8 +166,14 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.stopDownloadPolling();
+  }
+
+  private stopDownloadPolling(): void {
+    if (this.downloadPollingInterval) {
+      clearInterval(this.downloadPollingInterval);
+      this.downloadPollingInterval = null;
+    }
   }
 
   private loadRun(): void {
@@ -510,16 +525,100 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   downloadGeopackage(): void {
     if (!this.runId || this.downloading) return;
 
+    if (this.downloadStatus === 'ready' && this.downloadUrl) {
+      this.performDownload(this.downloadUrl);
+      return;
+    }
+
+    // starts interval polling for download status
+    this.checkDownloadStatus();
+  }
+
+  private checkDownloadStatus(): void {
+    if (!this.runId) return;
+
+    this.climateForesightService.getDownloadStatus(this.runId).subscribe({
+      next: (response) => {
+        this.downloadStatus = response.status;
+
+        if (response.status === 'ready' && response.download_url) {
+          this.downloadUrl = response.download_url;
+          this.stopDownloadPolling();
+          this.performDownload(response.download_url);
+        } else if (
+          response.status === 'processing' ||
+          response.status === 'pending'
+        ) {
+          if (!this.downloadPollingInterval) {
+            this.snackBar.open(
+              'GeoPackage is being generated. This may take a few minutes.',
+              'Dismiss',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+            this.startDownloadPolling();
+          }
+        } else if (response.status === 'error') {
+          this.snackBar.open(
+            response.message || 'Failed to generate GeoPackage',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        }
+      },
+      error: (err) => {
+        console.error('Failed to check download status:', err);
+        this.snackBar.open(
+          'Failed to check download status',
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
+  }
+
+  private startDownloadPolling(): void {
+    this.stopDownloadPolling();
+    this.downloadPollingInterval = setInterval(() => {
+      if (!this.runId) {
+        this.stopDownloadPolling();
+        return;
+      }
+
+      this.climateForesightService.getDownloadStatus(this.runId).subscribe({
+        next: (response) => {
+          this.downloadStatus = response.status;
+
+          if (response.status === 'ready' && response.download_url) {
+            this.downloadUrl = response.download_url;
+            this.stopDownloadPolling();
+            this.performDownload(response.download_url);
+          } else if (response.status === 'error') {
+            this.stopDownloadPolling();
+            this.snackBar.open(
+              response.message || 'Failed to generate GeoPackage',
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+          }
+        },
+        error: () => {
+          // don't stop for transient errors
+        },
+      });
+    }, 5000);
+  }
+
+  private performDownload(url: string): void {
     this.downloading = true;
-    this.climateForesightService.downloadOutputs(this.runId).subscribe({
+    this.climateForesightService.downloadFromUrl(url).subscribe({
       next: (blob) => {
         const filename = `climate_foresight_${this.run?.name || this.runId}.zip`;
-        const url = window.URL.createObjectURL(blob);
+        const downloadUrl = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
+        a.href = downloadUrl;
         a.download = filename;
         a.click();
-        window.URL.revokeObjectURL(url);
+        window.URL.revokeObjectURL(downloadUrl);
         this.downloading = false;
       },
       error: (err) => {
@@ -528,6 +627,21 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         this.downloading = false;
       },
     });
+  }
+
+  get downloadButtonLabel(): string {
+    if (this.downloading) {
+      return 'Downloading...';
+    }
+    switch (this.downloadStatus) {
+      case 'processing':
+      case 'pending':
+        return 'Generating GeoPackage...';
+      case 'error':
+        return 'Retry Download';
+      default:
+        return 'Download GeoPackage';
+    }
   }
 
   get isMpatSelected(): boolean {
