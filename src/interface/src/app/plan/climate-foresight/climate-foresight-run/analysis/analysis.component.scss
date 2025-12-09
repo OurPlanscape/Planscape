@@ -171,58 +171,9 @@
   gap: 8px;
 }
 
-.opacity-control {
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 4px;
+.opacity-slider {
+  width: 180px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  padding: 4px;
-  gap: 8px;
-
-  .basemap-thumbnail {
-    width: 32px;
-    height: 32px;
-    border-radius: 2px;
-    background: url('/assets/png/satellite-thumbnail.png') no-repeat center
-      center;
-    background-size: cover;
-    background-color: $color-soft-gray;
-    flex-shrink: 0;
-  }
-
-  .opacity-slider {
-    width: 120px;
-    height: 4px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: $color-standard-blue;
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-
-    &::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: $color-standard-blue;
-      cursor: pointer;
-      border: 2px solid white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-
-    &::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: $color-standard-blue;
-      cursor: pointer;
-      border: 2px solid white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-  }
 }
 
 .legend-container {

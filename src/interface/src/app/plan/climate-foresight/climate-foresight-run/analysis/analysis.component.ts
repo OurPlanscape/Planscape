@@ -12,7 +12,7 @@ import {
   transformMapboxUrl,
 } from 'maplibregl-mapbox-request-transformer';
 
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
 import {
   ClimateForesightRun,
   DataLayer,
@@ -71,6 +71,7 @@ export interface OutputLayer {
     CommonModule,
     SharedModule,
     ButtonComponent,
+    OpacitySliderComponent,
     MatIconModule,
     MatButtonModule,
     MatSnackBarModule,

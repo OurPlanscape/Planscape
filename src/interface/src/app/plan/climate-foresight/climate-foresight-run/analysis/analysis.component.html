@@ -1,11 +1,21 @@
 <app-nav-bar [area]="'CLIMATE_FORESIGHT'">
   <div class="download-container">
-    <mat-spinner diameter="24" *ngIf="downloading || downloadStatus === 'processing' || downloadStatus === 'pending'"></mat-spinner>
+    <mat-spinner
+      diameter="24"
+      *ngIf="
+        downloading ||
+        downloadStatus === 'processing' ||
+        downloadStatus === 'pending'
+      "></mat-spinner>
     <button
       sg-button
       variant="primary"
       icon="download"
-      [disabled]="downloading || downloadStatus === 'processing' || downloadStatus === 'pending'"
+      [disabled]="
+        downloading ||
+        downloadStatus === 'processing' ||
+        downloadStatus === 'pending'
+      "
       (click)="downloadGeopackage()">
       {{ downloadButtonLabel }}
     </button>
@@ -147,16 +157,15 @@
         </mgl-map>
 
         <div class="map-overlay">
-          <div class="opacity-control">
-            <div class="basemap-thumbnail"></div>
-            <input
-              type="range"
-              class="opacity-slider"
-              [value]="opacity"
-              min="0"
-              max="100"
-              (input)="onOpacityChange($any($event.target).value)" />
-          </div>
+          <sg-opacity-slider
+            class="opacity-slider"
+            [minValue]="0"
+            [maxValue]="100"
+            [step]="1"
+            [sliderValue]="opacity"
+            (valueChange)="onOpacityChange($event)"
+            tooltip="Layer Opacity">
+          </sg-opacity-slider>
 
           <div class="legend-container" *ngIf="selectedLayer">
             <app-mpat-legend
