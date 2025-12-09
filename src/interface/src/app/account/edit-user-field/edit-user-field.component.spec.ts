@@ -6,10 +6,11 @@ import { AuthService } from '@services';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
+
 import { of } from 'rxjs';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatButtonHarness } from '@angular/material/button/testing';
 
 describe('EditFieldComponent', () => {
   let component: EditUserFieldComponent;
