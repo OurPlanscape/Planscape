@@ -121,9 +121,10 @@ export class AssignFavorabilityComponent
   get chartData(): ChartConfiguration<'bar'>['data'] | null {
     if (!this.currentLayer) return null;
 
-    const stats = this.currentInputDataLayer?.statistics;
-    if (!stats) return null;
+    const statistics = this.currentInputDataLayer?.statistics;
+    if (!statistics || !statistics.original) return null;
 
+    const stats = statistics.original;
     const { min, max, mean, std } = stats;
 
     const range = max - min;

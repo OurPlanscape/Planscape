@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,7 +12,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { SharedModule } from '../../shared/shared.module';
 import { Plan, ClimateForesightRun } from '@types';
-import { take, map } from 'rxjs/operators';
+import { take, map, switchMap, takeUntil } from 'rxjs/operators';
+import { interval, Subject } from 'rxjs';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import { DeleteRunModalComponent } from './delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
@@ -32,7 +33,12 @@ import {
 import { FrontendConstants } from '../../map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-modal.component';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 
+const POLLING_INTERVAL = 5000; // 5 seconds
+
+@UntilDestroy()
 @Component({
   selector: 'app-climate-foresight',
   standalone: true,
@@ -55,7 +61,7 @@ import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-mod
   templateUrl: './climate-foresight.component.html',
   styleUrls: ['./climate-foresight.component.scss'],
 })
-export class ClimateForesightComponent implements OnInit {
+export class ClimateForesightComponent implements OnInit, OnDestroy {
   planName = '';
   planAcres = '';
   hasRuns = false;
@@ -68,6 +74,8 @@ export class ClimateForesightComponent implements OnInit {
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+
+  private stopPolling$ = new Subject<void>();
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
@@ -173,16 +181,20 @@ export class ClimateForesightComponent implements OnInit {
         this.runs.unshift(run);
         this.hasRuns = true;
         this.loading = false;
-        this.snackBar.open('Run created successfully', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'Run created successfully',
+          'Close',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
         this.openRun(run);
       },
       error: (error) => {
         this.loading = false;
-        this.snackBar.open('Failed to create run', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'Failed to create run',
+          'Close',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
         console.error('Error creating run:', error);
       },
     });
@@ -201,6 +213,8 @@ export class ClimateForesightComponent implements OnInit {
           this.runs = runs;
           this.hasRuns = runs.length > 0;
           this.loading = false;
+
+          this.startPollingIfNeeded();
         },
         error: (error) => {
           this.loading = false;
@@ -210,7 +224,13 @@ export class ClimateForesightComponent implements OnInit {
   }
 
   openRun(run: ClimateForesightRun): void {
-    this.router.navigate(['run', run.id], { relativeTo: this.route });
+    if (run.status === 'done') {
+      this.router.navigate(['run', run.id, 'analysis'], {
+        relativeTo: this.route,
+      });
+    } else {
+      this.router.navigate(['run', run.id], { relativeTo: this.route });
+    }
   }
 
   deleteRun(run: ClimateForesightRun): void {
@@ -226,18 +246,72 @@ export class ClimateForesightComponent implements OnInit {
           next: () => {
             this.runs = this.runs.filter((r) => r.id !== run.id);
             this.hasRuns = this.runs.length > 0;
-            this.snackBar.open(`"${run.name}" has been deleted`, 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              `"${run.name}" has been deleted`,
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
           },
           error: (error) => {
-            this.snackBar.open('Failed to delete run', 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              'Failed to delete run',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
             console.error('Error deleting run:', error);
           },
         });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling$.next();
+    this.stopPolling$.complete();
+  }
+
+  /**
+   * Start polling for run status updates if any runs are in 'running' status
+   */
+  private startPollingIfNeeded(): void {
+    const hasRunningRuns = this.runs.some((run) => run.status === 'running');
+
+    if (!hasRunningRuns || !this.currentPlan) {
+      return;
+    }
+
+    this.stopPolling$.next();
+
+    interval(POLLING_INTERVAL)
+      .pipe(
+        untilDestroyed(this),
+        takeUntil(this.stopPolling$),
+        switchMap(() =>
+          this.climateForesightService.listRunsByPlanningArea(
+            this.currentPlan!.id
+          )
+        )
+      )
+      .subscribe({
+        next: (runs) => {
+          this.runs = runs;
+
+          const stillHasRunningRuns = runs.some(
+            (run) => run.status === 'running'
+          );
+
+          if (!stillHasRunningRuns) {
+            this.stopPolling$.next();
+            this.snackBar.open(
+              'All analyses completed!',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+          }
+        },
+        error: (err) => {
+          console.error('Error polling for run status:', err);
+        },
+      });
   }
 }

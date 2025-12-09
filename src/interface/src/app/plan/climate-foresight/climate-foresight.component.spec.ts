@@ -434,6 +434,10 @@ describe('ClimateForesightComponent', () => {
           status: 'draft' as const,
           current_step: 1,
           furthest_step: 2,
+          input_datalayers: [],
+          pillar_rollups: [],
+          landscape_rollup: null,
+          promote: null,
         },
       ])
     );
