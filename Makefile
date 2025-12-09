@@ -95,9 +95,6 @@ migrate:
 install-dependencies-backend:
 	uv sync --locked --no-install-project --dev
 
-install-dependencies-forsys:
-	Rscript install.R
-
 deploy-backend: install-dependencies-backend migrate restart
 
 deploy-all: deploy-backend deploy-frontend
@@ -111,12 +108,6 @@ stop-celery:
 status-celery:
 	${SYS_CTL} status celery-* --all
 
-stop-forsys-server:
-	${SYS_CTL} stop forsys-server.service
-
-start-forsys-server:
-	${SYS_CTL} start forsys-server.service
-
 start:
 	${SYS_CTL} start ${SERVICE}
 
@@ -129,7 +120,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop-celery stop stop-forsys-server start-forsys-server start start-celery
+restart: reload stop-celery stop start start-celery
 
 nginx-restart:
 	sudo service nginx restart
