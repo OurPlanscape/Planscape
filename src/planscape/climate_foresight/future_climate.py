@@ -8,12 +8,12 @@ and are matched to pillars by name. Custom pillars use a default future layer.
 import logging
 from typing import Dict, Optional
 
-from datasets.models import DataLayer, Category
+from datasets.models import Category, DataLayer
 
 log = logging.getLogger(__name__)
 
 # default future climate layer to use when no match is found
-DEFAULT_FUTURE_CLIMATE_PILLAR = "Fire Dynamics"
+DEFAULT_FUTURE_CLIMATE_PILLAR = "Generic"
 
 
 def get_future_climate_category() -> Optional[Category]:
