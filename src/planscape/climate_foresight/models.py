@@ -1,9 +1,13 @@
 from typing import Optional
 
-from core.gcs import create_download_url
+from core.gcs import create_download_url as create_gcs_download_url
+from core.gcs import get_bucket_and_key as get_gcs_bucket_and_key
+from core.gcs import is_gcs_file
 from core.models import CreatedAtMixin
+from core.s3 import create_download_url as create_s3_download_url
+from core.s3 import get_bucket_and_key as get_s3_bucket_and_key
+from core.s3 import is_s3_file
 from datasets.models import DataLayer
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from planning.models import GeoPackageStatus, PlanningArea
@@ -528,7 +532,11 @@ class ClimateForesightPromote(CreatedAtMixin, models.Model):
         """Generate a signed download URL for the geopackage."""
         if not self.geopackage_url:
             return None
-        return create_download_url(
-            self.geopackage_url,
-            bucket_name=settings.GCS_MEDIA_BUCKET,
-        )
+
+        if is_s3_file(self.geopackage_url):
+            bucket, key = get_s3_bucket_and_key(self.geopackage_url)
+            return create_s3_download_url(bucket, key)
+        elif is_gcs_file(self.geopackage_url):
+            bucket, key = get_gcs_bucket_and_key(self.geopackage_url)
+            return create_gcs_download_url(self.geopackage_url, bucket_name=bucket)
+        return None

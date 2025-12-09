@@ -1069,7 +1069,7 @@ def _download_raster_to_temp(url: str, temp_dir: Path, filename: str) -> Optiona
 
 def export_geopackage(run_id: int, regenerate: bool = False) -> str:
     """
-    Export all Climate Foresight run outputs to a zipped GeoPackage and upload to GCS.
+    Export all Climate Foresight run outputs to a zipped GeoPackage and upload to cloud storage.
 
     This creates a zip file containing GeoTIFF rasters for all output layers:
     - MPAT outputs (matrix, strength, individual strategies)
@@ -1082,12 +1082,11 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
         regenerate: If True, regenerate even if geopackage already exists
 
     Returns:
-        GCS URL of the uploaded geopackage (gs://...)
+        Cloud storage URL of the uploaded geopackage (gs://... or s3://...)
 
     Raises:
         ValueError: If run is not in DONE status or has no outputs
     """
-    from core.gcs import upload_file_via_cli
     from planning.models import GeoPackageStatus
 
     from climate_foresight.models import (
@@ -1128,7 +1127,7 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
 
     try:
         promote.geopackage_status = GeoPackageStatus.PROCESSING
-        promote.save(update_fields=["geopackage_status", "updated_at"])
+        promote.save(update_fields=["geopackage_status"])
 
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
@@ -1234,23 +1233,32 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
         shutil.rmtree(temp_dir, ignore_errors=True)
         temp_dir = None
 
-        geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/climate_foresight_{run_id}.zip"
-        upload_file_via_cli(
-            object_name=geopackage_path.replace(
-                f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
-            ),
-            input_file=str(zip_path),
-            bucket_name=settings.GCS_MEDIA_BUCKET,
-        )
+        object_name = f"{settings.GEOPACKAGES_FOLDER}/climate_foresight_{run_id}.zip"
+
+        if settings.PROVIDER == "gcp":
+            from core.gcs import upload_file_via_cli
+
+            geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{object_name}"
+            upload_file_via_cli(
+                object_name=object_name,
+                input_file=str(zip_path),
+                bucket_name=settings.GCS_MEDIA_BUCKET,
+            )
+        else:
+            from core.s3 import upload_file_via_s3_client
+
+            geopackage_path = f"s3://{settings.S3_BUCKET}/{object_name}"
+            upload_file_via_s3_client(
+                object_name=object_name,
+                input_file=str(zip_path),
+            )
 
         zip_path.unlink(missing_ok=True)
         zip_path = None
 
         promote.geopackage_url = geopackage_path
         promote.geopackage_status = GeoPackageStatus.SUCCEEDED
-        promote.save(
-            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
-        )
+        promote.save(update_fields=["geopackage_url", "geopackage_status"])
 
         log.info(
             f"Successfully uploaded geopackage for run {run_id} to {geopackage_path}"
@@ -1261,9 +1269,7 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
         log.exception(f"Failed to export geopackage for run {run_id}")
         promote.geopackage_url = None
         promote.geopackage_status = GeoPackageStatus.FAILED
-        promote.save(
-            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
-        )
+        promote.save(update_fields=["geopackage_url", "geopackage_status"])
         raise
     finally:
         if temp_dir is not None:

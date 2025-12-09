@@ -344,7 +344,7 @@ def check_run_completion(run_id: int) -> Dict[str, Any]:
             if promote.geopackage_status in (GeoPackageStatus.PENDING, None):
                 if promote.geopackage_status is None:
                     promote.geopackage_status = GeoPackageStatus.PENDING
-                    promote.save(update_fields=["geopackage_status", "updated_at"])
+                    promote.save(update_fields=["geopackage_status"])
 
                 async_generate_climate_foresight_geopackage.delay(run_id)
                 log.info(f"Triggered geopackage generation for run {run_id}")
