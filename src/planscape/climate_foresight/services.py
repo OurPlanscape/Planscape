@@ -4,17 +4,11 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import numpy as np
 import rasterio
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import MultiPolygon
-from django.db import IntegrityError
-from scipy.optimize import minimize
-
 from datasets.models import (
     DataLayer,
     DataLayerHasStyle,
@@ -25,14 +19,19 @@ from datasets.models import (
     Style,
 )
 from datasets.services import create_datalayer, get_storage_url
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import MultiPolygon
+from django.db import IntegrityError
 from gis.info import get_gdal_env, info_raster
 from gis.rasters import read_raster_window_downsampled, to_planscape_streaming
+from scipy.optimize import minimize
 
 from climate_foresight.normalize import (
     calculate_outliers,
     s_shaped_membership,
-    z_shaped_membership,
     trapezoidal_membership,
+    z_shaped_membership,
 )
 
 log = logging.getLogger(__name__)
@@ -368,9 +367,10 @@ def normalize_raster_layer(
             f"(original clipped: {clipped_data.shape[1]}x{clipped_data.shape[0]})"
         )
 
-        from rasterio.warp import reproject, Resampling
-        from rasterio.features import geometry_mask
         import json
+
+        from rasterio.features import geometry_mask
+        from rasterio.warp import Resampling, reproject
 
         aligned_data = np.full((ref_height, ref_width), ref_nodata, dtype=np.float32)
 
@@ -771,8 +771,8 @@ def rollup_pillar(
             - method: Weight method used
     """
     from climate_foresight.models import (
-        ClimateForesightRun,
         ClimateForesightPillar,
+        ClimateForesightRun,
         ClimateForesightRunInputDataLayer,
     )
 
@@ -1067,9 +1067,9 @@ def _download_raster_to_temp(url: str, temp_dir: Path, filename: str) -> Optiona
         return None
 
 
-def export_geopackage(run_id: int) -> str:
+def export_geopackage(run_id: int, regenerate: bool = False) -> str:
     """
-    Export all Climate Foresight run outputs to a zipped GeoPackage.
+    Export all Climate Foresight run outputs to a zipped GeoPackage and upload to GCS.
 
     This creates a zip file containing GeoTIFF rasters for all output layers:
     - MPAT outputs (matrix, strength, individual strategies)
@@ -1079,13 +1079,17 @@ def export_geopackage(run_id: int) -> str:
 
     Args:
         run_id: ID of the ClimateForesightRun to export
+        regenerate: If True, regenerate even if geopackage already exists
 
     Returns:
-        Path to the generated zip file
+        GCS URL of the uploaded geopackage (gs://...)
 
     Raises:
         ValueError: If run is not in DONE status or has no outputs
     """
+    from core.gcs import upload_file_via_cli
+    from planning.models import GeoPackageStatus
+
     from climate_foresight.models import (
         ClimateForesightRun,
         ClimateForesightRunStatus,
@@ -1094,6 +1098,7 @@ def export_geopackage(run_id: int) -> str:
     run = (
         ClimateForesightRun.objects.select_related(
             "planning_area",
+            "promote_analysis",
         )
         .prefetch_related(
             "pillar_rollups__pillar",
@@ -1109,42 +1114,56 @@ def export_geopackage(run_id: int) -> str:
             f"Cannot export run {run_id}: status is {run.status}, expected 'done'"
         )
 
-    export_dir = Path(settings.OUTPUT_DIR) / "climate_foresight" / str(run_id)
-    export_dir.mkdir(parents=True, exist_ok=True)
+    if not hasattr(run, "promote_analysis"):
+        raise ValueError(f"Run {run_id} has no PROMOTe analysis")
 
-    temp_dir = Path(tempfile.mkdtemp(prefix=f"cf_export_{run_id}_"))
-    rasters_dir = temp_dir / "rasters"
-    rasters_dir.mkdir(parents=True, exist_ok=True)
+    promote = run.promote_analysis
 
-    exported_files = []
+    if not regenerate and promote.geopackage_url:
+        log.info(f"Run {run_id} already has a geopackage URL: {promote.geopackage_url}")
+        return promote.geopackage_url
+
+    temp_dir = None
+    zip_path = None
 
     try:
-        # PROMOTe outputs
-        if hasattr(run, "promote_analysis"):
-            promote = run.promote_analysis
-            promote_layers = [
-                ("mpat_matrix", promote.mpat_matrix_datalayer),
-                ("mpat_strength", promote.mpat_strength_datalayer),
-                ("monitor", promote.monitor_datalayer),
-                ("protect", promote.protect_datalayer),
-                ("adapt", promote.adapt_datalayer),
-                ("transform", promote.transform_datalayer),
-                ("adapt_protect", promote.adapt_protect_datalayer),
-                (
-                    "integrated_condition_score",
-                    promote.integrated_condition_score_datalayer,
-                ),
-            ]
+        promote.geopackage_status = GeoPackageStatus.PROCESSING
+        promote.save(update_fields=["geopackage_status", "updated_at"])
 
-            for name, datalayer in promote_layers:
-                if datalayer and datalayer.url:
-                    filename = f"promote_{name}.tif"
-                    local_path = _download_raster_to_temp(
-                        datalayer.url, rasters_dir, filename
-                    )
-                    if local_path:
-                        exported_files.append(local_path)
-                        log.info(f"Exported PROMOTe layer: {name}")
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        if not temp_folder.exists():
+            temp_folder.mkdir(parents=True)
+
+        temp_dir = Path(tempfile.mkdtemp(prefix=f"cf_export_{run_id}_"))
+        rasters_dir = temp_dir / "rasters"
+        rasters_dir.mkdir(parents=True, exist_ok=True)
+
+        exported_files = []
+
+        # PROMOTe outputs
+        promote_layers = [
+            ("mpat_matrix", promote.mpat_matrix_datalayer),
+            ("mpat_strength", promote.mpat_strength_datalayer),
+            ("monitor", promote.monitor_datalayer),
+            ("protect", promote.protect_datalayer),
+            ("adapt", promote.adapt_datalayer),
+            ("transform", promote.transform_datalayer),
+            ("adapt_protect", promote.adapt_protect_datalayer),
+            (
+                "integrated_condition_score",
+                promote.integrated_condition_score_datalayer,
+            ),
+        ]
+
+        for name, datalayer in promote_layers:
+            if datalayer and datalayer.url:
+                filename = f"promote_{name}.tif"
+                local_path = _download_raster_to_temp(
+                    datalayer.url, rasters_dir, filename
+                )
+                if local_path:
+                    exported_files.append(local_path)
+                    log.info(f"Exported PROMOTe layer: {name}")
 
         # landscape rollup
         if hasattr(run, "landscape_rollup"):
@@ -1198,8 +1217,7 @@ def export_geopackage(run_id: int) -> str:
 
         safe_run_name = run.name.replace(" ", "_").replace("/", "_")
         zip_filename = f"climate_foresight_{safe_run_name}_{run_id}.zip"
-        zip_path = export_dir / zip_filename
-
+        zip_path = temp_folder / zip_filename
         zip_path.unlink(missing_ok=True)
 
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -1213,7 +1231,42 @@ def export_geopackage(run_id: int) -> str:
             f"({len(exported_files)} rasters)"
         )
 
-        return str(zip_path)
-
-    finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
+        temp_dir = None
+
+        geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/climate_foresight_{run_id}.zip"
+        upload_file_via_cli(
+            object_name=geopackage_path.replace(
+                f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
+            ),
+            input_file=str(zip_path),
+            bucket_name=settings.GCS_MEDIA_BUCKET,
+        )
+
+        zip_path.unlink(missing_ok=True)
+        zip_path = None
+
+        promote.geopackage_url = geopackage_path
+        promote.geopackage_status = GeoPackageStatus.SUCCEEDED
+        promote.save(
+            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
+
+        log.info(
+            f"Successfully uploaded geopackage for run {run_id} to {geopackage_path}"
+        )
+        return geopackage_path
+
+    except Exception:
+        log.exception(f"Failed to export geopackage for run {run_id}")
+        promote.geopackage_url = None
+        promote.geopackage_status = GeoPackageStatus.FAILED
+        promote.save(
+            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
+        raise
+    finally:
+        if temp_dir is not None:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        if zip_path is not None:
+            zip_path.unlink(missing_ok=True)

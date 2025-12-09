@@ -1,28 +1,32 @@
 import logging
 from typing import Optional
-from django.db import transaction
 
 from datasets.models import DataLayer
 from datasets.tasks import datalayer_uploaded
+from django.db import transaction
+from planning.models import GeoPackageStatus
+from planscape.celery import app
 
+from climate_foresight.landscape import rollup_landscape
 from climate_foresight.models import (
-    ClimateForesightRunInputDataLayer,
-    InputDataLayerStatus,
-    ClimateForesightPillarRollup,
-    ClimateForesightPillarRollupStatus,
     ClimateForesightLandscapeRollup,
     ClimateForesightLandscapeRollupStatus,
+    ClimateForesightPillarRollup,
+    ClimateForesightPillarRollupStatus,
     ClimateForesightPromote,
     ClimateForesightPromoteStatus,
+    ClimateForesightRun,
+    ClimateForesightRunInputDataLayer,
+    ClimateForesightRunStatus,
+    InputDataLayerStatus,
 )
+from climate_foresight.promote import run_promote_analysis
 from climate_foresight.services import (
     calculate_layer_statistics,
+    export_geopackage,
     normalize_raster_layer,
     rollup_pillar,
 )
-from climate_foresight.landscape import rollup_landscape
-from climate_foresight.promote import run_promote_analysis
-from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
@@ -648,10 +652,10 @@ def auto_progress_climate_foresight_run(run_id: int) -> dict:
         dict: Summary of what was triggered
     """
     from climate_foresight.orchestration import (
-        trigger_pillar_rollups_if_ready,
-        trigger_landscape_rollup_if_ready,
-        trigger_promote_if_ready,
         check_run_completion,
+        trigger_landscape_rollup_if_ready,
+        trigger_pillar_rollups_if_ready,
+        trigger_promote_if_ready,
     )
 
     log.info(f"Auto-progressing Climate Foresight run {run_id}")
@@ -667,3 +671,53 @@ def auto_progress_climate_foresight_run(run_id: int) -> dict:
     log.info(f"Auto-progress results for run {run_id}: {results}")
 
     return results
+
+
+@app.task()
+def async_generate_climate_foresight_geopackage(run_id: int) -> None:
+    """
+    Generate geopackage for a Climate Foresight run asynchronously.
+
+    This task exports all PROMOTe outputs, pillar rollups, landscape rollups,
+    and normalized input layers to a zipped GeoPackage and uploads to GCS.
+
+    Args:
+        run_id: ID of the ClimateForesightRun to export
+    """
+
+    try:
+        run = ClimateForesightRun.objects.select_related("promote_analysis").get(
+            pk=run_id
+        )
+
+        # Validate run is complete
+        if run.status != ClimateForesightRunStatus.DONE:
+            log.warning(
+                f"Cannot export run {run_id}: status is {run.status}, expected 'done'"
+            )
+            return
+
+        if not hasattr(run, "promote_analysis"):
+            log.warning(f"Cannot export run {run_id}: no PROMOTe analysis found")
+            return
+
+        if run.promote_analysis.geopackage_status not in (
+            GeoPackageStatus.PENDING,
+            GeoPackageStatus.FAILED,
+            None,
+        ):
+            log.info(
+                f"Geopackage for run {run_id} is already {run.promote_analysis.geopackage_status}"
+            )
+            return
+
+        geopackage_path = export_geopackage(run_id)
+        log.info(
+            f"Successfully generated geopackage for run {run_id}: {geopackage_path}"
+        )
+
+    except ClimateForesightRun.DoesNotExist:
+        log.error(f"Climate Foresight run {run_id} does not exist")
+    except Exception as e:
+        log.exception(f"Failed to generate geopackage for run {run_id}: {e}")
+        raise

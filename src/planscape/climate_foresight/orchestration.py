@@ -9,33 +9,35 @@ This module coordinates the full analysis workflow:
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 from celery import chain, group
+from datasets.models import DataLayerStatus
+from datasets.tasks import datalayer_uploaded
 from django.db import transaction
+from planning.models import GeoPackageStatus
 
 from climate_foresight.models import (
+    ClimateForesightLandscapeRollup,
+    ClimateForesightLandscapeRollupStatus,
+    ClimateForesightPillarRollup,
+    ClimateForesightPillarRollupStatus,
+    ClimateForesightPromote,
+    ClimateForesightPromoteStatus,
     ClimateForesightRun,
     ClimateForesightRunStatus,
     InputDataLayerStatus,
-    ClimateForesightPillarRollup,
-    ClimateForesightPillarRollupStatus,
-    ClimateForesightLandscapeRollup,
-    ClimateForesightLandscapeRollupStatus,
-    ClimateForesightPromote,
-    ClimateForesightPromoteStatus,
 )
 from climate_foresight.tasks import (
+    async_generate_climate_foresight_geopackage,
+    auto_progress_climate_foresight_run,
     normalize_climate_foresight_input_layer,
-    rollup_climate_foresight_pillar,
-    rollup_climate_foresight_landscape,
-    run_climate_foresight_promote,
     process_landscape_datalayers,
     process_promote_datalayers,
-    auto_progress_climate_foresight_run,
+    rollup_climate_foresight_landscape,
+    rollup_climate_foresight_pillar,
+    run_climate_foresight_promote,
 )
-from datasets.models import DataLayerStatus
-from datasets.tasks import datalayer_uploaded
 
 log = logging.getLogger(__name__)
 
@@ -338,6 +340,15 @@ def check_run_completion(run_id: int) -> Dict[str, Any]:
         with transaction.atomic():
             run.status = ClimateForesightRunStatus.DONE
             run.save()
+
+            if promote.geopackage_status in (GeoPackageStatus.PENDING, None):
+                if promote.geopackage_status is None:
+                    promote.geopackage_status = GeoPackageStatus.PENDING
+                    promote.save(update_fields=["geopackage_status", "updated_at"])
+
+                async_generate_climate_foresight_geopackage.delay(run_id)
+                log.info(f"Triggered geopackage generation for run {run_id}")
+
         log.info(f"Run {run_id} marked as DONE")
         return {"run_id": run_id, "status": "done"}
 

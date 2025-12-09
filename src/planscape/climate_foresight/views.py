@@ -1,34 +1,44 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, ValidationError
+import logging
+
+from datasets.models import DataLayer, DataLayerStatus
+from datasets.serializers import BrowseDataLayerSerializer
 from django.db.models import Prefetch, Q
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
-from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
-from climate_foresight.serializers import (
-    ClimateForesightPillarSerializer,
-    ClimateForesightRunSerializer,
-    ClimateForesightRunListSerializer,
-)
+from drf_spectacular.utils import extend_schema
+from planning.models import GeoPackageStatus, PlanningArea
+from planscape.serializers import BaseErrorMessageSerializer
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.response import Response
+
 from climate_foresight.filters import (
-    ClimateForesightRunFilterSet,
     ClimateForesightPillarFilterSet,
+    ClimateForesightRunFilterSet,
+)
+from climate_foresight.models import (
+    ClimateForesightPillar,
+    ClimateForesightRun,
+    ClimateForesightRunStatus,
 )
 from climate_foresight.orchestration import (
-    start_climate_foresight_analysis,
-    trigger_pillar_rollups_if_ready,
-    trigger_landscape_rollup_if_ready,
-    trigger_promote_if_ready,
     check_run_completion,
+    start_climate_foresight_analysis,
+    trigger_landscape_rollup_if_ready,
+    trigger_pillar_rollups_if_ready,
+    trigger_promote_if_ready,
+)
+from climate_foresight.serializers import (
+    ClimateForesightPillarSerializer,
+    ClimateForesightRunListSerializer,
+    ClimateForesightRunSerializer,
 )
 from climate_foresight.services import export_geopackage
-from planning.models import PlanningArea
-from datasets.models import DataLayer, DataLayerStatus
-from datasets.serializers import BrowseDataLayerSerializer
-from planscape.serializers import BaseErrorMessageSerializer
+from climate_foresight.tasks import async_generate_climate_foresight_geopackage
+
+log = logging.getLogger(__name__)
 
 
 class ClimateForesightRunViewSet(viewsets.ModelViewSet):
@@ -175,27 +185,77 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], filterset_class=None)
     def download(self, request, pk=None):
         """
-        Export and download all Climate Foresight run outputs.
+        Get download URL for Climate Foresight run geopackage.
 
-        Returns a zip file containing GeoTIFF rasters for:
+        Returns a JSON response with the download status and URL (if ready).
+        The geopackage contains GeoTIFF rasters for:
         - MPAT outputs (matrix, strength, individual strategies)
         - Pillar rollups
         - Landscape rollups (current and future)
         - Normalized input layers
 
         The run must be in 'done' status.
+
+        Response format:
+        - status: "ready" | "processing" | "pending" | "failed"
+        - download_url: Signed GCS URL (only when status="ready")
+        - message: Status message
         """
+
         run = self.get_object()
 
-        try:
-            output_path = export_geopackage(run.id)
-            return FileResponse(
-                open(output_path, "rb"),
-                as_attachment=True,
-                filename=f"climate_foresight_{run.id}.zip",
+        # Following 2 checks validate but cases should never happen with normal usage
+        if run.status != ClimateForesightRunStatus.DONE:
+            raise ValidationError(
+                f"Cannot download: run status is {run.status}, expected 'done'"
             )
-        except ValueError as e:
-            raise ValidationError(str(e))
+
+        if not hasattr(run, "promote_analysis"):
+            raise ValidationError("No PROMOTe analysis found for this run")
+
+        promote = run.promote_analysis
+
+        if promote.geopackage_status == GeoPackageStatus.SUCCEEDED:
+            download_url = promote.get_geopackage_url()
+            if download_url:
+                return Response(
+                    {
+                        "status": "ready",
+                        "download_url": download_url,
+                    }
+                )
+            else:
+                return Response(
+                    {"status": "error", "message": "Download URL generation failed"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+        elif promote.geopackage_status == GeoPackageStatus.PROCESSING:
+            return Response(
+                {
+                    "status": "processing",
+                    "message": "Geopackage is being generated. Please try again later.",
+                }
+            )
+
+        else:
+            if promote.geopackage_status == GeoPackageStatus.FAILED:
+                log.warning(
+                    f"Previous geopackage generation failed for run {run.id}. Trying again."
+                )
+
+            if promote.geopackage_status is None:
+                promote.geopackage_status = GeoPackageStatus.PENDING
+                promote.save(update_fields=["geopackage_status", "updated_at"])
+
+            async_generate_climate_foresight_geopackage.delay(run.id)
+
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Geopackage generation has been queued.",
+                }
+            )
 
 
 class ClimateForesightPillarViewSet(viewsets.ModelViewSet):

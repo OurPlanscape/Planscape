@@ -1,8 +1,12 @@
-from django.contrib.auth.models import User
-from django.db import models
+from typing import Optional
+
+from core.gcs import create_download_url
 from core.models import CreatedAtMixin
 from datasets.models import DataLayer
-from planning.models import PlanningArea
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import models
+from planning.models import GeoPackageStatus, PlanningArea
 
 
 class ClimateForesightRunManager(models.Manager):
@@ -500,9 +504,31 @@ class ClimateForesightPromote(CreatedAtMixin, models.Model):
         help_text="MPAT with strength classification (weak/strong)",
     )
 
+    # Geopackage export fields
+    geopackage_status = models.CharField(
+        max_length=32,
+        choices=GeoPackageStatus.choices,
+        null=True,
+        help_text="Status of the geopackage generation.",
+    )
+
+    geopackage_url = models.URLField(
+        null=True,
+        help_text="Cloud storage URL of the generated geopackage ZIP file.",
+    )
+
     class Meta:
         verbose_name = "Climate Foresight PROMOTe Analysis"
         verbose_name_plural = "Climate Foresight PROMOTe Analyses"
 
     def __str__(self):
         return f"PROMOTe analysis for {self.run.name}"
+
+    def get_geopackage_url(self) -> Optional[str]:
+        """Generate a signed download URL for the geopackage."""
+        if not self.geopackage_url:
+            return None
+        return create_download_url(
+            self.geopackage_url,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
+        )

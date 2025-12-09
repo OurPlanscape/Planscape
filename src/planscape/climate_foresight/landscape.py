@@ -8,15 +8,11 @@ for use in PROMOTe analysis.
 import logging
 import tempfile
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 from uuid import uuid4
 
 import numpy as np
 import rasterio
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.db import IntegrityError
-
 from datasets.models import (
     DataLayer,
     DataLayerHasStyle,
@@ -27,10 +23,21 @@ from datasets.models import (
     Style,
 )
 from datasets.services import create_datalayer, get_storage_url
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import IntegrityError
 from gis.info import get_gdal_env, info_raster
-from gis.rasters import to_planscape_streaming, read_raster_window_downsampled
+from gis.rasters import read_raster_window_downsampled, to_planscape_streaming
 
-from climate_foresight.future_climate import map_pillars_to_future_layers
+from climate_foresight.future_climate import (
+    get_default_future_climate_layer,
+    map_pillars_to_future_layers,
+)
+from climate_foresight.models import (
+    ClimateForesightPillarRollup,
+    ClimateForesightPillarRollupStatus,
+    ClimateForesightRun,
+)
 
 log = logging.getLogger(__name__)
 
@@ -64,6 +71,18 @@ def aggregate_rasters_simple_average(
         return raster_layers[0]
 
     log.info(f"Averaging {len(raster_layers)} rasters: {output_name}")
+
+    existing_layer = DataLayer.objects.filter(
+        name=output_name,
+        dataset=raster_layers[0].dataset,
+        type=DataLayerType.RASTER,
+    ).first()
+
+    if existing_layer:
+        log.info(
+            f"DataLayer {existing_layer.name} already processed and created: (id={existing_layer.id})"
+        )
+        return existing_layer
 
     with rasterio.Env(**get_gdal_env()):
         with rasterio.open(raster_layers[0].url) as src:
@@ -123,9 +142,9 @@ def aggregate_rasters_simple_average(
     ).first()
 
     if existing_layer:
-        log.warning(
-            f"Datalayer '{output_name}' already exists (id={existing_layer.id}). "
-            "Returning existing layer (task retry detected)."
+        log.info(
+            f"DataLayer {existing_layer.name} already processed and created: (id={existing_layer.id})",
+            "Check tasks for race condition as first check did not find an existing layer.",
         )
         return existing_layer
 
@@ -206,11 +225,6 @@ def rollup_landscape(
             - future_datalayer: Aggregated future conditions DataLayer (aligned to current)
             - future_mapping: Dict mapping pillar_id to future layer info
     """
-    from climate_foresight.models import (
-        ClimateForesightRun,
-        ClimateForesightPillarRollup,
-        ClimateForesightPillarRollupStatus,
-    )
 
     run = ClimateForesightRun.objects.get(pk=run_id)
 
@@ -317,8 +331,6 @@ def rollup_landscape(
             pillar_to_future[str(pillar_rollup.pillar.id)] = future_info
 
     # for unassigned layers, use default future climate layer
-    from climate_foresight.future_climate import get_default_future_climate_layer
-
     if unassigned_count > 0:
         default_future_layer = get_default_future_climate_layer()
         if default_future_layer:

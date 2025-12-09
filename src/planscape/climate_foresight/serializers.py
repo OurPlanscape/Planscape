@@ -1,16 +1,17 @@
+from datasets.serializers import DataLayerSerializer
+from planning.models import PlanningArea
 from rest_framework import serializers
+
 from climate_foresight.models import (
+    ClimateForesightLandscapeRollup,
     ClimateForesightPillar,
+    ClimateForesightPillarRollup,
+    ClimateForesightPromote,
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
     ClimateForesightRunStatus,
-    ClimateForesightPillarRollup,
-    ClimateForesightLandscapeRollup,
-    ClimateForesightPromote,
 )
 from climate_foresight.tasks import calculate_climate_foresight_layer_statistics
-from datasets.serializers import DataLayerSerializer
-from planning.models import PlanningArea
 
 
 class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
@@ -397,6 +398,12 @@ class ClimateForesightPromoteSerializer(serializers.ModelSerializer):
         read_only=True, allow_null=True
     )
 
+    geopackage_url = serializers.SerializerMethodField()
+
+    def get_geopackage_url(self, obj):
+        """Return presigned download URL if geopackage is ready."""
+        return obj.get_geopackage_url()
+
     class Meta:
         model = ClimateForesightPromote
         fields = [
@@ -414,6 +421,8 @@ class ClimateForesightPromoteSerializer(serializers.ModelSerializer):
             "mpat_strength_datalayer",
             "adapt_protect_datalayer",
             "integrated_condition_score_datalayer",
+            "geopackage_status",
+            "geopackage_url",
             "created_at",
         ]
         read_only_fields = [
@@ -430,5 +439,6 @@ class ClimateForesightPromoteSerializer(serializers.ModelSerializer):
             "mpat_strength_datalayer",
             "adapt_protect_datalayer",
             "integrated_condition_score_datalayer",
+            "geopackage_status",
             "created_at",
         ]

@@ -1,4 +1,4 @@
-# datasets/migrations/0023_add_climate_foresight_styles.py
+# datasets/migrations/0024_add_climate_foresight_styles.py
 """
 Add predefined raster styles for Climate Foresight outputs.
 
@@ -13,13 +13,11 @@ These styles define the color schemes for:
 from __future__ import annotations
 
 import json
+from typing import Any, Dict
+
 import mmh3
-
-from typing import Dict, Any
-
 from django.conf import settings
 from django.db import IntegrityError, migrations
-
 
 MPAT_MATRIX_STYLE: Dict[str, Any] = {
     "map_type": "VALUES",
@@ -144,7 +142,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("organizations", "0004_alter_organization_options"),
         ("auth", "0012_alter_user_first_name_max_length"),
-        ("datasets", "0022_dataset_preferred_display_type_and_more"),
+        ("datasets", "0023_alter_dataset_preferred_display_type_and_more"),
     ]
 
     operations = [
