@@ -2,9 +2,10 @@
 
 <div class="climate-foresight-run-container">
   <sg-steps-nav
+    [linear]="true"
     [steps]="stepsList"
     [selectedIndex]="currentStepIndex"
-    [allowNavigation]="true"
+    [allowNavigation]="false"
     (selectionChange)="
       stepsComponent && (stepsComponent.selectedIndex = $event)
     ">
