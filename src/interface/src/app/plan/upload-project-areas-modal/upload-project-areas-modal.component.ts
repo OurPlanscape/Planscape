@@ -7,7 +7,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -32,8 +31,7 @@ import { PlanService } from '@services';
 import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
-import { MatLegacyMenuModule } from '@angular/material/legacy-menu';
+import { MatMenuModule } from '@angular/material/menu';
 
 export interface DialogData {
   planning_area_name: string;
@@ -54,15 +52,13 @@ export interface DialogData {
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
-    MatButtonModule,
     MatDialogModule,
     MatSelectModule,
     MatIconModule,
     NgIf,
     SharedModule,
     ReactiveFormsModule,
-    MatLegacyButtonModule,
-    MatLegacyMenuModule,
+    MatMenuModule,
     InputDirective,
   ],
 })

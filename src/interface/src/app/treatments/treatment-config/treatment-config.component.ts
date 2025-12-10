@@ -26,7 +26,6 @@ import { FeaturesModule } from '../../features/features.module';
 import { SharedModule } from '@shared';
 import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { MatMenuModule } from '@angular/material/menu';
 import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
 import { ApplyTreatmentComponent } from '../apply-treatment/apply-treatment.component';
@@ -59,7 +58,6 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     ButtonComponent,
     MatLegacySlideToggleModule,
     MatIconModule,
-    MatLegacyButtonModule,
     MatMenuModule,
     TreatmentNavbarMenuComponent,
     ApplyTreatmentComponent,
