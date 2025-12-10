@@ -9,11 +9,9 @@ This module coordinates the full analysis workflow:
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from celery import chain, group
-from datasets.models import DataLayerStatus
-from datasets.tasks import datalayer_uploaded
+from celery import chain, chord, group
 from django.db import transaction
 from planning.models import GeoPackageStatus
 
@@ -30,9 +28,12 @@ from climate_foresight.models import (
 )
 from climate_foresight.tasks import (
     async_generate_climate_foresight_geopackage,
-    auto_progress_climate_foresight_run,
+    async_mark_run_failed,
+    mark_run_complete,
     normalize_climate_foresight_input_layer,
     process_landscape_datalayers,
+    process_normalized_datalayers,
+    process_pillar_datalayers,
     process_promote_datalayers,
     rollup_climate_foresight_landscape,
     rollup_climate_foresight_pillar,
@@ -46,13 +47,12 @@ def start_climate_foresight_analysis(run_id: int) -> Dict[str, Any]:
     """
     Start the full Climate Foresight analysis pipeline.
 
-    This orchestrates the entire workflow:
-    1. Normalize all input layers
-    2. Create pillar rollup records and start rollup tasks
-    3. Create landscape rollup record (will run after pillars complete)
-    4. Create PROMOTe record (will run after landscape completes)
-
-    The actual execution is async via Celery tasks.
+    This orchestrates a Celery workflow:
+    1. Normalize all input layers in parallel (chord)
+    2. Rollup all pillars in parallel (chord)
+    3. Rollup landscape (single task)
+    4. Run PROMOTe analysis (single task)
+    5. Mark run complete
 
     Args:
         run_id: ID of the ClimateForesightRun to analyze
@@ -83,29 +83,13 @@ def start_climate_foresight_analysis(run_id: int) -> Dict[str, Any]:
         run.status = ClimateForesightRunStatus.RUNNING
         run.save()
 
-        normalization_tasks = []
-        input_layers = run.input_datalayers.select_related("datalayer").all()
-
-        for input_layer in input_layers:
-            if input_layer.status in [
-                InputDataLayerStatus.COMPLETED,
-                InputDataLayerStatus.RUNNING,
-            ]:
-                log.info(
-                    f"Input layer {input_layer.id} status is {input_layer.status}, skipping"
-                )
-                continue
-
-            normalize_chain = chain(
-                normalize_climate_foresight_input_layer.si(input_layer.id),
-                datalayer_uploaded.s(status=DataLayerStatus.READY),
-                auto_progress_climate_foresight_run.si(run_id),
-            )
-            normalization_tasks.append(normalize_chain)
-
-        if normalization_tasks:
-            log.info(f"Starting {len(normalization_tasks)} normalization tasks")
-            group(*normalization_tasks).apply_async()
+        input_layers = list(run.input_datalayers.select_related("datalayer").all())
+        normalization_layer_ids = [
+            il.id
+            for il in input_layers
+            if il.status
+            not in [InputDataLayerStatus.COMPLETED, InputDataLayerStatus.RUNNING]
+        ]
 
         assigned_pillars = (
             run.input_datalayers.values_list("pillar_id", flat=True)
@@ -115,21 +99,16 @@ def start_climate_foresight_analysis(run_id: int) -> Dict[str, Any]:
 
         pillar_rollup_ids = []
         for pillar_id in assigned_pillars:
-            existing_rollup = run.pillar_rollups.filter(pillar_id=pillar_id).first()
-            if existing_rollup:
-                log.info(
-                    f"Pillar rollup for pillar {pillar_id} already exists: {existing_rollup.id}"
-                )
-                pillar_rollup_ids.append(existing_rollup.id)
-                continue
-
-            pillar_rollup = ClimateForesightPillarRollup.objects.create(
+            pillar_rollup, created = ClimateForesightPillarRollup.objects.get_or_create(
                 run=run,
                 pillar_id=pillar_id,
-                status=ClimateForesightPillarRollupStatus.PENDING,
+                defaults={"status": ClimateForesightPillarRollupStatus.PENDING},
             )
             pillar_rollup_ids.append(pillar_rollup.id)
-            log.info(f"Created pillar rollup {pillar_rollup.id} for pillar {pillar_id}")
+            if created:
+                log.info(
+                    f"Created pillar rollup {pillar_rollup.id} for pillar {pillar_id}"
+                )
 
         landscape_rollup, created = (
             ClimateForesightLandscapeRollup.objects.get_or_create(
@@ -139,8 +118,6 @@ def start_climate_foresight_analysis(run_id: int) -> Dict[str, Any]:
         )
         if created:
             log.info(f"Created landscape rollup {landscape_rollup.id}")
-        else:
-            log.info(f"Landscape rollup {landscape_rollup.id} already exists")
 
         promote, created = ClimateForesightPromote.objects.get_or_create(
             run=run,
@@ -148,175 +125,75 @@ def start_climate_foresight_analysis(run_id: int) -> Dict[str, Any]:
         )
         if created:
             log.info(f"Created PROMOTe record {promote.id}")
-        else:
-            log.info(f"PROMOTe record {promote.id} already exists")
+
+    workflow = build_analysis_workflow(
+        run_id=run_id,
+        normalization_layer_ids=normalization_layer_ids,
+        pillar_rollup_ids=pillar_rollup_ids,
+        landscape_rollup_id=landscape_rollup.id,
+        promote_id=promote.id,
+    )
+
+    error_handler = async_mark_run_failed.si(run_id)
+    workflow.on_error(error_handler).apply_async()
+
+    log.info(f"Triggered analysis workflow for run {run_id}")
 
     return {
         "run_id": run_id,
         "status": "started",
-        "normalization_tasks": len(normalization_tasks),
-        "pillar_rollups_created": pillar_rollup_ids,
+        "normalization_tasks": len(normalization_layer_ids),
+        "pillar_rollups": pillar_rollup_ids,
         "landscape_rollup_id": landscape_rollup.id,
         "promote_id": promote.id,
     }
 
 
-def trigger_pillar_rollups_if_ready(run_id: int) -> Dict[str, Any]:
+def build_analysis_workflow(
+    run_id: int,
+    normalization_layer_ids: List[int],
+    pillar_rollup_ids: List[int],
+    landscape_rollup_id: int,
+    promote_id: int,
+):
     """
-    Check if any pillar rollups are ready to run and trigger them.
+    Build the Celery workflow for the full analysis pipeline.
 
-    A pillar rollup is ready when all its input layers are normalized.
-
-    Args:
-        run_id: ID of the ClimateForesightRun
-
-    Returns:
-        dict: Summary of pillar rollups triggered
+    Structure:
+    - chord(normalize all inputs) -> process normalized datalayers
+    - chord(rollup all pillars) -> process pillar datalayers
+    - rollup landscape -> process landscape datalayers
+    - run PROMOTe -> process promote datalayers
+    - mark complete
     """
-    run = ClimateForesightRun.objects.get(pk=run_id)
-    triggered_pillars = []
+    stages = []
 
-    pending_rollups = run.pillar_rollups.filter(
-        status=ClimateForesightPillarRollupStatus.PENDING
-    ).select_related("pillar")
+    if normalization_layer_ids:
+        normalize_tasks = group(
+            normalize_climate_foresight_input_layer.si(layer_id)
+            for layer_id in normalization_layer_ids
+        )
+        normalize_callback = process_normalized_datalayers.si(run_id)
+        stages.append(chord(normalize_tasks, normalize_callback))
 
-    for pillar_rollup in pending_rollups:
-        pillar_layers = run.input_datalayers.filter(pillar=pillar_rollup.pillar)
-        incomplete_count = pillar_layers.exclude(
-            status=InputDataLayerStatus.COMPLETED
-        ).count()
+    if pillar_rollup_ids:
+        pillar_tasks = group(
+            rollup_climate_foresight_pillar.si(pr_id) for pr_id in pillar_rollup_ids
+        )
+        pillar_callback = process_pillar_datalayers.si(run_id)
+        stages.append(chord(pillar_tasks, pillar_callback))
 
-        if incomplete_count == 0:
-            log.info(
-                f"Triggering pillar rollup {pillar_rollup.id} for pillar {pillar_rollup.pillar.name}"
-            )
-
-            rollup_chain = chain(
-                rollup_climate_foresight_pillar.si(pillar_rollup.id),
-                datalayer_uploaded.s(status=DataLayerStatus.READY),
-                auto_progress_climate_foresight_run.si(run_id),
-            )
-            rollup_chain.apply_async()
-            triggered_pillars.append(
-                {
-                    "pillar_rollup_id": pillar_rollup.id,
-                    "pillar_name": pillar_rollup.pillar.name,
-                }
-            )
-        else:
-            log.info(
-                f"Pillar rollup {pillar_rollup.id} waiting for {incomplete_count} layers to complete"
-            )
-
-    return {"run_id": run_id, "triggered_pillars": triggered_pillars}
-
-
-def trigger_landscape_rollup_if_ready(run_id: int) -> Dict[str, Any]:
-    """
-    Check if landscape rollup is ready to run and trigger it.
-
-    Landscape rollup is ready when all pillar rollups are completed.
-
-    Args:
-        run_id: ID of the ClimateForesightRun
-
-    Returns:
-        dict: Summary of landscape rollup status
-    """
-    run = ClimateForesightRun.objects.get(pk=run_id)
-
-    try:
-        landscape_rollup = run.landscape_rollup
-    except ClimateForesightLandscapeRollup.DoesNotExist:
-        return {"run_id": run_id, "status": "no_landscape_rollup"}
-
-    if landscape_rollup.status != ClimateForesightLandscapeRollupStatus.PENDING:
-        return {
-            "run_id": run_id,
-            "status": "already_processing",
-            "landscape_status": landscape_rollup.status,
-        }
-
-    if run.all_pillars_rolled_up():
-        log.info(f"Triggering landscape rollup {landscape_rollup.id}")
-
-        landscape_rollup.status = ClimateForesightLandscapeRollupStatus.RUNNING
-        landscape_rollup.save()
-
-        landscape_chain = chain(
-            rollup_climate_foresight_landscape.si(landscape_rollup.id),
+    stages.extend(
+        [
+            rollup_climate_foresight_landscape.si(landscape_rollup_id),
             process_landscape_datalayers.s(),
-            auto_progress_climate_foresight_run.si(run_id),
-        )
-        landscape_chain.apply_async()
-
-        return {
-            "run_id": run_id,
-            "status": "triggered",
-            "landscape_rollup_id": landscape_rollup.id,
-        }
-    else:
-        pending_count = run.pillar_rollups.exclude(
-            status=ClimateForesightPillarRollupStatus.COMPLETED
-        ).count()
-        return {
-            "run_id": run_id,
-            "status": "waiting",
-            "pending_pillar_rollups": pending_count,
-        }
-
-
-def trigger_promote_if_ready(run_id: int) -> Dict[str, Any]:
-    """
-    Check if PROMOTe analysis is ready to run and trigger it.
-
-    PROMOTe is ready when landscape rollup is completed.
-
-    Args:
-        run_id: ID of the ClimateForesightRun
-
-    Returns:
-        dict: Summary of PROMOTe status
-    """
-    run = ClimateForesightRun.objects.get(pk=run_id)
-
-    try:
-        promote = run.promote_analysis
-        landscape_rollup = run.landscape_rollup
-    except (
-        ClimateForesightPromote.DoesNotExist,
-        ClimateForesightLandscapeRollup.DoesNotExist,
-    ):
-        return {"run_id": run_id, "status": "not_ready"}
-
-    if promote.status != ClimateForesightPromoteStatus.PENDING:
-        return {
-            "run_id": run_id,
-            "status": "already_processing",
-            "promote_status": promote.status,
-        }
-
-    if landscape_rollup.status == ClimateForesightLandscapeRollupStatus.COMPLETED:
-        log.info(f"Triggering PROMOTe analysis {promote.id}")
-
-        promote_chain = chain(
-            run_climate_foresight_promote.si(promote.id),
+            run_climate_foresight_promote.si(promote_id),
             process_promote_datalayers.s(),
-            auto_progress_climate_foresight_run.si(run_id),
-        )
-        promote_chain.apply_async()
+            mark_run_complete.si(run_id),
+        ]
+    )
 
-        return {
-            "run_id": run_id,
-            "status": "triggered",
-            "promote_id": promote.id,
-        }
-    else:
-        return {
-            "run_id": run_id,
-            "status": "waiting",
-            "landscape_status": landscape_rollup.status,
-        }
+    return chain(*stages)
 
 
 def check_run_completion(run_id: int) -> Dict[str, Any]:

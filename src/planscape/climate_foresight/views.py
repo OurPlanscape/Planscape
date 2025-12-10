@@ -25,9 +25,6 @@ from climate_foresight.models import (
 from climate_foresight.orchestration import (
     check_run_completion,
     start_climate_foresight_analysis,
-    trigger_landscape_rollup_if_ready,
-    trigger_pillar_rollups_if_ready,
-    trigger_promote_if_ready,
 )
 from climate_foresight.serializers import (
     ClimateForesightPillarSerializer,
@@ -149,24 +146,17 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def trigger_next_steps(self, request, pk=None):
         """
-        Manually trigger the next ready steps in the analysis pipeline.
+        Check run completion status.
 
-        This is useful for debugging or when automatic progression fails.
-        It checks what's ready and triggers:
-        - Pillar rollups (if all input layers normalized)
-        - Landscape rollup (if all pillars completed)
-        - PROMOTe analysis (if landscape completed)
-        - Mark run as DONE (if PROMOTe completed)
+        With the new workflow model, the entire pipeline runs as a single
+        Celery chain. This endpoint now just checks completion status.
 
-        Returns a summary of what was triggered.
+        Returns a summary of the run status.
         """
         run = self.get_object()
 
         results = {
             "run_id": run.id,
-            "pillar_rollups": trigger_pillar_rollups_if_ready(run.id),
-            "landscape_rollup": trigger_landscape_rollup_if_ready(run.id),
-            "promote": trigger_promote_if_ready(run.id),
             "completion_check": check_run_completion(run.id),
         }
 
