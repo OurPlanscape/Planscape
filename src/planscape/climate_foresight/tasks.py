@@ -389,10 +389,6 @@ def rollup_climate_foresight_landscape(landscape_rollup_id: int) -> dict:
                 "future": landscape_rollup_obj.future_datalayer.id,
             }
 
-        with transaction.atomic():
-            landscape_rollup_obj.status = ClimateForesightLandscapeRollupStatus.RUNNING
-            landscape_rollup_obj.save()
-
         result = rollup_landscape(
             run_id=landscape_rollup_obj.run.id,
             created_by=landscape_rollup_obj.run.created_by,
@@ -581,8 +577,8 @@ def process_landscape_datalayers(result: dict) -> dict:
         f"Processing landscape datalayers: current={current_id}, future={future_id}"
     )
 
-    datalayer_uploaded(current_id)
-    datalayer_uploaded(future_id)
+    datalayer_uploaded.delay(current_id)
+    datalayer_uploaded.delay(future_id)
 
     log.info("Successfully processed both landscape datalayers")
 
@@ -624,7 +620,7 @@ def process_promote_datalayers(result: dict) -> dict:
         if key in result:
             layer_id = result[key]
             log.info(f"Processing PROMOTe output '{key}': {layer_id}")
-            datalayer_uploaded(layer_id)
+            datalayer_uploaded.delay(layer_id)
         else:
             log.warning(f"Missing expected PROMOTe output key: {key}")
 

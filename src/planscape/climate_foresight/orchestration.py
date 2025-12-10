@@ -240,6 +240,9 @@ def trigger_landscape_rollup_if_ready(run_id: int) -> Dict[str, Any]:
     if run.all_pillars_rolled_up():
         log.info(f"Triggering landscape rollup {landscape_rollup.id}")
 
+        landscape_rollup.status = ClimateForesightLandscapeRollupStatus.RUNNING
+        landscape_rollup.save()
+
         landscape_chain = chain(
             rollup_climate_foresight_landscape.si(landscape_rollup.id),
             process_landscape_datalayers.s(),
