@@ -1,6 +1,6 @@
 import logging
 
-from core.gcs import get_gcs_hash, is_gcs_file
+from core.gcs import get_gcs_hash, is_gcs_file, update_file_cache_control
 from core.s3 import get_s3_hash, is_s3_file
 from django.conf import settings
 from django.db import connection
@@ -71,8 +71,8 @@ def datalayer_file_post_process(datalayer_id: int):
     try:
         if is_gcs_file(datalayer.url):
             update_file_cache_control(
-                datalayer.url,
-                directive=settings.GCS_DEFAULT_CACHE_DIRECTIVE,
+                gs_url=datalayer.url,
+                directives=settings.GCS_DEFAULT_CACHE_DIRECTIVES,
                 max_age=settings.GCS_DEFAULT_CACHE_MAX_AGE,
             )
     except Exception:
