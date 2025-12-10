@@ -2,10 +2,10 @@ from unittest import mock
 from uuid import uuid4
 
 from django.conf import settings
-from django.test import TestCase, TransactionTestCase, override_settings
+from django.test import TestCase, override_settings
 from organizations.tests.factories import OrganizationFactory
 
-from datasets.models import Category, DataLayer, DataLayerStatus
+from datasets.models import Category, DataLayer, DataLayerStatus, DataLayerType
 from datasets.services import (
     create_datalayer,
     create_upload_url_for_org,
@@ -77,7 +77,10 @@ class TestCreateUploadURLForOrganization(TestCase):
         )
 
 
-class TestCreateDataLayer(TransactionTestCase):
+class TestCreateDataLayer(TestCase):
+    def setUp(self):
+        DataLayer.objects.all().delete()  # Delete hard coded datalayers
+
     @override_settings(PROVIDER="aws")
     @mock.patch(
         "datasets.services.create_upload_url_s3",
@@ -159,7 +162,7 @@ class TestCreateDataLayer(TransactionTestCase):
             self.assertEqual(0, DataLayer.objects.all().count())
 
 
-class TestSearch(TransactionTestCase):
+class TestSearch(TestCase):
     def test_end_to_end(self):
         organization = OrganizationFactory.create(name="my cool fire org")
         dataset = DatasetFactory(
@@ -198,6 +201,7 @@ class TestSearch(TransactionTestCase):
             name="A lighthouse on fire at night",
             category=category1,
             status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
         )
         # should be returned too
         cat1_datalayer2 = DataLayerFactory.create(
@@ -206,6 +210,7 @@ class TestSearch(TransactionTestCase):
             name="Cassandra",
             category=category1,
             status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
         )
 
         # should be returned
@@ -215,6 +220,7 @@ class TestSearch(TransactionTestCase):
             name="Play with Fire",
             category=subcategory1,
             status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
         )
         # should be returned too, because it's inside category
         subcat1_datalayer2 = DataLayerFactory.create(
@@ -223,6 +229,7 @@ class TestSearch(TransactionTestCase):
             name="Ride the Lightning",
             category=subcategory1,
             status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
         )
 
         # SHOULD NOT MATCH

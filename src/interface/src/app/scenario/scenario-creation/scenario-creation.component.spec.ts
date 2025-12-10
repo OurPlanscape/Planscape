@@ -10,11 +10,16 @@ import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
 import { Step1Component } from '../step1/step1.component';
 import { ScenarioState } from '../scenario.state';
-import { Step3Component } from '../step3/step3.component';
+import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxMaskModule } from 'ngx-mask';
 import { NewScenarioState } from '../new-scenario.state';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { AvailableStands } from '@types';
+import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
+import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
+import { FeaturesModule } from 'src/app/features/features.module';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -25,6 +30,7 @@ describe('ScenarioCreationComponent', () => {
       imports: [
         HttpClientTestingModule,
         ScenarioCreationComponent,
+        MatSnackBarModule,
         NgxMaskModule.forRoot(),
         NoopAnimationsModule,
       ],
@@ -36,17 +42,24 @@ describe('ScenarioCreationComponent', () => {
           getScenariosForPlan: () =>
             of([{ name: 'Scenario A' }, { name: 'Scenario B' }] as any),
         }),
-        MockProvider(ScenarioState, { excludedAreas$: of([]) }),
+        MockProvider(ScenarioState),
         MockProvider(DataLayersStateService, { paths$: of([]) }),
-        MockProvider(NewScenarioState),
+        MockProvider(NewScenarioState, {
+          availableStands$: of({ summary: {} } as AvailableStands),
+          stepIndex$: of(0),
+          scenarioConfig$: of({}),
+        }),
       ],
       declarations: [
         MockDeclarations(
           DataLayersComponent,
           Step1Component,
-          Step3Component,
+          StandLevelConstraintsComponent,
+          TreatmentTargetComponent,
+          Step4LegacyComponent,
           BaseLayersComponent
         ),
+        FeaturesModule,
       ],
     }).compileComponents();
 

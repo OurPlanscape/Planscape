@@ -14,4 +14,8 @@ export class InputDirective {
   focus() {
     this.el.nativeElement.focus();
   }
+
+  get isRequired() {
+    return this.el.nativeElement.required;
+  }
 }

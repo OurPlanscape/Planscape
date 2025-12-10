@@ -1,0 +1,59 @@
+<section>
+  <ng-container *ngIf="scenarioState === 'FAILURE'; else generic">
+    <h4>
+      <mat-icon class="material-symbols-filled warning">warning</mat-icon>
+      No optimal project areas for treatment were found
+    </h4>
+    <p>
+      Planscape couldn't find enough treatable area to create project areas.
+      <br />
+      Review your scenario configurations and try adjusting the following:
+    </p>
+
+    <ul>
+      <li>
+        <b>Check data coverage:</b> Make sure your planning area has enough
+        density of the key metrics for your treatment goal.
+      </li>
+      <li>
+        <b>Review exclusions:</b> Too many excluded areas can limit available
+        land for treatment.
+      </li>
+      <li>
+        <b>Relax constraints:</b> Try increasing the maximum slope or distance
+        from roads to include more treatable areas.
+      </li>
+      <li>
+        <b>Adjust treatment targets:</b> If available land is limited, consider
+        lowering your treatment targets to match what's feasible.
+      </li>
+    </ul>
+
+    <p>
+      You can copy your scenario and edit it with these adjustments in mind,
+      then run the scenario again.
+    </p>
+  </ng-container>
+
+  <ng-template #generic>
+    <h4>
+      <mat-icon class="material-symbols-filled error">error</mat-icon>
+      There was an error generating your scenario
+    </h4>
+    <p>Sorry, we were unable to generate your scenario. Please try again.</p>
+  </ng-template>
+
+  <div class="actions">
+    <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
+      Return to Plan Overview
+    </a>
+    <button
+      (click)="tryAgain.emit()"
+      class="white-spinner"
+      sg-button
+      [loading]="loadingCopyDialog"
+      variant="primary">
+      Copy Scenario & Edit
+    </button>
+  </div>
+</section>

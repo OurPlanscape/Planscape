@@ -1,7 +1,13 @@
 <sg-section
   headline="Exclude Areas (OPTIONAL)"
-  tooltipContent="Exclude areas are types of land that you can choose to exclude from your planning scenarios.
-   If you choose to exclude these areas, project areas will not be assigned on these lands.">
+  tooltipContent="<b>What does it mean to exclude areas?</b>
+Excluding areas lets you remove specific lands from your planning scenarios based on their Protected Area Status.
+
+<b>What happens when I exclude areas?</b>
+If you exclude areas, ForSys will not assign project areas or treatments on those lands. The acreage associated with the excluded lands will be removed from your Potential Treatable Area, and those stands will not be considered in the final scenario results.
+
+<b>Where can I learn more about Protected Areas?</b>
+For more information on Protected Area Status, visit the <a href='https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-statistics-dashboard' target='_blank'>USGS Protected Areas Database.</a>">
   <div>
     Select areas you want to exclude from your Potential Treatable Area.
   </div>
@@ -13,7 +19,7 @@
             [color]="'primary'"
             class="exclude-checkbox"
             [formControlName]="i"
-            >{{ area.label }}</mat-checkbox
+            >{{ area.name }}</mat-checkbox
           >
         </div>
       </div>

@@ -1,23 +1,23 @@
 import logging
 
-from django.db import connection
-
-from core.s3 import is_s3_file, get_s3_hash
-from core.gcs import is_gcs_file, get_gcs_hash
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
+from core.gcs import get_gcs_hash, is_gcs_file
+from core.s3 import get_s3_hash, is_s3_file
 from django.conf import settings
+from django.contrib.gis.geos import MultiPolygon
+from django.db import connection
+from gis.rasters import get_estimated_mask
 from gis.vectors import ogr2ogr
-
 from planscape.celery import app
+
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 
 logger = logging.getLogger(__name__)
 
 
-@app.task()
-def datalayer_uploaded(
+def process_datalayer(
     datalayer_id: int,
     status: DataLayerStatus = DataLayerStatus.READY,
-):
+) -> None:
     try:
         datalayer = DataLayer.objects.get(pk=datalayer_id)
     except DataLayer.DoesNotExist:
@@ -25,13 +25,24 @@ def datalayer_uploaded(
         return
 
     try:
-        if is_s3_file(datalayer.url):
+        if is_s3_file(datalayer.url) and datalayer.url:
             datalayer.hash = get_s3_hash(datalayer.url, bucket=settings.S3_BUCKET)
-        elif is_gcs_file(datalayer.url):
+        elif is_gcs_file(datalayer.url) and datalayer.url:
             datalayer.hash = get_gcs_hash(datalayer.url)
         datalayer.status = status
 
-        if datalayer.type == DataLayerType.VECTOR:
+        if datalayer.type == DataLayerType.RASTER and datalayer.url:
+            outline = get_estimated_mask(datalayer.url)
+            match outline.geom_type:
+                case "MultiPolygon":
+                    pass
+                case "Polygon":
+                    outline = MultiPolygon([outline])
+                case _:
+                    outline = None
+            datalayer.outline = outline
+
+        if datalayer.type == DataLayerType.VECTOR and datalayer.url:
             datastore_table = ogr2ogr(datalayer.url)
             validate_datastore_table(datastore_table, datalayer)
             datalayer.table = datastore_table
@@ -43,6 +54,14 @@ def datalayer_uploaded(
         datalayer.status = DataLayerStatus.FAILED
     finally:
         datalayer.save()
+
+
+@app.task()
+def datalayer_uploaded(
+    datalayer_id: int,
+    status: DataLayerStatus = DataLayerStatus.READY,
+) -> None:
+    process_datalayer(datalayer_id, status)
 
 
 def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):

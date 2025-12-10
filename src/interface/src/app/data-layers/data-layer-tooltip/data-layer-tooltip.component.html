@@ -29,6 +29,11 @@
       </a>
       <ng-template #noSource>--</ng-template>
     </dd>
+
+    <dt>Vintage</dt>
+    <dd>
+      {{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}
+    </dd>
   </dl>
 </div>
 <div class="footer">

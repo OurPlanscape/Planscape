@@ -17,7 +17,7 @@
     <mat-icon class="material-symbols-outlined">description</mat-icon>
     <div class="overview-item">
       <strong>Scenarios:</strong>
-      {{ plan?.scenario_count }}
+      {{ loading ? plan?.scenario_count : activeScenarios.length }}
     </div>
 
     <a [routerLink]="['/explore', plan?.id]" class="view-map">View Map</a>
@@ -34,12 +34,12 @@
     </button>
     <button
       sg-button
-      matTooltip="Planning Area is Less than 100 Acres"
+      [matTooltip]="scenarioDisabledTooltipReason"
       [matTooltipDisabled]="isValidPlanningArea"
       *ngIf="canAddScenarioForPlan"
-      [disabled]="!isValidPlanningArea"
+      [disabled]="!isValidPlanningArea || planningAreaIsLarge"
       data-id="new-scenario"
-      (click)="openConfig()"
+      (click)="handleNewScenarioButton()"
       icon="add"
       variant="primary">
       New Scenario
@@ -47,6 +47,7 @@
   </div>
 
   <app-section-loader
+    *ngIf="planningAreaIsReady && !planningAreaIsLarge"
     [isLoading]="loading"
     [hasData]="totalScenarios > 0"
     [ngClass]="{
@@ -55,7 +56,9 @@
     emptyStateTitle="No scenarios yet"
     [emptyStateContent]="
       canAddScenarioForPlan
-        ? 'Click “New scenario” to start creating your scenarios.'
+        ? isValidPlanningArea
+          ? 'Click “New scenario” to start creating your scenarios.'
+          : 'Click “Upload Scenario” to add scenarios.'
         : ''
     ">
     <mat-tab-group
@@ -92,7 +95,10 @@
               [scenarios]="activeScenarios"
               [plan]="plan"
               (viewScenario)="navigateToScenario($event)"
-              (triggerRefresh)="fetchScenarios()"></app-scenarios-card-list>
+              (triggerEdit)="fetchScenarios()"
+              (triggerRefresh)="
+                removeScenarioFromList($event, 'activeScenarios')
+              "></app-scenarios-card-list>
           </ng-container>
           <div class="empty-state" *ngIf="activeScenarios.length === 0">
             No active scenarios
@@ -128,8 +134,9 @@
             <app-scenarios-card-list
               [scenarios]="archivedScenarios"
               [plan]="plan"
-              (viewScenario)="
-                navigateToScenario($event)
+              (viewScenario)="navigateToScenario($event)"
+              (triggerRefresh)="
+                removeScenarioFromList($event, 'archivedScenarios')
               "></app-scenarios-card-list>
           </ng-container>
           <div class="empty-state" *ngIf="archivedScenarios.length === 0">
@@ -139,4 +146,46 @@
       </mat-tab>
     </mat-tab-group>
   </app-section-loader>
+
+  <div *ngIf="planningAreaIsLarge && !loading" class="large-message">
+    <p>
+      Your Planning Area is greater than 3 million acres. The Planscape team
+      would like to work with you to ensure we're meeting your scenario planning
+      needs.<br />Please contact
+      <a href="mailto:support@planscape.org">support&#64;planscape.org</a> to
+      move forward with scenario planning.
+    </p>
+  </div>
+
+  <div
+    *ngIf="!planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed"
+    class="pending-message">
+    <mat-spinner diameter="32" class="spinner"></mat-spinner>
+    <h4>Your Planning Area is being prepared for Scenario Planning</h4>
+    <p>
+      For larger areas (over 1 million acres), this process may take up to 20
+      minutes.
+    </p>
+  </div>
+
+  <sg-banner
+    [dismissible]="false"
+    type="error"
+    *ngIf="!planningAreaIsReady && planningAreaFailed"
+    class="banner">
+    <div>
+      <div>
+        There was an error preparing your Planning Area for Scenario Planning.
+      </div>
+      <div>
+        Please
+        <a
+          href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw"
+          target="_blank"
+          >contact support</a
+        >
+        or try creating a new Planning Area.
+      </div>
+    </div>
+  </sg-banner>
 </div>

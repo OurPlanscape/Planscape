@@ -1,28 +1,54 @@
 import { Component } from '@angular/core';
-import { map } from 'rxjs';
-import { PlanState } from '../../plan/plan.state';
+import { combineLatest, map } from 'rxjs';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ButtonComponent } from '@styleguide';
 
 import { NewScenarioState } from '../new-scenario.state';
-import { AsyncPipe, DecimalPipe, NgIf } from '@angular/common';
+import { AsyncPipe, DecimalPipe, NgIf, PercentPipe } from '@angular/common';
 
 @Component({
   selector: 'app-scenario-legend',
   standalone: true,
-  imports: [AsyncPipe, DecimalPipe, MatTooltipModule, ButtonComponent, NgIf],
+  imports: [
+    AsyncPipe,
+    DecimalPipe,
+    MatTooltipModule,
+    ButtonComponent,
+    NgIf,
+    PercentPipe,
+  ],
   templateUrl: './scenario-legend.component.html',
   styleUrl: './scenario-legend.component.scss',
 })
 export class ScenarioLegendComponent {
-  $acres = this.planState.currentPlan$.pipe(map((p) => p.area_acres));
-
   summary$ = this.newScenarioState.availableStands$.pipe(map((s) => s.summary));
 
   stepIndex$ = this.newScenarioState.stepIndex$;
-  constructor(
-    private planState: PlanState,
-    private newScenarioState: NewScenarioState
-  ) {}
+
+  showExcludedStands$ = combineLatest([
+    this.stepIndex$,
+    this.newScenarioState.hasExcludedStands$,
+  ]).pipe(
+    map(([step, hasExcluded]) => {
+      return hasExcluded && step === 1;
+    })
+  );
+
+  showConstrainedStands$ = combineLatest([
+    this.stepIndex$,
+    this.newScenarioState.hasConstrainedStands$,
+  ]).pipe(
+    map(([step, hasExcluded]) => {
+      return hasExcluded && step > 1;
+    })
+  );
+
+  treatablePercent$ = this.newScenarioState.availableStands$.pipe(
+    map((s) => s.summary.treatable_area / s.summary.available_area)
+  );
+
+  showAvailablePercent$ = this.stepIndex$.pipe(map((s) => s > 1));
+
+  constructor(private newScenarioState: NewScenarioState) {}
 }

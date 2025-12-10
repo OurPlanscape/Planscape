@@ -1,32 +1,39 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import { Constraint, NamedConstraint, ScenarioCreation } from '@types';
+import {
+  Constraint,
+  NamedConstraint,
+  ScenarioCreation,
+  ScenarioV3Config,
+} from '@types';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
+  EMPTY,
   filter,
   map,
   mapTo,
   merge,
+  Observable,
+  of,
   shareReplay,
   startWith,
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayersService } from '@services/data-layers.service';
-import { FeatureService } from '../features/feature.service';
 import { distinctUntilChanged } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@shared';
+import { ForsysService } from '@services/forsys.service';
+import { getNamedConstraints } from './scenario-helper';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class NewScenarioState {
-  private scenarioService: ScenarioService = inject(ScenarioService);
+  planId = this.route.snapshot.data['planId'];
 
-  // todo set this via injection token once we split plan and scenario components
-  public planId = 0;
-
-  private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioCreation>>({});
+  private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioV3Config>>({});
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
 
   // user selected excluded areas
@@ -37,13 +44,17 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
+  private _stepIndex$ = new BehaviorSubject(0);
+  public stepIndex$ = this._stepIndex$.asObservable();
+
   // flag to track if the base stands are loaded
-  public baseStandsReady$ = new BehaviorSubject(false);
+  private baseStandsReady$ = new BehaviorSubject(false);
 
   // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
-    map((c) => c.stand_size!)
+    map((c) => c.stand_size!),
+    distinctUntilChanged()
   );
 
   // trigger to get available stands
@@ -52,63 +63,112 @@ export class NewScenarioState {
     this.baseStandsReady$.asObservable() // flip to true when loading completes
   ).pipe(
     startWith(false),
-    distinctUntilChanged(),
-    shareReplay({ bufferSize: 1, refCount: true })
+    shareReplay({ bufferSize: 1, refCount: true }),
+    distinctUntilChanged()
   );
 
   public availableStands$ = combineLatest([
     this._baseStandsLoaded$,
+    this.stepIndex$,
     this.standSize$,
     this.excludedAreas$,
     this.constraints$,
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
+    // only trigger/refresh on the steps that interact with the map
+    tap(([, stepIndex]) => {
+      if (stepIndex >= 3) {
+        this.setLoading(false); // we never otherwise call this unless the step is < 3
+      }
+    }),
+    filter(([standsLoaded, stepIndex]) => stepIndex < 3),
     tap(() => this.setLoading(true)),
-    switchMap(([standsLoaded, standSize, excludedAreas, constraints]) =>
-      this.scenarioService.getExcludedStands(
-        this.planId,
-        standSize,
-        excludedAreas,
-        constraints
-      )
+    switchMap(([_, step, standSize, excludedAreas, constraints]) =>
+      this.scenarioService
+        .getExcludedStands(
+          this.planId,
+          standSize,
+          step > 0 ? excludedAreas : undefined,
+          step > 1 ? constraints : undefined
+        )
+        .pipe(
+          tap(() => this.setLoading(false)),
+          catchError(() => {
+            this.snackbar.open(
+              '[Error] Cannot load map data',
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+            this.setLoading(false);
+            return EMPTY;
+          })
+        )
     ),
-    tap(() => this.setLoading(false)),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+
+  isValidToGoNext$: Observable<boolean> = this.stepIndex$.pipe(
+    switchMap((index) =>
+      index <= 0
+        ? of(true)
+        : this.availableStands$.pipe(
+            map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
+          )
+    ),
+    distinctUntilChanged(),
     shareReplay(1)
   );
 
-  public excludedStands = this.availableStands$.pipe(
+  public excludedStands$ = this.availableStands$.pipe(
     map((c) => c.unavailable.by_exclusions)
+  );
+
+  public constraintStands$ = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_thresholds)
+  );
+
+  hasExcludedStands$ = this.excludedStands$.pipe(
+    map((stands) => stands.length > 0)
+  );
+
+  hasConstrainedStands$ = this.constraintStands$.pipe(
+    map((stands) => stands.length > 0)
+  );
+
+  public doesNotMeetConstraintsStands$ = this.availableStands$.pipe(
+    map((c) => c.unavailable.by_thresholds)
   );
 
   private _loading$ = new BehaviorSubject(false);
   public loading$ = this._loading$.asObservable();
 
+  private _draftFinished$ = new BehaviorSubject(false);
+
   private slopeId = 0;
   private distanceToRoadsId = 0;
 
-  private _stepIndex$ = new BehaviorSubject(0);
-  public stepIndex$ = this._stepIndex$.asObservable();
-
   constructor(
-    private dataLayersService: DataLayersService,
-    private featureService: FeatureService
+    private scenarioService: ScenarioService,
+    private route: ActivatedRoute,
+    private snackbar: MatSnackBar,
+    private forsysService: ForsysService
   ) {
-    if (this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP')) {
-      this.dataLayersService.getMaxSlopeLayerId().subscribe((s) => {
-        this.slopeId = s;
-      });
-      this.dataLayersService.getDistanceToRoadsLayerId().subscribe((s) => {
-        this.distanceToRoadsId = s;
-      });
-    }
+    this.forsysService.forsysData$.subscribe((forsys) => {
+      this.slopeId = forsys.thresholds.slope.id;
+      this.distanceToRoadsId = forsys.thresholds.distance_from_roads.id;
+    });
+  }
+
+  setDraftFinished(isFinished: boolean) {
+    this._draftFinished$.next(isFinished);
+  }
+
+  isDraftFinishedSnapshot() {
+    return this._draftFinished$.value === true;
   }
 
   setLoading(isLoading: boolean) {
     this._loading$.next(isLoading);
-  }
-
-  setPlanId(val: number) {
-    this.planId = val;
   }
 
   setExcludedAreas(value: number[]) {
@@ -117,6 +177,9 @@ export class NewScenarioState {
 
   setScenarioConfig(config: Partial<ScenarioCreation>) {
     this._scenarioConfig$.next(config);
+    if (config.excluded_areas) {
+      this.setExcludedAreas(config.excluded_areas);
+    }
   }
 
   setConstraints(constraints: Constraint[]) {
@@ -141,16 +204,19 @@ export class NewScenarioState {
     this.setConstraints(constraints);
   }
 
+  getNamedConstraints(constraints: Constraint[]): NamedConstraint[] {
+    return getNamedConstraints(constraints, this.slopeId);
+  }
+
   setBaseStandsLoaded(loaded: boolean) {
     this.baseStandsReady$.next(loaded);
   }
 
-  reset() {
-    this._scenarioConfig$.next({});
-    this._excludedAreas$.next([]);
-    this._constraints$.next([]);
-    this.baseStandsReady$.next(false);
-    this.setPlanId(0);
-    this.setLoading(false);
+  getSlopeId() {
+    return this.slopeId;
+  }
+
+  getDistanceToRoadsId() {
+    return this.distanceToRoadsId;
   }
 }

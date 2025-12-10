@@ -1,0 +1,73 @@
+<app-nav-bar [area]="'CLIMATE_FORESIGHT'"></app-nav-bar>
+
+<div class="climate-foresight-run-container">
+  <sg-steps-nav
+    [linear]="true"
+    [steps]="stepsList"
+    [selectedIndex]="currentStepIndex"
+    [allowNavigation]="false"
+    (selectionChange)="
+      stepsComponent && (stepsComponent.selectedIndex = $event)
+    ">
+  </sg-steps-nav>
+
+  <sg-steps
+    #stepsComponent
+    [save]="saveStepData.bind(this)"
+    [savingStep]="savingStep"
+    [showActions]="currentStepIndex !== 0"
+    [continueLabel]="
+      currentStepIndex === 2 ? 'Save & Run Analysis' : 'Save & Continue'
+    "
+    [disabled]="!canGoNext"
+    (finished)="onFinished()">
+    <sg-step label="Select Data Layers">
+      <div class="step-layout">
+        <div class="step-content">
+          <app-data-layer-selection
+            #dataLayerSelection
+            [plan]="currentPlan"
+            [run]="currentRun"
+            (complete)="onStepComplete($event)">
+            <ng-container actions>
+              <sg-steps-actions
+                [currentStep]="currentStepIndex"
+                [totalSteps]="totalSteps"
+                [canGoNext]="dataLayerSelectionComponent?.form?.valid || false"
+                [loading]="savingStep"
+                [showBack]="false"
+                [showStepCount]="false"
+                continueLabel="Save & Continue"
+                (back)="goToPreviousStep()"
+                (next)="goToNextStep()">
+              </sg-steps-actions>
+            </ng-container>
+          </app-data-layer-selection>
+        </div>
+      </div>
+    </sg-step>
+
+    <sg-step label="Assign Favorability">
+      <app-assign-favorability
+        #assignFavorability
+        [plan]="currentPlan"
+        [run]="currentRun"
+        (complete)="onStepComplete($event)">
+      </app-assign-favorability>
+    </sg-step>
+
+    <sg-step label="Assign Pillars">
+      <div class="step-layout">
+        <div class="step-content">
+          <app-assign-pillars [run]="currentRun!"></app-assign-pillars>
+        </div>
+      </div>
+    </sg-step>
+
+    <cdk-step label="Run & Risk Assessment">
+      <div class="step-layout">
+        <div class="step-content"></div>
+      </div>
+    </cdk-step>
+  </sg-steps>
+</div>

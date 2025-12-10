@@ -13,12 +13,10 @@
       sg-button
       variant="icon-only"
       [outlined]="true"
-      icon="info"
+      [icon]="tooltipIcon"
       [matMenuTriggerFor]="tooltipMenu">
       <mat-menu #tooltipMenu="matMenu">
-        <div class="tooltip">
-          {{ tooltipContent }}
-        </div>
+        <div class="tooltip" [innerHTML]="tooltipContent"></div>
       </mat-menu>
     </button>
   </mat-expansion-panel-header>

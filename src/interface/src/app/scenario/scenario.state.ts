@@ -6,7 +6,6 @@ import {
   catchError,
   combineLatest,
   concat,
-  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -29,9 +28,6 @@ export class ScenarioState {
   // BehaviorSubject that we are going to use to manually reload the scenario
   private _reloadScenario$ = new BehaviorSubject<void>(undefined);
 
-  // Observable that we are going to use to get the excluded_areas
-  excludedAreas$ = this.scenarioService.getExcludedAreas().pipe(shareReplay(1));
-
   private _excludedStands$ = new Subject<AvailableStands>();
   public excludedStands$ = this._excludedStands$
     .asObservable()
@@ -39,10 +35,7 @@ export class ScenarioState {
 
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
-    this._currentScenarioId$.pipe(
-      distinctUntilChanged(),
-      filter((id): id is number => !!id)
-    ),
+    this._currentScenarioId$.pipe(filter((id): id is number => !!id)),
     this._reloadScenario$,
   ]).pipe(
     switchMap(([id]) =>

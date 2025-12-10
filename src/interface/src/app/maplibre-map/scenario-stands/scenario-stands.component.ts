@@ -2,39 +2,44 @@ import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
-  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { ActivatedRoute } from '@angular/router';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
-import { map, tap } from 'rxjs';
+import {
+  animationFrameScheduler,
+  auditTime,
+  combineLatest,
+  concat,
+  map,
+  Observable,
+  observeOn,
+  of,
+  tap,
+} from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { FrontendConstants } from '../../map/map.constants';
 
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-stands',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    LayerComponent,
-    NgIf,
-    VectorSourceComponent,
-    ImageComponent,
-  ],
+  imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './scenario-stands.component.html',
 })
 export class ScenarioStandsComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
+  readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
+  readonly excludedKey = 'excluded';
+  readonly constrainedKey = 'constrained';
+  readonly planId = this.route.snapshot.data['planId'];
 
-  protected readonly COLORS = BASE_COLORS;
-  sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
-
-  planId = this.route.snapshot.data['planId'];
+  private standsLoaded = false;
 
   tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
@@ -44,14 +49,19 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
         `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
     ),
     distinctUntilChanged(),
+    // when the stand size changes, set as loading
     tap((s) => {
       this.newScenarioState.setLoading(true);
+      this.standsLoaded = false;
     })
   );
 
-  // local copy to reset feature state
-  excludedStands: number[] = [];
-  readonly excludedKey = 'excluded';
+  opacity$ = this.mapConfigState.opacity$;
+  step$ = this.newScenarioState.stepIndex$;
+
+  // local copies to reset feature state
+  private excludedStands: number[] = [];
+  private constrainedStands: number[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -59,98 +69,142 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private mapConfigState: MapConfigState
   ) {
-    this.newScenarioState.excludedStands
+    // remove constrainedStands when going back to step 1
+    this.step$
+      .pipe(
+        untilDestroyed(this),
+        filter((step) => step === 1)
+      )
+      .subscribe((step) => {
+        this.constrainedStands.forEach((id) =>
+          this.removeFeatureState(id, this.constrainedKey)
+        );
+      });
+
+    this.newScenarioState.doesNotMeetConstraintsStands$
       .pipe(untilDestroyed(this))
       .subscribe((ids) => {
-        const toRemove = this.excludedStands.filter((id) => !ids.includes(id));
-        const toAdd = ids.filter((id) => !this.excludedStands.includes(id));
+        this.paintConstrainedStands(ids);
+      });
 
-        toRemove.forEach((id) => this.removeMarkStandAsExcluded(id));
-        toAdd.forEach((id) => this.markStandAsExcluded(id));
-
-        this.excludedStands = ids;
+    this.newScenarioState.excludedStands$
+      .pipe(untilDestroyed(this))
+      .subscribe((ids) => {
+        this.paintExcludedStands(ids);
       });
   }
 
+  filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
+    this.newScenarioState.stepIndex$,
+    this.newScenarioState.excludedStands$,
+  ]).pipe(
+    map(([step, excluded]): FilterSpecification | undefined =>
+      step > 1 && excluded.length
+        ? ['!', ['in', ['get', 'id'], ['literal', excluded]]]
+        : undefined
+    )
+  );
+
+  // using this concat so we can keep things inside angular lifecycle without adding zone.runs or detectChanges
+  standPaint$ = concat(
+    of(FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY), // <-- emit immediately so the layer renders
+    this.opacity$.pipe(
+      // use  animationFrameScheduler (similar to requestAnimationFrame)
+      observeOn(animationFrameScheduler),
+      // collapse multiple slider events to one per frame
+      auditTime(0)
+    )
+  ).pipe(
+    map((opacity) => {
+      return {
+        'fill-color': [
+          'case',
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
+          BASE_COLORS.dark_magenta, // otherwise
+        ],
+        'fill-opacity-transition': { duration: 0 },
+
+        'fill-outline-color': [
+          'case',
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
+          BASE_COLORS.darker_magenta, // otherwise
+        ],
+        'fill-opacity': opacity,
+      } as any;
+    })
+  );
+
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
+    this.mapLibreMap.on('styledata', this.onStyleDataListener);
   }
 
   ngOnDestroy(): void {
     this.mapLibreMap.off('sourcedata', this.onDataListener);
+    this.mapLibreMap.off('styledata', this.onStyleDataListener);
   }
+
+  private paintExcludedStands(ids: number[]) {
+    this.excludedStands.forEach((id) =>
+      this.removeFeatureState(id, this.excludedKey)
+    );
+    ids.forEach((id) => this.setFeatureState(id, this.excludedKey));
+    this.excludedStands = ids;
+  }
+
+  private paintConstrainedStands(ids: number[]) {
+    this.constrainedStands.forEach((id) =>
+      this.removeFeatureState(id, this.constrainedKey)
+    );
+    ids.forEach((id) => this.setFeatureState(id, this.constrainedKey));
+    this.constrainedStands = ids;
+  }
+
+  private onStyleDataListener = (e: Event) => {
+    this.paintExcludedStands(this.excludedStands);
+    this.paintConstrainedStands(this.constrainedStands);
+  };
 
   private onDataListener = (event: any) => {
     if (
       event.sourceId === this.sourceName &&
       event.isSourceLoaded &&
       event.type === 'sourcedata' &&
-      !event.sourceDataType
+      !event.sourceDataType &&
+      !this.standsLoaded
     ) {
       this.zone.run(() => {
         this.newScenarioState.setBaseStandsLoaded(true);
-        this.newScenarioState.setLoading(false);
+        this.standsLoaded = true;
       });
     }
   };
 
-  private markStandAsExcluded(id: number) {
+  private setFeatureState(id: number, key: string) {
     this.mapLibreMap.setFeatureState(
       {
         source: this.sourceName,
         sourceLayer: this.sourceName,
         id: id,
       },
-      { [this.excludedKey]: true }
+      { [key]: true }
     );
   }
 
-  private removeMarkStandAsExcluded(id: number) {
+  private removeFeatureState(id: number, key: string) {
     this.mapLibreMap.removeFeatureState(
       {
         source: this.sourceName,
         sourceLayer: this.sourceName,
         id: id,
       },
-      this.excludedKey
+      key
     );
-  }
-
-  opacity$ = this.mapConfigState.projectAreasOpacity$;
-
-  standPaint$ = this.opacity$.pipe(
-    map(
-      (opacity) =>
-        ({
-          'fill-color': this.featureStatePaint(
-            BASE_COLORS.black,
-            BASE_COLORS.dark_magenta
-          ),
-          'fill-opacity': this.featureStatePaint(opacity, opacity),
-        }) as any
-    )
-  );
-
-  standLinePaint = {
-    'line-width': 1,
-    'line-color': BASE_COLORS.dark_magenta,
-    'line-opacity': this.featureStatePaint(0.2, 1),
-  } as any;
-
-  standExcludedPaint = {
-    'fill-pattern': 'stripes-pattern', // constant pattern
-    'fill-opacity': this.featureStatePaint(1, 0),
-  } as any;
-
-  private featureStatePaint(
-    valueOn: number | string,
-    valueOff: number | string
-  ) {
-    return [
-      'case',
-      ['boolean', ['feature-state', this.excludedKey], false],
-      valueOn,
-      valueOff,
-    ];
   }
 }

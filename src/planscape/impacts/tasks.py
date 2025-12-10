@@ -11,8 +11,6 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from rasterio.errors import RasterioIOError
 
-User = get_user_model()
-from django.contrib.auth import get_user_model
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -26,7 +24,6 @@ from impacts.services import (
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
 )
-
 from planscape.celery import app
 from planscape.openpanel import track_openpanel
 
@@ -251,7 +248,7 @@ def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
         link = urljoin(
             settings.PLANSCAPE_BASE_URL,
             f"plan/{treatment_plan.scenario.planning_area_id}/"
-            f"config/{treatment_plan.scenario.pk}/treatment/{treatment_plan_pk}/impacts",
+            f"scenario/{treatment_plan.scenario.pk}/treatment/{treatment_plan_pk}/impacts",
         )
 
         context = {

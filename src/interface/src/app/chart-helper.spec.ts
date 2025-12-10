@@ -2,6 +2,8 @@ import {
   getChartDatasetsFromFeatures,
   convertTo2DecimalsNumbers,
   getProjectAreaLabelsFromFeatures,
+  CustomChartDataset,
+  sortByTypeAndName,
 } from './chart-helper';
 
 describe('Chart helpers', () => {
@@ -33,6 +35,71 @@ describe('Chart helpers', () => {
     });
   });
 
+  describe('sortByTypeAndName', () => {
+    it('should sort chartdatasets by type if it exists, then by name', () => {
+      const exampleDataset: CustomChartDataset[] = [
+        {
+          data: [1, 2, 3],
+          extraInfo: 'ZZZ NO USAGE TYPE',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'ZZZ SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'BBB SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'CCC SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'AAA NO USAGE TYPE',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          extraInfo: 'AAA SECONDARY',
+          usageType: 'SECONDARY_METRIC',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          usageType: 'PRIMARY',
+          extraInfo: 'ZZ PRIMARY',
+          stack: 'Stack 0',
+        },
+        {
+          data: [1, 2, 3],
+          usageType: 'PRIMARY',
+          extraInfo: 'AA PRIMARY',
+          stack: 'Stack 0',
+        },
+      ];
+
+      const sortedExample = exampleDataset.sort(sortByTypeAndName);
+      expect(sortedExample.map((attainment) => attainment.extraInfo)).toEqual([
+        'AA PRIMARY',
+        'ZZ PRIMARY',
+        'AAA SECONDARY',
+        'BBB SECONDARY',
+        'CCC SECONDARY',
+        'ZZZ SECONDARY',
+        'AAA NO USAGE TYPE',
+        'ZZZ NO USAGE TYPE',
+      ]);
+    });
+  });
+
   describe('getChartDatasetsFromFeatures', () => {
     it('should group attainment properties into datasets', () => {
       const features = [
@@ -53,6 +120,22 @@ describe('Chart helpers', () => {
     it('should handle empty features', () => {
       const datasets = getChartDatasetsFromFeatures([]);
       expect(datasets).toEqual([]);
+    });
+
+    it('Should handle 0 values as expected', () => {
+      const features = [
+        { properties: { attainment: { a: 12, b: 0 } } },
+        { properties: { attainment: { a: 0, b: 14 } } },
+      ] as any;
+
+      const datasets = getChartDatasetsFromFeatures(features);
+
+      expect(datasets.length).toBe(2);
+      expect(datasets[0].data).toEqual([12, 0]);
+      expect(datasets[1].data).toEqual([0, 14]);
+
+      expect(datasets[0].stack).toBe('Stack 0');
+      expect(datasets[1].stack).toBe('Stack 0');
     });
   });
 });

@@ -9,6 +9,7 @@
   max-height: 700px;
   border-radius: 4px;
   justify-content: space-between;
+  box-sizing: border-box;
 
   &.xsmall {
     width: 340px;
@@ -33,6 +34,7 @@
   &.no-border {
     .header {
       border: none;
+      padding-top: 24px;
     }
 
     .footer {
@@ -48,21 +50,14 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  font-family: 'Public Sans';
   font-size: 18px;
   font-weight: 600;
   line-height: 32px;
   text-align: left;
-  padding: 16px;
-  padding-bottom: 10px;
-  padding-top: 10px;
+  padding: 16px 24px;
   border-bottom: 1px solid $color-soft-gray;
-  height: 64px;
+  box-sizing: border-box;
 
-  // short header
-  &.short {
-    height: 20px;
-  }
 
   .leading-icon {
     &.info {
@@ -88,24 +83,16 @@
 }
 
 .title-buttons {
-  width: 64px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   gap: 16px;
 
-  .button-icon {
-    width: 24px;
-    height: 24px;
-  }
 
   button {
-    background: none;
-    border: none;
     padding: 0;
     margin: 0;
     line-height: 0;
-    cursor: pointer;
     height: auto;
     width: auto;
   }
@@ -120,8 +107,15 @@
 }
 
 .modal-body {
-  &.padded {
-    padding: 10px;
+  color: $color-dark-gray;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  padding: 24px;
+
+  &.short {
+    padding-top: 0;
   }
 
   &.scrollable {
@@ -131,8 +125,7 @@
 
 .footer {
   border-top: 1px solid $color-soft-gray;
-  padding: 16px;
-  height: 64px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: flex-end;

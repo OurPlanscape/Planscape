@@ -1,12 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Plan } from '@types';
 import { AuthService, Note, PlanningAreaNotesService } from '@services';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import {
+  NOTE_DELETE_DIALOG,
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
+} from '@shared';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-area-notes',
@@ -37,7 +40,9 @@ export class AreaNotesComponent implements OnInit {
   }
 
   openDeleteNoteDialog(note: Note) {
-    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    const dialogRef = this.dialog.open(DeleteDialogComponent, {
+      data: NOTE_DELETE_DIALOG,
+    });
     dialogRef
       .afterClosed()
       .pipe(take(1))

@@ -1,4 +1,5 @@
 import { Geometry } from 'geojson';
+import { IdNamePair } from './general';
 
 export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
 
@@ -13,11 +14,6 @@ export interface DataSet {
   description: string | null;
   visibility: string;
   version: string;
-}
-
-export interface IdNamePair {
-  id: number;
-  name: string;
 }
 
 export interface InfoStats {
@@ -58,7 +54,11 @@ export interface Metadata {
   // Add specific fields once we start using this
   [key: string]: any;
 
-  modules?: { map?: any; toc?: any };
+  modules?: {
+    map?: any;
+    toc?: any;
+    forsys?: { capabilities: string[] };
+  };
   map?: {
     arcgis?: any;
   };
@@ -110,12 +110,12 @@ export interface DataLayer {
   map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
 
-export interface BaseLayer extends Omit<DataLayer, 'styles'> {
-  // base layers have only one path/category.
-  path: [string];
+export interface BaseLayer extends Omit<DataLayer, 'styles' | 'geometry'> {
   map_url: string;
+  storage_type?: string;
   styles: [
     {
+      id?: number;
       data: {
         [key: string]: string;
       };

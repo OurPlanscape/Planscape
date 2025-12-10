@@ -87,25 +87,13 @@ mypy:
 	mypy . --strict --ignore-missing-imports | grep src/ | wc -l
 
 migrate:
-	cd src/planscape && python3 manage.py migrate --no-input
-	cd src/planscape && python3 manage.py collectstatic --no-input
-	cd src/planscape && python3 manage.py install_layers
-	cd src/planscape && python3 manage.py install_layers --folder stands/sql
-
-load-conditions:
-	cd src/planscape && python3 manage.py load_conditions
-
-load-metrics:
-	cd src/planscape && python3 manage.py load_metrics
-
-load-rasters:
-	cd src/planscape && python3 manage.py load_rasters
+	uv run --directory=src/planscape manage.py migrate --no-input
+	uv run --directory=src/planscape manage.py collectstatic --no-input
+	uv run --directory=src/planscape manage.py install_functions
+	uv run --directory=src/planscape manage.py install_functions --folder stands/sql
 
 install-dependencies-backend:
-	pip install poetry setuptools && python3 -m poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && pip install -r requirements.txt
-
-install-dependencies-forsys:
-	Rscript install.R
+	uv sync --locked --no-install-project --dev
 
 deploy-backend: install-dependencies-backend migrate restart
 
@@ -120,18 +108,6 @@ stop-celery:
 status-celery:
 	${SYS_CTL} status celery-* --all
 
-stop-martin:
-	${SYS_CTL} stop martin.service
-
-start-martin:
-	${SYS_CTL} start martin.service
-
-stop-forsys-server:
-	${SYS_CTL} stop forsys-server.service
-
-start-forsys-server:
-	${SYS_CTL} start forsys-server.service
-
 start:
 	${SYS_CTL} start ${SERVICE}
 
@@ -144,13 +120,10 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop stop-celery stop-forsys-server start start-celery stop-martin start-martin start-forsys-server
+restart: reload stop-celery stop start start-celery
 
 nginx-restart:
 	sudo service nginx restart
-
-load-restrictions:
-	cd src/planscape && sh bin/load_restrictions.sh
 
 test-scenarios:
 	cd src/planscape && python3 manage.py test_scenarios
@@ -181,7 +154,7 @@ docker-build:
 		docker compose build ; \
 	fi
 docker-test:
-	./src/planscape/bin/run.sh python manage.py test $(TEST)
+	./src/planscape/bin/run.sh uv run python manage.py test $(TEST)
 
 docker-run: docker-build
 	docker compose up
@@ -203,17 +176,17 @@ docker-shell:
 	./src/planscape/bin/run.sh bash
 
 docker-makemigrations:
-	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
+	./src/planscape/bin/run.sh uv run python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
 	find . -type d -name migrations -exec sudo chown -R $(USER): {} +
 
 docker-migrate:
-	./src/planscape/bin/run.sh python manage.py migrate
-	./src/planscape/bin/run.sh python manage.py install_layers
+	./src/planscape/bin/run.sh uv run python manage.py migrate
+	./src/planscape/bin/run.sh uv run python manage.py install_functions
 
 # Reset relevant tables and load development fixture data
 load-dev-data:
-	./src/planscape/bin/run.sh python manage.py reset_dev_data
-	./src/planscape/bin/run.sh python manage.py loaddata datasets/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json
+	./src/planscape/bin/run.sh uv run python manage.py reset_dev_data
+	./src/planscape/bin/run.sh uv run python manage.py loaddata datasets/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json
 
 dev:
 	make -j2 dev-frontend dev-backend

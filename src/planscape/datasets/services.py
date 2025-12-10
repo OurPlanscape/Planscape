@@ -416,13 +416,14 @@ def find_anything(
     term: str,
     type: Optional[str] = None,
 ) -> Dict[str, SearchResult]:
+    layer_type = type or DataLayerType.RASTER
+
     datalayer_filter = {
         "name__icontains": term,
         "dataset__visibility": VisibilityOptions.PUBLIC,
         "status": DataLayerStatus.READY,
+        "type": layer_type,
     }
-    if type:
-        datalayer_filter["type"] = type
     raw_results = [
         [
             organization_to_search_result(x)
@@ -461,3 +462,15 @@ def find_anything(
                 results[key] = search_result
 
     return results
+
+
+def get_datalayer_by_module_atribute(
+    module: str,
+    attribute: str,
+    value: Any,
+) -> DataLayer:
+    return DataLayer.objects.get(
+        metadata__has_key="modules",
+        metadata__contains={"modules": {module: {attribute: value}}},
+        status=DataLayerStatus.READY,
+    )

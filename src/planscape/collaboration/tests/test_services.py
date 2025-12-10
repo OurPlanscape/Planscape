@@ -1,12 +1,13 @@
-from django.test import TransactionTestCase
+from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 from collaboration.models import UserObjectRole, Role
 from collaboration.services import link_invites, validate_ownership, get_permissions
+from impacts.permissions import OWNER_PERMISSIONS
 from planning.models import PlanningArea
 from django.contrib.auth.models import User
 
 
-class TestValidateOwnership(TransactionTestCase):
+class TestValidateOwnership(TestCase):
     def setUp(self):
         self.user1 = User(pk=1, email="foo@foo.com")
         self.user2 = User(pk=2, email="bar@bar.com")
@@ -23,7 +24,7 @@ class TestValidateOwnership(TransactionTestCase):
         self.assertFalse(validate_ownership(self.user1, self.user2))
 
 
-class TestGetPermissions(TransactionTestCase):
+class TestGetPermissions(TestCase):
     def setUp(self):
         self.user1 = User.objects.create(username="foo", email="foo@foo.com")
         self.user2 = User.objects.create(username="bar", email="bar@bar.com")
@@ -54,7 +55,7 @@ class TestGetPermissions(TransactionTestCase):
 
     def test_get_permissions_owner(self):
         permissions = get_permissions(self.user1, self.planning_area1)
-        self.assertGreater(7, len(permissions))
+        self.assertEqual(len(OWNER_PERMISSIONS), len(permissions))
 
     def test_get_permissions_not_owner_no_role(self):
         permissions = get_permissions(self.user1, self.planning_area2)
@@ -63,7 +64,7 @@ class TestGetPermissions(TransactionTestCase):
         self.assertIn("view_scenario", permissions)
 
 
-class TestLinkInvites(TransactionTestCase):
+class TestLinkInvites(TestCase):
     def setUp(self):
         self.user1 = User.objects.create(username="foo", email="foo@foo.com")
 

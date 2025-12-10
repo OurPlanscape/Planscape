@@ -30,6 +30,8 @@ export class SectionComponent {
 
   @Input() isCollapsible = false;
 
+  @Input() tooltipIcon: 'help' | 'info' = 'info';
+
   stopPropagation(e: Event) {
     e.stopPropagation();
   }

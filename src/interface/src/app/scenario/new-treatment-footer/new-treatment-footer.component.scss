@@ -1,0 +1,28 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  background-color: $color-white;
+  border-top: 1px solid $color-soft-gray;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-grow: 0;
+  z-index: 500;
+}
+
+.new-treatment {
+  margin: 0 16px;
+}
+
+@media print {
+  :host {
+    display: none;
+  }
+}

@@ -1,29 +1,27 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import {
-  combineLatest,
-  concatMap,
-  filter,
-  map,
-  Observable,
-  of,
-  startWith,
-  switchMap,
-  take,
-} from 'rxjs';
-import { Plan, User } from '@types';
-import { AuthService, Note, PlanningAreaNotesService } from '@services';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EMPTY, interval, switchMap, take } from 'rxjs';
+import { Plan } from '@types';
+import { Note, PlanningAreaNotesService } from '@services';
 import { NotesSidebarState } from '@styleguide';
-import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import {
+  NOTE_DELETE_DIALOG,
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
+} from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { ScenarioState } from '../scenario/scenario.state';
-import { getPlanPath } from './plan-helpers';
 import { PlanState } from './plan.state';
 import { canAddScenario } from './permissions';
+import {
+  planningAreaMetricsAreReady,
+  planningAreaMetricsFailed,
+  POLLING_INTERVAL,
+} from './plan-helpers';
+import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
+import { SuccessDialogComponent } from '../../styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -33,104 +31,44 @@ import { canAddScenario } from './permissions';
   providers: [PlanningAreaNotesService],
 })
 export class PlanComponent implements OnInit {
+  planId = this.route.snapshot.paramMap.get('planId');
+  planNotFound: boolean = !this.planId;
+  sidebarNotes: Note[] = [];
+  notesSidebarState: NotesSidebarState = 'READY';
+  currentPlan$ = this.planState.currentPlan$;
+
   constructor(
-    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private scenarioState: ScenarioState,
     private planState: PlanState
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
       return;
     }
-    const plan$ = this.planState.currentPlan$.pipe(take(1));
-
-    plan$.subscribe({
+    this.currentPlan$.pipe(untilDestroyed(this)).subscribe({
+      next: (plan) => {
+        // Setting up breadcrumbs
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Planning Area: ' + plan.name,
+          backUrl: '/home',
+        });
+      },
       error: () => {
         this.planNotFound = true;
       },
     });
 
-    this.planOwner$ = plan$.pipe(
-      concatMap((plan) => {
-        return this.authService.getUser(plan.user);
-      })
-    );
-
-    this.router.events
-      .pipe(
-        filter(
-          (event): event is NavigationEnd => event instanceof NavigationEnd
-        ),
-        switchMap(() =>
-          combineLatest([
-            this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-            this.scenario$,
-          ])
-        ),
-        untilDestroyed(this)
-      )
-      .subscribe(([plan, scenario]) => {
-        const deepestRoute = this.getDeepestChild(this.route);
-        const path = deepestRoute?.routeConfig?.path ?? null;
-        const scenarioId = deepestRoute.snapshot.data['scenarioId'];
-
-        if (!path && scenarioId === undefined) {
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Planning Area: ' + plan.name,
-            backUrl: '/home',
-          });
-        } else if (scenarioId && scenario) {
-          // On specific scenario
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Scenario: ' + scenario.name,
-            backUrl: getPlanPath(plan.id),
-          });
-        } else {
-          // Creating new scenario
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Scenario: New Scenario',
-            backUrl: getPlanPath(plan.id),
-          });
-        }
-      });
+    this.checkForInProgressModal();
   }
-
-  scenario$ = this.scenarioState.currentScenarioId$.pipe(
-    untilDestroyed(this),
-    switchMap((id) => {
-      return !id ? of(null) : this.scenarioState.currentScenario$;
-    })
-  );
-
-  currentPlan$ = this.planState.currentPlan$;
-  planOwner$ = new Observable<User | null>();
-
-  planId = this.route.snapshot.paramMap.get('planId');
-  planNotFound: boolean = !this.planId;
-
-  sidebarNotes: Note[] = [];
-  notesSidebarState: NotesSidebarState = 'READY';
-
-  showOverview$ = this.router.events.pipe(
-    filter((event) => event instanceof NavigationEnd),
-    startWith(null), // trigger on initial load
-    map(() => this.getDeepestChild(this.route)),
-    switchMap((route) => route.data),
-    map((data) => data['showOverview'] === true)
-  );
-
-  area$ = this.showOverview$.pipe(
-    map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
-  );
 
   ngOnInit() {
     this.loadNotes();
+    this.pollForChanges();
   }
 
   backToOverview() {
@@ -160,7 +98,9 @@ export class PlanComponent implements OnInit {
   }
 
   handleNoteDelete(n: Note) {
-    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    const dialogRef = this.dialog.open(DeleteDialogComponent, {
+      data: NOTE_DELETE_DIALOG,
+    });
     dialogRef
       .afterClosed()
       .pipe(take(1))
@@ -199,10 +139,42 @@ export class PlanComponent implements OnInit {
     return canAddScenario(plan) || false;
   }
 
-  private getDeepestChild(route: ActivatedRoute): ActivatedRoute {
-    while (route.firstChild) {
-      route = route.firstChild;
+  // only poll if plan.map-status is not done
+  private pollForChanges() {
+    this.currentPlan$
+      .pipe(
+        // poll only while NOT DONE
+        switchMap((plan) =>
+          !this.isPlanMapStatusReady(plan) ? interval(POLLING_INTERVAL) : EMPTY
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe(() => this.planState.reloadPlan());
+  }
+
+  private isPlanMapStatusReady(plan: Plan) {
+    return planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan);
+  }
+
+  private checkForInProgressModal() {
+    const nav = this.router.getCurrentNavigation();
+    let flag = nav?.extras.state?.['showInProgressModal'];
+
+    if (flag) {
+      this.showInProgressModal();
+      // Clear so it won't persist on refresh/back
+      const { showInProgressModal, ...rest } = history.state ?? {};
+      history.replaceState(rest, document.title);
     }
-    return route;
+  }
+
+  private showInProgressModal() {
+    this.dialog.open(SuccessDialogComponent, {
+      data: {
+        headline: 'Your Scenario Analysis is in Progress',
+        message:
+          'You’ll be notified when it’s ready, the completed scenario can be viewed in planning area dashboard.',
+      },
+    });
   }
 }

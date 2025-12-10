@@ -20,9 +20,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Count, Max, Q, QuerySet
-from django.db.models.functions import Coalesce
+from django.db.models import F, Q, QuerySet
 from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
 from stands.models import Stand, StandSizeChoices
@@ -35,27 +35,27 @@ class PlanningAreaManager(AliveObjectsManager):
     def list_by_user(self, user: User) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
         qs = super().get_queryset()
-        filtered_qs = qs.filter(
-            Q(user=user)
-            | Q(
-                pk__in=UserObjectRole.objects.filter(
-                    collaborator_id=user, content_type_id=content_type_pk
-                ).values_list("object_pk", flat=True)
-            )
-        )
-        return filtered_qs
 
-    def list_for_api(self, user: User) -> QuerySet:
-        queryset = PlanningArea.objects.list_by_user(user)
-        return (
-            queryset.annotate(scenario_count=Count("scenarios", distinct=True))
-            .annotate(
-                scenario_latest_updated_at=Coalesce(
-                    Max("scenarios__updated_at"), "updated_at"
+        ids = (
+            qs.filter(
+                Q(user=user)
+                | Q(
+                    pk__in=UserObjectRole.objects.filter(
+                        collaborator_id=user, content_type_id=content_type_pk
+                    ).values_list("object_pk", flat=True)
                 )
             )
-            .order_by("-scenario_latest_updated_at")
+            .values_list("id", flat=True)
+            .distinct("id")
+            .order_by("id")
         )
+        return super().get_queryset().filter(id__in=ids)
+
+    def list_for_api(self, user: User) -> QuerySet:
+        queryset = PlanningArea.objects.list_by_user(user).annotate(
+            latest_updated=F("updated_at")
+        )
+        return queryset
 
 
 class RegionChoices(models.TextChoices):
@@ -63,6 +63,15 @@ class RegionChoices(models.TextChoices):
     SOUTHERN_CALIFORNIA = "southern-california", "Southern California"
     CENTRAL_COAST = "central-coast", "Central Coast"
     NORTHERN_CALIFORNIA = "northern-california", "Northern California"
+
+
+class PlanningAreaMapStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    IN_PROGRESS = "IN_PROGRESS", "In Progress"
+    STANDS_DONE = "STANDS_DONE", "Stands Done"
+    DONE = "DONE", "Done"
+    FAILED = "FAILED", "Failed"
+    OVERSIZE = "OVERSIZE", "Oversize"
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
@@ -92,6 +101,17 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         null=True,
         help_text="Geometry of the Planning Area represented by polygons.",
     )
+
+    map_status = models.CharField(
+        choices=PlanningAreaMapStatus.choices,
+        null=True,
+        help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
+    )
+
+    scenario_count = models.IntegerField(null=True)
+
+    stands_ready_at = models.DateTimeField(null=True)
+    metrics_ready_at = models.DateTimeField(null=True)
 
     def creator_name(self) -> str:
         return self.user.get_full_name()
@@ -165,6 +185,7 @@ class ScenarioResultStatus(models.TextChoices):
     FAILURE = "FAILURE", "Failure"
     PANIC = "PANIC", "Panic"
     TIMED_OUT = "TIMED_OUT", "Timed Out"
+    DRAFT = "DRAFT", "Draft"
 
 
 class ScenarioManager(AliveObjectsManager):
@@ -190,6 +211,8 @@ class ScenarioVersion(models.TextChoices):
     V1 = "V1", "Version 1"
     # New version (v2) treatment goals are stored in the TreatmentGoal model.
     V2 = "V2", "Version 2"
+    # New version (v3) introduces the 'draft' configuration structure (targets, constraints).
+    V3 = "V3", "Version 3"
 
 
 class TreatmentGoalCategory(models.TextChoices):
@@ -207,6 +230,8 @@ class TreatmentGoalGroup(models.TextChoices):
         "CALIFORNIA_PLANNING_METRICS",
         "California Planning Metrics",
     )
+    TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
+    PYROLOGIX = ("PYROLOGIX", "Pyrologix")
 
 
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
@@ -244,15 +269,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[
-        DataLayer, models.Model
-    ] = models.ManyToManyField(
-        to=DataLayer,
-        through="TreatmentGoalUsesDataLayer",
-        through_fields=(
-            "treatment_goal",
-            "datalayer",
-        ),
+    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
+        models.ManyToManyField(
+            to=DataLayer,
+            through="TreatmentGoalUsesDataLayer",
+            through_fields=(
+                "treatment_goal",
+                "datalayer",
+            ),
+        )
     )
 
     geometry = models.MultiPolygonField(
@@ -261,13 +286,19 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
 
+    @cached_property
+    def active_datalayers(self) -> Collection[DataLayer]:
+        return self.datalayers.filter(used_by_treatment_goals__deleted_at__isnull=True)
+
     def get_coverage(self) -> GEOSGeometry:
-        return self.datalayers.all().geometric_intersection(geometry_field="outline")  # type: ignore
+        return self.active_datalayers.all().geometric_intersection(
+            geometry_field="outline"
+        )  # type: ignore
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(
-            self.datalayers.exclude(
-                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
+            self.active_datalayers.exclude(
+                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE,
             ).filter(type=DataLayerType.RASTER)
         )
 
@@ -290,6 +321,7 @@ class TreatmentGoalUsageType(models.TextChoices):
     SECONDARY_METRIC = "SECONDARY_METRIC", "Secondary Metric"
     THRESHOLD = "THRESHOLD", "Threshold"
     EXCLUSION_ZONE = "EXCLUSION_ZONE", "Exclusion Zone"
+    INCLUSION_ZONE = "INCLUSION_ZONE", "Inclusion Zone"
 
 
 class TreatmentGoalUsesDataLayer(
@@ -347,6 +379,11 @@ class GeoPackageStatus(models.TextChoices):
     FAILED = ("FAILED", "Failed")
 
 
+class ScenarioCapability(models.TextChoices):
+    FORSYS = ("FORSYS", "Forsys")
+    IMPACTS = ("IMPACTS", "Impacts")
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     planning_area_id: int
@@ -379,6 +416,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         help_text="Forsys input data for the Scenario.",
         encoder=DjangoJSONEncoder,
+    )
+
+    capabilities = ArrayField(
+        base_field=models.CharField(max_length=32, choices=ScenarioCapability.choices),
+        default=list,
+        blank=True,
+        help_text="List of enabled capabilities for this Scenario.",
     )
 
     uuid = models.UUIDField(
@@ -421,9 +465,16 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Geopackage URL of the Scenario.",
     )
 
+    ready_email_sent_at = models.DateTimeField(
+        null=True, help_text="When the ready email was sent."
+    )
+
     @cached_property
     def version(self):
-        if self.configuration and self.configuration.get("question_id") is not None:
+        cfg = self.configuration or {}
+        if "targets" in cfg:
+            return ScenarioVersion.V3
+        if "question_id" in cfg:
             return ScenarioVersion.V1
         return ScenarioVersion.V2
 

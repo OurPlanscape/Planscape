@@ -29,16 +29,38 @@ BEGIN
   WITH hexes AS (
     SELECT 
       geom, 
-      ST_Centroid(geom) as "point",
-      ST_Transform(ST_Centroid(geom), 4326) as "point_4326" 
+      ST_Centroid(geom) as "point_5070",
+      ST_Transform(ST_Centroid(geom), 4326) as "point_4326",
+      ST_Transform(ST_Centroid(geom), 4269) as "point_4269"
     FROM ST_HexagonGrid(side_m, envelope) AS g(geom)
+  ),
+  candidates AS (
+    SELECT
+      h.geom,
+      h.point_4269,
+      ST_GeoHash(h.point_4326, 8) as geohash
+      FROM hexes h
+    WHERE
+      ST_Covers(pa_5070, h.point_5070)
   ),
   inside AS (
     SELECT 
-      h.geom,
-      ST_GeoHash(h.point_4326, 8) as "geohash"
-    FROM hexes h
-    WHERE ST_Within(h.point, pa_5070)
+      c.geom,
+      c.geohash
+    FROM candidates c
+    LEFT JOIN LATERAL (
+      SELECT
+        ss.id AS ss_id
+      FROM stands_stand ss
+      WHERE
+        ss.size = stand_size AND
+        ss.geometry && planning_area AND
+        ss.geometry && c.point_4269 AND
+        ST_Covers(ss.geometry, c.point_4269)
+      LIMIT 1
+    ) hit ON TRUE
+    WHERE
+      hit.ss_id IS NULL
   )
   INSERT INTO public.stands_stand (created_at, size, geometry, area_m2, grid_key)
   SELECT 
@@ -52,5 +74,4 @@ BEGIN
 
   GET DIAGNOSTICS inserted = ROW_COUNT;
   RETURN inserted;
-END;
-$$;
+END $$;

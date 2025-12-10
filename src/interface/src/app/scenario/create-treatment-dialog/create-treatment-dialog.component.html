@@ -1,0 +1,26 @@
+<sg-modal
+  title="Name Your Treatment Plan"
+  primaryButtonText="Save"
+  [showClose]="false"
+  secondaryButtonText="Cancel"
+  [primaryButtonDisabled]="submitting || treatmentForm.invalid"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="submit()">
+  <div modalBodyContent>
+    <form [formGroup]="treatmentForm" (ngSubmit)="submitIfValid($event)">
+      <label for="treatmentName" class="form-label"
+        >Treatment Plan Name <span>*</span></label
+      >
+      <sg-input-field class="form-field" size="full">
+        <input
+          id="treatmentName"
+          sgInput
+          cdkFocusInitial
+          formControlName="treatmentName" />
+      </sg-input-field>
+    </form>
+  </div>
+</sg-modal>

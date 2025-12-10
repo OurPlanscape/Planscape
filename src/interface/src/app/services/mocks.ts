@@ -17,6 +17,7 @@ export const MOCK_PLAN: Plan = {
   permissions: [],
   scenario_count: 0,
   role: 'Creator',
+  map_status: 'DONE',
 };
 
 export const MOCK_FEATURE_COLLECTION: GeoJSON = {

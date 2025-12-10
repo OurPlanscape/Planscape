@@ -1,0 +1,73 @@
+<ng-container *ngIf="currentScenarioResource$ | async as scenarioResource">
+  <!-- Displaying loading if we are loading -->
+  <ng-container *ngIf="scenarioResource.isLoading; else scenarioLoaded">
+    <div class="spinner-row">
+      <mat-spinner diameter="24" class="loader"></mat-spinner>
+    </div>
+  </ng-container>
+
+  <!-- If loading is completed and we have an error we should display resource unavailable component -->
+  <ng-template #scenarioLoaded>
+    <ng-container *ngIf="scenarioResource.error; else scenarioOk">
+      <app-resource-unavailable resource="scenario"></app-resource-unavailable>
+    </ng-container>
+  </ng-template>
+
+  <!-- If the scenario is a valid scenario we should check which component we should display-->
+  <ng-template #scenarioOk>
+    <ng-container
+      *ngIf="
+        canViewScenarioCreation$ | async as canViewScenarioCreation;
+        else checkOrigin
+      ">
+      <!-- with the new config-->
+      <ng-container *ngIf="configUiFlagIsOn">
+        <!-- Displaying drafts if we can edit drafts -->
+        <app-scenario-creation
+          *ngIf="
+            canViewScenarioCreation === true;
+            else checkOrigin
+          "></app-scenario-creation>
+      </ng-container>
+
+      <!-- version without config ui - remove after cleaning flag-->
+      <ng-container *ngIf="!configUiFlagIsOn">
+        <app-scenario>
+          <!-- Displaying drafts if we can edit drafts -->
+          <app-scenario-creation
+            *ngIf="
+              canViewScenarioCreation === true;
+              else checkOrigin
+            "></app-scenario-creation>
+        </app-scenario>
+      </ng-container>
+    </ng-container>
+
+    <ng-template #checkOrigin>
+      <!-- Displaying uploaded scenario if the origin is USER -->
+      <app-scenario>
+        <app-uploaded-scenario-view
+          [scenario]="scenarioResource.data"
+          *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
+        </app-uploaded-scenario-view>
+
+        <ng-template #createScenario>
+          <!-- Displaying scenario view if canViewScenarioCreation$ --if not, means canViewScenarioCreation didn't emit yet and we should display loading-->
+
+          <app-view-scenario
+            *ngIf="
+              (canViewScenarioCreation$ | async) === false;
+              else loading
+            "></app-view-scenario>
+        </ng-template>
+      </app-scenario>
+    </ng-template>
+
+    <!-- Loading for the case where canViewScenarioCreation$ didn't emit yet -->
+    <ng-template #loading>
+      <div class="spinner-row">
+        <mat-spinner diameter="24" class="loader"></mat-spinner>
+      </div>
+    </ng-template>
+  </ng-template>
+</ng-container>

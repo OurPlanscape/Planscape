@@ -18,12 +18,11 @@ services:
     depends_on:
       - db
       - redis
-      - forsys
-    working_dir: /usr/src/app/src/planscape
+    working_dir: /app/src/planscape
     command: bin/run_gunicorn.sh
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - .:/usr/src/app
+      - .:/app
   frontend:
     build:
       context: .
@@ -34,9 +33,9 @@ services:
       - .env
     depends_on:
       - web
-    working_dir: /usr/src/app/src/interface
+    working_dir: /app/src/interface
     volumes:
-      - .:/usr/src/app
+      - .:/app
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -49,8 +48,8 @@ services:
     image: planscape
     extends:
       service: _planscape
-    working_dir: /usr/src/app/src/planscape
-    command: celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,default,impacts
+    working_dir: /app/src/planscape
+    command: uv run celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics
     deploy:
       replicas: 1
     env_file:
@@ -60,13 +59,13 @@ services:
       - db
       - redis
     volumes:
-      - .:/usr/src/app
+      - .:/app
   celery_beat:
     image: planscape
     extends:
       service: _planscape
-    working_dir: /usr/src/app/src/planscape
-    command: celery -A planscape beat --loglevel INFO
+    working_dir: /app/src/planscape
+    command: uv run celery -A planscape beat --loglevel INFO
     deploy:
       replicas: 1
     env_file:
@@ -102,20 +101,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db/postgres
     command: --config /usr/src/app/martin.yaml
     volumes:
-      - .:/usr/src/app
-  forsys:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.forsys
-    ports:
-      - "8001:8001"
-    depends_on:
-      - db
-    env_file:
-      - .env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - .:/usr/src/app
+      - .:/app
 volumes:
   postgres: null
   cache:

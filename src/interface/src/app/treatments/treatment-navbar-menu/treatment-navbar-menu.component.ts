@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
@@ -9,19 +8,14 @@ import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentsService } from '@services/treatments.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AfterDuplicateTreatmentDialogComponent } from '../after-duplicate-treatment-dialog/after-duplicate-treatment-dialog.component';
 import { TreatmentPlan } from '@types';
 import { ButtonComponent, DialogData, ErrorDialogComponent } from '@styleguide';
+import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-treatment-navbar-menu',
   standalone: true,
-  imports: [
-    MatIconModule,
-    MatLegacyButtonModule,
-    MatMenuModule,
-    ButtonComponent,
-  ],
+  imports: [MatIconModule, MatMenuModule, ButtonComponent],
   templateUrl: './treatment-navbar-menu.component.html',
   styleUrl: './treatment-navbar-menu.component.scss',
 })
@@ -42,7 +36,8 @@ export class TreatmentNavbarMenuComponent {
       DeleteDialogComponent,
       {
         data: {
-          name: '"' + this.treatmentPlanName + '"',
+          title: 'Delete "' + this.treatmentPlanName + '"?',
+          body: `<b>Warning</b>: This operation cannot be reversed.`,
         },
       }
     );
@@ -109,8 +104,13 @@ export class TreatmentNavbarMenuComponent {
 
   openAfterDuplicateTreatmentDialog(newPlan: TreatmentPlan) {
     this.dialog
-      .open(AfterDuplicateTreatmentDialogComponent, {
-        data: { name: this.treatmentPlanName },
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Open the copy of ' + this.treatmentPlanName,
+          body: `All changes you made for ${this.treatmentPlanName} are auto-saved. Do you want to open the duplicated plan?`,
+          primaryCta: 'Open the copy',
+          secondaryCta: 'Stay On This Plan',
+        },
       })
       .afterClosed()
       .pipe(take(1))

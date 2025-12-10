@@ -17,14 +17,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { ScenarioResultStatus } from '@types';
-import { MatLegacyProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
 import {
   StatusChipComponent,
   StatusChipStatus,
 } from '../status-chip/status-chip.component';
 import { ButtonComponent } from '../button/button.component';
 
-export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
+export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
 
 /**
  * Scenario Card for displaying scenario data in a results list
@@ -43,7 +42,6 @@ export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
     MatIconModule,
     MatMenuModule,
     MatButtonModule,
-    MatLegacyProgressSpinnerModule,
   ],
   templateUrl: './scenario-card.component.html',
   styleUrl: './scenario-card.component.scss',
@@ -60,12 +58,18 @@ export class ScenarioCardComponent {
   @Input() selected: boolean = false;
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
   @Input() userCanArchiveScenario = false;
-  @Input() userCanCreateTreatmentPlans = false;
+  @Input() userCanDeleteScenario = false;
+  @Input() userCanEditScenario = false;
+  @Input() showTreatmentPlanButton = false;
+  @Input() contextualMenuEnabled = true;
+  @Input() disabled = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
   @Output() openNewTreatment = new EventEmitter();
   @Output() toggleArchiveStatus = new EventEmitter();
+  @Output() deleteScenario = new EventEmitter();
+  @Output() editScenario = new EventEmitter();
   @Output() clicked = new EventEmitter();
 
   readonly chipsStatus: Record<
@@ -83,6 +87,7 @@ export class ScenarioCardComponent {
     RUNNING: { status: 'running', label: 'Running' },
     SUCCESS: { status: 'success', label: 'Done' },
     TIMED_OUT: { status: 'failed', label: 'Failed' },
+    DRAFT: { status: 'draft', label: 'Draft' },
   };
 
   hasFailed(): boolean {
@@ -106,7 +111,7 @@ export class ScenarioCardComponent {
 
   @HostBinding('class.disabled-content')
   get disabledContent() {
-    return this.isRunning();
+    return this.isRunning() || this.disabled;
   }
 
   @HostBinding('class.selected')

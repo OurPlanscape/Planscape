@@ -2,6 +2,10 @@ import re
 from typing import Any, Collection, Dict, Optional
 
 from core.loaders import get_python_object
+from organizations.models import Organization
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+
 from datasets.models import (
     Category,
     DataLayer,
@@ -17,9 +21,6 @@ from datasets.styles import (
     get_default_vector_style,
     get_raster_style,
 )
-from organizations.models import Organization
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -85,6 +86,8 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
             "name",
             "description",
             "visibility",
+            "selection_type",
+            "preferred_display_type",
             "version",
         )
 
@@ -571,6 +574,12 @@ class BrowseDataSetSerializer(serializers.Serializer):
 
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
+
+    type = serializers.ChoiceField(
+        choices=DataLayerType.choices,
+        required=False,
+        allow_null=True,
+    )
 
     limit = serializers.IntegerField(required=False, min_value=1)
 

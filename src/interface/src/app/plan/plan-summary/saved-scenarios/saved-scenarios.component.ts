@@ -1,17 +1,29 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, ScenarioService } from '@services';
-import { interval, take } from 'rxjs';
+import {
+  catchError,
+  EMPTY,
+  exhaustMap,
+  merge,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+  timer,
+} from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   getPlanPath,
   isValidTotalArea,
+  planningAreaMetricsAreReady,
+  planningAreaMetricsFailed,
   POLLING_INTERVAL,
 } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
-
+import { PLANNINGAREA_SIZE_ALERT_THRESHOLD } from '@shared';
 import { canAddScenario } from '../../permissions';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
@@ -19,7 +31,9 @@ import { UploadProjectAreasModalComponent } from '../../upload-project-areas-mod
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { FeatureService } from 'src/app/features/feature.service';
+import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
+import { PlanState } from '../../plan.state';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -33,7 +47,8 @@ export interface ScenarioRow extends Scenario {
   styleUrls: ['./saved-scenarios.component.scss'],
 })
 export class SavedScenariosComponent implements OnInit {
-  @Input() plan: Plan | null = null;
+  planId: number | null = null;
+  plan: Plan | null = null;
   user$ = this.authService.loggedInUser$;
 
   highlightedScenarioRow: ScenarioRow | null = null;
@@ -45,11 +60,8 @@ export class SavedScenariosComponent implements OnInit {
   selectedTabIndex = 0;
   totalScenarios = 0;
   sortSelection = '-created_at';
-  scenarioPath = this.featureService.isFeatureEnabled(
-    'SCENARIO_CONFIGURATION_STEPS'
-  )
-    ? 'scenario'
-    : 'config';
+
+  private manualFetch$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
@@ -60,19 +72,34 @@ export class SavedScenariosComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService
+    private planState: PlanState
   ) {}
 
   ngOnInit(): void {
-    this.fetchScenarios();
+    this.planId = this.route.snapshot.params['planId'];
     this.pollForChanges();
+    this.planState.currentPlan$.pipe(untilDestroyed(this)).subscribe((plan) => {
+      this.plan = plan;
+    });
   }
 
   private pollForChanges() {
-    // we might want to check if any scenario is still pending in order to poll
-    interval(POLLING_INTERVAL)
-      .pipe(untilDestroyed(this))
-      .subscribe(() => this.fetchScenarios());
+    const poll$ = timer(0, POLLING_INTERVAL).pipe(
+      // start a fetch if not already running; ignore extra poll ticks while active
+      exhaustMap(() =>
+        this.fetchScenarios$().pipe(
+          // if a manual trigger arrives, cancel the current poll request
+          takeUntil(this.manualFetch$)
+        )
+      )
+    );
+
+    const manual$ = this.manualFetch$.pipe(
+      // run immediately; ignore extra manual clicks while one is running
+      switchMap(() => this.fetchScenarios$())
+    );
+
+    merge(poll$, manual$).pipe(untilDestroyed(this)).subscribe();
   }
 
   handleSortChange() {
@@ -84,30 +111,51 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   fetchScenarios(): void {
-    this.scenarioService
-      .getScenariosForPlan(this.plan?.id!, this.sortSelection)
-      .pipe(take(1))
-      .subscribe((scenarios) => {
-        this.totalScenarios = scenarios.length;
-        this.scenariosForUser = this.showOnlyMyScenarios
-          ? scenarios.filter((s) => s.user === this.user$.value?.id)
-          : scenarios;
-        const fetchedActiveScenarios = this.scenariosForUser.filter(
-          (s) => s.status === 'ACTIVE'
-        );
-        if (this.listsDiffer(this.activeScenarios, fetchedActiveScenarios)) {
-          this.activeScenarios = fetchedActiveScenarios;
-        }
-        const fetchedArchivedScenarios = this.scenariosForUser.filter(
-          (s) => s.status === 'ARCHIVED'
-        );
-        if (
-          this.listsDiffer(this.archivedScenarios, fetchedArchivedScenarios)
-        ) {
-          this.archivedScenarios = fetchedArchivedScenarios;
-        }
-        this.loading = false;
-      });
+    this.manualFetch$.next();
+  }
+
+  private fetchScenarios$() {
+    return this.scenarioService
+      .getScenariosForPlan(this.planId!, this.sortSelection)
+      .pipe(
+        take(1),
+        tap((scenarios) => {
+          this.totalScenarios = scenarios.length;
+
+          this.scenariosForUser = this.showOnlyMyScenarios
+            ? scenarios.filter((s) => s.user === this.user$.value?.id)
+            : scenarios;
+
+          const fetchedActive = this.scenariosForUser.filter(
+            (s) => s.status === 'ACTIVE'
+          );
+          if (this.listsDiffer(this.activeScenarios, fetchedActive)) {
+            this.activeScenarios = fetchedActive;
+          }
+
+          const fetchedArchived = this.scenariosForUser.filter(
+            (s) => s.status === 'ARCHIVED'
+          );
+          if (this.listsDiffer(this.archivedScenarios, fetchedArchived)) {
+            this.archivedScenarios = fetchedArchived;
+          }
+          this.loading = false;
+        }),
+
+        // keep the poller alive on errors
+        catchError(() => {
+          this.loading = false;
+          return EMPTY;
+        })
+      );
+  }
+
+  removeScenarioFromList(
+    scenario: Scenario,
+    list: 'activeScenarios' | 'archivedScenarios'
+  ) {
+    this[list] = this[list].filter((s) => s.id !== scenario.id);
+    this.fetchScenarios();
   }
 
   get canAddScenarioForPlan(): boolean {
@@ -117,16 +165,45 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
-  openConfig(configId?: number): void {
-    if (!configId) {
-      this.router.navigate([this.scenarioPath], {
-        relativeTo: this.route,
-      });
+  // Check PA for acreage, and if it doesn't have active scenarios
+  get planningAreaIsLarge() {
+    const acres = this.plan?.area_acres ?? 0;
+    return (
+      this.plan?.scenario_count === 0 &&
+      acres >= PLANNINGAREA_SIZE_ALERT_THRESHOLD
+    );
+  }
+
+  get scenarioDisabledTooltipReason() {
+    if (this.planningAreaIsLarge) {
+      return 'New Scenario not available';
+    } else if (!this.planningAreaIsReady) {
+      return 'Your Planning Area is being prepared';
     } else {
-      this.router.navigate([this.scenarioPath, configId], {
-        relativeTo: this.route,
-      });
+      return 'Planning Area is less than 100 acres';
     }
+  }
+
+  get planningAreaIsReady() {
+    return this.plan && planningAreaMetricsAreReady(this.plan);
+  }
+
+  get planningAreaFailed() {
+    return this.plan && planningAreaMetricsFailed(this.plan);
+  }
+
+  private openScenarioSetupDialog() {
+    return this.dialog.open(ScenarioSetupModalComponent, {
+      maxWidth: '560px',
+      data: {
+        planId: this.plan?.id,
+        fromClone: false,
+      },
+    });
+  }
+
+  handleNewScenarioButton(configId?: number): void {
+    this.openScenarioSetupDialog();
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
@@ -135,7 +212,7 @@ export class SavedScenariosComponent implements OnInit {
       backUrl: getPlanPath(clickedScenario.planning_area),
     });
 
-    this.router.navigate([this.scenarioPath, clickedScenario.id], {
+    this.router.navigate(['scenario', clickedScenario.id], {
       relativeTo: this.route,
     });
   }
@@ -147,7 +224,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   get isValidPlanningArea() {
-    if (!this.plan) {
+    if (!this.plan || !this.planningAreaIsReady) {
       return false;
     }
     return isValidTotalArea(this.plan.area_acres);
@@ -172,7 +249,7 @@ export class SavedScenariosComponent implements OnInit {
       .subscribe({
         next: (result) => {
           this.router.navigate(
-            [this.scenarioPath, scenarioId, 'treatment', result.id],
+            ['scenario', scenarioId, 'treatment', result.id],
             {
               relativeTo: this.route,
             }

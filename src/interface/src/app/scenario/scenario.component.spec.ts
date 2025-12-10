@@ -1,0 +1,32 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { ScenarioComponent } from './scenario.component';
+import { MockComponents, MockDeclarations } from 'ng-mocks';
+import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
+
+import { NavBarComponent, SharedModule } from '@shared';
+import { GoalOverlayComponent } from '../plan/goal-overlay/goal-overlay.component';
+import { RouterTestingModule } from '@angular/router/testing';
+
+describe('ScenarioComponent', () => {
+  let component: ScenarioComponent;
+  let fixture: ComponentFixture<ScenarioComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [
+        MockComponents(ScenarioMapComponent, GoalOverlayComponent),
+        MockDeclarations(NavBarComponent),
+      ],
+      imports: [ScenarioComponent, RouterTestingModule, SharedModule],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ScenarioComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

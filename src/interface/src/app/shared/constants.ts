@@ -1,6 +1,7 @@
-import { MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
+import { MatSnackBarConfig } from '@angular/material/snack-bar';
 
 export const DEFAULT_TX_COST_PER_ACRE: number = 2470;
+export const PLANNINGAREA_SIZE_ALERT_THRESHOLD: number = 3000000;
 
 /**
  * @desc Error message indicating some unknown error occurred while attempting a
@@ -9,25 +10,25 @@ export const DEFAULT_TX_COST_PER_ACRE: number = 2470;
 export const MSG_RESET_PASSWORD_ERROR =
   'Unable to reset your password at this time. Please try again later.';
 
-export const SNACK_NOTICE_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_NOTICE_CONFIG: MatSnackBarConfig = {
   duration: 4000,
   panelClass: ['snackbar-notice'],
   verticalPosition: 'top',
 };
 
-export const SNACK_BOTTOM_NOTICE_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_BOTTOM_NOTICE_CONFIG: MatSnackBarConfig = {
   duration: 4000,
   panelClass: ['snackbar-notice'],
   verticalPosition: 'bottom',
 };
 
-export const SNACK_ERROR_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_ERROR_CONFIG: MatSnackBarConfig = {
   duration: 10000,
   panelClass: ['snackbar-error'],
   verticalPosition: 'top',
 };
 
-export const SNACK_DEBUG_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_DEBUG_CONFIG: MatSnackBarConfig = {
   duration: 30000,
   panelClass: ['snackbar-debug-error'],
   verticalPosition: 'top',
@@ -121,3 +122,8 @@ export const BASE_LAYERS_DEFAULT = {
  * that's accepted by Angular is rejected by the backend.
  */
 export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
+
+export const NOTE_DELETE_DIALOG = {
+  title: 'Permanently delete note?',
+  body: 'Are you sure you want to delete this note?',
+};

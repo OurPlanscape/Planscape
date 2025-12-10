@@ -1,11 +1,17 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
+
 import { EMAIL_VALIDATION_REGEX } from '@shared';
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { NgForOf } from '@angular/common';
 
 @Component({
   selector: 'app-chip-input',
   templateUrl: './chip-input.component.html',
   styleUrls: ['./chip-input.component.scss'],
+  standalone: true,
+  imports: [MatChipsModule, MatInputModule, MatIconModule, NgForOf],
 })
 export class ChipInputComponent {
   @Input() emails: string[] = [];

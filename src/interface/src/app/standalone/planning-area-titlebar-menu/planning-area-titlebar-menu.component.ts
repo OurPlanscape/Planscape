@@ -13,15 +13,13 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { ButtonComponent } from '@styleguide';
+import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-planning-area-titlebar-menu',
   standalone: true,
   imports: [
-    MatLegacyButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,
@@ -51,12 +49,17 @@ export class PlanningAreaTitlebarMenuComponent {
   }
 
   deletePlan() {
-    const dialogRef: MatDialogRef<DeletePlanningAreaComponent> =
-      this.dialog.open(DeletePlanningAreaComponent, {
+    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
+      DeleteDialogComponent,
+      {
         data: {
-          name: '"' + this.plan.name + '"',
+          title: 'Delete planning area "' + this.plan.name + '"?',
+          body: ` Are you sure you want to delete this planning area? All scenarios of this
+                  planning area will be permanently deleted, and users who have access to this
+                  planning area will lose the access.`,
         },
-      });
+      }
+    );
     dialogRef
       .afterClosed()
       .pipe(take(1))

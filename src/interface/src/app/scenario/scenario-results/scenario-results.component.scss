@@ -1,0 +1,23 @@
+
+.actions {
+  margin: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+@media print {
+  .actions {
+    display: none;
+  }
+}
+
+sg-section {
+  margin-top: 16px;
+}
+
+.chart {
+  margin-top: 24px;
+}

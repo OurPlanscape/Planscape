@@ -1,0 +1,41 @@
+<sg-modal
+  [title]="editMode ? 'Rename Scenario' : 'Name your scenario'"
+  [showClose]="false"
+  [primaryButtonText]="primaryCTA"
+  secondaryButtonText="Cancel"
+  [primaryButtonDisabled]="
+    scenarioNameForm.get('scenarioName')?.hasError('required') === true ||
+    submitting
+  "
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="handleSubmit()">
+  <div modalBodyContent>
+    <form [formGroup]="scenarioNameForm" (ngSubmit)="submitIfValid($event)">
+      <sg-input-field
+        [disabled]="false"
+        showSupportMessage="on-error"
+        label="Scenario Name"
+        [error]="this.errorMessage !== ''"
+        [supportMessage]="errorMessage"
+        size="full">
+        <input
+          sgInput
+          required
+          name="scenarioName"
+          cdkFocusInitial
+          formControlName="scenarioName" />
+      </sg-input-field>
+      <div
+        *ngIf="
+          data.fromClone === true &&
+          (data.scenario?.version === 'V2' || data.scenario?.version === 'V1')
+        ">
+        The scenario creation steps have been updated and may be different from
+        this original version.
+      </div>
+    </form>
+  </div>
+</sg-modal>

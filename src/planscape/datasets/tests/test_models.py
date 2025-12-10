@@ -1,11 +1,11 @@
 from django.contrib.gis.geos import GEOSGeometry
-from django.test import TransactionTestCase
+from django.test import TestCase
 
 from datasets.models import DataLayer
 from datasets.tests.factories import DataLayerFactory
 
 
-class GeometricIntersectionTest(TransactionTestCase):
+class GeometricIntersectionTest(TestCase):
     def setUp(self):
         # Create two overlapping polygons
         self.poly1 = GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))")

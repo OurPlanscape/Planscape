@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Type
 from rest_framework.serializers import Serializer
 
 

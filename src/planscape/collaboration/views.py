@@ -53,7 +53,7 @@ class CreateInvite(APIView):
                 {"message": f"You cannot invite other users to this {target_entity}"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        except Exception as ex:
+        except Exception:
             # this collects exception info and forwards it to sentry.
             logger.exception("Something failed during the creation of a new invite.")
             # this will return a 500

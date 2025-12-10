@@ -1,0 +1,13 @@
+<h4 class="title">Treatment Plans</h4>
+<div class="uploaded-scenario-panel-content">
+  <app-treatments-tab
+    class="uploaded-treatments-tab"
+    *ngIf="scenario"
+    [scenarioId]="scenario.id!"
+    [planningArea]="plan$ | async"></app-treatments-tab>
+  <app-new-treatment-footer
+    [scenarioId]="scenario?.id!"
+    *ngIf="
+      (showTreatmentFooter$ | async) && scenarioCanHaveTreatmentPlans(scenario)
+    "></app-new-treatment-footer>
+</div>

@@ -3,17 +3,18 @@ from urllib.parse import urlencode
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from organizations.tests.factories import OrganizationFactory
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 
-from datasets.models import DataLayerType, VisibilityOptions
+from datasets.models import DataLayer, DataLayerType, VisibilityOptions
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
 
 
-class TestDataLayerViewSet(APITransactionTestCase):
+class TestDataLayerViewSet(APITestCase):
     def setUp(self) -> None:
+        DataLayer.objects.all().delete()  # Delete hard coded Datalayers
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
         self.organization = OrganizationFactory.create(
@@ -91,7 +92,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_full_text_search_datalayer_name_multiple_return(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):
@@ -108,7 +109,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_full_text_search_dataset_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):
@@ -129,7 +130,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_full_text_search_organization_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):
@@ -177,7 +178,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_find_anything(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(
+        DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         for i in range(10):
@@ -190,14 +191,40 @@ class TestDataLayerViewSet(APITransactionTestCase):
         filter = {
             "term": "foo",
         }
+        DataLayerFactory.create(
+            dataset=self.dataset, name="Foo Vector", type=DataLayerType.VECTOR
+        )
         url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(filter)}"
         response = self.client.get(url)
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(10, data.get("count"))
 
+        for row in data["results"]:
+            self.assertEqual("RASTER", row["data"]["type"])
 
-class TestDatasetViewSet(APITransactionTestCase):
+    def test_find_anything_type_vector_returns_vectors(self):
+        self.client.force_authenticate(user=self.admin)
+        for i in range(3):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"vefoo {i}", type=DataLayerType.VECTOR
+            )
+        for i in range(5):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"vefoo R {i}", type=DataLayerType.RASTER
+            )
+
+        params = {"term": "vefoo", "type": DataLayerType.VECTOR}
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
+        resp = self.client.get(url)
+        data = resp.json()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(3, data.get("count"))
+        for row in data["results"]:
+            self.assertEqual("VECTOR", row["data"]["type"])
+
+
+class TestDatasetViewSet(APITestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
@@ -222,7 +249,8 @@ class TestDatasetViewSet(APITransactionTestCase):
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+        ids = [row["id"] for row in data.get("results", [])]
+        self.assertIn(dataset.pk, ids)
 
     def test_get_by_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
@@ -231,7 +259,8 @@ class TestDatasetViewSet(APITransactionTestCase):
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+        ids = [row["id"] for row in data.get("results", [])]
+        self.assertIn(dataset.pk, ids)
 
     def test_browses_datalayers(self):
         self.client.force_authenticate(user=self.admin)
@@ -266,7 +295,7 @@ class TestDatasetViewSet(APITransactionTestCase):
         self.assertEqual(datalayer.pk, data[0].get("id"))
 
 
-class TestPublicAccess(APITransactionTestCase):
+class TestPublicAccess(APITestCase):
     def setUp(self) -> None:
         self.dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
         self.datalayer = DataLayerFactory.create(dataset=self.dataset)

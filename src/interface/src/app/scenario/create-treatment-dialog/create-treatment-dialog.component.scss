@@ -1,0 +1,17 @@
+@import "colors";
+
+.form-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: $color-text-dark;
+  margin-bottom: 4px;
+
+  span {
+    color: $color-error;
+  }
+}
+
+.form-field {
+  width: 100%;
+}

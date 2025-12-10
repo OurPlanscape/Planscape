@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, Observable } from 'rxjs';
 import {
   AvailableStands,
   Constraint,
   Scenario,
-  ScenarioConfig,
   ScenarioCreationPayload,
+  ScenarioV3Payload,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -43,27 +43,40 @@ export class ScenarioService {
     });
   }
 
-  /** Creates a scenario in the backend. Returns scenario ID. */
-  // TODO: Remove once SCENARIO_CONFIGURATION_STEPS be approved
-  createScenario(scenarioParameters: any): Observable<Scenario> {
-    scenarioParameters['configuration'] = this.convertConfigToScenario(
-      scenarioParameters['configuration']
-    );
-
-    return this.http
-      .post<Scenario>(this.v2Path, scenarioParameters, {
+  createScenarioFromName(name: string, planId: number) {
+    const scenarioParameters = { name: name, planning_area: planId };
+    return this.http.post<Scenario>(
+      this.v2Path + 'draft/',
+      scenarioParameters,
+      {
         withCredentials: true,
-      })
-      .pipe(
-        catchError((error) => {
-          const message =
-            error.error?.global?.[0] ||
-            'Please change your settings and try again.';
-          throw new CreateScenarioError(
-            'Your scenario config is invalid. ' + message
-          );
-        })
-      );
+      }
+    );
+  }
+
+  /** Actually runs the draft scenario after it's been configured */
+  runScenario(scenarioId: number) {
+    const runUrl = `${this.v2Path}${scenarioId}/run/`;
+    return this.http.post<Scenario>(
+      runUrl,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /** Makes a request to the backend to rename the scenario with the given name */
+  editScenarioName(
+    scenarioId: number,
+    name: string,
+    planning_area: number
+  ): Observable<any> {
+    return this.http.patch(
+      this.v2Path + scenarioId + '/',
+      { name, planning_area },
+      { withCredentials: true }
+    );
   }
 
   /** Creates a scenario in the backend with stepper Returns scenario ID. */
@@ -86,9 +99,36 @@ export class ScenarioService {
       );
   }
 
+  //sends a partial scenario configuration using PATCH
+  // returns success or failure, based on backend results
+  patchScenarioConfig(
+    scenarioId: number,
+    configPayload: Partial<ScenarioV3Payload>
+  ) {
+    return this.http
+      .patch<Scenario>(this.v2Path + scenarioId + '/draft/', configPayload, {
+        withCredentials: true,
+      })
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.global?.[0] || 'Failed to save configuration';
+          throw new CreateScenarioError(
+            'Scenario Config is invalid. ' + message
+          );
+        })
+      );
+  }
+
   toggleScenarioStatus(scenarioId: number) {
     const url = this.v2Path + scenarioId + '/toggle_status/';
     return this.http.post<number>(url, {
+      withCredentials: true,
+    });
+  }
+
+  deleteScenario(scenarioId: number) {
+    return this.http.delete<void>(`${this.v2Path}${scenarioId}/`, {
       withCredentials: true,
     });
   }
@@ -121,23 +161,6 @@ export class ScenarioService {
     );
   }
 
-  getExcludedAreas(): Observable<{ key: number; label: string; id: number }[]> {
-    const url = environment.backend_endpoint + '/v2/datasets/998/browse';
-    return this.http.get(url).pipe(
-      map((areas: any) => {
-        const excludedAreas: { key: number; label: string; id: number }[] = [];
-        areas.forEach((area: any) => {
-          excludedAreas.push({
-            key: area.id,
-            label: area.name,
-            id: area.id,
-          });
-        });
-        return excludedAreas;
-      })
-    );
-  }
-
   getExcludedStands(
     planId: number,
     stand_size: string,
@@ -158,19 +181,5 @@ export class ScenarioService {
         withCredentials: true,
       }
     );
-  }
-
-  private convertConfigToScenario(config: ScenarioConfig): ScenarioConfig {
-    return {
-      stand_size: config.stand_size,
-      estimated_cost: config.estimated_cost,
-      max_budget: config.max_budget, // We should send max_budget OR max_area just 1 of both
-      max_area: !config.max_budget && config.max_area ? config.max_area : null, // We should send max_budget OR max_area just 1 of both
-      max_project_count: config.max_project_count,
-      max_slope: config.max_slope,
-      min_distance_from_road: config.min_distance_from_road,
-      excluded_areas: config.excluded_areas,
-      seed: config.seed,
-    };
   }
 }

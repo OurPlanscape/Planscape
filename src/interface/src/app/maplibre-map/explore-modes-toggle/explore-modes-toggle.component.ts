@@ -8,11 +8,11 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
-import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { UploadPlanningAreaBoxComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
-import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
-import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/explore-plan-create-dialog.component';
+import { CreatePlanDialogComponent } from '../../explore/create-plan-dialog/create-plan-dialog.component';
+import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
+import { BlockDialogComponent } from '../../standalone/block-dialog/block-dialog.component';
+
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -87,9 +87,7 @@ export class ExploreModesToggleComponent {
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
     } else if (!this.drawService.isDrawingWithinBoundary()) {
-      this.dialog.open(OutsideStateDialogComponentComponent, {
-        maxWidth: '560px',
-      });
+      this.openOutsideStateDialog();
       return;
     } else {
       this.openPlanCreateDialog()
@@ -103,7 +101,7 @@ export class ExploreModesToggleComponent {
   }
 
   private openPlanCreateDialog() {
-    return this.dialog.open(ExplorePlanCreateDialogComponent, {
+    return this.dialog.open(CreatePlanDialogComponent, {
       maxWidth: '560px',
       data: {
         drawService: this.drawService,
@@ -113,16 +111,40 @@ export class ExploreModesToggleComponent {
 
   private openConfirmExitDialog(): void {
     this.dialog
-      .open(ConfirmExitDrawingModalComponent)
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Discard Polygon(s)?',
+          body: 'Your polygon(s) have not been saved, are you sure you want to discard?',
+          primaryCta: 'Discard',
+        },
+      })
       .afterClosed()
-      .subscribe((modalResponse: any) => {
-        if (modalResponse === true) {
+      .subscribe((confirms: boolean) => {
+        if (confirms) {
           this.mapConfigState.enterViewMode();
         }
       });
   }
 
   private openSaveWarningDialog(): void {
-    this.dialog.open(NoPlanningAreaModalComponent);
+    this.dialog.open(BlockDialogComponent, {
+      data: {
+        title: 'Planning Area Required',
+        body: 'You must add a planning area before saving. Use the drawing tool or upload a valid shapefile to proceed.',
+        primaryCta: 'OK',
+      },
+    });
+  }
+
+  private openOutsideStateDialog() {
+    this.dialog.open(BlockDialogComponent, {
+      data: {
+        title:
+          'Scenario Planning Available Only in the Contiguous United States',
+        body: ` Please adjust your Planning Area to be located within the contiguous United
+                States in order to proceed with scenario planning.`,
+        primaryCta: 'Adjust Planning Area',
+      },
+    });
   }
 }

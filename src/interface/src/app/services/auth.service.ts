@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import {
   ActivatedRouteSnapshot,
   Router,
@@ -23,6 +22,7 @@ import {
 import { User } from '@types';
 import { RedirectService } from './redirect.service';
 import { environment } from '../../environments/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface LogoutResponse {
   detail: string;

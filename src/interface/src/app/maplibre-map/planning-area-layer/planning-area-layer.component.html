@@ -5,21 +5,8 @@
     type="line"
     [source]="sourceName"
     [sourceLayer]="sourceName"
-    [paint]="{
-      'line-color': COLORS.md_gray,
-      'line-width': 2,
-    }"
+    [paint]="linePaint"
     [before]="before">
   </mgl-layer>
-  <mgl-layer
-    id="planning-area-fill"
-    type="fill"
-    [source]="sourceName"
-    [sourceLayer]="sourceName"
-    [paint]="{
-      'fill-color': COLORS.white_light_blue,
-      'fill-opacity': 0.4,
-    }"
-    before="planning-area-polygon">
-  </mgl-layer>
 </ng-container>
+Z Z

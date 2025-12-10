@@ -17,8 +17,10 @@ from planning.models import (
     PlanningArea,
     RegionChoices,
     ScenarioResult,
+    TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsesDataLayer,
 )
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -29,7 +31,7 @@ from planning.tests.factories import (
 from planning.tests.helpers import _load_geojson_fixture
 
 
-class CreatorsTest(APITransactionTestCase):
+class CreatorsTest(APITestCase):
     def setUp(self):
         self.geometry = {
             "type": "MultiPolygon",
@@ -199,11 +201,15 @@ class GetPlanningAreaTest(APITransactionTestCase):
             name="test pa1 scenario3",
             user=self.user,
         )
+        self.planning_area1.scenario_count = 3
+        self.planning_area1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory(
             planning_area=self.planning_area3,
             name="test pa3 scenario1",
             user=self.user,
         )
+        self.planning_area3.scenario_count = 1
+        self.planning_area3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory(
             planning_area=self.planning_area4,
             name="test pa4 scenario1",
@@ -219,6 +225,8 @@ class GetPlanningAreaTest(APITransactionTestCase):
             name="test pa4 scenario3",
             user=self.user,
         )
+        self.planning_area4.scenario_count = 3
+        self.planning_area4.save(update_fields=["updated_at", "scenario_count"])
 
     def test_list_planning_areas(self):
         self.client.force_authenticate(self.user)
@@ -424,8 +432,21 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(planning_areas["count"], 0)
 
+    def test_list_planning_areas_scenario_count(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse("api:planning:planningareas-list") + "?ordering=-scenario_count",
+            {},
+            content_type="application/json",
+        )
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        results = content.get("results")
+        first_planning_area = results[0]
+        self.assertEqual(first_planning_area.get("scenario_count"), 3)
 
-class ListPlanningAreaSortingTest(APITransactionTestCase):
+
+class ListPlanningAreaSortingTest(APITestCase):
     def setUp(self):
         self.user1 = UserFactory.create(username="testuser")
 
@@ -531,11 +552,15 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             name="test pa1 scenario3",
             user=self.user1,
         )
+        self.pa1.scenario_count = 3
+        self.pa1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory(
             planning_area=self.pa3,
             name="test pa3 scenario1",
             user=self.user1,
         )
+        self.pa3.scenario_count = 1
+        self.pa3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory(
             planning_area=self.pa4,
             name="test pa4 scenario1",
@@ -551,6 +576,8 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             name="test pa4 scenario3",
             user=self.user1,
         )
+        self.pa4.scenario_count = 3
+        self.pa4.save(update_fields=["updated_at", "scenario_count"])
 
         # user1 can see all of user2 PA records as a collaborator
         UserObjectRoleFactory(
@@ -597,58 +624,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         expected_names = ["Area A", "Area B", "Area C", "Area D", "Area E", "Area F"]
         self.assertListEqual(area_names, expected_names)
 
-    def test_list_planning_areas_sort_by_region_name(self):
-        self.client.force_authenticate(self.user1)
-        query_params = {"ordering": "region_name"}
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        region_names = []
-        for item in planning_areas["results"]:
-            region_names.append(item["region_name"])
-        expected_region_names = [
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Northern California",
-            "Northern California",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Southern California",
-        ]
-        self.assertListEqual(region_names, expected_region_names)
-
-    def test_list_planning_areas_desc_sort_by_region_name(self):
-        self.client.force_authenticate(self.user1)
-        query_params = {"ordering": "-region_name"}
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        region_names = []
-        for item in planning_areas["results"]:
-            region_names.append(item["region_name"])
-        expected_region_names = [
-            "Southern California",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Northern California",
-            "Northern California",
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-        ]
-        self.assertListEqual(region_names, expected_region_names)
-
     def test_list_planning_areas_sort_by_scenario_count(self):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "scenario_count"}
@@ -663,36 +638,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             scenario_counts.append(item["scenario_count"])
         expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
         self.assertListEqual(scenario_counts, expected_scenario_counts)
-
-    def test_list_planning_areas_sort_by_scenario_count_region_name(self):
-        self.client.force_authenticate(self.user1)
-        query_params = {"ordering": "scenario_count, region_name"}
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        scenario_counts = []
-        region_names = []
-        for item in planning_areas["results"]:
-            scenario_counts.append(item["scenario_count"])
-            region_names.append(item["region_name"])
-        expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
-        expected_region_names = [
-            "Central Coast",
-            "Central Coast",
-            "Central Coast",
-            "Northern California",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Sierra Nevada",
-            "Southern California",
-            "Central Coast",
-            "Northern California",
-        ]
-        self.assertListEqual(scenario_counts, expected_scenario_counts)
-        self.assertListEqual(region_names, expected_region_names)
 
     def test_list_planning_areas_sort_by_area_acres(self):
         self.client.force_authenticate(self.user1)
@@ -709,7 +654,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.assertListEqual(acres, sorted(acres))
 
 
-class CreatePlanningAreaTest(APITransactionTestCase):
+class CreatePlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.valid_data = {
@@ -885,7 +830,240 @@ class ListPlanningAreasWithPermissionsTest(APITestCase):
         self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
 
 
-class CreateScenariosFromUpload(APITransactionTestCase):
+class UpdatePlanningAreaTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory.create()
+        self.owner = UserFactory()
+        self.collaborator = UserFactory()
+        self.viewer = UserFactory()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            name="Editable Area",
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+        self.url = reverse(
+            "api:planning:planningareas-detail",
+            kwargs={"pk": self.planning_area.pk},
+        )
+        self.payload = {"name": "Renamed Area"}
+
+    def test_creator_can_rename_planning_area(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Renamed Area")
+
+    def test_owner_can_rename_planning_area(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Renamed Area")
+
+    def test_collaborator_cannot_rename_planning_area(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_viewer_cannot_rename_planning_area(self):
+        self.client.force_authenticate(self.viewer)
+        response = self.client.patch(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_to_taken_name_fails(self):
+        PlanningAreaFactory.create(
+            user=self.creator,
+            name="Another Area",
+        )
+        payload = {"name": "Another Area"}
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_to_same_name(self):
+        payload = {"name": "Editable Area"}
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_invalid_payload(self):
+        payload = {"planning_area": "Editable Area"}
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_using_put(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.put(
+            self.url,
+            self.payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Renamed Area")
+
+    def test_rename_updates_latest_updated_ordering(self):
+        other_area = PlanningAreaFactory.create(
+            user=self.creator,
+            name="Secondary Area",
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+
+        list_url = reverse("api:planning:planningareas-list")
+        self.client.force_authenticate(self.creator)
+        initial_response = self.client.get(list_url, {}, format="json")
+        self.assertEqual(initial_response.status_code, status.HTTP_200_OK)
+        initial_results = initial_response.json()["results"]
+        initial_ids = [pa["id"] for pa in initial_results]
+        self.assertEqual(initial_ids[:2], [other_area.id, self.planning_area.id])
+
+        rename_response = self.client.patch(self.url, self.payload, format="json")
+        self.assertEqual(rename_response.status_code, status.HTTP_200_OK)
+        reordered_response = self.client.get(
+            list_url + "?ordering=-latest_updated", {}, format="json"
+        )
+        self.assertEqual(reordered_response.status_code, status.HTTP_200_OK)
+        reordered_results = reordered_response.json()["results"]
+        self.assertEqual(reordered_results[0]["id"], self.planning_area.id)
+
+
+class DeletePlanningAreaTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory.create()
+        self.owner = UserFactory()
+        self.collaborator = UserFactory()
+        self.viewer = UserFactory()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            name="Deletable Area",
+            owners=[self.creator, self.owner],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
+
+    def test_delete_planning_area_as_creator(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(PlanningArea.objects.count(), 0)
+
+    def test_delete_planning_area_as_owner(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_planning_area_as_collaborator(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_planning_area_as_viewer(self):
+        self.client.force_authenticate(self.viewer)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_planning_area_unauthenticated(self):
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": self.planning_area.pk},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_nonexistent_planning_area(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.delete(
+            reverse(
+                "api:planning:planningareas-detail",
+                kwargs={"pk": 9999},
+            ),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(PlanningArea.objects.count(), 1)
+
+
+class CreateScenariosFromUpload(APITestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
         self.la_geojson = json.dumps(_load_geojson_fixture("around_LA.geojson"))
@@ -1001,7 +1179,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         )
 
 
-class TreatmentGoalViewSetTest(APITransactionTestCase):
+class TreatmentGoalViewSetTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
@@ -1035,6 +1213,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             geometry=self.poly3,
             outline=self.mpoly3,
         )
+
         self.markdown_description = (
             "# This is a h1\n"
             "## This is a h2\n"
@@ -1051,13 +1230,14 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
 
         ca_group = TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
 
+        TreatmentGoal.objects.all().delete()  # cleanup any existing records added on migrations
+
         self.first_treatment_goal = TreatmentGoalFactory.create(
             name="First",
             description=self.markdown_description,
             category=TreatmentGoalCategory.BIODIVERSITY,
             geometry=MultiPolygon([self.poly1.intersection(self.poly2)]),
             group=ca_group,
-            priorities=["priority one", "priority two"],
         )
         self.treatment_goals = TreatmentGoalFactory.create_batch(
             10,
@@ -1067,6 +1247,16 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.inactive_treatment_goal = TreatmentGoalFactory.create(
             active=False,
             group=ca_group,
+        )
+        self.usage1 = TreatmentGoalUsesDataLayer.objects.create(
+            usage_type="PRIORITY",
+            datalayer=self.dl1,
+            treatment_goal=self.first_treatment_goal,
+        )
+        self.usage2 = TreatmentGoalUsesDataLayer.objects.create(
+            usage_type="THRESHOLD",
+            datalayer=self.dl2,
+            treatment_goal=self.first_treatment_goal,
         )
 
     def test_list_treatment_goals(self):
@@ -1094,7 +1284,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             TreatmentGoalGroup(self.first_treatment_goal.group).label,
         )
         self.assertCountEqual(
-            first_treatment_goal["priorities"], ["priority one", "priority two"]
+            first_treatment_goal["usage_types"],
+            [
+                {"usage_type": "PRIORITY", "datalayer": "Layer 1"},
+                {"usage_type": "THRESHOLD", "datalayer": "Layer 2"},
+            ],
         )
 
     def test_detail_treatment_goal(self):

@@ -17,6 +17,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Area
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.validators import RegexValidator, URLValidator
+from django.db.models import Manager
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node
@@ -28,6 +29,16 @@ User = get_user_model()
 class VisibilityOptions(models.TextChoices):
     PRIVATE = "PRIVATE", "Private"
     PUBLIC = "PUBLIC", "Public"
+
+
+class SelectionTypeOptions(models.TextChoices):
+    SINGLE = "SINGLE", "Single"
+    MULTIPLE = "MULTIPLE", "Multiple"
+
+
+class PreferredDisplayType(models.TextChoices):
+    MAIN_DATALAYERS = "MAIN_DATALAYERS", "Main DataLayers"
+    BASE_DATALAYERS = "BASE_DATALAYERS", "Base DataLayers"
 
 
 class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
@@ -61,6 +72,20 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     )
     version = models.CharField(
         null=True,
+    )
+
+    selection_type = models.CharField(
+        choices=SelectionTypeOptions.choices,
+        null=True,
+        blank=True,
+        max_length=32,
+    )
+
+    preferred_display_type = models.CharField(
+        choices=PreferredDisplayType.choices,
+        null=True,
+        blank=True,
+        max_length=32,
     )
 
     def __str__(self) -> str:
@@ -185,13 +210,21 @@ class DataLayerQuerySet(models.QuerySet):
 
         return temp_geometry
 
+    def by_meta_module(self, module: str):
+        return self.all().filter(metadata__modules__has_key=module)
+
+    def by_meta_name(self, name: str):
+        query = {"modules": {"forsys": {"name": name}}}
+        return self.all().filter(metadata__contains=query).first()
+
+    def by_meta_capability(self, capability: str):
+        query = {"modules": {"forsys": {"capabilities": [capability]}}}
+        return self.all().filter(metadata__contains=query)
+
 
 class DataLayerManager(models.Manager):
     def get_queryset(self):
         return DataLayerQuerySet(self.model, using=self._db)
-
-    def by_module(self, module: str):
-        return self.get_queryset().filter(metadata__modules__has_key=module)
 
 
 class Style(
@@ -401,8 +434,13 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_public_url(self) -> Optional[str]:
         if not self.url:
             return None
+        
+        if feature_enabled("INTERNAL_RASTER_PROXY"):
+            base_url = get_base_url(settings.ENV)
+            path_url = self.url.split("/datalayers/")[-1]
+            download_url = f"{base_url}/datalayers/{path_url}"
 
-        if is_s3_file(self.url):
+        elif is_s3_file(self.url):
             object_name = self.url.replace(f"s3://{settings.S3_BUCKET}/", "")
             download_url = create_s3_download_url(settings.S3_BUCKET, object_name)
             if feature_enabled("FEATURE_FLAG_S3_PROXY"):

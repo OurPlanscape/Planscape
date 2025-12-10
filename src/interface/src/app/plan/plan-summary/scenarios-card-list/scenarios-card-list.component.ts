@@ -11,23 +11,35 @@ import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '../../plan-helpers';
+import { scenarioCanHaveTreatmentPlans } from 'src/app/scenario/scenario-helper';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { OverlayLoaderService } from '@services/overlay-loader.service';
-import { CreateTreatmentDialogComponent } from '../../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
+import { CreateTreatmentDialogComponent } from '../../../scenario/create-treatment-dialog/create-treatment-dialog.component';
 import { take } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
-import { canAddTreatmentPlan } from '../../permissions';
+import {
+  canEditScenarioName,
+  userCanAddTreatmentPlan,
+} from '../../permissions';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ScenarioSetupModalComponent } from 'src/app/scenario/scenario-setup-modal/scenario-setup-modal.component';
+import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-scenarios-card-list',
   standalone: true,
-  imports: [ScenarioCardComponent, NgFor, SharedModule, OverlayLoaderComponent],
+  imports: [
+    ScenarioCardComponent,
+    NgFor,
+    SharedModule,
+    OverlayLoaderComponent,
+    MatTooltipModule,
+  ],
   templateUrl: './scenarios-card-list.component.html',
   styleUrl: './scenarios-card-list.component.scss',
 })
@@ -38,6 +50,10 @@ export class ScenariosCardListComponent {
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
   @Output() triggerRefresh = new EventEmitter<ScenarioRow>();
+  @Output() triggerEdit = new EventEmitter();
+  @Output() scenarioDeleted = new EventEmitter<ScenarioRow>();
+
+  open_statuses = ['SUCCESS', 'FAILURE', 'PANIC', 'DRAFT'];
 
   constructor(
     private authService: AuthService,
@@ -55,14 +71,38 @@ export class ScenariosCardListComponent {
     return scenario.scenario_result?.result?.features?.length;
   }
 
+  isDraft(row: ScenarioRow): boolean {
+    return row.scenario_result?.status === 'DRAFT';
+  }
+
+  isCreator(row: ScenarioRow, userId?: number): boolean {
+    return userId != null && row.user === userId;
+  }
+
+  isDraftByOtherUser(row: ScenarioRow, userId?: number): boolean {
+    return this.isDraft(row) && !this.isCreator(row, userId);
+  }
+
+  canOpenScenario(row: ScenarioRow, userId?: number): boolean {
+    const status = row.scenario_result?.status;
+    if (!status) return false;
+
+    if (this.isDraftByOtherUser(row, userId)) return false;
+
+    return this.open_statuses.includes(status);
+  }
+
+  displayDraftCreatorTooltip(row: ScenarioRow): boolean {
+    const userId = this.authService.currentUser()?.id;
+    return this.isDraftByOtherUser(row, userId);
+  }
+
   handleOpenScenario(row: ScenarioRow): void {
-    if (
-      row.scenario_result &&
-      ['SUCCESS', 'FAILURE', 'PANIC'].includes(row.scenario_result.status)
-    ) {
-      this.selectedCard = row;
-      this.viewScenario.emit(row);
-    }
+    const userId = this.authService.currentUser()?.id;
+    if (!this.canOpenScenario(row, userId)) return;
+
+    this.selectedCard = row;
+    this.viewScenario.emit(row);
   }
 
   hasResults(scenario: Scenario) {
@@ -89,11 +129,33 @@ export class ScenariosCardListComponent {
     return user?.id === this.plan?.user || user?.id == scenario.user;
   }
 
+  // Planning Area Creators and Owners, and Scenario Creators can rename scenarios
+  userCanEditScenario(scenario: Scenario) {
+    const user = this.authService.currentUser();
+    if (!this.plan || !user) {
+      return false;
+    }
+    return user?.id == scenario.user || canEditScenarioName(this.plan, user);
+  }
+
+  canShowContextualMenu(scenario: Scenario) {
+    const user = this.authService.currentUser();
+    if (this.isDraft(scenario)) {
+      return user?.id == scenario.user;
+    } else {
+      return true;
+    }
+  }
+
   userCanCreateTreatmentPlan() {
     if (!this.plan) {
       return false;
     }
-    return canAddTreatmentPlan(this.plan) || false;
+    return userCanAddTreatmentPlan(this.plan) || false;
+  }
+
+  hasTreatmentPlanCapability(scenario: Scenario) {
+    return scenarioCanHaveTreatmentPlans(scenario);
   }
 
   toggleScenarioStatus(scenario: Scenario) {
@@ -106,7 +168,7 @@ export class ScenariosCardListComponent {
             'Dismiss',
             SNACK_BOTTOM_NOTICE_CONFIG
           );
-          this.triggerRefresh.emit();
+          this.triggerRefresh.emit(scenario);
         },
         error: (err) => {
           this.snackbar.open(
@@ -117,6 +179,46 @@ export class ScenariosCardListComponent {
         },
       });
     }
+  }
+
+  showDeleteScenarioDialog(scenario: Scenario) {
+    if (scenario.id) {
+      this.dialog
+        .open(DeleteDialogComponent, {
+          data: {
+            title: `Delete "${scenario?.name}"?`,
+            body: `Are you sure you want to delete this scenario? All configuration details and
+                    results will be permanently deleted, and this action cannot be undone.`,
+          },
+        })
+        .afterClosed()
+        .pipe(take(1))
+        .subscribe((name) => {
+          if (name) {
+            this.deleteScenario(scenario);
+          }
+        });
+    }
+  }
+
+  private deleteScenario(scenario: Scenario) {
+    this.scenarioService.deleteScenario(Number(scenario.id)).subscribe({
+      next: () => {
+        this.snackbar.open(
+          `"${scenario.name}" has been deleted`,
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
+        this.triggerRefresh.emit(scenario);
+      },
+      error: (err) => {
+        this.snackbar.open(
+          `Error: Unable to delete ${scenario.name}`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
   }
 
   openNewTreatmentDialog(event: Event, s: Scenario) {
@@ -149,9 +251,12 @@ export class ScenariosCardListComponent {
       .subscribe({
         next: (result) => {
           this.overlayLoaderService.hideLoader();
-          this.router.navigate(['config', scenarioId, 'treatment', result.id], {
-            relativeTo: this.route,
-          });
+          this.router.navigate(
+            ['scenario', scenarioId, 'treatment', result.id],
+            {
+              relativeTo: this.route,
+            }
+          );
         },
         error: () => {
           this.snackbar.open(
@@ -161,5 +266,31 @@ export class ScenariosCardListComponent {
           );
         },
       });
+  }
+
+  editScenario(s: Scenario) {
+    if (this.plan) {
+      const dialogRef: MatDialogRef<ScenarioSetupModalComponent> =
+        this.dialog.open(ScenarioSetupModalComponent, {
+          data: {
+            planId: this.plan.id,
+            fromClone: false,
+            scenario: s,
+          },
+        });
+      dialogRef
+        .afterClosed()
+        .pipe(take(1))
+        .subscribe((confirmed) => {
+          if (confirmed) {
+            this.snackbar.open(
+              `Scenario name has been updated`,
+              'Dismiss',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+            this.triggerEdit.emit(s);
+          }
+        });
+    }
   }
 }

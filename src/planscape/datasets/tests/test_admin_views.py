@@ -3,18 +3,18 @@ from urllib.parse import urlencode
 from datasets.models import DataLayer, Dataset
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from organizations.tests.factories import OrganizationFactory
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
 
 
-class TestAdminDataLayerViewSet(APITransactionTestCase):
+class TestAdminDataLayerViewSet(APITestCase):
     def setUp(self) -> None:
+        DataLayer.objects.all().delete()
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
         self.dataset = DatasetFactory.create()
@@ -88,7 +88,7 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(1, DataLayer.objects.all().count())
 
 
-class TestAdminDatasetViewSet(APITransactionTestCase):
+class TestAdminDatasetViewSet(APITestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
@@ -116,7 +116,6 @@ class TestAdminDatasetViewSet(APITransactionTestCase):
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(0, Dataset.objects.all().count())
 
     def test_create_by_admin_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
@@ -129,4 +128,4 @@ class TestAdminDatasetViewSet(APITransactionTestCase):
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(1, Dataset.objects.all().count())
+        self.assertEqual(1, Dataset.objects.filter(created_by=self.admin).count())

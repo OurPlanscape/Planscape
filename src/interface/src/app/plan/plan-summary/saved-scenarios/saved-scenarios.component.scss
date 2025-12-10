@@ -5,6 +5,7 @@
 
 .saved-scenarios-wrapper {
   position: relative;
+  padding: 20px;
 }
 
 .scenario-list-controls {
@@ -133,9 +134,38 @@ app-section-loader {
 }
 
 .custom-tab-group
-  ::ng-deep
-  .mat-mdc-tab-header
-  .mat-mdc-tab-label-container
-  .mat-mdc-tab {
+::ng-deep
+.mat-mdc-tab-header
+.mat-mdc-tab-label-container
+.mat-mdc-tab {
   flex-grow: 0;
+}
+
+
+.banner {
+  margin-top: 20px;
+}
+
+.spinner {
+  width: 100%;
+  margin: 40px auto;
+}
+
+
+.pending-message, .large-message {
+  text-align: center;
+
+  h4 {
+    @include standard-input-label();
+    margin: 0 0 8px;
+    color: $color-text-dark;
+  }
+
+  p {
+    color: $color-md-gray;
+  }
+}
+
+.large-message {
+  margin: 32px;
 }

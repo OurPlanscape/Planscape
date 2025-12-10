@@ -6,6 +6,12 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.utils import timezone
+from planscape.exceptions import InvalidGeometry
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+from stands.models import StandSizeChoices
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -17,23 +23,14 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsesDataLayer,
     User,
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
-from stands.models import StandSizeChoices
-
-from planscape.exceptions import InvalidGeometry
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
-    scenario_count = serializers.IntegerField(
-        read_only=True,
-        required=False,
-        help_text="Number of scenarios executed on the Planning Area.",
-    )
     region_name = serializers.SerializerMethodField(
         help_text="Region choice name of the Planning Area."
     )
@@ -69,9 +66,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
         return get_acreage(instance.geometry)
 
     def get_latest_updated(self, instance):
-        return (
-            getattr(instance, "scenario_latest_updated_at", None) or instance.updated_at
-        )
+        return instance.updated_at
 
     def get_role(self, instance):
         user = self.context["request"].user or self.request.user
@@ -95,6 +90,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "creator",
             "role",
             "permissions",
+            "map_status",
         )
         model = PlanningArea
 
@@ -158,6 +154,37 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
         validators = []
 
 
+class UpdatePlanningAreaSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        if not attrs.get("name"):
+            raise serializers.ValidationError(
+                {"name": "A planning area name is required."}
+            )
+        instance = self.instance
+        if (
+            PlanningArea.objects.filter(
+                user=instance.user,
+                name=attrs["name"],
+            )
+            .exclude(id=instance.pk)
+            .exists()
+        ):
+            raise serializers.ValidationError(
+                {"name": "A planning area with this name already exists."}
+            )
+        return attrs
+
+    class Meta:
+        model = PlanningArea
+        fields = ("name",)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get("name")
+        instance.updated_at = timezone.now()
+        instance.save(update_fields=["name", "updated_at"])
+        return instance
+
+
 class PlanningAreaSerializer(
     ListPlanningAreaSerializer,
     gis_serializers.GeoModelSerializer,
@@ -177,6 +204,7 @@ class PlanningAreaSerializer(
             "role",
             "permissions",
             "geometry",
+            "map_status",
         )
         model = PlanningArea
         geo_field = "geometry"
@@ -250,6 +278,8 @@ class PlanningAreaNoteListSerializer(serializers.ModelSerializer):
 
 
 class ScenarioResultSerializer(serializers.ModelSerializer):
+    result = serializers.SerializerMethodField()
+
     class Meta:
         fields = (
             "id",
@@ -262,6 +292,16 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
             "run_details",
         )
         model = ScenarioResult
+
+    def get_result(self, instance):
+        result = instance.result
+        if not result:
+            return None
+        features = result.get("features")
+        for feature in features:
+            feature["properties"].pop("text_geometry", None)
+        result["features"] = features
+        return result
 
 
 class ConfigurationSerializer(serializers.Serializer):
@@ -427,9 +467,157 @@ class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
         return [excluded_area.pk for excluded_area in excluded_areas]
 
     def update(self, instance, validated_data):
-        instance.configuration = {**(instance.configuration or {}), **validated_data}
+        instance.configuration = {
+            **(instance.configuration or {}),
+            **validated_data,
+        }
         instance.save(update_fields=["configuration"])
         return instance
+
+
+class ConstraintSerializer(serializers.Serializer):
+    datalayer = serializers.PrimaryKeyRelatedField(
+        queryset=DataLayer.objects.all(),
+        required=True,
+    )
+
+    operator = serializers.ChoiceField(
+        choices=["eq", "lt", "lte", "gt", "gte"],
+        required=True,
+    )
+
+    value = serializers.CharField(
+        max_length=16,
+        required=True,
+    )
+
+
+class ConstraintReadSerializer(serializers.Serializer):
+    datalayer = serializers.IntegerField()
+    operator = serializers.ChoiceField(choices=["eq", "lt", "lte", "gt", "gte"])
+    value = serializers.CharField(max_length=16)
+
+
+class TargetsSerializer(serializers.Serializer):
+    max_area = serializers.FloatField(
+        allow_null=True,
+        required=True,
+        help_text="Maximum area, in acres that can be treated for the entire scenario.",
+    )
+    max_project_count = serializers.IntegerField(
+        min_value=1,
+        required=True,
+        allow_null=True,
+        help_text="Maximum number of areas that can be generated by Forsys.",
+    )
+    estimated_cost = serializers.FloatField(
+        min_value=1,
+        default=settings.DEFAULT_ESTIMATED_COST,
+    )
+
+
+class ConfigurationV3Serializer(serializers.Serializer):
+    stand_size = serializers.ChoiceField(
+        choices=StandSizeChoices.choices,
+        required=False,
+    )
+
+    included_areas = serializers.ListField(
+        source="included_areas_ids",
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+    )
+
+    excluded_areas = serializers.ListField(
+        source="excluded_areas_ids",
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+    )
+
+    constraints = serializers.ListField(
+        child=ConstraintReadSerializer(),
+        allow_empty=True,
+        required=False,
+    )
+
+    targets = TargetsSerializer(
+        required=False,
+        help_text="Scenario targets: max_area, max_project_count, estimated_cost.",
+    )
+
+    seed = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text="Optional seed for reproducible randomization.",
+    )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field in ["included_areas", "excluded_areas", "constraints"]:
+            if field not in data or data[field] is None:
+                data[field] = []
+        return data
+
+
+class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
+    included_areas = serializers.ListField(
+        source="included_areas_ids",
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=DataLayer.objects.filter(
+                type=DataLayerType.VECTOR,
+                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+            ),
+        ),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+    )
+    excluded_areas = serializers.ListField(
+        source="excluded_areas_ids",
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=DataLayer.objects.filter(
+                type=DataLayerType.VECTOR,
+                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+            ),
+        ),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+    )
+    constraints = serializers.ListField(
+        child=ConstraintSerializer(),
+        allow_empty=True,
+        required=False,
+    )
+
+    def validate_included_areas(self, included_areas):
+        return [included_area.pk for included_area in included_areas]
+
+    def validate_excluded_areas(self, excluded_areas):
+        return [excluded_area.pk for excluded_area in excluded_areas]
+
+    def validate_constraints(self, constraints):
+        return [{**c, "datalayer": c["datalayer"].pk} for c in (constraints or [])]
+
+    def update(self, instance, validated_data):
+        instance.configuration = {
+            **(instance.configuration or {}),
+            **validated_data,
+        }
+        instance.save(update_fields=["configuration"])
+        return instance
+
+
+class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
+    datalayer = serializers.CharField(source="datalayer.name", read_only=True)
+
+    class Meta:
+        model = TreatmentGoalUsesDataLayer
+        fields = ("usage_type", "datalayer")
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
@@ -443,6 +631,9 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text="Text format of Treatment Goal Group.",
     )
+    usage_types = TreatmentGoalUsageSerializer(
+        source="datalayer_usages", many=True, read_only=True
+    )
 
     class Meta:
         model = TreatmentGoal
@@ -454,7 +645,7 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             "category_text",
             "group",
             "group_text",
-            "priorities",
+            "usage_types",
         )
 
     def get_description(self, instance):
@@ -505,15 +696,23 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="results",
         help_text="Results of the scenario.",
     )
-    max_treatment_area = serializers.ReadOnlyField(
-        source="configuration.max_treatment_area_ratio",
-        help_text="Max Treatment Area Ratio.",
-    )
+
     max_budget = serializers.ReadOnlyField(
         source="configuration.max_budget", help_text="Max budget."
     )
 
+    max_treatment_area = serializers.SerializerMethodField()
+
     bbox = serializers.SerializerMethodField()
+
+    def get_max_treatment_area(self, obj):
+        cfg = obj.configuration
+        if not isinstance(cfg, dict):
+            return None
+        targets = cfg.get("targets")
+        if isinstance(targets, dict):
+            return targets.get("max_area")
+        return cfg.get("max_treatment_area_ratio")
 
     def get_bbox(self, instance) -> Optional[List[float]]:
         geometries = list(
@@ -559,6 +758,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "bbox",
             "origin",
             "version",
+            "capabilities",
         )
         model = Scenario
 
@@ -567,6 +767,9 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV2Serializer()
     geopackage_url = serializers.SerializerMethodField(
         help_text="URL to download the scenario's geopackage file.",
+    )
+    usage_types = TreatmentGoalUsageSerializer(
+        source="treatment_goal.datalayer_usages", many=True, read_only=True
     )
 
     def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
@@ -587,6 +790,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "notes",
             "configuration",
             "treatment_goal",
+            "usage_types",
             "scenario_result",
             "user",
             "creator",
@@ -594,6 +798,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "version",
             "geopackage_url",
             "geopackage_status",
+            "capabilities",
         )
         model = Scenario
 
@@ -618,6 +823,97 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "configuration",
             "treatment_goal",
         )
+
+
+class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
+    configuration = ConfigurationV3Serializer()
+    geopackage_url = serializers.SerializerMethodField()
+    usage_types = TreatmentGoalUsageSerializer(
+        source="treatment_goal.datalayer_usages", many=True, read_only=True
+    )
+
+    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+        """
+        Returns the URL to download the scenario's geopackage file.
+        If the scenario is currently being exported, returns None.
+        """
+        return scenario.get_geopackage_url()
+
+    class Meta:
+        fields = (
+            "id",
+            "updated_at",
+            "created_at",
+            "planning_area",
+            "name",
+            "origin",
+            "notes",
+            "configuration",
+            "treatment_goal",
+            "usage_types",
+            "scenario_result",
+            "user",
+            "creator",
+            "status",
+            "version",
+            "geopackage_url",
+            "geopackage_status",
+            "capabilities",
+        )
+        model = Scenario
+
+
+class UpsertScenarioV3Serializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    name = serializers.CharField(max_length=100, required=True)
+
+    class Meta:
+        model = Scenario
+        fields = (
+            "user",
+            "planning_area",
+            "name",
+            "origin",
+            "notes",
+        )
+
+    def update(self, instance, validated_data):
+        validated_data.pop("user", None)
+        return super().update(instance, validated_data)
+
+
+class PatchScenarioV3Serializer(serializers.ModelSerializer):
+    treatment_goal = serializers.PrimaryKeyRelatedField(
+        queryset=TreatmentGoal.objects.all(),
+        required=False,
+        allow_null=True,
+        help_text="Treatment goal of the scenario.",
+    )
+
+    configuration = UpsertConfigurationV3Serializer()
+
+    class Meta:
+        model = Scenario
+        fields = ("treatment_goal", "configuration")
+
+    def update(self, instance: Scenario, validated_data):
+        if "treatment_goal" in validated_data:
+            instance.treatment_goal = validated_data["treatment_goal"]
+
+        if "configuration" in validated_data:
+            cfg = instance.configuration or {}
+            incoming = validated_data["configuration"]
+            if "excluded_areas" in incoming:
+                cfg["excluded_areas_ids"] = incoming.pop("excluded_areas")
+            if "included_areas" in incoming:
+                cfg["included_areas_ids"] = incoming.pop("included_areas")
+            cfg.update(incoming)
+            instance.configuration = cfg
+
+        instance.save(update_fields=["treatment_goal", "configuration"])
+        instance.refresh_from_db()
+        serializer = ScenarioV3Serializer(instance)
+        return serializer.data
 
 
 class CreateScenarioSerializer(serializers.ModelSerializer):
@@ -717,6 +1013,7 @@ class ScenarioSerializer(
             "status",
             "version",
             "geopackage_url",
+            "capabilities",
         )
         model = Scenario
 
@@ -749,6 +1046,7 @@ class ScenarioAndProjectAreasSerializer(serializers.ModelSerializer):
             "user",
             "status",
             "project_areas",
+            "capabilities",
         )
         model = Scenario
 
@@ -919,23 +1217,6 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         )
 
 
-class ConstraintSerializer(serializers.Serializer):
-    datalayer = serializers.PrimaryKeyRelatedField(
-        queryset=DataLayer.objects.all(),
-        required=True,
-    )
-
-    operator = serializers.ChoiceField(
-        choices=["eq", "lt", "lte", "gt", "gte"],
-        required=True,
-    )
-
-    value = serializers.CharField(
-        max_length=16,
-        required=True,
-    )
-
-
 class GetAvailableStandsSerializer(serializers.Serializer):
     stand_size = serializers.ChoiceField(
         choices=StandSizeChoices.choices,
@@ -973,7 +1254,11 @@ class AvailableStandsSummarySerializer(serializers.Serializer):
 
     available_area = serializers.FloatField()
 
+    treatable_area = serializers.FloatField()
+
     unavailable_area = serializers.FloatField()
+
+    treatable_stand_count = serializers.IntegerField()
 
 
 class AvailableStandsSerializer(serializers.Serializer):

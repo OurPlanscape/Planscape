@@ -27,6 +27,14 @@ import { MARTIN_SOURCES } from '../../treatments/map.sources';
 export class PlanningAreaLayerComponent {
   @Input() before = '';
 
+  readonly lineColor = BASE_COLORS.blue;
+
+  linePaint = {
+    'line-color': this.lineColor,
+    'line-width': 2,
+    'line-opacity': 0.8,
+  } as any;
+
   constructor(private planState: PlanState) {}
 
   tilesUrl$ = this.planState.currentPlanId$.pipe(
@@ -36,5 +44,4 @@ export class PlanningAreaLayerComponent {
   );
 
   readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
-  readonly COLORS = BASE_COLORS;
 }

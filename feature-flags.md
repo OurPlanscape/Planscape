@@ -11,16 +11,16 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
-`SCENARIO_IMPROVEMENTS` : Shows Scenario Analytics and other improvements
-
-`CONUS_WIDE_SCENARIOS` : Enable CONUS wide scenarios
-
-`SCENARIO_CONFIGURATION_STEPS` : Shows the new scenario configuration steps
-
-`DYNAMIC_SCENARIO_MAP`: Shows stands on new scenario configuration steps"
-
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool
 
 `AUTO_CREATE_STANDS`: Enables the creation of stands during the creation of new planning areas
 
-`SCENARIO_DRAFTS`: Enable the scenario drafts
+`FORSYS_VIA_API`: Enable Forsys execution on stand alone R server
+
+`PAGINATED_STAND_METRICS`: Enable pagination on stand metric calculation during Scenario creation
+
+`RASTERIO_WINDOWED_READ`: Enable windowed read of raster files (unstable)
+
+`FORSYS_PREPROCESSED`: Enable Forsys execution with pre-processed data (forsys_input field)
+
+`SCENARIO_CONFIG_UI` : Enables new scenario configuration UI 

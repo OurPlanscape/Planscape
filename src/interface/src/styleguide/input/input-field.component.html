@@ -1,3 +1,6 @@
+<div class="label" *ngIf="hasLabel">
+  {{ label }} <span class="required" *ngIf="isRequired">*</span>
+</div>
 <div class="input-wrapper" (click)="focusInput()">
   <mat-icon *ngIf="leadingIcon">{{ leadingIcon }}</mat-icon>
   <ng-content></ng-content>

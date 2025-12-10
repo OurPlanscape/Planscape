@@ -1,0 +1,10 @@
+<sg-modal
+  [title]="data.title"
+  [shortHeader]="true"
+  [showBorders]="false"
+  [showClose]="false"
+  [primaryButtonText]="data.primaryCta ? data.primaryCta : 'Ok'"
+  [hasSecondaryButton]="false"
+  (clickedPrimary)="close()">
+  <div modalBodyContent [innerHTML]="data.body"></div>
+</sg-modal>

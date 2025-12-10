@@ -1,11 +1,18 @@
 import logging
 
-from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from planscape.serializers import BaseErrorMessageSerializer
+from rest_framework import mixins, pagination, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
+from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
@@ -17,8 +24,9 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioResultStatus,
+    ScenarioVersion,
     TreatmentGoal,
-    TreatmentGoalGroup,
 )
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
@@ -29,14 +37,18 @@ from planning.serializers import (
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    PatchScenarioV3Serializer,
     PlanningAreaSerializer,
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
     ScenarioSerializer,
     ScenarioV2Serializer,
+    ScenarioV3Serializer,
     TreatmentGoalSerializer,
+    UpdatePlanningAreaSerializer,
     UploadedScenarioDataSerializer,
     UpsertConfigurationV2Serializer,
+    UpsertScenarioV3Serializer,
 )
 from planning.services import (
     create_planning_area,
@@ -46,14 +58,9 @@ from planning.services import (
     delete_scenario,
     get_available_stands,
     toggle_scenario_status,
+    trigger_scenario_run,
+    validate_scenario_configuration,
 )
-from rest_framework import mixins, pagination, permissions, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
-from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
-
-from planscape.serializers import BaseErrorMessageSerializer
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -99,6 +106,8 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "create": CreatePlanningAreaSerializer,
         "list": ListPlanningAreaSerializer,
         "retrieve": PlanningAreaSerializer,
+        "update": UpdatePlanningAreaSerializer,
+        "partial_update": UpdatePlanningAreaSerializer,
     }
     pagination_class = pagination.LimitOffsetPagination
     filterset_class = PlanningAreaFilter
@@ -118,6 +127,12 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         user = self.request.user
         qs = PlanningArea.objects.list_for_api(user=user).select_related("user")
         return qs
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        instance.updated_at = timezone.now()
+        instance.save(update_fields=["updated_at"])
+        super().perform_update(serializer)
 
     @extend_schema(description="Create Planning Area.")
     def create(self, request, *args, **kwargs):
@@ -203,9 +218,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     serializer_classes = {
         "list": ListScenarioSerializer,
         "create": CreateScenarioV2Serializer,
-        "retrieve": ScenarioV2Serializer,
-        "partial_update": UpsertConfigurationV2Serializer,
+        "partial_update": UpsertScenarioV3Serializer,
+        "create_draft": UpsertScenarioV3Serializer,
     }
+
     filterset_class = ScenarioFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -224,14 +240,50 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
         return qs
 
+    @extend_schema(description="Retrieve a Scenario (auto-detects version).")
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        version = getattr(instance, "version", None)
+        if version == ScenarioVersion.V3:
+            serializer = ScenarioV3Serializer(instance, context={"request": request})
+        else:
+            serializer = ScenarioV2Serializer(instance, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @extend_schema(description="Create a Scenario.")
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        scenario = create_scenario(
-            **serializer.validated_data,
-        )
+        scenario = create_scenario(**serializer.validated_data)
+
         out_serializer = ScenarioV2Serializer(instance=scenario)
+
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+    @action(detail=False, methods=["post"], url_path="draft")
+    def create_draft(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        configuration_data = {
+            "targets": serializer.validated_data.get("targets", []),
+        }
+        validated_data = {
+            **serializer.validated_data,
+            "configuration": configuration_data,
+        }
+        scenario = create_scenario(**validated_data)
+
+        if hasattr(scenario, "result_status"):
+            scenario.results.status = ScenarioResultStatus.DRAFT
+            scenario.results.save()
+            scenario.refresh_from_db()
+
+        out_serializer = ScenarioV3Serializer(instance=scenario)
 
         headers = self.get_success_headers(out_serializer.data)
         return Response(
@@ -274,26 +326,52 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @action(methods=["POST"], detail=True)
-    def available_stands(self, request, pk=None):
-        scenario = self.get_object()
-        serializer = GetAvailableStandSerializer(request.data)
-        serializer.is_valid(raise_exception=True)
-        result = get_available_stands(scenario, **serializer.validated_data)
-        out_serializer = AvailableStandsSerializer(instance=result)
-        return Response(
-            out_serializer.data,
-            status=status.HTTP_200_OK,
-        )
-
-    @extend_schema(description="Partially update a Scenario.")
-    def partial_update(self, request, *args, **kwargs):
+    @extend_schema(description="Update Scenario's configuration.")
+    @action(methods=["patch"], detail=True, url_path="configuration")
+    def patch_configuration(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = UpsertConfigurationV2Serializer(
+            instance, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         response_serializer = ScenarioV2Serializer(instance)
+        planning_area = instance.planning_area
+        planning_area.updated_at = timezone.now()
+        planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
+
+    @action(methods=["patch"], detail=True, url_path="draft")
+    def patch_draft(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = PatchScenarioV3Serializer(
+            instance, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        response_serializer = ScenarioV3Serializer(instance)
+        planning_area = instance.planning_area
+        planning_area.updated_at = timezone.now()
+        planning_area.save(update_fields=["updated_at"])
+        return Response(response_serializer.data)
+
+    @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
+    @action(methods=["post"], detail=True, url_path="run")
+    def run(self, request, pk=None):
+        scenario = self.get_object()
+        if hasattr(scenario, "results"):
+            scenario.results.status = ScenarioResultStatus.PENDING
+            scenario.results.save()
+
+        errors = validate_scenario_configuration(scenario)
+        if errors:
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        # trigger
+        trigger_scenario_run(scenario, request.user)
+
+        serializer = ScenarioV3Serializer(instance=scenario)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
 # TODO: migrate this to an action inside the planning area viewset
@@ -349,9 +427,3 @@ class TreatmentGoalViewSet(
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        if feature_enabled("CONUS_WIDE_SCENARIOS"):
-            return qs
-        return qs.filter(group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS)

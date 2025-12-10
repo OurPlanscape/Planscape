@@ -9,7 +9,6 @@ import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEnv
-from openpanel import OpenPanel
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
@@ -39,6 +38,7 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 # Application definition
 PLANSCAPE_APPS = [
     "admin.apps.PlanscapeAdmin",
+    "climate_foresight",
     "collaboration",
     "core",
     "datasets",
@@ -225,6 +225,7 @@ REST_FRAMEWORK = {
         "%Y-%m-%dT%H:%M:%SZ",  # Optional: to accept inputs with 'Z' indicating UTC time
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "core.exception_handler.planscape_api_exception_handler",
 }
 
 REST_AUTH = {
@@ -241,19 +242,23 @@ REST_AUTH = {
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
     "LANGUAGE_CODE": "en-us",
-    "SESSION_LOGIN": False,
+    "SESSION_LOGIN": True,
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=3),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
     "ROTATE_REFRESH_TOKENS": True,  # ensure the Refresh token is invalidated at each login
+    "UPDATE_LAST_LOGIN": True,
 }
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "users.backends.PlanscapeAuthBackend",
 ]
+
+# Who should receive internal alert emails
+SUPPORT_EMAIL = config("SUPPORT_EMAIL", default="support@planscape.org")
 
 # allauth
 
@@ -281,6 +286,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default=DEFAULT_FROM_EMAIL)
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
+
 
 PLANSCAPE_BASE_URL = config("PLANSCAPE_BASE_URL", default="localhost")
 
@@ -361,6 +367,11 @@ if SENTRY_DSN is not None:
         traces_sample_rate=0.05,
     )
 
+# Planning area settings
+OVERSIZE_PLANNING_AREA_ACRES = config(
+    "OVERSIZE_PLANNING_AREA_ACRES", 3_000_000, cast=int
+)
+
 # Scenario planning settings
 DEFAULT_MAX_PROJECT_COUNT = config("DEFAULT_MAX_PROJECT_COUNT", 10, cast=int)
 MIN_AREA_PROJECT_SMALL = config("MIN_AREA_PROJECT_SMALL", 10, cast=int)
@@ -410,11 +421,36 @@ CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
-    "planning.tasks.*": {"queue": "forsys"},
-    "planning.tasks.trigger_geopackage_generation": {"queue": "default"},
-    "planning.tasks.async_generate_scenario_geopackage": {"queue": "default"},
-    "impacts.tasks.*": {"queue": "impacts"},
-    "e2e.tasks.*": {"queue": "default"},
+    "planning.tasks.*": {
+        "queue": "forsys",
+    },
+    "planning.tasks.trigger_geopackage_generation": {
+        "queue": "geopackage",
+    },
+    "planning.tasks.async_generate_scenario_geopackage": {
+        "queue": "geopackage",
+    },
+    "planning.tasks.async_create_stands": {
+        "queue": "planning-stand-creation",
+    },
+    "planning.tasks.async_set_planning_area_status": {
+        "queue": "planning-stand-creation"
+    },
+    "planning.tasks.async_calculate_stand_metrics": {
+        "queue": "planning-stand-metrics",
+    },
+    "planning.tasks.async_calculate_stand_metrics_with_stand_list": {
+        "queue": "planning-stand-metrics",
+    },
+    "planning.tasks.async_calculate_vector_metrics": {
+        "queue": "planning-stand-metrics",
+    },
+    "impacts.tasks.*": {
+        "queue": "impacts",
+    },
+    "e2e.tasks.*": {
+        "queue": "default",
+    },
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
@@ -452,6 +488,7 @@ S3_BUCKET = config("S3_BUCKET", "planscape-control-dev")
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
+AWS_S3_ENDPOINT_URL = config("AWS_S3_ENDPOINT_URL", default=None)
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
 GEOPACKAGES_FOLDER = "geopackages"
@@ -463,14 +500,14 @@ GCS_MEDIA_BUCKET = config("GCS_MEDIA_BUCKET", f"planscape-media-{ENV}")
 GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
 )
-if PROVIDER == "aws":
-    os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
-    os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
-    os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
-elif PROVIDER == "gcp":
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
-        GOOGLE_APPLICATION_CREDENTIALS_FILE
-    )
+
+os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
+os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
+os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
+if AWS_S3_ENDPOINT_URL:
+    os.environ["AWS_S3_ENDPOINT"] = str(AWS_S3_ENDPOINT_URL)
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(GOOGLE_APPLICATION_CREDENTIALS_FILE)
 
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
@@ -486,9 +523,11 @@ ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
 # OPENPANEL config
-OPENPANEL_URL = config("OPENPANEL_URL", None)
-OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", None)
-OPENPANEL_CLIENT_SECRET = config("OPENPANEL_CLIENT_SECRET", None)
+OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
+OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
+OPENPANEL_CLIENT_SECRET = config(
+    "OPENPANEL_CLIENT_SECRET", "fake-openpanel-client-secret"
+)
 
 # MARTOR (ADMIN MARKDOWN EDITOR)
 MARTOR_TOOLBAR_BUTTONS = [
@@ -503,21 +542,12 @@ MARTOR_TOOLBAR_BUTTONS = [
 DEFAULT_ORGANIZATION_NAME = "Spatial Informatics Group"
 DEFAULT_ADMIN_EMAIL = "admin@planscape.org"
 DEFAULT_BASELAYERS_DATASET_ID = 999
+CLIMATE_FORESIGHT_DATASET_ID = 1050
 
 
 FEATURE_FLAGS = config(
     "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
 )
-
-if not TESTING_MODE and not OPENPANEL_URL:
-    OPENPANEL_CLIENT = OpenPanel(
-        client_id=OPENPANEL_CLIENT_ID,  # type: ignore
-        client_secret=OPENPANEL_CLIENT_SECRET,  # type: ignore
-        api_url=OPENPANEL_URL,  # type: ignore
-    )
-    OPENPANEL_CLIENT.set_global_properties({"environment": ENV})
-else:
-    OPENPANEL_CLIENT = None
 
 STAND_METRICS_PAGE_SIZE = config("STAND_METRICS_PAGE_SIZE", default=5000, cast=int)
 AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
@@ -525,3 +555,11 @@ AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
 )
 
 E2E_TESTS_ENABLED = config("E2E_TESTS_ENABLED", default=False, cast=bool)
+STAND_METRICS_API_URL = config(
+    "STAND_METRICS_API_URL",
+    "https://stand-metrics-test-537855483895.us-central1.run.app/",
+)
+
+# RequestsSessionWrap settings
+REQUESTS_RETRIES = config("REQUESTS_RETRIES", default=3, cast=int)
+REQUESTS_BACKOFF_FACTOR = config("REQUESTS_BACKOFF_FACTOR", default=1, cast=float)

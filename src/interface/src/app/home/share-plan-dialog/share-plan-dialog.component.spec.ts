@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SharePlanDialogComponent } from './share-plan-dialog.component';
-import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
 
@@ -14,6 +13,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { PlanState } from '../../plan/plan.state';
 import { MOCK_PLAN } from '@services/mocks';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;

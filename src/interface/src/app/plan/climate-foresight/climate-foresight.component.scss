@@ -1,0 +1,262 @@
+@import 'variables';
+@import 'colors';
+@import 'mixins';
+
+$analyses-header-height: 40px;
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.climate-foresight-container {
+  flex: 1;
+  display: flex;
+  background: $color-soft-white;
+  overflow-y: auto;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+.left-panel {
+  width: $climate-left-panel-width;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    background: $color-white;
+    border: 1px solid $color-fields-gray;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
+  }
+
+  .map-card {
+    flex: 1;
+  }
+
+  .tool-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+
+    border-radius: 8px;
+    border: 1px solid $color-soft-gray;
+    background: $color-white;
+
+    h2 {
+      @include h2();
+      margin: 0;
+    }
+  }
+
+  .tool-metadata {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .developed-by {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+
+      @include small-input-label();
+    }
+
+    .info-button {
+      color: $color-standard-blue;
+    }
+  }
+
+  .tool-description {
+    p {
+      @include standard-label();
+      font-weight: 400;
+      color: $color-dark-gray;
+      margin: 0;
+    }
+  }
+
+  .planning-area-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .planning-area-name {
+      @include h4();
+    }
+
+    .map-legend {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+
+      .legend-symbol {
+        width: 20px;
+        height: 16px;
+        border: 2px solid $color-standard-blue;
+        border-radius: 4px;
+      }
+
+      .acres-info {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+
+        @include xs-label();
+        font-weight: 500;
+
+        .label {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .map-container {
+    .map-preview {
+      height: 300px;
+      border-radius: 0 0 4px 4px;
+      overflow: hidden;
+      position: relative;
+
+      app-scenario-map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+    }
+  }
+
+  mgl-map {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.climate-foresight-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .back-button {
+    color: $color-white;
+  }
+
+  .page-title {
+    margin: 0;
+    color: $color-white;
+    font-size: 20px;
+    font-weight: 500;
+  }
+}
+
+.right-panel {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  background: $color-white;
+  border: 1px solid $color-fields-gray;
+  border-radius: 8px;
+  padding: 0px;
+  box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
+
+  .analysis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    height: $analyses-header-height;
+
+    h3 {
+      margin: 0;
+      @include h4();
+    }
+
+    .start-analysis-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .analysis-content {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+
+    .no-analyses {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+
+      .empty-state-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 48px;
+          height: 48px;
+        }
+      }
+
+      &-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        h4 {
+          @include h4();
+        }
+        p {
+          @include regular-paragraph();
+          color: $color-dark-gray;
+        }
+
+        h4,
+        p {
+          margin: 0;
+          text-align: center;
+        }
+      }
+    }
+
+    .analyses-list {
+      width: 100%;
+      padding: 0;
+      max-height: 100%;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+}
+.normal-flex {
+  align-items: normal;
+}

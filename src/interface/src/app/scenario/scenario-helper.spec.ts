@@ -1,53 +1,10 @@
 import {
   getGroupedGoals,
-  getScenarioCreationPayloadScenarioCreation,
+  convertFlatConfigurationToDraftPayload,
+  getNamedConstraints,
+  suggestUniqueName,
 } from './scenario-helper';
-import { ScenarioCreation, ScenarioGoal } from '@types';
-
-describe('getScenarioCreationPayloadScenarioCreation', () => {
-  let mockScenario: ScenarioCreation;
-
-  beforeEach(() => {
-    mockScenario = {
-      name: 'Test Scenario',
-      planning_area: 42,
-      treatment_goal: 100,
-      estimated_cost: 5000,
-      excluded_areas: [1, 2, 3],
-      max_area: 200,
-      max_slope: 15,
-      min_distance_from_road: 5,
-      stand_size: 'SMALL',
-    };
-  });
-
-  it('should map ScenarioCreation to ScenarioCreationPayload with correct fields', () => {
-    const result = getScenarioCreationPayloadScenarioCreation(mockScenario);
-
-    expect(result.name).toBe(mockScenario.name);
-    expect(result.planning_area).toBe(mockScenario.planning_area);
-    expect(result.treatment_goal).toBe(mockScenario.treatment_goal);
-    expect(result.configuration).toEqual({
-      stand_size: mockScenario.stand_size,
-      max_slope: mockScenario.max_slope,
-      min_distance_from_road: mockScenario.min_distance_from_road,
-      estimated_cost: mockScenario.estimated_cost,
-      excluded_areas: mockScenario.excluded_areas,
-      max_area: mockScenario.max_area,
-      max_budget: mockScenario.max_budget,
-    } as any);
-  });
-
-  it('should handle null values for optional fields', () => {
-    mockScenario.max_slope = null;
-    mockScenario.min_distance_from_road = null;
-
-    const result = getScenarioCreationPayloadScenarioCreation(mockScenario);
-
-    expect(result.configuration?.max_slope).toBeNull();
-    expect(result.configuration?.min_distance_from_road).toBeNull();
-  });
-});
+import { Constraint, ScenarioCreation, ScenarioGoal } from '@types';
 
 describe('getGroupedGoals', () => {
   const makeGoal = (overrides: Partial<ScenarioGoal> = {}): ScenarioGoal => ({
@@ -160,5 +117,230 @@ describe('getGroupedGoals', () => {
 
     expect(result['Group Pretty']).toBeDefined();
     expect(result['Group Pretty']['Category Pretty']).toEqual([goal]);
+  });
+});
+
+describe('convertFlatConfigurationToDraftPayload', () => {
+  const mockThresholdIds = new Map<string, number>([
+    ['distance_to_roads', 100],
+    ['slope', 200],
+  ]);
+  it('should return the correct values for standsize and tx goal', () => {
+    const formData: Partial<ScenarioCreation> = {
+      stand_size: 'LARGE',
+      treatment_goal: 1,
+    };
+    const payloadResult = convertFlatConfigurationToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: { stand_size: 'LARGE' },
+      treatment_goal: 1,
+    });
+  });
+  it('should return the correct values for excluded areas', () => {
+    const formData: Partial<ScenarioCreation> = {
+      excluded_areas: [555, 444, 333],
+    };
+    const payloadResult = convertFlatConfigurationToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: { excluded_areas: [555, 444, 333] },
+    });
+  });
+  it('should allow the user to set an empty excluded_areas array', () => {
+    const formData: Partial<ScenarioCreation> = {
+      excluded_areas: [],
+    };
+    const payloadResult = convertFlatConfigurationToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: { excluded_areas: [] },
+    });
+  });
+  it('should return the correct values for thresholds', () => {
+    const formData: Partial<ScenarioCreation> = {
+      min_distance_from_road: 100,
+      max_slope: 99,
+    };
+    const payloadResult = convertFlatConfigurationToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+    expect(Array.isArray(payloadResult.configuration?.constraints)).toBe(true);
+    expect(payloadResult.configuration?.constraints).toContain({
+      datalayer: 100,
+      operator: 'lte',
+      value: 100,
+    });
+    expect(payloadResult.configuration?.constraints).toContain({
+      datalayer: 200,
+      operator: 'lt',
+      value: 99,
+    });
+  });
+  it('should return the correct values for targets with maxarea', () => {
+    const formData: Partial<ScenarioCreation> = {
+      max_area: 43999,
+      max_project_count: 10,
+      estimated_cost: 2470,
+    };
+    const payloadResult = convertFlatConfigurationToDraftPayload(
+      formData,
+      mockThresholdIds
+    );
+
+    expect(payloadResult).toEqual({
+      configuration: {
+        targets: {
+          estimated_cost: 2470,
+          max_area: 43999,
+          max_project_count: 10,
+        },
+      },
+    });
+  });
+});
+
+describe('getNamedConstraints', () => {
+  const slopeId = 10;
+
+  it('should map constraints with matching datalayer to maxSlope', () => {
+    const constraints: Constraint[] = [
+      { datalayer: 10, operator: 'lt', value: 25 },
+      { datalayer: 10, operator: 'lte', value: 30 },
+    ];
+
+    const result = getNamedConstraints(constraints, slopeId);
+
+    expect(result).toEqual([
+      { name: 'maxSlope', operator: 'lt', value: 25 },
+      { name: 'maxSlope', operator: 'lte', value: 30 },
+    ]);
+  });
+
+  // TODO: This will change if we add more constraints for now we handle just 2
+  it('should map constraints with different datalayer to distanceToRoads', () => {
+    const constraints: Constraint[] = [
+      { datalayer: 20, operator: 'lt', value: 100 },
+      { datalayer: 30, operator: 'lte', value: 150 },
+    ];
+
+    const result = getNamedConstraints(constraints, slopeId);
+
+    expect(result).toEqual([
+      { name: 'distanceToRoads', operator: 'lt', value: 100 },
+      { name: 'distanceToRoads', operator: 'lte', value: 150 },
+    ]);
+  });
+
+  it('should handle a mix of datalayers correctly', () => {
+    const constraints: Constraint[] = [
+      { datalayer: 10, operator: 'lt', value: 50 },
+      { datalayer: 99, operator: 'lte', value: 200 },
+    ];
+
+    const result = getNamedConstraints(constraints, slopeId);
+
+    expect(result).toEqual([
+      { name: 'maxSlope', operator: 'lt', value: 50 },
+      { name: 'distanceToRoads', operator: 'lte', value: 200 },
+    ]);
+  });
+});
+
+describe('suggestUniqueName', () => {
+  it('should should name the copy "Copy of <basename>"', () => {
+    const origName = 'some name';
+    const existingNames = ['a name', 'another name', 'some name'];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name'");
+  });
+
+  it('should append a numeral if the name exists but doesnt end in a numeral', () => {
+    const origName = 'some name';
+    const existingNames = [
+      'a name',
+      'another name',
+      'some name',
+      "Copy of 'some name'",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 2");
+  });
+
+  it('should append a numeral if the name exists with subsequent numbers', () => {
+    const origName = 'some name';
+    const existingNames = [
+      'some name',
+      'some name 2',
+      "Copy of 'some name'",
+      "Copy of 'some name' 2",
+      "Copy of 'some name' 3",
+      "Copy of 'some name' 4",
+      "Copy of 'some name' 5",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 6");
+  });
+
+  it('should increment the trailing number, but only outside the cloned name', () => {
+    const origName = 'some name 5';
+    const existingNames = [
+      'some name',
+      "Copy of 'some name 5'",
+      "Copy of 'some name 5' 2",
+      "Copy of 'some name 5' 3",
+      "Copy of 'some name 5' 4",
+      "Copy of 'some name 5' 5",
+      "Copy of 'some name 5' 6",
+      "Copy of 'some name 5' 7",
+      "Copy of 'some name 5' 8",
+      "Copy of 'some name 5' 9",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name 5' 10");
+  });
+
+  it('should only increment a number if the name is in "Copy of \'Some Name\'" format', () => {
+    const origName = 'Scenario 4567';
+    const existingNames = ['Scenario 4567'];
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'Scenario 4567'");
+    existingNames.push("Copy of 'Scenario 4567'");
+
+    const secondNameResult = suggestUniqueName(origName, existingNames);
+    expect(secondNameResult).toEqual("Copy of 'Scenario 4567' 2");
+  });
+
+  it('should not prepend "Copy of" if that text already exists', () => {
+    const origName = "Copy of 'some name' 5";
+    const existingNames = [
+      'some name',
+      "Copy of 'some name'",
+      "Copy of 'some name' 2",
+      "Copy of 'some name' 3",
+      "Copy of 'some name' 4",
+      "Copy of 'some name' 5",
+      "Copy of 'some name' 6",
+      "Copy of 'some name' 7",
+      "Copy of 'some name' 8",
+      "Copy of 'some name' 9",
+    ];
+
+    const nameResult = suggestUniqueName(origName, existingNames);
+    expect(nameResult).toEqual("Copy of 'some name' 10");
   });
 });

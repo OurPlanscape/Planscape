@@ -7,13 +7,12 @@ import { ModalComponent } from '@styleguide';
 @Component({
   selector: 'app-delete-dialog',
   templateUrl: './delete-dialog.component.html',
-  styleUrls: ['./delete-dialog.component.scss'],
   standalone: true,
   imports: [CommonModule, LegacyMaterialModule, ModalComponent],
 })
 export class DeleteDialogComponent {
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { name: string },
+    @Inject(MAT_DIALOG_DATA) public data: { title: string; body: string },
     public dialogRef: MatDialogRef<DeleteDialogComponent>
   ) {}
 

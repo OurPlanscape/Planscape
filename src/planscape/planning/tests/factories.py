@@ -1,11 +1,12 @@
-from django.conf import settings
-from django.db import connection
-
 import factory
 import factory.fuzzy
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
+from datasets.tests.factories import DataLayerFactory
+from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.db import connection
+
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -17,11 +18,9 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
-    TreatmentGoalGroup,
-    TreatmentGoalUsesDataLayer,
     TreatmentGoalUsageType,
+    TreatmentGoalUsesDataLayer,
 )
-from datasets.tests.factories import DataLayerFactory
 from planscape.tests.factories import UserFactory
 
 
@@ -38,6 +37,8 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
     )
 
     name = factory.Sequence(lambda n: "planning area %s" % n)
+
+    scenario_count = 0
 
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
@@ -88,7 +89,7 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted == True:
+        if extracted:
             with connection.cursor() as cur:
                 cur.execute(
                     """
@@ -125,7 +126,7 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted == True:
+        if extracted:
             TreatmentGoalUsesDataLayerFactory.create(
                 treatment_goal=self, usage_type=TreatmentGoalUsageType.PRIORITY
             )
@@ -190,7 +191,7 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted == True:
+        if extracted:
             ScenarioResultFactory(scenario=self)
 
 
@@ -199,6 +200,52 @@ class ScenarioResultFactory(factory.django.DjangoModelFactory):
         model = ScenarioResult
 
     scenario = factory.SubFactory(ScenarioFactory)
+
+    result = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "crs": {"type": "name", "properties": {"name": "EPSG:4269"}},
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [1, 1],
+                            [1, 2],
+                            [2, 2],
+                            [1, 1],
+                        ]
+                    ],
+                },
+                "properties": {
+                    "YR": 1,
+                    "proj_id": 1,
+                    "pct_area": 3.45,
+                    "area_acres": 12345.987,
+                    "attainment": {
+                        "Foo Bar": 5.12345,
+                        "Bar Baz": 4.12345,
+                        "Baz Foo": 3.12345,
+                        "Foo Baz": 2.12345,
+                        "Baz Bar": 1.12345,
+                    },
+                    "total_cost": 12345.987,
+                    "stand_count": 123,
+                    "pct_excluded": 0,
+                    "cost_per_acre": 2470,
+                    "text_geometry": "POLYGON((1 1, 1 2, 2 2, 1 1))",
+                    "datalayer_1": 12345.987,
+                    "datalayer_2": 987.12345,
+                    "datalayer_3": 12345.987,
+                    "datalayer_4": 987.12345,
+                    "datalayer_5": 12345.987,
+                    "treatment_rank": 1,
+                    "weightedPriority": 12345.987,
+                },
+            }
+        ],
+    }
 
 
 class ProjectAreaFactory(factory.django.DjangoModelFactory):

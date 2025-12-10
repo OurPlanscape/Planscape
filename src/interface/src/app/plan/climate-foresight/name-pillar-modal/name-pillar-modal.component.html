@@ -1,0 +1,31 @@
+<sg-modal
+  [title]="!editMode ? 'New custom pillar' : 'Name custom pillar'"
+  [showClose]="false"
+  secondaryButtonText="Cancel"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting"
+  [primaryButtonDisabled]="submitting || form.invalid"
+  (clickedSecondary)="cancel()"
+  [primaryButtonText]="primaryCTA"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="handleSubmit()">
+  <div modalBodyContent>
+    <form [formGroup]="form" (ngSubmit)="handleSubmit()">
+      <sg-input-field
+        label="Pillar Name"
+        [error]="displayError"
+        showSupportMessage="on-error"
+        supportMessage="Something went wrong while saving your changes. Please try again in a
+        moment."
+        size="full">
+        <input
+          sgInput
+          placeholder="Pillar Name"
+          name="pillarName"
+          cdkFocusInitial
+          [required]="true"
+          formControlName="pillarName" />
+      </sg-input-field>
+    </form>
+  </div>
+</sg-modal>

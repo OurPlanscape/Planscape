@@ -3,6 +3,11 @@
 
 :host {
   width: 100%;
+
+  // this seems to be a one-off from our normal inputs... slightly shorter.
+  ::ng-deep .search-input .input-wrapper {
+    padding-block: 8px;
+  }
 }
 
 .search-bar-container {

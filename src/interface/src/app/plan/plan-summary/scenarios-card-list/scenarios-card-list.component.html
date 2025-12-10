@@ -16,6 +16,16 @@
   [selected]="isSelected(s)"
   (openNewTreatment)="openNewTreatmentDialog($event, s)"
   [userCanArchiveScenario]="userCanArchiveScenario(s)"
-  [userCanCreateTreatmentPlans]="userCanCreateTreatmentPlan()"
-  (toggleArchiveStatus)="toggleScenarioStatus(s)">
+  [userCanDeleteScenario]="userCanArchiveScenario(s)"
+  [userCanEditScenario]="userCanEditScenario(s)"
+  [contextualMenuEnabled]="canShowContextualMenu(s)"
+  [showTreatmentPlanButton]="
+    userCanCreateTreatmentPlan() && hasTreatmentPlanCapability(s)
+  "
+  (toggleArchiveStatus)="toggleScenarioStatus(s)"
+  (deleteScenario)="showDeleteScenarioDialog(s)"
+  (editScenario)="editScenario(s)"
+  matTooltip="Only the creator can edit this draft"
+  [matTooltipDisabled]="!displayDraftCreatorTooltip(s)"
+  [disabled]="displayDraftCreatorTooltip(s)">
 </sg-scenario-card>

@@ -1,0 +1,58 @@
+<sg-modal
+  [title]="!editMode ? 'Name your Planning Area' : 'Rename Planning Area'"
+  [showClose]="false"
+  [primaryButtonText]="primaryCTA"
+  secondaryButtonText="Cancel"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting"
+  [primaryButtonDisabled]="submitting || planForm.invalid"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="submitPlan()">
+  <sg-modal-info
+    modalInfoBox
+    *ngIf="!editMode"
+    infoType="info"
+    leadingIcon="info_filled"
+    message="Boundaries cannot be modified after the plan is saved.">
+  </sg-modal-info>
+  <sg-modal-info
+    modalInfoBox
+    *ngIf="!editMode && !isValidTotalArea"
+    infoType="warning"
+    data-id="totalAreaError"
+    leadingIcon="warning_filled"
+    message="Your planning area is less than 100 acres. You will not be able to run
+        treatment scenarios in Plan.">
+  </sg-modal-info>
+  <div modalBodyContent>
+    <form [formGroup]="planForm" (ngSubmit)="submitPlan()" class="upload-form">
+      <div class="field-row">
+        <sg-input-field
+          [disabled]="false"
+          class="scenario-input"
+          label="Planning Area Name"
+          showSupportMessage="on-error"
+          size="full">
+          <input
+            sgInput
+            placeholder="Plan Name"
+            name="planName"
+            cdkFocusInitial
+            formControlName="planName"
+            class="name-field"
+            required />
+        </sg-input-field>
+      </div>
+
+      <div class="help-text error" *ngIf="planForm.hasError('planNameExists')">
+        There is already a planning area with that name.
+      </div>
+
+      <div class="help-text error" *ngIf="displayError">
+        Something went wrong while saving your changes. Please try again in a
+        moment.
+      </div>
+    </form>
+  </div>
+</sg-modal>

@@ -1,7 +1,15 @@
 @import 'colors';
 @import 'mixins';
 
+// map layers specific colors, see map.styles.ts
+$map_dark_gray: #646464;
+$map_light_gray: #909090;
+
 :host {
+  display: block;
+}
+
+section {
   @include public-sans();
   font-size: 14px;
   font-style: normal;
@@ -17,6 +25,7 @@
   max-width: 260px;
   box-sizing: border-box;
 }
+
 
 .legend {
   display: inline-flex;
@@ -62,18 +71,15 @@
     }
   }
 
-  &.pattern {
+  &.dark-gray {
     &:before {
-      // placeholder, not actual final pattern!
-      background-color: $color-light-magenta;
-      background-image: url('/assets/png/patterns/stripes-black.png');
+      background-color: $map_dark_gray;
     }
   }
 
-  &.pattern-gray {
+  &.light-gray {
     &:before {
-      background-color: $color-text-gray;
-      background-image: url('/assets/png/patterns/stripes-black.png');
+      background-color: $map_light_gray;
     }
   }
 }
@@ -81,4 +87,19 @@
 ::ng-deep .legend-tooltip {
   --mdc-plain-tooltip-container-color: rgba(0, 0, 0, 0.7);
   --mdc-plain-tooltip-supporting-text-color: #fff;
+}
+
+@media print {
+  :host {
+    display: block;
+    width: 100%;
+  }
+
+  .icon {
+    // Force to display background colors (some browsers block it)
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: $color-black;
+    opacity: 1; // In case we have color with opacity
+  }
 }

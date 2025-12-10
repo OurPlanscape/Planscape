@@ -67,6 +67,7 @@ export class DrawService {
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
+      renderBelowLayerId: 'drawing-hook',
     });
     if (!this._terraDraw) {
       this._terraDraw = new TerraDraw({
@@ -227,11 +228,7 @@ export class DrawService {
     if (this._boundaryShape$.value !== null) {
       return this._boundaryShape$.asObservable();
     }
-    let boundaryPath = 'assets/geojson/ca_state.geojson';
-    if (this.featureService.isFeatureEnabled('CONUS_WIDE_SCENARIOS')) {
-      boundaryPath = 'assets/geojson/conus-census.geojson';
-    }
-    return this.http.get<GeoJSON>(boundaryPath).pipe(
+    return this.http.get<GeoJSON>('assets/geojson/conus-census.geojson').pipe(
       catchError((error) => {
         console.error('Failed to load shape:', error);
         return of(null); // Return null on error

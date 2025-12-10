@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, distinctUntilChanged, map, shareReplay } from 'rxjs';
+import {
+  BehaviorSubject,
+  distinctUntilChanged,
+  filter,
+  map,
+  shareReplay,
+} from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
 import { BaseLayer } from '@types';
 
@@ -19,6 +25,9 @@ export class BaseLayersStateService {
 
   // base layers grouped by category (one level)
   categorizedBaseLayers$ = this.baseLayers$.pipe(
+    filter((layers) =>
+      layers.some((layer) => layer.path.length === 1 && layer.path[0])
+    ),
     map((layers) => {
       const grouped = layers.reduce<Record<string, BaseLayer[]>>(
         (acc, layer) => {

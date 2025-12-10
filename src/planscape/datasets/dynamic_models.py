@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from django.apps import apps
 from django.contrib.gis.db import models
@@ -17,7 +17,7 @@ def srid_from_crs(crs: Optional[str], default: int = 4326) -> int:
     return default
 
 
-def geometry_field_from_fiona(geom_type: str) -> type[gis.GeometryField]:
+def geometry_field_from_fiona(geom_type: str) -> type[models.GeometryField]:
     """
     Maps Fiona geometry string to GeoDjango field class.
     Strips Z/M suffixes if present (e.g., 'MultiPolygonZ').

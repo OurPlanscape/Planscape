@@ -40,7 +40,6 @@ import * as Sentry from '@sentry/angular';
 @NgModule({
   declarations: [
     AppComponent,
-    ChipInputComponent,
     HomeComponent,
     SharePlanDialogComponent,
     WelcomeComponent,
@@ -70,6 +69,7 @@ import * as Sentry from '@sentry/angular';
     DeleteDialogComponent,
     PlanningAreasComponent,
     OverlayLoaderComponent,
+    ChipInputComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,

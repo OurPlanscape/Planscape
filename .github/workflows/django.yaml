@@ -10,12 +10,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: psf/black@stable
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
         with:
-          options: "--check"
-          src: "src/planscape"
-          version: "23.7.0"
+          src: src/planscape
 
   build:
     runs-on: ubuntu-latest
@@ -53,23 +51,16 @@ jobs:
         run: sudo apt-get update
       - name: Install Apt Dependencies
         run: sudo apt-get install libcurl4-openssl-dev libssl-dev gcc gdal-bin libgdal-dev r-base-core -y
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Get Python Version
-        id: full-python-version
-        run: echo version=$(python -c "import sys; print('-'.join(str(v) for v in sys.version_info))")  >> $GITHUB_OUTPUT
-      - name: Install Poetry
-        run: |
-          curl -sL https://install.python-poetry.org | python - -y ${{ matrix.bootstrap-args }}
-
-      - name: Update PATH
-        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Configure Poetry
-        run: poetry config virtualenvs.in-project true
+      - name: Install UV
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: latest
+          python-version: ${{ matrix.python-version }}
 
       - name: Configure cache
         uses: actions/cache@v3
@@ -80,10 +71,7 @@ jobs:
 
       - name: Cache is healthy?
         if: steps.cache.outputs.cache-hit == 'true'
-        run: timeout 10s poetry run pip --version || rm -rf .venv
-
-      - name: Install Python Dependencies
-        run: poetry install --with dev
+        run: timeout 10s uv run pip --version || rm -rf .venv
 
       - name: Set up PostGIS
         env:
@@ -107,4 +95,4 @@ jobs:
           echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .env
           echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .env
           cd src/planscape
-          poetry run python manage.py test .
+          uv run python manage.py test . --parallel 4

@@ -20,16 +20,22 @@ services:
     extends:
       service: _planscape
     working_dir: /usr/src/app/src/planscape
-    command: celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,impacts,default
+    command: uv run python manage.py auto_reload_celery
     deploy:
       replicas: 1
+    network_mode: "host"
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS_FILE: /root/.config/gcloud/planscape-23d66-4d449c5227ed.json
     env_file:
       - ../.env
     depends_on:
       - db
       - redis
+      - forsys
     volumes:
-      - .:/usr/src/app
+      - ..:/usr/src/app
+      - /usr/src/app/.venv # Exclude .venv from host sync (keep in container)
+      - ${HOME}/.config/gcloud:/root/.config/gcloud:ro
   db:
     image: postgis/postgis:15-3.4
     environment:
@@ -51,10 +57,10 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db/postgres
-    command: --config /usr/src/app/martin.yaml
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+    command: --config /app/martin.yaml
     volumes:
-      - .:/usr/src/app
+      - ..:/app
   forsys:
     build:
       context: ..
@@ -68,7 +74,40 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - .:/usr/src/app
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 20s
+      retries: 15
+  minio_setup:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb myminio/planscape-control-dev --ignore-existing;
+      mc mb myminio/planscape-datastore-dev --ignore-existing;
+      mc mb myminio/planscape-media-local --ignore-existing;
+      exit 0;
+      "
 volumes:
   postgres: null
   cache:
+    driver: local
+  minio_data:
     driver: local

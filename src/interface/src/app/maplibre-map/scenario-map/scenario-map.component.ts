@@ -13,7 +13,7 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, of, switchMap } from 'rxjs';
+import { combineLatest, map, of, switchMap, mergeMap } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
@@ -31,8 +31,8 @@ import { FeaturesModule } from '../../features/features.module';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '../../scenario/new-scenario.state';
-import { FeatureService } from '../../features/feature.service';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
+import { Scenario } from '@types';
 
 @Component({
   selector: 'app-scenario-map',
@@ -66,8 +66,7 @@ export class ScenarioMapComponent {
     private planState: PlanState,
     private scenarioState: ScenarioState,
     private mapConfigService: MapConfigService,
-    private newScenarioState: NewScenarioState,
-    private featureService: FeatureService
+    private newScenarioState: NewScenarioState
   ) {
     this.mapConfigService.initialize();
   }
@@ -79,14 +78,33 @@ export class ScenarioMapComponent {
 
   isScenarioSuccessful$ = this.scenarioState.isScenarioSuccessful$;
 
+  opacityTooltip$ = this.scenarioState.currentScenarioId$.pipe(
+    map((scenarioId) => (scenarioId ? 'Project Area Opacity' : 'Stand Opacity'))
+  );
+
+  //check values of currentScenarioId and currentScenario (which might be empty)
+  showScenarioStands$ = this.scenarioState.currentScenarioId$.pipe(
+    mergeMap((scenarioId) => {
+      if (!scenarioId) {
+        return of(true);
+      }
+      // If scenarioId exists, we then check currentScenario$
+      return this.scenarioState.currentScenario$.pipe(
+        map((scenario: Scenario) => {
+          // If the scenario exists and its status is 'DRAFT', return true
+          return scenario?.scenario_result?.status === 'DRAFT';
+        })
+      );
+    })
+  );
+
   showOpacitySlider$ = combineLatest([
     this.isScenarioSuccessful$,
     this.newScenarioState.stepIndex$,
   ]).pipe(
     map(
       ([isScenarioSuccessful, stepIndex]) =>
-        this.featureService.isFeatureEnabled('DYNAMIC_SCENARIO_MAP') &&
-        (isScenarioSuccessful || stepIndex > 0)
+        isScenarioSuccessful || stepIndex > 0
     )
   );
 
@@ -107,7 +125,7 @@ export class ScenarioMapComponent {
     })
   );
 
-  projectAreasOpacity$ = this.mapConfigState.projectAreasOpacity$;
+  opacity$ = this.mapConfigState.opacity$;
 
   projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
@@ -135,7 +153,7 @@ export class ScenarioMapComponent {
   }
 
   handleOpacityChange(opacity: number) {
-    this.mapConfigState.setProjectAreasOpacity(opacity);
+    this.mapConfigState.setOpacity(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

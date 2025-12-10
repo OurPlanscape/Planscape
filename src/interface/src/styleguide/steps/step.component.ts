@@ -3,8 +3,9 @@ import {
   Component,
   ContentChild,
   Directive,
+  SkipSelf,
 } from '@angular/core';
-import { CdkStep, CdkStepperModule } from '@angular/cdk/stepper';
+import { CdkStep, CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
 import { FormGroup } from '@angular/forms';
 import { PartialDeep } from '@types';
 
@@ -29,6 +30,11 @@ export abstract class StepDirective<T> {
 })
 export class StepComponent<T> extends CdkStep implements AfterViewInit {
   @ContentChild(StepDirective) stepLogic?: StepDirective<T>;
+
+  // FIX make the parent stepper dependency explicit on the subclass
+  constructor(@SkipSelf() stepper: CdkStepper) {
+    super(stepper);
+  }
 
   ngAfterViewInit() {
     if (!this.stepLogic) {

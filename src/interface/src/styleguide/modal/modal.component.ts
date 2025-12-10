@@ -1,7 +1,5 @@
 import {
   Component,
-  ContentChild,
-  ElementRef,
   EventEmitter,
   HostBinding,
   Input,
@@ -14,6 +12,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ButtonComponent, ButtonVariant } from '../button/button.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'sg-modal',
@@ -29,6 +28,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatDividerModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
   ],
 })
 export class ModalComponent {
@@ -98,10 +98,6 @@ export class ModalComponent {
    */
   @Input() showClose? = true;
   /**
-   * Whether or not to show the tooltip button in the header
-   */
-  @Input() showToolTip? = false;
-  /**
    * Whether or not to show the header at all
    */
   @Input() hasHeader? = true;
@@ -117,10 +113,12 @@ export class ModalComponent {
    * Whether the buttons should be centered
    */
   @Input() centerFooter? = false;
+
   /**
-   * Whether or not to use default padding for the projected content
+   * If provided, the modal will show a tooltip on the header
    */
-  @Input() padBody? = false;
+  @Input() tooltipContent = '';
+
   /**
    * Whether or not to show the borders on header and footer
    */
@@ -130,23 +128,23 @@ export class ModalComponent {
   @Output() clickedPrimary = new EventEmitter<any>();
   @Output() clickedClose = new EventEmitter<any>();
 
-  @ContentChild('tooltipContentDiv', { static: false })
-  tooltipContentDiv?: ElementRef | null = null;
-
   constructor() {}
 
   get hasTooltipContent(): boolean {
-    return !!this.tooltipContentDiv;
+    return !!this.tooltipContent;
   }
 
+  /** @ignore */
   handleCloseButton(): void {
     this.clickedClose.emit();
   }
 
+  /** @ignore */
   handleSecondaryButton(): void {
     this.clickedSecondary.emit();
   }
 
+  /** @ignore */
   handlePrimaryButton(): void {
     this.clickedPrimary.emit();
   }
@@ -155,18 +153,22 @@ export class ModalComponent {
   get isExtraSmall() {
     return this.width === 'xsmall';
   }
+
   @HostBinding('class.small')
   get isSmall() {
     return this.width === 'small';
   }
+
   @HostBinding('class.medium')
   get isMedium() {
     return this.width === 'medium';
   }
+
   @HostBinding('class.large')
   get isLarge() {
     return this.width === 'large';
   }
+
   @HostBinding('class.full')
   get isFull() {
     return this.width === 'full';

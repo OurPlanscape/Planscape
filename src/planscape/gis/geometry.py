@@ -1,6 +1,15 @@
 from typing import Collection, List, Optional
 
 from django.contrib.gis.geos import GeometryCollection, GEOSGeometry, Polygon
+from rasterio.warp import transform_geom
+from shapely.geometry import mapping, shape
+
+
+def to_geodjango_geometry(shapely_geom, srid=4326):
+    """
+    Converts a shapely geometry to a geodjango geometry
+    """
+    return GEOSGeometry(shapely_geom.wkt, srid=srid)
 
 
 def get_bounding_box(geometries: List[GEOSGeometry]) -> Optional[Collection[float]]:
@@ -26,3 +35,15 @@ def get_bounding_polygon(geometries: List[GEOSGeometry]) -> GEOSGeometry:
         ],
         srid=geometries[0].srid,
     )
+
+
+def shapely_reproject(geometry, src_crs, dst_crs):
+    geometry = shape(
+        transform_geom(
+            src_crs,
+            dst_crs,
+            mapping(geometry),
+            precision=6,
+        )
+    )
+    return geometry

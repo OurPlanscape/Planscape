@@ -1,0 +1,11 @@
+<mat-card *ngIf="stateWideGoal$ | async as goal">
+  <header>
+    <h4>{{ goal.name }}</h4>
+    <button
+      sg-button
+      variant="icon-only"
+      icon="close"
+      (click)="close()"></button>
+  </header>
+  <section [innerHTML]="safeDescription$ | async"></section>
+</mat-card>

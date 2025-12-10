@@ -1,4 +1,7 @@
-from datasets.models import DataLayer
+from core.flags import feature_enabled
+from datasets.models import DataLayer, Dataset
+from datasets.serializers import BrowseDataLayerSerializer
+from organizations.models import Organization
 from rest_framework import serializers
 
 
@@ -7,7 +10,6 @@ class OptionDataLayerSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "info",
         )
         model = DataLayer
 
@@ -19,12 +21,44 @@ class OptionThresholdsSerializer(serializers.Serializer):
 
 class ForsysOptionsSerializer(serializers.Serializer):
     inclusions = serializers.ListField(child=OptionDataLayerSerializer())
-    exclusions = serializers.ListField(child=OptionDataLayerSerializer())
+    if feature_enabled("SCENARIO_CONFIG_UI"):
+        exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
+    else:
+        exclusions = serializers.ListField(child=OptionDataLayerSerializer())
     thresholds = OptionThresholdsSerializer()
+
+
+class OrganizationMapOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class DatasetMapOptionsSerializer(serializers.ModelSerializer):
+    organization = OrganizationMapOptionsSerializer()
+
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "organization",
+            "name",
+            "preferred_display_type",
+            "selection_type",
+        )
+
+
+class MapOptionsSerializer(serializers.Serializer):
+    main_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+    base_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
 
 
 OPTIONS_SERIALIZERS = {
     "forsys": ForsysOptionsSerializer,
+    "map": MapOptionsSerializer,
 }
 
 
@@ -37,3 +71,5 @@ class ModuleSerializer(serializers.Serializer):
         self.fields["options"] = self.get_options_serializer(module_name)
 
     name = serializers.CharField()
+    options = serializers.DictField()
+    options = serializers.DictField()

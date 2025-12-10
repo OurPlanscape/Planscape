@@ -1,4 +1,11 @@
 @import 'colors';
+@import "media";
+@import "variables";
+
+// indexes on this page: nav on top, then sidebar, then map.
+$sg-navs-index: 50;
+$sg-steps-index: 30;
+
 
 :host {
   display: flex;
@@ -11,21 +18,24 @@
   overflow: hidden;
 
   ::ng-deep {
-    mat-tab-header {
-      padding: 0 16px 0 32px;
-    }
-
     .mat-mdc-tab-body-wrapper {
       background-color: $color-soft-purple;
       flex: 1;
     }
 
     .mat-mdc-tab-labels {
-      border: 0;
+      padding: 0 16px;
+      border-bottom: 2px $color-soft-gray solid;
     }
 
-    .mdc-tab-indicator--active {
-      border-bottom: 2px solid $color-standard-blue;
+    // remove paddings if showing pagination
+    .mat-mdc-tab-header-pagination-controls-enabled .mat-mdc-tab-labels {
+      padding: 0;
+    }
+
+    .mat-mdc-tab-header-pagination {
+      border-bottom: 2px $color-soft-gray solid;
+      padding-top: 2px;
     }
   }
 }
@@ -39,7 +49,7 @@
   flex-direction: row;
   height: fit-content;
   width: 100%;
-  padding: 10px 16px 0 32px;
+  padding: 10px 16px 0 16px;
   box-sizing: border-box;
   position: sticky;
   top: 0;
@@ -55,4 +65,74 @@
 
 .error {
   color: $color-error-secondary;
+}
+
+
+// new scenario ui
+
+
+sg-steps.new-scenario-ui {
+  max-width: $scenario-sidebar-width;
+  background-color: $color-soft-purple;
+  box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+  z-index: $sg-steps-index;
+
+  &:not(.full-screen-steps) {
+    @include on-small() {
+      height: initial;
+      max-width: initial;
+    }
+
+  }
+
+  &.full-screen-steps {
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+
+    ::ng-deep .step {
+      padding: 0;
+      overflow: hidden;
+      @include on-small() {
+        overflow: initial;
+      }
+    }
+  }
+}
+
+.container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+
+
+  @include on-small() {
+    overflow: initial;
+    flex-direction: column-reverse;
+    height: initial;
+  }
+
+}
+
+sg-steps-nav {
+  display: block;
+  z-index: $sg-navs-index;
+  box-shadow: 1px 4px 3px 0 rgba(0, 0, 0, 0.12), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.20);
+}
+
+
+app-scenario-map {
+  flex: 1;
+  min-width: $scenario-sidebar-width;
+
+
+  @include on-small() {
+    height: 400px;
+    flex: initial;
+  }
+}
+
+app-scenario-summary {
+  display: block;
+  margin-bottom: 16px;
 }

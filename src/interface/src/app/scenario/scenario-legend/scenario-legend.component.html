@@ -1,8 +1,8 @@
-<div>
-  <div class="legend icon blue">Total Planning Area Acres:</div>
-  <div>{{ $acres | async | number: '1.0-0' }} ac</div>
-</div>
-<ng-container *ngIf="summary$ | async as summary">
+<section *ngIf="summary$ | async as summary">
+  <div>
+    <div class="legend icon blue">Total Planning Area Acres:</div>
+    <div>{{ summary.total_area | number: '1.0-0' }} ac</div>
+  </div>
   <div>
     <div class="legend icon magenta">
       <div class="legend-text">
@@ -17,18 +17,23 @@
           [outlined]="true"></button>
       </div>
     </div>
-    <div>{{ summary.available_area }}</div>
+    <div>{{ summary.available_area | number: '1.0-0' }} ac</div>
   </div>
-  <div>
-    <div class="legend icon pattern">Does not meet Stand-level Constraint</div>
+  <div *ngIf="showExcludedStands$ | async">
+    <div class="legend icon dark-gray">Excluded Area</div>
   </div>
-  <div>
+  <div *ngIf="showConstrainedStands$ | async">
+    <div class="legend icon light-gray">
+      Does not meet Stand-level Constraint
+    </div>
+  </div>
+  <div *ngIf="showAvailablePercent$ | async">
     <div class="legend">
       <div class="legend-text">
         % Treatable:
         <button
           sg-button
-          matTooltip="The percentage of the Potential Treatable Area that meets thresholds"
+          matTooltip="The percentage of the Potential Treatable Area that meets stand-level constraints"
           matTooltipClass="legend-tooltip"
           variant="icon-only"
           icon="info"
@@ -36,8 +41,9 @@
           [outlined]="true"></button>
       </div>
     </div>
+    <div>
+      {{ treatablePercent$ | async | percent }} of
+      {{ summary.available_area | number: '1.0-0' }} ac
+    </div>
   </div>
-  <div *ngIf="(stepIndex$ | async) === 1">
-    <div class="legend icon pattern-gray">Excluded Area</div>
-  </div>
-</ng-container>
+</section>

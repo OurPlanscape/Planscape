@@ -2,6 +2,7 @@ from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin, UUIDMixi
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Manager
 from django_stubs_ext.db.models import TypedModelMeta
 
 User = get_user_model()
@@ -38,9 +39,9 @@ class Organization(
     )
     created_by_id: int
 
-    categories: models.QuerySet["Category"]
-    datasets: models.QuerySet["Dataset"]
-    datalayers: models.QuerySet["DataLayer"]
+    categories: models.QuerySet["Category"]  # type: ignore # noqa
+    datasets: models.QuerySet["Dataset"]  # type: ignore # noqa: F821
+    datalayers: models.QuerySet["DataLayer"]  # type: ignore # noqa: F821
 
     name = models.CharField(max_length=256)
 

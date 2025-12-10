@@ -15,7 +15,7 @@ echo "migrated"
 echo "Starting gunicorn for production"
 if [[ "$ENV" == "production" ]]; then
   echo "Starting gunicorn for production"
-  gunicorn planscape.wsgi:application \
+  uv run gunicorn planscape.wsgi:application \
     -n "$app_name" \
     --bind 0.0.0.0:8000 \
     --workers "$CORN_WORKERS" \
@@ -24,7 +24,7 @@ if [[ "$ENV" == "production" ]]; then
 
 else
   echo "Starting gunicorn locally"
-  gunicorn planscape.wsgi:application \
+  uv run gunicorn planscape.wsgi:application \
     -n "$app_name" \
     --bind 0.0.0.0:8000 \
     --workers "$CORN_WORKERS" \

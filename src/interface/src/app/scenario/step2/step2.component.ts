@@ -8,17 +8,14 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ScenarioState } from '../scenario.state';
 import { StepDirective } from '../../../styleguide/steps/step.component';
-import { ScenarioCreation } from '@types';
+import { IdNamePair, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
+import { ForsysService } from '@services/forsys.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { filter, take } from 'rxjs';
 
-interface ExcludedArea {
-  key: number;
-  label: string;
-  id: number;
-}
-
+@UntilDestroy()
 @Component({
   selector: 'app-step2',
   standalone: true,
@@ -37,26 +34,48 @@ export class Step2Component
   implements OnInit
 {
   constructor(
-    private scenarioState: ScenarioState,
-    private newScenarioState: NewScenarioState
+    private newScenarioState: NewScenarioState,
+    private forsysService: ForsysService
   ) {
     super();
   }
 
   form = new FormGroup({
-    excluded_areas: new FormArray([]),
+    excluded_areas: new FormArray<FormControl<boolean>>([]),
   });
-  excludedAreas$ = this.scenarioState.excludedAreas$;
-  excludedAreas: ExcludedArea[] = [];
+  excludedAreas$ = this.forsysService.excludedAreas$;
+  excludedAreas: IdNamePair[] = [];
 
   ngOnInit() {
-    this.excludedAreas$.subscribe((areas: ExcludedArea[]) => {
+    this.excludedAreas$.subscribe((areas) => {
       this.excludedAreas = areas;
       this.createFormControls();
       this.form.get('excluded_areas')?.valueChanges.subscribe(() => {
         this.newScenarioState.setExcludedAreas(this.getSelectedExcludedAreas());
       });
+      this.prefillExcludedAreas();
     });
+  }
+
+  private prefillExcludedAreas() {
+    // Reading the config from the scenario state
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.excluded_areas),
+        take(1)
+      )
+      .subscribe((config) => {
+        let excluded_areas_value: boolean[] = [];
+        this.excludedAreas.forEach((area) => {
+          if (config.excluded_areas?.includes(area.id)) {
+            excluded_areas_value.push(true);
+          } else {
+            excluded_areas_value.push(false);
+          }
+        });
+        this.form.get('excluded_areas')?.setValue(excluded_areas_value);
+      });
   }
 
   private createFormControls() {
@@ -71,7 +90,7 @@ export class Step2Component
     const selectedKeys: number[] = [];
     excludedAreasFormArray.controls.forEach((control, index) => {
       if (control.value) {
-        selectedKeys.push(this.excludedAreas[index].key);
+        selectedKeys.push(this.excludedAreas[index].id);
       }
     });
     return selectedKeys;

@@ -1,0 +1,74 @@
+@import "colors";
+@import "mixins";
+
+:host {
+  display: block;
+  margin: 0;
+  padding-top: 24px
+}
+
+section {
+  border: 1px solid $color-fields-gray;
+  border-radius: 4px;
+  background-color: $color-white;
+  padding: 24px;
+}
+
+h4 {
+    @include h4();
+    display: flex;
+    gap: 8px;
+}
+
+.button-left {
+  margin-bottom: 16px;
+  margin-left: auto;
+}
+
+p {
+  @include small-input-label();
+  color: $color-md-gray;
+}
+
+ul {
+  padding-left: 16px;
+}
+
+li {
+  @include small-input-label();
+  color: $color-md-gray;
+
+}
+
+li::marker {
+  color: $color-black;
+}
+
+b {
+  @include small-input-label();
+  font-weight: 600;
+  color: $color-black;
+}
+
+.warning {
+  color: $color-orange;
+  vertical-align: bottom;
+}
+
+.error {
+  color: $color-error;
+  vertical-align: bottom;
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  padding-bottom: 16px;
+}
+
+.white-spinner {
+  --mdc-circular-progress-active-indicator-color: $color-white;
+}
+

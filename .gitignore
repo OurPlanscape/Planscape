@@ -190,3 +190,7 @@ compiled-static/
 
 # local Sentry config file
 .sentryclirc
+.ruff_cache
+
+# R files used to convert to Python
+R/

@@ -17,7 +17,7 @@ class ScenarioViewPermission(PlanscapePermission):
         if not self.is_authenticated(request):
             return False
         match view.action:
-            case "create":
+            case "create" | "create_draft":
                 pa_id = request.data.get("planning_area") or None
                 if not pa_id:
                     return False
@@ -27,15 +27,4 @@ class ScenarioViewPermission(PlanscapePermission):
                 )
             case _:
                 # scenario filters this on the queryset
-                return True
-
-    def has_object_permission(self, request, view, object):
-        planning_area = object.planning_area
-        match view.action:
-            case "update" | "partial_update":
-                method = PlanningAreaPermission.can_change
-            case "destroy":
-                method = PlanningAreaPermission.can_remove
-            case _:
-                method = PlanningAreaPermission.can_view
-        return method(request.user, planning_area)
+                return super().has_permission(request, view)

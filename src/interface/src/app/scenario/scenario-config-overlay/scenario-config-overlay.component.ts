@@ -5,10 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
-import { BehaviorSubject, catchError, combineLatest, map } from 'rxjs';
-import { ScenarioService } from '@services';
-import { MatLegacyProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ForsysService } from '@services/forsys.service';
 
 @UntilDestroy()
 @Component({
@@ -19,7 +18,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MatButtonModule,
     MatIconModule,
     ButtonComponent,
-    MatLegacyProgressSpinnerModule,
     DecimalPipe,
   ],
   templateUrl: './scenario-config-overlay.component.html',
@@ -27,12 +25,12 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 })
 export class ScenarioConfigOverlayComponent implements OnDestroy {
   private scenarioState: ScenarioState = inject(ScenarioState);
-  private scenarioService: ScenarioService = inject(ScenarioService);
+  private forsysService: ForsysService = inject(ForsysService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
-  excludedAreas$ = this.scenarioService.getExcludedAreas();
-  loadingExcludedAreas$ = new BehaviorSubject(true);
+  excludedAreas$ = this.forsysService.excludedAreas$;
+
   readonly standSizeOptions = STAND_OPTIONS;
 
   selectedExcludedAreas$ = combineLatest([
@@ -43,13 +41,11 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     map(([scenario, excludedAreas]) => {
       const ids = scenario.configuration?.excluded_areas ?? [];
       const labels = ids
-        .map((id) => excludedAreas.find((a) => a.id === id)?.label)
+        .map((id) => excludedAreas.find((a) => a.id === id)?.name)
         .filter((v): v is string => !!v);
-      this.loadingExcludedAreas$.next(false);
       return labels.length ? labels.join(', ') : '--';
     }),
     catchError(() => {
-      this.loadingExcludedAreas$.next(false);
       return '--';
     })
   );
@@ -59,7 +55,6 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   );
 
   close() {
-    this.loadingExcludedAreas$.next(true);
     this.scenarioState.setDisplayOverlay(false);
   }
 

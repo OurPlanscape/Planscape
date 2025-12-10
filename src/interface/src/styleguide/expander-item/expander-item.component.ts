@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
-import { MatLegacyMenuModule } from '@angular/material/legacy-menu';
 import { NgIf, NgSwitchCase } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
 
 /**
  * This component is used in combination with `<sg-expander-section>`.
@@ -12,13 +12,7 @@ import { NgIf, NgSwitchCase } from '@angular/common';
 @Component({
   selector: 'sg-expander-item',
   standalone: true,
-  imports: [
-    MatIconModule,
-    MatLegacyButtonModule,
-    MatLegacyMenuModule,
-    NgSwitchCase,
-    NgIf,
-  ],
+  imports: [MatIconModule, MatMenuModule, NgSwitchCase, NgIf, MatButtonModule],
   templateUrl: './expander-item.component.html',
   styleUrl: './expander-item.component.scss',
 })

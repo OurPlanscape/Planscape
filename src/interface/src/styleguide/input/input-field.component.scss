@@ -1,5 +1,5 @@
-@import "mixins";
-@import "colors";
+@import 'mixins';
+@import 'colors';
 
 .input-wrapper {
   @include standard-input-label();
@@ -23,17 +23,28 @@
 
   &:focus-within {
     color: $color-black;
-    border-inline: none;
     background-color: $color-white;
-    border-bottom-width: 2px;
-    padding: 13px 14px 12px;
-    border-color: transparent transparent $color-main-blue transparent;
+    border-color: $color-standard-blue;
   }
+}
+
+.label {
+  color: black;
+  margin-bottom: 4px;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px
+}
+
+.required {
+  color: $color-error;
 }
 
 .support-msg {
   margin-top: 4px;
   @include small-paragraph();
+  color: $color-md-gray;
 }
 
 .suffix {
@@ -41,7 +52,6 @@
 }
 
 :host {
-
   mat-icon {
     color: currentColor;
   }
@@ -54,7 +64,8 @@
       background: none;
       border: none;
       color: $color-black;
-      padding: 2px 0 0;
+      padding: 0;
+      width: 100%;
 
       &::placeholder {
         color: $color-md-gray;
@@ -65,7 +76,6 @@
       }
     }
   }
-
 
   /// variants
 
@@ -79,7 +89,6 @@
     .support-msg {
       color: $color-error;
     }
-
   }
 
   &.disabled {
@@ -98,26 +107,23 @@
   }
 
   &.highlighted.error {
-    .input-wrapper, .suffix {
+    .input-wrapper,
+    .suffix {
       color: $color-error;
     }
   }
 
-  &.small {
+  &.full {
     .input-wrapper {
-      height: 40px;
+      width: 100%;
     }
   }
-
 }
 
 mat-icon {
   width: 20px;
   height: 20px;
   font-size: 20px;
-  line-height: 20px;
-  padding: 2px 0 0;
+  line-height: 19px;
+  padding: 0;
 }
-
-
-

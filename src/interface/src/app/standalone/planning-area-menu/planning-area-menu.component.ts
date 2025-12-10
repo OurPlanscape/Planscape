@@ -5,10 +5,11 @@ import { RouterLink } from '@angular/router';
 import { Plan, PreviewPlan } from '@types';
 import {
   canDeletePlanningArea,
+  canEditPlanName,
   canViewCollaborators,
 } from '../../plan/permissions';
 import { take } from 'rxjs';
-import { SNACK_NOTICE_CONFIG } from '@shared';
+import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
@@ -17,15 +18,18 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { CreatePlanDialogComponent } from 'src/app/explore/create-plan-dialog/create-plan-dialog.component';
+import { NgIf } from '@angular/common';
+import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-planning-area-menu',
   standalone: true,
   imports: [
-    MatLegacyButtonModule,
+    NgIf,
+    MatButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,
@@ -37,6 +41,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 export class PlanningAreaMenuComponent {
   @Input() plan!: Plan | PreviewPlan;
   @Output() afterDelete = new EventEmitter();
+  @Output() afterRename = new EventEmitter();
 
   constructor(
     private authService: AuthService,
@@ -73,13 +78,51 @@ export class PlanningAreaMenuComponent {
     return canDeletePlanningArea(this.plan, user);
   }
 
-  deletePlan() {
-    const dialogRef: MatDialogRef<DeletePlanningAreaComponent> =
-      this.dialog.open(DeletePlanningAreaComponent, {
+  get canEditPlanName() {
+    const user = this.authService.currentUser();
+    if (!user) {
+      return false;
+    }
+    return canEditPlanName(this.plan, user);
+  }
+
+  editPlanName() {
+    const dialogRef: MatDialogRef<CreatePlanDialogComponent> = this.dialog.open(
+      CreatePlanDialogComponent,
+      {
         data: {
-          name: '"' + this.plan.name + '"',
+          planName: this.plan.name,
+          planId: this.plan.id,
         },
+      }
+    );
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.snackbar.open(
+            `Planning area name has been updated`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+          this.afterRename.emit();
+        }
       });
+  }
+
+  deletePlan() {
+    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
+      DeleteDialogComponent,
+      {
+        data: {
+          title: 'Delete planning area "' + this.plan.name + '"?',
+          body: ` Are you sure you want to delete this planning area? All scenarios of this
+                  planning area will be permanently deleted, and users who have access to this
+                  planning area will lose the access.`,
+        },
+      }
+    );
     dialogRef
       .afterClosed()
       .pipe(take(1))

@@ -7,11 +7,10 @@ from django.db.models import (
     F,
     FloatField,
     Func,
-    Max,
+    Q,
     QuerySet,
     Value,
 )
-from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.request import Request
@@ -52,11 +51,7 @@ class PlanningAreaOrderingFilter(OrderingFilter):
 
                 if field_name == "latest_updated":
                     direction = "-" if reverse else ""
-                    queryset = queryset.annotate(
-                        latest_updated=Coalesce(
-                            Max("scenarios__updated_at"), "updated_at"
-                        )
-                    ).order_by(f"{direction}latest_updated")
+                    queryset = queryset.order_by(f"{direction}updated_at")
 
         return super().filter_queryset(request, queryset, view)
 
@@ -97,11 +92,20 @@ def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
 
 class ScenarioOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
-        ordering_dict = {
-            "budget": "configuration__max_budget",
-            "acres": "configuration__max_treatment_area_ratio",
-            "completed_at": "results__completed_at",
-        }
+        has_v3_targets = queryset.filter(Q(configuration__has_key="targets")).exists()
+
+        if has_v3_targets:
+            ordering_dict = {
+                "acres": "configuration__targets__max_area",
+                "completed_at": "results__completed_at",
+            }
+        else:
+            ordering_dict = {
+                "budget": "configuration__max_budget",
+                "acres": "configuration__max_treatment_area_ratio",
+                "completed_at": "results__completed_at",
+            }
+
         ordering = self.get_ordering(request, queryset, view)
         if not ordering:
             return super().filter_queryset(request, queryset, view)

@@ -2,10 +2,10 @@ import { Component, Inject } from '@angular/core';
 
 import { FormMessageType, Invite, INVITE_ROLE, Plan, User } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { AuthService, InvitesService } from '@services';
 import { filter, map, tap } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
   Viewer: 'Viewer',
@@ -49,7 +49,7 @@ export class SharePlanDialogComponent {
 
   showCreator$ = this.authService.loggedInUser$.pipe(
     filter((user): user is User => !!user),
-    map((user) => user.id != this.data.plan.id)
+    map((user) => user.id != this.data.plan.user)
   );
 
   roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];

@@ -2,8 +2,8 @@
 
 .prescription {
   display: block;
-  padding: 4px 4px 4px 16px;
-  margin-bottom: 4px;
+  padding: 0 0 0 24px;
+  margin-bottom: 0;
 
   &:hover {
     background-color: $color-light-gray;
@@ -12,10 +12,18 @@
 
 .prescriptions {
   overflow-y: scroll;
+  padding-top: 8px;
+  padding-bottom: 24px;
 }
 
 .form-fixed {
-  padding: 16px 16px 0;
+  padding: 24px 24px 8px;
+}
+
+.single-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 
@@ -75,10 +83,7 @@ sg-modal {
       display: flex;
       flex-direction: column;
       overflow-y: hidden;
-    }
-
-    .header {
-      padding-block: 0;
+      padding: 0;
     }
 
     .footer {
@@ -159,4 +164,10 @@ sg-modal {
 
 .prescription-sequence ::ng-deep label {
   font-weight: bold;
+}
+
+
+.item ::ng-deep .mat-form-field-wrapper {
+  margin: 0;
+  padding: 0;
 }
