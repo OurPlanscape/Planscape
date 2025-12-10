@@ -20,7 +20,7 @@
       display: grid;
       grid-template-columns: max-content 1fr;
       gap: 0.5rem 1rem;
-      align-items: center;
+      align-items: baseline;
     }
 
     dt {
@@ -47,8 +47,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     ::ng-deep .mat-mdc-progress-spinner {
-    --mdc-circular-progress-active-indicator-color: gray;
+      --mdc-circular-progress-active-indicator-color: gray;
     }
 
     a {
@@ -58,9 +59,10 @@
       padding: 13px;
       color: $color-standard-blue;
     }
+
     .download-link {
       width: 180px;
-      background:none;
+      background: none;
       border: none;
     }
   }
