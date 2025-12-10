@@ -2,23 +2,22 @@ import logging
 
 from core.gcs import get_gcs_hash, is_gcs_file
 from core.s3 import get_s3_hash, is_s3_file
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon
 from django.db import connection
 from gis.rasters import get_estimated_mask
 from gis.vectors import ogr2ogr
-
 from planscape.celery import app
+
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 
 logger = logging.getLogger(__name__)
 
 
-@app.task()
-def datalayer_uploaded(
+def process_datalayer(
     datalayer_id: int,
     status: DataLayerStatus = DataLayerStatus.READY,
-):
+) -> None:
     try:
         datalayer = DataLayer.objects.get(pk=datalayer_id)
     except DataLayer.DoesNotExist:
@@ -55,6 +54,14 @@ def datalayer_uploaded(
         datalayer.status = DataLayerStatus.FAILED
     finally:
         datalayer.save()
+
+
+@app.task()
+def datalayer_uploaded(
+    datalayer_id: int,
+    status: DataLayerStatus = DataLayerStatus.READY,
+) -> None:
+    process_datalayer(datalayer_id, status)
 
 
 def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):

@@ -1,8 +1,8 @@
 import logging
 from typing import Optional
 
-from datasets.models import DataLayer
-from datasets.tasks import datalayer_uploaded
+from datasets.models import DataLayer, DataLayerStatus
+from datasets.tasks import process_datalayer
 from django.db import transaction
 from planning.models import GeoPackageStatus
 from planscape.celery import app
@@ -171,6 +171,7 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
                 f"(id={existing_normalized.id}) that wasn't linked. Linking it now."
             )
             input_dl.normalized_datalayer = existing_normalized
+            input_dl.status = InputDataLayerStatus.COMPLETED
             input_dl.save()
             return existing_normalized.id
 
@@ -211,14 +212,9 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
             input_dl.save()
 
         log.info(
-            f"Linked normalized layer {normalized_layer.id} to input layer {input_dl.id}"
-        )
-
-        log.info(
             f"Successfully normalized input layer {input_dl.id}. "
             f"Function: {normalization_info['function']}, "
             f"Endpoints: {normalization_info['endpoints']}, "
-            f"Method: {normalization_info['endpoints_method']}, "
             f"Favor high: {input_dl.favor_high}"
         )
 
@@ -240,6 +236,30 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
 
         log.exception(f"Failed to normalize input layer {input_datalayer_id}: {str(e)}")
         raise
+
+
+@app.task()
+def process_normalized_datalayers(run_id: int) -> None:
+    """
+    Callback after all normalization tasks complete.
+    Triggers process_datalayer for each normalized layer.
+    """
+    run = ClimateForesightRun.objects.get(pk=run_id)
+    input_layers = run.input_datalayers.filter(
+        normalized_datalayer__isnull=False
+    ).select_related("normalized_datalayer")
+
+    log.info(
+        f"Processing {input_layers.count()} normalized datalayers for run {run_id}"
+    )
+
+    for input_layer in input_layers:
+        process_datalayer(
+            input_layer.normalized_datalayer.id,
+            status=DataLayerStatus.READY,
+        )
+
+    log.info(f"Triggered datalayer processing for run {run_id}")
 
 
 @app.task(
@@ -344,6 +364,30 @@ def rollup_climate_foresight_pillar(pillar_rollup_id: int) -> int:
         raise
 
 
+@app.task()
+def process_pillar_datalayers(run_id: int) -> None:
+    """
+    Callback after all pillar rollup tasks complete.
+    Triggers datalayer_uploaded for each pillar rollup layer.
+    """
+    run = ClimateForesightRun.objects.get(pk=run_id)
+    pillar_rollups = run.pillar_rollups.filter(
+        rollup_datalayer__isnull=False
+    ).select_related("rollup_datalayer")
+
+    log.info(
+        f"Processing {pillar_rollups.count()} pillar rollup datalayers for run {run_id}"
+    )
+
+    for pillar_rollup in pillar_rollups:
+        process_datalayer(
+            pillar_rollup.rollup_datalayer.id,
+            status=DataLayerStatus.READY,
+        )
+
+    log.info(f"Triggered pillar datalayer processing for run {run_id}")
+
+
 @app.task(
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3, "countdown": 5},
@@ -359,7 +403,7 @@ def rollup_climate_foresight_landscape(landscape_rollup_id: int) -> dict:
     4. Averages future layers → future_landscape raster
     5. Updates ClimateForesightLandscapeRollup with results
 
-    NOTE: This task should be chained with datalayer_uploaded for both output layers.
+    NOTE: This task should be chained with process_datalayer for both output layers.
 
     Args:
         landscape_rollup_id: ID of the ClimateForesightLandscapeRollup to process
@@ -388,6 +432,10 @@ def rollup_climate_foresight_landscape(landscape_rollup_id: int) -> dict:
                 "current": landscape_rollup_obj.current_datalayer.id,
                 "future": landscape_rollup_obj.future_datalayer.id,
             }
+
+        with transaction.atomic():
+            landscape_rollup_obj.status = ClimateForesightLandscapeRollupStatus.RUNNING
+            landscape_rollup_obj.save()
 
         result = rollup_landscape(
             run_id=landscape_rollup_obj.run.id,
@@ -432,6 +480,34 @@ def rollup_climate_foresight_landscape(landscape_rollup_id: int) -> dict:
         raise
 
 
+@app.task()
+def process_landscape_datalayers(result: dict) -> dict:
+    """
+    Process landscape rollup datalayers by calling process_datalayer for both.
+    """
+    if (
+        not isinstance(result, dict)
+        or "current" not in result
+        or "future" not in result
+    ):
+        log.error(f"Invalid result format for landscape processing: {result}")
+        return result
+
+    current_id = result["current"]
+    future_id = result["future"]
+
+    log.info(
+        f"Processing landscape datalayers: current={current_id}, future={future_id}"
+    )
+
+    process_datalayer(current_id)
+    process_datalayer(future_id)
+
+    log.info("Successfully processed both landscape datalayers")
+
+    return result
+
+
 @app.task(
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3, "countdown": 5},
@@ -440,24 +516,7 @@ def run_climate_foresight_promote(promote_id: int) -> dict:
     """
     Run PROMOTe analysis to generate MPAT outputs asynchronously.
 
-    This task:
-    1. Gets the current and future landscape rasters from LandscapeRollup
-    2. Runs PROMOTe analysis (Monitor, Protect, Adapt, Transform)
-    3. Generates 8 output rasters:
-       - Monitor, Protect, Adapt, Transform scores
-       - Adapt-Protect score
-       - Integrated Condition Score
-       - MPAT Matrix (categorical)
-       - MPAT Strength (categorical with weak/strong)
-    4. Updates ClimateForesightPromote with all output layers
-
-    NOTE: All output layers should be chained with datalayer_uploaded.
-
-    Args:
-        promote_id: ID of the ClimateForesightPromote to process
-
-    Returns:
-        dict: IDs of all created PROMOTe output DataLayers
+    Returns dict with IDs of all created PROMOTe output DataLayers.
     """
     try:
         promote_obj = ClimateForesightPromote.objects.select_related(
@@ -548,44 +607,6 @@ def run_climate_foresight_promote(promote_id: int) -> dict:
 
 
 @app.task()
-def process_landscape_datalayers(result: dict) -> dict:
-    """
-    Process landscape rollup datalayers by calling datalayer_uploaded for both.
-
-    This task is chained after rollup_climate_foresight_landscape to finalize
-    both the current and future landscape datalayers (hash calculation, status update).
-
-    Args:
-        result: Dict with {"current": int, "future": int} datalayer IDs
-
-    Returns:
-        The same result dict for potential further chaining
-    """
-
-    if (
-        not isinstance(result, dict)
-        or "current" not in result
-        or "future" not in result
-    ):
-        log.error(f"Invalid result format for landscape processing: {result}")
-        return result
-
-    current_id = result["current"]
-    future_id = result["future"]
-
-    log.info(
-        f"Processing landscape datalayers: current={current_id}, future={future_id}"
-    )
-
-    datalayer_uploaded.delay(current_id)
-    datalayer_uploaded.delay(future_id)
-
-    log.info("Successfully processed both landscape datalayers")
-
-    return result
-
-
-@app.task()
 def process_promote_datalayers(result: dict) -> dict:
     """
     Process PROMOTe output datalayers by calling datalayer_uploaded for all 8.
@@ -620,7 +641,7 @@ def process_promote_datalayers(result: dict) -> dict:
         if key in result:
             layer_id = result[key]
             log.info(f"Processing PROMOTe output '{key}': {layer_id}")
-            datalayer_uploaded.delay(layer_id)
+            process_datalayer(layer_id)
         else:
             log.warning(f"Missing expected PROMOTe output key: {key}")
 
@@ -630,42 +651,47 @@ def process_promote_datalayers(result: dict) -> dict:
 
 
 @app.task()
-def auto_progress_climate_foresight_run(run_id: int) -> dict:
+def mark_run_complete(run_id: int) -> None:
     """
-    Automatically progress a Climate Foresight run to the next ready steps.
-
-    This task checks what's ready and triggers:
-    - Pillar rollups (if all input layers for a pillar are normalized)
-    - Landscape rollup (if all pillars completed)
-    - PROMOTe analysis (if landscape completed)
-    - Mark run as DONE (if PROMOTe completed)
+    Mark the Climate Foresight run as complete and trigger geopackage generation.
 
     Args:
-        run_id: ID of the ClimateForesightRun to progress
-
-    Returns:
-        dict: Summary of what was triggered
+        run_id: ID of the ClimateForesightRun to make complete
     """
-    from climate_foresight.orchestration import (
-        check_run_completion,
-        trigger_landscape_rollup_if_ready,
-        trigger_pillar_rollups_if_ready,
-        trigger_promote_if_ready,
-    )
+    run = ClimateForesightRun.objects.select_related("promote_analysis").get(pk=run_id)
 
-    log.info(f"Auto-progressing Climate Foresight run {run_id}")
+    with transaction.atomic():
+        run.status = ClimateForesightRunStatus.DONE
+        run.save()
 
-    results = {
-        "run_id": run_id,
-        "pillar_rollups": trigger_pillar_rollups_if_ready(run_id),
-        "landscape_rollup": trigger_landscape_rollup_if_ready(run_id),
-        "promote": trigger_promote_if_ready(run_id),
-        "completion_check": check_run_completion(run_id),
-    }
+        promote = run.promote_analysis
+        if promote.geopackage_status in (GeoPackageStatus.PENDING, None):
+            if promote.geopackage_status is None:
+                promote.geopackage_status = GeoPackageStatus.PENDING
+                promote.save(update_fields=["geopackage_status"])
 
-    log.info(f"Auto-progress results for run {run_id}: {results}")
+            async_generate_climate_foresight_geopackage.delay(run_id)
+            log.info(f"Triggered geopackage generation for run {run_id}")
 
-    return results
+    log.info(f"Run {run_id} marked as DONE")
+
+
+@app.task()
+def async_mark_run_failed(run_id: int) -> None:
+    """
+    Mark the Climate Foresight run as failed.
+    Called as error handler when workflow fails.
+
+    Args:
+        run_id: ID of the ClimateForesightRun to mark failed
+    """
+    try:
+        run = ClimateForesightRun.objects.get(pk=run_id)
+        run.status = ClimateForesightRunStatus.FAILED
+        run.save()
+        log.error(f"Run {run_id} marked as FAILED due to workflow error")
+    except ClimateForesightRun.DoesNotExist:
+        log.error(f"Run {run_id} does not exist (mark FAILED)")
 
 
 @app.task()
