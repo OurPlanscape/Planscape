@@ -78,8 +78,7 @@ def calculate_climate_foresight_layer_statistics(input_datalayer_id: int) -> Non
         )
 
     except ClimateForesightRunInputDataLayer.DoesNotExist:
-        log.error(f"Input data layer {input_datalayer_id} does not exist")
-        raise
+        log.warning(f"Input data layer {input_datalayer_id} does not exist")
 
     except Exception as e:
         log.exception(
