@@ -66,3 +66,12 @@ export const TooltipWithLinks: Story = {
       'Here click on <a href="https://app.planscape.org/home">Planscape</a>',
   },
 };
+
+export const TooltipWithIconVariant: Story = {
+  args: {
+    headline: 'Project Areas',
+    tooltipContent:
+      'Here click on <a href="https://app.planscape.org/home">Planscape</a>',
+    tooltipIcon: 'help',
+  },
+};

@@ -13,7 +13,7 @@
       sg-button
       variant="icon-only"
       [outlined]="true"
-      icon="info"
+      [icon]="tooltipIcon"
       [matMenuTriggerFor]="tooltipMenu">
       <mat-menu #tooltipMenu="matMenu">
         <div class="tooltip" [innerHTML]="tooltipContent"></div>
