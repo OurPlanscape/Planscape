@@ -13,7 +13,7 @@ from datasets.models import Category, DataLayer
 log = logging.getLogger(__name__)
 
 # default future climate layer to use when no match is found
-DEFAULT_FUTURE_CLIMATE_PILLAR = "Fire Dynamics"
+DEFAULT_FUTURE_CLIMATE_PILLAR = "Generic"
 
 
 def get_future_climate_category() -> Optional[Category]:
