@@ -1,6 +1,13 @@
 from typing import Collection, List, Optional
 
-from django.contrib.gis.geos import GeometryCollection, GEOSGeometry, Polygon
+from django.contrib.gis.geos import (
+    GeometryCollection,
+    GEOSGeometry,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+    Polygon,
+)
 from rasterio.warp import transform_geom
 from shapely.geometry import mapping, shape
 
@@ -47,3 +54,30 @@ def shapely_reproject(geometry, src_crs, dst_crs):
         )
     )
     return geometry
+
+
+def geodjango_to_multi(geometry: GEOSGeometry) -> GEOSGeometry:
+    klass = GeometryCollection
+    match geometry.geom_type:
+        case "MultiPolygon" | "MultiLineString" | "MultiPoint":
+            return geometry
+        case "Polygon":
+            klass = MultiPolygon
+        case "LineString":
+            klass = MultiLineString
+        case "Point":
+            klass = MultiPoint
+
+    return klass([geometry], srid=geometry.srid)
+
+
+def geojson_to_multi(geometry):
+    if geometry["type"].startswith("Multi"):
+        return geometry
+
+    new_coordinates = [geometry.get("coordinates")]
+    new_type = f"Multi{geometry['type']}"
+    return {
+        "type": new_type,
+        "coordinates": new_coordinates,
+    }
