@@ -486,7 +486,7 @@ def get_table_mask(datalayer: DataLayer) -> Optional[GEOSGeometry]:
     schema, table = datalayer.table.split(".")
     with connection.cursor() as cursor:
         query = f"""SELECT
-ST_AsBinary(
+ST_AsText(
     ST_UnaryUnion(
         ST_Collect(
             ST_Envelope(geometry)
@@ -499,7 +499,7 @@ WHERE geometry IS NOT NULL;
         cursor.execute(query)
         row = cursor.fetchone()
         if row:
-            return GEOSGeometry(row[0].tobytes(), srid=srid)
+            return GEOSGeometry(row[0], srid=srid)
 
         return None
 
