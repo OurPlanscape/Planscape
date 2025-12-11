@@ -452,6 +452,9 @@ CELERY_TASK_ROUTES = {
     "impacts.tasks.*": {
         "queue": "impacts",
     },
+    "climate_foresight.tasks.*": {
+        "queue": "climate_foresight",
+    },
     "e2e.tasks.*": {
         "queue": "default",
     },
