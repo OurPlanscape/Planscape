@@ -572,6 +572,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ERROR_SURVEY - ignores errors
   private startDownloadPolling(): void {
     this.stopDownloadPolling();
     this.downloadPollingInterval = setInterval(() => {
@@ -604,6 +605,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     }, 5000);
   }
 
+  // ERROR_SURVEY - logs backend error, opens snackbar but not with backend error
   private performDownload(url: string): void {
     this.downloading = true;
     this.climateForesightService.downloadFromUrl(url).subscribe({

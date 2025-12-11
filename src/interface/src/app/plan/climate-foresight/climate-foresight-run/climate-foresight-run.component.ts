@@ -445,6 +445,7 @@ export class ClimateForesightRunComponent implements OnInit {
       });
   }
 
+  // ERROR_SURVEY - displays snackbar, logs error, displays error directly from backend
   runAnalysis(): void {
     this.displaySuccessDialog();
     this.climateForesightService
