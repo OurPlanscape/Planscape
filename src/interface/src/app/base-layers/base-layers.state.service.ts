@@ -134,10 +134,11 @@ export class BaseLayersStateService {
   // also sets loading for base layers where category is irrelevant
   updateAllBaseLayers(baseLayers: BaseLayer[]) {
     const currentLayers = this._selectedBaseLayers$.value ?? [];
-    const newLayers = baseLayers.filter(myLayer => 
-      !currentLayers.some(existingLayer => existingLayer.id === myLayer.id)
+    const newLayers = baseLayers.filter(
+      (myLayer) =>
+        !currentLayers.some((existingLayer) => existingLayer.id === myLayer.id)
     );
-    newLayers.map(ne => this.addLoadingSourceId(`source_${ne.id}` ));
+    newLayers.map((ne) => this.addLoadingSourceId(`source_${ne.id}`));
     this._selectedBaseLayers$.next(baseLayers);
   }
 
