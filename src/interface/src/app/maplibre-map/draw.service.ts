@@ -263,7 +263,6 @@ export class DrawService {
         mode: 'polygon',
       },
     }));
-    // sanitize the data so terraDraw will not complain
     let flatFeatures = flattenMultipolygons(featuresArray);
     flatFeatures = stripZCoords(flatFeatures);
     const validations = this._terraDraw?.addFeatures(flatFeatures);
