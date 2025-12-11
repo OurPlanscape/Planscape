@@ -24,7 +24,6 @@ class Command(BaseCommand):
                 update_file_cache_control(
                     gs_url=datalayer.url,
                     directives=settings.GCS_DEFAULT_CACHE_DIRECTIVES,
-                    max_age=settings.GCS_DEFAULT_CACHE_MAX_AGE,
                 )
             except Exception:
                 logger.exception(

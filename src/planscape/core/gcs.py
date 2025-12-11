@@ -189,27 +189,16 @@ def upload_file_via_api(
     logger.info(f"Uploaded {object_name} done.")
 
 
-class GCScacheDirective(Enum):
-    NO_STORE = "no-store"
-    NO_CACHE = "no-cache"
-    PRIVATE = "private"
-    PUBLIC = "public"
-    NO_TRANSFORM = "no-transform"
-    IMMUTABLE = "immutable"
-
-
 def update_file_cache_control(
     gs_url: str,
-    directives: list[GCScacheDirective] = [GCScacheDirective.NO_CACHE],
-    max_age: Optional[int] = None,
+    directives: str,
     bucket_name: str = settings.GCS_BUCKET,
 ):
     """
     Updates the cache_control metadata of a GCS file.
     Args:
         gs_url (str): The GCS URL of the file.
-        directives (GCScacheDirective): The cache control directives to set.
-        max_age (Optional[int]): The max-age value in seconds.
+        directives (str): The cache control directives to set. e.g. "public, max-age=3600".
         bucket_name (str): The name of the GCS bucket.
     """
     if not is_gcs_file(gs_url):
@@ -224,23 +213,6 @@ def update_file_cache_control(
         logger.error(f"Blob not found: {blob_name} in bucket {bucket_name}")
         return
     
-    if GCScacheDirective.NO_CACHE in directives and len(directives) > 1:
-        raise ValueError("NO_CACHE directive cannot be combined with other directives.")
-
-    if GCScacheDirective.PRIVATE in directives and GCScacheDirective.PUBLIC in directives:
-        raise ValueError("Cannot set both PRIVATE and PUBLIC directives.")
-    
-    cache_control = ""
-    for directive in directives:
-        if cache_control:
-            cache_control += ", "
-        cache_control = directive.value
-
-    if max_age is not None:
-        if cache_control:
-            cache_control += ", "
-        cache_control += f"max-age={max_age}"
-
-    blob.cache_control = cache_control
+    blob.cache_control = directives
     blob.patch()
     logger.info(f"Updated cache_control for {gs_url}.")
