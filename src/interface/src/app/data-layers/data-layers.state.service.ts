@@ -12,9 +12,16 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
+import {
+  BaseDataSet,
+  DataLayer,
+  DataSet,
+  Pagination,
+  SearchResult,
+} from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
+import { MapModuleService } from '@services/map-module.service';
 
 @Injectable()
 export class DataLayersStateService {
@@ -23,8 +30,8 @@ export class DataLayersStateService {
   private _datasetsCurrentPage$ = new BehaviorSubject(1);
   datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
 
-  // ERROR_SURVEY - no error handling
-  dataSets$ = this._datasetsCurrentPage$.pipe(
+  // remove once MAP_MODULE is turned on
+  legacyDataSets$ = this._datasetsCurrentPage$.pipe(
     distinctUntilChanged(),
     tap(() => this.loadingSubject.next(true)),
     switchMap((currentPage) => {
@@ -36,7 +43,12 @@ export class DataLayersStateService {
     }),
     shareReplay(1)
   );
-  private _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
+
+  dataSets$ = this.mapModuleService.mapData$.pipe(
+    map((mapData) => mapData.main_datasets)
+  );
+
+  private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
@@ -123,9 +135,12 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {}
+  constructor(
+    private service: DataLayersService,
+    private mapModuleService: MapModuleService
+  ) {}
 
-  selectDataSet(dataset: DataSet) {
+  selectDataSet(dataset: BaseDataSet) {
     this._isBrowsing$.next(true);
     this._selectedDataSet$.next(dataset);
     this.loadingSubject.next(true);

@@ -186,3 +186,32 @@ def upload_file_via_api(
                 )
 
     logger.info(f"Uploaded {object_name} done.")
+
+
+def update_file_cache_control(
+    gs_url: str,
+    directives: str,
+    bucket_name: str = settings.GCS_BUCKET,
+):
+    """
+    Updates the cache_control metadata of a GCS file.
+    Args:
+        gs_url (str): The GCS URL of the file.
+        directives (str): The cache control directives to set. e.g. "public, max-age=3600".
+        bucket_name (str): The name of the GCS bucket.
+    """
+    if not is_gcs_file(gs_url):
+        raise ValueError(f"Invalid GCS URL: {gs_url}")
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+
+    blob_name = gs_url.replace(f"gs://{bucket_name}/", "")
+    blob = bucket.get_blob(blob_name)
+    if not blob:
+        logger.error(f"Blob not found: {blob_name} in bucket {bucket_name}")
+        return
+    
+    blob.cache_control = directives
+    blob.patch()
+    logger.info(f"Updated cache_control for {gs_url}.")

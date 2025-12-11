@@ -4,6 +4,8 @@ import { BaseLayersComponent } from './base-layers.component';
 import { MockProvider } from 'ng-mocks';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { of } from 'rxjs';
+import { MapModuleService } from '@services/map-module.service';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('BaseLayersComponent', () => {
   let component: BaseLayersComponent;
@@ -11,8 +13,14 @@ describe('BaseLayersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BaseLayersComponent],
+      imports: [BaseLayersComponent, FeaturesModule],
       providers: [
+        MockProvider(MapModuleService, {
+          mapData$: of({
+            main_datasets: [],
+            base_datasets: [],
+          }),
+        }),
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: of([]),
           categorizedBaseLayers$: of([]),

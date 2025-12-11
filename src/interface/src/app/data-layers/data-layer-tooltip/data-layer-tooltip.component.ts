@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { DecimalPipe, NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '../../shared/files';
@@ -20,6 +20,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MatButtonModule,
     NgIf,
     AccountRoutingModule,
+    DatePipe,
   ],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
@@ -30,6 +31,7 @@ export class DataLayerTooltipComponent implements OnInit {
   downloadLink$: Observable<string> | null = null;
   loadingLink = false;
   filename: string | null = null;
+
   constructor(private dataLayersService: DataLayersService) {}
 
   // ERROR_SURVEY - pipe, no error handling
@@ -54,6 +56,12 @@ export class DataLayerTooltipComponent implements OnInit {
 
   getSource() {
     return this.layer.metadata?.['metadata']?.['distribution']?.['download'];
+  }
+
+  get vintageDate() {
+    return this.layer.metadata?.['metadata']?.['identification']?.['date']?.[
+      'date'
+    ];
   }
 
   getUnits() {

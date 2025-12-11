@@ -14,7 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
-import { ButtonComponent, PanelComponent } from '@styleguide';
+import { ButtonComponent, PanelComponent, SectionComponent } from '@styleguide';
 import { Plan, ClimateForesightRun, DataLayer } from '@types';
 import { ClimateForesightService } from '@services';
 import { StepDirective } from '../../../../../styleguide/steps/step.component';
@@ -40,6 +40,7 @@ interface LayerFavorability {
     MatButtonModule,
     MatProgressSpinnerModule,
     NgChartsModule,
+    SectionComponent,
   ],
   providers: [
     { provide: StepDirective, useExisting: AssignFavorabilityComponent },
@@ -120,9 +121,10 @@ export class AssignFavorabilityComponent
   get chartData(): ChartConfiguration<'bar'>['data'] | null {
     if (!this.currentLayer) return null;
 
-    const stats = this.currentInputDataLayer?.statistics;
-    if (!stats) return null;
+    const statistics = this.currentInputDataLayer?.statistics;
+    if (!statistics || !statistics.original) return null;
 
+    const stats = statistics.original;
     const { min, max, mean, std } = stats;
 
     const range = max - min;
@@ -222,6 +224,9 @@ export class AssignFavorabilityComponent
   get chartOptions(): ChartConfiguration<'bar'>['options'] {
     const xAxisLabel = this.getUnitsFromLayer();
 
+    const SLOPE_MIN = 0.1;
+    const SLOPE_MAX = 1.0;
+
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -248,11 +253,17 @@ export class AssignFavorabilityComponent
           title: {
             display: true,
             text: xAxisLabel,
+            color: '#898989',
             font: {
               size: 12,
             },
           },
           ticks: {
+            color: '#4A4A4A',
+            font: {
+              size: 14,
+              weight: '600',
+            },
             maxRotation: 0,
             minRotation: 0,
             autoSkip: true,
@@ -266,18 +277,44 @@ export class AssignFavorabilityComponent
           title: {
             display: true,
             text: 'Favorability',
+            color: '#898989',
             font: {
               size: 12,
+              weight: '500',
             },
           },
           beginAtZero: true,
+          min: 0,
           max: 1.1,
-          ticks: {
-            display: false,
+
+          afterBuildTicks: (axis) => {
+            // We need to add the ticks for high and low
+            const ticks = axis.ticks.map((t) => t.value);
+
+            if (!ticks.includes(0.1)) {
+              axis.ticks.push({ value: 0.1 });
+            }
+
+            if (!ticks.includes(1.0)) {
+              axis.ticks.push({ value: 1.0 });
+            }
+
+            axis.ticks.sort((a, b) => a.value - b.value);
           },
+
+          ticks: {
+            color: '#4A4A4A',
+            font: { size: 14, weight: '600' },
+            callback: (value) => {
+              if (value === SLOPE_MIN) return 'Low';
+              if (value === SLOPE_MAX) return 'High';
+              return '';
+            },
+          },
+
           grid: {
             display: true,
-            color: 'rgba(0, 0, 0, 0.05)',
+            color: 'rgba(0,0,0,0.05)',
           },
         },
       },
@@ -291,7 +328,7 @@ export class AssignFavorabilityComponent
 
   getUnitsFromLayer(): string {
     if (!this.currentLayer) {
-      return 'Value';
+      return '--';
     }
 
     const units = this.currentLayer.metadata?.['metadata']?.[
@@ -299,13 +336,13 @@ export class AssignFavorabilityComponent
     ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
 
     if (!units || units.length === 0) {
-      return 'Value';
+      return '--';
     }
 
     const unitsString = units.join(', ');
 
     if (unitsString === '0-1') {
-      return 'Value';
+      return '--';
     }
 
     return unitsString;

@@ -1,15 +1,17 @@
+from datasets.serializers import DataLayerSerializer
+from planning.models import PlanningArea
 from rest_framework import serializers
+
 from climate_foresight.models import (
+    ClimateForesightLandscapeRollup,
     ClimateForesightPillar,
+    ClimateForesightPillarRollup,
+    ClimateForesightPromote,
     ClimateForesightRun,
     ClimateForesightRunInputDataLayer,
     ClimateForesightRunStatus,
-    ClimateForesightPillarRollup,
-    ClimateForesightLandscapeRollup,
-    ClimateForesightPromote,
 )
 from climate_foresight.tasks import calculate_climate_foresight_layer_statistics
-from planning.models import PlanningArea
 
 
 class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
@@ -109,7 +111,7 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
         from climate_foresight.serializers import ClimateForesightPromoteSerializer
 
         try:
-            return ClimateForesightPromoteSerializer(obj.promote).data
+            return ClimateForesightPromoteSerializer(obj.promote_analysis).data
         except (ClimateForesightPromote.DoesNotExist, AttributeError):
             return None
 
@@ -299,6 +301,7 @@ class ClimateForesightPillarRollupSerializer(serializers.ModelSerializer):
     rollup_datalayer_id = serializers.IntegerField(
         source="rollup_datalayer.id", read_only=True, allow_null=True
     )
+    rollup_datalayer = DataLayerSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = ClimateForesightPillarRollup
@@ -308,6 +311,7 @@ class ClimateForesightPillarRollupSerializer(serializers.ModelSerializer):
             "pillar",
             "pillar_name",
             "rollup_datalayer_id",
+            "rollup_datalayer",
             "status",
             "method",
             "weights",
@@ -317,6 +321,7 @@ class ClimateForesightPillarRollupSerializer(serializers.ModelSerializer):
             "id",
             "pillar_name",
             "rollup_datalayer_id",
+            "rollup_datalayer",
             "status",
             "weights",
             "created_at",
@@ -332,6 +337,7 @@ class ClimateForesightLandscapeRollupSerializer(serializers.ModelSerializer):
     future_datalayer_id = serializers.IntegerField(
         source="future_datalayer.id", read_only=True, allow_null=True
     )
+    current_datalayer = DataLayerSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = ClimateForesightLandscapeRollup
@@ -340,6 +346,7 @@ class ClimateForesightLandscapeRollupSerializer(serializers.ModelSerializer):
             "run",
             "current_datalayer_id",
             "future_datalayer_id",
+            "current_datalayer",
             "status",
             "future_mapping",
             "created_at",
@@ -348,6 +355,7 @@ class ClimateForesightLandscapeRollupSerializer(serializers.ModelSerializer):
             "id",
             "current_datalayer_id",
             "future_datalayer_id",
+            "current_datalayer",
             "status",
             "future_mapping",
             "created_at",
@@ -384,6 +392,18 @@ class ClimateForesightPromoteSerializer(serializers.ModelSerializer):
         source="mpat_strength_datalayer.id", read_only=True, allow_null=True
     )
 
+    mpat_strength_datalayer = DataLayerSerializer(read_only=True, allow_null=True)
+    adapt_protect_datalayer = DataLayerSerializer(read_only=True, allow_null=True)
+    integrated_condition_score_datalayer = DataLayerSerializer(
+        read_only=True, allow_null=True
+    )
+
+    geopackage_url = serializers.SerializerMethodField()
+
+    def get_geopackage_url(self, obj):
+        """Return presigned download URL if geopackage is ready."""
+        return obj.get_geopackage_url()
+
     class Meta:
         model = ClimateForesightPromote
         fields = [
@@ -398,6 +418,11 @@ class ClimateForesightPromoteSerializer(serializers.ModelSerializer):
             "integrated_condition_score_datalayer_id",
             "mpat_matrix_datalayer_id",
             "mpat_strength_datalayer_id",
+            "mpat_strength_datalayer",
+            "adapt_protect_datalayer",
+            "integrated_condition_score_datalayer",
+            "geopackage_status",
+            "geopackage_url",
             "created_at",
         ]
         read_only_fields = [
@@ -411,5 +436,9 @@ class ClimateForesightPromoteSerializer(serializers.ModelSerializer):
             "integrated_condition_score_datalayer_id",
             "mpat_matrix_datalayer_id",
             "mpat_strength_datalayer_id",
+            "mpat_strength_datalayer",
+            "adapt_protect_datalayer",
+            "integrated_condition_score_datalayer",
+            "geopackage_status",
             "created_at",
         ]

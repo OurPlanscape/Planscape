@@ -3,14 +3,17 @@ import { IdNamePair } from './general';
 
 export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
 
-export interface DataSet {
+export interface BaseDataSet {
   id: number;
+  name: string;
+  organization: IdNamePair;
+}
+
+export interface DataSet extends BaseDataSet {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
   created_by: number;
-  organization: IdNamePair;
-  name: string;
   description: string | null;
   visibility: string;
   version: string;

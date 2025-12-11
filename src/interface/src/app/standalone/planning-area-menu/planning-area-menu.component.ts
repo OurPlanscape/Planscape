@@ -18,18 +18,18 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { CreatePlanDialogComponent } from 'src/app/explore/create-plan-dialog/create-plan-dialog.component';
 import { NgIf } from '@angular/common';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-planning-area-menu',
   standalone: true,
   imports: [
     NgIf,
-    MatLegacyButtonModule,
+    MatButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,

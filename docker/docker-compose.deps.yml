@@ -102,6 +102,7 @@ services:
       mc alias set myminio http://minio:9000 minioadmin minioadmin;
       mc mb myminio/planscape-control-dev --ignore-existing;
       mc mb myminio/planscape-datastore-dev --ignore-existing;
+      mc mb myminio/planscape-media-local --ignore-existing;
       exit 0;
       "
 volumes:

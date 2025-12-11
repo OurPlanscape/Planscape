@@ -77,12 +77,14 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     selection_type = models.CharField(
         choices=SelectionTypeOptions.choices,
         null=True,
+        blank=True,
         max_length=32,
     )
 
     preferred_display_type = models.CharField(
         choices=PreferredDisplayType.choices,
         null=True,
+        blank=True,
         max_length=32,
     )
 
@@ -432,8 +434,13 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_public_url(self) -> Optional[str]:
         if not self.url:
             return None
+        
+        if feature_enabled("INTERNAL_RASTER_PROXY"):
+            base_url = get_base_url(settings.ENV)
+            path_url = self.url.split("/datalayers/")[-1]
+            download_url = f"{base_url}/datalayers/{path_url}"
 
-        if is_s3_file(self.url):
+        elif is_s3_file(self.url):
             object_name = self.url.replace(f"s3://{settings.S3_BUCKET}/", "")
             download_url = create_s3_download_url(settings.S3_BUCKET, object_name)
             if feature_enabled("FEATURE_FLAG_S3_PROXY"):

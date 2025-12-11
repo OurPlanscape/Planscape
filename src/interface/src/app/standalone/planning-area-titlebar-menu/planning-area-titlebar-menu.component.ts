@@ -13,7 +13,6 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 
@@ -21,7 +20,6 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
   selector: 'app-planning-area-titlebar-menu',
   standalone: true,
   imports: [
-    MatLegacyButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,
