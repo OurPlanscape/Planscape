@@ -1,8 +1,9 @@
 import json
 from typing import Any, Dict, List, Union
 
-from datasets.models import DataLayer, Dataset, PreferredDisplayType
+from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
 from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Q, QuerySet
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -33,6 +34,9 @@ class BaseModule:
 
     def get_configuration(self, **kwargs) -> Dict[str, Any]:
         return {"name": self.name, "options": self._get_options(**kwargs)}
+
+    def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
+        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
 
     def _get_options(self, **kwargs) -> Dict[str, Any]:
         return {}
@@ -96,16 +100,21 @@ class MapModule(BaseModule):
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         return True
 
-    def _get_datasets(self, type: PreferredDisplayType):
+    def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
         return Dataset.objects.filter(
-            preferred_display_type=type,
+            Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
+            | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
         ).select_related("organization")
 
     def _get_main_datasets(self):
-        return self._get_datasets(type=PreferredDisplayType.MAIN_DATALAYERS)
+        return self.get_datasets().filter(
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
 
     def _get_base_datasets(self):
-        return self._get_datasets(type=PreferredDisplayType.BASE_DATALAYERS)
+        return self.get_datasets().filter(
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+        )
 
     def _get_options(self, **kwargs):
         main_datasets = list(self._get_main_datasets())
