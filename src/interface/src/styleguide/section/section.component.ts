@@ -29,6 +29,7 @@ export class SectionComponent {
   @Input() required = false;
 
   @Input() isCollapsible = false;
+  @Input() defaultExpanded = true;
 
   @Input() tooltipIcon: 'help' | 'info' = 'info';
 

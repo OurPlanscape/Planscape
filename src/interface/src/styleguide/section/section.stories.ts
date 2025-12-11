@@ -59,6 +59,16 @@ export const Collapsible: Story = {
   },
 };
 
+export const DefaultExpanded: Story = {
+  args: {
+    isCollapsible: true,
+    headline: 'Project Areas',
+    defaultExpanded: true,
+    tooltipContent:
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
+  },
+};
+
 export const TooltipWithLinks: Story = {
   args: {
     headline: 'Project Areas',
