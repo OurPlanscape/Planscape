@@ -1,11 +1,9 @@
 import logging
 
-from core.gcs import get_gcs_hash, is_gcs_file
+from core.gcs import get_gcs_hash, is_gcs_file, update_file_cache_control
 from core.s3 import get_s3_hash, is_s3_file
 from django.conf import settings
-from django.contrib.gis.geos import MultiPolygon
 from django.db import connection
-from gis.rasters import get_estimated_mask
 from gis.vectors import ogr2ogr
 from planscape.celery import app
 
@@ -17,7 +15,9 @@ logger = logging.getLogger(__name__)
 def process_datalayer(
     datalayer_id: int,
     status: DataLayerStatus = DataLayerStatus.READY,
-) -> None:
+):
+    from datasets.services import get_datalayer_outline
+
     try:
         datalayer = DataLayer.objects.get(pk=datalayer_id)
     except DataLayer.DoesNotExist:
@@ -30,22 +30,11 @@ def process_datalayer(
         elif is_gcs_file(datalayer.url) and datalayer.url:
             datalayer.hash = get_gcs_hash(datalayer.url)
         datalayer.status = status
-
-        if datalayer.type == DataLayerType.RASTER and datalayer.url:
-            outline = get_estimated_mask(datalayer.url)
-            match outline.geom_type:
-                case "MultiPolygon":
-                    pass
-                case "Polygon":
-                    outline = MultiPolygon([outline])
-                case _:
-                    outline = None
-            datalayer.outline = outline
-
         if datalayer.type == DataLayerType.VECTOR and datalayer.url:
             datastore_table = ogr2ogr(datalayer.url)
             validate_datastore_table(datastore_table, datalayer)
             datalayer.table = datastore_table
+        datalayer.outline = get_datalayer_outline(datalayer)
     except Exception:
         logger.exception(
             "Something went wrong while ingesting and processing datalayer %s",
@@ -54,6 +43,40 @@ def process_datalayer(
         datalayer.status = DataLayerStatus.FAILED
     finally:
         datalayer.save()
+        datalayer_file_post_process.delay(datalayer_id=datalayer_id)
+
+
+@app.task()
+def datalayer_file_post_process(datalayer_id: int):
+    """
+    Post processing on datalayer's file after upload is complete.
+    
+    :param datalayer: Description
+    :type datalayer: DataLayer
+    """
+
+    try:
+        datalayer = DataLayer.objects.get(pk=datalayer_id)
+    except DataLayer.DoesNotExist:
+        logger.warning("Datalayer %s does not exist", datalayer_id)
+        return
+    
+    if datalayer.status != DataLayerStatus.READY:
+        logger.warning(
+            "Datalayer %s is not in READY status, skipping post processing",
+            datalayer_id,
+        )
+        return
+
+    try:
+        if is_gcs_file(datalayer.url):
+            update_file_cache_control(
+                gs_url=datalayer.url,
+                directives=settings.GCS_DEFAULT_CACHE_DIRECTIVES,
+                max_age=settings.GCS_DEFAULT_CACHE_MAX_AGE,
+            )
+    except Exception:
+        logger.exception("Failed to set cache control for datalayer %s", datalayer_id)
 
 
 @app.task()

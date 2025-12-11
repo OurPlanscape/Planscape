@@ -13,6 +13,15 @@ from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import connection, transaction
+from gis.geometry import geodjango_to_multi, to_geodjango_geometry
+from gis.rasters import get_estimated_mask as get_estimated_mask_raster
+from organizations.models import Organization
+from planscape.openpanel import track_openpanel
+
 from datasets.models import (
     Category,
     DataLayer,
@@ -33,13 +42,6 @@ from datasets.search import (
     organization_to_search_result,
 )
 from datasets.tasks import datalayer_uploaded
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
-
-from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -474,3 +476,43 @@ def get_datalayer_by_module_atribute(
         metadata__contains={"modules": {module: {attribute: value}}},
         status=DataLayerStatus.READY,
     )
+
+
+def get_table_mask(datalayer: DataLayer) -> Optional[GEOSGeometry]:
+    """
+    Given a datalayer, returns the UNION of all geometries bounding boxes.
+    """
+    srid = 4269  # hardcoded as we only import stuff in 4269
+    schema, table = datalayer.table.split(".")
+    with connection.cursor() as cursor:
+        query = f"""SELECT
+ST_AsText(
+    ST_UnaryUnion(
+        ST_Collect(
+            ST_Envelope(geometry)
+        )
+    )
+) as geometry
+FROM "{schema}"."{table}"
+WHERE geometry IS NOT NULL;
+"""
+        cursor.execute(query)
+        row = cursor.fetchone()
+        if row:
+            return GEOSGeometry(row[0], srid=srid)
+
+        return None
+
+
+def get_datalayer_outline(datalayer: DataLayer) -> Optional[GEOSGeometry]:
+    match datalayer.type:
+        case DataLayerType.RASTER:
+            if not datalayer.url:
+                raise ValueError("datalayer url is none")
+            return geodjango_to_multi(
+                to_geodjango_geometry(get_estimated_mask_raster(datalayer.url))
+            )
+        case _:
+            if not datalayer.table:
+                raise ValueError("datalayer table is none")
+            return get_table_mask(datalayer)

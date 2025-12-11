@@ -21,9 +21,9 @@ from rasterio.warp import (
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
 from shapely.geometry import mapping, shape
+from shapely.geometry.base import BaseGeometry
 
 from gis.core import get_layer_info, get_random_output_file, with_vsi_prefix
-from gis.geometry import to_geodjango_geometry
 from gis.info import get_gdal_env
 from gis.quadtree import build_raster_tree, union_data_area
 
@@ -327,7 +327,7 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
 def get_estimated_mask(
     raster_path: str,
     output_srid: int = 4269,
-) -> GEOSGeometry:
+) -> BaseGeometry:
     """
     Returns the estimated data mask in a GEOSGeometry
     for a raster.
@@ -346,7 +346,7 @@ def get_estimated_mask(
                 input_srid=input_srid,
                 output_srid=output_srid,
             )
-            return to_geodjango_geometry(shapely_geometry, srid=output_srid)
+            return shapely_geometry
 
 
 def read_raster_window_downsampled(

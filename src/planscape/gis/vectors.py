@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import Collection, Tuple, Optional
+from typing import Collection, Optional, Tuple
 from uuid import uuid4
 
 from django.conf import settings
@@ -87,7 +87,7 @@ def to_planscape(input_file: str) -> Collection[str]:
         warped_vector = get_random_output_file(input_file=input_file)
         # warp here
     else:
-        log.info("Raster DataLayer already has EPSG:3857 projection.")
+        log.info("Vector DataLayer already has EPSG:3857 projection.")
         warped_vector = input_file
 
     is_valid, errors, _warnings = vector_validate(warped_vector)
