@@ -5,29 +5,6 @@ from organizations.models import Organization
 from rest_framework import serializers
 
 
-class OptionDataLayerSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = (
-            "id",
-            "name",
-        )
-        model = DataLayer
-
-
-class OptionThresholdsSerializer(serializers.Serializer):
-    slope = OptionDataLayerSerializer()
-    distance_from_roads = OptionDataLayerSerializer()
-
-
-class ForsysOptionsSerializer(serializers.Serializer):
-    inclusions = serializers.ListField(child=OptionDataLayerSerializer())
-    if feature_enabled("SCENARIO_CONFIG_UI"):
-        exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
-    else:
-        exclusions = serializers.ListField(child=OptionDataLayerSerializer())
-    thresholds = OptionThresholdsSerializer()
-
-
 class OrganizationMapOptionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
@@ -51,14 +28,46 @@ class DatasetMapOptionsSerializer(serializers.ModelSerializer):
         )
 
 
-class MapOptionsSerializer(serializers.Serializer):
+class DatasetsOptionsSerializers(serializers.Serializer):
     main_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
     base_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+
+
+class BaseModuleSerializer(serializers.Serializer):
+    datasets = DatasetsOptionsSerializers()
+
+
+class OptionDataLayerSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = DataLayer
+
+
+class OptionThresholdsSerializer(serializers.Serializer):
+    slope = OptionDataLayerSerializer()
+    distance_from_roads = OptionDataLayerSerializer()
+
+
+class ForsysOptionsSerializer(BaseModuleSerializer):
+    inclusions = serializers.ListField(child=OptionDataLayerSerializer())
+    if feature_enabled("SCENARIO_CONFIG_UI"):
+        exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
+    else:
+        exclusions = serializers.ListField(child=OptionDataLayerSerializer())
+    thresholds = OptionThresholdsSerializer()
+
+
+class MapOptionsSerializer(BaseModuleSerializer):
+    pass
 
 
 OPTIONS_SERIALIZERS = {
     "forsys": ForsysOptionsSerializer,
     "map": MapOptionsSerializer,
+    "impacts": BaseModuleSerializer,
 }
 
 
