@@ -76,6 +76,7 @@ export class DataLayersService {
     );
   }
 
+  // ERROR_SURVEY - passes response up
   getPublicUrl(id: number) {
     return this.http
       .get<{ layer_url: string }>(

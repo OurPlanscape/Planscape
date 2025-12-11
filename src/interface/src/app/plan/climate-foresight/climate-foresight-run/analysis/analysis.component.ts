@@ -329,6 +329,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ERROR_SURVEY - logs error but doesnt use backend messages
   private loadLayerPreview(layer: OutputLayer): void {
     if (!layer.datalayerId) {
       this.removeRasterLayer();
