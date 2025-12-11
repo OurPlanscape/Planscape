@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Union
 
-from datasets.models import DataLayer, Dataset, PreferredDisplayType
+from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
 from planning.models import (
@@ -36,7 +36,7 @@ class BaseModule:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.none()
+        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
 
     def _get_main_datasets(self):
         return self.get_datasets().filter(
@@ -85,6 +85,9 @@ class ForsysModule(BaseModule):
             "thresholds": {"slope": slope, "distance_from_roads": distance_from_roads},
         }
 
+    def get_datasets(self, **kwargs):
+        return Dataset.objects.none()
+
 
 class ImpactsModule(BaseModule):
     name = "impacts"
@@ -103,6 +106,9 @@ class ImpactsModule(BaseModule):
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         scenario_geometry = runnable.planning_area.geometry
         return self.california.contains(scenario_geometry)
+
+    def get_datasets(self, **kwargs):
+        return Dataset.objects.none()
 
 
 class MapModule(BaseModule):
