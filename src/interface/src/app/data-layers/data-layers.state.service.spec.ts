@@ -5,6 +5,7 @@ import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
 import { of } from 'rxjs';
 import { DataSet, Pagination } from '@types';
+import { MapModuleService } from '@services/map-module.service';
 
 describe('DataLayersStateService', () => {
   let service: DataLayersStateService;
@@ -16,6 +17,12 @@ describe('DataLayersStateService', () => {
           listDataSets: () => of({} as Pagination<DataSet>),
         }),
         DataLayersStateService,
+        MockProvider(MapModuleService, {
+          mapData$: of({
+            main_datasets: [],
+            base_datasets: [],
+          }),
+        }),
       ],
     });
     service = TestBed.inject(DataLayersStateService);

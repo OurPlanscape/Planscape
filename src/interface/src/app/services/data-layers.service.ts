@@ -61,6 +61,16 @@ export class DataLayersService {
     );
   }
 
+  listBaseLayersByDataSet(dataSetId: number) {
+    return this.http.get<BaseLayer[]>(
+      environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
+      {
+        withCredentials: true,
+        params: { type: 'VECTOR' },
+      }
+    );
+  }
+
   getPublicUrl(id: number) {
     return this.http
       .get<{ layer_url: string }>(

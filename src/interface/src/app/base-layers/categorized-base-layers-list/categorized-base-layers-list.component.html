@@ -1,21 +1,23 @@
 <!-- We display the title and the list of options, if it is Multiple we display checkboxes -->
 
 <!--Expansion panel -->
-<div class="list-header" (click)="expandDataSet()" [class.expanded]="expanded">
+<div
+  class="list-header"
+  (click)="expanded = !expanded"
+  [class.expanded]="expanded">
   <div class="label">
-    {{ dataSet.name }}
+    {{ categorizedBaseLayer.category.name }}
   </div>
   <i class="material-symbols-outlined">{{
     expanded ? 'expand_more' : 'chevron_right'
   }}</i>
 </div>
 <div class="list-content" *ngIf="expanded" #listContent>
-  <mat-spinner diameter="20" *ngIf="!loaded" class="list-spinner"></mat-spinner>
-
-  <div *ngIf="noBaseLayers && loaded" class="no-data">No data available</div>
   <ng-container
-    *ngIf="dataSet.selection_type === 'MULTIPLE'; else singleSelect">
-    <div *ngFor="let layer of baseLayers" class="checkbox-option">
+    *ngIf="categorizedBaseLayer.category.isMultiSelect; else singleSelect">
+    <div
+      *ngFor="let layer of categorizedBaseLayer.layers"
+      class="checkbox-option">
       <mat-checkbox
         [value]="layer.id.toString()"
         [checked]="allSelectedLayersIds.includes(layer.id)"
@@ -44,7 +46,7 @@
   </ng-container>
   <ng-template #singleSelect>
     <mat-radio-button
-      *ngFor="let layer of baseLayers"
+      *ngFor="let layer of categorizedBaseLayer.layers"
       [value]="layer.id"
       [checked]="allSelectedLayersIds.includes(layer.id)"
       class="data-layer-input"
