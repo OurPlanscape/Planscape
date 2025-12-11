@@ -11,6 +11,7 @@ import {
 } from '@angular/forms';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
 import { FileUploadFieldComponent, ModalInfoComponent } from '@styleguide';
+import { InvalidCoordinatesError } from '@services/errors';
 
 @Component({
   selector: 'app-upload-planning-area-box',
@@ -86,8 +87,13 @@ export class UploadPlanningAreaBoxComponent {
       }
     } catch (e) {
       this.uploadElementStatus = 'failed';
-      this.uploadFormError =
-        'The zip file does not appear to contain a valid shapefile.';
+      if (e instanceof InvalidCoordinatesError) {
+        this.uploadFormError =
+          'The upload contains features with invalid coordinates.';
+      } else {
+        this.uploadFormError =
+          'The zip file does not appear to contain a valid shapefile.';
+      }
     }
   }
 }

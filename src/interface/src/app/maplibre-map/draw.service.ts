@@ -17,7 +17,8 @@ import {
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
-import { flattenMultipolygons } from '../plan/plan-helpers';
+import { flattenMultipolygons, stripZCoords } from '../plan/plan-helpers';
+import { InvalidCoordinatesError } from '@services/errors';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -262,11 +263,33 @@ export class DrawService {
         mode: 'polygon',
       },
     }));
-    const flatFeatures = flattenMultipolygons(featuresArray);
-    this._terraDraw?.addFeatures(flatFeatures);
+    // sanitize the data so terraDraw will not complain
+    let flatFeatures = flattenMultipolygons(featuresArray);
+    flatFeatures = stripZCoords(flatFeatures);
+    const validations = this._terraDraw?.addFeatures(flatFeatures);
+    handleValidation(validations);
     this.updateTotalAcreage();
     this._terraDraw?.setMode('select'); // should be in select mode to add
   }
+}
+
+function handleValidation(validations: any[] | undefined): void {
+  if (validations?.some((feature) => feature.valid === false)) {
+    const reasons = getValidationReasons(validations);
+    if (
+      reasons.some((reason: string) => reason.includes('invalid coordinates'))
+    ) {
+      throw new InvalidCoordinatesError(reasons.join(', '));
+    } else {
+      throw new Error('A generic validation error occurred.');
+    }
+  }
+}
+
+function getValidationReasons(validations: any[]) {
+  return validations
+    .filter((validation) => !validation.valid && validation.reason)
+    .map((validation) => validation.reason);
 }
 
 // terra-draw only accepts up to 6 decimal places of precision, so this rounds that
