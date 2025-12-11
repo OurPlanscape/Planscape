@@ -78,64 +78,48 @@
         </div>
 
         <!-- Current Conditions Translated-->
-        <div
-          class="collapsible-section"
-          *ngIf="currentConditionsLayers.length > 0">
+        <sg-section
+          *ngIf="currentConditionsLayers.length > 0"
+          headline="Current Conditions Translated"
+          [defaultExpanded]="false"
+          [isCollapsible]="true">
           <div
-            class="section-header"
-            (click)="toggleCurrentConditions()"
-            [class.expanded]="currentConditionsExpanded">
-            <span class="expand-icon"></span>
-            <span class="section-title">Current Conditions Translated</span>
-            <mat-icon class="info-icon">info_outline</mat-icon>
+            *ngFor="let layer of currentConditionsLayers"
+            class="layer-item grouped"
+            [class.selected]="selectedLayerId === layer.id"
+            (click)="selectLayer(layer)">
+            <mat-icon class="radio-icon">
+              {{
+                selectedLayerId === layer.id
+                  ? 'radio_button_checked'
+                  : 'radio_button_unchecked'
+              }}
+            </mat-icon>
+            <span class="layer-name">{{ layer.name }}</span>
           </div>
-          <div class="section-content" *ngIf="currentConditionsExpanded">
-            <div
-              *ngFor="let layer of currentConditionsLayers"
-              class="layer-item indented"
-              [class.selected]="selectedLayerId === layer.id"
-              (click)="selectLayer(layer)">
-              <mat-icon class="radio-icon">
-                {{
-                  selectedLayerId === layer.id
-                    ? 'radio_button_checked'
-                    : 'radio_button_unchecked'
-                }}
-              </mat-icon>
-              <span class="layer-name">{{ layer.name }}</span>
-            </div>
-          </div>
-        </div>
+        </sg-section>
 
         <!-- Future Conditions -->
-        <div
-          class="collapsible-section"
-          *ngIf="futureConditionsLayers.length > 0">
+        <sg-section
+          *ngIf="futureConditionsLayers.length > 0"
+          headline="Future Conditions"
+          [defaultExpanded]="false"
+          [isCollapsible]="true">
           <div
-            class="section-header"
-            (click)="toggleFutureConditions()"
-            [class.expanded]="futureConditionsExpanded">
-            <span class="expand-icon"></span>
-            <span class="section-title">Future Conditions</span>
-            <mat-icon class="info-icon">info_outline</mat-icon>
+            *ngFor="let layer of futureConditionsLayers"
+            class="layer-item grouped"
+            [class.selected]="selectedLayerId === layer.id"
+            (click)="selectLayer(layer)">
+            <mat-icon class="radio-icon">
+              {{
+                selectedLayerId === layer.id
+                  ? 'radio_button_checked'
+                  : 'radio_button_unchecked'
+              }}
+            </mat-icon>
+            <span class="layer-name">{{ layer.name }}</span>
           </div>
-          <div class="section-content" *ngIf="futureConditionsExpanded">
-            <div
-              *ngFor="let layer of futureConditionsLayers"
-              class="layer-item indented"
-              [class.selected]="selectedLayerId === layer.id"
-              (click)="selectLayer(layer)">
-              <mat-icon class="radio-icon">
-                {{
-                  selectedLayerId === layer.id
-                    ? 'radio_button_checked'
-                    : 'radio_button_unchecked'
-                }}
-              </mat-icon>
-              <span class="layer-name">{{ layer.name }}</span>
-            </div>
-          </div>
-        </div>
+        </sg-section>
       </div>
     </div>
 

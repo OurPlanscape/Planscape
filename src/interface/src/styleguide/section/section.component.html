@@ -1,6 +1,6 @@
 <mat-expansion-panel
   togglePosition="before"
-  expanded="true"
+  [expanded]="!isCollapsible || defaultExpanded"
   [disabled]="!isCollapsible">
   <mat-expansion-panel-header class="panel-header">
     <div class="title-txt">
