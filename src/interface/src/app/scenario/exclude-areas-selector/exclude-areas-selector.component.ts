@@ -83,14 +83,8 @@ export class ExcludeAreasSelectorComponent
   }
 
   handleViewedItemsChange(viewedItems: BaseLayer[]) {
-    const newItems = viewedItems.filter(
-      (item) => !this.viewingAreas.includes(item)
-    );
     this.viewingAreas = [...viewedItems];
-
-    newItems.map((layer) =>
-      this.baseLayersStateService.updateBaseLayers(layer, true)
-    );
+    this.baseLayersStateService.updateAllBaseLayers(this.viewingAreas);
   }
 
   getData() {
