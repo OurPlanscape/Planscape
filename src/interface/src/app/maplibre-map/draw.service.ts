@@ -280,7 +280,7 @@ function handleValidation(validations: any[] | undefined): void {
     ) {
       throw new InvalidCoordinatesError(reasons.join(', '));
     } else {
-      throw new Error('A generic validation error occurred.');
+      throw new Error(`Error: ${reasons.join(', ')} `);
     }
   }
 }
