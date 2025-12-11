@@ -127,8 +127,18 @@ export class BaseLayersStateService {
     this._loadingLayers$.next([]);
   }
 
-  setBaseLayers(bs: BaseLayer[]) {
-    this._selectedBaseLayers$.next(bs);
+  setBaseLayers(baseLayers: BaseLayer[]) {
+    this._selectedBaseLayers$.next(baseLayers);
+  }
+
+  // also sets loading for base layers where category is irrelevant
+  updateAllBaseLayers(baseLayers: BaseLayer[]) {
+    const currentLayers = this._selectedBaseLayers$.value ?? [];
+    const newLayers = baseLayers.filter(myLayer => 
+      !currentLayers.some(existingLayer => existingLayer.id === myLayer.id)
+    );
+    newLayers.map(ne => this.addLoadingSourceId(`source_${ne.id}` ));
+    this._selectedBaseLayers$.next(baseLayers);
   }
 
   private isCategoryMultiSelect(path: string) {
