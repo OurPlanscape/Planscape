@@ -19,6 +19,7 @@ from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.db import connection, transaction
 from gis.geometry import geodjango_to_multi, to_geodjango_geometry
 from gis.rasters import get_estimated_mask as get_estimated_mask_raster
+from modules.base import get_module
 from organizations.models import Organization
 from planscape.openpanel import track_openpanel
 
@@ -417,8 +418,13 @@ def create_datalayer(
 def find_anything(
     term: str,
     type: Optional[str] = None,
+    module: Optional[str] = None,
 ) -> Dict[str, SearchResult]:
     layer_type = type or DataLayerType.RASTER
+    datasets = None
+    if module:
+        mod = get_module(module)
+        datasets = mod.get_datasets()
 
     datalayer_filter = {
         "name__icontains": term,
@@ -426,21 +432,36 @@ def find_anything(
         "status": DataLayerStatus.READY,
         "type": layer_type,
     }
+    category_filter = {
+        "name__icontains": term,
+    }
+    dataset_filter = {
+        "name__icontains": term,
+        "visibility": VisibilityOptions.PUBLIC,
+    }
+
+    if datasets:
+        dataset_ids = list([d.pk for d in datasets])
+        datalayer_filter["dataset_id__in"] = dataset_ids
+        category_filter["dataset_id__in"] = dataset_ids
+        dataset_filter["id__in"] = dataset_ids
+    else:
+        dataset_ids = None
+
     raw_results = [
         [
-            organization_to_search_result(x)
+            organization_to_search_result(x, dataset_ids)
             for x in Organization.objects.filter(name__icontains=term)
         ],
         [
             dataset_to_search_result(x)
             for x in Dataset.objects.filter(
-                name__icontains=term,
-                visibility=VisibilityOptions.PUBLIC,
+                **dataset_filter,
             )
         ],
         [
             category_to_search_result(x)
-            for x in Category.objects.filter(name__icontains=term)
+            for x in Category.objects.filter(**category_filter)
         ],
         [
             datalayer_to_search_result(x)

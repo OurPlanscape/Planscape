@@ -2,6 +2,19 @@ from typing import Any, Dict, Optional
 
 from cacheops import cached
 from core.serializers import MultiSerializerMixin
+from django.conf import settings
+from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.db.models import Q
+from drf_spectacular.utils import extend_schema
+from planscape.openpanel import track_openpanel
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
 from datasets.filters import DataLayerFilterSet
 from datasets.models import (
     DataLayer,
@@ -20,19 +33,6 @@ from datasets.serializers import (
     SearchResultsSerializer,
 )
 from datasets.services import find_anything
-from django.conf import settings
-from django.contrib.postgres.search import SearchQuery, SearchVector
-from django.db.models import Q
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
-
-from planscape.openpanel import track_openpanel
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -135,9 +135,11 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: cache results and paginate here.
         term = serializer.validated_data.get("term")
         type = serializer.validated_data.get("type")
+        module = serializer.validated_data.get("module")
         results = find_anything(
             term=term,
             type=type,
+            module=module,
         )
         search_results = list(results.values())
         page = self.paginate_queryset(search_results)  # type: ignore

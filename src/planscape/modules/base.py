@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Union
 
-from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
+from datasets.models import DataLayer, Dataset, PreferredDisplayType
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
 from planning.models import (
@@ -36,10 +36,25 @@ class BaseModule:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+        return Dataset.objects.none()
+
+    def _get_main_datasets(self):
+        return self.get_datasets().filter(
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+
+    def _get_base_datasets(self):
+        return self.get_datasets().filter(
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+        )
 
     def _get_options(self, **kwargs) -> Dict[str, Any]:
-        return {}
+        return {
+            "datasets": {
+                "main_datasets": self._get_main_datasets(),
+                "base_datasets": self._get_base_datasets(),
+            }
+        }
 
 
 class ForsysModule(BaseModule):
@@ -52,6 +67,7 @@ class ForsysModule(BaseModule):
         return True
 
     def _get_options(self, **kwargs):
+        options = super()._get_options(**kwargs)
         inclusions = DataLayer.objects.all().by_meta_capability(
             TreatmentGoalUsageType.INCLUSION_ZONE
         )
@@ -63,6 +79,7 @@ class ForsysModule(BaseModule):
             "distance_from_roads"
         )
         return {
+            **options,
             "exclusions": list(exclusions),
             "inclusions": list(inclusions),
             "thresholds": {"slope": slope, "distance_from_roads": distance_from_roads},
@@ -105,24 +122,6 @@ class MapModule(BaseModule):
             Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
             | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
         ).select_related("organization")
-
-    def _get_main_datasets(self):
-        return self.get_datasets().filter(
-            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
-        )
-
-    def _get_base_datasets(self):
-        return self.get_datasets().filter(
-            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
-        )
-
-    def _get_options(self, **kwargs):
-        main_datasets = list(self._get_main_datasets())
-        base_datasets = list(self._get_base_datasets())
-        return {
-            "main_datasets": main_datasets,
-            "base_datasets": base_datasets,
-        }
 
 
 def get_module(module_name: str) -> BaseModule:
