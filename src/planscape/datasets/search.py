@@ -32,7 +32,7 @@ def organization_to_search_result(
 ) -> Collection[SearchResult]:  # type: ignore
     org_datasets = organization.datasets.filter(visibility=VisibilityOptions.PUBLIC)
     if dataset_ids:
-        org_datasets = org_datasets.filter(dataset_id__in=dataset_ids)
+        org_datasets = org_datasets.filter(id__in=dataset_ids)
     return list([dataset_to_search_result(x) for x in org_datasets])
 
 
