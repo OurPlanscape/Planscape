@@ -106,7 +106,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   currentConditionsLayers: OutputLayer[] = [];
   futureConditionsLayers: OutputLayer[] = [];
 
-
   selectedLayerId: string | null = null;
   selectedLayer: OutputLayer | null = null;
   opacity = 70;
