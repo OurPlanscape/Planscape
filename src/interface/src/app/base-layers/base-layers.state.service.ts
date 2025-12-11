@@ -131,7 +131,9 @@ export class BaseLayersStateService {
     this._selectedBaseLayers$.next(baseLayers);
   }
 
-  // also sets loading for base layers where category is irrelevant
+  // updates base layers regardless of category, (e.g., in a flat list),
+  // where separate categories may exist, but are irrelevant
+  // also sets loading sourceid for newly added layers
   updateAllBaseLayers(baseLayers: BaseLayer[]) {
     const currentLayers = this._selectedBaseLayers$.value ?? [];
     const newLayers = baseLayers.filter(

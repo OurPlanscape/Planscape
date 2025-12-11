@@ -22,7 +22,10 @@
       (change)="viewItem(item)"
       >{{ item.name }}</mat-checkbox
     >
-    <mat-spinner diameter="20" *ngIf="isLoading(item)"> </mat-spinner>
+    <div class="spinner-container">
+      <!-- placeholder, to reduce UI jumpiness -->
+      <mat-spinner diameter="20" *ngIf="isLoading(item)"> </mat-spinner>
+    </div>
     <div
       class="color-box"
       [ngClass]="{ selected: isViewed(item) }"
