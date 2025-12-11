@@ -8,6 +8,31 @@
   width: 100%;
 }
 
+sg-section {
+  ::ng-deep {
+    .title-txt {
+      font-weight: 600;
+      text-transform: initial;
+    }
+
+    .mat-expansion-panel {
+      border: none !important;
+
+      &.mat-expanded > .mat-expansion-panel-header {
+        background-color: $color-soft-purple;
+      }
+    }
+
+    .mat-expansion-panel-header {
+      border: 1px solid $color-soft-gray;
+    }
+
+    .mat-expansion-panel-body {
+      padding: 0;
+    }
+  }
+}
+
 .analysis-container {
   display: flex;
   flex-direction: column;
@@ -28,12 +53,6 @@
   flex-direction: column;
   background-color: white;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  z-index: 2;
-
-  .layer-list {
-    flex: 1;
-    overflow-y: auto;
-  }
 
   .layer-item {
     display: flex;
@@ -44,16 +63,16 @@
     transition: background-color 0.2s;
     gap: 12px;
 
+    &.grouped {
+      background-color: $color-soft-purple-light;
+    }
+
     &:hover {
       background-color: $color-lighter-gray;
     }
 
     &.selected {
       background-color: $color-soft-purple-light;
-    }
-
-    &.indented {
-      padding-left: 48px;
     }
 
     .radio-icon {
@@ -76,68 +95,6 @@
       width: 18px;
       height: 18px;
       flex-shrink: 0;
-    }
-  }
-
-  .collapsible-section {
-    border-bottom: 1px solid $color-soft-gray;
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      padding: 16px 20px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      gap: 8px;
-
-      &:hover {
-        background-color: $color-lighter-gray;
-      }
-
-      .expand-icon {
-        width: 20px;
-        height: 20px;
-        background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>')
-          no-repeat 50% 50%;
-        background-size: 6px;
-        transition: transform 100ms linear;
-        flex-shrink: 0;
-      }
-
-      &.expanded .expand-icon {
-        transform: rotate(90deg);
-      }
-
-      .section-title {
-        font-size: 14px;
-        font-weight: 500;
-        color: $color-dark-gray;
-        flex: 1;
-      }
-
-      .info-icon {
-        color: $color-standard-blue;
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
-      }
-    }
-
-    .section-content {
-      background-color: $color-lighter-gray;
-
-      .layer-item {
-        border-bottom: none;
-
-        &:hover {
-          background-color: rgba(white, 0.5);
-        }
-
-        &.selected {
-          background-color: white;
-        }
-      }
     }
   }
 }

@@ -12,7 +12,11 @@ import {
   transformMapboxUrl,
 } from 'maplibregl-mapbox-request-transformer';
 
-import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  OpacitySliderComponent,
+  SectionComponent,
+} from '@styleguide';
 import {
   ClimateForesightRun,
   DataLayer,
@@ -79,6 +83,7 @@ export interface OutputLayer {
     MapComponent,
     PlanningAreaLayerComponent,
     MpatLegendComponent,
+    SectionComponent,
   ],
   providers: [MapConfigService],
   templateUrl: './analysis.component.html',
@@ -101,8 +106,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   currentConditionsLayers: OutputLayer[] = [];
   futureConditionsLayers: OutputLayer[] = [];
 
-  currentConditionsExpanded = false;
-  futureConditionsExpanded = false;
 
   selectedLayerId: string | null = null;
   selectedLayer: OutputLayer | null = null;
@@ -301,14 +304,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         });
       }
     }
-  }
-
-  toggleCurrentConditions(): void {
-    this.currentConditionsExpanded = !this.currentConditionsExpanded;
-  }
-
-  toggleFutureConditions(): void {
-    this.futureConditionsExpanded = !this.futureConditionsExpanded;
   }
 
   selectLayer(layer: OutputLayer): void {
