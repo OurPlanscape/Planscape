@@ -8,6 +8,7 @@ import { BaseLayersStateService } from '../base-layers.state.service';
 import { DataLayersService } from '@services';
 import { MapDataDataSet } from '../../types/module.types';
 import { MockProvider } from 'ng-mocks';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('BaseLayersListComponent', () => {
   let component: BaseLayersListComponent;
@@ -22,7 +23,7 @@ describe('BaseLayersListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BaseLayersListComponent],
+      imports: [BaseLayersListComponent, MatSnackBarModule],
       providers: [
         MockProvider(BaseLayersStateService, {
           loadingLayers$: of([]), // or of([]) if that matches your type

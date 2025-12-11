@@ -14,11 +14,13 @@ import {
 import { BaseLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { BASE_LAYERS_DEFAULT } from '@shared';
+import { BASE_LAYERS_DEFAULT, SNACK_ERROR_CONFIG } from '@shared';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersService } from '@services';
 import { MapDataDataSet } from '../../types/module.types';
+import { catchError, tap } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-base-layers-list',
@@ -60,6 +62,10 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
 
   baseLayers: BaseLayer[] = [];
 
+  loaded = false;
+
+  constructor(private matSnackBar: MatSnackBar) {}
+
   ngAfterViewInit(): void {
     if (this.expanded) {
       this.listBaseLayersByDataSet().subscribe((c) => {
@@ -100,12 +106,25 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
   expandDataSet() {
     this.expanded = !this.expanded;
     if (this.noBaseLayers) {
-      this.listBaseLayersByDataSet().subscribe((c) => (this.baseLayers = c));
+      this.listBaseLayersByDataSet().subscribe((c) => {
+        this.baseLayers = c;
+      });
     }
   }
 
   private listBaseLayersByDataSet() {
-    return this.dataLayersService.listBaseLayersByDataSet(this.dataSet.id);
+    this.loaded = false;
+    return this.dataLayersService.listBaseLayersByDataSet(this.dataSet.id).pipe(
+      tap((_) => (this.loaded = true)),
+      catchError((e) => {
+        this.matSnackBar.open(
+          `Error: Could not load layers for ${this.dataSet.name}`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+        return [];
+      })
+    );
   }
 
   get noBaseLayers() {

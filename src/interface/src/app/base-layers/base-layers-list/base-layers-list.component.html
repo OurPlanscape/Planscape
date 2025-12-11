@@ -10,10 +10,9 @@
   }}</i>
 </div>
 <div class="list-content" *ngIf="expanded" #listContent>
-  <mat-spinner
-    diameter="20"
-    *ngIf="noBaseLayers"
-    class="list-spinner"></mat-spinner>
+  <mat-spinner diameter="20" *ngIf="!loaded" class="list-spinner"></mat-spinner>
+
+  <div *ngIf="noBaseLayers && loaded" class="no-data">No data available</div>
   <ng-container
     *ngIf="dataSet.selection_type === 'MULTIPLE'; else singleSelect">
     <div *ngFor="let layer of baseLayers" class="checkbox-option">
