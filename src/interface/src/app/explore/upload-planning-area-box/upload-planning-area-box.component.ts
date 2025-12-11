@@ -12,6 +12,7 @@ import {
 import { DrawService } from 'src/app/maplibre-map/draw.service';
 import { FileUploadFieldComponent, ModalInfoComponent } from '@styleguide';
 import { InvalidCoordinatesError } from '@services/errors';
+import * as Sentry from '@sentry/browser';
 
 @Component({
   selector: 'app-upload-planning-area-box',
@@ -94,6 +95,7 @@ export class UploadPlanningAreaBoxComponent {
         this.uploadFormError =
           'The zip file does not appear to contain a valid shapefile.';
       }
+      Sentry.captureException(e);
     }
   }
 }
