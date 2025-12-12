@@ -212,7 +212,6 @@ export class UploadProjectAreasModalComponent {
               this.uploadFormError =
                 'An unknown error occured when trying to create a scenario.';
             }
-
           },
         });
     }
