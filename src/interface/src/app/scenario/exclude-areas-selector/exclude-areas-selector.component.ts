@@ -84,7 +84,7 @@ export class ExcludeAreasSelectorComponent
 
   handleViewedItemsChange(viewedItems: BaseLayer[]) {
     this.viewingAreas = [...viewedItems];
-    this.baseLayersStateService.updateAllBaseLayers(this.viewingAreas);
+    this.baseLayersStateService.updateFlatMultiBaseLayers(this.viewingAreas);
   }
 
   getData() {
