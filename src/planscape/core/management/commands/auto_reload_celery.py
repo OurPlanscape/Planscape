@@ -1,13 +1,12 @@
-import shlex
-import subprocess
-import signal
 import os
+import shlex
+import signal
+import subprocess
 import tempfile
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
 from django.utils import autoreload
-
 
 # PID file to track celery worker across restarts. Each restart kills the previous worker.
 PID_FILE = Path(tempfile.gettempdir()) / "celery_autoreload.pid"
@@ -70,7 +69,7 @@ def auto_reload_celery(*args, **kwargs):
 
     start_worker_cmd = (
         "celery -A planscape worker -E --loglevel INFO --concurrency 3 "
-        "-Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics"
+        "-Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics,climate-foresight"
     )
     print("Starting celery worker...")
     process = subprocess.Popen(shlex.split(start_worker_cmd))
