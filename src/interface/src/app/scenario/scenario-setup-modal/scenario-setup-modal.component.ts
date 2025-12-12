@@ -173,13 +173,12 @@ export class ScenarioSetupModalComponent implements OnInit {
         }
       },
       error: (e) => {
-        // detect known errors
+        this.submitting = false;
         if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
           // TODO: confirm backend error format
-        } else {
           if (
-            e.error?.global &&
-            e.error?.global.some((msg: string) =>
+            e.error.errors?.global &&
+            e.error.errors?.global.some((msg: string) =>
               msg.includes(
                 'The fields planning_area, name must make a unique set.'
               )
@@ -189,19 +188,36 @@ export class ScenarioSetupModalComponent implements OnInit {
             this.errorMessage =
               'This name is already used by another scenario in this planning area.';
           } else {
-            this.submitting = false;
-
-            // otherwise, show snackbar for unknown errors
-            this.matSnackBar.open(
-              '[Error] Unable to create scenario...',
-              'Dismiss',
-              SNACK_ERROR_CONFIG
-            );
-            this.dialogRef.close(false);
+            this.showGenericErrorSnackbar();
           }
+        } else {
+          if (
+            e.error?.global &&
+            e.error?.global.some((msg: string) =>
+              msg.includes(
+                'The fields planning_area, name must make a unique set.'
+              )
+            )
+          ) {
+            this.errorMessage =
+              'This name is already used by another scenario in this planning area.';
+          } else {
+            this.submitting = false;
+            // otherwise, show snackbar for unknown errors
+            this.showGenericErrorSnackbar();
+          }
+          this.dialogRef.close(false);
         }
       },
     });
+  }
+
+  private showGenericErrorSnackbar() {
+    this.matSnackBar.open(
+      '[Error] Unable to create scenario...',
+      'Dismiss',
+      SNACK_ERROR_CONFIG
+    );
   }
 
   private editScenarioName(name: string) {
