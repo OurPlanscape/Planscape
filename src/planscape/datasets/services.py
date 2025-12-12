@@ -423,10 +423,15 @@ def find_anything(
     datasets = None
     if module:
         mod = get_module(module)
+        preferred_display_type = (
+            PreferredDisplayType.MAIN_DATASETS
+            if layer_type == DataLayerType.RASTER
+            else PreferredDisplayType.BASE_DATALAYERS
+        )
         dataset_ids = [
             d.pk
             for d in mod.get_datasets()
-            if d.preferred_display_type == PreferredDisplayType.MAIN_DATASETS
+            if d.preferred_display_type == preferred_display_type
         ]
     else:
         dataset_ids = None
