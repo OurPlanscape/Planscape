@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '@services';
 import { User } from '@types';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-delete-account-dialog',
@@ -21,7 +20,6 @@ export class DeleteAccountDialogComponent {
     @Inject(MAT_DIALOG_DATA) private data: { user: User },
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<DeleteAccountDialogComponent>,
-    private featureService: FeatureService
   ) {
     this.deleteAccountForm = this.fb.group({
       currentPassword: this.fb.control('', [Validators.required]),
@@ -46,11 +44,7 @@ export class DeleteAccountDialogComponent {
           });
         },
         error: (err) => {
-          if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-          ) {
-            // TODO: confirm that the error codes used here are still relevant
-          } else {
+
             if (err.status === 403) {
               this.error = 'Password was incorrect.';
             } else if (err.status === 401) {
@@ -58,7 +52,7 @@ export class DeleteAccountDialogComponent {
             } else {
               this.error = 'An unknown error has occured.';
             }
-          }
+          
           this.disableDeleteButton = false;
         },
       });
