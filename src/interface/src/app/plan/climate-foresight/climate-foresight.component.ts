@@ -33,6 +33,7 @@ import {
 import { FrontendConstants } from '../../map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-modal.component';
+import { CopyRunModalComponent } from './copy-run-modal/copy-run-modal.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 
@@ -259,6 +260,40 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
               SNACK_BOTTOM_NOTICE_CONFIG
             );
             console.error('Error deleting run:', error);
+          },
+        });
+      }
+    });
+  }
+
+  copyRun(run: ClimateForesightRun): void {
+    const dialogRef = this.dialog.open(CopyRunModalComponent, {
+      data: {
+        runId: run.id,
+        runName: run.name,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.climateForesightService.copyRun(run.id, result.name).subscribe({
+          next: (newRun) => {
+            this.runs.unshift(newRun);
+            this.hasRuns = true;
+            this.snackBar.open(
+              'Run copied successfully',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+            this.openRun(newRun);
+          },
+          error: (error) => {
+            this.snackBar.open(
+              'Failed to copy run',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+            console.error('Error copying run:', error);
           },
         });
       }
