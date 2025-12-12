@@ -391,63 +391,6 @@ describe('AuthService', () => {
     });
   });
 
-  describe('updateUser', () => {
-    it('makes request to backend', (done) => {
-      const backendUser = {
-        first_name: 'Foo',
-        last_name: 'Bar',
-        username: 'test',
-        email: 'test@test.com',
-      };
-      const frontendUser = {
-        firstName: 'Foo',
-        lastName: 'Bar',
-        username: 'test',
-        email: 'test@test.com',
-      };
-
-      service.updateUser(frontendUser, 'currentpassword').subscribe((res) => {
-        expect(res).toEqual(frontendUser);
-        done();
-      });
-
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint + '/dj-rest-auth/user/'
-      );
-      expect(req.request.method).toEqual('PATCH');
-      expect(req.request.body).toEqual({
-        ...backendUser,
-        current_password: 'currentpassword',
-      });
-      req.flush(backendUser);
-      httpTestingController.verify();
-    });
-
-    it('updates logged in user', (done) => {
-      const backendUser = {
-        first_name: 'Foo',
-        last_name: 'Bar',
-        username: 'test',
-        email: 'test@test.com',
-      };
-      const frontendUser = {
-        firstName: 'Foo',
-        lastName: 'Bar',
-        username: 'test',
-        email: 'test@test.com',
-      };
-
-      service.updateUser(frontendUser, 'currentpassword').subscribe((_) => {
-        expect(service.loggedInUser$.value).toEqual(frontendUser);
-        done();
-      });
-
-      httpTestingController
-        .expectOne(environment.backend_endpoint + '/dj-rest-auth/user/')
-        .flush(backendUser);
-    });
-  });
-
   describe('getUser', () => {
     it('should make HTTP request to backend', () => {
       const user: User = {

@@ -66,11 +66,6 @@ export class SignupComponent {
     );
   }
 
-  resendEmail() {
-    const email: string = this.form.get('email')?.value;
-    this.authService.resendValidationEmail(email).subscribe();
-  }
-
   getEmailError(): string | null {
     if (!!this.form.controls['email'].errors) {
       const emailErrors = this.form.controls['email'].errors;

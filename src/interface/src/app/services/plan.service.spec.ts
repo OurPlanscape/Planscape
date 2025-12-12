@@ -60,20 +60,4 @@ describe('PlanService', () => {
       httpTestingController.verify();
     });
   });
-
-  describe('getTotalArea', () => {
-    it('should call the endpoint with parameters', () => {
-      service.getTotalArea(MOCK_FEATURE_COLLECTION).subscribe((res) => {
-        expect(res).toEqual(1000);
-      });
-
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/validate_planning_area/')
-      );
-      req.flush({ area_acres: 1000 });
-
-      expect(req.request.body).toEqual({ geometry: MOCK_FEATURE_COLLECTION });
-      httpTestingController.verify();
-    });
-  });
 });
