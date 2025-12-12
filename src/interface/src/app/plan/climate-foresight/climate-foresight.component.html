@@ -102,6 +102,7 @@
           *ngFor="let run of runs"
           [run]="run"
           (delete)="deleteRun($event)"
+          (copyRun)="copyRun($event)"
           (openRun)="openRun($event)">
         </app-climate-foresight-run-card>
       </div>

@@ -162,8 +162,8 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(NewAnalysisModalComponent, {
       data: {
+        mode: 'new',
         planningAreaId: this.currentPlan.id,
-        planningAreaName: this.currentPlan.name,
       },
     });
 
@@ -259,6 +259,41 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
               SNACK_BOTTOM_NOTICE_CONFIG
             );
             console.error('Error deleting run:', error);
+          },
+        });
+      }
+    });
+  }
+
+  copyRun(run: ClimateForesightRun): void {
+    const dialogRef = this.dialog.open(NewAnalysisModalComponent, {
+      data: {
+        mode: 'copy',
+        runId: run.id,
+        runName: run.name,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.climateForesightService.copyRun(run.id, result.name).subscribe({
+          next: (newRun) => {
+            this.runs.unshift(newRun);
+            this.hasRuns = true;
+            this.snackBar.open(
+              'Run copied successfully',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+            this.openRun(newRun);
+          },
+          error: (error) => {
+            this.snackBar.open(
+              'Failed to copy run',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+            console.error('Error copying run:', error);
           },
         });
       }
