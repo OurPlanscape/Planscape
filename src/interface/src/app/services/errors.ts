@@ -3,3 +3,9 @@ export class CreateScenarioError extends Error {
     super(message);
   }
 }
+
+export class InvalidCoordinatesError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
