@@ -19,7 +19,7 @@ export class DeleteAccountDialogComponent {
     private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) private data: { user: User },
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<DeleteAccountDialogComponent>,
+    private dialogRef: MatDialogRef<DeleteAccountDialogComponent>
   ) {
     this.deleteAccountForm = this.fb.group({
       currentPassword: this.fb.control('', [Validators.required]),
@@ -44,15 +44,14 @@ export class DeleteAccountDialogComponent {
           });
         },
         error: (err) => {
+          if (err.status === 403) {
+            this.error = 'Password was incorrect.';
+          } else if (err.status === 401) {
+            this.error = 'User is not logged in.';
+          } else {
+            this.error = 'An unknown error has occured.';
+          }
 
-            if (err.status === 403) {
-              this.error = 'Password was incorrect.';
-            } else if (err.status === 401) {
-              this.error = 'User is not logged in.';
-            } else {
-              this.error = 'An unknown error has occured.';
-            }
-          
           this.disableDeleteButton = false;
         },
       });
