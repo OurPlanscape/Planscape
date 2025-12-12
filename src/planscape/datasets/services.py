@@ -40,7 +40,6 @@ from datasets.search import (
     category_to_search_result,
     datalayer_to_search_result,
     dataset_to_search_result,
-    organization_to_search_result,
 )
 from datasets.tasks import datalayer_uploaded
 
@@ -420,6 +419,9 @@ def find_anything(
     type: Optional[str] = None,
     module: Optional[str] = None,
 ) -> Dict[str, SearchResult]:
+    """
+    Given a term, search for anything (datasets / datalayers)
+    """
     layer_type = type or DataLayerType.RASTER
     datasets = None
     if module:
@@ -439,20 +441,19 @@ def find_anything(
         "name__icontains": term,
         "visibility": VisibilityOptions.PUBLIC,
     }
+    org_filter = {"organization__name__icontains": term}
 
     if datasets:
         dataset_ids = list([d.pk for d in datasets])
         datalayer_filter["dataset_id__in"] = dataset_ids
         category_filter["dataset_id__in"] = dataset_ids
         dataset_filter["id__in"] = dataset_ids
+        org_filter["id__in"] = dataset_ids
     else:
         dataset_ids = None
 
     raw_results = [
-        [
-            organization_to_search_result(x, dataset_ids)
-            for x in Organization.objects.filter(name__icontains=term)
-        ],
+        [dataset_to_search_result(x) for x in Dataset.objects.filter(**org_filter)],
         [
             dataset_to_search_result(x)
             for x in Dataset.objects.filter(

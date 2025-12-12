@@ -1,7 +1,5 @@
 import re
-from typing import Collection, Optional
-
-from organizations.models import Organization
+from typing import Collection
 
 from datasets.models import (
     Category,
@@ -24,16 +22,6 @@ def get_highlight(
     parts = re.split(query, name, flags=re.IGNORECASE)
     full_tag = f"<{html_tag} class='{html_class}'>{query}</{html_tag}"
     return full_tag.join(parts)
-
-
-def organization_to_search_result(
-    organization: Organization,
-    dataset_ids: Optional[Collection[int]] = None,
-) -> Collection[SearchResult]:  # type: ignore
-    org_datasets = organization.datasets.filter(visibility=VisibilityOptions.PUBLIC)
-    if dataset_ids:
-        org_datasets = org_datasets.filter(id__in=dataset_ids)
-    return list([dataset_to_search_result(x) for x in org_datasets])
 
 
 def dataset_to_search_result(dataset: Dataset) -> SearchResult:

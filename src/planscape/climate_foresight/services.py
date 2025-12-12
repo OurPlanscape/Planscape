@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import shutil
 import tempfile
 import zipfile
@@ -259,6 +258,131 @@ def get_reference_grid_for_run(
     return transform, width, height, nodata
 
 
+def clip_and_align_raster_to_grid(
+    source_url: str,
+    planning_area_geometry: MultiPolygon,
+    ref_transform: rasterio.Affine,
+    ref_width: int,
+    ref_height: int,
+    ref_nodata: float,
+    resampling: Resampling = Resampling.bilinear,
+) -> np.ndarray:
+    """
+    Clip a raster to a planning area and align it to a reference grid.
+
+    This function handles the common pattern of:
+    1. Clipping a source raster to a planning area geometry
+    2. Reprojecting to a reference grid (handling extent and resolution)
+    3. Applying a geometry mask
+
+    This ensures the output covers the full planning area extent, even if
+    the source raster doesn't fully cover the area (missing areas become nodata).
+
+    Args:
+        source_url: URL of the source raster to clip
+        planning_area_geometry: MultiPolygon to clip to (in EPSG:4269)
+        ref_transform: Affine transform for the reference grid
+        ref_width: Width of the reference grid in pixels
+        ref_height: Height of the reference grid in pixels
+        ref_nodata: Nodata value for the output
+        resampling: Resampling method (default: bilinear)
+
+    Returns:
+        Aligned numpy array matching the reference grid dimensions
+    """
+    with rasterio.open(source_url) as src:
+        log.info(
+            f"Clipping raster - url: {source_url}, "
+            f"shape: ({src.height}, {src.width}), "
+            f"dtype: {src.dtypes[0]}, "
+            f"nodata: {src.nodata}, "
+            f"crs: {src.crs}"
+        )
+
+        clipped_data, valid_mask, clipped_transform = read_raster_window_downsampled(
+            src=src,
+            geometry=planning_area_geometry,
+            geometry_crs="EPSG:4269",
+            target_pixels=None,
+            resampling=rasterio.enums.Resampling.nearest,
+        )
+
+        log.info(
+            f"After initial clip - "
+            f"clipped_data shape: {clipped_data.shape}, "
+            f"valid_mask sum: {np.sum(valid_mask)}"
+        )
+
+        src_nodata = src.nodata if src.nodata is not None else -9999
+        src_crs = src.crs
+
+        clipped_data = clipped_data.astype(np.float32)
+        clipped_data[~valid_mask] = src_nodata
+
+    with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+        temp_initial_clip = tmp.name
+
+    try:
+        initial_profile = {
+            "driver": "GTiff",
+            "dtype": rasterio.float32,
+            "width": clipped_data.shape[1],
+            "height": clipped_data.shape[0],
+            "count": 1,
+            "crs": src_crs,
+            "transform": clipped_transform,
+            "nodata": src_nodata,
+        }
+
+        with rasterio.open(temp_initial_clip, "w", **initial_profile) as dst:
+            dst.write(clipped_data, 1)
+
+        log.info(f"Wrote initial clipped raster to: {temp_initial_clip}")
+
+        log.info(
+            f"Resampling to reference grid: {ref_width}x{ref_height} "
+            f"(original clipped: {clipped_data.shape[1]}x{clipped_data.shape[0]})"
+        )
+
+        aligned_data = np.full((ref_height, ref_width), ref_nodata, dtype=np.float32)
+
+        with rasterio.open(temp_initial_clip) as clip_src:
+            reproject(
+                source=rasterio.band(clip_src, 1),
+                destination=aligned_data,
+                src_transform=clip_src.transform,
+                src_crs=clip_src.crs,
+                src_nodata=clip_src.nodata,
+                dst_transform=ref_transform,
+                dst_crs="EPSG:4269",
+                dst_nodata=ref_nodata,
+                resampling=resampling,
+            )
+
+        geom_geojson = json.loads(planning_area_geometry.json)
+        geom_mask = geometry_mask(
+            [geom_geojson],
+            out_shape=(ref_height, ref_width),
+            transform=ref_transform,
+            invert=True,
+        )
+        aligned_data[~geom_mask] = ref_nodata
+
+        log.info(
+            f"After alignment to reference grid - "
+            f"shape: {aligned_data.shape}, "
+            f"valid pixels: {np.sum(aligned_data != ref_nodata)}"
+        )
+
+        return aligned_data
+
+    finally:
+        try:
+            Path(temp_initial_clip).unlink(missing_ok=True)
+        except Exception as e:
+            log.warning(f"Failed to clean up temp file {temp_initial_clip}: {e}")
+
+
 def normalize_raster_layer(
     input_layer: DataLayer,
     run_id: int,
@@ -314,93 +438,21 @@ def normalize_raster_layer(
         with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
             temp_clipped_path = tmp.name
 
-        with rasterio.open(input_layer.url) as src:
+        aligned_data = clip_and_align_raster_to_grid(
+            source_url=input_layer.url,
+            planning_area_geometry=planning_area_geometry,
+            ref_transform=ref_transform,
+            ref_width=ref_width,
+            ref_height=ref_height,
+            ref_nodata=ref_nodata,
+            resampling=Resampling.bilinear,
+        )
+
+        if np.any(aligned_data != ref_nodata):
+            valid_data = aligned_data[aligned_data != ref_nodata]
             log.info(
-                f"Source raster info - url: {input_layer.url}, "
-                f"shape: ({src.height}, {src.width}), "
-                f"dtype: {src.dtypes[0]}, "
-                f"nodata: {src.nodata}, "
-                f"crs: {src.crs}"
+                f"Aligned data stats - min: {np.min(valid_data)}, max: {np.max(valid_data)}"
             )
-
-            clipped_data, valid_mask, clipped_transform = (
-                read_raster_window_downsampled(
-                    src=src,
-                    geometry=planning_area_geometry,
-                    geometry_crs="EPSG:4269",
-                    target_pixels=None,
-                    resampling=rasterio.enums.Resampling.nearest,
-                )
-            )
-
-            log.info(
-                f"After initial clip - "
-                f"clipped_data shape: {clipped_data.shape}, "
-                f"dtype: {clipped_data.dtype}, "
-                f"valid_mask sum: {np.sum(valid_mask)}"
-            )
-
-            src_nodata = src.nodata if src.nodata is not None else -9999
-            src_crs = src.crs
-
-            clipped_data = clipped_data.astype(np.float32)
-            clipped_data[~valid_mask] = src_nodata
-
-        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp2:
-            temp_initial_clip = tmp2.name
-
-        initial_profile = {
-            "driver": "GTiff",
-            "dtype": rasterio.float32,
-            "width": clipped_data.shape[1],
-            "height": clipped_data.shape[0],
-            "count": 1,
-            "crs": src_crs,
-            "transform": clipped_transform,
-            "nodata": src_nodata,
-        }
-
-        with rasterio.open(temp_initial_clip, "w", **initial_profile) as dst:
-            dst.write(clipped_data, 1)
-
-        log.info(f"Wrote initial clipped raster to: {temp_initial_clip}")
-
-        log.info(
-            f"Resampling to reference grid: {ref_width}x{ref_height} "
-            f"(original clipped: {clipped_data.shape[1]}x{clipped_data.shape[0]})"
-        )
-
-        aligned_data = np.full((ref_height, ref_width), ref_nodata, dtype=np.float32)
-
-        with rasterio.open(temp_initial_clip) as clip_src:
-            reproject(
-                source=rasterio.band(clip_src, 1),
-                destination=aligned_data,
-                src_transform=clip_src.transform,
-                src_crs=clip_src.crs,
-                src_nodata=clip_src.nodata,
-                dst_transform=ref_transform,
-                dst_crs="EPSG:4269",
-                dst_nodata=ref_nodata,
-                resampling=Resampling.bilinear,
-            )
-
-        geom_geojson = json.loads(planning_area_geometry.json)
-        geom_mask = geometry_mask(
-            [geom_geojson],
-            out_shape=(ref_height, ref_width),
-            transform=ref_transform,
-            invert=True,
-        )
-        aligned_data[~geom_mask] = ref_nodata
-
-        log.info(
-            f"After resampling to reference grid - "
-            f"shape: {aligned_data.shape}, "
-            f"valid pixels: {np.sum(aligned_data != ref_nodata)}, "
-            f"min: {np.min(aligned_data[aligned_data != ref_nodata]) if np.any(aligned_data != ref_nodata) else 'N/A'}, "
-            f"max: {np.max(aligned_data[aligned_data != ref_nodata]) if np.any(aligned_data != ref_nodata) else 'N/A'}"
-        )
 
         profile = {
             "driver": "GTiff",
@@ -417,11 +469,6 @@ def normalize_raster_layer(
             dst.write(aligned_data, 1)
 
         log.info(f"Wrote aligned raster to: {temp_clipped_path}")
-
-        try:
-            os.unlink(temp_initial_clip)
-        except Exception as e:
-            log.warning(f"Failed to clean up temp file {temp_initial_clip}: {e}")
 
         cf_meta = input_layer.metadata.get("modules", {}).get("climate_foresight", {})
         translation = cf_meta.get("translation", {})
@@ -852,7 +899,17 @@ def rollup_pillar(
                     block_stack = []
                     for layer in normalized_layers:
                         with rasterio.open(layer.url) as layer_src:
-                            block_data = layer_src.read(1, window=window)
+                            fill_value = (
+                                layer_src.nodata
+                                if layer_src.nodata is not None
+                                else nodata
+                            )
+                            block_data = layer_src.read(
+                                1,
+                                window=window,
+                                boundless=True,
+                                fill_value=fill_value,
+                            )
                             block_stack.append(block_data)
 
                     block_stack = np.array(block_stack, dtype=np.float32)

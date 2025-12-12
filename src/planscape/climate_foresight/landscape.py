@@ -27,7 +27,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from gis.info import get_gdal_env, info_raster
-from gis.rasters import read_raster_window_downsampled, to_planscape_streaming
+from gis.rasters import to_planscape_streaming
 
 from climate_foresight.future_climate import (
     get_default_future_climate_layer,
@@ -37,6 +37,10 @@ from climate_foresight.models import (
     ClimateForesightPillarRollup,
     ClimateForesightPillarRollupStatus,
     ClimateForesightRun,
+)
+from climate_foresight.services import (
+    clip_and_align_raster_to_grid,
+    get_reference_grid_for_run,
 )
 
 log = logging.getLogger(__name__)
@@ -100,7 +104,17 @@ def aggregate_rasters_simple_average(
                     block_stack = []
                     for layer in raster_layers:
                         with rasterio.open(layer.url) as layer_src:
-                            block_data = layer_src.read(1, window=window)
+                            fill_value = (
+                                layer_src.nodata
+                                if layer_src.nodata is not None
+                                else nodata
+                            )
+                            block_data = layer_src.read(
+                                1,
+                                window=window,
+                                boundless=True,
+                                fill_value=fill_value,
+                            )
                             block_stack.append(block_data)
 
                     block_stack = np.array(block_stack, dtype=np.float32)
@@ -364,6 +378,10 @@ def rollup_landscape(
         pk=settings.CLIMATE_FORESIGHT_DATASET_ID
     )
 
+    ref_transform, ref_width, ref_height, ref_nodata = get_reference_grid_for_run(
+        run_id, planning_area_geometry
+    )
+
     for future_layer in future_layers:
         clipped_name = f"{future_layer.name} (Clipped for PA {run.planning_area.id})"
 
@@ -390,39 +408,30 @@ def rollup_landscape(
                 temp_clipped_path = tmp.name
 
             try:
-                with rasterio.open(future_layer.url) as src:
-                    clipped_data, valid_mask, clipped_transform = (
-                        read_raster_window_downsampled(
-                            src=src,
-                            geometry=planning_area_geometry,
-                            geometry_crs="EPSG:4269",
-                            target_pixels=None,  # Full resolution
-                            resampling=rasterio.enums.Resampling.bilinear,
-                        )
-                    )
+                aligned_data = clip_and_align_raster_to_grid(
+                    source_url=future_layer.url,
+                    planning_area_geometry=planning_area_geometry,
+                    ref_transform=ref_transform,
+                    ref_width=ref_width,
+                    ref_height=ref_height,
+                    ref_nodata=ref_nodata,
+                )
 
-                    nodata = src.nodata if src.nodata is not None else -9999
-                    clipped_data = clipped_data.astype(np.float32)
-                    clipped_data[~valid_mask] = nodata
+                profile = {
+                    "driver": "GTiff",
+                    "dtype": rasterio.float32,
+                    "width": ref_width,
+                    "height": ref_height,
+                    "count": 1,
+                    "crs": "EPSG:4269",
+                    "transform": ref_transform,
+                    "nodata": ref_nodata,
+                }
 
-                    profile = src.profile.copy()
-                    profile.update(
-                        {
-                            "height": clipped_data.shape[0],
-                            "width": clipped_data.shape[1],
-                            "transform": clipped_transform,
-                            "nodata": nodata,
-                            "dtype": rasterio.float32,
-                        }
-                    )
+                with rasterio.open(temp_clipped_path, "w", **profile) as dst:
+                    dst.write(aligned_data, 1)
 
-                    with rasterio.open(temp_clipped_path, "w", **profile) as dst:
-                        dst.write(clipped_data, 1)
-
-                    log.info(
-                        f"Clipped to shape {clipped_data.shape} "
-                        f"(from original {src.shape})"
-                    )
+                log.info(f"Aligned to reference grid shape ({ref_height}, {ref_width})")
 
                 uuid = str(uuid4())
                 original_name = f"{clipped_name.replace(' ', '_')}_{uuid}.tif"
