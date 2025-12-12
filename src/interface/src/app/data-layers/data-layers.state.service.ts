@@ -22,6 +22,7 @@ import {
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
+import { FeatureService } from '../features/feature.service';
 
 @Injectable()
 export class DataLayersStateService {
@@ -44,7 +45,7 @@ export class DataLayersStateService {
     shareReplay(1)
   );
 
-  dataSets$ = this.mapModuleService.mapData$.pipe(
+  dataSets$ = this.mapModuleService.datasets$.pipe(
     map((mapData) => mapData.main_datasets)
   );
 
@@ -112,16 +113,27 @@ export class DataLayersStateService {
         this.loadingSubject.next(false);
         return of(null);
       }
-      return this.service.search(term, this.limit, offset).pipe(
-        startWith(null),
-        map((results) => {
-          if (results) {
-            this.loadingSubject.next(false);
-            return results;
-          }
-          return null;
+
+      const module = this.isMapModuleFeatureOn
+        ? this.mapModuleService.moduleName
+        : undefined;
+      return this.service
+        .search({
+          term,
+          limit: this.limit,
+          offset,
+          module,
         })
-      );
+        .pipe(
+          startWith(null),
+          map((results) => {
+            if (results) {
+              this.loadingSubject.next(false);
+              return results;
+            }
+            return null;
+          })
+        );
     }),
     shareReplay(1)
   );
@@ -134,7 +146,8 @@ export class DataLayersStateService {
 
   constructor(
     private service: DataLayersService,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    private featureService: FeatureService
   ) {}
 
   selectDataSet(dataset: BaseDataSet) {
@@ -221,5 +234,9 @@ export class DataLayersStateService {
     this.resetPath();
     this.clearDataLayer();
     this.clearSearch();
+  }
+
+  get isMapModuleFeatureOn() {
+    return this.featureService.isFeatureEnabled('MAP_MODULE');
   }
 }

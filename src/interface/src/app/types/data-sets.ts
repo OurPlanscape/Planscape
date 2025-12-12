@@ -148,6 +148,13 @@ export interface SearchResult {
   data: DataLayer | DataSet;
 }
 
+export interface SearchQuery {
+  term: string;
+  limit: number;
+  offset?: number;
+  module?: string;
+}
+
 export interface DataSetSearchResult extends SearchResult {
   type: 'DATASET';
   data: DataSet;
