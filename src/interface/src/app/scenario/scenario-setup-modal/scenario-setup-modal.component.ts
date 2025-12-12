@@ -175,7 +175,6 @@ export class ScenarioSetupModalComponent implements OnInit {
       error: (e) => {
         this.submitting = false;
         if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
-          // TODO: confirm backend error format
           if (
             e.error.errors?.global &&
             e.error.errors?.global.some((msg: string) =>
@@ -184,7 +183,6 @@ export class ScenarioSetupModalComponent implements OnInit {
               )
             )
           ) {
-            this.submitting = false;
             this.errorMessage =
               'This name is already used by another scenario in this planning area.';
           } else {
@@ -202,8 +200,6 @@ export class ScenarioSetupModalComponent implements OnInit {
             this.errorMessage =
               'This name is already used by another scenario in this planning area.';
           } else {
-            this.submitting = false;
-            // otherwise, show snackbar for unknown errors
             this.showGenericErrorSnackbar();
           }
           this.dialogRef.close(false);

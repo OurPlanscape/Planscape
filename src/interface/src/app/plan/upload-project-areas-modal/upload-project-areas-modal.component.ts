@@ -187,30 +187,32 @@ export class UploadProjectAreasModalComponent {
           },
           error: (err: any) => {
             this.uploadingData = false;
-
+            let errorsObject = err.error;
+            // TODO: more tests on latter two conditions
             if (
               this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
             ) {
-              // TODO: test what the error response might be
-            } else {
-              if (!!err.error?.global) {
-                this.uploadFormError = err.error.global.join(' ');
-              } else if (err.error?.name) {
-                const nameControl = this.uploadProjectsForm.get('scenarioName');
-                if (err.error.name?.join(' ').includes('blank.')) {
-                  nameControl?.setErrors({
-                    customError: 'Name must not be blank',
-                  });
-                }
-                if (err.error.name?.join(' ').includes('name already exists.'))
-                  nameControl?.setErrors({
-                    customError: 'A scenario with this name already exists.',
-                  });
-              } else {
-                this.uploadFormError =
-                  'An unknown error occured when trying to create a scenario.';
-              }
+              errorsObject = err.error.errors;
             }
+
+            if (!!errorsObject.global) {
+              this.uploadFormError = err.error.global.join(' ');
+            } else if (errorsObject.name) {
+              const nameControl = this.uploadProjectsForm.get('scenarioName');
+              if (errorsObject.name?.join(' ').includes('blank.')) {
+                nameControl?.setErrors({
+                  customError: 'Name must not be blank',
+                });
+              }
+              if (errorsObject.name?.join(' ').includes('name already exists.'))
+                nameControl?.setErrors({
+                  customError: 'A scenario with this name already exists.',
+                });
+            } else {
+              this.uploadFormError =
+                'An unknown error occured when trying to create a scenario.';
+            }
+
           },
         });
     }
