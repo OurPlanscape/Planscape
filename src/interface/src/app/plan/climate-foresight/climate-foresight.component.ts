@@ -33,7 +33,6 @@ import {
 import { FrontendConstants } from '../../map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-modal.component';
-import { CopyRunModalComponent } from './copy-run-modal/copy-run-modal.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 
@@ -163,8 +162,8 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(NewAnalysisModalComponent, {
       data: {
+        mode: 'new',
         planningAreaId: this.currentPlan.id,
-        planningAreaName: this.currentPlan.name,
       },
     });
 
@@ -267,8 +266,9 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
   }
 
   copyRun(run: ClimateForesightRun): void {
-    const dialogRef = this.dialog.open(CopyRunModalComponent, {
+    const dialogRef = this.dialog.open(NewAnalysisModalComponent, {
       data: {
+        mode: 'copy',
         runId: run.id,
         runName: run.name,
       },
