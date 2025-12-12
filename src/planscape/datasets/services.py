@@ -419,6 +419,9 @@ def find_anything(
     type: Optional[str] = None,
     module: Optional[str] = None,
 ) -> Dict[str, SearchResult]:
+    """
+    Given a term, search for anything (datasets / datalayers)
+    """
     layer_type = type or DataLayerType.RASTER
     datasets = None
     if module:
