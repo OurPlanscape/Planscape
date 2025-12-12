@@ -266,11 +266,6 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
         )
 
         for input_layer in source_run.input_datalayers.all():
-            pillar = (
-                input_layer.pillar
-                if input_layer.pillar and not input_layer.pillar.is_custom
-                else None
-            )
             ClimateForesightRunInputDataLayer.objects.create(
                 run=new_run,
                 datalayer=input_layer.datalayer,
