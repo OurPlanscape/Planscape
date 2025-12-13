@@ -40,6 +40,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dialog/confirmation-dialog.component';
 import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+import { FeatureService } from 'src/app/features/feature.service';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -138,7 +139,8 @@ export class ClimateForesightRunComponent implements OnInit {
     private planState: PlanState,
     private climateForesightService: ClimateForesightService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -298,13 +300,20 @@ export class ClimateForesightRunComponent implements OnInit {
             observer.complete();
           },
           error: (error) => {
-            console.error('Error saving data layers:', error);
-            this.snackBar.open(
-              'Failed to save data layers: ' +
-                (error?.error?.detail || error?.message || 'Unknown error'),
-              'Close',
-              SNACK_BOTTOM_NOTICE_CONFIG
-            );
+            if (
+              this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+            ) {
+              // TODO: confirm backend error format
+            } else {
+              console.error('Error saving data layers:', error);
+              this.snackBar.open(
+                'Failed to save data layers: ' +
+                  (error?.error?.detail || error?.message || 'Unknown error'),
+                'Close',
+                SNACK_BOTTOM_NOTICE_CONFIG
+              );
+            }
+
             this.savingStep = false;
             observer.next(false);
             observer.complete();
@@ -367,12 +376,19 @@ export class ClimateForesightRunComponent implements OnInit {
           },
           error: (error) => {
             console.error('Error saving favorability:', error);
-            this.snackBar.open(
-              'Failed to save favorability: ' +
-                (error?.error?.detail || error?.message || 'Unknown error'),
-              'Close',
-              SNACK_BOTTOM_NOTICE_CONFIG
-            );
+
+            if (
+              this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+            ) {
+              // TODO: confirm backend error object format
+            } else {
+              this.snackBar.open(
+                'Failed to save favorability: ' +
+                  (error?.error?.detail || error?.message || 'Unknown error'),
+                'Close',
+                SNACK_BOTTOM_NOTICE_CONFIG
+              );
+            }
             this.savingStep = false;
             observer.next(false);
             observer.complete();
@@ -430,12 +446,18 @@ export class ClimateForesightRunComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error saving pillars:', error);
-          this.snackBar.open(
-            'Failed to save pillars: ' +
-              (error?.error?.detail || error?.message || 'Unknown error'),
-            'Close',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
+          if (
+            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+          ) {
+            // TODO: confirm backend error format
+          } else {
+            this.snackBar.open(
+              'Failed to save pillars: ' +
+                (error?.error?.detail || error?.message || 'Unknown error'),
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+          }
           this.savingStep = false;
         },
       });
@@ -468,12 +490,19 @@ export class ClimateForesightRunComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error triggering analysis:', error);
-          this.snackBar.open(
-            'Failed to trigger analysis: ' +
-              (error?.error?.detail || error?.message || 'Unknown error'),
-            'Close',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
+
+          if (
+            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+          ) {
+            // TODO: confirm backend error format
+          } else {
+            this.snackBar.open(
+              'Failed to trigger analysis: ' +
+                (error?.error?.detail || error?.message || 'Unknown error'),
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+          }
           this.savingStep = false;
         },
       });

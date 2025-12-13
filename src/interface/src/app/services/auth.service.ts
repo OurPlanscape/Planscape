@@ -311,40 +311,6 @@ export class AuthService {
   }
 
   /**
-   * deprecated
-   * @param newUser
-   * @param currentPassword
-   */
-  updateUser(newUser: User, currentPassword: string): Observable<User> {
-    return this.http
-      .patch(
-        this.API_ROOT.concat('user/'),
-        {
-          email: newUser.email,
-          username: newUser.username,
-          first_name: newUser.firstName,
-          last_name: newUser.lastName,
-          current_password: currentPassword,
-        },
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(
-        map((response: any) => {
-          const user: User = {
-            email: response.email,
-            username: response.username,
-            firstName: response.first_name,
-            lastName: response.last_name,
-          };
-          this.loggedInUser$.next(user);
-          return user;
-        })
-      );
-  }
-
-  /**
    * "Deletes" user from backend. The behavior of this command is to disable the user account,
    *  not fully delete it, so data can be restored later if necessary.
    */

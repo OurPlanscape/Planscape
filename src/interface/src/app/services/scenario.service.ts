@@ -10,6 +10,7 @@ import {
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
+import { FeatureService } from '../features/feature.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,10 @@ import { environment } from '../../environments/environment';
 export class ScenarioService {
   readonly v2Path = environment.backend_endpoint + '/v2/scenarios/';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private featureService: FeatureService
+  ) {}
 
   /** Fetches the scenarios for a plan from the backend.
    *  Includes an optional ordering param
@@ -89,6 +93,13 @@ export class ScenarioService {
       })
       .pipe(
         catchError((error) => {
+          if (
+            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+          ) {
+            // TODO: confirm backend response
+          } else {
+          }
+
           const message =
             error.error?.global?.[0] ||
             'Please change your settings and try again.';
@@ -111,6 +122,13 @@ export class ScenarioService {
       })
       .pipe(
         catchError((error) => {
+          if (
+            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+          ) {
+            // TODO: confirm backend error
+          } else {
+          }
+
           const message =
             error.error?.global?.[0] || 'Failed to save configuration';
           throw new CreateScenarioError(
