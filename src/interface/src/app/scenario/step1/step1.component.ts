@@ -8,7 +8,6 @@ import {
 } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
@@ -28,6 +27,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MatRadioModule } from '@angular/material/radio';
+
 
 @UntilDestroy()
 @Component({
@@ -40,7 +41,7 @@ import { FeatureService } from 'src/app/features/feature.service';
     MatMenuModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
-    MatLegacyRadioModule,
+    MatRadioModule,
     SectionComponent,
     MatFormFieldModule,
     MatSelectModule,
