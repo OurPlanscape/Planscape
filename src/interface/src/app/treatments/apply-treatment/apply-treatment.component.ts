@@ -143,9 +143,9 @@ export class ApplyTreatmentComponent {
       error: (err) => {
         if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
           // TODO: confirm backend response
+        } else {
+          this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
         }
-
-        this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
       },
     });
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
