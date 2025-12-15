@@ -9,10 +9,10 @@ from modules.base import get_module
 
 class MapModuleTest(TestCase):
     def test_returns_options_correctly(self):
-        base_dataset = DatasetFactory.create(
+        DatasetFactory.create(
             name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
         )
-        main_dataset = DatasetFactory.create(
+        DatasetFactory.create(
             name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
 
