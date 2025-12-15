@@ -139,6 +139,7 @@ def handle(apps, schema_editor):
         return
 
     print(f"OLD DATASET {old_dataset.name} NO LONGER HAS ANY DATALAYERS. DELETING IT.")
+    old_dataset.categories.all().delete()
     old_dataset.delete()
     print(f"OLD DATASET {old_dataset.name} DELETED.")
 
