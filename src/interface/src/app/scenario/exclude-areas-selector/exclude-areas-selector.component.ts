@@ -43,7 +43,9 @@ export class ExcludeAreasSelectorComponent
 
   form = new FormGroup({}); // keeping the inheritance happy
   // excludedAreas here are the list of available exclusion areas
-  excludableAreas$ = this.forsysService.excludedAreas$;
+  excludableAreas$ = this.forsysService.excludedAreas$.pipe(
+    map((areas) => areas.sort((a, b) => a.name.localeCompare(b.name)))
+  );
   selectedAreas: BaseLayer[] = [];
   viewingAreas: BaseLayer[] = [];
 
