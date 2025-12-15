@@ -34,6 +34,10 @@
 </mat-card>
 
 <mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="onCopy($event)">
+    <mat-icon>content_copy</mat-icon>
+    <span>Copy</span>
+  </button>
   <button class="delete-button" mat-menu-item (click)="onDelete($event)">
     <mat-icon>delete</mat-icon>
     <span>Delete</span>

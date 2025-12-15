@@ -11,17 +11,11 @@ landscape conditions in 2D space.
 import logging
 import tempfile
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 from uuid import uuid4
 
 import numpy as np
 import rasterio
-
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import MultiPolygon
-from django.db import IntegrityError
-
 from datasets.models import (
     DataLayer,
     DataLayerHasStyle,
@@ -32,8 +26,12 @@ from datasets.models import (
     Style,
 )
 from datasets.services import create_datalayer, get_storage_url
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import MultiPolygon
+from django.db import IntegrityError
 from gis.info import get_gdal_env, info_raster
-from gis.rasters import to_planscape_streaming, read_raster_window_downsampled
+from gis.rasters import to_planscape_streaming
 
 log = logging.getLogger(__name__)
 
@@ -180,25 +178,14 @@ def run_promote_analysis(
 
     with rasterio.Env(**get_gdal_env()):
         with rasterio.open(current_layer.url) as current_src:
-            current_data, current_geometry_mask, clipped_transform = (
-                read_raster_window_downsampled(
-                    src=current_src,
-                    geometry=planning_area_geometry,
-                    geometry_crs="EPSG:4269",
-                    target_pixels=None,  # Full resolution
-                    resampling=rasterio.enums.Resampling.nearest,
-                )
-            )
+            current_data = current_src.read(1).astype(np.float32)
             profile = current_src.profile.copy()
             nodata = current_src.nodata if current_src.nodata is not None else -9999
 
         with rasterio.open(future_layer.url) as future_src:
-            future_data, future_geometry_mask, _ = read_raster_window_downsampled(
-                src=future_src,
-                geometry=planning_area_geometry,
-                geometry_crs="EPSG:4269",
-                target_pixels=None,  # Full resolution
-                resampling=rasterio.enums.Resampling.nearest,
+            future_data = future_src.read(1).astype(np.float32)
+            future_nodata = (
+                future_src.nodata if future_src.nodata is not None else -9999
             )
 
         if current_data.shape != future_data.shape:
@@ -207,21 +194,9 @@ def run_promote_analysis(
                 f"Got current={current_data.shape}, future={future_data.shape}"
             )
 
-        profile.update(
-            {
-                "height": current_data.shape[0],
-                "width": current_data.shape[1],
-                "transform": clipped_transform,
-                "nodata": nodata,
-            }
-        )
+        profile.update(dtype=rasterio.float32, nodata=nodata)
 
-        valid_mask = current_geometry_mask & future_geometry_mask
-
-        current_data = current_data.astype(np.float32)
-        future_data = future_data.astype(np.float32)
-        current_data[~current_geometry_mask] = nodata
-        future_data[~future_geometry_mask] = nodata
+        valid_mask = (current_data != nodata) & (future_data != future_nodata)
 
         # initialize MPAT scores
         monitor = np.full_like(current_data, nodata, dtype=np.float32)
@@ -229,20 +204,34 @@ def run_promote_analysis(
         adapt = np.full_like(current_data, nodata, dtype=np.float32)
         transform = np.full_like(current_data, nodata, dtype=np.float32)
 
+        current_scaled = np.full_like(current_data, nodata, dtype=np.float32)
+
         if np.any(valid_mask):
             current_valid = current_data[valid_mask].astype(np.float32)
             future_valid = future_data[valid_mask].astype(np.float32)
 
-            # rescale both current and future to 0-100 range
-            current_min = np.min(current_valid)
-            current_max = np.max(current_valid)
+            # scale current to 0-100 to match future scale
+            current_valid = current_valid * 100.0
+
             future_min = np.min(future_valid)
             future_max = np.max(future_valid)
 
-            current_valid = rescale_linear(
-                current_valid, current_min, current_max, 0, 100
-            )
-            future_valid = rescale_linear(future_valid, future_min, future_max, 0, 100)
+            # ensure future values are within 0-100 range
+            if future_min >= 0 and future_max <= 1.0:
+                future_valid = future_valid * 100.0
+            elif future_min >= 0 and future_max <= 100.0:
+                pass
+            elif future_min >= 0 and future_max <= 255.0:
+                future_valid = rescale_linear(future_valid, 0, 255, 0, 100)
+            else:
+                future_valid = rescale_linear(
+                    future_valid, future_min, future_max, 0, 100
+                )
+
+            current_valid = np.clip(current_valid, 0, 100)
+            future_valid = np.clip(future_valid, 0, 100)
+
+            current_scaled[valid_mask] = current_valid
 
             # Calculate strategy scores for valid pixels
             # Monitor = good current, good future (100, 100)
@@ -318,7 +307,7 @@ def run_promote_analysis(
         # ICS = average of current and monitor, with piecewise rescaling
         ics = np.full_like(current_data, nodata, dtype=np.float32)
         if np.any(valid_mask):
-            avg = (current_data[valid_mask] + monitor[valid_mask]) / 2.0
+            avg = (current_scaled[valid_mask] + monitor[valid_mask]) / 2.0
 
             # Piecewise rescaling
             # <= 10 → 0

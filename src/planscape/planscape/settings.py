@@ -403,10 +403,10 @@ BROWSE_DATASETS_TTL = config("BROWSE_DATASETS_TTL", DEFAULT_CACHE_TTL)
 CATEGORY_PATH_TTL = config("CATEGORY_PATH_TTL", 3600)  # 1 hour
 S3_PUBLIC_URL_TTL = config("S3_PUBLIC_URL_TTL", 3600)  # 1 hour
 GCS_PUBLIC_URL_TTL = config("GCS_PUBLIC_URL_TTL", 3600, cast=int)  # 1 hour
-GCS_DEFAULT_CACHE_DIRECTIVES = config(
-    "GCS_DEFAULT_CACHE_DIRECTIVES", "public, immutable", cast=lambda x: list(set(x.split(",")))
-)
 GCS_DEFAULT_CACHE_MAX_AGE = config("GCS_DEFAULT_CACHE_MAX_AGE", 86400, cast=int)  # 1 day
+GCS_DEFAULT_CACHE_DIRECTIVES = config(
+    "GCS_DEFAULT_CACHE_DIRECTIVES", f"public, max-age={GCS_DEFAULT_CACHE_MAX_AGE}, immutable", cast=str
+)
 
 # CELERY
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
@@ -451,6 +451,9 @@ CELERY_TASK_ROUTES = {
     },
     "impacts.tasks.*": {
         "queue": "impacts",
+    },
+    "climate_foresight.tasks.*": {
+        "queue": "climate-foresight",
     },
     "e2e.tasks.*": {
         "queue": "default",
