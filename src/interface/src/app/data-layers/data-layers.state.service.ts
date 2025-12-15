@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
@@ -23,7 +23,7 @@ import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 import { FeatureService } from '../features/feature.service';
-
+import { MAX_SELECTED_DATALAYERS } from '../shared/tokens/max-selected-datalayers.token';
 @Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
@@ -52,8 +52,26 @@ export class DataLayersStateService {
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
+  // Datalayers applied to the map
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
+
+  // Datalayers added to a particular analysis - used on climate
+  private _addedDataLayer$ = new BehaviorSubject<DataLayer[] | []>([]);
+  addedDataLayer$ = this._addedDataLayer$.asObservable();
+
+  // Added datalayers count - used on climate
+  addedCount$ = this.addedDataLayer$.pipe(map((items) => items.length));
+
+  // can proceed, we can proceed just if we have more that 1 addded datalayer - used on climate
+  hasAddedDatalayers$ = this.addedDataLayer$.pipe(
+    map((items) => items.length > 0)
+  );
+
+  // can add more layers - used on climate
+  canAddMoreDatalayers$ = this.addedDataLayer$.pipe(
+    map((items) => items.length < this.maxSelectedDatalayers)
+  );
 
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
     switchMap((layer) => {
@@ -147,7 +165,9 @@ export class DataLayersStateService {
   constructor(
     private service: DataLayersService,
     private mapModuleService: MapModuleService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    @Inject(MAX_SELECTED_DATALAYERS)
+    private readonly maxSelectedDatalayers: number
   ) {}
 
   selectDataSet(dataset: BaseDataSet) {
@@ -238,5 +258,39 @@ export class DataLayersStateService {
 
   get isMapModuleFeatureOn() {
     return this.featureService.isFeatureEnabled('MAP_MODULE');
+  }
+
+  // Checking if the layer is already in the addedList - used on climate
+  isAddedLayer(layer: DataLayer) {
+    return this._addedDataLayer$.value.some((l) => l.id === layer.id);
+  }
+
+  // Remove a layer from the added list - used on climate
+  removeAddedLayer(layer: DataLayer) {
+    const updatedAddedDatalayers = this._addedDataLayer$.value.filter(
+      (l) => l.id !== layer.id
+    );
+    this._addedDataLayer$.next(updatedAddedDatalayers);
+  }
+
+  // Adding or removing an item to the added list - used on climate
+  toggleLayerAdition(layer: DataLayer) {
+    if (this.isAddedLayer(layer)) {
+      this.removeAddedLayer(layer);
+    } else if (
+      this._addedDataLayer$.value.length < this.maxSelectedDatalayers
+    ) {
+      this._addedDataLayer$.next([...this._addedDataLayer$.value, layer]);
+    }
+  }
+
+  // Setting the list of added layers with a pre-loaded list - used on climate
+  updateAddedLayers(layers: DataLayer[]) {
+    this._addedDataLayer$.next(layers);
+  }
+
+  // Return the max number of selected layers for this instance of the service
+  getMaxSelectedLayers(): number {
+    return this.maxSelectedDatalayers;
   }
 }

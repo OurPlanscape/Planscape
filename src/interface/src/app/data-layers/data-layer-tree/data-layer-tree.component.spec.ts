@@ -16,6 +16,7 @@ describe('DataLayerTreeComponent', () => {
           dataTree$: of(null),
           selectedDataLayer$: of(null),
           paths$: of([]),
+          addedDataLayer$: of([]),
         }),
       ],
     }).compileComponents();

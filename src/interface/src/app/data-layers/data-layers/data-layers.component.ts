@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BaseDataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
@@ -61,6 +61,8 @@ import { FeatureService } from '../../features/feature.service';
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
+  @Input() displayAddButton = false;
+
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private featureService: FeatureService
