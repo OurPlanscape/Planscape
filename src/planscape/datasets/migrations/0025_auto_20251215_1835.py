@@ -55,8 +55,8 @@ def handle(apps, schema_editor):
     DataLayer = apps.get_model("datasets", "DataLayer")
     User = apps.get_model("auth", "User")
     Organization = apps.get_model("organizations", "Organization")
-    user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
-    org = Organization.objects.get(name=settings.DEFAULT_ORGANIZATION_NAME)
+    user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL).first()
+    org = Organization.objects.get(name=settings.DEFAULT_ORGANIZATION_NAME).first()
 
     for raster_dataset_name in RASTER_DATASETS:
         print(f"CONFIGURING RASTER DATASET {raster_dataset_name}.")
@@ -82,7 +82,7 @@ def handle(apps, schema_editor):
         created_by=user,
         organization=org,
         visiblity=VisibilityOptions.PUBLIC,
-        selection_type=SelectionTypeOptions.MULTIPLE,
+        selection_type=SelectionTypeOptions.SINGLE,
         preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         name="Disturbances",
     )
@@ -90,7 +90,7 @@ def handle(apps, schema_editor):
         created_by=user,
         organization=org,
         visiblity=VisibilityOptions.PUBLIC,
-        selection_type=SelectionTypeOptions.MULTIPLE,
+        selection_type=SelectionTypeOptions.SINGLE,
         preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         name="Boundaries",
     )
