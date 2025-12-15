@@ -112,7 +112,7 @@ class Command(BaseCommand):
 
                 remaining -= 1
 
-                if task_count > 0 and cooldown_seconds > 0:
+                if task_count > 0:
                     time.sleep(cooldown_seconds)
 
                 self.stdout.write(f"We have {remaining} planning areas remaining.")
