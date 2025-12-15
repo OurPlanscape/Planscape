@@ -13,16 +13,6 @@ from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import connection, transaction
-from gis.geometry import geodjango_to_multi, to_geodjango_geometry
-from gis.rasters import get_estimated_mask as get_estimated_mask_raster
-from modules.base import get_module
-from organizations.models import Organization
-from planscape.openpanel import track_openpanel
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -39,6 +29,16 @@ from datasets.models import (
 )
 from datasets.search import datalayer_to_search_result, dataset_to_search_result
 from datasets.tasks import datalayer_uploaded
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import connection, transaction
+from gis.geometry import geodjango_to_multi, to_geodjango_geometry
+from gis.rasters import get_estimated_mask as get_estimated_mask_raster
+from modules.base import get_module
+from organizations.models import Organization
+
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -424,7 +424,7 @@ def find_anything(
     if module:
         mod = get_module(module)
         preferred_display_type = (
-            PreferredDisplayType.MAIN_DATASETS
+            PreferredDisplayType.MAIN_DATALAYERS
             if layer_type == DataLayerType.RASTER
             else PreferredDisplayType.BASE_DATALAYERS
         )
