@@ -63,6 +63,16 @@
       padding: 0;
     }
 
+    --mat-select-trigger-text-size: 14px;
+
+    .mat-mdc-form-field-subscript-wrapper {
+      height: 0;
+    }
+
+    .mat-mdc-form-field-infix {
+      height: 50px;
+    }
+
     .mat-select-arrow-wrapper {
       align-items: end;
     }
@@ -72,6 +82,12 @@
     }
   }
 }
+
+::ng-deep .sm-select-options .mat-mdc-option {
+  --mat-option-label-text-size: 14px;
+  min-height: 3em;
+}
+
 
 sg-modal {
   max-height: 100%;
