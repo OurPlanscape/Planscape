@@ -41,7 +41,7 @@ export class BaseLayersComponent {
   );
   categorizedBaseLayers$ = this.baseLayersStateService.categorizedBaseLayers$;
 
-  baseDataSets$ = this.mapModuleService.mapData$.pipe(
+  baseDataSets$ = this.mapModuleService.datasets$.pipe(
     map((mapData) => mapData.base_datasets)
   );
 
