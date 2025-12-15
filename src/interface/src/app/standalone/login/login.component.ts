@@ -16,11 +16,11 @@ import {
   SNACK_NOTICE_CONFIG,
 } from '@shared';
 import { MatCardModule } from '@angular/material/card';
-
 import { CommonModule } from '@angular/common';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacyFormFieldModule } from '@angular/material/legacy-form-field'; // until replaceable
+import { MatLegacyInputModule } from '@angular/material/legacy-input'; // until replaceable
 
 @Component({
   selector: 'app-login',
@@ -31,7 +31,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     AboutComponent,
     CommonModule,
     MatCardModule,
-    LegacyMaterialModule,
+    MatLegacyFormFieldModule,
+    MatLegacyInputModule,
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
