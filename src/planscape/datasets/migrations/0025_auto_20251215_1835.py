@@ -129,6 +129,7 @@ def handle(apps, schema_editor):
                 continue
 
             layer.dataset = key
+            layer.category = None
             layer.save()
             print(f"MOVED {layer.name} FROM {old_dataset.name} TO {key.name} DATASET.")
     old_datalayer_count = old_dataset.datalayers.all().count()
