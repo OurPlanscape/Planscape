@@ -55,8 +55,8 @@ def handle(apps, schema_editor):
     DataLayer = apps.get_model("datasets", "DataLayer")
     User = apps.get_model("auth", "User")
     Organization = apps.get_model("organizations", "Organization")
-    user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL).first()
-    org = Organization.objects.get(name=settings.DEFAULT_ORGANIZATION_NAME).first()
+    user = User.objects.filter(email=settings.DEFAULT_ADMIN_EMAIL).first()
+    org = Organization.objects.filter(name=settings.DEFAULT_ORGANIZATION_NAME).first()
 
     for raster_dataset_name in RASTER_DATASETS:
         print(f"CONFIGURING RASTER DATASET {raster_dataset_name}.")
