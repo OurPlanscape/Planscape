@@ -41,7 +41,11 @@ BOUNDARIES_LAYERS = [
     "Subfiresheds",
 ]
 
-PROTECTED_AREAS_LAYERS = []
+PROTECTED_AREAS_LAYERS = [
+    "Protection Status 1 - Managed for biodiversity - disturbances events proceed or mimicked (e.g., wilderness)",
+    "Protection Status 2 - Managed for biodiversity - disturbance events suppressed (e.g., national wildlife refuge)",
+    "Protection Status 3 - Managed for multiple uses but subject to extractive uses such as logging and mining (e.g., national forest)",
+]
 
 RASTER_DATASETS = [
     "California Landscape Metrics",
@@ -96,14 +100,14 @@ def handle(apps, schema_editor):
         preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         name="Boundaries",
     )
-    protected_areas = Dataset.objects.create(
-        created_by=user,
-        organization=org,
-        visibility=VisibilityOptions.PUBLIC,
-        selection_type=SelectionTypeOptions.MULTIPLE,
-        preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
-        name="Protected Areas",
-    )
+    print("CREATED ALL 3 NEW DATASETS.")
+    protected_areas = Dataset.objects.filter(name="Protection Status Dataset").first()
+    if protected_areas:
+        protected_areas.preferred_display_type = PreferredDisplayType.BASE_DATALAYERS
+        protected_areas.selection_type = PreferredDisplayType.MAIN_DATALAYERS
+        protected_areas.visibility = VisibilityOptions.PUBLIC
+        protected_areas.save()
+        print("CONFIGURED PROTECTED AREAS DATASET.")
 
     dataset_groups = {
         ownership: OWNERSHIP_LAYERS,
