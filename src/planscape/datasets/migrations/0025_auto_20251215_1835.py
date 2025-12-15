@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import migrations
 
 from datasets.models import (
