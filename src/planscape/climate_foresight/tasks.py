@@ -1,20 +1,32 @@
 import logging
 from typing import Optional
-from django.db import transaction
 
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerStatus
+from datasets.tasks import process_datalayer
+from django.db import transaction
+from planning.models import GeoPackageStatus
+from planscape.celery import app
+
+from climate_foresight.landscape import rollup_landscape
 from climate_foresight.models import (
-    ClimateForesightRunInputDataLayer,
-    InputDataLayerStatus,
+    ClimateForesightLandscapeRollup,
+    ClimateForesightLandscapeRollupStatus,
     ClimateForesightPillarRollup,
     ClimateForesightPillarRollupStatus,
+    ClimateForesightPromote,
+    ClimateForesightPromoteStatus,
+    ClimateForesightRun,
+    ClimateForesightRunInputDataLayer,
+    ClimateForesightRunStatus,
+    InputDataLayerStatus,
 )
+from climate_foresight.promote import run_promote_analysis
 from climate_foresight.services import (
     calculate_layer_statistics,
+    export_geopackage,
     normalize_raster_layer,
     rollup_pillar,
 )
-from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
@@ -66,8 +78,7 @@ def calculate_climate_foresight_layer_statistics(input_datalayer_id: int) -> Non
         )
 
     except ClimateForesightRunInputDataLayer.DoesNotExist:
-        log.error(f"Input data layer {input_datalayer_id} does not exist")
-        raise
+        log.warning(f"Input data layer {input_datalayer_id} does not exist")
 
     except Exception as e:
         log.exception(
@@ -160,6 +171,7 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
                 f"(id={existing_normalized.id}) that wasn't linked. Linking it now."
             )
             input_dl.normalized_datalayer = existing_normalized
+            input_dl.status = InputDataLayerStatus.COMPLETED
             input_dl.save()
             return existing_normalized.id
 
@@ -200,14 +212,9 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
             input_dl.save()
 
         log.info(
-            f"Linked normalized layer {normalized_layer.id} to input layer {input_dl.id}"
-        )
-
-        log.info(
             f"Successfully normalized input layer {input_dl.id}. "
             f"Function: {normalization_info['function']}, "
             f"Endpoints: {normalization_info['endpoints']}, "
-            f"Method: {normalization_info['endpoints_method']}, "
             f"Favor high: {input_dl.favor_high}"
         )
 
@@ -229,6 +236,30 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
 
         log.exception(f"Failed to normalize input layer {input_datalayer_id}: {str(e)}")
         raise
+
+
+@app.task()
+def process_normalized_datalayers(run_id: int) -> None:
+    """
+    Callback after all normalization tasks complete.
+    Triggers process_datalayer for each normalized layer.
+    """
+    run = ClimateForesightRun.objects.get(pk=run_id)
+    input_layers = run.input_datalayers.filter(
+        normalized_datalayer__isnull=False
+    ).select_related("normalized_datalayer")
+
+    log.info(
+        f"Processing {input_layers.count()} normalized datalayers for run {run_id}"
+    )
+
+    for input_layer in input_layers:
+        process_datalayer(
+            input_layer.normalized_datalayer.id,
+            status=DataLayerStatus.READY,
+        )
+
+    log.info(f"Triggered datalayer processing for run {run_id}")
 
 
 @app.task(
@@ -332,3 +363,382 @@ def rollup_climate_foresight_pillar(pillar_rollup_id: int) -> int:
         log.exception(f"Failed to rollup pillar {pillar_rollup_id}: {str(e)}")
         raise
 
+
+@app.task()
+def process_pillar_datalayers(run_id: int) -> None:
+    """
+    Callback after all pillar rollup tasks complete.
+    Triggers datalayer_uploaded for each pillar rollup layer.
+    """
+    run = ClimateForesightRun.objects.get(pk=run_id)
+    pillar_rollups = run.pillar_rollups.filter(
+        rollup_datalayer__isnull=False
+    ).select_related("rollup_datalayer")
+
+    log.info(
+        f"Processing {pillar_rollups.count()} pillar rollup datalayers for run {run_id}"
+    )
+
+    for pillar_rollup in pillar_rollups:
+        process_datalayer(
+            pillar_rollup.rollup_datalayer.id,
+            status=DataLayerStatus.READY,
+        )
+
+    log.info(f"Triggered pillar datalayer processing for run {run_id}")
+
+
+@app.task(
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3, "countdown": 5},
+)
+def rollup_climate_foresight_landscape(landscape_rollup_id: int) -> dict:
+    """
+    Rollup landscape-level current and future rasters asynchronously.
+
+    This task:
+    1. Gets all completed pillar rollups for the run
+    2. Averages pillar rollups → current_landscape raster
+    3. Maps pillars to future climate layers (with default fallback)
+    4. Averages future layers → future_landscape raster
+    5. Updates ClimateForesightLandscapeRollup with results
+
+    NOTE: This task should be chained with process_datalayer for both output layers.
+
+    Args:
+        landscape_rollup_id: ID of the ClimateForesightLandscapeRollup to process
+
+    Returns:
+        dict: IDs of created current and future DataLayers
+    """
+    try:
+        landscape_rollup_obj = ClimateForesightLandscapeRollup.objects.select_related(
+            "run", "run__created_by"
+        ).get(pk=landscape_rollup_id)
+
+        log.info(
+            f"Starting landscape rollup task for rollup {landscape_rollup_id} "
+            f"(run={landscape_rollup_obj.run.id})"
+        )
+
+        if (
+            landscape_rollup_obj.current_datalayer
+            and landscape_rollup_obj.future_datalayer
+        ):
+            log.warning(
+                f"Landscape rollup {landscape_rollup_id} already has rasters. Skipping."
+            )
+            return {
+                "current": landscape_rollup_obj.current_datalayer.id,
+                "future": landscape_rollup_obj.future_datalayer.id,
+            }
+
+        with transaction.atomic():
+            landscape_rollup_obj.status = ClimateForesightLandscapeRollupStatus.RUNNING
+            landscape_rollup_obj.save()
+
+        result = rollup_landscape(
+            run_id=landscape_rollup_obj.run.id,
+            created_by=landscape_rollup_obj.run.created_by,
+        )
+
+        current_layer = result["current_datalayer"]
+        future_layer = result["future_datalayer"]
+        future_mapping = result["future_mapping"]
+
+        with transaction.atomic():
+            landscape_rollup_obj.current_datalayer = current_layer
+            landscape_rollup_obj.future_datalayer = future_layer
+            landscape_rollup_obj.future_mapping = future_mapping
+            landscape_rollup_obj.status = (
+                ClimateForesightLandscapeRollupStatus.COMPLETED
+            )
+            landscape_rollup_obj.save()
+
+        log.info(
+            f"Successfully completed landscape rollup {landscape_rollup_id}. "
+            f"Current: {current_layer.id}, Future: {future_layer.id}"
+        )
+
+        return {"current": current_layer.pk, "future": future_layer.pk}
+
+    except ClimateForesightLandscapeRollup.DoesNotExist:
+        log.error(f"Landscape rollup {landscape_rollup_id} does not exist")
+        raise
+
+    except Exception as e:
+        try:
+            landscape_rollup_obj = ClimateForesightLandscapeRollup.objects.get(
+                pk=landscape_rollup_id
+            )
+            landscape_rollup_obj.status = ClimateForesightLandscapeRollupStatus.FAILED
+            landscape_rollup_obj.save()
+        except Exception:
+            pass
+
+        log.exception(f"Failed to rollup landscape {landscape_rollup_id}: {str(e)}")
+        raise
+
+
+@app.task()
+def process_landscape_datalayers(result: dict) -> dict:
+    """
+    Process landscape rollup datalayers by calling process_datalayer for both.
+    """
+    if (
+        not isinstance(result, dict)
+        or "current" not in result
+        or "future" not in result
+    ):
+        log.error(f"Invalid result format for landscape processing: {result}")
+        return result
+
+    current_id = result["current"]
+    future_id = result["future"]
+
+    log.info(
+        f"Processing landscape datalayers: current={current_id}, future={future_id}"
+    )
+
+    process_datalayer(current_id)
+    process_datalayer(future_id)
+
+    log.info("Successfully processed both landscape datalayers")
+
+    return result
+
+
+@app.task(
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3, "countdown": 5},
+)
+def run_climate_foresight_promote(promote_id: int) -> dict:
+    """
+    Run PROMOTe analysis to generate MPAT outputs asynchronously.
+
+    Returns dict with IDs of all created PROMOTe output DataLayers.
+    """
+    try:
+        promote_obj = ClimateForesightPromote.objects.select_related(
+            "run", "run__created_by", "run__landscape_rollup", "run__planning_area"
+        ).get(pk=promote_id)
+
+        log.info(
+            f"Starting PROMOTe analysis task for promote {promote_id} "
+            f"(run={promote_obj.run.id})"
+        )
+
+        if promote_obj.mpat_matrix_datalayer:
+            log.warning(f"PROMOTe analysis {promote_id} already completed. Skipping.")
+            return {"mpat_matrix": promote_obj.mpat_matrix_datalayer.id}
+
+        landscape_rollup = promote_obj.run.landscape_rollup
+        if not landscape_rollup:
+            raise ValueError(
+                f"No landscape rollup found for run {promote_obj.run.id}. "
+                "Complete landscape rollup before running PROMOTe."
+            )
+
+        if (
+            landscape_rollup.status != ClimateForesightLandscapeRollupStatus.COMPLETED
+            or not landscape_rollup.current_datalayer
+            or not landscape_rollup.future_datalayer
+        ):
+            raise ValueError(
+                f"Landscape rollup not completed for run {promote_obj.run.id}. "
+                "Complete landscape rollup before running PROMOTe."
+            )
+
+        with transaction.atomic():
+            promote_obj.status = ClimateForesightPromoteStatus.RUNNING
+            promote_obj.save()
+
+        result = run_promote_analysis(
+            run_id=promote_obj.run.id,
+            current_layer=landscape_rollup.current_datalayer,
+            future_layer=landscape_rollup.future_datalayer,
+            created_by=promote_obj.run.created_by,
+            planning_area_geometry=promote_obj.run.planning_area.geometry,
+        )
+
+        with transaction.atomic():
+            promote_obj.monitor_datalayer = result["monitor_datalayer"]
+            promote_obj.protect_datalayer = result["protect_datalayer"]
+            promote_obj.adapt_datalayer = result["adapt_datalayer"]
+            promote_obj.transform_datalayer = result["transform_datalayer"]
+            promote_obj.adapt_protect_datalayer = result["adapt_protect_datalayer"]
+            promote_obj.integrated_condition_score_datalayer = result[
+                "integrated_condition_score_datalayer"
+            ]
+            promote_obj.mpat_matrix_datalayer = result["mpat_matrix_datalayer"]
+            promote_obj.mpat_strength_datalayer = result["mpat_strength_datalayer"]
+            promote_obj.status = ClimateForesightPromoteStatus.COMPLETED
+            promote_obj.save()
+
+        log.info(f"Successfully completed PROMOTe analysis {promote_id}")
+
+        return {
+            "monitor": result["monitor_datalayer"].pk,
+            "protect": result["protect_datalayer"].pk,
+            "adapt": result["adapt_datalayer"].pk,
+            "transform": result["transform_datalayer"].pk,
+            "adapt_protect": result["adapt_protect_datalayer"].pk,
+            "integrated_condition_score": result[
+                "integrated_condition_score_datalayer"
+            ].pk,
+            "mpat_matrix": result["mpat_matrix_datalayer"].pk,
+            "mpat_strength": result["mpat_strength_datalayer"].pk,
+        }
+
+    except ClimateForesightPromote.DoesNotExist:
+        log.error(f"PROMOTe analysis {promote_id} does not exist")
+        raise
+
+    except Exception as e:
+        try:
+            promote_obj = ClimateForesightPromote.objects.get(pk=promote_id)
+            promote_obj.status = ClimateForesightPromoteStatus.FAILED
+            promote_obj.save()
+        except Exception:
+            pass
+
+        log.exception(f"Failed to run PROMOTe analysis {promote_id}: {str(e)}")
+        raise
+
+
+@app.task()
+def process_promote_datalayers(result: dict) -> dict:
+    """
+    Process PROMOTe output datalayers by calling datalayer_uploaded for all 8.
+
+    This task is chained after run_climate_foresight_promote to finalize
+    all PROMOTe output datalayers (hash calculation, status update).
+
+    Args:
+        result: Dict with PROMOTe output layer IDs
+
+    Returns:
+        The same result dict for potential further chaining
+    """
+    expected_keys = [
+        "monitor",
+        "protect",
+        "adapt",
+        "transform",
+        "adapt_protect",
+        "integrated_condition_score",
+        "mpat_matrix",
+        "mpat_strength",
+    ]
+
+    if not isinstance(result, dict):
+        log.error(f"Invalid result format for PROMOTe processing: {result}")
+        return result
+
+    log.info(f"Processing PROMOTe datalayers: {result}")
+
+    for key in expected_keys:
+        if key in result:
+            layer_id = result[key]
+            log.info(f"Processing PROMOTe output '{key}': {layer_id}")
+            process_datalayer(layer_id)
+        else:
+            log.warning(f"Missing expected PROMOTe output key: {key}")
+
+    log.info("Successfully processed all PROMOTe datalayers")
+
+    return result
+
+
+@app.task()
+def mark_run_complete(run_id: int) -> None:
+    """
+    Mark the Climate Foresight run as complete and trigger geopackage generation.
+
+    Args:
+        run_id: ID of the ClimateForesightRun to make complete
+    """
+    run = ClimateForesightRun.objects.select_related("promote_analysis").get(pk=run_id)
+
+    with transaction.atomic():
+        run.status = ClimateForesightRunStatus.DONE
+        run.save()
+
+        promote = run.promote_analysis
+        if promote.geopackage_status in (GeoPackageStatus.PENDING, None):
+            if promote.geopackage_status is None:
+                promote.geopackage_status = GeoPackageStatus.PENDING
+                promote.save(update_fields=["geopackage_status"])
+
+            async_generate_climate_foresight_geopackage.delay(run_id)
+            log.info(f"Triggered geopackage generation for run {run_id}")
+
+    log.info(f"Run {run_id} marked as DONE")
+
+
+@app.task()
+def async_mark_run_failed(run_id: int) -> None:
+    """
+    Mark the Climate Foresight run as failed.
+    Called as error handler when workflow fails.
+
+    Args:
+        run_id: ID of the ClimateForesightRun to mark failed
+    """
+    try:
+        run = ClimateForesightRun.objects.get(pk=run_id)
+        run.status = ClimateForesightRunStatus.FAILED
+        run.save()
+        log.error(f"Run {run_id} marked as FAILED due to workflow error")
+    except ClimateForesightRun.DoesNotExist:
+        log.error(f"Run {run_id} does not exist (mark FAILED)")
+
+
+@app.task()
+def async_generate_climate_foresight_geopackage(run_id: int) -> None:
+    """
+    Generate geopackage for a Climate Foresight run asynchronously.
+
+    This task exports all PROMOTe outputs, pillar rollups, landscape rollups,
+    and normalized input layers to a zipped GeoPackage and uploads to GCS.
+
+    Args:
+        run_id: ID of the ClimateForesightRun to export
+    """
+
+    try:
+        run = ClimateForesightRun.objects.select_related("promote_analysis").get(
+            pk=run_id
+        )
+
+        # Validate run is complete
+        if run.status != ClimateForesightRunStatus.DONE:
+            log.warning(
+                f"Cannot export run {run_id}: status is {run.status}, expected 'done'"
+            )
+            return
+
+        if not hasattr(run, "promote_analysis"):
+            log.warning(f"Cannot export run {run_id}: no PROMOTe analysis found")
+            return
+
+        if run.promote_analysis.geopackage_status not in (
+            GeoPackageStatus.PENDING,
+            GeoPackageStatus.FAILED,
+            None,
+        ):
+            log.info(
+                f"Geopackage for run {run_id} is already {run.promote_analysis.geopackage_status}"
+            )
+            return
+
+        geopackage_path = export_geopackage(run_id)
+        log.info(
+            f"Successfully generated geopackage for run {run_id}: {geopackage_path}"
+        )
+
+    except ClimateForesightRun.DoesNotExist:
+        log.error(f"Climate Foresight run {run_id} does not exist")
+    except Exception as e:
+        log.exception(f"Failed to generate geopackage for run {run_id}: {e}")
+        raise

@@ -23,11 +23,15 @@ class MapModuleTest(TestCase):
 
         options: Dict[str, Any] = configuration["options"]
 
-        self.assertIn("main_datasets", options)
-        self.assertIn("base_datasets", options)
+        self.assertIn("datasets", options)
 
-        main = options["main_datasets"]
-        base = options["base_datasets"]
+        datasets: Dict[str, Any] = options["datasets"]
+
+        self.assertIn("main_datasets", datasets)
+        self.assertIn("base_datasets", datasets)
+
+        main = datasets["main_datasets"]
+        base = datasets["base_datasets"]
 
         self.assertEqual(1, len(main))
         self.assertEqual(1, len(base))

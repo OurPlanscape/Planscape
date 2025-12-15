@@ -2,6 +2,7 @@ import re
 from typing import Any, Collection, Dict, Optional
 
 from core.loaders import get_python_object
+from modules.base import MODULE_HANDLERS
 from organizations.models import Organization
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -573,6 +574,14 @@ class BrowseDataSetSerializer(serializers.Serializer):
 
 
 class FindAnythingSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = list(MODULE_HANDLERS.keys())
+        self.fields["module"] = serializers.ChoiceField(
+            choices=choices,
+            required=False,
+        )
+
     term = serializers.CharField(required=True)
 
     type = serializers.ChoiceField(

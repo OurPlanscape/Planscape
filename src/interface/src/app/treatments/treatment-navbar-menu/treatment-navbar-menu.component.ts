@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
@@ -16,12 +15,7 @@ import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialo
 @Component({
   selector: 'app-treatment-navbar-menu',
   standalone: true,
-  imports: [
-    MatIconModule,
-    MatLegacyButtonModule,
-    MatMenuModule,
-    ButtonComponent,
-  ],
+  imports: [MatIconModule, MatMenuModule, ButtonComponent],
   templateUrl: './treatment-navbar-menu.component.html',
   styleUrl: './treatment-navbar-menu.component.scss',
 })

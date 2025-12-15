@@ -1,37 +1,117 @@
+import json
 import logging
-import os
+import shutil
 import tempfile
+import zipfile
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import numpy as np
 import rasterio
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import MultiPolygon
-from django.db import IntegrityError
-from scipy.optimize import minimize
-
 from datasets.models import (
     DataLayer,
+    DataLayerHasStyle,
     DataLayerStatus,
     DataLayerType,
     Dataset,
     GeometryType,
+    Style,
 )
 from datasets.services import create_datalayer, get_storage_url
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import MultiPolygon
+from django.db import IntegrityError
 from gis.info import get_gdal_env, info_raster
 from gis.rasters import read_raster_window_downsampled, to_planscape_streaming
+from rasterio.features import geometry_mask
+from rasterio.warp import Resampling, reproject
+from scipy.optimize import minimize
 
 from climate_foresight.normalize import (
     calculate_outliers,
     s_shaped_membership,
-    z_shaped_membership,
     trapezoidal_membership,
+    z_shaped_membership,
 )
 
 log = logging.getLogger(__name__)
+
+METERS_PER_DEGREE = 111000.0
+
+
+def get_finest_resolution_for_run(run_id: int) -> Optional[float]:
+    """
+    Detect the finest (smallest) resolution among all input layers for a run.
+
+    Queries all input data layers associated with a Climate Foresight run and
+    determines the finest resolution in meters by examining each raster's
+    pixel size. Handles different CRS units (degrees vs meters) correctly.
+
+    Args:
+        run_id: The ID of the ClimateForesightRun
+
+    Returns:
+        The finest resolution in meters, or None if no valid rasters found
+    """
+    from climate_foresight.models import ClimateForesightRunInputDataLayer
+
+    input_layers = ClimateForesightRunInputDataLayer.objects.filter(
+        run_id=run_id
+    ).select_related("datalayer")
+
+    if not input_layers.exists():
+        log.warning(f"No input layers found for run {run_id}")
+        return None
+
+    finest_resolution = None
+
+    with rasterio.Env(**get_gdal_env()):
+        for input_layer in input_layers:
+            datalayer = input_layer.datalayer
+            if not datalayer.url or datalayer.type != DataLayerType.RASTER:
+                continue
+
+            try:
+                with rasterio.open(datalayer.url) as src:
+                    # pixel size from transform
+                    res_x = abs(src.transform.a)
+                    res_y = abs(src.transform.e)
+                    avg_res = (res_x + res_y) / 2
+
+                    crs = src.crs
+                    if crs is None or crs.is_geographic:
+                        log.warning(
+                            f"Layer {datalayer.id} has no CRS, assuming degrees"
+                        )
+                        res_meters = avg_res * METERS_PER_DEGREE
+                    else:
+                        linear_units = (
+                            crs.linear_units_factor[1]
+                            if hasattr(crs, "linear_units_factor")
+                            else 1.0
+                        )
+                        res_meters = avg_res * linear_units
+
+                    log.debug(
+                        f"Layer {datalayer.id} ({datalayer.name}): "
+                        f"resolution={res_meters:.2f}m (raw={avg_res:.8f}, crs={crs})"
+                    )
+
+                    if finest_resolution is None or res_meters < finest_resolution:
+                        finest_resolution = res_meters
+
+            except Exception as e:
+                log.warning(f"Could not read resolution from layer {datalayer.id}: {e}")
+                continue
+
+    if finest_resolution is not None:
+        log.info(
+            f"Finest resolution detected for run {run_id}: {finest_resolution:.2f}m"
+        )
+
+    return finest_resolution
 
 
 def calculate_layer_statistics(
@@ -117,7 +197,7 @@ def calculate_layer_statistics(
 def get_reference_grid_for_run(
     run_id: int,
     planning_area_geometry: MultiPolygon,
-    target_resolution_meters: float = 30.0,
+    target_resolution_meters: Optional[float] = None,
 ) -> Tuple[rasterio.Affine, int, int, float]:
     """
     Create a consistent reference grid for all normalized layers in a Climate Foresight run.
@@ -125,18 +205,34 @@ def get_reference_grid_for_run(
     This ensures all normalized layers have the same shape and transform, which is required
     for stacking them during pillar rollup.
 
+    Resolution is determined by:
+    1. If target_resolution_meters is provided, use that value
+    2. Otherwise, auto-detect the finest resolution from all input layers
+    3. Fall back to 30m if auto-detection fails
+
     Args:
         run_id: The ID of the ClimateForesightRun
         planning_area_geometry: MultiPolygon in EPSG:4269 to define bounds
-        target_resolution_meters: Target pixel resolution in meters (default: 30m)
+        target_resolution_meters: Target pixel resolution in meters.
+            If None (default), auto-detects from input layers.
 
     Returns:
         Tuple of (transform, width, height, nodata_value) defining the reference grid
     """
+    if target_resolution_meters is None:
+        detected_resolution = get_finest_resolution_for_run(run_id)
+        if detected_resolution is not None:
+            target_resolution_meters = detected_resolution
+            log.info(f"Using finest resolution: {target_resolution_meters:.2f}m")
+        else:
+            target_resolution_meters = 30.0
+            log.info(
+                f"Could not auto-detect resolution, using default: {target_resolution_meters}m"
+            )
+
     minx, miny, maxx, maxy = planning_area_geometry.extent
 
-    meters_per_degree = 111000.0  # approximate, should work for most cases
-    resolution_degrees = target_resolution_meters / meters_per_degree
+    resolution_degrees = target_resolution_meters / METERS_PER_DEGREE
 
     width = max(1, int(np.ceil((maxx - minx) / resolution_degrees)))
     height = max(1, int(np.ceil((maxy - miny) / resolution_degrees)))
@@ -155,11 +251,136 @@ def get_reference_grid_for_run(
     log.info(
         f"Reference grid for run {run_id}: "
         f"width={width}, height={height}, "
-        f"resolution={resolution_degrees:.8f} degrees (~{target_resolution_meters}m), "
+        f"resolution={resolution_degrees:.8f} degrees (~{target_resolution_meters:.2f}m), "
         f"bounds=({minx:.6f}, {miny:.6f}, {maxx:.6f}, {maxy:.6f})"
     )
 
     return transform, width, height, nodata
+
+
+def clip_and_align_raster_to_grid(
+    source_url: str,
+    planning_area_geometry: MultiPolygon,
+    ref_transform: rasterio.Affine,
+    ref_width: int,
+    ref_height: int,
+    ref_nodata: float,
+    resampling: Resampling = Resampling.bilinear,
+) -> np.ndarray:
+    """
+    Clip a raster to a planning area and align it to a reference grid.
+
+    This function handles the common pattern of:
+    1. Clipping a source raster to a planning area geometry
+    2. Reprojecting to a reference grid (handling extent and resolution)
+    3. Applying a geometry mask
+
+    This ensures the output covers the full planning area extent, even if
+    the source raster doesn't fully cover the area (missing areas become nodata).
+
+    Args:
+        source_url: URL of the source raster to clip
+        planning_area_geometry: MultiPolygon to clip to (in EPSG:4269)
+        ref_transform: Affine transform for the reference grid
+        ref_width: Width of the reference grid in pixels
+        ref_height: Height of the reference grid in pixels
+        ref_nodata: Nodata value for the output
+        resampling: Resampling method (default: bilinear)
+
+    Returns:
+        Aligned numpy array matching the reference grid dimensions
+    """
+    with rasterio.open(source_url) as src:
+        log.info(
+            f"Clipping raster - url: {source_url}, "
+            f"shape: ({src.height}, {src.width}), "
+            f"dtype: {src.dtypes[0]}, "
+            f"nodata: {src.nodata}, "
+            f"crs: {src.crs}"
+        )
+
+        clipped_data, valid_mask, clipped_transform = read_raster_window_downsampled(
+            src=src,
+            geometry=planning_area_geometry,
+            geometry_crs="EPSG:4269",
+            target_pixels=None,
+            resampling=rasterio.enums.Resampling.nearest,
+        )
+
+        log.info(
+            f"After initial clip - "
+            f"clipped_data shape: {clipped_data.shape}, "
+            f"valid_mask sum: {np.sum(valid_mask)}"
+        )
+
+        src_nodata = src.nodata if src.nodata is not None else -9999
+        src_crs = src.crs
+
+        clipped_data = clipped_data.astype(np.float32)
+        clipped_data[~valid_mask] = src_nodata
+
+    with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+        temp_initial_clip = tmp.name
+
+    try:
+        initial_profile = {
+            "driver": "GTiff",
+            "dtype": rasterio.float32,
+            "width": clipped_data.shape[1],
+            "height": clipped_data.shape[0],
+            "count": 1,
+            "crs": src_crs,
+            "transform": clipped_transform,
+            "nodata": src_nodata,
+        }
+
+        with rasterio.open(temp_initial_clip, "w", **initial_profile) as dst:
+            dst.write(clipped_data, 1)
+
+        log.info(f"Wrote initial clipped raster to: {temp_initial_clip}")
+
+        log.info(
+            f"Resampling to reference grid: {ref_width}x{ref_height} "
+            f"(original clipped: {clipped_data.shape[1]}x{clipped_data.shape[0]})"
+        )
+
+        aligned_data = np.full((ref_height, ref_width), ref_nodata, dtype=np.float32)
+
+        with rasterio.open(temp_initial_clip) as clip_src:
+            reproject(
+                source=rasterio.band(clip_src, 1),
+                destination=aligned_data,
+                src_transform=clip_src.transform,
+                src_crs=clip_src.crs,
+                src_nodata=clip_src.nodata,
+                dst_transform=ref_transform,
+                dst_crs="EPSG:4269",
+                dst_nodata=ref_nodata,
+                resampling=resampling,
+            )
+
+        geom_geojson = json.loads(planning_area_geometry.json)
+        geom_mask = geometry_mask(
+            [geom_geojson],
+            out_shape=(ref_height, ref_width),
+            transform=ref_transform,
+            invert=True,
+        )
+        aligned_data[~geom_mask] = ref_nodata
+
+        log.info(
+            f"After alignment to reference grid - "
+            f"shape: {aligned_data.shape}, "
+            f"valid pixels: {np.sum(aligned_data != ref_nodata)}"
+        )
+
+        return aligned_data
+
+    finally:
+        try:
+            Path(temp_initial_clip).unlink(missing_ok=True)
+        except Exception as e:
+            log.warning(f"Failed to clean up temp file {temp_initial_clip}: {e}")
 
 
 def normalize_raster_layer(
@@ -217,97 +438,21 @@ def normalize_raster_layer(
         with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
             temp_clipped_path = tmp.name
 
-        with rasterio.open(input_layer.url) as src:
+        aligned_data = clip_and_align_raster_to_grid(
+            source_url=input_layer.url,
+            planning_area_geometry=planning_area_geometry,
+            ref_transform=ref_transform,
+            ref_width=ref_width,
+            ref_height=ref_height,
+            ref_nodata=ref_nodata,
+            resampling=Resampling.bilinear,
+        )
+
+        if np.any(aligned_data != ref_nodata):
+            valid_data = aligned_data[aligned_data != ref_nodata]
             log.info(
-                f"Source raster info - url: {input_layer.url}, "
-                f"shape: ({src.height}, {src.width}), "
-                f"dtype: {src.dtypes[0]}, "
-                f"nodata: {src.nodata}, "
-                f"crs: {src.crs}"
+                f"Aligned data stats - min: {np.min(valid_data)}, max: {np.max(valid_data)}"
             )
-
-            clipped_data, valid_mask, clipped_transform = (
-                read_raster_window_downsampled(
-                    src=src,
-                    geometry=planning_area_geometry,
-                    geometry_crs="EPSG:4269",
-                    target_pixels=None,
-                    resampling=rasterio.enums.Resampling.nearest,
-                )
-            )
-
-            log.info(
-                f"After initial clip - "
-                f"clipped_data shape: {clipped_data.shape}, "
-                f"dtype: {clipped_data.dtype}, "
-                f"valid_mask sum: {np.sum(valid_mask)}"
-            )
-
-            src_nodata = src.nodata if src.nodata is not None else -9999
-            src_crs = src.crs
-
-            clipped_data = clipped_data.astype(np.float32)
-            clipped_data[~valid_mask] = src_nodata
-
-        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp2:
-            temp_initial_clip = tmp2.name
-
-        initial_profile = {
-            "driver": "GTiff",
-            "dtype": rasterio.float32,
-            "width": clipped_data.shape[1],
-            "height": clipped_data.shape[0],
-            "count": 1,
-            "crs": src_crs,
-            "transform": clipped_transform,
-            "nodata": src_nodata,
-        }
-
-        with rasterio.open(temp_initial_clip, "w", **initial_profile) as dst:
-            dst.write(clipped_data, 1)
-
-        log.info(f"Wrote initial clipped raster to: {temp_initial_clip}")
-
-        log.info(
-            f"Resampling to reference grid: {ref_width}x{ref_height} "
-            f"(original clipped: {clipped_data.shape[1]}x{clipped_data.shape[0]})"
-        )
-
-        from rasterio.warp import reproject, Resampling
-        from rasterio.features import geometry_mask
-        import json
-
-        aligned_data = np.full((ref_height, ref_width), ref_nodata, dtype=np.float32)
-
-        with rasterio.open(temp_initial_clip) as clip_src:
-            reproject(
-                source=rasterio.band(clip_src, 1),
-                destination=aligned_data,
-                src_transform=clip_src.transform,
-                src_crs=clip_src.crs,
-                src_nodata=clip_src.nodata,
-                dst_transform=ref_transform,
-                dst_crs="EPSG:4269",
-                dst_nodata=ref_nodata,
-                resampling=Resampling.bilinear,
-            )
-
-        geom_geojson = json.loads(planning_area_geometry.json)
-        geom_mask = geometry_mask(
-            [geom_geojson],
-            out_shape=(ref_height, ref_width),
-            transform=ref_transform,
-            invert=True,
-        )
-        aligned_data[~geom_mask] = ref_nodata
-
-        log.info(
-            f"After resampling to reference grid - "
-            f"shape: {aligned_data.shape}, "
-            f"valid pixels: {np.sum(aligned_data != ref_nodata)}, "
-            f"min: {np.min(aligned_data[aligned_data != ref_nodata]) if np.any(aligned_data != ref_nodata) else 'N/A'}, "
-            f"max: {np.max(aligned_data[aligned_data != ref_nodata]) if np.any(aligned_data != ref_nodata) else 'N/A'}"
-        )
 
         profile = {
             "driver": "GTiff",
@@ -324,11 +469,6 @@ def normalize_raster_layer(
             dst.write(aligned_data, 1)
 
         log.info(f"Wrote aligned raster to: {temp_clipped_path}")
-
-        try:
-            os.unlink(temp_initial_clip)
-        except Exception as e:
-            log.warning(f"Failed to clean up temp file {temp_initial_clip}: {e}")
 
         cf_meta = input_layer.metadata.get("modules", {}).get("climate_foresight", {})
         translation = cf_meta.get("translation", {})
@@ -676,8 +816,8 @@ def rollup_pillar(
             - method: Weight method used
     """
     from climate_foresight.models import (
-        ClimateForesightRun,
         ClimateForesightPillar,
+        ClimateForesightRun,
         ClimateForesightRunInputDataLayer,
     )
 
@@ -759,7 +899,17 @@ def rollup_pillar(
                     block_stack = []
                     for layer in normalized_layers:
                         with rasterio.open(layer.url) as layer_src:
-                            block_data = layer_src.read(1, window=window)
+                            fill_value = (
+                                layer_src.nodata
+                                if layer_src.nodata is not None
+                                else nodata
+                            )
+                            block_data = layer_src.read(
+                                1,
+                                window=window,
+                                boundless=True,
+                                fill_value=fill_value,
+                            )
                             block_stack.append(block_data)
 
                     block_stack = np.array(block_stack, dtype=np.float32)
@@ -853,6 +1003,38 @@ def rollup_pillar(
         rollup_layer = datalayer_result["datalayer"]
         rollup_layer.url = storage_url
         rollup_layer.save()
+
+        try:
+            style = Style.objects.get(
+                name="cf-current-conditions",
+                type=DataLayerType.RASTER,
+            )
+            DataLayerHasStyle.objects.create(
+                style=style,
+                datalayer=rollup_layer,
+                default=True,
+            )
+            log.info(
+                f"Assigned 'cf-current-conditions' style to pillar rollup {rollup_layer.id}"
+            )
+        except Style.DoesNotExist:
+            log.warning(
+                "Style 'cf-current-conditions' not found, skipping style assignment"
+            )
+        except Style.MultipleObjectsReturned:
+            style = Style.objects.filter(
+                name="cf-current-conditions",
+                type=DataLayerType.RASTER,
+            ).first()
+            if style:
+                DataLayerHasStyle.objects.create(
+                    style=style,
+                    datalayer=rollup_layer,
+                    default=True,
+                )
+                log.info(
+                    f"Assigned 'cf-current-conditions' style to pillar rollup {rollup_layer.id}"
+                )
     except IntegrityError:
         # another task created the layer between our check and insert
         # can happen especially on smaller planning areas with a few input layers
@@ -909,3 +1091,243 @@ def rollup_pillar(
         "method": method,
     }
 
+
+def _download_raster_to_temp(url: str, temp_dir: Path, filename: str) -> Optional[Path]:
+    """
+    Download a raster from cloud storage to a temporary local file.
+
+    Args:
+        url: The cloud storage URL (gs:// or s3://)
+        temp_dir: Directory to save the file
+        filename: Name for the local file
+
+    Returns:
+        Path to the downloaded file, or None if download failed
+    """
+    try:
+        local_path = temp_dir / filename
+        with rasterio.Env(**get_gdal_env()):
+            with rasterio.open(url) as src:
+                profile = src.profile.copy()
+                profile.update(
+                    driver="GTiff",
+                    compress="deflate",
+                )
+                with rasterio.open(local_path, "w", **profile) as dst:
+                    for i in range(1, src.count + 1):
+                        dst.write(src.read(i), i)
+        return local_path
+    except Exception as e:
+        log.error(f"Failed to download raster {url}: {e}")
+        return None
+
+
+def export_geopackage(run_id: int, regenerate: bool = False) -> str:
+    """
+    Export all Climate Foresight run outputs to a zipped GeoPackage and upload to cloud storage.
+
+    This creates a zip file containing GeoTIFF rasters for all output layers:
+    - MPAT outputs (matrix, strength, individual strategies)
+    - Pillar rollups
+    - Landscape rollups (current and future)
+    - Normalized input layers
+
+    Args:
+        run_id: ID of the ClimateForesightRun to export
+        regenerate: If True, regenerate even if geopackage already exists
+
+    Returns:
+        Cloud storage URL of the uploaded geopackage (gs://... or s3://...)
+
+    Raises:
+        ValueError: If run is not in DONE status or has no outputs
+    """
+    from planning.models import GeoPackageStatus
+
+    from climate_foresight.models import (
+        ClimateForesightRun,
+        ClimateForesightRunStatus,
+    )
+
+    run = (
+        ClimateForesightRun.objects.select_related(
+            "planning_area",
+            "promote_analysis",
+        )
+        .prefetch_related(
+            "pillar_rollups__pillar",
+            "pillar_rollups__rollup_datalayer",
+            "input_datalayers__normalized_datalayer",
+            "input_datalayers__datalayer",
+        )
+        .get(pk=run_id)
+    )
+
+    if run.status != ClimateForesightRunStatus.DONE:
+        raise ValueError(
+            f"Cannot export run {run_id}: status is {run.status}, expected 'done'"
+        )
+
+    if not hasattr(run, "promote_analysis"):
+        raise ValueError(f"Run {run_id} has no PROMOTe analysis")
+
+    promote = run.promote_analysis
+
+    if not regenerate and promote.geopackage_url:
+        log.info(f"Run {run_id} already has a geopackage URL: {promote.geopackage_url}")
+        return promote.geopackage_url
+
+    temp_dir = None
+    zip_path = None
+
+    try:
+        promote.geopackage_status = GeoPackageStatus.PROCESSING
+        promote.save(update_fields=["geopackage_status"])
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        if not temp_folder.exists():
+            temp_folder.mkdir(parents=True)
+
+        temp_dir = Path(tempfile.mkdtemp(prefix=f"cf_export_{run_id}_"))
+        rasters_dir = temp_dir / "rasters"
+        rasters_dir.mkdir(parents=True, exist_ok=True)
+
+        exported_files = []
+
+        # PROMOTe outputs
+        promote_layers = [
+            ("mpat_matrix", promote.mpat_matrix_datalayer),
+            ("mpat_strength", promote.mpat_strength_datalayer),
+            ("monitor", promote.monitor_datalayer),
+            ("protect", promote.protect_datalayer),
+            ("adapt", promote.adapt_datalayer),
+            ("transform", promote.transform_datalayer),
+            ("adapt_protect", promote.adapt_protect_datalayer),
+            (
+                "integrated_condition_score",
+                promote.integrated_condition_score_datalayer,
+            ),
+        ]
+
+        for name, datalayer in promote_layers:
+            if datalayer and datalayer.url:
+                filename = f"promote_{name}.tif"
+                local_path = _download_raster_to_temp(
+                    datalayer.url, rasters_dir, filename
+                )
+                if local_path:
+                    exported_files.append(local_path)
+                    log.info(f"Exported PROMOTe layer: {name}")
+
+        # landscape rollup
+        if hasattr(run, "landscape_rollup"):
+            landscape = run.landscape_rollup
+            if landscape.current_datalayer and landscape.current_datalayer.url:
+                local_path = _download_raster_to_temp(
+                    landscape.current_datalayer.url,
+                    rasters_dir,
+                    "landscape_current.tif",
+                )
+                if local_path:
+                    exported_files.append(local_path)
+                    log.info("Exported landscape current layer")
+
+            if landscape.future_datalayer and landscape.future_datalayer.url:
+                local_path = _download_raster_to_temp(
+                    landscape.future_datalayer.url,
+                    rasters_dir,
+                    "landscape_future.tif",
+                )
+                if local_path:
+                    exported_files.append(local_path)
+                    log.info("Exported landscape future layer")
+
+        # pillar rollups
+        for rollup in run.pillar_rollups.all():
+            if rollup.rollup_datalayer and rollup.rollup_datalayer.url:
+                safe_name = rollup.pillar.name.replace(" ", "_").replace("/", "_")
+                filename = f"pillar_{safe_name}.tif"
+                local_path = _download_raster_to_temp(
+                    rollup.rollup_datalayer.url, rasters_dir, filename
+                )
+                if local_path:
+                    exported_files.append(local_path)
+                    log.info(f"Exported pillar rollup: {rollup.pillar.name}")
+
+        # normalized input layers
+        for input_dl in run.input_datalayers.all():
+            if input_dl.normalized_datalayer and input_dl.normalized_datalayer.url:
+                safe_name = input_dl.datalayer.name.replace(" ", "_").replace("/", "_")
+                filename = f"normalized_{safe_name}.tif"
+                local_path = _download_raster_to_temp(
+                    input_dl.normalized_datalayer.url, rasters_dir, filename
+                )
+                if local_path:
+                    exported_files.append(local_path)
+                    log.info(f"Exported normalized layer: {input_dl.datalayer.name}")
+
+        if not exported_files:
+            raise ValueError(f"No output layers found for run {run_id}")
+
+        safe_run_name = run.name.replace(" ", "_").replace("/", "_")
+        zip_filename = f"climate_foresight_{safe_run_name}_{run_id}.zip"
+        zip_path = temp_folder / zip_filename
+        zip_path.unlink(missing_ok=True)
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for file_path in exported_files:
+                arcname = file_path.name
+                zipf.write(file_path, arcname=arcname)
+                log.info(f"Added to zip: {arcname}")
+
+        log.info(
+            f"Created Climate Foresight export: {zip_path} "
+            f"({len(exported_files)} rasters)"
+        )
+
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        temp_dir = None
+
+        object_name = f"{settings.GEOPACKAGES_FOLDER}/climate_foresight_{run_id}.zip"
+
+        if settings.PROVIDER == "gcp":
+            from core.gcs import upload_file_via_cli
+
+            geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{object_name}"
+            upload_file_via_cli(
+                object_name=object_name,
+                input_file=str(zip_path),
+                bucket_name=settings.GCS_MEDIA_BUCKET,
+            )
+        else:
+            from core.s3 import upload_file_via_s3_client
+
+            geopackage_path = f"s3://{settings.S3_BUCKET}/{object_name}"
+            upload_file_via_s3_client(
+                object_name=object_name,
+                input_file=str(zip_path),
+            )
+
+        zip_path.unlink(missing_ok=True)
+        zip_path = None
+
+        promote.geopackage_url = geopackage_path
+        promote.geopackage_status = GeoPackageStatus.SUCCEEDED
+        promote.save(update_fields=["geopackage_url", "geopackage_status"])
+
+        log.info(
+            f"Successfully uploaded geopackage for run {run_id} to {geopackage_path}"
+        )
+        return geopackage_path
+
+    except Exception:
+        log.exception(f"Failed to export geopackage for run {run_id}")
+        promote.geopackage_url = None
+        promote.geopackage_status = GeoPackageStatus.FAILED
+        promote.save(update_fields=["geopackage_url", "geopackage_status"])
+        raise
+    finally:
+        if temp_dir is not None:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        if zip_path is not None:
+            zip_path.unlink(missing_ok=True)

@@ -52,6 +52,21 @@ const routes: Routes = [
       planId: planLoaderResolver,
     },
   },
+  {
+    path: ':planId/climate-foresight/run/:runId/analysis',
+    title: 'Climate Foresight Analysis',
+    loadComponent: () =>
+      import(
+        './climate-foresight/climate-foresight-run/analysis/analysis.component'
+      ).then((m) => m.AnalysisComponent),
+    canActivate: [
+      createFeatureGuard({ featureName: 'CLIMATE_FORESIGHT' }),
+      AuthGuard,
+    ],
+    resolve: {
+      planId: planLoaderResolver,
+    },
+  },
 ];
 
 @NgModule({

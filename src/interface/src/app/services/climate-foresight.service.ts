@@ -5,6 +5,7 @@ import {
   ClimateForesightRun,
   CreateClimateForesightRunPayload,
   DataLayer,
+  GeoPackageDownloadResponse,
   Pillar,
 } from '@types';
 import { environment } from '../../environments/environment';
@@ -70,6 +71,17 @@ export class ClimateForesightService {
     return this.http.delete<void>(`${this.basePath}${id}/`, {
       withCredentials: true,
     });
+  }
+
+  /**
+   * Copy a climate foresight run
+   */
+  copyRun(id: number, name: string): Observable<ClimateForesightRun> {
+    return this.http.post<ClimateForesightRun>(
+      `${this.basePath}${id}/copy/`,
+      { name },
+      { withCredentials: true }
+    );
   }
 
   /**
@@ -145,5 +157,40 @@ export class ClimateForesightService {
         withCredentials: true,
       }
     );
+  }
+
+  /**
+   * Trigger the analysis pipeline for a climate foresight run
+   * This will start the normalization, pillar rollup, landscape rollup, and PROMOTe tasks
+   */
+  runAnalysis(id: number): Observable<ClimateForesightRun> {
+    return this.http.post<ClimateForesightRun>(
+      `${this.basePath}${id}/run_analysis/`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Get the download status and URL for Climate Foresight outputs
+   */
+  getDownloadStatus(id: number): Observable<GeoPackageDownloadResponse> {
+    return this.http.get<GeoPackageDownloadResponse>(
+      `${this.basePath}${id}/download/`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Download a file from a signed URL
+   */
+  downloadFromUrl(url: string): Observable<Blob> {
+    return this.http.get(url, {
+      responseType: 'blob',
+    });
   }
 }
