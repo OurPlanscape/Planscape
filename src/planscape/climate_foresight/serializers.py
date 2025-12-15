@@ -14,6 +14,10 @@ from climate_foresight.models import (
 from climate_foresight.tasks import calculate_climate_foresight_layer_statistics
 
 
+class CopyClimateForesightRunSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+
+
 class ClimateForesightRunInputDataLayerSerializer(serializers.ModelSerializer):
     """Serializer for ClimateForesightRunInputDataLayer model."""
 
@@ -189,6 +193,10 @@ class ClimateForesightRunSerializer(serializers.ModelSerializer):
                         if attr != "datalayer":
                             setattr(existing_layer, attr, value)
                     existing_layer.save()
+                    if existing_layer.statistics is None:
+                        calculate_climate_foresight_layer_statistics.delay(
+                            existing_layer.id
+                        )
                 else:
                     input_dl = ClimateForesightRunInputDataLayer.objects.create(
                         run=instance, **datalayer_data

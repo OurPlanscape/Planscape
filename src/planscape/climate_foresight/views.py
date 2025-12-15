@@ -20,6 +20,7 @@ from climate_foresight.filters import (
 from climate_foresight.models import (
     ClimateForesightPillar,
     ClimateForesightRun,
+    ClimateForesightRunInputDataLayer,
     ClimateForesightRunStatus,
 )
 from climate_foresight.orchestration import (
@@ -30,6 +31,7 @@ from climate_foresight.serializers import (
     ClimateForesightPillarSerializer,
     ClimateForesightRunListSerializer,
     ClimateForesightRunSerializer,
+    CopyClimateForesightRunSerializer,
 )
 from climate_foresight.tasks import async_generate_climate_foresight_geopackage
 
@@ -244,6 +246,35 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
                     "message": "Geopackage generation has been queued.",
                 }
             )
+
+    @action(detail=True, methods=["post"])
+    def copy(self, request, pk=None):
+        """
+        Create a copy of a Climate Foresight run. Only copies datalayers
+        """
+        source_run = self.get_object()
+        serializer = CopyClimateForesightRunSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_run = ClimateForesightRun.objects.create(
+            name=serializer.validated_data["name"],
+            planning_area=source_run.planning_area,
+            created_by=request.user,
+            status=ClimateForesightRunStatus.DRAFT,
+            current_step=1,
+            furthest_step=1,
+        )
+
+        for input_layer in source_run.input_datalayers.all():
+            ClimateForesightRunInputDataLayer.objects.create(
+                run=new_run,
+                datalayer=input_layer.datalayer,
+            )
+
+        return Response(
+            ClimateForesightRunSerializer(new_run).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ClimateForesightPillarViewSet(viewsets.ModelViewSet):

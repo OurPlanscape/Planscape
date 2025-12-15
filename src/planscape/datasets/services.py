@@ -31,16 +31,13 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     GeometryType,
+    PreferredDisplayType,
     SearchResult,
     StorageTypeChoices,
     Style,
     VisibilityOptions,
 )
-from datasets.search import (
-    category_to_search_result,
-    datalayer_to_search_result,
-    dataset_to_search_result,
-)
+from datasets.search import datalayer_to_search_result, dataset_to_search_result
 from datasets.tasks import datalayer_uploaded
 
 log = logging.getLogger(__name__)
@@ -426,7 +423,18 @@ def find_anything(
     datasets = None
     if module:
         mod = get_module(module)
-        datasets = mod.get_datasets()
+        preferred_display_type = (
+            PreferredDisplayType.MAIN_DATASETS
+            if layer_type == DataLayerType.RASTER
+            else PreferredDisplayType.BASE_DATALAYERS
+        )
+        dataset_ids = [
+            d.pk
+            for d in mod.get_datasets()
+            if d.preferred_display_type == preferred_display_type
+        ]
+    else:
+        dataset_ids = None
 
     datalayer_filter = {
         "name__icontains": term,
@@ -435,7 +443,10 @@ def find_anything(
         "type": layer_type,
     }
     category_filter = {
-        "name__icontains": term,
+        "category__name__icontains": term,
+        "dataset__visibility": VisibilityOptions.PUBLIC,
+        "status": DataLayerStatus.READY,
+        "type": layer_type,
     }
     dataset_filter = {
         "name__icontains": term,
@@ -443,17 +454,20 @@ def find_anything(
     }
     org_filter = {"organization__name__icontains": term}
 
-    if datasets:
+    if dataset_ids:
         dataset_ids = list([d.pk for d in datasets])
         datalayer_filter["dataset_id__in"] = dataset_ids
-        category_filter["dataset_id__in"] = dataset_ids
+        category_filter["dataset__id__in"] = dataset_ids
         dataset_filter["id__in"] = dataset_ids
         org_filter["id__in"] = dataset_ids
-    else:
-        dataset_ids = None
 
     raw_results = [
-        [dataset_to_search_result(x) for x in Dataset.objects.filter(**org_filter)],
+        [
+            dataset_to_search_result(x)
+            for x in Dataset.objects.filter(
+                **org_filter,
+            )
+        ],
         [
             dataset_to_search_result(x)
             for x in Dataset.objects.filter(
@@ -461,12 +475,16 @@ def find_anything(
             )
         ],
         [
-            category_to_search_result(x)
-            for x in Category.objects.filter(**category_filter)
+            datalayer_to_search_result(x)
+            for x in DataLayer.objects.filter(
+                **category_filter,
+            )
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.filter(**datalayer_filter)
+            for x in DataLayer.objects.filter(
+                **datalayer_filter,
+            )
         ],
     ]
     search_results = itertools.chain.from_iterable(raw_results)
