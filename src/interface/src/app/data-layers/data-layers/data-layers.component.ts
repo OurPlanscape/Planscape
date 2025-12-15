@@ -142,6 +142,9 @@ export class DataLayersComponent {
   }
 
   get datasetPages() {
+    if (this.isUsingMapModule) {
+      return 0;
+    }
     return this.datasetCount
       ? Math.ceil(this.datasetCount / this.dataLayersStateService.limit)
       : 0;
