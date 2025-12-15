@@ -41,6 +41,8 @@ BOUNDARIES_LAYERS = [
     "Subfiresheds",
 ]
 
+PROTECTED_AREAS_LAYERS = []
+
 RASTER_DATASETS = [
     "California Landscape Metrics",
     "Future Climate Conditions",
@@ -72,7 +74,7 @@ def handle(apps, schema_editor):
     ownership = Dataset.objects.create(
         created_by=user,
         organization=org,
-        visiblity=VisibilityOptions.PUBLIC,
+        visibility=VisibilityOptions.PUBLIC,
         selection_type=SelectionTypeOptions.MULTIPLE,
         preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         name="Ownership",
@@ -81,7 +83,7 @@ def handle(apps, schema_editor):
     disturbances = Dataset.objects.create(
         created_by=user,
         organization=org,
-        visiblity=VisibilityOptions.PUBLIC,
+        visibility=VisibilityOptions.PUBLIC,
         selection_type=SelectionTypeOptions.SINGLE,
         preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         name="Disturbances",
@@ -89,10 +91,18 @@ def handle(apps, schema_editor):
     boundaries = Dataset.objects.create(
         created_by=user,
         organization=org,
-        visiblity=VisibilityOptions.PUBLIC,
+        visibility=VisibilityOptions.PUBLIC,
         selection_type=SelectionTypeOptions.SINGLE,
         preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         name="Boundaries",
+    )
+    protected_areas = Dataset.objects.create(
+        created_by=user,
+        organization=org,
+        visibility=VisibilityOptions.PUBLIC,
+        selection_type=SelectionTypeOptions.MULTIPLE,
+        preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+        name="Protected Areas",
     )
 
     dataset_groups = {
