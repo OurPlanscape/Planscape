@@ -117,6 +117,8 @@ def handle(apps, schema_editor):
     }
 
     for key, layers in dataset_groups.items():
+        if not key:
+            continue
         print(f"PROCESSING {key.name}")
         for layer_name in layers:
             print(f"MOVING {layer_name}")
