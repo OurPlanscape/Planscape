@@ -61,7 +61,7 @@ def handle(apps, schema_editor):
     for raster_dataset_name in RASTER_DATASETS:
         print(f"CONFIGURING RASTER DATASET {raster_dataset_name}.")
         raster_dataset = Dataset.objects.filter(name=raster_dataset_name).first()
-        if not raster_dataset_name:
+        if not raster_dataset:
             print(f"COULD NOT FIND {raster_dataset_name}. INVESTIGATE!")
             continue
         raster_dataset.preferred_display_type = PreferredDisplayType.MAIN_DATALAYERS
