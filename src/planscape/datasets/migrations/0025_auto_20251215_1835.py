@@ -75,29 +75,35 @@ def handle(apps, schema_editor):
         raster_dataset.save()
         print(f"CONFIGURED {raster_dataset.name} AS MAIN AND SINGLE.")
 
-    ownership = Dataset.objects.create(
-        created_by=user,
-        organization=org,
-        visibility=VisibilityOptions.PUBLIC,
-        selection_type=SelectionTypeOptions.MULTIPLE,
-        preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+    old_dataset = Dataset.objects.get(pk=999)
+    ownership, _created = Dataset.objects.get_or_create(
+        defaults=dict(
+            created_by=user,
+            organization=org,
+            visibility=VisibilityOptions.PUBLIC,
+            selection_type=SelectionTypeOptions.MULTIPLE,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+        ),
         name="Ownership",
     )
-    old_dataset = Dataset.objects.get(pk=999)
-    disturbances = Dataset.objects.create(
-        created_by=user,
-        organization=org,
-        visibility=VisibilityOptions.PUBLIC,
-        selection_type=SelectionTypeOptions.SINGLE,
-        preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+    disturbances, _created = Dataset.objects.get_or_create(
+        defaults=dict(
+            created_by=user,
+            organization=org,
+            visibility=VisibilityOptions.PUBLIC,
+            selection_type=SelectionTypeOptions.SINGLE,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+        ),
         name="Disturbances",
     )
-    boundaries = Dataset.objects.create(
-        created_by=user,
-        organization=org,
-        visibility=VisibilityOptions.PUBLIC,
-        selection_type=SelectionTypeOptions.SINGLE,
-        preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+    boundaries, _created = Dataset.objects.get_or_create(
+        defaults=dict(
+            created_by=user,
+            organization=org,
+            visibility=VisibilityOptions.PUBLIC,
+            selection_type=SelectionTypeOptions.SINGLE,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+        ),
         name="Boundaries",
     )
     print("CREATED ALL 3 NEW DATASETS.")
@@ -123,7 +129,6 @@ def handle(apps, schema_editor):
         for layer_name in layers:
             print(f"MOVING {layer_name}")
             layer = DataLayer.objects.filter(
-                dataset=old_dataset,
                 name=layer_name,
                 type=DataLayerType.VECTOR,
             ).first()
