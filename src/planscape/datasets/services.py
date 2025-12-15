@@ -420,7 +420,6 @@ def find_anything(
     Given a term, search for anything (datasets / datalayers)
     """
     layer_type = type or DataLayerType.RASTER
-    datasets = None
     if module:
         mod = get_module(module)
         preferred_display_type = (
@@ -455,7 +454,6 @@ def find_anything(
     org_filter = {"organization__name__icontains": term}
 
     if dataset_ids:
-        dataset_ids = list([d.pk for d in datasets])
         datalayer_filter["dataset_id__in"] = dataset_ids
         category_filter["dataset__id__in"] = dataset_ids
         dataset_filter["id__in"] = dataset_ids
