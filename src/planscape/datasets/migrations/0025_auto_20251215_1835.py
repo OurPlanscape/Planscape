@@ -123,7 +123,6 @@ def handle(apps, schema_editor):
         for layer_name in layers:
             print(f"MOVING {layer_name}")
             layer = DataLayer.objects.filter(
-                dataset=old_dataset,
                 name=layer_name,
                 type=DataLayerType.VECTOR,
             ).first()
