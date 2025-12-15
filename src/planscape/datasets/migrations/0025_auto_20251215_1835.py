@@ -109,6 +109,7 @@ def handle(apps, schema_editor):
         ownership: OWNERSHIP_LAYERS,
         disturbances: DISTURBANCES_LAYERS,
         boundaries: BOUNDARIES_LAYERS,
+        protected_areas: PROTECTED_AREAS_LAYERS,
     }
 
     for key, layers in dataset_groups.items():
