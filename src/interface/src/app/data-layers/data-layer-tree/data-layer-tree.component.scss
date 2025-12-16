@@ -90,13 +90,19 @@
     font-size: 20px;
   }
 
-  &.selected,
+  &:hover {
+    background-color: $color-main-blue;
+  }
+
   &.disabled,
   &.disabled:hover {
+    background-color: $color-disabled-gray;
+  }
+
+  &.selected {
     background-color: $color-medium-blue;
   }
 
-  &:hover,
   &.selected:hover {
     background-color: $color-main-blue;
   }
