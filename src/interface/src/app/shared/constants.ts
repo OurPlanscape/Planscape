@@ -127,3 +127,9 @@ export const NOTE_DELETE_DIALOG = {
   title: 'Permanently delete note?',
   body: 'Are you sure you want to delete this note?',
 };
+
+// Default max datalayers that we can select
+export const DEFAULT_MAX_SELECTED_LAYERS = 3;
+
+// Max datalayers that we can select on climate foresight
+export const MAX_CLIMATE_DATALAYERS = 10;

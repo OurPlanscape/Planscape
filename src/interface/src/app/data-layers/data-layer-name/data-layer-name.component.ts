@@ -15,9 +15,9 @@ import { DataLayer } from '@types';
 export class DataLayerNameComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
-  goToSelectedLayer(layer: DataLayer) {
+  goToViewedLayer(layer: DataLayer) {
     this.dataLayersStateService.goToSelectedLayer(layer);
   }
 }

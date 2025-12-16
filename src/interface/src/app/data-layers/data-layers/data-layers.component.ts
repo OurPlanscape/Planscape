@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BaseDataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
@@ -61,6 +61,8 @@ import { FeatureService } from '../../features/feature.service';
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
+  @Input() displayAddButton = false;
+
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private featureService: FeatureService
@@ -78,7 +80,7 @@ export class DataLayersComponent {
   dataSets$ = this.dataLayersStateService.dataSets$;
 
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
     tap(() => {
@@ -111,7 +113,7 @@ export class DataLayersComponent {
 
   showFooter$ = combineLatest([
     this.results$,
-    this.selectedDataLayer$,
+    this.viewedDataLayer$,
     this.legacyDataSets$,
   ]).pipe(
     map(

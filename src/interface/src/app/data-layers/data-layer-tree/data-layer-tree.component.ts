@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
@@ -13,6 +13,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
+import { MatIconModule } from '@angular/material/icon';
 
 @UntilDestroy()
 @Component({
@@ -29,11 +30,14 @@ import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tool
     FormsModule,
     MatMenuModule,
     DataLayerTooltipComponent,
+    MatIconModule,
   ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',
 })
 export class DataLayerTreeComponent {
+  @Input() displayAddButton = false;
+
   constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$
       .pipe(
@@ -55,7 +59,15 @@ export class DataLayerTreeComponent {
   }
 
   treeData$ = this.dataLayersStateService.dataTree$.pipe(shareReplay(1));
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
+  isSelectionCompleted$ = this.dataLayersStateService.selectedDataLayers$.pipe(
+    untilDestroyed(this),
+    map(
+      (layers) =>
+        layers.length === this.dataLayersStateService.getMaxSelectedLayers()
+    )
+  );
 
   loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
@@ -104,6 +116,14 @@ export class DataLayerTreeComponent {
     }
     // wait until this is rendered (next tick)
     setTimeout(() => this.scrollToSelectedNode(), 0);
+  }
+
+  isDatalayerSelected(layer: DataLayer) {
+    return this.dataLayersStateService.isSelectedLayer(layer);
+  }
+
+  toggleDataLayerSelection(dl: DataLayer) {
+    this.dataLayersStateService.toggleLayerAdition(dl);
   }
 
   hasChild = (_: number, node: TreeNode) =>
