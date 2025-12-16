@@ -27,7 +27,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         ids: Optional[Iterable[int]] = options.get("ids")
         skip_existing: bool = options["skip_existing"]
-        queryset = DataLayer.objects.all(status=DataLayerStatus.READY)
+        queryset = DataLayer.objects.filter(status=DataLayerStatus.READY)
         if ids:
             queryset = queryset.filter(id__in=ids)
 
