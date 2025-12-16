@@ -17,7 +17,7 @@ export class DataLayerNameComponent {
 
   viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
-  goToSelectedLayer(layer: DataLayer) {
+  goToViewedLayer(layer: DataLayer) {
     this.dataLayersStateService.goToSelectedLayer(layer);
   }
 }
