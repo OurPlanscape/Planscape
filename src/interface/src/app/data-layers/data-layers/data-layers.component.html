@@ -44,7 +44,8 @@
         </div>
       </div>
 
-      <app-data-layer-tree></app-data-layer-tree>
+      <app-data-layer-tree
+        [displayAddButton]="displayAddButton"></app-data-layer-tree>
 
       <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
     </ng-container>
@@ -104,7 +105,7 @@
     (click)="clearDataLayer()"
     variant="text"
     class="clear-btn"
-    *ngIf="selectedDataLayer$ | async">
+    *ngIf="viewedDataLayer$ | async">
     Clear
   </button>
 </div>
