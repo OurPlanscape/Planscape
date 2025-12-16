@@ -3,8 +3,6 @@ import { take } from 'rxjs/operators';
 import { BaseLayersStateService } from './base-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { of } from 'rxjs';
-import { BaseLayer } from '@types';
 
 describe('BaseLayersStateService', () => {
   let service: BaseLayersStateService;
@@ -15,32 +13,9 @@ describe('BaseLayersStateService', () => {
     path: [category],
   });
 
-  const mockLayers = [
-    {
-      id: 1,
-      name: 'State',
-      path: ['Elevation'],
-    },
-    {
-      id: 2,
-      name: 'Department of Defense',
-      path: ['Elevation'],
-    },
-    {
-      id: 3,
-      name: 'County',
-      path: ['Landcover'],
-    },
-  ] as BaseLayer[];
-
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        BaseLayersStateService,
-        MockProvider(DataLayersService, {
-          listBaseLayers: () => of(mockLayers),
-        }),
-      ],
+      providers: [BaseLayersStateService, MockProvider(DataLayersService)],
     });
 
     service = TestBed.inject(BaseLayersStateService);
@@ -122,31 +97,6 @@ describe('BaseLayersStateService', () => {
 
     service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toBeNull();
-      done();
-    });
-  });
-
-  it('should group base layers by category using path[0], sorted', (done) => {
-    service.categorizedBaseLayers$.pipe(take(1)).subscribe((groups) => {
-      expect(groups.length).toBe(2);
-
-      const elevationGroup = groups.find(
-        (g) => g.category.name === 'Elevation'
-      );
-      const landcoverGroup = groups.find(
-        (g) => g.category.name === 'Landcover'
-      );
-
-      expect(elevationGroup).toBeDefined();
-      expect(landcoverGroup).toBeDefined();
-
-      expect(elevationGroup?.layers.length).toBe(2);
-      expect(landcoverGroup?.layers.length).toBe(1);
-
-      expect(elevationGroup?.layers[0].name).toBe('Department of Defense');
-      expect(elevationGroup?.layers[1].name).toBe('State');
-      expect(landcoverGroup?.layers[0].name).toBe('County');
-
       done();
     });
   });

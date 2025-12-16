@@ -1,22 +1,10 @@
 <div class="scrollable">
-  <ng-container *ngIf="!isUsingMapModule">
-    <app-categorized-base-layers-list
-      *ngFor="let categorizedBaseLayer of categorizedBaseLayers$ | async"
-      [categorizedBaseLayer]="categorizedBaseLayer"
-      [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
-      (layerSelected)="
-        updateSelectedLayer($event)
-      "></app-categorized-base-layers-list>
-  </ng-container>
-
-  <ng-container *ngIf="isUsingMapModule">
-    <app-base-layers-list
-      *ngFor="let baseDataSet of baseDataSets$ | async"
-      [dataSet]="baseDataSet"
-      [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
-      [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
-      (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
-  </ng-container>
+  <app-base-layers-list
+    *ngFor="let baseDataSet of baseDataSets$ | async"
+    [dataSet]="baseDataSet"
+    [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
+    [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
+    (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
 </div>
 <div class="footer" *ngIf="selectedLayers$ | async">
   <button sg-button (click)="clearBaseLayer()" variant="text" class="clear-btn">
