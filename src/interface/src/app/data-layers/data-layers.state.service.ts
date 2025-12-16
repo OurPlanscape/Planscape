@@ -23,7 +23,7 @@ import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 import { FeatureService } from '../features/feature.service';
-import { MAX_SELECTED_DATALAYERS } from '../shared/tokens/max-selected-datalayers.token';
+import { MAX_SELECTED_DATALAYERS } from './data-layers/max-selected-datalayers.token';
 @Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
