@@ -145,7 +145,7 @@ export class TreatmentMapComponent {
    */
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
 

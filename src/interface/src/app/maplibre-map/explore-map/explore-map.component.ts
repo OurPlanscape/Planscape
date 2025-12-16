@@ -128,7 +128,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     map((mapId) => mapId && this.mapNumber === mapId)
   );
 
-  selectedLayer$ = this.dataLayersStateService.selectedDataLayer$.pipe(
+  selectedLayer$ = this.dataLayersStateService.viewedDataLayer$.pipe(
     tap((layer) => {
       // If the selected layer was updated we want to update the storage
       this.saveSelectedLayerOnStorage(layer);

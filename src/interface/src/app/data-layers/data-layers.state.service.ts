@@ -53,27 +53,27 @@ export class DataLayersStateService {
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   // Datalayers applied to the map
-  private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
-  selectedDataLayer$ = this._selectedDataLayer$.asObservable();
+  private _viewedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
+  viewedDataLayer$ = this._viewedDataLayer$.asObservable();
 
-  // Datalayers added to a particular analysis - used on climate
-  private _addedDataLayer$ = new BehaviorSubject<DataLayer[] | []>([]);
-  addedDataLayer$ = this._addedDataLayer$.asObservable();
+  // Datalayers selected from the list of layers
+  private _selectedDataLayers$ = new BehaviorSubject<DataLayer[] | []>([]);
+  selectedDataLayers$ = this._selectedDataLayers$.asObservable();
 
-  // Added datalayers count - used on climate
-  addedCount$ = this.addedDataLayer$.pipe(map((items) => items.length));
+  // Selected datalayers count
+  selectedLayersCount$ = this.selectedDataLayers$.pipe(
+    map((items) => items.length)
+  );
 
-  // can proceed, we can proceed just if we have more that 1 addded datalayer - used on climate
-  hasAddedDatalayers$ = this.addedDataLayer$.pipe(
+  hasSelectedDatalayers$ = this.selectedDataLayers$.pipe(
     map((items) => items.length > 0)
   );
 
-  // can add more layers - used on climate
-  canAddMoreDatalayers$ = this.addedDataLayer$.pipe(
+  canSelectMoreDatalayers$ = this.selectedDataLayers$.pipe(
     map((items) => items.length < this.maxSelectedDatalayers)
   );
 
-  dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
+  dataLayerWithUrl$ = this.viewedDataLayer$.pipe(
     switchMap((layer) => {
       if (!layer) {
         return of(null);
@@ -111,7 +111,7 @@ export class DataLayersStateService {
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  colorLegendInfo$ = this.selectedDataLayer$.pipe(
+  colorLegendInfo$ = this.viewedDataLayer$.pipe(
     map((currentLayer: DataLayer | null) => {
       if (currentLayer) {
         return extractLegendInfo(currentLayer);
@@ -186,7 +186,7 @@ export class DataLayersStateService {
 
   selectDataLayer(dataLayer: DataLayer) {
     this.setDataLayerLoading(true);
-    this._selectedDataLayer$.next(dataLayer);
+    this._viewedDataLayer$.next(dataLayer);
   }
 
   setDataLayerLoading(status: boolean) {
@@ -194,12 +194,12 @@ export class DataLayersStateService {
   }
 
   clearDataLayer() {
-    this._selectedDataLayer$.next(null);
+    this._viewedDataLayer$.next(null);
   }
 
   reloadDataLayerUrl() {
-    const currentLayer = this._selectedDataLayer$.value;
-    this._selectedDataLayer$.next(currentLayer);
+    const currentLayer = this._viewedDataLayer$.value;
+    this._viewedDataLayer$.next(currentLayer);
   }
 
   search(term: string) {
@@ -260,33 +260,36 @@ export class DataLayersStateService {
     return this.featureService.isFeatureEnabled('MAP_MODULE');
   }
 
-  // Checking if the layer is already in the addedList - used on climate
-  isAddedLayer(layer: DataLayer) {
-    return this._addedDataLayer$.value.some((l) => l.id === layer.id);
+  // Checking if the layer is already in the selected list
+  isSelectedLayer(layer: DataLayer) {
+    return this._selectedDataLayers$.value.some((l) => l.id === layer.id);
   }
 
-  // Remove a layer from the added list - used on climate
-  removeAddedLayer(layer: DataLayer) {
-    const updatedAddedDatalayers = this._addedDataLayer$.value.filter(
+  // Remove a layer from the selected list
+  removeSelectedLayer(layer: DataLayer) {
+    const updatedSelectedDatalayers = this._selectedDataLayers$.value.filter(
       (l) => l.id !== layer.id
     );
-    this._addedDataLayer$.next(updatedAddedDatalayers);
+    this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
 
-  // Adding or removing an item to the added list - used on climate
+  // Adding or removing an item to the selected list
   toggleLayerAdition(layer: DataLayer) {
-    if (this.isAddedLayer(layer)) {
-      this.removeAddedLayer(layer);
+    if (this.isSelectedLayer(layer)) {
+      this.removeSelectedLayer(layer);
     } else if (
-      this._addedDataLayer$.value.length < this.maxSelectedDatalayers
+      this._selectedDataLayers$.value.length < this.maxSelectedDatalayers
     ) {
-      this._addedDataLayer$.next([...this._addedDataLayer$.value, layer]);
+      this._selectedDataLayers$.next([
+        ...this._selectedDataLayers$.value,
+        layer,
+      ]);
     }
   }
 
-  // Setting the list of added layers with a pre-loaded list - used on climate
-  updateAddedLayers(layers: DataLayer[]) {
-    this._addedDataLayer$.next(layers);
+  // Setting the list of selected list
+  updateSelectedLayers(layers: DataLayer[]) {
+    this._selectedDataLayers$.next(layers);
   }
 
   // Return the max number of selected layers for this instance of the service

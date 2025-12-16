@@ -59,9 +59,9 @@ export class DataLayerTreeComponent {
   }
 
   treeData$ = this.dataLayersStateService.dataTree$.pipe(shareReplay(1));
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
-  isSelectionCompleted$ = this.dataLayersStateService.addedDataLayer$.pipe(
+  isSelectionCompleted$ = this.dataLayersStateService.selectedDataLayers$.pipe(
     untilDestroyed(this),
     map(
       (layers) =>
@@ -119,7 +119,7 @@ export class DataLayerTreeComponent {
   }
 
   isDatalayerSelected(layer: DataLayer) {
-    return this.dataLayersStateService.isAddedLayer(layer);
+    return this.dataLayersStateService.isSelectedLayer(layer);
   }
 
   toggleDataLayerSelection(dl: DataLayer) {

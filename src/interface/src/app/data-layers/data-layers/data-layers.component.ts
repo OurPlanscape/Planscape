@@ -80,7 +80,7 @@ export class DataLayersComponent {
   dataSets$ = this.dataLayersStateService.dataSets$;
 
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
     tap(() => {
@@ -113,7 +113,7 @@ export class DataLayersComponent {
 
   showFooter$ = combineLatest([
     this.results$,
-    this.selectedDataLayer$,
+    this.viewedDataLayer$,
     this.legacyDataSets$,
   ]).pipe(
     map(
