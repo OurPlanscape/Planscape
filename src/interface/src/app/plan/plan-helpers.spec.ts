@@ -4,9 +4,11 @@ import {
   isValidTotalArea,
   processCumulativeAttainment,
   flattenMultipolygons,
+  stripZCoords,
 } from './plan-helpers';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
+import { GeoJSONStoreFeatures } from 'terra-draw';
 
 interface MockFeature {
   properties: {
@@ -98,6 +100,47 @@ describe('Plan Helpers', () => {
 
       expect(ds.data).toEqual([0.5, 0.75, 0.875, 1]);
     });
+  });
+});
+
+describe('Sanitize z-coords', () => {
+  const threeElementFeatures: GeoJSONStoreFeatures[] = [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-122.352853, 43.777647, 0],
+            [-122.352415, 43.777644, 0],
+            [-122.351012, 43.777908, 0],
+            [-122.34988, 43.778302, 0],
+            [-122.348998, 43.778776, 0],
+            [-122.352853, 43.777647, 0],
+          ],
+        ],
+      },
+      properties: {
+        BASICOWNER: '111',
+        OWNERCLASS: 'SOME OWNER',
+        mode: 'polygon',
+      },
+    },
+  ];
+
+  it('should convert any coords with three elements to just the first two', () => {
+    const sanitizedResult: GeoJSONStoreFeatures[] =
+      stripZCoords(threeElementFeatures);
+    expect(sanitizedResult[0].geometry.coordinates).toEqual([
+      [
+        [-122.352853, 43.777647],
+        [-122.352415, 43.777644],
+        [-122.351012, 43.777908],
+        [-122.34988, 43.778302],
+        [-122.348998, 43.778776],
+        [-122.352853, 43.777647],
+      ],
+    ]);
   });
 });
 

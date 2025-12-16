@@ -40,10 +40,7 @@
   .logo {
     height: 100%;
   }
-
-  .mat-icon {
-    line-height: 22px;
-  }
+  
 
   .help.mat-icon-button {
     line-height: 36px;
@@ -103,10 +100,9 @@ a.navbar-item {
   }
 
   .mat-icon {
-    line-height: 22px;
-    height: 20px;
-    width: 20px;
     font-size: 20px;
+    padding-top: 2px;
+
   }
 }
 

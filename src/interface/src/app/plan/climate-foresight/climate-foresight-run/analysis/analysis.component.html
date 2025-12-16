@@ -1,0 +1,186 @@
+<app-nav-bar [area]="'CLIMATE_FORESIGHT'">
+  <div class="download-container">
+    <mat-spinner
+      diameter="24"
+      *ngIf="
+        downloading ||
+        downloadStatus === 'processing' ||
+        downloadStatus === 'pending'
+      "></mat-spinner>
+    <button
+      sg-button
+      variant="primary"
+      icon="download"
+      [disabled]="
+        downloading ||
+        downloadStatus === 'processing' ||
+        downloadStatus === 'pending'
+      "
+      (click)="downloadGeopackage()">
+      {{ downloadButtonLabel }}
+    </button>
+  </div>
+</app-nav-bar>
+
+<div class="analysis-container">
+  <div class="content" *ngIf="!loading">
+    <div class="sidebar">
+      <div class="layer-list">
+        <!-- MPAT Matrix -->
+        <div
+          class="layer-item"
+          *ngIf="mpatMatrixLayer"
+          [class.selected]="selectedLayerId === mpatMatrixLayer.id"
+          (click)="selectLayer(mpatMatrixLayer)">
+          <mat-icon class="radio-icon">
+            {{
+              selectedLayerId === mpatMatrixLayer.id
+                ? 'radio_button_checked'
+                : 'radio_button_unchecked'
+            }}
+          </mat-icon>
+          <span class="layer-name">{{ mpatMatrixLayer.name }}</span>
+          <mat-icon class="info-icon">info_outline</mat-icon>
+        </div>
+
+        <!-- Adapt-Protect Score -->
+        <div
+          class="layer-item"
+          *ngIf="adaptProtectLayer"
+          [class.selected]="selectedLayerId === adaptProtectLayer.id"
+          (click)="selectLayer(adaptProtectLayer)">
+          <mat-icon class="radio-icon">
+            {{
+              selectedLayerId === adaptProtectLayer.id
+                ? 'radio_button_checked'
+                : 'radio_button_unchecked'
+            }}
+          </mat-icon>
+          <span class="layer-name">{{ adaptProtectLayer.name }}</span>
+          <mat-icon class="info-icon">info_outline</mat-icon>
+        </div>
+
+        <!-- Integrated Condition Score -->
+        <div
+          class="layer-item"
+          *ngIf="integratedConditionLayer"
+          [class.selected]="selectedLayerId === integratedConditionLayer.id"
+          (click)="selectLayer(integratedConditionLayer)">
+          <mat-icon class="radio-icon">
+            {{
+              selectedLayerId === integratedConditionLayer.id
+                ? 'radio_button_checked'
+                : 'radio_button_unchecked'
+            }}
+          </mat-icon>
+          <span class="layer-name">{{ integratedConditionLayer.name }}</span>
+          <mat-icon class="info-icon">info_outline</mat-icon>
+        </div>
+
+        <!-- Current Conditions Translated-->
+        <sg-section
+          *ngIf="currentConditionsLayers.length > 0"
+          headline="Current Conditions Translated"
+          [defaultExpanded]="false"
+          [isCollapsible]="true">
+          <div
+            *ngFor="let layer of currentConditionsLayers"
+            class="layer-item grouped"
+            [class.selected]="selectedLayerId === layer.id"
+            (click)="selectLayer(layer)">
+            <mat-icon class="radio-icon">
+              {{
+                selectedLayerId === layer.id
+                  ? 'radio_button_checked'
+                  : 'radio_button_unchecked'
+              }}
+            </mat-icon>
+            <span class="layer-name">{{ layer.name }}</span>
+          </div>
+        </sg-section>
+
+        <!-- Future Conditions -->
+        <sg-section
+          *ngIf="futureConditionsLayers.length > 0"
+          headline="Future Conditions"
+          [defaultExpanded]="false"
+          [isCollapsible]="true">
+          <div
+            *ngFor="let layer of futureConditionsLayers"
+            class="layer-item grouped"
+            [class.selected]="selectedLayerId === layer.id"
+            (click)="selectLayer(layer)">
+            <mat-icon class="radio-icon">
+              {{
+                selectedLayerId === layer.id
+                  ? 'radio_button_checked'
+                  : 'radio_button_unchecked'
+              }}
+            </mat-icon>
+            <span class="layer-name">{{ layer.name }}</span>
+          </div>
+        </sg-section>
+      </div>
+    </div>
+
+    <div class="map-panel">
+      <div class="map-container">
+        <mgl-map
+          *ngIf="bounds$ | async as bounds"
+          [style]="(baseLayerUrl$ | async) || ''"
+          [transformRequest]="transformRequest"
+          [maxZoom]="maxZoom"
+          [minZoom]="minZoom"
+          [dragRotate]="false"
+          [fitBoundsOptions]="{ padding: 20 }"
+          [fitBounds]="bounds"
+          [interactive]="true"
+          (mapLoad)="mapLoaded($event)">
+          <app-planning-area-layer *ngIf="mapLibreMap">
+          </app-planning-area-layer>
+        </mgl-map>
+
+        <div class="map-overlay">
+          <sg-opacity-slider
+            class="opacity-slider"
+            [minValue]="0"
+            [maxValue]="100"
+            [step]="1"
+            [sliderValue]="opacity"
+            (valueChange)="onOpacityChange($event)"
+            tooltip="Layer Opacity">
+          </sg-opacity-slider>
+
+          <div class="legend-container" *ngIf="selectedLayer">
+            <app-mpat-legend
+              *ngIf="hasStyleData && !isGradientStyle"
+              [title]="selectedLayer.name"
+              [entries]="selectedLayerLegendEntries">
+            </app-mpat-legend>
+
+            <div class="ramp-legend" *ngIf="isGradientStyle || !hasStyleData">
+              <div class="legend-title">{{ selectedLayer.name }}</div>
+              <div class="ramp-content">
+                <div
+                  class="gradient-bar-vertical"
+                  [style.background]="gradientStyleVertical"></div>
+                <div class="gradient-labels-vertical">
+                  <span
+                    *ngFor="let entry of selectedLayerLegendEntries"
+                    class="gradient-label">
+                    {{ entry.label }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading analysis results...</p>
+  </div>
+</div>

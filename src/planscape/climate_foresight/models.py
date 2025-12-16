@@ -1,8 +1,16 @@
+from typing import Optional
+
+from core.gcs import create_download_url as create_gcs_download_url
+from core.gcs import get_bucket_and_key as get_gcs_bucket_and_key
+from core.gcs import is_gcs_file
+from core.models import CreatedAtMixin
+from core.s3 import create_download_url as create_s3_download_url
+from core.s3 import get_bucket_and_key as get_s3_bucket_and_key
+from core.s3 import is_s3_file
+from datasets.models import DataLayer
 from django.contrib.auth.models import User
 from django.db import models
-from core.models import CreatedAtMixin
-from datasets.models import DataLayer
-from planning.models import PlanningArea
+from planning.models import GeoPackageStatus, PlanningArea
 
 
 class ClimateForesightRunManager(models.Manager):
@@ -500,9 +508,35 @@ class ClimateForesightPromote(CreatedAtMixin, models.Model):
         help_text="MPAT with strength classification (weak/strong)",
     )
 
+    # Geopackage export fields
+    geopackage_status = models.CharField(
+        max_length=32,
+        choices=GeoPackageStatus.choices,
+        null=True,
+        help_text="Status of the geopackage generation.",
+    )
+
+    geopackage_url = models.URLField(
+        null=True,
+        help_text="Cloud storage URL of the generated geopackage ZIP file.",
+    )
+
     class Meta:
         verbose_name = "Climate Foresight PROMOTe Analysis"
         verbose_name_plural = "Climate Foresight PROMOTe Analyses"
 
     def __str__(self):
         return f"PROMOTe analysis for {self.run.name}"
+
+    def get_geopackage_url(self) -> Optional[str]:
+        """Generate a signed download URL for the geopackage."""
+        if not self.geopackage_url:
+            return None
+
+        if is_s3_file(self.geopackage_url):
+            bucket, key = get_s3_bucket_and_key(self.geopackage_url)
+            return create_s3_download_url(bucket, key)
+        elif is_gcs_file(self.geopackage_url):
+            bucket, key = get_gcs_bucket_and_key(self.geopackage_url)
+            return create_gcs_download_url(self.geopackage_url, bucket_name=bucket)
+        return None

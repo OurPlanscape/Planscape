@@ -1,7 +1,41 @@
-from datasets.models import DataLayer, Dataset
-from rest_framework import serializers
-from datasets.serializers import BrowseDataLayerSerializer
 from core.flags import feature_enabled
+from datasets.models import DataLayer, Dataset
+from datasets.serializers import BrowseDataLayerSerializer
+from organizations.models import Organization
+from rest_framework import serializers
+
+
+class OrganizationMapOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class DatasetMapOptionsSerializer(serializers.ModelSerializer):
+    organization = OrganizationMapOptionsSerializer()
+
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "organization",
+            "name",
+            "preferred_display_type",
+            "selection_type",
+        )
+
+
+class DatasetsOptionsSerializers(serializers.Serializer):
+    main_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+    base_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+
+
+class BaseModuleSerializer(serializers.Serializer):
+    datasets = DatasetsOptionsSerializers()
+
 
 class OptionDataLayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,7 +51,7 @@ class OptionThresholdsSerializer(serializers.Serializer):
     distance_from_roads = OptionDataLayerSerializer()
 
 
-class ForsysOptionsSerializer(serializers.Serializer):
+class ForsysOptionsSerializer(BaseModuleSerializer):
     inclusions = serializers.ListField(child=OptionDataLayerSerializer())
     if feature_enabled("SCENARIO_CONFIG_UI"):
         exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
@@ -26,28 +60,14 @@ class ForsysOptionsSerializer(serializers.Serializer):
     thresholds = OptionThresholdsSerializer()
 
 
-class DatasetMapOptionsSerializer(serializers.ModelSerializer):
-    organization = serializers.CharField(source="organization.name")
-
-    class Meta:
-        model = Dataset
-        fields = (
-            "id",
-            "organization",
-            "name",
-            "preferred_display_type",
-            "selection_type",
-        )
-
-
-class MapOptionsSerializer(serializers.Serializer):
-    main_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
-    base_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+class MapOptionsSerializer(BaseModuleSerializer):
+    pass
 
 
 OPTIONS_SERIALIZERS = {
     "forsys": ForsysOptionsSerializer,
     "map": MapOptionsSerializer,
+    "impacts": BaseModuleSerializer,
 }
 
 
@@ -60,4 +80,5 @@ class ModuleSerializer(serializers.Serializer):
         self.fields["options"] = self.get_options_serializer(module_name)
 
     name = serializers.CharField()
+    options = serializers.DictField()
     options = serializers.DictField()

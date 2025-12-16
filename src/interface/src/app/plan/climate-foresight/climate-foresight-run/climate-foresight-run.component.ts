@@ -1,7 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, of, take } from 'rxjs';
+import {
+  Observable,
+  of,
+  take,
+  interval,
+  Subject,
+  switchMap,
+  takeUntil,
+} from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormGroup } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
@@ -31,6 +39,7 @@ import { AssignPillarsComponent } from './assign-pillars/assign-pillars.componen
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dialog/confirmation-dialog.component';
 import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
+import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -68,6 +77,8 @@ export class ClimateForesightRunComponent implements OnInit {
   dataLayerSelectionComponent?: DataLayerSelectionComponent;
   @ViewChild('assignFavorability')
   assignFavorabilityComponent?: AssignFavorabilityComponent;
+  @ViewChild('assignPillars')
+  assignPillarsComponent?: AssignPillarsComponent;
 
   currentPlan: Plan | null = null;
   currentRun: ClimateForesightRun | null = null;
@@ -80,6 +91,9 @@ export class ClimateForesightRunComponent implements OnInit {
   assessmentForm: FormGroup | null = null;
 
   stepData: Record<number, SaveStepData> = {};
+
+  private pollingInterval = 5000; // 5 seconds
+  private stopPolling$ = new Subject<void>();
 
   stepsList: StepConfig[] = [
     { label: 'Select Data Layers', completed: false },
@@ -167,7 +181,11 @@ export class ClimateForesightRunComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error loading run:', error);
-          this.snackBar.open('Failed to load run', 'Close', { duration: 3000 });
+          this.snackBar.open(
+            'Failed to load run',
+            'Close',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
           this.router.navigate(['../'], { relativeTo: this.route });
         },
       });
@@ -207,7 +225,11 @@ export class ClimateForesightRunComponent implements OnInit {
 
   saveStepData = (data: Partial<SaveStepData>): Observable<boolean> => {
     if (!this.runId) {
-      this.snackBar.open('No run ID found', 'Close', { duration: 3000 });
+      this.snackBar.open(
+        'No run ID found',
+        'Close',
+        SNACK_BOTTOM_NOTICE_CONFIG
+      );
       return of(false);
     }
 
@@ -231,9 +253,11 @@ export class ClimateForesightRunComponent implements OnInit {
 
   private saveDataLayers(data: Partial<SaveStepData>): Observable<boolean> {
     if (!data || !data.dataLayers || !this.runId) {
-      this.snackBar.open('Please select at least one data layer', 'Close', {
-        duration: 3000,
-      });
+      this.snackBar.open(
+        'Please select at least one data layer',
+        'Close',
+        SNACK_BOTTOM_NOTICE_CONFIG
+      );
       this.savingStep = false;
       return of(false);
     }
@@ -241,7 +265,6 @@ export class ClimateForesightRunComponent implements OnInit {
     const inputDatalayers = data.dataLayers.map(
       (layer: Partial<InputDatalayer>) => ({
         datalayer: layer.id,
-        pillar: null,
       })
     );
 
@@ -264,9 +287,11 @@ export class ClimateForesightRunComponent implements OnInit {
           next: (updatedRun) => {
             this.currentRun = updatedRun;
 
-            this.snackBar.open('Data layers saved', 'Close', {
-              duration: 2000,
-            });
+            this.snackBar.open(
+              'Data layers saved',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
             this.savingStep = false;
 
             observer.next(true);
@@ -278,7 +303,7 @@ export class ClimateForesightRunComponent implements OnInit {
               'Failed to save data layers: ' +
                 (error?.error?.detail || error?.message || 'Unknown error'),
               'Close',
-              { duration: 5000 }
+              SNACK_BOTTOM_NOTICE_CONFIG
             );
             this.savingStep = false;
             observer.next(false);
@@ -290,9 +315,11 @@ export class ClimateForesightRunComponent implements OnInit {
 
   private saveFavorability(data: Partial<SaveStepData>): Observable<boolean> {
     if (!data || !data.favorability || !this.runId) {
-      this.snackBar.open('Please assign favorability for all layers', 'Close', {
-        duration: 3000,
-      });
+      this.snackBar.open(
+        'Please assign favorability for all layers',
+        'Close',
+        SNACK_BOTTOM_NOTICE_CONFIG
+      );
       this.savingStep = false;
       return of(false);
     }
@@ -328,9 +355,11 @@ export class ClimateForesightRunComponent implements OnInit {
           next: (updatedRun) => {
             this.currentRun = updatedRun;
 
-            this.snackBar.open('Favorability saved', 'Close', {
-              duration: 2000,
-            });
+            this.snackBar.open(
+              'Favorability saved',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
             this.savingStep = false;
 
             observer.next(true);
@@ -342,7 +371,7 @@ export class ClimateForesightRunComponent implements OnInit {
               'Failed to save favorability: ' +
                 (error?.error?.detail || error?.message || 'Unknown error'),
               'Close',
-              { duration: 5000 }
+              SNACK_BOTTOM_NOTICE_CONFIG
             );
             this.savingStep = false;
             observer.next(false);
@@ -405,7 +434,7 @@ export class ClimateForesightRunComponent implements OnInit {
             'Failed to save pillars: ' +
               (error?.error?.detail || error?.message || 'Unknown error'),
             'Close',
-            { duration: 5000 }
+            SNACK_BOTTOM_NOTICE_CONFIG
           );
           this.savingStep = false;
         },
@@ -413,9 +442,41 @@ export class ClimateForesightRunComponent implements OnInit {
   }
 
   runAnalysis(): void {
-    // TODO: Execute analysis
-    // On success display success dialog
     this.displaySuccessDialog();
+    this.climateForesightService
+      .runAnalysis(this.runId!)
+      .pipe(untilDestroyed(this))
+      .subscribe({
+        next: (runningRun) => {
+          this.currentRun = runningRun;
+          this.snackBar.open(
+            'Analysis started. You will be notified when it completes.',
+            'Close',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+
+          this.startPollingForRunStatus();
+
+          this.savingStep = false;
+
+          this.router.navigate(
+            [`/plan/${this.currentPlan?.id}/climate-foresight`],
+            {
+              relativeTo: this.route,
+            }
+          );
+        },
+        error: (error) => {
+          console.error('Error triggering analysis:', error);
+          this.snackBar.open(
+            'Failed to trigger analysis: ' +
+              (error?.error?.detail || error?.message || 'Unknown error'),
+            'Close',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+          this.savingStep = false;
+        },
+      });
   }
 
   displaySuccessDialog() {
@@ -433,6 +494,41 @@ export class ClimateForesightRunComponent implements OnInit {
         this.savingStep = false;
         // On modal closed go to the climate home page
         this.onFinished();
+      });
+  }
+
+  /**
+   * Start polling for run status updates every 5 seconds
+   * Stops when run status becomes 'done' or component is destroyed
+   */
+  private startPollingForRunStatus(): void {
+    if (this.currentRun?.status !== 'running') {
+      return;
+    }
+
+    interval(this.pollingInterval)
+      .pipe(
+        untilDestroyed(this),
+        takeUntil(this.stopPolling$),
+        switchMap(() => this.climateForesightService.getRun(this.runId!))
+      )
+      .subscribe({
+        next: (updatedRun) => {
+          this.currentRun = updatedRun;
+
+          if (updatedRun.status === 'done') {
+            this.stopPolling$.next();
+            this.stopPolling$.complete();
+            this.snackBar.open(
+              'Analysis completed successfully!',
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
+          }
+        },
+        error: (err) => {
+          console.error('Error polling for run status:', err);
+        },
       });
   }
 }

@@ -6,30 +6,12 @@ from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
-from datasets.models import (
-    Category,
-    DataLayer,
-    DataLayerHasStyle,
-    Dataset,
-    PreferredDisplayType,
-    SelectionTypeOptions,
-    Style,
-)
+from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
 
 
 class DatasetAdminForm(forms.ModelForm):
     description = forms.CharField(widget=forms.Textarea, required=False)
     version = forms.CharField(required=False)
-    selection_type = forms.TypedChoiceField(
-        choices=SelectionTypeOptions.choices,
-        required=False,
-        empty_value=None,
-    )
-    preferred_display_type = forms.TypedChoiceField(
-        choices=PreferredDisplayType.choices,
-        required=False,
-        empty_value=None,
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -83,6 +65,9 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["category"].required = False
         self.fields["metadata"].required = False
         self.fields["geometry"].required = False
+        self.fields["geometry"].disabled = True
+        self.fields["outline"].required = False
+        self.fields["outline"].disabled = True
 
     def save(self, commit=True):
         invalidate_model(DataLayer)
@@ -103,6 +88,7 @@ class DataLayerAdminForm(forms.ModelForm):
             "info",
             "metadata",
             "geometry",
+            "outline",
         )
 
 

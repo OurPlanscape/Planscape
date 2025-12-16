@@ -5,6 +5,7 @@ import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { DataSet, Pagination } from '@types';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('DataLayersComponent', () => {
   let component: DataLayersComponent;
@@ -12,11 +13,11 @@ describe('DataLayersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataLayersComponent],
+      imports: [DataLayersComponent, FeaturesModule],
       providers: [
         MockProvider(DataLayersStateService, {
           searchTerm$: of(''),
-          dataSets$: of({} as Pagination<DataSet>),
+          legacyDataSets$: of({} as Pagination<DataSet>),
           selectedDataSet$: of(null),
           dataTree$: of(null),
           searchResults$: of(null),

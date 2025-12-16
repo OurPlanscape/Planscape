@@ -7,6 +7,7 @@ import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 import flatten from '@turf/flatten';
 import { Feature, MultiPolygon, Polygon } from 'geojson';
 import { GeoJSONStoreFeatures } from 'terra-draw';
+import { Position } from '@turf/helpers';
 
 export const POLLING_INTERVAL = 3000;
 
@@ -179,4 +180,32 @@ export function planningAreaMetricsAreReady(pa: Plan) {
 
 export function planningAreaMetricsFailed(pa: Plan) {
   return pa.map_status === 'FAILED';
+}
+
+export function stripZCoords(
+  givenFeatures: GeoJSONStoreFeatures[]
+): GeoJSONStoreFeatures[] {
+  return givenFeatures.map((feature) => {
+    if (feature.geometry && Array.isArray(feature.geometry.coordinates)) {
+      feature.geometry.coordinates = sanitizeCoordinates(
+        feature.geometry.coordinates
+      );
+    }
+    return feature;
+  });
+}
+
+function sanitizeCoordinates(coords: any): Position[] | any {
+  if (!Array.isArray(coords)) {
+    return coords;
+  }
+
+  return coords.map((coord) => {
+    // If the coordinate is an array with 3 elements, return only the first two
+    if (Array.isArray(coord) && coord.length === 3) {
+      return [coord[0], coord[1]] as Position;
+    }
+    // Recursively sanitize deeper nested arrays
+    return sanitizeCoordinates(coord);
+  });
 }
