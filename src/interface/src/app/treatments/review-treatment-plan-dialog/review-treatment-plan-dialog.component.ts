@@ -19,7 +19,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
   standalone: true,
   imports: [
     ModalComponent,
-    MatSlideToggleModule,
+    MatSlideToggleModule, // already newer version
     NgForOf,
     AsyncPipe,
     NgIf,
