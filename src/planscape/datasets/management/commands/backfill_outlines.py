@@ -42,16 +42,16 @@ class Command(BaseCommand):
             prefix = f"[{index}/{total}] datalayer {datalayer.id}"
             if skip_existing and datalayer.outline:
                 skipped += 1
-                self.stdout.write(f"{prefix} already has an outline, skipping.")
+                self.stdout.write(f" [OK] {prefix} already has an outline, skipping.")
                 continue
             try:
                 datalayer.outline = get_datalayer_outline(datalayer)
                 datalayer.save(update_fields=["outline", "updated_at"])
                 updated += 1
-                self.stdout.write(f"{prefix} outline updated.")
+                self.stdout.write(f" [OK] {prefix} outline updated.")
             except Exception as exc:
                 failed += 1
-                self.stderr.write(f"{prefix} failed: {exc}")
+                self.stderr.write(f" [NOK] {prefix} failed: {exc}")
         self.stdout.write(
             f"Finished processing {total} datalayers. Updated {updated}, skipped {skipped}, failed {failed}."
         )
