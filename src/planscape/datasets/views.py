@@ -130,7 +130,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     )
     @action(detail=False, methods=["get", "post"])
     def find_anything(self, request):
-        params = request.query_params if request.query_params else request.POST
+        params = request.query_params if request.query_params else request.data
         serializer = FindAnythingSerializer(data=params)
         serializer.is_valid(raise_exception=True)
         # TODO: cache results and paginate here.
