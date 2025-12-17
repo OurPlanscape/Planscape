@@ -33,7 +33,7 @@ export class DataLayersStateService {
   dataSets$ = this.mapModuleService.datasets$.pipe(
     distinctUntilChanged(),
     map((mapData) => mapData.main_datasets),
-    tap(() => this.loadingSubject.next(false))
+    tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
 
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
