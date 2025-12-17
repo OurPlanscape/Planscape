@@ -21,6 +21,7 @@ import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-login',
@@ -49,7 +50,8 @@ export class LoginComponent {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private featureService: FeatureService
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
@@ -105,15 +107,20 @@ export class LoginComponent {
 
         // present the user with the strings that we decided for UX, rather than
         //  the errors provided by the backend and dj-rest-auth
-        var errorMsg: string = '';
+        let errorMsg: string = '';
+        let errorObject = error.error;
 
-        if (error.error.email) {
+        if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
+          errorObject = error.error.errors;
+        }
+
+        if (errorObject.email) {
           this.form.controls['email'].setErrors({
             email: 'Email must be in the proper format.',
           });
         }
-        if (error.error.global) {
-          errorMsg = error.error.global[0];
+        if (errorObject.global) {
+          errorMsg = errorObject.global[0];
           this.form.setErrors({ error: errorMsg });
           if (errorMsg === 'E-mail is not verified.') {
             this.loginError = 'Please check your email to verify your account.';
