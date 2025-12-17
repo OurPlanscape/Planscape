@@ -1,0 +1,16 @@
+@import 'colors';
+
+:host {
+  position: relative;
+}
+
+mgl-map {
+  height: 100%;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  align-items: center;
+}

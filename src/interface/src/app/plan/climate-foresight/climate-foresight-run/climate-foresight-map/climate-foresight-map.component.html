@@ -1,0 +1,55 @@
+<ng-container *ngIf="bounds$ | async as bounds">
+  <app-map-nav-bar *ngIf="mapIsLoaded">
+    <sg-opacity-slider
+      class="navbar-slider"
+      [minValue]="0"
+      [maxValue]="1"
+      [step]="0.01"
+      [sliderValue]="(opacity$ | async) ?? 0.5"
+      (valueChange)="handleOpacityChange($event)"
+      tooltip="Planning Area Opacity"></sg-opacity-slider>
+  </app-map-nav-bar>
+
+  <mgl-map
+    *ngIf="bounds"
+    [style]="(baseLayerUrl$ | async) || ''"
+    [transformRequest]="transformRequest"
+    [maxZoom]="maxZoom"
+    [minZoom]="minZoom"
+    [dragRotate]="false"
+    [fitBoundsOptions]="{
+      padding: { top: 70, bottom: 40, left: 20, right: 20 },
+    }"
+    [fitBounds]="bounds"
+    (mapLoad)="mapLoaded($event)">
+    <app-map-zoom-control
+      *ngIf="mapLibreMap"
+      [mapLibreMap]="mapLibreMap"
+      controlsPosition="bottom-right"></app-map-zoom-control>
+
+    <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
+    <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
+
+    <app-map-data-layer
+      *ngIf="mapLibreMap"
+      [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
+    <app-map-base-layers
+      *ngIf="mapLibreMap"
+      [mapLibreMap]="mapLibreMap"></app-map-base-layers>
+
+    <mgl-layer
+      type="background"
+      id="bottom-layer"
+      [layout]="{ visibility: 'none' }">
+    </mgl-layer>
+
+    <mgl-control position="top-left">
+      <app-map-layer-color-legend></app-map-layer-color-legend>
+    </mgl-control>
+  </mgl-map>
+</ng-container>
+
+<div class="loader" *ngIf="!mapIsLoaded">
+  <mat-spinner diameter="32"></mat-spinner>
+</div>

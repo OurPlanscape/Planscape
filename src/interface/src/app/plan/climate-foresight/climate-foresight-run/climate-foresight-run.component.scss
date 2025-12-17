@@ -4,11 +4,11 @@
 .climate-foresight-run-container {
   display: flex;
   flex-direction: column;
-  height: calc(100% - ($navbar-height));
+  height: calc(100% - 110px);
 
   ::ng-deep {
     sg-steps {
-      overflow-y: auto;
+      min-height: 100%;
     }
     sg-steps .step {
       padding: 0;
@@ -16,7 +16,7 @@
 
     sg-steps-nav {
       box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-      z-index: 3;
+      z-index: 40;
     }
   }
 }
