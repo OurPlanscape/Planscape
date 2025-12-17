@@ -155,8 +155,12 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   }
 
   reload() {
-    this.planState.reloadPlan();
     this.dataSource.loadData();
+  }
+
+  afterRename() {
+    this.planState.reloadPlan();
+    this.reload();
   }
 
   search(str: string) {
