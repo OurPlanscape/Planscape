@@ -126,14 +126,6 @@ export interface BaseLayer extends Omit<DataLayer, 'styles' | 'geometry'> {
   ];
 }
 
-export interface CategorizedBaseLayers {
-  category: {
-    name: string;
-    isMultiSelect: boolean;
-  };
-  layers: BaseLayer[];
-}
-
 export interface ColorLegendInfo {
   title: string;
   type: RasterColorType;

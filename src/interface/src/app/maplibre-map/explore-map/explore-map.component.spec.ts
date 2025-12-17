@@ -4,7 +4,7 @@ import { ExploreMapComponent } from './explore-map.component';
 import { MockProvider, MockProviders } from 'ng-mocks';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { MapConfigState, MapInteractionMode } from '../map-config.state';
-import { AuthService } from '@services';
+import { AuthService, DataLayersService } from '@services';
 import { DrawService } from '../draw.service';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 import { PlanState } from '../../plan/plan.state';
@@ -20,6 +20,7 @@ describe('ExploreMapComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ExploreMapComponent, FeaturesModule],
       providers: [
+        MockProvider(DataLayersService),
         MockProviders(MultiMapConfigState, AuthService, DrawService),
         // alias the abstract token
         { provide: MapConfigState, useExisting: MultiMapConfigState },

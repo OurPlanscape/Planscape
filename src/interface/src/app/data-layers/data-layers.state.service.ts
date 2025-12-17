@@ -3,7 +3,6 @@ import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
   combineLatest,
-  distinctUntilChanged,
   map,
   Observable,
   of,
@@ -22,31 +21,19 @@ import {
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
-import { FeatureService } from '../features/feature.service';
+
 import { MAX_SELECTED_DATALAYERS } from './data-layers/max-selected-datalayers.token';
+
+import { distinctUntilChanged } from 'rxjs/operators';
+
 @Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
 
-  private _datasetsCurrentPage$ = new BehaviorSubject(1);
-  datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
-
-  // remove once MAP_MODULE is turned on
-  legacyDataSets$ = this._datasetsCurrentPage$.pipe(
-    distinctUntilChanged(),
-    tap(() => this.loadingSubject.next(true)),
-    switchMap((currentPage) => {
-      const offset = (currentPage - 1) * this.limit;
-      return this.service.listDataSets(this.limit, offset);
-    }),
-    tap(() => {
-      this.loadingSubject.next(false);
-    }),
-    shareReplay(1)
-  );
-
   dataSets$ = this.mapModuleService.datasets$.pipe(
-    map((mapData) => mapData.main_datasets)
+    distinctUntilChanged(),
+    map((mapData) => mapData.main_datasets),
+    tap(() => this.loadingSubject.next(false))
   );
 
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
@@ -128,13 +115,10 @@ export class DataLayersStateService {
     tap(() => this.loadingSubject.next(true)),
     switchMap(([term, offset]) => {
       if (!term) {
-        this.loadingSubject.next(false);
         return of(null);
       }
 
-      const module = this.isMapModuleFeatureOn
-        ? this.mapModuleService.moduleName
-        : undefined;
+      const module = this.mapModuleService.moduleName;
       return this.service
         .search({
           term,
@@ -165,7 +149,6 @@ export class DataLayersStateService {
   constructor(
     private service: DataLayersService,
     private mapModuleService: MapModuleService,
-    private featureService: FeatureService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private readonly maxSelectedDatalayers: number
   ) {}
@@ -214,10 +197,6 @@ export class DataLayersStateService {
     this._offset.next((page - 1) * this.limit);
   }
 
-  changeDatasetsPage(page: number) {
-    this._datasetsCurrentPage$.next(page);
-  }
-
   clearSearch() {
     this.search('');
     this._selectedDataSet$.next(null);
@@ -232,6 +211,7 @@ export class DataLayersStateService {
 
   goToDataLayerCategory(layer: DataLayer) {
     this._isBrowsing$.next(true);
+    this.loadingSubject.next(false);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
       const dataSet: Partial<DataSet> = {
@@ -254,10 +234,6 @@ export class DataLayersStateService {
     this.resetPath();
     this.clearDataLayer();
     this.clearSearch();
-  }
-
-  get isMapModuleFeatureOn() {
-    return this.featureService.isFeatureEnabled('MAP_MODULE');
   }
 
   // Checking if the layer is already in the selected list
