@@ -17,7 +17,6 @@ import { NewScenarioState } from '../new-scenario.state';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { AvailableStands } from '@types';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
-import { Step4LegacyComponent } from '../step4-legacy/step4-legacy.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
@@ -56,7 +55,6 @@ describe('ScenarioCreationComponent', () => {
           Step1Component,
           StandLevelConstraintsComponent,
           TreatmentTargetComponent,
-          Step4LegacyComponent,
           BaseLayersComponent
         ),
         FeaturesModule,
