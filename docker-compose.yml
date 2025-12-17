@@ -49,7 +49,7 @@ services:
     extends:
       service: _planscape
     working_dir: /app/src/planscape
-    command: uv run celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics
+    command: uv run celery -A planscape worker -E --loglevel INFO --concurrency 3 -Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics,climate-foresight
     deploy:
       replicas: 1
     env_file:

@@ -65,3 +65,17 @@
   align-items: center;
   gap: 8px;
 }
+
+.list-spinner {
+  margin-left: 8px;
+}
+
+
+.no-data {
+  margin-left: 8px;
+  color: $color-md-gray;
+}
+
+.side-spinner {
+  flex-shrink: 0;
+}

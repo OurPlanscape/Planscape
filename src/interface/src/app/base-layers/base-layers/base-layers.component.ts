@@ -6,6 +6,7 @@ import { BaseLayer } from '@types';
 import { map } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
+import { MapModuleService } from '@services/map-module.service';
 
 @Component({
   selector: 'app-base-layers',
@@ -23,6 +24,10 @@ import { ButtonComponent } from '@styleguide';
 })
 export class BaseLayersComponent {
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
+  selectedLayersDataSet$ = this.selectedLayers$.pipe(
+    // just return the first item data set id, as we can only have 1 dataset active.
+    map((layers) => layers?.[0]?.dataset.id ?? null)
+  );
   selectedLayersId$ = this.selectedLayers$.pipe(
     map((layers) => {
       if (layers && layers.length) {
@@ -31,9 +36,15 @@ export class BaseLayersComponent {
       return [];
     })
   );
-  categorizedBaseLayers$ = this.baseLayersStateService.categorizedBaseLayers$;
 
-  constructor(private baseLayersStateService: BaseLayersStateService) {}
+  baseDataSets$ = this.mapModuleService.datasets$.pipe(
+    map((mapData) => mapData.base_datasets)
+  );
+
+  constructor(
+    private baseLayersStateService: BaseLayersStateService,
+    private mapModuleService: MapModuleService
+  ) {}
 
   updateSelectedLayer(data: { layer: BaseLayer; isMulti: boolean }) {
     this.baseLayersStateService.updateBaseLayers(data.layer, data.isMulti);

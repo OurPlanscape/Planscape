@@ -1,4 +1,4 @@
-import { BaseLayer } from './data-sets';
+import { BaseDataSet, BaseLayer } from './data-sets';
 import { IdNamePair } from './general';
 
 export interface ApiModule<T> {
@@ -13,4 +13,16 @@ export interface ForsysData {
     slope: { id: number };
     distance_from_roads: { id: number };
   };
+}
+
+export interface MapData {
+  datasets: {
+    main_datasets: MapDataDataSet[];
+    base_datasets: MapDataDataSet[];
+  };
+}
+
+export interface MapDataDataSet extends BaseDataSet {
+  preferred_display_type: 'MAIN_DATALAYERS' | 'BASE_DATALAYERS';
+  selection_type: 'SINGLE' | 'MULTIPLE';
 }

@@ -1,61 +1,17 @@
 import { Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  distinctUntilChanged,
-  filter,
-  map,
-  shareReplay,
-} from 'rxjs';
-import { DataLayersService } from '@services/data-layers.service';
+import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
 import { BaseLayer } from '@types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BaseLayersStateService {
-  constructor(private dataLayersService: DataLayersService) {}
-
-  // gets all base layers
-  baseLayers$ = this.dataLayersService.listBaseLayers().pipe(shareReplay(1));
+  constructor() {}
 
   private _loadingLayers$ = new BehaviorSubject<string[]>([]);
   public loadingLayers$ = this._loadingLayers$
     .asObservable()
     .pipe(distinctUntilChanged());
-
-  // base layers grouped by category (one level)
-  categorizedBaseLayers$ = this.baseLayers$.pipe(
-    filter((layers) =>
-      layers.some((layer) => layer.path.length === 1 && layer.path[0])
-    ),
-    map((layers) => {
-      const grouped = layers.reduce<Record<string, BaseLayer[]>>(
-        (acc, layer) => {
-          const category = layer.path[0];
-          (acc[category] ??= []).push(layer);
-          return acc;
-        },
-        {}
-      );
-
-      return Object.entries(grouped).map(([categoryName, categoryLayers]) => ({
-        category: {
-          name: categoryName,
-          isMultiSelect: this.isCategoryMultiSelect(categoryName),
-        },
-        layers: [...categoryLayers].sort((a, b) => {
-          // push any “order = -1” item to the very end:
-          const aOrder = a.metadata?.modules?.toc?.order;
-          const bOrder = b.metadata?.modules?.toc?.order;
-
-          if (aOrder === -1 && bOrder !== -1) return 1;
-          if (bOrder === -1 && aOrder !== -1) return -1;
-          // otherwise, alphabetical
-          return a.name.localeCompare(b.name);
-        }),
-      }));
-    })
-  );
 
   private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(true);
   enableBaseLayerHover$ = this._enableBaseLayerHover$.asObservable();
@@ -129,9 +85,5 @@ export class BaseLayersStateService {
 
   setBaseLayers(bs: BaseLayer[]) {
     this._selectedBaseLayers$.next(bs);
-  }
-
-  private isCategoryMultiSelect(path: string) {
-    return path == 'Ownership';
   }
 }

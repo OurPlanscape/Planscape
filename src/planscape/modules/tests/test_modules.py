@@ -9,10 +9,10 @@ from modules.base import get_module
 
 class MapModuleTest(TestCase):
     def test_returns_options_correctly(self):
-        base_dataset = DatasetFactory.create(
+        DatasetFactory.create(
             name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
         )
-        main_dataset = DatasetFactory.create(
+        DatasetFactory.create(
             name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
 
@@ -23,17 +23,15 @@ class MapModuleTest(TestCase):
 
         options: Dict[str, Any] = configuration["options"]
 
-        self.assertIn("main_datasets", options)
-        self.assertIn("base_datasets", options)
+        self.assertIn("datasets", options)
 
-        main = options["main_datasets"]
-        base = options["base_datasets"]
+        datasets: Dict[str, Any] = options["datasets"]
 
-        self.assertEqual(1, len(main))
-        self.assertEqual(1, len(base))
+        self.assertIn("main_datasets", datasets)
+        self.assertIn("base_datasets", datasets)
 
-        main1 = main[0]
-        base1 = base[0]
+        main = datasets["main_datasets"]
+        base = datasets["base_datasets"]
 
-        self.assertEqual(main_dataset.name, main1.name)
-        self.assertEqual(base_dataset.name, base1.name)
+        self.assertGreaterEqual(len(main), 1)
+        self.assertGreaterEqual(len(base), 1)

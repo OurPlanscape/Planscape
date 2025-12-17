@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataSet } from '@types';
+import { BaseDataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
@@ -60,18 +60,16 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
+  @Input() displayAddButton = false;
+
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   loading$ = this.dataLayersStateService.loading$;
 
-  dataSets$ = this.dataLayersStateService.dataSets$.pipe(
-    map((dataset) => {
-      this.datasetCount = dataset.count;
-      return dataset;
-    })
-  );
+  dataSets$ = this.dataLayersStateService.dataSets$;
+
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
     tap(() => {
@@ -80,7 +78,6 @@ export class DataLayersComponent {
     })
   );
   resultCount: number | null = null;
-  datasetCount: number | null = null;
 
   results$: Observable<Results | null> =
     this.dataLayersStateService.searchResults$.pipe(
@@ -102,29 +99,13 @@ export class DataLayersComponent {
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
-  showFooter$ = combineLatest([
-    this.results$,
-    this.selectedDataLayer$,
-    this.dataSets$,
-  ]).pipe(
-    map(
-      ([results, selectedLayer, datasets]) =>
-        this.pages > 1 || selectedLayer || this.datasetPages > 1
-    )
+  showFooter$ = combineLatest([this.results$, this.viewedDataLayer$]).pipe(
+    map(([results, selectedLayer]) => this.pages > 1 || selectedLayer)
   );
 
   showDatasets$ = combineLatest([this.dataSets$, this.loading$]).pipe(
     map(([dataSets, loading]) => {
-      return dataSets?.results.length > 0 && !loading;
-    })
-  );
-
-  showDatasetPagination$ = combineLatest([
-    this.selectedDataSet$,
-    this.isBrowsing$,
-  ]).pipe(
-    map(([selectedDataSet, isBrowsing]) => {
-      return !selectedDataSet && isBrowsing;
+      return dataSets.length > 0 && !loading;
     })
   );
 
@@ -134,14 +115,6 @@ export class DataLayersComponent {
       : 0;
   }
 
-  get datasetPages() {
-    return this.datasetCount
-      ? Math.ceil(this.datasetCount / this.dataLayersStateService.limit)
-      : 0;
-  }
-
-  datasetCurrentPage$ = this.dataLayersStateService.datasetsCurrentPage$;
-
   search(term: string) {
     this.dataLayersStateService.search(term);
   }
@@ -150,11 +123,7 @@ export class DataLayersComponent {
     this.dataLayersStateService.changePage(page);
   }
 
-  showDatasetsPage(page: number) {
-    this.dataLayersStateService.changeDatasetsPage(page);
-  }
-
-  viewDatasetCategories(dataSet: DataSet) {
+  viewDatasetCategories(dataSet: BaseDataSet) {
     this.dataLayersStateService.resetPath();
     this.dataLayersStateService.selectDataSet(dataSet);
   }

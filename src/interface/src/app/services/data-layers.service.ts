@@ -6,6 +6,7 @@ import {
   DataLayer,
   DataSet,
   Pagination,
+  SearchQuery,
   SearchResult,
 } from '@types';
 import { map } from 'rxjs';
@@ -36,24 +37,25 @@ export class DataLayersService {
     );
   }
 
-  search(term: string, limit: number, offset?: number) {
+  search(query: SearchQuery) {
     return this.http.get<Pagination<SearchResult>>(
       environment.backend_endpoint + '/v2/datalayers/find_anything/',
       {
         withCredentials: true,
         params: {
-          term,
+          term: query.term,
           type: 'RASTER',
-          limit: limit,
-          ...(offset ? { offset } : {}),
+          limit: query.limit,
+          ...(query.offset ? { offset: query.offset } : {}),
+          ...(query.module ? { module: query.module } : {}),
         },
       }
     );
   }
 
-  listBaseLayers() {
+  listBaseLayersByDataSet(dataSetId: number) {
     return this.http.get<BaseLayer[]>(
-      environment.backend_endpoint + '/v2/datasets/999/browse/',
+      environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
       {
         withCredentials: true,
         params: { type: 'VECTOR' },
@@ -70,15 +72,5 @@ export class DataLayersService {
         }
       )
       .pipe(map((data) => data.layer_url));
-  }
-
-  getMaxSlopeLayerId() {
-    return this.search('Slope', 1).pipe(map((s) => s.results[0].id));
-  }
-
-  getDistanceToRoadsLayerId() {
-    return this.search('Distance from Roads - CA', 1).pipe(
-      map((s) => s.results[0].id)
-    );
   }
 }
