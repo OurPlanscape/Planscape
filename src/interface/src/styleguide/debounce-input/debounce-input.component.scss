@@ -42,6 +42,7 @@
   .pencil-icon {
     color: $color-md-gray;
   }
+
   .pencil-icon:hover {
     color: $color-black;
   }
@@ -64,6 +65,8 @@
   .save-spinner {
     right: 10px;
   }
+
+
 }
 
 ::ng-deep .name-input-component input {
@@ -72,6 +75,14 @@
 
 ::ng-deep .name-input.small input:disabled {
   color: black;
+}
+
+:host {
+  ::ng-deep .name-input-component .input-wrapper {
+    width: 100%;
+    padding: 4px 4px 4px 8px;
+    height: 42px;
+  }
 }
 
 ::ng-deep .name-input.small .input-wrapper {
@@ -84,12 +95,6 @@
   border: 1px $color-standard-blue solid;
 }
 
-::ng-deep .name-input-component .input-wrapper {
-  width: 100%;
-  border-width: 2px;
-  padding: 4px 0px 4px 8px;
-  padding-right: 4px;
-}
 
 ::ng-deep .tooltip-menu .mat-mdc-menu-content {
   padding: 4px;
