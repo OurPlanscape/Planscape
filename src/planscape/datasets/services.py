@@ -483,6 +483,7 @@ def find_anything(
     }
     org_filter: Dict[str, Any] = {
         "organization__name__icontains": term,
+        "visibility": VisibilityOptions.PUBLIC,
     }
 
     if dataset_ids:
