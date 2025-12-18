@@ -573,6 +573,13 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
 class BrowseDataSetSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
 
+    geometry = GeometryTypeField(
+        geometry_type="MultiPolygon",
+        destination_srid=4269,
+        coerce_multi=True,
+        required=False,
+    )
+
 
 class FindAnythingSerializer(serializers.Serializer):
     def __init__(self, *args, **kwargs):
