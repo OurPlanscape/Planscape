@@ -75,3 +75,4 @@ $planscape-frontend-theme: mat.define-light-theme(
 
 $color-config: mat.get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
+
