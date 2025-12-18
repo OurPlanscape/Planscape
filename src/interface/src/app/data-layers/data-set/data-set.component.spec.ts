@@ -14,7 +14,7 @@ describe('DataSetComponent', () => {
       imports: [DataSetComponent],
       providers: [
         MockProvider(DataLayersStateService, {
-          selectedDataLayer$: of(null),
+          viewedDataLayer$: of(null),
         }),
       ],
     }).compileComponents();

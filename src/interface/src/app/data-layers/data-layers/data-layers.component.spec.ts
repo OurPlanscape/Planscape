@@ -4,7 +4,6 @@ import { DataLayersComponent } from './data-layers.component';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { DataSet, Pagination } from '@types';
 import { FeaturesModule } from '../../features/features.module';
 
 describe('DataLayersComponent', () => {
@@ -17,7 +16,6 @@ describe('DataLayersComponent', () => {
       providers: [
         MockProvider(DataLayersStateService, {
           searchTerm$: of(''),
-          legacyDataSets$: of({} as Pagination<DataSet>),
           selectedDataSet$: of(null),
           dataTree$: of(null),
           searchResults$: of(null),

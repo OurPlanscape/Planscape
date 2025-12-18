@@ -65,10 +65,11 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             200: BrowseDataLayerSerializer(many=True),
         },
     )
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["get", "post"])
     def browse(self, request, pk=None):
         dataset = self.get_object()
-        serializer = BrowseDataSetSerializer(data=request.query_params)
+        params = request.query_params if request.query_params else request.data
+        serializer = BrowseDataSetSerializer(data=params)
         serializer.is_valid(raise_exception=True)
         results = self._get_browse_result(
             dataset,
@@ -128,9 +129,10 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         parameters=[FindAnythingSerializer],
         responses={200: SearchResultsSerializer(many=True)},
     )
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get", "post"])
     def find_anything(self, request):
-        serializer = FindAnythingSerializer(data=request.query_params)
+        params = request.query_params if request.query_params else request.data
+        serializer = FindAnythingSerializer(data=params)
         serializer.is_valid(raise_exception=True)
         # TODO: cache results and paginate here.
         term = serializer.validated_data.get("term")
