@@ -84,6 +84,8 @@ button {
 .standard-label {
   @include standard-input-label();
   color: $color-black;
+  display: block;
+  margin-bottom: 4px;
 }
 
 .required-blurb {
