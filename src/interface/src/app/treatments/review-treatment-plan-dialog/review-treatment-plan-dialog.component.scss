@@ -13,12 +13,8 @@
     text-align: right;
     margin-top: 40px;
     margin-bottom: 16px;
+    --mat-slide-toggle-label-text-size: 16px;
     --mat-slide-toggle-label-text-weight: 500;
-    // --mdc-switch-selected-focus-handle-color: #{$color-standard-blue};
-    // --mdc-switch-selected-hover-handle-color:  #{$color-standard-blue};
-    // --mdc-switch-selected-pressed-handle-color:  #{$color-standard-blue};
-    // --mdc-switch-selected-track-color: #789eda;
-    // --mdc-switch-selected-handle-color:  #{$color-standard-blue};
   }
 
   table {
@@ -26,7 +22,6 @@
     border: 1px solid $color-soft-gray;
     border-radius: 4px;
     border-collapse: collapse;
-
   }
 
   tr {
@@ -45,13 +40,14 @@
     padding: 14px 16px;
   }
 
-
   .project-area-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-
   }
 
+}
+
+::ng-deep .no-treatments-toggle .mdc-form-field {
+  gap: 16px;
 }
