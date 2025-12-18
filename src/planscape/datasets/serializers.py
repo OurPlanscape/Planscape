@@ -1,6 +1,7 @@
 import re
 from typing import Any, Collection, Dict, Optional
 
+from core.fields import GeometryTypeField
 from core.loaders import get_python_object
 from modules.base import MODULE_HANDLERS
 from organizations.models import Organization
@@ -593,6 +594,13 @@ class FindAnythingSerializer(serializers.Serializer):
     limit = serializers.IntegerField(required=False, min_value=1)
 
     offset = serializers.IntegerField(required=False, min_value=1)
+
+    geometry = GeometryTypeField(
+        geometry_type="MultiPolygon",
+        destination_srid=4269,
+        coerce_multi=True,
+        required=False,
+    )
 
 
 class SearchResultsSerializer(serializers.Serializer):
