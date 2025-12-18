@@ -76,7 +76,7 @@ $planscape-frontend-theme: mat.define-light-theme(
 $color-config: mat.get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
 
-@mixin toggle-component-overrides($theme) {
+@mixin slide-toggle-overrides($theme) {
   // Extract color config from the passed theme
   $color-config: mat.get-color-config($theme);
   $primary-palette: map.get($color-config, 'primary');
@@ -111,4 +111,4 @@ $primary-palette: map.get($color-config, 'primary');
   }
 }
 
-@include toggle-component-overrides($planscape-frontend-theme);
+@include slide-toggle-overrides($planscape-frontend-theme);
