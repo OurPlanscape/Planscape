@@ -101,3 +101,13 @@ body.no-scroll-bounce {
   );
 }
 
+
+.mat-mdc-form-field .mdc-text-field .mat-mdc-form-field-infix {
+  min-height: 50px;
+}
+
+
+mat-label {
+  padding-bottom: 4px;
+  display: block;
+}

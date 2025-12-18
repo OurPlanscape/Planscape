@@ -4,7 +4,6 @@
 .form-field-label {
   @include standard-input-label();
   color: $color-black;
-  padding-bottom: 0;
   padding-right: 1em;
   display: flex;
   align-items: center;
