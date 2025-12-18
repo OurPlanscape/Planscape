@@ -76,3 +76,39 @@ $planscape-frontend-theme: mat.define-light-theme(
 $color-config: mat.get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
 
+@mixin toggle-component-overrides($theme) {
+  // Extract color config from the passed theme
+  $color-config: mat.get-color-config($theme);
+  $primary-palette: map.get($color-config, 'primary');
+
+  .mat-mdc-slide-toggle {
+    // Selected State
+    --mdc-switch-selected-handle-color: #{mat.get-color-from-palette($primary-palette, default)};
+    --mdc-switch-selected-track-color: #{mat.get-color-from-palette($primary-palette, 200)};
+    --mdc-switch-selected-hover-track-color: #{mat.get-color-from-palette($primary-palette, 200)};
+    --mdc-switch-selected-focus-track-color: #{mat.get-color-from-palette($primary-palette, 200)};
+    --mdc-switch-selected-pressed-track-color: #{mat.get-color-from-palette($primary-palette, 200)};
+
+    // Unselected State
+    --mdc-switch-unselected-handle-color: #{$color-white};
+    --mdc-switch-unselected-track-color: #9e9e9e;
+    --mdc-switch-unselected-focus-handle-color: #{$color-white};
+    --mdc-switch-unselected-hover-handle-color: #{$color-white};
+    --mdc-switch-unselected-pressed-handle-color: #{$color-white};
+    --mdc-switch-unselected-hover-track-color: #9e9e9e;
+    --mdc-switch-unselected-focus-track-color: #9e9e9e;
+    --mdc-switch-unselected-pressed-track-color: #9e9e9e;
+
+    .mdc-label {
+      font-weight: 600;
+    }
+  }
+
+  .mat-mdc-button-toggle-group {
+    --mat-standard-button-toggle-selected-state-background-color: #9e9e9e;
+    --mat-standard-button-toggle-selected-state-text-color: #{$color-white};
+    --mat-standard-button-toggle-divider-color: #9e9e9e;
+  }
+}
+
+@include toggle-component-overrides($planscape-frontend-theme);
