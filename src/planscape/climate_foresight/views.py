@@ -2,6 +2,7 @@ import logging
 
 from datasets.models import DataLayer, DataLayerStatus
 from datasets.serializers import BrowseDataLayerSerializer
+from django.conf import settings
 from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
@@ -114,6 +115,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
                 metadata__modules__has_key="climate_foresight",
                 status=DataLayerStatus.READY,
             )
+            .exclude(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
             .select_related("organization", "dataset", "category")
             .prefetch_related("styles")
         )
@@ -296,7 +298,7 @@ class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
         # Return global pillars + custom pillars from user's runs
         return ClimateForesightPillar.objects.filter(
             Q(run__isnull=True) | Q(run__in=user_runs)
-        ).order_by("order", "name")
+        ).order_by("name")
 
     def perform_destroy(self, instance):
         """Only allow deletion of custom pillars when run is in draft mode."""
