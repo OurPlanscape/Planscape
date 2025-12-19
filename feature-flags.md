@@ -25,6 +25,4 @@ The name and value of the flag will be shared by frontend and backend.
 
 `SCENARIO_CONFIG_UI` : Enables new scenario configuration UI
 
-`MAP_MODULE` : Enables map module usage in Frontend
-
 `CUSTOM_EXCEPTION_HANDLER` : Enables common error format in backend payloads
