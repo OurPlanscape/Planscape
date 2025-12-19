@@ -8,8 +8,8 @@ import { of } from 'rxjs';
 
 import { AuthService, PasswordResetToken } from '@services';
 import { PasswordResetComponent } from './password-reset.component';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
 
 describe('PasswordResetComponent', () => {
   let component: PasswordResetComponent;

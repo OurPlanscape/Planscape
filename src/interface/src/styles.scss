@@ -90,14 +90,3 @@ body.no-scroll-bounce {
 }
 
 @import "styles/index";
-
-
-.mat-mdc-icon-button.mat-mdc-button-base {
-  /* make globally the target smaller (matching legacy and our styleguide) */
-  --mdc-icon-button-state-layer-size: 40px;
-  /* Make the icon padding relative to `--mdc-icon-button-state-layer-size` */
-  padding: calc(
-    (var(--mdc-icon-button-state-layer-size) - var(--mdc-icon-button-icon-size)) / 2
-  );
-}
-

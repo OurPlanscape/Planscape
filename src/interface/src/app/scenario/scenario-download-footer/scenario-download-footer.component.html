@@ -15,7 +15,9 @@
     (click)="$event.stopPropagation()"
     *ngIf="displayScenarioConfigOverlay$ | async">
     <app-scenario-config-overlay
-      *ngIf="scenarioVersion === 'V2'"></app-scenario-config-overlay>
+      *ngIf="
+        scenarioVersion === 'V2' || scenarioVersion === 'V1'
+      "></app-scenario-config-overlay>
     <app-scenario-v3-config-overlay
       *ngIf="scenarioVersion === 'V3'"></app-scenario-v3-config-overlay>
   </div>

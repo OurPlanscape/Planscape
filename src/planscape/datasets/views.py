@@ -1,8 +1,8 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
-from cacheops import cached
 from core.serializers import MultiSerializerMixin
 from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
@@ -16,13 +16,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from datasets.filters import DataLayerFilterSet
-from datasets.models import (
-    DataLayer,
-    DataLayerStatus,
-    DataLayerType,
-    Dataset,
-    VisibilityOptions,
-)
+from datasets.models import DataLayer, DataLayerType, Dataset, VisibilityOptions
 from datasets.serializers import (
     BrowseDataLayerFilterSerializer,
     BrowseDataLayerSerializer,
@@ -32,7 +26,7 @@ from datasets.serializers import (
     FindAnythingSerializer,
     SearchResultsSerializer,
 )
-from datasets.services import find_anything
+from datasets.services import browse, find_anything
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -74,6 +68,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         results = self._get_browse_result(
             dataset,
             type=serializer.validated_data.get("type"),
+            geometry=serializer.validated_data.get("geometry"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
         email = (
@@ -94,20 +89,15 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @cached(timeout=settings.BROWSE_DATASETS_TTL)
-    def _get_browse_result(self, dataset, type: Optional[DataLayerType] = None):
+    def _get_browse_result(
+        self,
+        dataset,
+        type: Optional[DataLayerType] = None,
+        geometry: Optional[GEOSGeometry] = None,
+    ):
         dataset = self.get_object()
-        queryset = (
-            dataset.datalayers.all()
-            .select_related("organization", "dataset", "category")
-            .prefetch_related("styles")
-        )
-        filter_dict: Dict[str, Any] = {
-            "status": DataLayerStatus.READY,
-        }
-        if type is not None:
-            filter_dict["type"] = type
-        return list(queryset.all().filter(**filter_dict))
+        datalayers = browse(dataset, type=type, geometry=geometry)
+        return list(datalayers.all())
 
 
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
