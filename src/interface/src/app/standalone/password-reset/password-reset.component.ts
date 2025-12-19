@@ -20,6 +20,7 @@ import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { PasswordConfirmationDialogComponent } from '../password-confirmation-dialog/password-confirmation-dialog.component';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MatDialog } from '@angular/material/dialog';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -50,6 +51,7 @@ export class PasswordResetComponent implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
+    private featureService: FeatureService,
     private formBuilder: FormBuilder,
     private router: Router,
     private readonly dialog: MatDialog
@@ -96,7 +98,12 @@ export class PasswordResetComponent implements OnInit {
           this.dialog.open(PasswordConfirmationDialogComponent);
         },
         error: (err: HttpErrorResponse) => {
+          if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
+            // TODO: confirm backend error format
+            this.form.setErrors({ backendError: Object.values(err.error.errors) });
+          }else {
           this.form.setErrors({ backendError: Object.values(err.error) });
+          }
         },
       });
   }

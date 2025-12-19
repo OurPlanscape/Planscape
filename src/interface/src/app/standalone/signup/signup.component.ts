@@ -16,6 +16,7 @@ import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { InfoCardComponent } from '../info-card/info-card.component';
 import { CommonModule } from '@angular/common';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-signup',
@@ -43,6 +44,7 @@ export class SignupComponent {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
+    private featureService: FeatureService,
     private router: Router
   ) {
     this.form = this.formBuilder.group(
@@ -114,6 +116,10 @@ export class SignupComponent {
           this.router.navigate(['thankyou']);
         },
         error: (error: HttpErrorResponse) => {
+          if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
+          // TODO: confirm backend error format
+            
+          }
           this.submitting = false;
           if (error.status == 400) {
             this.errors = Object.values(error.error);
