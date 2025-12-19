@@ -73,13 +73,7 @@ button {
 }
 
 .create-button {
-  @include standard-button();
-  background-color: $color-standard-blue;
-  border: 1px $color-dark-gray solid;
-  margin-left: auto;
-  margin-right: auto;
-  width: 80%;
-  max-width: 200px;
+  margin: 20px auto;
 }
 
 .post-error-option {
@@ -90,6 +84,8 @@ button {
 .standard-label {
   @include standard-input-label();
   color: $color-black;
+  display: block;
+  margin-bottom: 4px;
 }
 
 .required-blurb {

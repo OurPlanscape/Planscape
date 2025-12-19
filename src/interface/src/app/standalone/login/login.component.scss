@@ -64,16 +64,12 @@ h1 {
   text-align: center;
 }
 
-mat-label {
-  text-align: left;
-  vertical-align: middle;
-  padding-bottom: 1em;
-  padding-right: 1em;
-}
 
 .standard-label {
   @include standard-input-label();
   color: $color-black;
+  display: block;
+  margin-bottom: 4px;
 }
 
 .required-blurb {
