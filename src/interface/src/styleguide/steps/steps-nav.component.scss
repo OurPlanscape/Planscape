@@ -113,10 +113,14 @@
 
 .step-connector {
   flex: auto;
-  height: 1px;
+  height: 2px;
   background-color: $color-text-gray;
   top: 50%;
   z-index: 0;
+
+  &-completed {
+    background-color: $color-brand-teal;
+  }
 }
 
 @media (max-width: 768px) {

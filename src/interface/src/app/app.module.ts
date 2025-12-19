@@ -36,6 +36,7 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import * as Sentry from '@sentry/angular';
+import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
 
 @NgModule({
   declarations: [
@@ -74,6 +75,11 @@ import * as Sentry from '@sentry/angular';
   providers: [
     WINDOW_PROVIDERS,
     CurrencyPipe,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: LoggingHttpInterceptor,
+      multi: true,
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: JwtInterceptor,

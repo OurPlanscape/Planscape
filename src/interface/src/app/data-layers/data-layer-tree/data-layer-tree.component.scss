@@ -1,10 +1,10 @@
-@import "mixins";
-@import "colors";
+@import 'mixins';
+@import 'colors';
 
 /*
  * This padding sets alignment of the nested nodes.
  */
-.data-layers .mat-nested-tree-node div[role=group] {
+.data-layers .mat-nested-tree-node div[role='group'] {
   padding-left: 15px;
   cursor: pointer;
 }
@@ -14,7 +14,7 @@
  * Leaf nodes need to have padding so as to align with other non-leaf nodes
  * under the same parent.
  */
-.data-layers div[role=group] > .mat-tree-node {
+.data-layers div[role='group'] > .mat-tree-node {
   margin-left: -8px;
   padding-right: 10px;
 }
@@ -22,12 +22,12 @@
 .icon {
   width: 20px;
   height: 20px;
-  background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>') no-repeat 50% 50%;
+  background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>')
+    no-repeat 50% 50%;
   background-size: 6px;
   transition: transform 100ms linear;
   margin: 0 8px 0 16px;
 }
-
 
 .data-layer-node {
   border-bottom: 1px solid $color-soft-gray;
@@ -47,7 +47,6 @@
   }
 }
 
-
 .data-layer-cat {
   background-color: $color-soft-purple-light;
 
@@ -55,9 +54,7 @@
     border: none;
     background-color: $color-soft-purple-light;
   }
-
 }
-
 
 .data-layer-input {
   margin: 0;
@@ -71,4 +68,47 @@
 
 .info-icon {
   color: $color-standard-blue;
+}
+
+.select-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  margin: 0 auto;
+  border-radius: 100%;
+  height: 20px;
+  width: 20px;
+  color: $color-white;
+  background-color: $color-standard-blue;
+  cursor: pointer;
+
+  .mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  &:hover {
+    background-color: $color-main-blue;
+  }
+
+  &.disabled,
+  &.disabled:hover {
+    background-color: $color-disabled-gray;
+  }
+
+  &.selected {
+    background-color: $color-medium-blue;
+  }
+
+  &.selected:hover {
+    background-color: $color-main-blue;
+  }
+}
+
+// We want to add a padding to the datalayer when we add the add button to match figma
+.padded {
+  padding-left: 10px;
 }

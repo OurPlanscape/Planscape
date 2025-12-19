@@ -23,7 +23,6 @@ describe('BaseLayersComponent', () => {
         }),
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: of([]),
-          categorizedBaseLayers$: of([]),
         }),
       ],
     }).compileComponents();
