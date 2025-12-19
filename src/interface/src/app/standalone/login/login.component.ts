@@ -19,8 +19,6 @@ import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { AboutComponent } from '../about/about.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatLegacyFormFieldModule } from '@angular/material/legacy-form-field'; // until replaceable
-import { MatLegacyInputModule } from '@angular/material/legacy-input'; // until replaceable
 
 @Component({
   selector: 'app-login',
@@ -31,8 +29,6 @@ import { MatLegacyInputModule } from '@angular/material/legacy-input'; // until 
     AboutComponent,
     CommonModule,
     MatCardModule,
-    MatLegacyFormFieldModule,
-    MatLegacyInputModule,
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
