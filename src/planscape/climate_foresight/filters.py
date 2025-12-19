@@ -1,11 +1,11 @@
 from typing import Optional
 
-from django.db.models import QuerySet, Case, When, IntegerField, Q
+from django.db.models import Case, IntegerField, Q, QuerySet, When
 from django_filters import rest_framework as filters
+from planning.models import PlanningArea
 from rest_framework.request import Request
 
 from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
-from planning.models import PlanningArea
 
 
 def get_planning_areas_for_filter(
@@ -63,7 +63,6 @@ class ClimateForesightPillarFilterSet(filters.FilterSet):
                     When(run__isnull=False, then=0),
                     output_field=IntegerField(),
                 ),
-                "order",
                 "name",
             )
         return queryset
