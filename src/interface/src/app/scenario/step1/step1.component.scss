@@ -2,13 +2,6 @@
 @import 'mixins';
 @import 'variables';
 
-.mat-radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-left: 44px;
-}
-
 :host {
   ::ng-deep .mat-radio-label {
     padding-left: 10px;
@@ -57,10 +50,6 @@
 .mat-expansion-panel:not([class*='mat-elevation-z']) {
   box-shadow: none;
   width: 100%;
-}
-
-.mat-radio-group {
-  margin-left: 0;
 }
 
 /** Always show scrollbar. */
@@ -167,6 +156,7 @@ sg-section {
   justify-content: space-between;
   padding-right: 0;
   align-items: center;
+  height: 36px;
 }
 
 .goal-control-container ::ng-deep .mat-expansion-panel-header {

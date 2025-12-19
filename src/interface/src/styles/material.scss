@@ -24,15 +24,18 @@
   font-weight: 700;
 }
 
-// default styles for menu
+
 body {
+  // default styles for menu
   --mat-menu-item-label-text-font: 'Public Sans', sans-serif;
   --mat-menu-item-label-text-size: 14px;
   --mat-menu-item-label-text-tracking: 0;
   --mat-menu-item-label-text-line-height: 22px;
   --mat-menu-item-label-text-weight: 400;
-
+  // default styles for table
   --mat-table-header-headline-size: 14px;
+  // default styles for form field
+  --mat-form-field-container-text-size: 14px;
 }
 
 .mat-mdc-dialog-container {
@@ -120,6 +123,7 @@ mat-radio-button:not([disabled]) .mdc-label {
 // material dropdown styles
 .mat-mdc-form-field {
   --mdc-outlined-text-field-outline-color: #{$color-fields-gray};
+
   .mdc-text-field {
     .mat-mdc-form-field-infix {
       min-height: 38px;
@@ -127,4 +131,21 @@ mat-radio-button:not([disabled]) .mdc-label {
       align-content: center;
     }
   }
+}
+
+
+// overrides
+
+.mat-mdc-icon-button.mat-mdc-button-base {
+  /* make globally the target smaller (matching legacy and our styleguide) */
+  --mdc-icon-button-state-layer-size: 40px;
+  /* Make the icon padding relative to `--mdc-icon-button-state-layer-size` */
+  padding: calc(
+    (var(--mdc-icon-button-state-layer-size) - var(--mdc-icon-button-icon-size)) / 2
+  );
+}
+
+
+.mat-mdc-form-field .mdc-text-field .mat-mdc-form-field-infix {
+  min-height: 50px;
 }

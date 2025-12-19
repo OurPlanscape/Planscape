@@ -5,7 +5,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { Plan } from '@types';
 import { PlanService } from './plan.service';
-import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from './mocks';
+import { MOCK_PLAN } from './mocks';
 import { environment } from '../../environments/environment';
 
 describe('PlanService', () => {
@@ -57,22 +57,6 @@ describe('PlanService', () => {
         environment.backend_endpoint.concat('/planning/list_planning_areas')
       );
       req.flush([mockPlan]);
-      httpTestingController.verify();
-    });
-  });
-
-  describe('getTotalArea', () => {
-    it('should call the endpoint with parameters', () => {
-      service.getTotalArea(MOCK_FEATURE_COLLECTION).subscribe((res) => {
-        expect(res).toEqual(1000);
-      });
-
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/validate_planning_area/')
-      );
-      req.flush({ area_acres: 1000 });
-
-      expect(req.request.body).toEqual({ geometry: MOCK_FEATURE_COLLECTION });
       httpTestingController.verify();
     });
   });

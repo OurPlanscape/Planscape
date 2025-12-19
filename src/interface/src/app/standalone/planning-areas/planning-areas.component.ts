@@ -39,6 +39,7 @@ import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeaturesModule } from 'src/app/features/features.module';
+import { PlanState } from 'src/app/plan/plan.state';
 
 @Component({
   selector: 'app-planning-areas',
@@ -104,7 +105,8 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     public dataSource: PlanningAreasDataSource,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private planState: PlanState
   ) {}
 
   sortOptions = this.dataSource.sortOptions;
@@ -154,6 +156,11 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   reload() {
     this.dataSource.loadData();
+  }
+
+  afterRename() {
+    this.planState.reloadPlan();
+    this.reload();
   }
 
   search(str: string) {

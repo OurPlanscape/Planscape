@@ -10,11 +10,15 @@
       display: block;
     }
 
+    .mat-mdc-form-field .mdc-text-field .mat-mdc-form-field-infix {
+      min-height: 36px;
+    }
+
+
     .mat-mdc-text-field-wrapper {
       margin: 0;
       gap: 4px;
       font-size: 14px;
-      min-height: 40px;
 
       .mat-input-element {
         padding: 3px 0;

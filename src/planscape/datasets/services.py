@@ -13,6 +13,17 @@ from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import connection, transaction
+from django.db.models import QuerySet
+from gis.geometry import geodjango_to_multi, to_geodjango_geometry
+from gis.rasters import get_estimated_mask as get_estimated_mask_raster
+from modules.base import get_module
+from organizations.models import Organization
+from planscape.openpanel import track_openpanel
+
 from datasets.models import (
     Category,
     DataLayer,
@@ -29,16 +40,6 @@ from datasets.models import (
 )
 from datasets.search import datalayer_to_search_result, dataset_to_search_result
 from datasets.tasks import datalayer_uploaded
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import connection, transaction
-from gis.geometry import geodjango_to_multi, to_geodjango_geometry
-from gis.rasters import get_estimated_mask as get_estimated_mask_raster
-from modules.base import get_module
-from organizations.models import Organization
-
-from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -410,11 +411,40 @@ def create_datalayer(
     }
 
 
+@cached(timeout=settings.BROWSE_DATASETS_TTL)
+def browse(
+    dataset: Dataset,
+    type: Optional[DataLayerType] = None,
+    geometry: Optional[GEOSGeometry] = None,
+) -> QuerySet[DataLayer]:
+    datalayers = (
+        DataLayer.objects.filter(
+            dataset=dataset,
+            status=DataLayerStatus.READY,
+        )
+        .select_related(
+            "organization",
+            "dataset",
+            "category",
+        )
+        .prefetch_related("styles")
+    )
+
+    if type is not None:
+        datalayers = datalayers.filter(type=type)
+
+    if geometry is not None:
+        datalayers = datalayers.filter(geometry__intersects=geometry)
+
+    return datalayers
+
+
 @cached(timeout=settings.FIND_ANYTHING_TTL)
 def find_anything(
     term: str,
     type: Optional[str] = None,
     module: Optional[str] = None,
+    geometry: GEOSGeometry = None,
 ) -> Dict[str, SearchResult]:
     """
     Given a term, search for anything (datasets / datalayers)
@@ -453,6 +483,7 @@ def find_anything(
     }
     org_filter: Dict[str, Any] = {
         "organization__name__icontains": term,
+        "visibility": VisibilityOptions.PUBLIC,
     }
 
     if dataset_ids:
@@ -460,6 +491,10 @@ def find_anything(
         category_filter["dataset__id__in"] = dataset_ids
         dataset_filter["id__in"] = dataset_ids
         org_filter["id__in"] = dataset_ids
+
+    if geometry:
+        datalayer_filter["geometry__intersects"] = geometry
+        category_filter["geometry__intersects"] = geometry
 
     raw_results = [
         [

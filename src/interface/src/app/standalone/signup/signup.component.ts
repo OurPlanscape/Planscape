@@ -16,6 +16,7 @@ import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { InfoCardComponent } from '../info-card/info-card.component';
 import { CommonModule } from '@angular/common';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-signup',
@@ -28,6 +29,7 @@ import { CommonModule } from '@angular/common';
     LegacyMaterialModule,
     ReactiveFormsModule,
     SharedModule,
+    ButtonComponent,
   ],
 })
 export class SignupComponent {

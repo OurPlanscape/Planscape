@@ -44,25 +44,15 @@
         </div>
       </div>
 
-      <app-data-layer-tree></app-data-layer-tree>
+      <app-data-layer-tree
+        [displayAddButton]="displayAddButton"></app-data-layer-tree>
 
       <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
     </ng-container>
 
     <!--Listing Datasets, no selection yet-->
     <ng-template #listDataSets>
-      <ng-container *ngIf="!isUsingMapModule && (showDatasets$ | async)">
-        <ng-container *ngIf="legacyDataSets$ | async; let dataSets">
-          <app-data-set
-            *ngFor="let dataSet of dataSets.results"
-            (selectDataset)="viewDatasetCategories(dataSet)"
-            [name]="dataSet.name"
-            [organizationName]="dataSet.organization.name">
-          </app-data-set>
-        </ng-container>
-      </ng-container>
-
-      <ng-container *ngIf="isUsingMapModule && (showDatasets$ | async)">
+      <ng-container *ngIf="showDatasets$ | async">
         <ng-container *ngIf="dataSets$ | async; let dataSets">
           <app-data-set
             *ngFor="let dataSet of dataSets"
@@ -74,7 +64,6 @@
       </ng-container>
     </ng-template>
   </ng-container>
-
   <mat-spinner
     *ngIf="loading$ | async"
     diameter="20"
@@ -82,16 +71,6 @@
 </div>
 
 <div class="footer" *ngIf="showFooter$ | async">
-  <!-- Base datasets pagination-->
-  <ng-container
-    *ngIf="datasetPages && (showDatasetPagination$ | async) === true">
-    <sg-paginator
-      *ngIf="datasetCurrentPage$ | async as currentPage"
-      [currentPage]="currentPage"
-      [compact]="true"
-      [pageCount]="datasetPages"
-      (pageChanged)="showDatasetsPage($event)"></sg-paginator>
-  </ng-container>
   <!-- Search pagination -->
   <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
     <sg-paginator
@@ -104,7 +83,7 @@
     (click)="clearDataLayer()"
     variant="text"
     class="clear-btn"
-    *ngIf="selectedDataLayer$ | async">
+    *ngIf="viewedDataLayer$ | async">
     Clear
   </button>
 </div>
