@@ -133,9 +133,7 @@ mat-radio-button:not([disabled]) .mdc-label {
   }
 }
 
-
 // overrides
-
 .mat-mdc-icon-button.mat-mdc-button-base {
   /* make globally the target smaller (matching legacy and our styleguide) */
   --mdc-icon-button-state-layer-size: 40px;
@@ -145,7 +143,35 @@ mat-radio-button:not([disabled]) .mdc-label {
   );
 }
 
-
 .mat-mdc-form-field .mdc-text-field .mat-mdc-form-field-infix {
   min-height: 50px;
 }
+
+.mat-mdc-slide-toggle
+{
+  $unselected-track: #9e9e9e;
+  $selected-track: #789eda;
+  // Unselected
+  --mdc-switch-unselected-handle-color: #{$color-white};
+  --mdc-switch-unselected-focus-handle-color: #{$color-white};
+  --mdc-switch-unselected-hover-handle-color: #{$color-white};
+  --mdc-switch-unselected-pressed-handle-color: #{$color-white};
+  --mdc-switch-unselected-track-color: #{$unselected-track};
+  --mdc-switch-unselected-focus-track-color: #{$unselected-track};
+  --mdc-switch-unselected-hover-track-color: #{$unselected-track};
+  // Selected
+  --mdc-switch-selected-handle-color: #{$color-standard-blue};
+  --mdc-switch-selected-focus-handle-color: #{$color-standard-blue};
+  --mdc-switch-selected-hover-handle-color: #{$color-standard-blue};
+  --mdc-switch-selected-pressed-handle-color: #{$color-standard-blue};
+  --mdc-switch-selected-track-color: #{$selected-track};
+  --mdc-switch-selected-focus-track-color: #{$selected-track};
+  --mdc-switch-selected-hover-track-color: #{$selected-track};
+  // Interaction
+  --mdc-switch-selected-focus-state-layer-color: #{$color-standard-blue};
+  --mdc-switch-selected-hover-state-layer-color: #{$color-standard-blue};
+  --mdc-switch-selected-pressed-state-layer-color: #{$color-standard-blue};
+  // Font
+  --mat-slide-toggle-label-text-weight: 600;
+}
+
