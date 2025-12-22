@@ -102,3 +102,12 @@ export const WithCustomColorPath: Story = {
     colorPath: 'nested[0].properties.color',
   },
 };
+
+export const WithLoadingItems: Story = {
+  args: {
+    items: items,
+    viewedItems: [items[1], items[3]],
+    colorPath: 'otherPropertyUsedForColor',
+    loadingItems: [`source_${items[1].id}`],
+  },
+};
