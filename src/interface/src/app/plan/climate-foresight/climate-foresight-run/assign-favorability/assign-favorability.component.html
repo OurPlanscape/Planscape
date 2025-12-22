@@ -23,8 +23,8 @@
       <!-- Data layers list Header-->
       <div class="data-layers-header" *ngIf="selectedDataLayers.length > 0">
         <span class="header title">Data layers</span>
-        <span class="header value-title">High Values</span>
         <span class="header value-title">Low Values</span>
+        <span class="header value-title">High Values</span>
       </div>
       <!-- Data layers list -->
       <div class="data-layers-list">
@@ -44,9 +44,9 @@
                 [value]="getFavorability(layer.id)"
                 (change)="setFavorability(layer.id, $event.value)"
                 class="favorability-radio-group">
-                <mat-radio-button [value]="true" class="radio-option">
-                </mat-radio-button>
                 <mat-radio-button [value]="false" class="radio-option">
+                </mat-radio-button>
+                <mat-radio-button [value]="true" class="radio-option">
                 </mat-radio-button>
               </mat-radio-group>
             </div>
