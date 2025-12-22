@@ -123,21 +123,45 @@ def async_set_planning_area_status(
     planning_area_id: int,
     status: PlanningAreaMapStatus,
 ) -> None:
+    """
+    Set a PlanningArea's map_status. If re-run via command, only saves if map_status changed,
+    or if stands_ready_at or metrics_ready_at were never set.
+    """
     try:
         with transaction.atomic():
             planning_area: PlanningArea = PlanningArea.objects.select_for_update().get(
                 pk=planning_area_id
             )
-            planning_area.map_status = status
-            update_fields = ["map_status", "updated_at"]
+            update_fields: list[str] = []
+            if planning_area.map_status != status:
+                planning_area.map_status = status
+                update_fields.append("map_status")
+
             if status == PlanningAreaMapStatus.STANDS_DONE:
-                planning_area.stands_ready_at = timezone.now()
-                update_fields.append("stands_ready_at")
+                if planning_area.stands_ready_at is None:
+                    planning_area.stands_ready_at = timezone.now()
+                    update_fields.append("stands_ready_at")
+
             if status == PlanningAreaMapStatus.DONE:
-                planning_area.metrics_ready_at = timezone.now()
-                update_fields.append("metrics_ready_at")
-            planning_area.save(update_fields=update_fields)
-            log.info("Planning Area %s map status set to %s", planning_area_id, status)
+                if planning_area.metrics_ready_at is None:
+                    planning_area.metrics_ready_at = timezone.now()
+                    update_fields.append("metrics_ready_at")
+
+            if update_fields:
+                planning_area.save(update_fields=update_fields)
+                log.info(
+                    "Planning Area %s map status set to %s (updated_fields=%s)",
+                    planning_area_id,
+                    status,
+                    update_fields,
+                )
+            else:
+                log.info(
+                    "Planning Area %s map status already %s (no changes)",
+                    planning_area_id,
+                    status,
+                )
+
     except PlanningArea.DoesNotExist:
         log.exception("Planning Area %s does not exist", planning_area_id)
 
