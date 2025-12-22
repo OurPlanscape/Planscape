@@ -124,13 +124,8 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         params = request.query_params if request.query_params else request.data
         serializer = FindAnythingSerializer(data=params)
         serializer.is_valid(raise_exception=True)
-        data = {
-            "term": serializer.validated_data.get("term"),
-            "type": serializer.validated_data.get("type"),
-            "module": serializer.validated_data.get("module"),
-            "geometry": serializer.validated_data.get("geometry"),
-        }
-        results = find_anything(**data)
+
+        results = find_anything(**serializer.validated_data)
         search_results = list(results.values())
         page = self.paginate_queryset(search_results)  # type: ignore
         if page is not None:

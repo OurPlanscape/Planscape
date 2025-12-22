@@ -445,6 +445,7 @@ def find_anything(
     type: Optional[str] = None,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
+    **kwargs,
 ) -> Dict[str, SearchResult]:
     """
     Given a term, search for anything (datasets / datalayers)
