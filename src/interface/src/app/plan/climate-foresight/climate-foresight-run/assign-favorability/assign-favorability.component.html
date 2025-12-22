@@ -7,9 +7,18 @@
       tooltipIcon="help">
       <!-- Section description paragraph -->
       <p class="description">
-        For each data layer, review the distribution of current condition values
-        and specify whether higher or lower values represent favorable
-        conditions for your analysis.
+        Climate Foresite assigns values to each raster cell ranging from 0
+        (vulnerable to future climate) to 100 (resilient to future climate). To
+        do so, the algorithm needs the user to provide some information
+        regarding how to interpret the raster data layers you have selected.
+      </p>
+      <p class="description">
+        For each variable, indicate whether higher values in the raster are
+        associated with a favorable condition (click, High Values), or if lower
+        values are considered more favorable (click, Low Values). For example,
+        if I am interested in supporting large tree carbon, I would click “High
+        Values” for the Large Tree Carbon raster to indicate that higher levels
+        of carbon are desired.
       </p>
       <!-- Data layers list Header-->
       <div class="data-layers-header" *ngIf="selectedDataLayers.length > 0">
