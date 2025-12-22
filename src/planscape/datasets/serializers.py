@@ -598,10 +598,6 @@ class FindAnythingSerializer(serializers.Serializer):
         allow_null=True,
     )
 
-    limit = serializers.IntegerField(required=False, min_value=1)
-
-    offset = serializers.IntegerField(required=False, min_value=1)
-
     geometry = GeometryTypeField(
         geometry_type="MultiPolygon",
         destination_srid=4269,
