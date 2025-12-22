@@ -15,7 +15,8 @@ section {
   font-style: normal;
   font-weight: 500;
   line-height: 22px;
-  background-color: rgba($color-black, 0.5);
+  background-color: rgba($color-black, 0.55);
+  backdrop-filter: blur(2px);
   border-radius: 4px;
   padding: 16px;
   color: $color-white;
