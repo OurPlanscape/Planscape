@@ -32,6 +32,7 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock /app/
 RUN uv sync --locked --no-install-project --dev
+RUN uv run opentelemetry-bootstrap --action=install
 
 COPY . /app
 
