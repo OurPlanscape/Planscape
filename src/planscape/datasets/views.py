@@ -121,18 +121,11 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     )
     @action(detail=False, methods=["get", "post"])
     def find_anything(self, request):
-        params = request.query_params if request.query_params else request.data
+        params = request.query_params if request.method == "GET" else request.data
         serializer = FindAnythingSerializer(data=params)
         serializer.is_valid(raise_exception=True)
-        # TODO: cache results and paginate here.
-        term = serializer.validated_data.get("term")
-        type = serializer.validated_data.get("type")
-        module = serializer.validated_data.get("module")
-        results = find_anything(
-            term=term,
-            type=type,
-            module=module,
-        )
+
+        results = find_anything(**serializer.validated_data)
         search_results = list(results.values())
         page = self.paginate_queryset(search_results)  # type: ignore
         if page is not None:
@@ -145,16 +138,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             list(search_results),
             many=True,
         )
-        # not inside the service layer because service layer is cached and it's not per user
-        track_openpanel(
-            name="datasets.datalayer.find_anything",
-            properties={
-                "term": term,
-                "type": type,
-                "email": request.user.email if request.user else None,
-            },
-            user_id=request.user.pk,
-        )
+
         return Response(out_serializer.data, status=status.HTTP_200_OK)
 
     def get_queryset(self):

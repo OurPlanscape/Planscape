@@ -83,7 +83,34 @@ export class BaseLayersStateService {
     this._loadingLayers$.next([]);
   }
 
-  setBaseLayers(bs: BaseLayer[]) {
-    this._selectedBaseLayers$.next(bs);
+  setBaseLayers(baseLayers: BaseLayer[]) {
+    this._selectedBaseLayers$.next(baseLayers);
+  }
+
+  // This updates all base layers given regardless of category, (e.g., in a flat list),
+  // where separate categories may exist on the layer, but are irrelevant.
+  // This also sets loading sourceid for newly added layers
+  updateFlatMultiBaseLayers(updatedLayers: BaseLayer[]): void {
+    const displayedLayers = this._selectedBaseLayers$.value;
+    const loadingLayers = this._loadingLayers$.value;
+    const sourceIds = new Set(
+      updatedLayers.map((layer) => `source_${layer.id}`)
+    ); // cache the string conversions
+
+    // add layers to loading if currently in displayed list
+    updatedLayers
+      .filter(
+        (updatedLayer) =>
+          !displayedLayers?.map((cl) => cl.id).includes(updatedLayer.id)
+      )
+      .forEach((updatedLayer) =>
+        this.addLoadingSourceId(`source_${updatedLayer.id}`)
+      );
+
+    // remove loading layers if not in the current updatedLayers
+    loadingLayers
+      .filter((loadingLayerId) => !sourceIds.has(loadingLayerId))
+      .forEach((loadingLayerId) => this.removeLoadingSourceId(loadingLayerId));
+    this._selectedBaseLayers$.next(updatedLayers);
   }
 }

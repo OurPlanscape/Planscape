@@ -32,7 +32,23 @@ $material-checkbox-padding: 8px;
     .mdc-label {
       margin-top: #{$material-checkbox-padding + 1};
     }
+
+    .mat-mdc-progress-spinner {
+      margin-top: 10px;
+    }
+
   }
+}
+
+.right-options {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 8px;
+}
+
+.spinner-container {
+  width: 20px;
 }
 
 .list-row,

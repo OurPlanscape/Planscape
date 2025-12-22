@@ -20,7 +20,6 @@ import {
 } from '@angular/forms';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
 import { filter, map, take } from 'rxjs';
@@ -37,7 +36,6 @@ import { STAND_SIZES } from 'src/app/plan/plan-helpers';
     CurrencyPipe,
     DecimalPipe,
     MatDividerModule,
-    MatSelectModule,
     MatInputModule,
     MatFormFieldModule,
     NgClass,
