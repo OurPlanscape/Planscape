@@ -158,8 +158,8 @@ describe('ClimateForesightComponent', () => {
   });
 
   it('should initialize with correct default values', () => {
-    expect(component.planName).toBe('');
-    expect(component.planAcres).toBe('');
+    expect(component.currentPlan?.name).toBe(undefined);
+    expect(component.currentPlan?.area_acres).toBe(undefined);
     expect(component.hasRuns).toBeFalse();
     expect(component.currentPlan).toBeNull();
     expect(component.mapLibreMap).toBeUndefined();
@@ -169,8 +169,8 @@ describe('ClimateForesightComponent', () => {
     fixture.detectChanges();
 
     expect(component.currentPlan).toEqual(mockPlan);
-    expect(component.planName).toBe('Test Planning Area');
-    expect(component.planAcres).toBe('5,000');
+    expect(component.currentPlan?.name).toBe('Test Planning Area');
+    expect(component.currentPlan?.area_acres).toBe(5000);
   });
 
   it('should handle plan without area_acres', async () => {
@@ -217,7 +217,7 @@ describe('ClimateForesightComponent', () => {
     const localComponent = localFixture.componentInstance;
     localFixture.detectChanges();
 
-    expect(localComponent.planAcres).toBe('');
+    expect(localComponent.currentPlan?.area_acres).toBe(0);
   });
 
   it('should update breadcrumb on init', () => {
@@ -314,8 +314,10 @@ describe('ClimateForesightComponent', () => {
     localFixture.detectChanges();
 
     expect(localFixture.componentInstance.currentPlan).toBeNull();
-    expect(localFixture.componentInstance.planName).toBe('');
-    expect(localFixture.componentInstance.planAcres).toBe('');
+    expect(localFixture.componentInstance.currentPlan?.name).toBe(undefined);
+    expect(localFixture.componentInstance.currentPlan?.area_acres).toBe(
+      undefined
+    );
   });
 
   it('should set map reference when map is loaded', () => {

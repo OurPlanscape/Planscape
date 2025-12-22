@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -57,13 +57,12 @@ const POLLING_INTERVAL = 5000; // 5 seconds
     PlanningAreaLayerComponent,
     ClimateForesightRunCardComponent,
     SectionComponent,
+    DecimalPipe,
   ],
   templateUrl: './climate-foresight.component.html',
   styleUrls: ['./climate-foresight.component.scss'],
 })
 export class ClimateForesightComponent implements OnInit, OnDestroy {
-  planName = '';
-  planAcres = '';
   hasRuns = false;
   currentPlan: Plan | null = null;
   mapLibreMap?: MapLibreMap;
@@ -106,10 +105,6 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
     this.planState.currentPlan$.pipe(take(1)).subscribe((plan) => {
       if (plan) {
         this.currentPlan = plan;
-        this.planName = plan.name;
-        this.planAcres = plan.area_acres
-          ? plan.area_acres.toLocaleString()
-          : '';
 
         this.breadcrumbService.breadcrumb$
           .pipe(take(1))
