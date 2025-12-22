@@ -58,6 +58,9 @@ dependencies = [
     "gevent>=25.9.1,<26",
     "zope-event==5.1.1",
     "scipy==1.15.0",
+    "opentelemetry-distro>=0.60b1",
+    "opentelemetry-exporter-otlp>=1.39.1",
+    "pip>=25.3",
 ]
 
 [tool.isort]
