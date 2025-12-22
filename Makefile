@@ -94,6 +94,7 @@ migrate:
 
 install-dependencies-backend:
 	uv sync --locked --no-install-project --dev
+	uv run opentelemetry-bootstrap --action=install
 
 deploy-backend: install-dependencies-backend migrate restart
 
