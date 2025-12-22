@@ -7,6 +7,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV UV_PROJECT_ENVIRONMENT=/opt/virtualenvs/
 ENV UV_LINK_MODE=copy
+ARG UID=1000
+ARG GID=1000
 
 RUN apt-get update && \
     apt-get -y install \
@@ -21,7 +23,11 @@ RUN apt-get update && \
     postgresql-client \
     python3-pip
 
-RUN mkdir -p /app
+RUN groupadd -g ${GID} app && useradd -m -u ${UID} -g ${GID} app \
+    && mkdir -p /opt/virtualenvs /app \
+    && chown -R app:app /opt/virtualenvs /app
+
+USER app
 WORKDIR /app
 
 COPY pyproject.toml uv.lock /app/
