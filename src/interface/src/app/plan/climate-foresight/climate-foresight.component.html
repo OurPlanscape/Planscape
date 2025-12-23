@@ -38,11 +38,12 @@
     <div class="left-panel-card map-card">
       <!-- Header -->
       <div class="planning-area-section">
-        <div class="planning-area-name">{{ planName }}</div>
+        <div class="planning-area-name">{{ currentPlan?.name }}</div>
         <div class="map-legend">
           <div class="legend-symbol"></div>
           <span class="acres-info">
-            <span class="label">Acres: </span> {{ planAcres }}</span
+            <span class="label">Acres: </span>
+            {{ this.currentPlan?.area_acres | number: '1.0-0' }}</span
           >
         </div>
       </div>
