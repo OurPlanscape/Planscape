@@ -442,7 +442,7 @@ def browse(
 @cached(timeout=settings.FIND_ANYTHING_TTL)
 def find_anything(
     term: str,
-    type: Optional[str] = None,
+    type: DataLayerType,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
     **kwargs,
@@ -494,8 +494,8 @@ def find_anything(
         org_filter["id__in"] = dataset_ids
 
     if geometry:
-        datalayer_filter["geometry__intersects"] = geometry
-        category_filter["geometry__intersects"] = geometry
+        datalayer_filter["outline__intersects"] = geometry
+        category_filter["outline__intersects"] = geometry
 
     raw_results = [
         [

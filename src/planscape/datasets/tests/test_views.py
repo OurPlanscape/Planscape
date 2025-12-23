@@ -3,11 +3,11 @@ from urllib.parse import urlencode
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from organizations.tests.factories import OrganizationFactory
+from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
 
 from datasets.models import DataLayer, DataLayerType, VisibilityOptions
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
-from planscape.tests.factories import UserFactory
 
 User = get_user_model()
 
@@ -190,6 +190,7 @@ class TestDataLayerViewSet(APITestCase):
             )
         filter = {
             "term": "foo",
+            "type": "RASTER",
         }
         DataLayerFactory.create(
             dataset=self.dataset, name="Foo Vector", type=DataLayerType.VECTOR
@@ -308,7 +309,7 @@ class TestPublicAccess(APITestCase):
     def test_all_public_endpoints_are_readable(self):
         urls = [
             reverse("api:datasets:datasets-browse", kwargs={"pk": self.dataset.pk}),
-            f"{reverse('api:datasets:datalayers-find-anything')}?term=x",
+            f"{reverse('api:datasets:datalayers-find-anything')}?term=x&type=RASTER",
             reverse("api:datasets:datalayers-urls", kwargs={"pk": self.datalayer.pk}),
         ]
         for url in urls:
