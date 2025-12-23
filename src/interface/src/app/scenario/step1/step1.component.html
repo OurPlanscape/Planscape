@@ -110,6 +110,10 @@
       <mat-form-field class="stand-size" appearance="outline">
         <mat-label> Stand Size</mat-label>
         <mat-select formControlName="stand_size">
+          <mat-select-trigger>
+            {{ selectedStandSize?.label }} ({{ selectedStandSize?.acres }}
+            acres)
+          </mat-select-trigger>
           <mat-option
             *ngFor="let size of standSizeOptions | keyvalue: reverseAlpha"
             [value]="size.key">
