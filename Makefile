@@ -1,8 +1,6 @@
-# Authors:
-# - RJ Sheperd (rsheperd@sig-gis.com)
-# - George Silva (gsilva@sig-gis.com)
-
-USER_ID = $(shell id -u)
+UID ?= $(shell id -u)
+GID ?= $(shell id -g)
+export UID GID
 
 # User Systemd Service (see: ~/.config/systemd/user/planscape.service)
 SERVICE=planscape

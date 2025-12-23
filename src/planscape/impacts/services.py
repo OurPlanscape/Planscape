@@ -19,6 +19,21 @@ from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
 from fiona.crs import from_epsg
 from gis.core import get_storage_session
+from planning.models import PlanningArea, ProjectArea, Scenario
+from planscape.openpanel import track_openpanel
+from stands.models import (
+    STAND_AREA_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    pixels_from_size,
+)
+from stands.services import (
+    calculate_stand_zonal_stats,
+    calculate_stand_zonal_stats_api,
+    get_missing_stand_ids_for_datalayer_from_stand_list,
+)
+
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -34,21 +49,6 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario
-from stands.models import (
-    STAND_AREA_ACRES,
-    Stand,
-    StandMetric,
-    StandSizeChoices,
-    pixels_from_size,
-)
-from stands.services import (
-    calculate_stand_zonal_stats,
-    calculate_stand_zonal_stats_api,
-    get_missing_stand_ids_for_datalayer_from_stand_list,
-)
-
-from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -856,9 +856,9 @@ def get_treatment_results_table_data(
     return table_data
 
 
-def get_export_path(treatment_plan: TreatmentPlan) -> str:
+def get_export_path(treatment_plan: TreatmentPlan) -> Path:
     return (
-        settings.OUTPUT_DIR
+        Path(settings.OUTPUT_DIR)
         / "shapefile"
         / f"{treatment_plan.pk}"
         / f"{treatment_plan.pk}.gpkg"
@@ -1021,7 +1021,7 @@ def match_schema(record: Dict[str, Any], schema: Dict[str, Any]):
 
 
 def export_geopackage(treatment_plan: TreatmentPlan) -> str:
-    bare_export_path = Path(get_export_path(treatment_plan))
+    bare_export_path = get_export_path(treatment_plan)
     fiona_path = f"{str(bare_export_path)}.zip"
     data = fetch_treatment_plan_data(treatment_plan)
     treatment_result_schema = get_treament_result_schema()

@@ -2,6 +2,7 @@ from unittest import mock
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
 from organizations.tests.factories import OrganizationFactory
 
@@ -10,8 +11,8 @@ from datasets.services import (
     create_datalayer,
     create_upload_url_for_org,
     find_anything,
-    get_object_name,
     get_bucket_url,
+    get_object_name,
     get_storage_url,
 )
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
@@ -163,6 +164,97 @@ class TestCreateDataLayer(TestCase):
 
 
 class TestSearch(TestCase):
+    def test_end_to_end_with_spatial(self):
+        unit_square = MultiPolygon(
+            GEOSGeometry(
+                "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
+                srid=4269,
+            )
+        )
+        unit_square_east_5 = MultiPolygon(
+            GEOSGeometry(
+                "POLYGON ((5 0, 6 0, 6 1, 5 1, 5 0))",
+                srid=4269,
+            )
+        )
+        organization = OrganizationFactory.create(name="my cool fire org")
+        dataset = DatasetFactory(
+            organization=organization,
+            name="my awesome fire dataset",
+            visibility="PUBLIC",
+        )
+        category1 = Category.add_root(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="the fire art pieces",
+        )
+        subcategory1 = category1.add_child(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="the fire music albums",
+        )
+        category2 = Category.add_root(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="no matches",
+        )
+        subcategory2 = category2.add_child(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="also no matches",
+        )
+        # should be returned
+        cat1_datalayer1 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="A lighthouse on fire at night",
+            category=category1,
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            outline=unit_square,
+        )
+        cat1_datalayer2 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="Cassandra",
+            category=category1,
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            outline=unit_square,
+        )
+        # should NOT BE RETURNED BECAUSE SPATIAL
+        cat1_datalayer3 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="BAD GEOM",
+            category=category1,
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            outline=unit_square_east_5,
+        )
+        results = find_anything(
+            "fire",
+            type=DataLayerType.RASTER,
+            geometry=unit_square,
+        )
+        names = [r.name for r in results.values()]
+        # in
+        self.assertIn(dataset.name, names)
+        self.assertIn(cat1_datalayer1.name, names)
+        self.assertIn(cat1_datalayer2.name, names)
+        # out
+        # categories will never be diretcly included
+        self.assertNotIn(category1.name, names)
+        self.assertNotIn(subcategory1.name, names)
+        # these just don't match
+        self.assertNotIn(category2.name, names)
+        self.assertNotIn(subcategory2.name, names)
+        self.assertNotIn(cat1_datalayer3.name, names)
+
     def test_end_to_end(self):
         organization = OrganizationFactory.create(name="my cool fire org")
         dataset = DatasetFactory(
@@ -248,7 +340,10 @@ class TestSearch(TestCase):
             status=DataLayerStatus.READY,
         )
 
-        results = find_anything("fire")
+        results = find_anything(
+            "fire",
+            type=DataLayerType.RASTER,
+        )
         names = [r.name for r in results.values()]
         # in
         self.assertIn(dataset.name, names)

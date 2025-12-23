@@ -594,8 +594,6 @@ class FindAnythingSerializer(serializers.Serializer):
 
     type = serializers.ChoiceField(
         choices=DataLayerType.choices,
-        required=False,
-        allow_null=True,
     )
 
     geometry = GeometryTypeField(

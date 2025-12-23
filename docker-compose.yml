@@ -4,6 +4,10 @@ services:
   _planscape:
     image: planscape
     command: ["echo", "build done"]
+    user: "${UID}:${GID}"
+    environment:
+      - UID=${UID}
+      - GID=${GID}
     build:
       context: .
       dockerfile: docker/${DOCKERFILE:-Dockerfile}
