@@ -19,7 +19,7 @@ import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersService } from '@services';
 import { MapDataDataSet } from '../../types/module.types';
-import { catchError, tap } from 'rxjs';
+import { catchError, map, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -68,10 +68,12 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
 
   ngAfterViewInit(): void {
     if (this.expanded) {
-      this.listBaseLayersByDataSet().subscribe((c) => {
-        this.baseLayers = c;
-        this.scrollToSelectedItems();
-      });
+      this.listBaseLayersByDataSet()
+        .pipe(map((c) => c.sort((a, b) => a.name.localeCompare(b.name))))
+        .subscribe((c) => {
+          this.baseLayers = c;
+          this.scrollToSelectedItems();
+        });
     }
   }
 
@@ -106,9 +108,11 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
   expandDataSet() {
     this.expanded = !this.expanded;
     if (this.noBaseLayers) {
-      this.listBaseLayersByDataSet().subscribe((c) => {
-        this.baseLayers = c;
-      });
+      this.listBaseLayersByDataSet()
+        .pipe(map((c) => c.sort((a, b) => a.name.localeCompare(b.name))))
+        .subscribe((c) => {
+          this.baseLayers = c;
+        });
     }
   }
 
