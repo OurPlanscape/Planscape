@@ -434,7 +434,7 @@ def browse(
         datalayers = datalayers.filter(type=type)
 
     if geometry is not None:
-        datalayers = datalayers.filter(geometry__intersects=geometry)
+        datalayers = datalayers.filter(outline__intersects=geometry)
 
     return datalayers
 
