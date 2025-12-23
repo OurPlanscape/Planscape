@@ -62,7 +62,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     @action(detail=True, methods=["get", "post"])
     def browse(self, request, pk=None):
         dataset = self.get_object()
-        params = request.query_params if request.query_params else request.data
+        params = request.query_params if request.method == "GET" else request.data
         serializer = BrowseDataSetSerializer(data=params)
         serializer.is_valid(raise_exception=True)
         results = self._get_browse_result(
