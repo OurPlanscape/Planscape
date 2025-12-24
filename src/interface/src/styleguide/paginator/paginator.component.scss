@@ -23,6 +23,7 @@
   .mat-mdc-form-field-infix {
     padding-top: 0px;
     padding-bottom: 0px;
+    min-height: 0;
   }
 
   ::ng-deep .mat-mdc-select-value-text {
