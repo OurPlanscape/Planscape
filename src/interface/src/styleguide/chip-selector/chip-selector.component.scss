@@ -9,19 +9,51 @@
         --mdc-chip-label-text-weight: 600;
         --mdc-chip-label-text-color: #{$color-brand-green};
         --mdc-chip-container-shape-radius: 4px;
+        --mdc-chip-focus-state-layer-color:#{$color-brand-green};
         background-color: $color-brand-soft-green;
         font-weight: 600;
-        margin: 4px;
-        max-width: 200px;
         display: flex;
-        padding: 8px 12px;
         justify-content: center;
         align-items: center;
-        gap: 8px;
+        gap: 0;
+        padding-left: 0px;
+        padding-right: 0px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+
+        &:hover, &:select {
+        background-color: $color-brand-soft-green;
+        opacity: 1;
+        }
+
 
         .mat-chip-remove {
-            opacity: 0.9;
-            color: $color-dark-gray;
+            opacity: 1;
+            color: black;
         }
+
+        .mat-mdc-chip-remove {
+            opacity: 1;
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+        }
+        
+        .mat-mdc-chip-remove .mat-icon:hover {
+            background-color: white;
+            border-radius: 8px;
+        }
+
     }
+
+}
+
+.trailing-link {
+    height: 30px;
+    margin: 8px;
+}
+
+.expand-link {
+    @include standard-link();
+    line-height: 24px;
 }

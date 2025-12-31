@@ -1,30 +1,34 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import {MatChipsModule} from '@angular/material/chips';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { NgForOf } from '@angular/common';
+import { NgForOf, NgIf } from '@angular/common';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'sg-chip-selector',
   standalone: true,
-  imports: [MatChipsModule, MatIconModule, NgForOf],
+  imports: [ButtonComponent, MatChipsModule, MatIconModule, NgForOf, NgIf],
   templateUrl: './chip-selector.component.html',
-  styleUrl: './chip-selector.component.scss'
+  styleUrl: './chip-selector.component.scss',
 })
 export class ChipSelectorComponent {
-
-  @Input() items : string[] = ['something', 'another thing', 'a third thing',
-    'one more thing', 'yet another thing', 'just a thing like the others'
-  ];
-
-  MAX_ITEMS_TO_DISPLAY = 4;
+  @Input() items: string[] = [];
+  @Input() maxCollapsedItems = 4;
 
   @Output() addItem = new EventEmitter<string>();
   @Output() removeItem = new EventEmitter<string>();
 
-  expanded:boolean = false;
+  expanded: boolean = false;
 
-  handleRemove(item : string ) {
-    console.log('wants to remove:', item);
+  get displayedItems() {
+    if (this.expanded) {
+      return this.items;
+    } else {
+      return this.items.slice(0, this.maxCollapsedItems);
+    }
+  }
+
+  handleRemove(item: string) {
     this.removeItem.emit(item);
   }
 
@@ -36,4 +40,7 @@ export class ChipSelectorComponent {
     this.expanded = false;
   }
 
+  get hiddenCount() {
+    return this.items.length - this.maxCollapsedItems;
+  }
 }

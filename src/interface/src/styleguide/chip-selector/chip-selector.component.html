@@ -1,12 +1,23 @@
-<mat-form-field appearance="outline" subscriptSizing="dynamic">
-    <mat-chip-row
-      class="chip-row"
-      *ngFor="let item of items"
-      (removed)="handleRemove(item)">
-      {{ item }}
-      <button matChipRemove [attr.aria-label]="'remove ' + item">
-        <mat-icon>close</mat-icon>
-      </button>
-    </mat-chip-row>
-</mat-form-field>
-
+<mat-chip-set class="sg-chip-set">
+  <mat-chip-row
+    class="chip-row"
+    *ngFor="let item of displayedItems"
+    (removed)="handleRemove(item)">
+    {{ item }}
+    <button
+      class="chip-button"
+      matChipRemove
+      [attr.aria-label]="'remove ' + item">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-chip-row>
+  <div *ngIf="items.length > maxCollapsedItems" class="trailing-link">
+    <a
+      class="expand-link"
+      *ngIf="!expanded && hiddenCount > 0"
+      (click)="expand()"
+      >See +{{ hiddenCount }} more</a
+    >
+    <a class="expand-link" *ngIf="expanded" (click)="collapse()">See Less</a>
+  </div>
+</mat-chip-set>
