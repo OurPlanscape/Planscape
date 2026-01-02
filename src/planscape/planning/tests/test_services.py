@@ -25,11 +25,14 @@ from planning.models import (
     PlanningArea,
     PlanningAreaMapStatus,
     ScenarioResultStatus,
+    ScenarioStatus,
     TreatmentGoalUsageType,
 )
 from planning.services import (
     create_planning_area,
     create_scenario,
+    create_scenario_from_upload,
+    delete_scenario,
     export_planning_area_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
@@ -42,6 +45,7 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
+    toggle_scenario_status,
     trigger_scenario_run,
     validate_scenario_configuration,
     validate_scenario_treatment_ratio,
@@ -847,6 +851,93 @@ class CreateScenarioGuardTest(TestCase):
                 },
             )
         self.assertIn("oversize", str(ctx.exception).lower())
+
+
+class ScenarioCountTrackingTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.user,
+            scenario_count=0,
+            map_status=PlanningAreaMapStatus.STANDS_DONE,
+        )
+
+    def test_create_scenario_increments_planning_area_scenario_count(self):
+        self.planning_area.scenario_count = 0
+        self.planning_area.save(update_fields=["scenario_count"])
+        create_scenario(
+            user=self.user,
+            name="count-create-scenario",
+            planning_area=self.planning_area,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "targets": {"max_area": 500, "max_project_count": 2},
+            },
+        )
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.scenario_count, 1)
+
+    def test_create_scenario_from_upload_increments_planning_area_scenario_count(self):
+        self.planning_area.scenario_count = None
+        self.planning_area.save(update_fields=["scenario_count"])
+        create_scenario_from_upload(
+            validated_data={
+                "name": "count-upload-scenario",
+                "stand_size": "LARGE",
+                "planning_area": self.planning_area.pk,
+                "geometry": {"type": "FeatureCollection", "features": []},
+            },
+            user=self.user,
+        )
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.scenario_count, 1)
+
+    def test_toggle_scenario_status_updates_planning_area_scenario_count(self):
+        self.planning_area.scenario_count = None
+        self.planning_area.save(update_fields=["scenario_count"])
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            status=ScenarioStatus.ARCHIVED,
+        )
+        toggle_scenario_status(scenario, self.user)
+        scenario.refresh_from_db()
+        self.planning_area.refresh_from_db()
+        self.assertEqual(scenario.status, ScenarioStatus.ACTIVE)
+        self.assertEqual(self.planning_area.scenario_count, 1)
+        toggle_scenario_status(scenario, self.user)
+        scenario.refresh_from_db()
+        self.planning_area.refresh_from_db()
+        self.assertEqual(scenario.status, ScenarioStatus.ARCHIVED)
+        self.assertEqual(self.planning_area.scenario_count, 0)
+
+    def test_delete_scenario_decrements_count_for_active_scenario(self):
+        self.planning_area.scenario_count = 1
+        self.planning_area.save(update_fields=["scenario_count"])
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            status=ScenarioStatus.ACTIVE,
+        )
+        ok, _msg = delete_scenario(user=self.user, scenario=scenario)
+        self.assertTrue(ok)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.scenario_count, 0)
+
+    def test_delete_scenario_does_not_decrement_count_for_archived_scenario(self):
+        self.planning_area.scenario_count = 0
+        self.planning_area.save(update_fields=["scenario_count"])
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            status=ScenarioStatus.ARCHIVED,
+        )
+        ok, _msg = delete_scenario(user=self.user, scenario=scenario)
+        self.assertTrue(ok)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.scenario_count, 0)
 
 
 @override_settings(OVERSIZE_PLANNING_AREA_ACRES=100)

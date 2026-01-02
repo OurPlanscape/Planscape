@@ -373,7 +373,10 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     scenario.capabilities = compute_scenario_capabilities(scenario)
     scenario.save(update_fields=["capabilities"])
     planning_area.updated_at = now()
-    planning_area.save(update_fields=["updated_at"])
+    planning_area.scenario_count = (
+        planning_area.scenario_count + 1 if planning_area.scenario_count else 1
+    )
+    planning_area.save(update_fields=["updated_at", "scenario_count"])
     transaction.on_commit(
         partial(
             action.send,
@@ -443,11 +446,19 @@ def delete_scenario(
     )
     right_now = now()
     planning_area: PlanningArea = scenario.planning_area
+    was_active = scenario.status == ScenarioStatus.ACTIVE
+
     scenario.delete()
-    planning_area.scenario_count = (
-        planning_area.scenario_count - 1 if planning_area.scenario_count else 0
-    )
-    planning_area.save(update_fields=["updated_at", "scenario_count"])
+
+    planning_area.updated_at = right_now
+    if was_active:
+        planning_area.scenario_count = (
+            planning_area.scenario_count - 1 if planning_area.scenario_count else 0
+        )
+        planning_area.save(update_fields=["updated_at", "scenario_count"])
+    else:
+        planning_area.save(update_fields=["updated_at"])
+
     ScenarioResult.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     ProjectArea.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     track_openpanel(
@@ -1149,17 +1160,26 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
 
 @transaction.atomic()
 def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
-    new_status = (
-        ScenarioStatus.ACTIVE
-        if scenario.status == ScenarioStatus.ARCHIVED
-        else ScenarioStatus.ARCHIVED
-    )
-    verb = "activated" if scenario.status == ScenarioStatus.ARCHIVED else "archived"
     pa = scenario.planning_area
+    archiving = scenario.status == ScenarioStatus.ACTIVE
+
+    if archiving:
+        new_status = ScenarioStatus.ARCHIVED
+        verb = "archived"
+        scenario_count_change = -1
+    else:
+        new_status = ScenarioStatus.ACTIVE
+        verb = "activated"
+        scenario_count_change = +1
+
     pa.updated_at = timezone.now()
-    pa.save(update_fields=["updated_at"])
+    current = pa.scenario_count or 0
+    pa.scenario_count = max(0, current + scenario_count_change)
+    pa.save(update_fields=["updated_at", "scenario_count"])
+
     scenario.status = new_status
-    scenario.save()
+    scenario.save(update_fields=["status"])
+
     action.send(user, verb=verb, action_object=scenario)
     return scenario
 
