@@ -22,6 +22,7 @@ import { ClimateForesightRun } from '@types';
 export class ClimateForesightRunCardComponent {
   @Input() run!: ClimateForesightRun;
   @Output() delete = new EventEmitter<ClimateForesightRun>();
+  @Output() copyRun = new EventEmitter<ClimateForesightRun>();
   @Output() openRun = new EventEmitter<ClimateForesightRun>();
 
   get statusClass(): string {
@@ -41,5 +42,10 @@ export class ClimateForesightRunCardComponent {
   onDelete(event: Event): void {
     event.stopPropagation();
     this.delete.emit(this.run);
+  }
+
+  onCopy(event: Event): void {
+    event.stopPropagation();
+    this.copyRun.emit(this.run);
   }
 }

@@ -74,6 +74,17 @@ export class ClimateForesightService {
   }
 
   /**
+   * Copy a climate foresight run
+   */
+  copyRun(id: number, name: string): Observable<ClimateForesightRun> {
+    return this.http.post<ClimateForesightRun>(
+      `${this.basePath}${id}/copy/`,
+      { name },
+      { withCredentials: true }
+    );
+  }
+
+  /**
    * Get data layers available for climate foresight analysis
    */
   getDataLayers(): Observable<DataLayer[]> {

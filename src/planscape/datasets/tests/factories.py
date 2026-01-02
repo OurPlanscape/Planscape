@@ -1,5 +1,6 @@
 import factory
 from organizations.tests.factories import OrganizationFactory
+from planscape.tests.factories import UserFactory
 
 from datasets.models import (
     Category,
@@ -15,7 +16,6 @@ from datasets.models import (
     Style,
     VisibilityOptions,
 )
-from planscape.tests.factories import UserFactory
 
 
 class DatasetFactory(factory.django.DjangoModelFactory):
@@ -65,6 +65,7 @@ class DataLayerFactory(factory.django.DjangoModelFactory):
     status = DataLayerStatus.READY
     metadata = {}
     url = None
+    outline = None
 
     @factory.post_generation
     def style(self, create, extracted, **kwargs):

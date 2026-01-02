@@ -1,9 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
   combineLatest,
-  distinctUntilChanged,
   map,
   Observable,
   of,
@@ -23,38 +22,45 @@ import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 
+import { MAX_SELECTED_DATALAYERS } from './data-layers/max-selected-datalayers.token';
+
+import { distinctUntilChanged } from 'rxjs/operators';
+
 @Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
 
-  private _datasetsCurrentPage$ = new BehaviorSubject(1);
-  datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
-
-  // remove once MAP_MODULE is turned on
-  legacyDataSets$ = this._datasetsCurrentPage$.pipe(
+  dataSets$ = this.mapModuleService.datasets$.pipe(
     distinctUntilChanged(),
-    tap(() => this.loadingSubject.next(true)),
-    switchMap((currentPage) => {
-      const offset = (currentPage - 1) * this.limit;
-      return this.service.listDataSets(this.limit, offset);
-    }),
-    tap(() => {
-      this.loadingSubject.next(false);
-    }),
-    shareReplay(1)
-  );
-
-  dataSets$ = this.mapModuleService.mapData$.pipe(
-    map((mapData) => mapData.main_datasets)
+    map((mapData) => mapData.main_datasets),
+    tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
 
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
-  private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
-  selectedDataLayer$ = this._selectedDataLayer$.asObservable();
+  // Datalayers applied to the map
+  private _viewedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
+  viewedDataLayer$ = this._viewedDataLayer$.asObservable();
 
-  dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
+  // Datalayers selected from the list of layers
+  private _selectedDataLayers$ = new BehaviorSubject<DataLayer[] | []>([]);
+  selectedDataLayers$ = this._selectedDataLayers$.asObservable();
+
+  // Selected datalayers count
+  selectedLayersCount$ = this.selectedDataLayers$.pipe(
+    map((items) => items.length)
+  );
+
+  hasSelectedDatalayers$ = this.selectedDataLayers$.pipe(
+    map((items) => items.length > 0)
+  );
+
+  canSelectMoreDatalayers$ = this.selectedDataLayers$.pipe(
+    map((items) => items.length < this.maxSelectedDatalayers)
+  );
+
+  dataLayerWithUrl$ = this.viewedDataLayer$.pipe(
     switchMap((layer) => {
       if (!layer) {
         return of(null);
@@ -92,7 +98,7 @@ export class DataLayersStateService {
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  colorLegendInfo$ = this.selectedDataLayer$.pipe(
+  colorLegendInfo$ = this.viewedDataLayer$.pipe(
     map((currentLayer: DataLayer | null) => {
       if (currentLayer) {
         return extractLegendInfo(currentLayer);
@@ -109,19 +115,27 @@ export class DataLayersStateService {
     tap(() => this.loadingSubject.next(true)),
     switchMap(([term, offset]) => {
       if (!term) {
-        this.loadingSubject.next(false);
         return of(null);
       }
-      return this.service.search(term, this.limit, offset).pipe(
-        startWith(null),
-        map((results) => {
-          if (results) {
-            this.loadingSubject.next(false);
-            return results;
-          }
-          return null;
+
+      const module = this.mapModuleService.moduleName;
+      return this.service
+        .search({
+          term,
+          limit: this.limit,
+          offset,
+          module,
         })
-      );
+        .pipe(
+          startWith(null),
+          map((results) => {
+            if (results) {
+              this.loadingSubject.next(false);
+              return results;
+            }
+            return null;
+          })
+        );
     }),
     shareReplay(1)
   );
@@ -134,7 +148,9 @@ export class DataLayersStateService {
 
   constructor(
     private service: DataLayersService,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    @Inject(MAX_SELECTED_DATALAYERS)
+    private readonly maxSelectedDatalayers: number
   ) {}
 
   selectDataSet(dataset: BaseDataSet) {
@@ -153,7 +169,7 @@ export class DataLayersStateService {
 
   selectDataLayer(dataLayer: DataLayer) {
     this.setDataLayerLoading(true);
-    this._selectedDataLayer$.next(dataLayer);
+    this._viewedDataLayer$.next(dataLayer);
   }
 
   setDataLayerLoading(status: boolean) {
@@ -161,12 +177,12 @@ export class DataLayersStateService {
   }
 
   clearDataLayer() {
-    this._selectedDataLayer$.next(null);
+    this._viewedDataLayer$.next(null);
   }
 
   reloadDataLayerUrl() {
-    const currentLayer = this._selectedDataLayer$.value;
-    this._selectedDataLayer$.next(currentLayer);
+    const currentLayer = this._viewedDataLayer$.value;
+    this._viewedDataLayer$.next(currentLayer);
   }
 
   search(term: string) {
@@ -179,10 +195,6 @@ export class DataLayersStateService {
 
   changePage(page: number) {
     this._offset.next((page - 1) * this.limit);
-  }
-
-  changeDatasetsPage(page: number) {
-    this._datasetsCurrentPage$.next(page);
   }
 
   clearSearch() {
@@ -199,6 +211,7 @@ export class DataLayersStateService {
 
   goToDataLayerCategory(layer: DataLayer) {
     this._isBrowsing$.next(true);
+    this.loadingSubject.next(false);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
       const dataSet: Partial<DataSet> = {
@@ -221,5 +234,42 @@ export class DataLayersStateService {
     this.resetPath();
     this.clearDataLayer();
     this.clearSearch();
+  }
+
+  // Checking if the layer is already in the selected list
+  isSelectedLayer(layer: DataLayer) {
+    return this._selectedDataLayers$.value.some((l) => l.id === layer.id);
+  }
+
+  // Remove a layer from the selected list
+  removeSelectedLayer(layer: DataLayer) {
+    const updatedSelectedDatalayers = this._selectedDataLayers$.value.filter(
+      (l) => l.id !== layer.id
+    );
+    this._selectedDataLayers$.next(updatedSelectedDatalayers);
+  }
+
+  // Adding or removing an item to the selected list
+  toggleLayerAdition(layer: DataLayer) {
+    if (this.isSelectedLayer(layer)) {
+      this.removeSelectedLayer(layer);
+    } else if (
+      this._selectedDataLayers$.value.length < this.maxSelectedDatalayers
+    ) {
+      this._selectedDataLayers$.next([
+        ...this._selectedDataLayers$.value,
+        layer,
+      ]);
+    }
+  }
+
+  // Setting the list of selected list
+  updateSelectedLayers(layers: DataLayer[]) {
+    this._selectedDataLayers$.next(layers);
+  }
+
+  // Return the max number of selected layers for this instance of the service
+  getMaxSelectedLayers(): number {
+    return this.maxSelectedDatalayers;
   }
 }

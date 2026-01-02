@@ -1,9 +1,8 @@
-@import "colors";
+@import 'colors';
 
 $select-width: 50px;
 $colum-gap: 16px;
 $material-checkbox-padding: 8px;
-$select-button-selected-color: #5892EE;
 
 :host {
   box-sizing: border-box;
@@ -17,7 +16,7 @@ $select-button-selected-color: #5892EE;
     height: 100%;
     background-color: $color-soft-gray;
     top: 0;
-    left: #{$select-width + $colum-gap}
+    left: #{$select-width + $colum-gap};
   }
 
   .view-checkbox {
@@ -34,13 +33,28 @@ $select-button-selected-color: #5892EE;
       margin-top: #{$material-checkbox-padding + 1};
     }
 
+    .mat-mdc-progress-spinner {
+      margin-top: 10px;
+    }
+
   }
 }
 
-
-.list-row, .list-header {
+.right-options {
   display: flex;
-  gap: #{ $colum-gap * 2 - $material-checkbox-padding};
+  flex-direction: row;
+  width: 100%;
+  gap: 8px;
+}
+
+.spinner-container {
+  width: 20px;
+}
+
+.list-row,
+.list-header {
+  display: flex;
+  gap: #{$colum-gap * 2 - $material-checkbox-padding};
   margin-bottom: 16px;
 }
 
@@ -50,7 +64,7 @@ $select-button-selected-color: #5892EE;
 
 .list-header {
   margin-bottom: 15px;
-  gap: #{ $colum-gap * 2};
+  gap: #{$colum-gap * 2};
   align-items: center;
   color: $color-md-gray;
   font-size: 16px;
@@ -58,11 +72,10 @@ $select-button-selected-color: #5892EE;
   font-weight: 600;
   line-height: 16px;
   text-transform: capitalize;
-
 }
 
-
-.select-title, .select {
+.select-title,
+.select {
   width: 50px;
   text-align: center;
 }
@@ -73,7 +86,6 @@ $select-button-selected-color: #5892EE;
   display: flex;
   align-items: center;
 }
-
 
 .select-button {
   display: block;
@@ -87,15 +99,13 @@ $select-button-selected-color: #5892EE;
   background-color: $color-standard-blue;
   cursor: pointer;
 
-
   &.selected {
-    background-color: $select-button-selected-color;
+    background-color: $color-medium-blue;
   }
 
   &:hover {
     background-color: $color-main-blue;
   }
-
 }
 
 .color-box {

@@ -489,6 +489,10 @@ export class AnalysisComponent implements OnInit, OnDestroy {
 
   mapLoaded(map: MapLibreMap): void {
     this.mapLibreMap = map;
+
+    if (this.selectedLayer) {
+      this.selectLayer(this.selectedLayer);
+    }
   }
 
   transformRequest: RequestTransformFunction = (

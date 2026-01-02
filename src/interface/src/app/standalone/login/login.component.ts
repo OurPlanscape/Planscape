@@ -16,7 +16,6 @@ import {
   SNACK_NOTICE_CONFIG,
 } from '@shared';
 import { MatCardModule } from '@angular/material/card';
-
 import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';

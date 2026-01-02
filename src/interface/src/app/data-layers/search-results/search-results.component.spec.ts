@@ -14,7 +14,7 @@ describe('SearchResultsComponent', () => {
       imports: [SearchResultsComponent],
       providers: [
         MockProvider(DataLayersStateService, {
-          selectedDataLayer$: of(null),
+          viewedDataLayer$: of(null),
         }),
       ],
     }).compileComponents();

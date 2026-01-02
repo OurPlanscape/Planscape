@@ -1,5 +1,5 @@
 <mat-radio-group
-  [ngModel]="(selectedDataLayer$ | async)?.id"
+  [ngModel]="(viewedDataLayer$ | async)?.id"
   #treeContainer
   #treeContainerModel="ngModel">
   <mat-tree
@@ -11,7 +11,22 @@
     <mat-tree-node
       *matTreeNodeDef="let node"
       matTreeNodePadding
-      class="data-layer">
+      class="data-layer"
+      [class.padded]="displayAddButton">
+      <button
+        *ngIf="displayAddButton"
+        mat-icon-button
+        class="select-button"
+        [ngClass]="{
+          selected: isDatalayerSelected(node.item),
+          disabled: (isSelectionCompleted$ | async),
+        }"
+        (click)="toggleDataLayerSelection(node.item)"
+        type="button">
+        <mat-icon>{{
+          isDatalayerSelected(node.item) ? 'remove' : 'add'
+        }}</mat-icon>
+      </button>
       <mat-radio-button
         [value]="node.item.id"
         class="data-layer-input"

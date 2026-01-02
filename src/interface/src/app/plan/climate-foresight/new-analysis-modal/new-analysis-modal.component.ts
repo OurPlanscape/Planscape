@@ -19,9 +19,13 @@ import {
   ModalComponent,
 } from '@styleguide';
 
+export type AnalysisModalMode = 'new' | 'copy';
+
 export interface NewAnalysisModalData {
-  planningAreaId: number;
-  planningAreaName: string;
+  mode: AnalysisModalMode;
+  planningAreaId?: number;
+  runId?: number;
+  runName?: string;
 }
 
 @Component({
@@ -42,23 +46,35 @@ export interface NewAnalysisModalData {
 })
 export class NewAnalysisModalComponent {
   form: FormGroup;
+  title: string;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<NewAnalysisModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: NewAnalysisModalData
   ) {
+    const isCopyMode = data.mode === 'copy';
+    this.title = isCopyMode ? 'Copy analysis' : 'New analysis';
+
+    const defaultName = isCopyMode ? `Copy of "${data.runName}"` : '';
+
     this.form = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(255)]],
+      name: [defaultName, [Validators.required, Validators.maxLength(255)]],
     });
   }
 
   onSubmit(): void {
     if (this.form.valid) {
-      this.dialogRef.close({
-        name: this.form.value.name,
-        planning_area: this.data.planningAreaId,
-      });
+      if (this.data.mode === 'copy') {
+        this.dialogRef.close({
+          name: this.form.value.name,
+        });
+      } else {
+        this.dialogRef.close({
+          name: this.form.value.name,
+          planning_area: this.data.planningAreaId,
+        });
+      }
     }
   }
 

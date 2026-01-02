@@ -25,6 +25,7 @@
         >{{ layer.name }}
         <div class="right-items">
           <mat-spinner
+            class="side-spinner"
             diameter="20"
             *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
           </mat-spinner>
@@ -52,6 +53,7 @@
       (change)="onLayerChange(layer, false)"
       >{{ layer.name }}
       <mat-spinner
+        class="side-spinner"
         diameter="20"
         *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
       </mat-spinner>

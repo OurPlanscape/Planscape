@@ -4,12 +4,13 @@ import { ExploreMapComponent } from './explore-map.component';
 import { MockProvider, MockProviders } from 'ng-mocks';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { MapConfigState, MapInteractionMode } from '../map-config.state';
-import { AuthService } from '@services';
+import { AuthService, DataLayersService } from '@services';
 import { DrawService } from '../draw.service';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { MapModuleService } from '@services/map-module.service';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('ExploreMapComponent', () => {
   let component: ExploreMapComponent;
@@ -17,8 +18,9 @@ describe('ExploreMapComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExploreMapComponent],
+      imports: [ExploreMapComponent, FeaturesModule],
       providers: [
+        MockProvider(DataLayersService),
         MockProviders(MultiMapConfigState, AuthService, DrawService),
         // alias the abstract token
         { provide: MapConfigState, useExisting: MultiMapConfigState },
@@ -34,7 +36,7 @@ describe('ExploreMapComponent', () => {
         }),
         MockProvider(DataLayersStateService),
         MockProvider(MapModuleService, {
-          mapData$: of({
+          datasets$: of({
             main_datasets: [],
             base_datasets: [],
           }),

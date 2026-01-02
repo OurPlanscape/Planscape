@@ -4,8 +4,6 @@ import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { KeyPipe } from '../../standalone/key.pipe';
 import { MatRadioModule } from '@angular/material/radio';
-import { MatLegacyOptionModule } from '@angular/material/legacy-core';
-import { MatLegacySelectModule } from '@angular/material/legacy-select';
 import {
   FormControl,
   FormGroup,
@@ -13,7 +11,6 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { MatLegacyFormFieldModule } from '@angular/material/legacy-form-field';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 
@@ -22,6 +19,9 @@ import { combineLatest, map, take } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-apply-treatment',
@@ -32,10 +32,10 @@ import { FeatureService } from 'src/app/features/feature.service';
     NgForOf,
     KeyPipe,
     MatRadioModule,
-    MatLegacyOptionModule,
-    MatLegacySelectModule,
+    MatOptionModule,
+    MatSelectModule,
     ReactiveFormsModule,
-    MatLegacyFormFieldModule,
+    MatFormFieldModule,
     AsyncPipe,
     NgIf,
     BannerComponent,

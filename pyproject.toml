@@ -58,6 +58,9 @@ dependencies = [
     "gevent>=25.9.1,<26",
     "zope-event==5.1.1",
     "scipy==1.15.0",
+    "opentelemetry-distro>=0.60b1",
+    "opentelemetry-exporter-otlp>=1.39.1",
+    "pip>=25.3",
 ]
 
 [tool.isort]
@@ -95,6 +98,7 @@ dev = [
     "drf-spectacular>=0.27.2,<0.28",
     "celery-types>=0.22.0,<0.23",
     "tblib>=3.1.0,<4",
+    "ruff>=0.14.10",
 ]
 
 [tool.flake8]

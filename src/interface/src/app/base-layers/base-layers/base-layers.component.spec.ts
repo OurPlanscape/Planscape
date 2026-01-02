@@ -16,14 +16,13 @@ describe('BaseLayersComponent', () => {
       imports: [BaseLayersComponent, FeaturesModule],
       providers: [
         MockProvider(MapModuleService, {
-          mapData$: of({
+          datasets$: of({
             main_datasets: [],
             base_datasets: [],
           }),
         }),
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: of([]),
-          categorizedBaseLayers$: of([]),
         }),
       ],
     }).compileComponents();

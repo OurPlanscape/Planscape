@@ -3,7 +3,6 @@ import { take } from 'rxjs/operators';
 import { BaseLayersStateService } from './base-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { of } from 'rxjs';
 import { BaseLayer } from '@types';
 
 describe('BaseLayersStateService', () => {
@@ -15,32 +14,9 @@ describe('BaseLayersStateService', () => {
     path: [category],
   });
 
-  const mockLayers = [
-    {
-      id: 1,
-      name: 'State',
-      path: ['Elevation'],
-    },
-    {
-      id: 2,
-      name: 'Department of Defense',
-      path: ['Elevation'],
-    },
-    {
-      id: 3,
-      name: 'County',
-      path: ['Landcover'],
-    },
-  ] as BaseLayer[];
-
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        BaseLayersStateService,
-        MockProvider(DataLayersService, {
-          listBaseLayers: () => of(mockLayers),
-        }),
-      ],
+      providers: [BaseLayersStateService, MockProvider(DataLayersService)],
     });
 
     service = TestBed.inject(BaseLayersStateService);
@@ -126,27 +102,47 @@ describe('BaseLayersStateService', () => {
     });
   });
 
-  it('should group base layers by category using path[0], sorted', (done) => {
-    service.categorizedBaseLayers$.pipe(take(1)).subscribe((groups) => {
-      expect(groups.length).toBe(2);
+  it('should update selectedBaseLayers$ using new updateFlatMultiBaseLayers', (done) => {
+    const layer1: BaseLayer = makeLayer(1, 'catA');
+    const layer2: BaseLayer = makeLayer(2, 'catB');
+    service.setBaseLayers([layer1, layer2]);
+    const newLayers: BaseLayer[] = [makeLayer(3, 'catC'), makeLayer(4, 'catD')];
+    service.updateFlatMultiBaseLayers(newLayers);
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((result) => {
+      expect(result).toEqual(newLayers);
+      done();
+    });
+  });
 
-      const elevationGroup = groups.find(
-        (g) => g.category.name === 'Elevation'
+  it('should add loading state using updateFlatMultiBaseLayers for newly added layers', (done) => {
+    const existingLayer = makeLayer(1, 'catA');
+    const newLayer = makeLayer(2, 'catB');
+    service.setBaseLayers([existingLayer]);
+    spyOn<any>(service, 'addLoadingSourceId');
+    service.updateFlatMultiBaseLayers([existingLayer, newLayer]);
+    service.selectedBaseLayers$.pipe(take(1)).subscribe(() => {
+      expect(service['addLoadingSourceId']).toHaveBeenCalledWith('source_2');
+      expect(service['addLoadingSourceId']).not.toHaveBeenCalledWith(
+        'source_1'
       );
-      const landcoverGroup = groups.find(
-        (g) => g.category.name === 'Landcover'
+      done();
+    });
+  });
+
+  it('should remove loading state using updateFlatMultiBaseLayers for unselected layers', (done) => {
+    const layer1: BaseLayer = makeLayer(1, 'catA');
+    const layer2: BaseLayer = makeLayer(2, 'catB');
+    service.updateFlatMultiBaseLayers([layer1, layer2]);
+
+    // and then, check that loading is removed once the layer is unselected
+    spyOn<any>(service, 'removeLoadingSourceId');
+    const layers: BaseLayer[] = [makeLayer(2, 'catA')]; // only keeping layer 2
+    service.updateFlatMultiBaseLayers(layers);
+    service.selectedBaseLayers$.pipe(take(1)).subscribe(() => {
+      expect(service['removeLoadingSourceId']).toHaveBeenCalledWith('source_1');
+      expect(service['removeLoadingSourceId']).not.toHaveBeenCalledWith(
+        'source_2'
       );
-
-      expect(elevationGroup).toBeDefined();
-      expect(landcoverGroup).toBeDefined();
-
-      expect(elevationGroup?.layers.length).toBe(2);
-      expect(landcoverGroup?.layers.length).toBe(1);
-
-      expect(elevationGroup?.layers[0].name).toBe('Department of Defense');
-      expect(elevationGroup?.layers[1].name).toBe('State');
-      expect(landcoverGroup?.layers[0].name).toBe('County');
-
       done();
     });
   });

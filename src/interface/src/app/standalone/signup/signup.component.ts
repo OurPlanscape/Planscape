@@ -17,6 +17,7 @@ import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { InfoCardComponent } from '../info-card/info-card.component';
 import { CommonModule } from '@angular/common';
 import { FeatureService } from 'src/app/features/feature.service';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-signup',
@@ -29,6 +30,7 @@ import { FeatureService } from 'src/app/features/feature.service';
     LegacyMaterialModule,
     ReactiveFormsModule,
     SharedModule,
+    ButtonComponent,
   ],
 })
 export class SignupComponent {

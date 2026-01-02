@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.db import connection, transaction
+from django.db.models import QuerySet
 from gis.geometry import geodjango_to_multi, to_geodjango_geometry
 from gis.rasters import get_estimated_mask as get_estimated_mask_raster
 from modules.base import get_module
@@ -31,16 +32,13 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     GeometryType,
+    PreferredDisplayType,
     SearchResult,
     StorageTypeChoices,
     Style,
     VisibilityOptions,
 )
-from datasets.search import (
-    category_to_search_result,
-    datalayer_to_search_result,
-    dataset_to_search_result,
-)
+from datasets.search import datalayer_to_search_result, dataset_to_search_result
 from datasets.tasks import datalayer_uploaded
 
 log = logging.getLogger(__name__)
@@ -413,47 +411,99 @@ def create_datalayer(
     }
 
 
+@cached(timeout=settings.BROWSE_DATASETS_TTL)
+def browse(
+    dataset: Dataset,
+    type: Optional[DataLayerType] = None,
+    geometry: Optional[GEOSGeometry] = None,
+) -> QuerySet[DataLayer]:
+    datalayers = (
+        DataLayer.objects.filter(
+            dataset=dataset,
+            status=DataLayerStatus.READY,
+        )
+        .select_related(
+            "organization",
+            "dataset",
+            "category",
+        )
+        .prefetch_related("styles")
+    )
+
+    if type is not None:
+        datalayers = datalayers.filter(type=type)
+
+    if geometry is not None:
+        datalayers = datalayers.filter(outline__intersects=geometry)
+
+    return datalayers
+
+
 @cached(timeout=settings.FIND_ANYTHING_TTL)
 def find_anything(
     term: str,
-    type: Optional[str] = None,
+    type: DataLayerType,
     module: Optional[str] = None,
+    geometry: Optional[GEOSGeometry] = None,
+    **kwargs,
 ) -> Dict[str, SearchResult]:
     """
     Given a term, search for anything (datasets / datalayers)
     """
     layer_type = type or DataLayerType.RASTER
-    datasets = None
     if module:
         mod = get_module(module)
-        datasets = mod.get_datasets()
+        preferred_display_type = (
+            PreferredDisplayType.MAIN_DATALAYERS
+            if layer_type == DataLayerType.RASTER
+            else PreferredDisplayType.BASE_DATALAYERS
+        )
+        dataset_ids = [
+            d.pk
+            for d in mod.get_datasets()
+            if d.preferred_display_type == preferred_display_type
+        ]
+    else:
+        dataset_ids = None
 
-    datalayer_filter = {
+    datalayer_filter: Dict[str, Any] = {
         "name__icontains": term,
         "dataset__visibility": VisibilityOptions.PUBLIC,
         "status": DataLayerStatus.READY,
         "type": layer_type,
     }
-    category_filter = {
-        "name__icontains": term,
+    category_filter: Dict[str, Any] = {
+        "category__name__icontains": term,
+        "dataset__visibility": VisibilityOptions.PUBLIC,
+        "status": DataLayerStatus.READY,
+        "type": layer_type,
     }
-    dataset_filter = {
+    dataset_filter: Dict[str, Any] = {
         "name__icontains": term,
         "visibility": VisibilityOptions.PUBLIC,
     }
-    org_filter = {"organization__name__icontains": term}
+    org_filter: Dict[str, Any] = {
+        "organization__name__icontains": term,
+        "visibility": VisibilityOptions.PUBLIC,
+    }
 
-    if datasets:
-        dataset_ids = list([d.pk for d in datasets])
+    if dataset_ids:
         datalayer_filter["dataset_id__in"] = dataset_ids
-        category_filter["dataset_id__in"] = dataset_ids
+        category_filter["dataset__id__in"] = dataset_ids
         dataset_filter["id__in"] = dataset_ids
         org_filter["id__in"] = dataset_ids
-    else:
-        dataset_ids = None
+
+    if geometry:
+        datalayer_filter["outline__intersects"] = geometry
+        category_filter["outline__intersects"] = geometry
 
     raw_results = [
-        [dataset_to_search_result(x) for x in Dataset.objects.filter(**org_filter)],
+        [
+            dataset_to_search_result(x)
+            for x in Dataset.objects.filter(
+                **org_filter,
+            )
+        ],
         [
             dataset_to_search_result(x)
             for x in Dataset.objects.filter(
@@ -461,12 +511,16 @@ def find_anything(
             )
         ],
         [
-            category_to_search_result(x)
-            for x in Category.objects.filter(**category_filter)
+            datalayer_to_search_result(x)
+            for x in DataLayer.objects.filter(
+                **category_filter,
+            )
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.filter(**datalayer_filter)
+            for x in DataLayer.objects.filter(
+                **datalayer_filter,
+            )
         ],
     ]
     search_results = itertools.chain.from_iterable(raw_results)

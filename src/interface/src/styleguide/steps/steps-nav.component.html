@@ -25,6 +25,9 @@
       <div class="step-label">{{ step.label }}</div>
     </div>
 
-    <div *ngIf="i !== steps.length - 1" class="step-connector"></div>
+    <div
+      *ngIf="i !== steps.length - 1"
+      class="step-connector"
+      [class.step-connector-completed]="getStepState(i) === 'completed'"></div>
   </div>
 </div>

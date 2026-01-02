@@ -7,8 +7,6 @@ import { map } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { MapModuleService } from '@services/map-module.service';
-import { FeatureService } from '../../features/feature.service';
-import { CategorizedBaseLayersListComponent } from '../categorized-base-layers-list/categorized-base-layers-list.component';
 
 @Component({
   selector: 'app-base-layers',
@@ -20,7 +18,6 @@ import { CategorizedBaseLayersListComponent } from '../categorized-base-layers-l
     MatButtonModule,
     NgForOf,
     NgIf,
-    CategorizedBaseLayersListComponent,
   ],
   templateUrl: './base-layers.component.html',
   styleUrl: './base-layers.component.scss',
@@ -39,16 +36,14 @@ export class BaseLayersComponent {
       return [];
     })
   );
-  categorizedBaseLayers$ = this.baseLayersStateService.categorizedBaseLayers$;
 
-  baseDataSets$ = this.mapModuleService.mapData$.pipe(
+  baseDataSets$ = this.mapModuleService.datasets$.pipe(
     map((mapData) => mapData.base_datasets)
   );
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
-    private mapModuleService: MapModuleService,
-    private featureService: FeatureService
+    private mapModuleService: MapModuleService
   ) {}
 
   updateSelectedLayer(data: { layer: BaseLayer; isMulti: boolean }) {
@@ -57,9 +52,5 @@ export class BaseLayersComponent {
 
   clearBaseLayer() {
     this.baseLayersStateService.clearBaseLayer();
-  }
-
-  get isUsingMapModule() {
-    return this.featureService.isFeatureEnabled('MAP_MODULE');
   }
 }

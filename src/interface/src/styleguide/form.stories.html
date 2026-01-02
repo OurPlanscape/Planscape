@@ -14,6 +14,15 @@
       [disabled]="demoForm.get('phone')?.disabled || false">
       <input sgInput formControlName="phone" />
     </sg-input-field>
+
+    <mat-form-field appearance="outline">
+      <input
+        type="text"
+        required
+        formControlName="lastName"
+        matInput
+        autocomplete="family-name" />
+    </mat-form-field>
   </section>
 
   <section class="flex">

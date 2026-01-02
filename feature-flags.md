@@ -26,3 +26,5 @@ The name and value of the flag will be shared by frontend and backend.
 `SCENARIO_CONFIG_UI` : Enables new scenario configuration UI
 
 `CUSTOM_EXCEPTION_HANDLER` : Enables common error format in backend payloads
+
+`CUSTOM_SCENARIOS` : Allows custom scenarios

@@ -16,8 +16,10 @@ export interface ForsysData {
 }
 
 export interface MapData {
-  main_datasets: MapDataDataSet[];
-  base_datasets: MapDataDataSet[];
+  datasets: {
+    main_datasets: MapDataDataSet[];
+    base_datasets: MapDataDataSet[];
+  };
 }
 
 export interface MapDataDataSet extends BaseDataSet {

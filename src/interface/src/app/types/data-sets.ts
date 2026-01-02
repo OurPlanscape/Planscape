@@ -126,14 +126,6 @@ export interface BaseLayer extends Omit<DataLayer, 'styles' | 'geometry'> {
   ];
 }
 
-export interface CategorizedBaseLayers {
-  category: {
-    name: string;
-    isMultiSelect: boolean;
-  };
-  layers: BaseLayer[];
-}
-
 export interface ColorLegendInfo {
   title: string;
   type: RasterColorType;
@@ -146,6 +138,13 @@ export interface SearchResult {
   type: 'DATASET' | 'DATALAYER';
   url: string;
   data: DataLayer | DataSet;
+}
+
+export interface SearchQuery {
+  term: string;
+  limit: number;
+  offset?: number;
+  module?: string;
 }
 
 export interface DataSetSearchResult extends SearchResult {

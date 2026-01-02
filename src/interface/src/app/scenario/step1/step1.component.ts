@@ -8,7 +8,6 @@ import {
 } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
@@ -16,7 +15,7 @@ import { ScenarioCreation, ScenarioGoal } from '@types';
 import { filter, map, shareReplay, take } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { GoalOverlayService } from 'src/app/plan/goal-overlay/goal-overlay.service';
-import { SectionComponent } from '@styleguide';
+import { ButtonComponent, SectionComponent } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ActivatedRoute } from '@angular/router';
@@ -25,9 +24,9 @@ import { FeaturesModule } from '../../features/features.module';
 import { getGroupedGoals } from '../scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MatRadioModule } from '@angular/material/radio';
 
 @UntilDestroy()
 @Component({
@@ -40,7 +39,7 @@ import { FeatureService } from 'src/app/features/feature.service';
     MatMenuModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
-    MatLegacyRadioModule,
+    MatRadioModule,
     SectionComponent,
     MatFormFieldModule,
     MatSelectModule,
@@ -133,5 +132,10 @@ export class Step1Component
   // TODO: remove when SCENARIO_CONFIG_UI is removed
   get configUiFlagIsOn() {
     return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
+  }
+
+  get selectedStandSize() {
+    const key = this.form.get('stand_size')?.value as STAND_SIZE | null;
+    return key ? this.standSizeOptions[key] : null;
   }
 }

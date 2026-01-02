@@ -100,7 +100,7 @@ export class ClimateForesightRunComponent implements OnInit {
     { label: 'Select Data Layers', completed: false },
     { label: 'Assign Favorability', completed: false },
     { label: 'Assign Pillars', completed: false },
-    { label: 'Run & Risk Assessment', completed: false },
+    { label: 'Save & Run Analysis', completed: false },
   ];
 
   get currentStepIndex(): number {

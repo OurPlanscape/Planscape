@@ -39,7 +39,7 @@ export class DataSetComponent {
 
   loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
 
-  selectedDataLayerId$ = this.dataLayersStateService.selectedDataLayer$.pipe(
+  selectedDataLayerId$ = this.dataLayersStateService.viewedDataLayer$.pipe(
     map((dl) => dl?.id)
   );
 
