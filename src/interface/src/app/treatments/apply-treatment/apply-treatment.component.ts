@@ -142,7 +142,7 @@ export class ApplyTreatmentComponent {
     this.treatmentsState.removeTreatments(stands).subscribe({
       error: (err) => {
         if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
-          // TODO: confirm backend response
+          this.snackBar.open(err.errors.message, 'Dismiss', SNACK_ERROR_CONFIG);
         } else {
           this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
         }

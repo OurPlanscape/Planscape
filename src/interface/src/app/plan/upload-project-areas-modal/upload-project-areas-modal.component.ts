@@ -188,7 +188,6 @@ export class UploadProjectAreasModalComponent {
           error: (err: any) => {
             this.uploadingData = false;
             let errorsObject = err.error;
-            // TODO: more tests on latter two conditions
             if (
               this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
             ) {

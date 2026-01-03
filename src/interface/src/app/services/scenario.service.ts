@@ -96,16 +96,20 @@ export class ScenarioService {
           if (
             this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
           ) {
-            // TODO: confirm backend response
+            const message =
+              error.error.errors?.global?.[0] ||
+              'Please change your settings and try again.';
+            throw new CreateScenarioError(
+              'Your scenario config is invalid. ' + message
+            );
           } else {
+            const message =
+              error.error?.global?.[0] ||
+              'Please change your settings and try again.';
+            throw new CreateScenarioError(
+              'Your scenario config is invalid. ' + message
+            );
           }
-
-          const message =
-            error.error?.global?.[0] ||
-            'Please change your settings and try again.';
-          throw new CreateScenarioError(
-            'Your scenario config is invalid. ' + message
-          );
         })
       );
   }
@@ -125,15 +129,18 @@ export class ScenarioService {
           if (
             this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
           ) {
-            // TODO: confirm backend error
+            const message =
+              error.error.errors?.global?.[0] || 'Failed to save configuration';
+            throw new CreateScenarioError(
+              'Scenario Config is invalid. ' + message
+            );
           } else {
+            const message =
+              error.error?.global?.[0] || 'Failed to save configuration';
+            throw new CreateScenarioError(
+              'Scenario Config is invalid. ' + message
+            );
           }
-
-          const message =
-            error.error?.global?.[0] || 'Failed to save configuration';
-          throw new CreateScenarioError(
-            'Scenario Config is invalid. ' + message
-          );
         })
       );
   }

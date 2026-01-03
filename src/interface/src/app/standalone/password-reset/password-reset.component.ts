@@ -98,11 +98,14 @@ export class PasswordResetComponent implements OnInit {
           this.dialog.open(PasswordConfirmationDialogComponent);
         },
         error: (err: HttpErrorResponse) => {
-          if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
-            // TODO: confirm backend error format
-            this.form.setErrors({ backendError: Object.values(err.error.errors) });
-          }else {
-          this.form.setErrors({ backendError: Object.values(err.error) });
+          if (
+            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+          ) {
+            this.form.setErrors({
+              backendError: Object.values(err.error.errors),
+            });
+          } else {
+            this.form.setErrors({ backendError: Object.values(err.error) });
           }
         },
       });

@@ -303,7 +303,15 @@ export class ClimateForesightRunComponent implements OnInit {
             if (
               this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
             ) {
-              // TODO: confirm backend error format
+              console.error('Error saving data layers:', error);
+              this.snackBar.open(
+                'Failed to save data layers: ' +
+                  (error?.error.errors?.detail ||
+                    error?.message ||
+                    'Unknown error'),
+                'Close',
+                SNACK_BOTTOM_NOTICE_CONFIG
+              );
             } else {
               console.error('Error saving data layers:', error);
               this.snackBar.open(
@@ -380,7 +388,14 @@ export class ClimateForesightRunComponent implements OnInit {
             if (
               this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
             ) {
-              // TODO: confirm backend error object format
+              this.snackBar.open(
+                'Failed to save favorability: ' +
+                  (error?.error?.errors.detail ||
+                    error?.message ||
+                    'Unknown error'),
+                'Close',
+                SNACK_BOTTOM_NOTICE_CONFIG
+              );
             } else {
               this.snackBar.open(
                 'Failed to save favorability: ' +
@@ -449,7 +464,14 @@ export class ClimateForesightRunComponent implements OnInit {
           if (
             this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
           ) {
-            // TODO: confirm backend error format
+            this.snackBar.open(
+              'Failed to save pillars: ' +
+                (error?.error?.errors.detail ||
+                  error?.message ||
+                  'Unknown error'),
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
           } else {
             this.snackBar.open(
               'Failed to save pillars: ' +
@@ -494,7 +516,14 @@ export class ClimateForesightRunComponent implements OnInit {
           if (
             this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
           ) {
-            // TODO: confirm backend error format
+            this.snackBar.open(
+              'Failed to trigger analysis: ' +
+                (error?.error?.errors.detail ||
+                  error?.message ||
+                  'Unknown error'),
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
           } else {
             this.snackBar.open(
               'Failed to trigger analysis: ' +
