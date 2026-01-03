@@ -3,6 +3,7 @@ import json
 import shutil
 from datetime import date, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 import fiona
@@ -34,17 +35,21 @@ from planning.services import (
     create_scenario_from_upload,
     delete_scenario,
     export_planning_area_to_geopackage,
+    export_scenario_inputs_to_geopackage,
+    export_scenario_stand_outputs_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
     get_available_stand_ids,
     get_constrained_stands,
     get_excluded_stands,
+    get_flatten_geojson,
     get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
     planning_area_covers,
+    sanitize_shp_field_name,
     toggle_scenario_status,
     trigger_scenario_run,
     validate_scenario_configuration,
@@ -231,6 +236,43 @@ class GetSchemaTest(TestCase):
         self.assertEqual(5, len(schema["properties"]))
 
 
+class TestSanitizeShpFieldName(TestCase):
+    def test_replaces_spaces_with_underscores(self):
+        self.assertEqual(
+            sanitize_shp_field_name("Expected Annual Total Volume Killed"),
+            "Expected_Annual_Total_Volume_Killed",
+        )
+
+    def test_non_string_is_returned_unchanged(self):
+        self.assertIsNone(sanitize_shp_field_name(None))
+        self.assertEqual(sanitize_shp_field_name(123), 123)
+
+
+class TestFlattenGeojsonSanitization(TestCase):
+    def test_get_flatten_geojson_sanitizes_datalayer_and_nested_keys(self):
+        scenario = mock.Mock()
+        scenario.get_geojson_result.return_value = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": None,
+                    "properties": {
+                        "datalayer_1": 0.1,
+                        "attainment": {"Expected Annual Total Volume Killed": 0.2},
+                    },
+                }
+            ],
+        }
+        dl = SimpleNamespace(pk=1, name="Expected Annual Total Volume Killed")
+        scenario.treatment_goal.get_raster_datalayers.return_value = [dl]
+        out = get_flatten_geojson(scenario)
+        props = out["features"][0]["properties"]
+        self.assertIn("datalayer_Expected_Annual_Total_Volume_Killed", props)
+        self.assertIn("attainment_Expected_Annual_Total_Volume_Killed", props)
+        self.assertTrue(all(" " not in k for k in props.keys()))
+
+
 class ExportToShapefileTest(TestCase):
     def test_export_raises_value_error_failure(self):
         unit_poly = GEOSGeometry(
@@ -323,7 +365,7 @@ class TestExportToGeopackage(TestCase):
         self.unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
-        self.datalayers = DataLayerFactory.create_batch(7)
+        self.datalayers = DataLayerFactory.create_batch(7, type=DataLayerType.RASTER)
         self.stand = StandFactory.create()
         self.planning = PlanningAreaFactory.create(
             name="foo",
@@ -465,6 +507,32 @@ class TestExportToGeopackage(TestCase):
             )
             feature = next(iter(src))
             self.assertEqual(feature["properties"]["name"], self.planning.name)
+
+    def test_export_stand_outputs_schema_field_names_are_sanitized(self):
+        self.datalayers[0].name = "Expected Annual Total Volume Killed"
+        self.datalayers[0].save(update_fields=["name"])
+        stand_inputs = export_scenario_inputs_to_geopackage(
+            self.scenario, self.output_path
+        )
+        export_scenario_stand_outputs_to_geopackage(
+            self.scenario, self.output_path, stand_inputs
+        )
+        with fiona.open(self.output_path, layer="stand_outputs") as src:
+            field_names = list(src.schema["properties"].keys())
+        self.assertIn("datalayer_Expected_Annual_Total_Volume_Killed", field_names)
+        self.assertTrue(all(" " not in n for n in field_names))
+
+    def test_export_inputs_schema_renames_spm_and_pcp_fields(self):
+        self.datalayers[5].name = "Some SPM Layer"
+        self.datalayers[5].save(update_fields=["name"])
+        self.datalayers[6].name = "Some PCP Layer"
+        self.datalayers[6].save(update_fields=["name"])
+        export_scenario_inputs_to_geopackage(self.scenario, self.output_path)
+        with fiona.open(self.output_path, layer="stand_inputs") as src:
+            field_names = list(src.schema["properties"].keys())
+        self.assertIn("datalayer_Some_SPM_Layer_SPM", field_names)
+        self.assertIn("datalayer_Some_PCP_Layer_PCP", field_names)
+        self.assertTrue(all(" " not in n for n in field_names))
 
     def tearDown(self) -> None:
         self.output_path.unlink(missing_ok=True)
