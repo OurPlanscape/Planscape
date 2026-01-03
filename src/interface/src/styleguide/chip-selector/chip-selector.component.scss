@@ -21,12 +21,6 @@
         padding-top: 8px;
         padding-bottom: 8px;
 
-        &:hover, &:select {
-        background-color: $color-brand-soft-green;
-        opacity: 1;
-        }
-
-
         .mat-chip-remove {
             opacity: 1;
             color: black;
@@ -38,14 +32,43 @@
             height: 16px;
             font-size: 16px;
         }
-        
-        .mat-mdc-chip-remove .mat-icon:hover {
-            background-color: white;
-            border-radius: 8px;
-        }
-
     }
 
+    ::ng-deep {
+        .chip-row.mat-mdc-standard-chip {
+            --mdc-chip-selected-container-color: transparent;
+            .mdc-evolution-chip__action--primary::before,
+            .mdc-evolution-chip__action--primary::after,
+            .mat-mdc-chip-focus-overlay {
+                display: none;
+            }
+        }
+
+        .chip-button.mat-mdc-chip-remove {
+            position: relative;
+            &::before {
+                background-color: $color-brand-soft-green;
+                border-radius: 16px;
+                opacity: 0;
+                display: block;
+            }
+            &:hover::before {
+                opacity: 1;
+            }
+            &:active::before {
+                opacity: 1;
+                filter: brightness(0.6);
+            }
+            &:hover mat-icon,
+            &:active mat-icon {
+                color: $color-dark-gray;
+                position: relative;
+            }
+            .mat-mdc-chip-state-layer {
+                display: none;
+            }
+        }
+    }
 }
 
 .trailing-link {
