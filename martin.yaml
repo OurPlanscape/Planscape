@@ -76,6 +76,21 @@ postgres:
       maxzoom: 20
       bounds: [-180.0, -90.0, 180.0, 90.0]
       id_column: id
+    # POC: stands colored by exclusions + constraint (SQL/Martin)
+    # parameters:
+    # - planning_area_id: int
+    # - stand_size: string
+    # - exclude_datalayer_id: int (optional)
+    # - constraint_datalayer_id: int (optional)
+    # - constraint_operator: string (lt|lte|gt|gte|eq) (optional)
+    # - constraint_value: float (optional)
+    stands_by_planning_area_poc:
+      schema: public
+      function: martin_stands_by_planning_area_poc
+      minzoom: 0
+      maxzoom: 20
+      bounds: [-180.0, -90.0, 180.0, 90.0]
+      id_column: id
     # dynamic endpoint for any imported DataLayer by ID
     # parameters:
     # - layer: integer  (DataLayer id)
