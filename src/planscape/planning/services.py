@@ -373,7 +373,10 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     scenario.capabilities = compute_scenario_capabilities(scenario)
     scenario.save(update_fields=["capabilities"])
     planning_area.updated_at = now()
-    planning_area.save(update_fields=["updated_at"])
+    planning_area.scenario_count = (
+        planning_area.scenario_count + 1 if planning_area.scenario_count else 1
+    )
+    planning_area.save(update_fields=["updated_at", "scenario_count"])
     transaction.on_commit(
         partial(
             action.send,
@@ -443,11 +446,19 @@ def delete_scenario(
     )
     right_now = now()
     planning_area: PlanningArea = scenario.planning_area
+    was_active = scenario.status == ScenarioStatus.ACTIVE
+
     scenario.delete()
-    planning_area.scenario_count = (
-        planning_area.scenario_count - 1 if planning_area.scenario_count else 0
-    )
-    planning_area.save(update_fields=["updated_at", "scenario_count"])
+
+    planning_area.updated_at = right_now
+    if was_active:
+        planning_area.scenario_count = (
+            planning_area.scenario_count - 1 if planning_area.scenario_count else 0
+        )
+        planning_area.save(update_fields=["updated_at", "scenario_count"])
+    else:
+        planning_area.save(update_fields=["updated_at"])
+
     ScenarioResult.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     ProjectArea.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     track_openpanel(
@@ -773,15 +784,25 @@ def get_schema(
     return schema
 
 
+def sanitize_shp_field_name(name: Optional[str]) -> Optional[str]:
+    """
+    Replace spaces with underscores so exported attribute/column names
+    are safe when users convert GeoPackages to Shapefiles in GIS tools.
+    """
+    return name.replace(" ", "_") if isinstance(name, str) else name
+
+
 def _get_datalayers_id_lookup_table(scenario):
     # Lookup table to rename datalayer fields to their names
     # e.g. datalayer_1 -> datalaye_Elevation
     datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
     dl_lookup = dict()
     for dl in datalayers:
-        dl_lookup[f"datalayer_{dl.pk}"] = f"datalayer_{dl.name}"
-        dl_lookup[f"datalayer_{dl.pk}_SMP"] = f"datalayer_{dl.name}_SMP"
-        dl_lookup[f"datalayer_{dl.pk}_PCP"] = f"datalayer_{dl.name}_PCP"
+        safe_name = sanitize_shp_field_name(dl.name)
+        dl_lookup[f"datalayer_{dl.pk}"] = f"datalayer_{safe_name}"
+        dl_lookup[f"datalayer_{dl.pk}_SMP"] = f"datalayer_{safe_name}_SMP"
+        dl_lookup[f"datalayer_{dl.pk}_SPM"] = f"datalayer_{safe_name}_SPM"
+        dl_lookup[f"datalayer_{dl.pk}_PCP"] = f"datalayer_{safe_name}_PCP"
     return dl_lookup
 
 
@@ -802,21 +823,23 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
                 for k, v in value.items():
                     if isinstance(v, float):
                         v = truncate_result(v, quantize=".001")
-                    new_properties[f"{prop}_{k}"] = v
+                    flat_key = sanitize_shp_field_name(f"{prop}_{k}")
+                    new_properties[flat_key] = v
             else:
                 if isinstance(value, float):
                     value = truncate_result(value, quantize=".001")
                 key = dl_lookup.get(prop, prop)
+                key = sanitize_shp_field_name(key)
                 new_properties[key] = value
         feature["properties"] = new_properties
     return geojson
 
 
 def export_to_shapefile(scenario: Scenario) -> Path:
-    """Given a scenario, export it to shapefile
+    """
+    Given a scenario, export it to shapefile
     and return the path of the folder containing all files.
     """
-
     if scenario.results.status != ScenarioResultStatus.SUCCESS:
         raise ValueError("Cannot export a scenario if it's result failed.")
     geojson = get_flatten_geojson(scenario)
@@ -879,6 +902,7 @@ def export_scenario_stand_outputs_to_geopackage(
                             )
                             f = None
                         prop = dl_lookup.get(key, key)
+                        prop = sanitize_shp_field_name(prop)
                         properties[prop] = f
             stand_id = int(row.get("stand_id"))  # type: ignore
             geometry = stand_inputs.get(stand_id, {}).get("WKT")
@@ -972,6 +996,7 @@ def export_scenario_inputs_to_geopackage(
                             )
                             f = None
                         prop_key = dl_lookup.get(key, key)
+                        prop_key = sanitize_shp_field_name(prop_key)
                         properties[prop_key] = f
             properties["stand_size"] = stand_size
             stand_id = int(row.get("stand_id"))  # type: ignore
@@ -1149,17 +1174,26 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
 
 @transaction.atomic()
 def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
-    new_status = (
-        ScenarioStatus.ACTIVE
-        if scenario.status == ScenarioStatus.ARCHIVED
-        else ScenarioStatus.ARCHIVED
-    )
-    verb = "activated" if scenario.status == ScenarioStatus.ARCHIVED else "archived"
     pa = scenario.planning_area
+    archiving = scenario.status == ScenarioStatus.ACTIVE
+
+    if archiving:
+        new_status = ScenarioStatus.ARCHIVED
+        verb = "archived"
+        scenario_count_change = -1
+    else:
+        new_status = ScenarioStatus.ACTIVE
+        verb = "activated"
+        scenario_count_change = +1
+
     pa.updated_at = timezone.now()
-    pa.save(update_fields=["updated_at"])
+    current = pa.scenario_count or 0
+    pa.scenario_count = max(0, current + scenario_count_change)
+    pa.save(update_fields=["updated_at", "scenario_count"])
+
     scenario.status = new_status
-    scenario.save()
+    scenario.save(update_fields=["status"])
+
     action.send(user, verb=verb, action_object=scenario)
     return scenario
 
