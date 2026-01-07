@@ -17,8 +17,6 @@ import {
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
-import { flattenMultipolygons, stripZCoords } from '../plan/plan-helpers';
-import { InvalidCoordinatesError } from '@services/errors';
 import area from '@turf/area';
 import Decimal from 'decimal.js';
 
@@ -360,57 +358,5 @@ export class DrawService {
     const areaInAcres = Decimal(areaInSquareMeters).div(conversionAcresToSqMeters);
     return areaInAcres.toNumber();
   }
-
-  // Deprecated when just handling uploads directly
-  addGeoJSONFeature(shape: any) {
-    const featuresArray = shape.features.map((feature: any) => ({
-      type: 'Feature',
-      geometry: {
-        type: feature.geometry.type,
-        coordinates: roundCoordinates(feature.geometry.coordinates, 6),
-      },
-      properties: {
-        ...feature.properties,
-        mode: 'polygon',
-      },
-    }));
-    let flatFeatures = flattenMultipolygons(featuresArray);
-    flatFeatures = stripZCoords(flatFeatures);
-    const validations = this._terraDraw?.addFeatures(flatFeatures);
-    handleValidation(validations);
-    this.updateTotalAcreage();
-    this._terraDraw?.setMode('select'); // should be in select mode to add
-  }
 }
 
-function handleValidation(validations: any[] | undefined): void {
-  if (validations?.some((feature) => feature.valid === false)) {
-    const reasons = getValidationReasons(validations);
-    if (
-      reasons.some((reason: string) => reason.includes('invalid coordinates'))
-    ) {
-      throw new InvalidCoordinatesError(reasons.join(', '));
-    } else {
-      throw new Error(`Error: ${reasons.join(', ')} `);
-    }
-  }
-}
-
-function getValidationReasons(validations: any[]) {
-  return validations
-    .filter((validation) => !validation.valid && validation.reason)
-    .map((validation) => validation.reason);
-}
-
-// terra-draw only accepts up to 6 decimal places of precision, so this rounds that
-// Note that 6 decimal places translates to about ~11 cm (4.3 inches)
-function roundCoordinates(coords: any, precision = 6) {
-  if (typeof coords[0] === 'number') {
-    return coords.map(
-      (coord: any) =>
-        Math.round(coord * Math.pow(10, precision)) / Math.pow(10, precision)
-    );
-  } else {
-    return coords.map((coord: any) => roundCoordinates(coord, precision));
-  }
-}
