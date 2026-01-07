@@ -62,7 +62,7 @@ export class DrawService {
 
   private _uploadedShape: GeoJSON.GeoJSON | null = null;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     this._mapRef = map;
@@ -184,7 +184,7 @@ export class DrawService {
     if (!this._terraDraw) {
       return false;
     } else if (this._uploadedShape) {
-      return true
+      return true;
     }
     return (
       this._terraDraw.getSnapshot().filter((f) => f.geometry.type === 'Polygon')
@@ -292,7 +292,9 @@ export class DrawService {
       return this._uploadedShape?.geometry;
     }
     if (this._uploadedShape.type === 'FeatureCollection') {
-      return this._uploadedShape.features.length > 0 ? this._uploadedShape.features[0].geometry : null;
+      return this._uploadedShape.features.length > 0
+        ? this._uploadedShape.features[0].geometry
+        : null;
     }
     return this._uploadedShape as GeoJSON.Geometry;
   }
@@ -305,7 +307,9 @@ export class DrawService {
     if (!this._mapRef.getSource('uploaded-shape')) {
       this.initializeUploadedShapeLayer();
     }
-    const source = this._mapRef.getSource('uploaded-shape') as maplibregl.GeoJSONSource;
+    const source = this._mapRef.getSource(
+      'uploaded-shape'
+    ) as maplibregl.GeoJSONSource;
     source.setData(this._uploadedShape);
     this.updateTotalAcreage();
   }
@@ -318,8 +322,8 @@ export class DrawService {
       type: 'geojson',
       data: {
         type: 'FeatureCollection',
-        features: []
-      }
+        features: [],
+      },
     });
     this._mapRef.addLayer({
       id: 'uploaded-shape-fill',
@@ -327,8 +331,8 @@ export class DrawService {
       source: 'uploaded-shape',
       paint: {
         'fill-color': '#088',
-        'fill-opacity': 0.4
-      }
+        'fill-opacity': 0.4,
+      },
     });
     this._mapRef.addLayer({
       id: 'uploaded-shape-outline',
@@ -336,8 +340,8 @@ export class DrawService {
       source: 'uploaded-shape',
       paint: {
         'line-color': '#000',
-        'line-width': 2
-      }
+        'line-width': 2,
+      },
     });
   }
 
@@ -349,14 +353,21 @@ export class DrawService {
     const conversionAcresToSqMeters = Decimal('4046.8564213562374');
     let areaInSquareMeters: number;
     if (this._uploadedShape.type === 'FeatureCollection') {
-      areaInSquareMeters = area(this._uploadedShape as GeoJSON.FeatureCollection);
+      areaInSquareMeters = area(
+        this._uploadedShape as GeoJSON.FeatureCollection
+      );
     } else if (this._uploadedShape.type === 'Feature') {
       areaInSquareMeters = area(this._uploadedShape as GeoJSON.Feature);
     } else {
-      areaInSquareMeters = area({ type: 'Feature', geometry: this._uploadedShape as GeoJSON.Geometry, properties: {} });
+      areaInSquareMeters = area({
+        type: 'Feature',
+        geometry: this._uploadedShape as GeoJSON.Geometry,
+        properties: {},
+      });
     }
-    const areaInAcres = Decimal(areaInSquareMeters).div(conversionAcresToSqMeters);
+    const areaInAcres = Decimal(areaInSquareMeters).div(
+      conversionAcresToSqMeters
+    );
     return areaInAcres.toNumber();
   }
 }
-
