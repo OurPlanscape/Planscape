@@ -168,6 +168,10 @@ export class DrawService {
     }
   }
 
+  getBboxFromUploadedShape() {
+    return bbox(this.getUploadedShape());
+  }
+
   getBboxFromDrawingContext() {
     return bbox(this.getDrawingGeoJSON());
   }
@@ -325,24 +329,30 @@ export class DrawService {
         features: [],
       },
     });
-    this._mapRef.addLayer({
-      id: 'uploaded-shape-fill',
-      type: 'fill',
-      source: 'uploaded-shape',
-      paint: {
-        'fill-color': '#088',
-        'fill-opacity': 0.4,
+    this._mapRef.addLayer(
+      {
+        id: 'uploaded-shape-fill',
+        type: 'fill',
+        source: 'uploaded-shape',
+        paint: {
+          'fill-color': '#088',
+          'fill-opacity': 0.4,
+        },
       },
-    });
-    this._mapRef.addLayer({
-      id: 'uploaded-shape-outline',
-      type: 'line',
-      source: 'uploaded-shape',
-      paint: {
-        'line-color': '#000',
-        'line-width': 2,
+      'drawing-hook'
+    );
+    this._mapRef.addLayer(
+      {
+        id: 'uploaded-shape-outline',
+        type: 'line',
+        source: 'uploaded-shape',
+        paint: {
+          'line-color': '#000',
+          'line-width': 2,
+        },
       },
-    });
+      'drawing-hook'
+    );
   }
 
   calculateUploadedAcres() {
