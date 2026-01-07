@@ -7,8 +7,7 @@ import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 import flatten from '@turf/flatten';
 import { Feature, MultiPolygon, Polygon } from 'geojson';
 import { GeoJSONStoreFeatures } from 'terra-draw';
-import { featureCollection, Position, polygon } from '@turf/helpers';
-import { difference } from '@turf/difference';
+import { Position } from '@turf/helpers';
 
 export const POLLING_INTERVAL = 3000;
 
@@ -153,70 +152,27 @@ export function hasAnalytics(results: ScenarioResult): boolean {
 /* from a mixed featuresArray of polygons and multipolygons,
   this function converts each multipolygon to a polygon,
   then returns a GeoJSONStoreFeatures array of just polygons
-*/export function flattenMultipolygons(
+*/
+export function flattenMultipolygons(
   featuresArray: Feature<Polygon | MultiPolygon>[]
 ): GeoJSONStoreFeatures[] {
   const polygons: GeoJSONStoreFeatures[] = [];
-  
   featuresArray.forEach((f) => {
     if (f.geometry.type === 'Polygon') {
-      // Type is narrowed to Polygon here
-      const processed = processPolygonWithHoles(f as Feature<Polygon>);
-      polygons.push(...processed);
+      polygons.push(f as GeoJSONStoreFeatures);
     } else if (f.geometry.type === 'MultiPolygon') {
       const flattened = flatten(f);
       if (flattened.features) {
         flattened.features.forEach((p) => {
           if (p.geometry && p.geometry.type === 'Polygon') {
-            const processed = processPolygonWithHoles(p as Feature<Polygon>);
-            polygons.push(...processed);
+            polygons.push(p as GeoJSONStoreFeatures);
           }
         });
       }
     }
   });
-  
   return polygons;
 }
-
-/**
- * Process a polygon by subtracting any holes using geometric difference
- * Returns an array since difference operation may create MultiPolygons
- */
-function processPolygonWithHoles(
-  feature: Feature<Polygon>
-): GeoJSONStoreFeatures[] {
-  const coords = feature.geometry.coordinates;
-  
-  if (coords.length === 1) {
-    // No holes, return as-is
-    return [feature as GeoJSONStoreFeatures];
-  }
-  
-  // Start with the exterior ring as a polygon
-  let result: Feature<Polygon | MultiPolygon> = polygon([coords[0]], feature.properties);
-  
-  // Subtract each hole from the result
-  for (let i = 1; i < coords.length; i++) {
-    const hole = polygon([coords[i]]);
-    // Create a FeatureCollection with result and hole
-    const diff = difference(featureCollection([result, hole]));
-    if (diff) {
-      result = diff;
-    } else {
-      console.warn('Difference operation failed for hole', i, 'in feature', feature.properties?.['id']);
-    }
-  }
-  
-  // If difference created a MultiPolygon, flatten it
-  if (result.geometry.type === 'MultiPolygon') {
-    const flattened = flatten(result);
-    return flattened.features.map(f => f as GeoJSONStoreFeatures);
-  }
-  
-  return [result as GeoJSONStoreFeatures];
-}
-
 
 export function planningAreaMetricsAreReady(pa: Plan) {
   return pa.map_status === 'DONE';
