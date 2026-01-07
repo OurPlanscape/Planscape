@@ -65,6 +65,7 @@ import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-ov
 import { FeatureService } from '../../features/feature.service';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
+import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives/custom-priority-objectives.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -100,6 +101,7 @@ enum ScenarioTabs {
     NgClass,
     ScenarioSummaryComponent,
     SharedModule,
+    CustomPriorityObjectivesComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',

@@ -3,10 +3,9 @@
     class="chip-row"
     *ngFor="let item of displayedItems"
     (removed)="handleRemove(item)"
-    [selectable]="false"
     [disableRipple]="true">
     {{ item }}
-    <button class="chip-button" matChipRemove [disableRipple]="true">
+    <button class="chip-button" matChipRemove>
       <mat-icon>close</mat-icon>
     </button>
   </mat-chip-row>

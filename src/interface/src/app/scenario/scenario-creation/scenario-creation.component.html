@@ -99,8 +99,14 @@
           (treatmentGoalName$ | async) || ''
         "></app-scenario-summary>
 
+
+
       <sg-step class="full-screen-step">
         <app-step1-with-overview></app-step1-with-overview>
+      </sg-step>
+      <!-- TODO this step is just a placeholder to mock-up the priority objectives -->
+      <sg-step>
+        <app-custom-priority-objectives></app-custom-priority-objectives>
       </sg-step>
       <sg-step>
         <app-exclude-areas-selector></app-exclude-areas-selector>
