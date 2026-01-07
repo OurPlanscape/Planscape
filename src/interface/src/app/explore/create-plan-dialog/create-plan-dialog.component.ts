@@ -119,10 +119,11 @@ export class CreatePlanDialogComponent implements OnInit {
 
   private createPlan(name: string) {
     const shape = this.drawService.getDrawingGeoJSON();
+    const geometry = this.drawService.getUploadedShape();
     this.planService
       .createPlan({
         name: name,
-        geometry: shape.geometry,
+        geometry: geometry ? geometry : shape.geometry,
       })
       .subscribe({
         next: (result) => {
