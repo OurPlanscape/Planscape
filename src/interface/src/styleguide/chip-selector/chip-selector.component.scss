@@ -1,0 +1,82 @@
+@import "mixins";
+@import "colors";
+
+:host {
+    .chip-row {
+        @include xs-label();
+        --mdc-chip-container-height: 14px;
+        --mdc-chip-elevated-container-color: $color-white;
+        --mdc-chip-label-text-weight: 600;
+        --mdc-chip-label-text-color: #{$color-brand-green};
+        --mdc-chip-container-shape-radius: 4px;
+        --mdc-chip-focus-state-layer-color:#{$color-brand-green};
+        background-color: $color-brand-soft-green;
+        font-weight: 600;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0;
+        padding-left: 0px;
+        padding-right: 0px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+
+        .mat-chip-remove {
+            opacity: 1;
+            color: black;
+        }
+
+        .mat-mdc-chip-remove {
+            opacity: 1;
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+        }
+    }
+
+    ::ng-deep {
+        .chip-row.mat-mdc-standard-chip {
+            --mdc-chip-selected-container-color: transparent;
+            .mdc-evolution-chip__action--primary::before,
+            .mdc-evolution-chip__action--primary::after,
+            .mat-mdc-chip-focus-overlay {
+                display: none;
+            }
+        }
+
+        .chip-button.mat-mdc-chip-remove {
+            position: relative;
+            &::before {
+                background-color: $color-brand-soft-green;
+                border-radius: 16px;
+                opacity: 0;
+                display: block;
+            }
+            &:hover::before {
+                opacity: 1;
+            }
+            &:active::before {
+                opacity: 1;
+                filter: brightness(0.6);
+            }
+            &:hover mat-icon,
+            &:active mat-icon {
+                color: $color-dark-gray;
+                position: relative;
+            }
+            .mat-mdc-chip-state-layer {
+                display: none;
+            }
+        }
+    }
+}
+
+.trailing-link {
+    height: 30px;
+    margin: 8px;
+}
+
+.expand-link {
+    @include standard-link();
+    line-height: 24px;
+}
