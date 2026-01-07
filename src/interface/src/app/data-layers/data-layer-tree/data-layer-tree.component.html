@@ -8,11 +8,14 @@
     [treeControl]="treeControl"
     class="data-layers">
     <!-- Leaf node -->
+
     <mat-tree-node
       *matTreeNodeDef="let node"
       matTreeNodePadding
       class="data-layer"
       [class.padded]="displayAddButton">
+
+
       <button
         *ngIf="displayAddButton"
         mat-icon-button
