@@ -335,8 +335,8 @@ export class DrawService {
         type: 'fill',
         source: 'uploaded-shape',
         paint: {
-          'fill-color': '#088',
-          'fill-opacity': 0.4,
+          'fill-color': '#A5C8D7',
+          'fill-opacity': 0.5,
         },
       },
       'drawing-hook'
