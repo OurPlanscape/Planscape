@@ -281,11 +281,7 @@ export class DrawService {
   }
 
   hasUploadedData() {
-    if (this._uploadedShape) {
-      return true;
-    } else {
-      return false;
-    }
+    return !!this._uploadedShape;
   }
 
   getUploadedShape() {
@@ -339,7 +335,7 @@ export class DrawService {
           'fill-opacity': 0.5,
         },
       },
-      'drawing-hook'
+      'drawing-hook' // adding this on the map just "before" this layer
     );
     this._mapRef.addLayer(
       {
@@ -351,7 +347,7 @@ export class DrawService {
           'line-width': 2,
         },
       },
-      'drawing-hook'
+      'drawing-hook' // adding this on the map just "before" this layer
     );
   }
 

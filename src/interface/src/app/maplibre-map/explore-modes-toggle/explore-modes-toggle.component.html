@@ -19,7 +19,6 @@
     type="button"
     (click)="handleDrawingButton()"
     class="right-option"
-    [disabled]="(mapInteractionMode$ | async) === 'draw'"
     matTooltip="Draw Planning Area"
     matTooltipPosition="below">
     <mat-icon class="material-symbols-outlined">draw</mat-icon>

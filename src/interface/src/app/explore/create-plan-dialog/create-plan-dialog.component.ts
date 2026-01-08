@@ -118,33 +118,41 @@ export class CreatePlanDialogComponent implements OnInit {
   }
 
   private createPlan(name: string) {
-    const shape = this.drawService.getDrawingGeoJSON();
-    const geometry = this.drawService.getUploadedShape();
-    this.planService
-      .createPlan({
-        name: name,
-        geometry: geometry ? geometry : shape.geometry,
-      })
-      .subscribe({
-        next: (result) => {
-          this.dialogRef.close(result!.id);
-          this.submitting = false;
-          this.analyticsService.emitEvent(
-            'polygons_draw_explore',
-            undefined,
-            undefined,
-            (result as any).geometry?.coordinates?.length
-          );
-        },
-        error: (e) => {
-          this.matSnackBar.open(
-            '[Error] Unable to create plan due to backend error.',
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-          this.submitting = false;
-        },
-      });
+    let geometry = null;
+    if (this.drawService.hasUploadedData()) {
+      geometry = this.drawService.getUploadedShape();
+    } else {
+      const shape = this.drawService.getDrawingGeoJSON();
+      geometry = shape.geometry;
+    }
+
+    if (geometry) {
+      this.planService
+        .createPlan({
+          name: name,
+          geometry: geometry,
+        })
+        .subscribe({
+          next: (result) => {
+            this.dialogRef.close(result!.id);
+            this.submitting = false;
+            this.analyticsService.emitEvent(
+              'polygons_draw_explore',
+              undefined,
+              undefined,
+              (result as any).geometry?.coordinates?.length
+            );
+          },
+          error: (e) => {
+            this.matSnackBar.open(
+              '[Error] Unable to create plan due to backend error.',
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+            this.submitting = false;
+          },
+        });
+    }
   }
 
   async editPlanningAreaName(name: string) {
