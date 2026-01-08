@@ -40,6 +40,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dialog/confirmation-dialog.component';
 import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+import { CdkDrag, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -67,6 +68,9 @@ type SaveStepData = {
     DataLayerSelectionComponent,
     AssignPillarsComponent,
     AssignFavorabilityComponent,
+    CdkDropListGroup,
+    CdkDropList,
+    CdkDrag,
   ],
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],
