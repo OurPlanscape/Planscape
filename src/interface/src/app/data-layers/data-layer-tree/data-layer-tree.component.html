@@ -14,8 +14,6 @@
       matTreeNodePadding
       class="data-layer"
       [class.padded]="displayAddButton">
-
-
       <button
         *ngIf="displayAddButton"
         mat-icon-button
@@ -72,6 +70,7 @@
         *ngIf="treeControl.isExpanded(node)"
         role="group"
         class="data-layer-cat">
+        <div *ngIf="displayAddButton">SELECT | VIEW PLACEHOLDER</div>
         <ng-container matTreeNodeOutlet></ng-container>
       </div>
     </mat-nested-tree-node>
