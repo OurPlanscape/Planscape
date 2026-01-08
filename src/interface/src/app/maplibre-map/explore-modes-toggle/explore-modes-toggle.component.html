@@ -1,5 +1,6 @@
 <div class="mode-buttons">
   <button
+    *ngIf="(mapInteractionMode$ | async) !== 'draw'"
     type="button"
     [ngClass]="{
       active: false,
@@ -12,6 +13,7 @@
     <mat-icon class="material-symbols-outlined">upload_file</mat-icon>
   </button>
   <button
+    *ngIf="(mapInteractionMode$ | async) !== 'upload'"
     type="button"
     (click)="handleDrawingButton()"
     class="right-option"
