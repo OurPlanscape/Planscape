@@ -38,17 +38,6 @@ button {
   &:hover {
     background: $color-soft-gray;
   }
-
-  &.active,
-  &:active {
-    background: $color-main-blue;
-    color: $color-white;
-
-    &:hover {
-      background: $color-main-blue;
-      color: $color-white;
-    }
-  }
 }
 
 mat-icon {

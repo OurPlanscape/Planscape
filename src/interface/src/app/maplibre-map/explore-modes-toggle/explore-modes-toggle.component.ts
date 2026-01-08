@@ -61,7 +61,7 @@ export class ExploreModesToggleComponent {
   uploadedShape() {
     this.showUploadForm = false;
     this.drawService.setMode('select');
-    const bbox = this.drawService.getBboxFromDrawingContext();
+    const bbox = this.drawService.getBboxFromUploadedShape();
     this.mapConfigState.updateMapCenter(bbox);
   }
 
@@ -121,6 +121,7 @@ export class ExploreModesToggleComponent {
       .afterClosed()
       .subscribe((confirms: boolean) => {
         if (confirms) {
+          this.drawService.clearFeatures();
           this.mapConfigState.enterViewMode();
         }
       });

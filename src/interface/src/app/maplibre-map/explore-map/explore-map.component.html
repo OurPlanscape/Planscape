@@ -75,7 +75,7 @@
     type="background"
     [layout]="{ visibility: 'none' }"></mgl-layer>
   <app-map-drawing-toolbox
-    *ngIf="(mapInteractionMode$ | async) !== 'view'"></app-map-drawing-toolbox>
+    *ngIf="(mapInteractionMode$ | async) === 'draw'"></app-map-drawing-toolbox>
   <mgl-control position="top-left">
     <app-map-layer-color-legend
       [size]="
