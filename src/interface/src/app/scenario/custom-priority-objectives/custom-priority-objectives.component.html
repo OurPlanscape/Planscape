@@ -12,16 +12,15 @@
 
   If you select 2 objectives, ForSys will run a tradeoff analysis between them, providing three different prioritization scenarios that represent different ways to balance the two objectives.
   ">
-  <div>
-    Select 1 or 2 Priority Objectives to guide where ForSys will focus treatments. 
-  </div>
+  <div class="padding-section">
     <div>
-    {{ selectionCount }}/2 Selected
+      Select 1 or 2 Priority Objectives to guide where ForSys will focus
+      treatments.
+    </div>
+    <div>{{ selectionCount }}/2 Selected</div>
+    <sg-chip-selector [items]="selectedItems"></sg-chip-selector>
   </div>
-  <sg-chip-selector [items]="selectedItems"></sg-chip-selector>
   <section>
-      <app-data-layers mapId="1" [displayAddButton]="true"
-          ></app-data-layers>
+    <app-data-layers mapId="1" [displayAddButton]="true"></app-data-layers>
   </section>
 </sg-section>
-

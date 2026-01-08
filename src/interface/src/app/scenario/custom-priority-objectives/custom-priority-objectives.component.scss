@@ -1,0 +1,12 @@
+:host {
+    .padding-section {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+::ng-deep .priority-selection .mat-expansion-panel-body {
+  padding: 0 !important; 
+  padding-left: 0;
+  padding-right: 0;
+}
