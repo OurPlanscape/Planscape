@@ -57,11 +57,9 @@
     </sg-step>
 
     <sg-step label="Assign Pillars">
-      <div class="step-layout">
-        <div class="step-content">
-          <app-assign-pillars [run]="currentRun!"></app-assign-pillars>
-        </div>
-      </div>
+      <app-assign-pillars
+        [run]="currentRun!"
+        cdkDropListGroup></app-assign-pillars>
     </sg-step>
 
     <cdk-step label="Save & Run Analysis">
