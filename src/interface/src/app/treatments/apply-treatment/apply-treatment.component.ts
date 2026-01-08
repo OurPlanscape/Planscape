@@ -18,6 +18,7 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { combineLatest, map, take } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
+import { FeatureService } from 'src/app/features/feature.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
@@ -88,7 +89,8 @@ export class ApplyTreatmentComponent {
     public selectedStandsState: SelectedStandsState,
     public treatmentsState: TreatmentsState,
     public treatedStandsState: TreatedStandsState,
-    public snackBar: MatSnackBar
+    public snackBar: MatSnackBar,
+    private featureService: FeatureService
   ) {}
 
   readonly prescriptions = PRESCRIPTIONS;
@@ -139,7 +141,11 @@ export class ApplyTreatmentComponent {
     this.selectedStandsState.clearStands();
     this.treatmentsState.removeTreatments(stands).subscribe({
       error: (err) => {
-        this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
+        if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
+          this.snackBar.open(err.errors.message, 'Dismiss', SNACK_ERROR_CONFIG);
+        } else {
+          this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
+        }
       },
     });
     this.treatmentsState.setShowApplyTreatmentsDialog(false);

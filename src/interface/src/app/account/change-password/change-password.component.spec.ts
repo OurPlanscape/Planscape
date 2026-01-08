@@ -5,6 +5,7 @@ import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '@types';
+import { FeatureService } from 'src/app/features/feature.service';
 
 describe('ChangePasswordComponent', () => {
   let component: ChangePasswordComponent;
@@ -20,6 +21,7 @@ describe('ChangePasswordComponent', () => {
             undefined
           ),
         }),
+        MockProvider(FeatureService),
       ],
     }).compileComponents();
 

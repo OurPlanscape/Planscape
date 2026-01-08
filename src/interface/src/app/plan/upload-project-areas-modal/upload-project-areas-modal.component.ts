@@ -32,6 +32,7 @@ import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
 import { MatMenuModule } from '@angular/material/menu';
+import { FeatureService } from 'src/app/features/feature.service';
 
 export interface DialogData {
   planning_area_name: string;
@@ -79,7 +80,8 @@ export class UploadProjectAreasModalComponent {
 
   constructor(
     private fb: FormBuilder,
-    private planService: PlanService
+    private planService: PlanService,
+    private featureService: FeatureService
   ) {
     this.uploadProjectsForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
@@ -185,16 +187,23 @@ export class UploadProjectAreasModalComponent {
           },
           error: (err: any) => {
             this.uploadingData = false;
-            if (!!err.error?.global) {
+            let errorsObject = err.error;
+            if (
+              this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+            ) {
+              errorsObject = err.error.errors;
+            }
+
+            if (!!errorsObject.global) {
               this.uploadFormError = err.error.global.join(' ');
-            } else if (err.error?.name) {
+            } else if (errorsObject.name) {
               const nameControl = this.uploadProjectsForm.get('scenarioName');
-              if (err.error.name?.join(' ').includes('blank.')) {
+              if (errorsObject.name?.join(' ').includes('blank.')) {
                 nameControl?.setErrors({
                   customError: 'Name must not be blank',
                 });
               }
-              if (err.error.name?.join(' ').includes('name already exists.'))
+              if (errorsObject.name?.join(' ').includes('name already exists.'))
                 nameControl?.setErrors({
                   customError: 'A scenario with this name already exists.',
                 });
