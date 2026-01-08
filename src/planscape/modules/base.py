@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Type, Union
 
 from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
 from django.contrib.gis.geos import GEOSGeometry
@@ -9,6 +9,12 @@ from planning.models import (
     Scenario,
     ScenarioCapability,
     TreatmentGoalUsageType,
+)
+
+from modules.serializers import (
+    BaseModuleSerializer,
+    ForsysModuleSerializer,
+    MapModuleSerializer,
 )
 
 RunnableItem = Union[PlanningArea, Scenario]
@@ -56,6 +62,9 @@ class BaseModule:
             }
         }
 
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return BaseModuleSerializer
+
 
 class ForsysModule(BaseModule):
     name = "forsys"
@@ -87,6 +96,9 @@ class ForsysModule(BaseModule):
 
     def get_datasets(self, **kwargs):
         return Dataset.objects.none()
+
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return ForsysModuleSerializer
 
 
 class ImpactsModule(BaseModule):
@@ -128,6 +140,9 @@ class MapModule(BaseModule):
             Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
             | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
         ).select_related("organization")
+
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return MapModuleSerializer
 
 
 def get_module(module_name: str) -> BaseModule:

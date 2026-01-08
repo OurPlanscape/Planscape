@@ -3,7 +3,6 @@ from typing import Any, Collection, Dict, Optional
 
 from core.fields import GeometryTypeField
 from core.loaders import get_python_object
-from modules.base import MODULE_HANDLERS
 from organizations.models import Organization
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -583,6 +582,8 @@ class BrowseDataSetSerializer(serializers.Serializer):
 
 class FindAnythingSerializer(serializers.Serializer):
     def __init__(self, *args, **kwargs):
+        from modules.base import MODULE_HANDLERS
+
         super().__init__(*args, **kwargs)
         choices = list(MODULE_HANDLERS.keys())
         self.fields["module"] = serializers.ChoiceField(
