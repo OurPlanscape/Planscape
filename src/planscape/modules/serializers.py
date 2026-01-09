@@ -66,7 +66,7 @@ class MapOptionsSerializer(BaseModuleOptionsSerializer):
 
 class BaseModuleSerializer(serializers.Serializer):
     name = serializers.CharField()
-    options = serializers.DictField()
+    options = BaseModuleOptionsSerializer()
 
 
 class ForsysModuleSerializer(BaseModuleSerializer):
