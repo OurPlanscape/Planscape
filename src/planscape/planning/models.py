@@ -222,17 +222,20 @@ class TreatmentGoalCategory(models.TextChoices):
 
 
 class TreatmentGoalGroup(models.TextChoices):
-    WILDFIRE_RISK_TO_COMMUTIES = (
-        "WILDFIRE_RISK_TO_COMMUTIES",
-        "Wildfire Risk to Communities",
-    )
     CALIFORNIA_PLANNING_METRICS = (
         "CALIFORNIA_PLANNING_METRICS",
         "California Landscape Metrics",
     )
-    TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
     PYROLOGIX = ("PYROLOGIX", "Pyrologix")
-
+    RISK_BASED_STRATEGIC_PLANNING = (
+        "RISK_BASED_STRATEGIC_PLANNING",
+        "Risk-Based Strategic Planning",
+    )
+    TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
+    WILDFIRE_RISK_TO_COMMUTIES = (
+        "WILDFIRE_RISK_TO_COMMUTIES",
+        "Wildfire Risk to Communities",
+    )
 
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
