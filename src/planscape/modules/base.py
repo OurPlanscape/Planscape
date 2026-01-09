@@ -145,6 +145,26 @@ class MapModule(BaseModule):
         return MapModuleSerializer
 
 
+class ClimateForesightModule(BaseModule):
+    name = "climate_foresight"
+
+    def __init__(self):
+        pass
+
+    def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
+        return True
+
+    def _can_run_scenario(self, runnable: Scenario) -> bool:
+        return True
+
+    def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
+        return Dataset.objects.filter(
+            Q(modules__in=[self.name])
+            & Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
+            | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
+        ).select_related("organization")
+
+
 def get_module(module_name: str) -> BaseModule:
     return MODULE_HANDLERS[module_name]
 
@@ -161,4 +181,5 @@ MODULE_HANDLERS = {
     "forsys": ForsysModule(),
     "impacts": ImpactsModule(),
     "map": MapModule(),
+    "climate_foresight": ClimateForesightModule(),
 }
