@@ -160,8 +160,10 @@ class ClimateForesightModule(BaseModule):
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
         return Dataset.objects.filter(
             Q(modules__contains=[self.name])
-            & Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
-            | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
+            & (
+                Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
+                | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
+            )
         ).select_related("organization")
 
 
