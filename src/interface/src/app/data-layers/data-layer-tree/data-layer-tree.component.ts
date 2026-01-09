@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @UntilDestroy()
 @Component({
@@ -27,6 +28,7 @@ import { MatIconModule } from '@angular/material/icon';
     NgIf,
     NgClass,
     MatRadioModule,
+    MatTooltipModule,
     FormsModule,
     MatMenuModule,
     DataLayerTooltipComponent,

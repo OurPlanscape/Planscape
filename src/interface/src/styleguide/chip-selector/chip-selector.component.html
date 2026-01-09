@@ -4,7 +4,7 @@
     *ngFor="let item of displayedItems"
     (removed)="handleRemove(item)"
     [disableRipple]="true">
-    {{ item }}
+    {{ item.name }}
     <button class="chip-button" matChipRemove>
       <mat-icon>close</mat-icon>
     </button>

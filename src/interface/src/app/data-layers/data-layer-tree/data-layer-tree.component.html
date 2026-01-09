@@ -22,6 +22,7 @@
           selected: isDatalayerSelected(node.item),
           disabled: (isSelectionCompleted$ | async),
         }"
+        [matTooltip]="(isSelectionCompleted$ | async) ? 'You have selected the maximum number of layers' : ''"
         (click)="toggleDataLayerSelection(node.item)"
         type="button">
         <mat-icon>{{
@@ -70,7 +71,7 @@
         *ngIf="treeControl.isExpanded(node)"
         role="group"
         class="data-layer-cat">
-        <div *ngIf="displayAddButton">SELECT | VIEW PLACEHOLDER</div>
+        <div *ngIf="displayAddButton">SELECT | VIEW LAYER PLACEHOLDER</div>
         <ng-container matTreeNodeOutlet></ng-container>
       </div>
     </mat-nested-tree-node>

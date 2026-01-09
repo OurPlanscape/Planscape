@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selector.component';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 
 @Component({
   selector: 'app-custom-priority-objectives',
@@ -20,8 +21,16 @@ import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selecto
 })
 export class CustomPriorityObjectivesComponent {
   form = new FormGroup({}); // keeping the inheritance happy
-  selectionCount = 0;
-  selectedItems = ['idk', 'something here'];
+  selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
 
-  constructor() {}
+  selectedItems$ = this.dataLayersStateService.selectedDataLayers$;
+
+  //TODO: use a separate instance of this
+  constructor(private dataLayersStateService: DataLayersStateService) {}
+
+  handleRemoveItem(layer: any) {
+    console.log('okay so we called a thing....and we want to remove this:', layer);
+    this.dataLayersStateService.removeSelectedLayer(layer);
+  }
+
 }
