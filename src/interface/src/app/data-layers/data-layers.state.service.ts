@@ -77,10 +77,12 @@ export class DataLayersStateService {
         this.loadingSubject.next(false);
         return of(null);
       }
-      return this.service.listDataLayers(dataset.id).pipe(
-        map((items) => buildPathTree(items)),
-        tap((s) => this.loadingSubject.next(false))
-      );
+      return this.service
+        .listDataLayers(dataset.id, this.mapModuleService.moduleName)
+        .pipe(
+          map((items) => buildPathTree(items)),
+          tap((s) => this.loadingSubject.next(false))
+        );
     }),
     shareReplay(1)
   );
