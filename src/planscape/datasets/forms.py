@@ -15,7 +15,20 @@ class DatasetAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        from modules.base import MODULE_HANDLERS
+
         self.fields["created_by"].disabled = False
+        self.fields["modules"].choices = [
+            (module, module) for module in MODULE_HANDLERS.keys()
+        ]
+        if self.instance and self.instance.modules is None:
+            self.initial.setdefault("modules", [])
+
+    def clean_modules(self):
+        modules = self.cleaned_data.get("modules")
+        if not modules:
+            return None
+        return modules
 
     def save(self, commit=True):
         invalidate_model(Dataset)
@@ -32,6 +45,7 @@ class DatasetAdminForm(forms.ModelForm):
             "version",
             "selection_type",
             "preferred_display_type",
+            "modules",
         )
 
 

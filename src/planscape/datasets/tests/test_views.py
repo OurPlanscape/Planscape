@@ -260,8 +260,11 @@ class TestDatasetViewSet(APITestCase):
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        ids = [row["id"] for row in data.get("results", [])]
+        rows = data.get("results", [])
+        ids = [row["id"] for row in rows]
         self.assertIn(dataset.pk, ids)
+        dataset_row = next(row for row in rows if row["id"] == dataset.pk)
+        self.assertIn("modules", dataset_row)
 
     def test_browses_datalayers(self):
         self.client.force_authenticate(user=self.admin)

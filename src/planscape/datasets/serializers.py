@@ -90,6 +90,7 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
             "selection_type",
             "preferred_display_type",
             "version",
+            "modules",
         )
 
 
@@ -167,6 +168,7 @@ class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
             "name",
             "visibility",
             "version",
+            "modules",
         )
 
 
@@ -489,6 +491,7 @@ class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
         fields = (
             "id",
             "name",
+            "modules",
         )
 
 
