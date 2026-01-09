@@ -10,6 +10,11 @@ from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Sty
 
 
 class DatasetAdminForm(forms.ModelForm):
+    modules = forms.MultipleChoiceField(
+        choices=(),
+        required=False,
+        widget=forms.SelectMultiple,
+    )
     description = forms.CharField(widget=forms.Textarea, required=False)
     version = forms.CharField(required=False)
 
