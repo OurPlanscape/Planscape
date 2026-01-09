@@ -69,6 +69,7 @@ class DatasetSerializerTest(TestCase):
         self.assertEqual(data["organization"]["id"], dataset.organization.id)
         self.assertEqual(data["organization"]["name"], dataset.organization.name)
         self.assertEqual(data["visibility"], dataset.visibility)
+        self.assertIn("modules", data)
 
 
 class DataLayerSerializerTest(TestCase):
