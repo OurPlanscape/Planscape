@@ -12,11 +12,12 @@ import { ButtonComponent } from '@styleguide';
   styleUrl: './chip-selector.component.scss',
 })
 export class ChipSelectorComponent {
-  @Input() items: string[] = [];
+  // TODO: use T type instead of strings
+  @Input() items: any[] = [];
   @Input() maxCollapsedItems = 4;
 
-  @Output() addItem = new EventEmitter<string>();
-  @Output() removeItem = new EventEmitter<string>();
+  @Output() addItem = new EventEmitter<any>();
+  @Output() removeItem = new EventEmitter<any>();
 
   expanded: boolean = false;
 
@@ -28,7 +29,8 @@ export class ChipSelectorComponent {
     }
   }
 
-  handleRemove(item: string) {
+  handleRemove(item: any) {
+    console.log('we are removing this:', item);
     this.removeItem.emit(item);
   }
 
