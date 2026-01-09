@@ -237,6 +237,7 @@ class TreatmentGoalGroup(models.TextChoices):
         "Wildfire Risk to Communities",
     )
 
+
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
