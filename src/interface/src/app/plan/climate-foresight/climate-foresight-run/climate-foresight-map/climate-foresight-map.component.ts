@@ -83,7 +83,7 @@ export class ClimateForesightMapComponent {
     })
   );
 
-  opacity$ = this.mapConfigState.opacity$;
+  opacity$ = this.mapConfigState.dataLayersOpacity$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapIsLoaded = true;
@@ -91,7 +91,7 @@ export class ClimateForesightMapComponent {
   }
 
   handleOpacityChange(opacity: number) {
-    this.mapConfigState.setOpacity(opacity);
+    this.mapConfigState.updateDataLayersOpacity(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
