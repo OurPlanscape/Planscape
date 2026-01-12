@@ -228,7 +228,7 @@ class TreatmentGoalGroup(models.TextChoices):
     )
     CALIFORNIA_PLANNING_METRICS = (
         "CALIFORNIA_PLANNING_METRICS",
-        "California Planning Metrics",
+        "California Landscape Metrics",
     )
     TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
     PYROLOGIX = ("PYROLOGIX", "Pyrologix")

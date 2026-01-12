@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Type, Union
 
 from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
 from django.contrib.gis.geos import GEOSGeometry
@@ -9,6 +9,12 @@ from planning.models import (
     Scenario,
     ScenarioCapability,
     TreatmentGoalUsageType,
+)
+
+from modules.serializers import (
+    BaseModuleSerializer,
+    ForsysModuleSerializer,
+    MapModuleSerializer,
 )
 
 RunnableItem = Union[PlanningArea, Scenario]
@@ -56,6 +62,9 @@ class BaseModule:
             }
         }
 
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return BaseModuleSerializer
+
 
 class ForsysModule(BaseModule):
     name = "forsys"
@@ -87,6 +96,9 @@ class ForsysModule(BaseModule):
 
     def get_datasets(self, **kwargs):
         return Dataset.objects.none()
+
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return ForsysModuleSerializer
 
 
 class ImpactsModule(BaseModule):
@@ -129,6 +141,31 @@ class MapModule(BaseModule):
             | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
         ).select_related("organization")
 
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return MapModuleSerializer
+
+
+class ClimateForesightModule(BaseModule):
+    name = "climate_foresight"
+
+    def __init__(self):
+        pass
+
+    def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
+        return True
+
+    def _can_run_scenario(self, runnable: Scenario) -> bool:
+        return True
+
+    def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
+        return Dataset.objects.filter(
+            Q(modules__contains=[self.name])
+            & (
+                Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
+                | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
+            )
+        ).select_related("organization")
+
 
 def get_module(module_name: str) -> BaseModule:
     return MODULE_HANDLERS[module_name]
@@ -146,4 +183,5 @@ MODULE_HANDLERS = {
     "forsys": ForsysModule(),
     "impacts": ImpactsModule(),
     "map": MapModule(),
+    "climate_foresight": ClimateForesightModule(),
 }

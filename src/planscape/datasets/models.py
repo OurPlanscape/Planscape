@@ -16,6 +16,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Area
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, URLValidator
 from django.db.models import Manager
 from django_stubs_ext.db.models import TypedModelMeta
@@ -24,6 +26,20 @@ from treebeard.mp_tree import MP_Node
 from utils.frontend import get_base_url, get_domain
 
 User = get_user_model()
+
+
+def validate_dataset_modules(value: Optional[List[str]]) -> None:
+    if value is None:
+        return
+    from modules.base import MODULE_HANDLERS
+
+    valid = set(MODULE_HANDLERS.keys())
+    invalid = sorted({module for module in value if module not in valid})
+    if invalid:
+        raise ValidationError(
+            "Invalid module name(s): %(invalid)s.",
+            params={"invalid": ", ".join(invalid)},
+        )
 
 
 class VisibilityOptions(models.TextChoices):
@@ -86,6 +102,13 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         blank=True,
         max_length=32,
+    )
+    modules = ArrayField(
+        base_field=models.CharField(max_length=32),
+        null=True,
+        blank=True,
+        validators=[validate_dataset_modules],
+        help_text="List of modules this dataset is associated with.",
     )
 
     def __str__(self) -> str:

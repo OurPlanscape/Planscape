@@ -128,4 +128,5 @@ class TestAdminDatasetViewSet(APITestCase):
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)
+        self.assertIn("modules", response.json())
         self.assertEqual(1, Dataset.objects.filter(created_by=self.admin).count())

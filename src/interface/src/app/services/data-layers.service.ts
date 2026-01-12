@@ -27,12 +27,12 @@ export class DataLayersService {
     );
   }
 
-  listDataLayers(dataSetId: number) {
+  listDataLayers(dataSetId: number, module: string) {
     return this.http.get<DataLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
       {
         withCredentials: true,
-        params: { type: 'RASTER' },
+        params: { type: 'RASTER', module: module },
       }
     );
   }

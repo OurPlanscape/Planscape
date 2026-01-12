@@ -1,7 +1,9 @@
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.exceptions import ValidationError
 from django.test import TestCase
+from modules.base import MODULE_HANDLERS
 
-from datasets.models import DataLayer
+from datasets.models import DataLayer, validate_dataset_modules
 from datasets.tests.factories import DataLayerFactory
 
 
@@ -27,3 +29,16 @@ class GeometricIntersectionTest(TestCase):
         qs = DataLayer.objects.all()
         output = qs.geometric_intersection()
         self.assertIsNone(output)
+
+
+class ValidateDatasetModulesTest(TestCase):
+    def test_allows_none(self):
+        validate_dataset_modules(None)
+
+    def test_allows_known_modules(self):
+        modules = list(MODULE_HANDLERS.keys())
+        validate_dataset_modules(modules[:1])
+
+    def test_rejects_unknown_modules(self):
+        with self.assertRaises(ValidationError):
+            validate_dataset_modules(["not-a-module"])

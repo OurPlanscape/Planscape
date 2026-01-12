@@ -35,7 +35,6 @@ export class UploadPlanningAreaBoxComponent {
   uploadElementStatus: 'default' | 'failed' | 'running' | 'uploaded' =
     'default';
   file: File | null = null;
-  geometries: GeoJSON.GeoJSON | null = null;
   uploadFormError?: string | null = null;
   @Output() uploadedShape = new EventEmitter();
 
@@ -73,8 +72,7 @@ export class UploadPlanningAreaBoxComponent {
         fileAsArrayBuffer
       )) as GeoJSON.GeoJSON;
       if (geojson.type == 'FeatureCollection') {
-        this.geometries = geojson;
-        this.drawService.addGeoJSONFeature(this.geometries);
+        this.drawService.addUploadedFeatures(geojson);
         this.uploadElementStatus = 'uploaded';
         this.uploadedShape.emit();
       } else if (Array.isArray(geojson)) {

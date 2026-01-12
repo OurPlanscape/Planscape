@@ -187,6 +187,7 @@ export class ScenarioSetupModalComponent implements OnInit {
               'This name is already used by another scenario in this planning area.';
           } else {
             this.showGenericErrorSnackbar();
+            this.dialogRef.close(false);
           }
         } else {
           if (
@@ -201,8 +202,8 @@ export class ScenarioSetupModalComponent implements OnInit {
               'This name is already used by another scenario in this planning area.';
           } else {
             this.showGenericErrorSnackbar();
+            this.dialogRef.close(false);
           }
-          this.dialogRef.close(false);
         }
       },
     });

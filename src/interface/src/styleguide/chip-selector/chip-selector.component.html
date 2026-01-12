@@ -1,0 +1,22 @@
+<mat-chip-set class="sg-chip-set">
+  <mat-chip-row
+    class="chip-row"
+    *ngFor="let item of displayedItems"
+    (removed)="handleRemove(item)"
+    [selectable]="false"
+    [disableRipple]="true">
+    {{ item }}
+    <button class="chip-button" matChipRemove [disableRipple]="true">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-chip-row>
+  <div *ngIf="items.length > maxCollapsedItems" class="trailing-link">
+    <a
+      class="expand-link"
+      *ngIf="!expanded && hiddenCount > 0"
+      (click)="expand()"
+      >See +{{ hiddenCount }} more</a
+    >
+    <a class="expand-link" *ngIf="expanded" (click)="collapse()">See Less</a>
+  </div>
+</mat-chip-set>

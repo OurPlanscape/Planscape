@@ -33,7 +33,7 @@ class DatasetsOptionsSerializers(serializers.Serializer):
     base_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
 
 
-class BaseModuleSerializer(serializers.Serializer):
+class BaseModuleOptionsSerializer(serializers.Serializer):
     datasets = DatasetsOptionsSerializers()
 
 
@@ -51,7 +51,7 @@ class OptionThresholdsSerializer(serializers.Serializer):
     distance_from_roads = OptionDataLayerSerializer()
 
 
-class ForsysOptionsSerializer(BaseModuleSerializer):
+class ForsysOptionsSerializer(BaseModuleOptionsSerializer):
     inclusions = serializers.ListField(child=OptionDataLayerSerializer())
     if feature_enabled("SCENARIO_CONFIG_UI"):
         exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
@@ -60,25 +60,18 @@ class ForsysOptionsSerializer(BaseModuleSerializer):
     thresholds = OptionThresholdsSerializer()
 
 
-class MapOptionsSerializer(BaseModuleSerializer):
+class MapOptionsSerializer(BaseModuleOptionsSerializer):
     pass
 
 
-OPTIONS_SERIALIZERS = {
-    "forsys": ForsysOptionsSerializer,
-    "map": MapOptionsSerializer,
-    "impacts": BaseModuleSerializer,
-}
-
-
-class ModuleSerializer(serializers.Serializer):
-    def get_options_serializer(self, module_name: str) -> serializers.Serializer:
-        return OPTIONS_SERIALIZERS[module_name]()
-
-    def __init__(self, *args, module_name: str, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["options"] = self.get_options_serializer(module_name)
-
+class BaseModuleSerializer(serializers.Serializer):
     name = serializers.CharField()
-    options = serializers.DictField()
-    options = serializers.DictField()
+    options = BaseModuleOptionsSerializer()
+
+
+class ForsysModuleSerializer(BaseModuleSerializer):
+    options = ForsysOptionsSerializer()
+
+
+class MapModuleSerializer(BaseModuleSerializer):
+    options = MapOptionsSerializer()

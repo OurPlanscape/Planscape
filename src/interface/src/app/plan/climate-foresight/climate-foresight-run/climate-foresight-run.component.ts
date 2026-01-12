@@ -39,8 +39,13 @@ import { AssignPillarsComponent } from './assign-pillars/assign-pillars.componen
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dialog/confirmation-dialog.component';
 import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
-import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MAX_CLIMATE_DATALAYERS, SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+import { CdkDrag, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { MapModuleService } from '@services/map-module.service';
+import { MAP_MODULE_NAME } from '@services/map-module.token';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { MAX_SELECTED_DATALAYERS } from 'src/app/data-layers/data-layers/max-selected-datalayers.token';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -68,9 +73,18 @@ type SaveStepData = {
     DataLayerSelectionComponent,
     AssignPillarsComponent,
     AssignFavorabilityComponent,
+    CdkDropListGroup,
+    CdkDropList,
+    CdkDrag,
   ],
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],
+  providers: [
+    DataLayersStateService,
+    { provide: MAX_SELECTED_DATALAYERS, useValue: MAX_CLIMATE_DATALAYERS },
+    MapModuleService,
+    { provide: MAP_MODULE_NAME, useValue: 'climate_foresight' },
+  ],
 })
 export class ClimateForesightRunComponent implements OnInit {
   @ViewChild(StepsComponent) stepsComponent?: StepsComponent<SaveStepData>;
@@ -140,10 +154,12 @@ export class ClimateForesightRunComponent implements OnInit {
     private climateForesightService: ClimateForesightService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private mapModuleService: MapModuleService
   ) {}
 
   ngOnInit(): void {
+    this.mapModuleService.loadMapModule();
     this.route.params.pipe(untilDestroyed(this)).subscribe((params) => {
       this.runId = params['runId'] ? +params['runId'] : null;
       if (this.runId) {

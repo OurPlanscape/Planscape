@@ -11,7 +11,10 @@
     type="button"
     [ngClass]="{ active: views === 2 }"
     (click)="setLayoutMode(2)"
-    [disabled]="(mapInteractionMode$ | async) === 'draw'">
+    [disabled]="
+      (mapInteractionMode$ | async) === 'draw' ||
+      (mapInteractionMode$ | async) === 'upload'
+    ">
     <span class="wrapper">
       <span class="square"></span>
       <span class="square"></span>
@@ -21,7 +24,10 @@
     type="button"
     [ngClass]="{ active: views === 4 }"
     (click)="setLayoutMode(4)"
-    [disabled]="(mapInteractionMode$ | async) === 'draw'">
+    [disabled]="
+      (mapInteractionMode$ | async) === 'draw' ||
+      (mapInteractionMode$ | async) === 'upload'
+    ">
     <span class="wrapper">
       <span class="square"></span>
       <span class="square"></span>
