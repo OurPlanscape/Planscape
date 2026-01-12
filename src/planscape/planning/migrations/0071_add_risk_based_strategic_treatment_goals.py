@@ -11,18 +11,16 @@ def add_riskmonitor_treatment_goals(apps, schema_editor):
     dataset_name = "RiskMonitor"
     group_name = "RISK_BASED_STRATEGIC_PLANNING"
 
-    admin_user = User.objects.filter(username="admin").first()
-    if not admin_user:
-        admin_user = User.objects.filter(is_superuser=True).order_by("id").first()
-    if not admin_user:
-        admin_user = User.objects.create(
-            username="admin",
-            email="admin@planscape.org",
-            first_name="Admin",
-            last_name="Planscape",
-            is_staff=True,
-            is_superuser=True,
-        )
+    admin_user, _ = User.objects.get_or_create(
+        username="admin",
+        defaults={
+            "email": "admin@planscape.org",
+            "first_name": "Admin",
+            "last_name": "Planscape",
+            "is_staff": True,
+            "is_superuser": True,
+        },
+    )
 
     def get_layer_by_name_and_dataset(name: str, dataset_name: str):
         layer = DataLayer.objects.filter(
