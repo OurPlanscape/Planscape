@@ -1,488 +1,149 @@
-@import '../../../../../styles/variables';
-@import '../../../../../styles/colors';
+@use '@angular/material' as mat;
+@import 'colors';
+@import 'mixins';
+@import 'variables';
 
-:host {
-  display: flex;
-  flex: 1;
-  height: 100%;
-  position: relative;
-}
-
-.data-layer-selection-container {
-  display: flex;
-  height: 100%;
+.container {
   width: 100%;
+  height: 100%; // The parent controls the height so it's safe
+  display: flex;
+  flex-direction: row;
 }
 
-.left-panel-container {
+.col.left-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  padding: 0;
+  background-color: $color-white;
   width: 360px;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-  z-index: 2;
+  box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+  z-index: 30;
+}
 
-  .left-panel {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    height: 100%;
-    background-color: $color-soft-purple;
+.col.left-panel .section-container {
+  flex: 1 1 auto;
+  padding: 16px;
+  background-color: $color-soft-purple;
+  overflow-y: auto;
+}
 
-    sg-panel {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      border-color: $color-light-purple;
-    }
+.col.left-panel .section-container .datalayers-section {
+  display: flex;
+  min-height: 100%;
 
-    .panel-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      justify-content: space-between;
+  .description {
+    margin-bottom: 24px;
+    @include small-paragraph();
+    color: $color-dark-gray;
+  }
 
-      h3 {
-        font-size: 14px;
-        font-weight: 500;
-        text-transform: uppercase;
-        margin: 0;
-        color: $color-dark-gray;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-      }
+  .bold-paragraph {
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+}
 
-      .info-button {
-        color: $color-dark-gray;
-      }
-    }
+.col.left-panel .footer {
+  padding: 0;
+}
 
-    .panel-body {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
+.col.dataLayers-map {
+  flex: 1;
+  background-color: $color-white;
+  border-radius: 4px;
+}
 
-    .selection-counter {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-radius: 4px;
-      margin-bottom: 16px;
+.selection-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 4px;
+  margin-bottom: 16px;
 
-      .count {
-        font-size: 14px;
-        font-weight: 500;
-        color: $color-dark-gray;
-      }
-    }
+  .count {
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-dark-gray;
+  }
+}
 
-    .data-layers-list {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 16px;
-    }
+.data-layers-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
 
-    .no-selection {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
+.selected-layer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  border-radius: 4px;
 
-      p {
-        font-size: 14px;
-        margin: 0;
-      }
-    }
+  .layer-name {
+    font-size: 14px;
+    flex: 1;
+  }
 
-    .selected-layers {
-      display: flex;
-      flex-direction: column;
-    }
+  .remove-button {
+    margin-left: 8px;
+  }
+}
 
-    .selected-layer-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: white;
-      border-radius: 4px;
+.no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 
-      .layer-name {
-        font-size: 14px;
-        flex: 1;
-      }
-
-      .remove-button {
-        margin-left: 8px;
-      }
-    }
-
-    .panel-footer {
-      padding-top: 16px;
-      border-top: 1px solid $color-soft-gray;
-
-      button {
-        width: 100%;
-      }
-    }
+  p {
+    @include h5();
   }
 }
 
 .browser-panel {
-  position: absolute;
-  top: 0;
-  left: 360px;
+  position: fixed;
   width: 400px;
-  height: 100%;
-  background-color: white;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-  transform: translateX(-100%);
+  background-color: $color-white;
   transition: transform 0.3s ease-in-out;
-  z-index: 1;
+  z-index: 25;
   display: flex;
   flex-direction: column;
+  height: calc(
+    100% -
+      ($climate-steps-bar + $navbar-height + $toolbar-height + $stepper-bar)
+  );
+  transform: translateX(-400px);
 
   &.open {
-    transform: translateX(0);
+    transform: translateX(360px);
   }
 
   .browser-header {
     display: flex;
-    align-items: center;
+    flex-direction: row;
     justify-content: space-between;
-    padding: 16px 24px;
-    border-bottom: 1px solid $color-soft-gray;
-
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 500;
-    }
-  }
-
-  .browser-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  .browser-search {
-    display: flex;
-    flex-direction: column;
-    padding: 16px 24px;
-    gap: 8px;
-    border-bottom: 1px solid $color-soft-gray;
-
-    .search-bar {
-      width: 100%;
-    }
-
-    .selection-hint {
-      font-size: 12px;
-    }
-  }
-
-  .content-container {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .datasets-list {
-    flex: 1;
-    overflow-y: auto;
-
-    .dataset-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      cursor: pointer;
-      border-bottom: 1px solid $color-soft-gray;
-      transition: background-color 0.2s;
-
-      &:hover {
-        background-color: $color-lighter-gray;
-      }
-
-      .dataset-info {
-        flex: 1;
-
-        .dataset-name {
-          font-size: 14px;
-          font-weight: 500;
-          color: $color-dark-gray;
-          margin-bottom: 4px;
-        }
-
-        .dataset-org {
-          font-size: 12px;
-          color: $color-md-gray;
-        }
-      }
-
-      mat-icon {
-        color: $color-md-gray;
-      }
-    }
-
-    .no-results {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 24px;
-
-      p {
-        margin: 0;
-        color: $color-md-gray;
-      }
-    }
-  }
-
-  .tree-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-
-    .dataset-header {
-      display: flex;
-      align-items: center;
-      padding: 16px 24px;
-      cursor: pointer;
-      border-bottom: 1px solid $color-soft-gray;
-      gap: 12px;
-
-      &:hover {
-        background-color: $color-lighter-gray;
-      }
-
-      mat-icon {
-        color: $color-dark-gray;
-      }
-
-      .header-info {
-        flex: 1;
-
-        .selected-dataset-name {
-          font-size: 14px;
-          font-weight: 500;
-          color: $color-dark-gray;
-          margin-bottom: 2px;
-        }
-
-        .selected-dataset-org {
-          font-size: 12px;
-          color: $color-md-gray;
-        }
-      }
-    }
-  }
-
-  .tree-container {
-    flex: 1;
-    overflow-y: auto;
-
-    .no-results {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 24px;
-
-      p {
-        margin: 0;
-        color: $color-md-gray;
-      }
-    }
-  }
-
-  .data-layers-tree {
-    .data-layer-node {
-      min-height: 48px;
-      padding-left: 8px;
-    }
-
-    .data-layer-item {
-      display: flex;
-      align-items: center;
-      width: 100%;
-    }
-
-    .selection-button,
-    .preview-button {
-      flex-shrink: 0;
-
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        color: $color-standard-blue;
-      }
-
-      &.selected mat-icon {
-        color: $color-brand-teal;
-      }
-
-      &.previewed mat-icon {
-        color: $color-standard-blue;
-      }
-    }
-
-    .layer-name {
-      flex: 1;
-      cursor: pointer;
-      font-size: 14px;
-      color: $color-dark-gray;
-      padding: 8px 0;
-
-      &:hover {
-        color: $color-black;
-      }
-    }
-
-    .category-node {
-      display: flex;
-      align-items: center;
-      min-height: 48px;
-      padding: 8px 16px;
-      cursor: pointer;
-      border-bottom: 1px solid $color-soft-gray;
-      font-weight: 500;
-
-      &:hover:not(.expanded) {
-        background-color: $color-lighter-gray;
-      }
-
-      &.expanded {
-        background-color: $color-soft-purple;
-      }
-    }
-
-    .category-icon {
-      width: 20px;
-      height: 20px;
-      background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>')
-        no-repeat 50% 50%;
-      background-size: 6px;
-      transition: transform 100ms linear;
-      margin-right: 8px;
-    }
-
-    .expanded .category-icon {
-      transform: rotate(90deg);
-    }
-
-    .category-children {
-      padding-left: 24px;
-      background-color: $color-soft-purple-light;
-
-      .category-node {
-        border: none;
-        background-color: $color-soft-purple-light;
-      }
-    }
-  }
-
-  .loading-container {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 48px 24px;
-    gap: 16px;
+    padding: 16px;
 
-    p {
-      margin: 0;
-    }
-  }
-}
-
-.right-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  border-radius: 4px;
-  overflow: hidden;
-
-  .map-header {
-    padding: 16px 24px;
     border-bottom: 1px solid $color-soft-gray;
+    background: $color-white;
+    flex: 0 0 auto;
 
-    h3 {
-      font-size: 16px;
-      font-weight: 500;
+    h5 {
+      @include h5();
       margin: 0;
-    }
-  }
-
-  .map-container {
-    flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .map-legend {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    background: white;
-    padding: 12px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      .legend-symbol {
-        width: 20px;
-        height: 20px;
-        border: 2px solid $color-standard-blue;
-        border-radius: 2px;
-
-        &.planning-area {
-          background-color: rgba($color-standard-blue, 0.1);
-        }
-      }
-
-      .acres-info {
-        font-size: 12px;
-        color: $color-dark-gray;
-      }
-    }
-  }
-
-  .map-preview {
-    flex: 1;
-    position: relative;
-
-    mgl-map {
-      width: 100%;
-      height: 100%;
     }
   }
 }
 
-::ng-deep {
-  sg-steps-actions {
-    z-index: 4;
-  }
+.white-background {
+  background-color: $color-white;
+}
 
-  sg-search-bar {
-    .input-wrapper {
-      width: 100%;
-
-      input {
-        width: 100%;
-      }
-    }
-  }
+.datalayer-container {
+  flex: 1 1 auto;
+  overflow: auto;
 }
 
 .red-symbol {

@@ -15,7 +15,6 @@
     #stepsComponent
     [save]="saveStepData.bind(this)"
     [savingStep]="savingStep"
-    [showActions]="currentStepIndex !== 0"
     [continueLabel]="
       currentStepIndex === 2 ? 'Save & Run Analysis' : 'Save & Continue'
     "
@@ -29,19 +28,6 @@
             [plan]="currentPlan"
             [run]="currentRun"
             (complete)="onStepComplete($event)">
-            <ng-container actions>
-              <sg-steps-actions
-                [currentStep]="currentStepIndex"
-                [totalSteps]="totalSteps"
-                [canGoNext]="dataLayerSelectionComponent?.form?.valid || false"
-                [loading]="savingStep"
-                [showBack]="false"
-                [showStepCount]="false"
-                continueLabel="Save & Continue"
-                (back)="goToPreviousStep()"
-                (next)="goToNextStep()">
-              </sg-steps-actions>
-            </ng-container>
           </app-data-layer-selection>
         </div>
       </div>
