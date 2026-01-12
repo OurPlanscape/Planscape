@@ -21,6 +21,7 @@ import { map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -57,7 +58,8 @@ export class ScenarioSetupModalComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
     private router: Router,
-    private forsysService: ForsysService
+    private forsysService: ForsysService,
+    private featureService: FeatureService
   ) {
     this.forsysService.forsysData$
       .pipe(take(1))
@@ -171,31 +173,48 @@ export class ScenarioSetupModalComponent implements OnInit {
         }
       },
       error: (e) => {
-        // detect known errors
-        if (
-          e.error?.global &&
-          e.error?.global.some((msg: string) =>
-            msg.includes(
-              'The fields planning_area, name must make a unique set.'
+        this.submitting = false;
+        if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
+          if (
+            e.error.errors?.global &&
+            e.error.errors?.global.some((msg: string) =>
+              msg.includes(
+                'The fields planning_area, name must make a unique set.'
+              )
             )
-          )
-        ) {
-          this.submitting = false;
-          this.errorMessage =
-            'This name is already used by another scenario in this planning area.';
+          ) {
+            this.errorMessage =
+              'This name is already used by another scenario in this planning area.';
+          } else {
+            this.showGenericErrorSnackbar();
+            this.dialogRef.close(false);
+          }
         } else {
-          this.submitting = false;
-
-          // otherwise, show snackbar for unknown errors
-          this.matSnackBar.open(
-            '[Error] Unable to create scenario...',
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-          this.dialogRef.close(false);
+          if (
+            e.error?.global &&
+            e.error?.global.some((msg: string) =>
+              msg.includes(
+                'The fields planning_area, name must make a unique set.'
+              )
+            )
+          ) {
+            this.errorMessage =
+              'This name is already used by another scenario in this planning area.';
+          } else {
+            this.showGenericErrorSnackbar();
+            this.dialogRef.close(false);
+          }
         }
       },
     });
+  }
+
+  private showGenericErrorSnackbar() {
+    this.matSnackBar.open(
+      '[Error] Unable to create scenario...',
+      'Dismiss',
+      SNACK_ERROR_CONFIG
+    );
   }
 
   private editScenarioName(name: string) {
@@ -212,21 +231,38 @@ export class ScenarioSetupModalComponent implements OnInit {
         },
         error: (e) => {
           // detect known errors
+          this.submitting = false;
           if (
-            e.error?.global &&
-            e.error?.global.some((msg: string) =>
-              msg.includes(
-                'The fields planning_area, name must make a unique set.'
-              )
-            )
+            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
           ) {
-            this.submitting = false;
-            this.errorMessage =
-              'This name is already used by another scenario in this planning area.';
+            if (
+              e.error.errors?.global &&
+              e.error.errors?.global.some((msg: string) =>
+                msg.includes(
+                  'The fields planning_area, name must make a unique set.'
+                )
+              )
+            ) {
+              this.errorMessage =
+                'This name is already used by another scenario in this planning area.';
+            } else {
+              this.showGenericErrorSnackbar();
+            }
           } else {
-            this.submitting = false;
-            this.errorMessage =
-              'Something went wrong while saving your changes. Please try again in a moment.';
+            if (
+              e.error?.global &&
+              e.error?.global.some((msg: string) =>
+                msg.includes(
+                  'The fields planning_area, name must make a unique set.'
+                )
+              )
+            ) {
+              this.errorMessage =
+                'This name is already used by another scenario in this planning area.';
+            } else {
+              this.errorMessage =
+                'Something went wrong while saving your changes. Please try again in a moment.';
+            }
           }
         },
       });

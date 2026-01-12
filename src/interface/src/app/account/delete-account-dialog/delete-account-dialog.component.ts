@@ -51,6 +51,7 @@ export class DeleteAccountDialogComponent {
           } else {
             this.error = 'An unknown error has occured.';
           }
+
           this.disableDeleteButton = false;
         },
       });
