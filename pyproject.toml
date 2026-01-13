@@ -61,6 +61,8 @@ dependencies = [
     "opentelemetry-distro>=0.60b1",
     "opentelemetry-exporter-otlp>=1.39.1",
     "pip>=25.3",
+    "opentelemetry-instrumentation-celery>=0.60b1",
+    "opentelemetry-instrumentation-django>=0.60b1",
 ]
 
 [tool.isort]
