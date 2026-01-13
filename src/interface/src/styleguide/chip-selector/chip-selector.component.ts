@@ -30,7 +30,6 @@ export class ChipSelectorComponent {
   }
 
   handleRemove(item: any) {
-    console.log('we are removing this:', item);
     this.removeItem.emit(item);
   }
 

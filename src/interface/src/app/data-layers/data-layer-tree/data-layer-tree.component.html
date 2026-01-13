@@ -22,7 +22,11 @@
           selected: isDatalayerSelected(node.item),
           disabled: (isSelectionCompleted$ | async),
         }"
-        [matTooltip]="(isSelectionCompleted$ | async) && !isDatalayerSelected(node.item) ? 'You have selected the maximum number of layers' : ''"
+        [matTooltip]="
+          (isSelectionCompleted$ | async) && !isDatalayerSelected(node.item)
+            ? 'You have selected the maximum number of layers'
+            : ''
+        "
         (click)="toggleDataLayerSelection(node.item)"
         type="button">
         <mat-icon>{{

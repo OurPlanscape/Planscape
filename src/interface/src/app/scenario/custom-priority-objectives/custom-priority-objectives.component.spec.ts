@@ -8,10 +8,9 @@ describe('CustomPriorityObjectivesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CustomPriorityObjectivesComponent]
-    })
-    .compileComponents();
-    
+      imports: [CustomPriorityObjectivesComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(CustomPriorityObjectivesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

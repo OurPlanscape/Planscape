@@ -17,9 +17,10 @@
       Select 1 or 2 Priority Objectives to guide where ForSys will focus
       treatments.
     </div>
-    <div>{{ selectionCount$ | async }}/2 Selected</div>
-    <sg-chip-selector [items]="(selectedItems$ | async) ?? []" 
-    (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
+    <div>{{ selectionCount$ | async }}/{{ maxLayers }} Selected</div>
+    <sg-chip-selector
+      [items]="(selectedItems$ | async) ?? []"
+      (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
   </div>
   <section>
     <app-data-layers mapId="1" [displayAddButton]="true"></app-data-layers>
