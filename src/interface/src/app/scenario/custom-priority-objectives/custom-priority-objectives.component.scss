@@ -1,15 +1,25 @@
+@import 'colors';
+@import 'mixins';
+@import 'variables';
+
 :host {
-    .padding-section {
-        padding-left: 16px;
-        padding-right: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
+  .padding-section {
+    padding-left: 16px;
+    padding-right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .error-message {
+    color: $color-error;
+    margin: 0;
+  }
+
 }
 
 ::ng-deep .priority-selection .mat-expansion-panel-body {
-  padding: 0 !important; 
+  padding: 0 !important;
   padding-left: 0;
   padding-right: 0;
 }

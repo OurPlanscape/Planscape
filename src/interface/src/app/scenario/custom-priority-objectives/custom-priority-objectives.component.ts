@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
@@ -32,7 +32,9 @@ export class CustomPriorityObjectivesComponent
   extends StepDirective<ScenarioCreation>
   implements OnInit
 {
-  form = new FormGroup({});
+  form = new FormGroup({
+    scenarioPriorities: new FormControl('', [Validators.required]),
+  });
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
 
   selectedItems$ = this.dataLayersStateService.selectedDataLayers$;
@@ -50,6 +52,6 @@ export class CustomPriorityObjectivesComponent
   ngOnInit(): void {}
 
   getData() {
-    return this.form.value;
+    return {scenario_priorities: []}
   }
 }

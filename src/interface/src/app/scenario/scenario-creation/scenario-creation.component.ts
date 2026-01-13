@@ -76,7 +76,7 @@ enum ScenarioTabs {
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-creation',
-  providers: [BaseLayersStateService],
+  providers: [BaseLayersStateService, DataLayersStateService],
   standalone: true,
   imports: [
     AsyncPipe,
