@@ -107,7 +107,7 @@ export class ExploreComponent implements OnDestroy {
         this.breadcrumbService.updateBreadCrumb({
           label,
           backUrl,
-          icon: 'close'
+          icon: 'close',
         });
       });
 

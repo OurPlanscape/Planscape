@@ -84,7 +84,7 @@ export class TreatmentsTabComponent implements OnInit {
       this.breadcrumbService.updateBreadCrumb({
         label: 'Treatment Plan: ' + treatment.name,
         backUrl: this.router.url,
-        icon: 'close'
+        icon: 'close',
       });
     }
     this.router.navigate(route, { relativeTo: this.route });
