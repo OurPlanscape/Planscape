@@ -262,6 +262,7 @@ class Command(PlanscapeCommand):
                 "organization_name",
                 "datalayer_id",
                 "datalayer_name",
+                "datalayer_url",
                 "dataset_id",
                 "dataset_name",
                 "category",
@@ -270,6 +271,8 @@ class Command(PlanscapeCommand):
                 *module_keys,
             ]
         )
+        base_url = f"{self.get_base_url()}/planscape-backend/admin/datasets/datalayer/"
+
         datalayers = DataLayer.objects.select_related(
             "dataset",
             "category",
@@ -289,6 +292,7 @@ class Command(PlanscapeCommand):
                     datalayer.organization.name if datalayer.organization else "",
                     datalayer.id,
                     datalayer.name,
+                    f"{base_url}/{datalayer.id}/change",
                     datalayer.dataset_id,
                     datalayer.dataset.name,
                     datalayer.category.name if datalayer.category else "",
