@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { SharedModule } from '@shared';
-import { GoalOverlayComponent } from '../plan/goal-overlay/goal-overlay.component';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
 
 /**
@@ -14,7 +13,7 @@ import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.
   selector: 'app-scenario',
   templateUrl: './scenario.component.html',
   styleUrl: './scenario.component.scss',
-  imports: [SharedModule, GoalOverlayComponent, ScenarioMapComponent],
+  imports: [SharedModule, ScenarioMapComponent],
 })
 export class ScenarioComponent {
   constructor() {}
