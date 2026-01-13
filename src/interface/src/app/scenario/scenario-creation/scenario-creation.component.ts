@@ -213,6 +213,7 @@ export class ScenarioCreationComponent implements OnInit {
         this.breadcrumbService.updateBreadCrumb({
           label: 'Scenario: ' + scenario.name,
           backUrl: getPlanPath(this.planId),
+          icon: 'close',
         });
         this.scenarioName = scenario.name;
         //this loads the list of scenario names and looks for dupes.
@@ -329,6 +330,7 @@ export class ScenarioCreationComponent implements OnInit {
               this.breadcrumbService.updateBreadCrumb({
                 label: 'Scenario: ' + newName,
                 backUrl: getPlanPath(this.planId),
+                icon: 'close',
               });
               this.scenarioName = newName;
             },
