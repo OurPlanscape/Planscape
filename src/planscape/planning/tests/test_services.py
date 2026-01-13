@@ -240,12 +240,8 @@ class TestSanitizeShpFieldName(TestCase):
     def test_replaces_spaces_with_underscores(self):
         self.assertEqual(
             sanitize_shp_field_name("Expected Annual Total Volume Killed"),
-            "Expected_Annual_Total_Volume_Killed",
+            "expected-annual-total-volume-killed",
         )
-
-    def test_non_string_is_returned_unchanged(self):
-        self.assertIsNone(sanitize_shp_field_name(None))
-        self.assertEqual(sanitize_shp_field_name(123), 123)
 
 
 class TestFlattenGeojsonSanitization(TestCase):
@@ -268,8 +264,8 @@ class TestFlattenGeojsonSanitization(TestCase):
         scenario.treatment_goal.get_raster_datalayers.return_value = [dl]
         out = get_flatten_geojson(scenario)
         props = out["features"][0]["properties"]
-        self.assertIn("datalayer_Expected_Annual_Total_Volume_Killed", props)
-        self.assertIn("attainment_Expected_Annual_Total_Volume_Killed", props)
+        self.assertIn("datalayer_expected-annual-total-volume-killed", props)
+        self.assertIn("attainment_expected-annual-total-volume-killed", props)
         self.assertTrue(all(" " not in k for k in props.keys()))
 
 
@@ -519,7 +515,7 @@ class TestExportToGeopackage(TestCase):
         )
         with fiona.open(self.output_path, layer="stand_outputs") as src:
             field_names = list(src.schema["properties"].keys())
-        self.assertIn("datalayer_Expected_Annual_Total_Volume_Killed", field_names)
+        self.assertIn("datalayer_expected-annual-total-volume-killed", field_names)
         self.assertTrue(all(" " not in n for n in field_names))
 
     def test_export_inputs_schema_renames_spm_and_pcp_fields(self):
@@ -530,8 +526,8 @@ class TestExportToGeopackage(TestCase):
         export_scenario_inputs_to_geopackage(self.scenario, self.output_path)
         with fiona.open(self.output_path, layer="stand_inputs") as src:
             field_names = list(src.schema["properties"].keys())
-        self.assertIn("datalayer_Some_SPM_Layer_SPM", field_names)
-        self.assertIn("datalayer_Some_PCP_Layer_PCP", field_names)
+        self.assertIn("datalayer_some-spm-layer_spm", field_names)
+        self.assertIn("datalayer_some-pcp-layer_pcp", field_names)
         self.assertTrue(all(" " not in n for n in field_names))
 
     def tearDown(self) -> None:

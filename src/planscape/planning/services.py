@@ -24,7 +24,7 @@ from django.contrib.gis.measure import A
 from django.db import transaction
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
-from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
@@ -784,12 +784,12 @@ def get_schema(
     return schema
 
 
-def sanitize_shp_field_name(name: Optional[str]) -> Optional[str]:
+def sanitize_shp_field_name(name: str) -> str:
     """
     Replace spaces with underscores so exported attribute/column names
     are safe when users convert GeoPackages to Shapefiles in GIS tools.
     """
-    return name.replace(" ", "_") if isinstance(name, str) else name
+    return slugify(name)
 
 
 def _get_datalayers_id_lookup_table(scenario):
@@ -1186,7 +1186,7 @@ def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
         verb = "activated"
         scenario_count_change = +1
 
-    pa.updated_at = timezone.now()
+    pa.updated_at = now()
     current = pa.scenario_count or 0
     pa.scenario_count = max(0, current + scenario_count_change)
     pa.save(update_fields=["updated_at", "scenario_count"])
