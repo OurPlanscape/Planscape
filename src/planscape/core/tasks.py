@@ -5,14 +5,17 @@ from typing import Any, Dict
 import requests
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
-
 from planscape.celery import app
+
+from core.flags import feature_enabled
 
 log = logging.getLogger(__name__)
 
 
 @app.task()
 def track(payload: Dict[str, Any]) -> None:
+    if not feature_enabled("OPENPANEL_INTEGRATION"):
+        return
     url = f"{settings.OPENPANEL_URL}/track"
     headers = {
         "openpanel-client-id": settings.OPENPANEL_CLIENT_ID,
