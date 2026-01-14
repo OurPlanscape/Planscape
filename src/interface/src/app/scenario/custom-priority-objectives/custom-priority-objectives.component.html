@@ -14,10 +14,9 @@
 
   If you select 2 objectives, ForSys will run a tradeoff analysis between them, providing three different prioritization scenarios that represent different ways to balance the two objectives.
   ">
-      <form [formGroup]="form">
-
-  <div class="padding-section">
-     <span
+  <form [formGroup]="form">
+    <div class="padding-section">
+      <span
         class="error-message ng-invalid"
         *ngIf="
           form.get('dataLayers')?.touched &&
@@ -25,19 +24,18 @@
         ">
         Please select a priority objective to continue
       </span>
-    <div>
-      Select 1 or 2 Priority Objectives to guide where ForSys will focus
-      treatments.
-    </div>
-     
+      <div>
+        Select 1 or 2 Priority Objectives to guide where ForSys will focus
+        treatments.
+      </div>
 
-    <div>{{ selectionCount$ | async }}/{{ maxLayers }} Selected</div>
-    <sg-chip-selector
-      [items]="(selectedItems$ | async) ?? []"
-      (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
-  </div>
-  <section>
-    <app-data-layers mapId="1" [displayAddButton]="true"></app-data-layers>
-  </section>
+      <div>{{ selectionCount$ | async }}/{{ maxLayers }} Selected</div>
+      <sg-chip-selector
+        [items]="(selectedItems$ | async) ?? []"
+        (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
+    </div>
+    <section>
+      <app-data-layers mapId="1" [displayAddButton]="true"></app-data-layers>
+    </section>
   </form>
 </sg-section>

@@ -1,7 +1,12 @@
 import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
@@ -30,9 +35,7 @@ const MAX_SELECTABLE_LAYERS = 2;
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent
-  extends StepDirective<ScenarioCreation>
-{
+export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -48,16 +51,15 @@ export class CustomPriorityObjectivesComponent
 
   constructor(private dataLayersStateService: DataLayersStateService) {
     super();
-  
 
-  this.dataLayersStateService.selectedDataLayers$
-    .pipe(untilDestroyed(this))
-    .subscribe((datalayers : DataLayer[]) => {
-      this.form.patchValue({
-        dataLayers: datalayers,
+    this.dataLayersStateService.selectedDataLayers$
+      .pipe(untilDestroyed(this))
+      .subscribe((datalayers: DataLayer[]) => {
+        this.form.patchValue({
+          dataLayers: datalayers,
+        });
+        this.form.markAsTouched();
       });
-      this.form.markAsTouched();
-    });
   }
 
   handleRemoveItem(layer: any) {
@@ -66,6 +68,6 @@ export class CustomPriorityObjectivesComponent
 
   getData() {
     const datalayers = this.form.getRawValue().dataLayers;
-    return {scenario_priorities: datalayers?.map(layer => layer.id) ?? []}
+    return { scenario_priorities: datalayers?.map((layer) => layer.id) ?? [] };
   }
 }
