@@ -1,3 +1,4 @@
+import csv
 import json
 import multiprocessing
 import re
@@ -14,8 +15,6 @@ from core.gcs import upload_file_via_api as upload_to_gcs
 from core.pprint import pprint
 from core.s3 import is_s3_file, list_files
 from core.s3 import upload_file_via_api as upload_to_s3
-from datasets.models import DataLayerType, MapServiceChoices
-from datasets.parsers import get_and_parse_datalayer_file_metadata
 from django.core.management.base import CommandParser
 from gis.core import (
     fetch_datalayer_type,
@@ -26,8 +25,12 @@ from gis.core import (
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
 from gis.vectors import to_planscape_multi_layer
+from modules.base import MODULE_HANDLERS
 from requests import Response
 from requests.exceptions import JSONDecodeError
+
+from datasets.models import DataLayer, DataLayerType, MapServiceChoices
+from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -125,6 +128,7 @@ class Command(PlanscapeCommand):
         list_parser = subp.add_parser("list")
         create_parser = subp.add_parser("create")
         import_parser = subp.add_parser("import")
+        report_parser = subp.add_parser("report")
         apply_style_parser = subp.add_parser("apply-style")
         apply_style_parser.add_argument(
             "--datalayer", type=int, required=True, default=None
@@ -246,7 +250,57 @@ class Command(PlanscapeCommand):
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
         import_parser.set_defaults(func=self.import_from_s3)
+        report_parser.set_defaults(func=self.report)
         apply_style_parser.set_defaults(func=self.apply_style)
+
+    def report(self, **kwargs) -> None:
+        module_keys = tuple(MODULE_HANDLERS.keys())
+        writer = csv.writer(self.stdout)
+        writer.writerow(
+            [
+                "organization_id",
+                "organization_name",
+                "datalayer_id",
+                "datalayer_name",
+                "datalayer_url",
+                "dataset_id",
+                "dataset_name",
+                "category",
+                "status",
+                "type",
+                *module_keys,
+            ]
+        )
+        base_url = f"{self.get_base_url()}admin/datasets/datalayer"
+
+        datalayers = DataLayer.objects.select_related(
+            "dataset",
+            "category",
+            "organization",
+        ).order_by("id")
+        for datalayer in datalayers:
+            metadata = datalayer.metadata or {}
+            modules = {}
+            if isinstance(metadata, dict):
+                modules = metadata.get("modules") or {}
+            if not isinstance(modules, dict):
+                modules = {}
+
+            writer.writerow(
+                [
+                    datalayer.organization_id,
+                    datalayer.organization.name if datalayer.organization else "",
+                    datalayer.id,
+                    datalayer.name,
+                    f"{base_url}/{datalayer.id}/change",
+                    datalayer.dataset_id,
+                    datalayer.dataset.name,
+                    datalayer.category.name if datalayer.category else "",
+                    datalayer.status,
+                    datalayer.type,
+                    *[module in modules for module in module_keys],
+                ]
+            )
 
     def apply_style(self, **kwargs):
         response = self._apply_style_request(**kwargs)

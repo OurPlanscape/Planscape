@@ -5,7 +5,6 @@ import { MockComponents, MockDeclarations } from 'ng-mocks';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
 
 import { NavBarComponent, SharedModule } from '@shared';
-import { GoalOverlayComponent } from '../plan/goal-overlay/goal-overlay.component';
 import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ScenarioComponent', () => {
@@ -15,7 +14,7 @@ describe('ScenarioComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
-        MockComponents(ScenarioMapComponent, GoalOverlayComponent),
+        MockComponents(ScenarioMapComponent),
         MockDeclarations(NavBarComponent),
       ],
       imports: [ScenarioComponent, RouterTestingModule, SharedModule],

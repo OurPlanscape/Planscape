@@ -1,123 +1,51 @@
-<!--Flow without new scenario ui-->
-<ng-container *ngIf="!withDynamicScenarioUi">
-  <div class="scenario-name">
-    <!-- Scenario name input -->
-    <form *ngIf="form.get('scenarioName')" [formGroup]="form!">
-      <mat-form-field class="scenario-name-input">
-        <input
-          formControlName="scenarioName"
-          matInput
-          placeholder="Scenario Name:" />
-      </mat-form-field>
-    </form>
-    <!-- Scenario name errors -->
-    <div
-      *ngIf="
-        form.get('scenarioName')?.invalid &&
-        form.get('scenarioName')?.touched &&
-        form.get('scenarioName')?.errors?.['required']
-      "
-      class="error">
-      Please enter scenario name above
-    </div>
-    <div *ngIf="form.get('scenarioName')?.errors?.['duplicate']" class="error">
-      This name is already used by another scenario.
-    </div>
-  </div>
-  <mat-tab-group
-    #tabGroup
-    mat-stretch-tabs="false"
-    mat-align-tabs="start"
-    class="scenario-tabs">
-    <mat-tab label="Configurations">
-      <sg-steps
-        linear
-        finishLabel="Save & Run Scenario"
-        continueLabel="Save & Continue"
-        [save]="saveStep.bind(this)"
-        (selectedIndexChange)="stepChanged($event)"
-        (finished)="onFinish()"
-        [outerForm]="form"
-        [savingStep]="(loading$ | async) ?? false"
-        [disabled]="(loading$ | async) || false">
-        <sg-step>
-          <app-step1 #step1></app-step1>
-        </sg-step>
-        <sg-step>
-          <app-step2 #step2></app-step2>
-        </sg-step>
-        <sg-step>
-          <app-stand-level-constraints></app-stand-level-constraints>
-        </sg-step>
-        <sg-step>
-          <app-treatment-target #step4></app-treatment-target>
-        </sg-step>
-      </sg-steps>
-    </mat-tab>
-    <mat-tab label="Data Layers">
-      <app-data-layers class="white-background"></app-data-layers>
-    </mat-tab>
-    <mat-tab label="Base Layers">
-      <app-base-layers class="white-background"></app-base-layers>
-    </mat-tab>
-  </mat-tab-group>
-</ng-container>
+<app-nav-bar area="NEW_SCENARIO"></app-nav-bar>
+<!--New scenario ui flow-->
+<sg-steps-nav
+  [steps]="steps"
+  [selectedIndex]="localIndex"
+  [allowNavigation]="true"
+  [linear]="true"
+  (selectionChange)="
+    stepsComponent && (stepsComponent.selectedIndex = $event)
+  "></sg-steps-nav>
+<section class="container" [ngClass]="{ first: isFirstIndex$ | async }">
+  <sg-steps
+    #stepsComponent
+    class="new-scenario-ui"
+    [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"
+    [showStepIndex]="false"
+    linear
+    finishLabel="Save & Run Scenario"
+    continueLabel="Save & Continue"
+    [save]="saveStep.bind(this)"
+    (selectedIndexChange)="stepChanged($event)"
+    (finished)="onFinish()"
+    [outerForm]="form"
+    [savingStep]="(loading$ | async) ?? false"
+    [disabled]="(loading$ | async) || false">
+    <app-scenario-summary
+      sharedHeading
+      *ngIf="(isFirstIndex$ | async) === false"
+      [title]="scenarioName"
+      [standSize]="(standSize$ | async) || null"
+      [treatmentGoal]="
+        (treatmentGoalName$ | async) || ''
+      "></app-scenario-summary>
 
-<!--New flow with scenario ui-->
-<ng-container *ngIf="withDynamicScenarioUi">
-  <app-nav-bar area="NEW_SCENARIO"></app-nav-bar>
-  <!--New scenario ui flow-->
-  <sg-steps-nav
-    [steps]="steps"
-    [selectedIndex]="localIndex"
-    [allowNavigation]="true"
-    [linear]="true"
-    (selectionChange)="
-      stepsComponent && (stepsComponent.selectedIndex = $event)
-    "></sg-steps-nav>
-  <section class="container" [ngClass]="{ first: isFirstIndex$ | async }">
-    <sg-steps
-      #stepsComponent
-      class="new-scenario-ui"
-      [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"
-      [showStepIndex]="false"
-      linear
-      finishLabel="Save & Run Scenario"
-      continueLabel="Save & Continue"
-      [save]="saveStep.bind(this)"
-      (selectedIndexChange)="stepChanged($event)"
-      (finished)="onFinish()"
-      [outerForm]="form"
-      [savingStep]="(loading$ | async) ?? false"
-      [disabled]="(loading$ | async) || false">
-      <app-scenario-summary
-        sharedHeading
-        *ngIf="(isFirstIndex$ | async) === false"
-        [title]="scenarioName"
-        [standSize]="(standSize$ | async) || null"
-        [treatmentGoal]="
-          (treatmentGoalName$ | async) || ''
-        "></app-scenario-summary>
+    <sg-step class="full-screen-step">
+      <app-step1-with-overview></app-step1-with-overview>
+    </sg-step>
+    <sg-step>
+      <app-exclude-areas-selector></app-exclude-areas-selector>
+    </sg-step>
+    <sg-step>
+      <app-stand-level-constraints></app-stand-level-constraints>
+    </sg-step>
+    <sg-step>
+      <app-treatment-target></app-treatment-target>
+    </sg-step>
+  </sg-steps>
 
-      <sg-step class="full-screen-step">
-        <app-step1-with-overview></app-step1-with-overview>
-      </sg-step>
-      <!-- TODO this step is just a placeholder to mock-up the priority objectives -->
-      <sg-step>
-        <app-custom-priority-objectives></app-custom-priority-objectives>
-      </sg-step>
-      <sg-step>
-        <app-exclude-areas-selector></app-exclude-areas-selector>
-      </sg-step>
-      <sg-step>
-        <app-stand-level-constraints></app-stand-level-constraints>
-      </sg-step>
-      <sg-step>
-        <app-treatment-target #step4></app-treatment-target>
-      </sg-step>
-    </sg-steps>
-
-    <app-scenario-map
-      *ngIf="(isFirstIndex$ | async) === false"></app-scenario-map>
-  </section>
-</ng-container>
+  <app-scenario-map
+    *ngIf="(isFirstIndex$ | async) === false"></app-scenario-map>
+</section>
