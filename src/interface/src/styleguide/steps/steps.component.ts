@@ -53,7 +53,6 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() errorKey = 'invalid';
   @Input() showActions = true;
 
-  // remove showing step index when removing `SCENARIO_CONFIG_UI` flag
   @Input() showStepIndex = true;
 
   // save callback

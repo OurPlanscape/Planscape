@@ -11,13 +11,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
-import { ScenarioCreation, ScenarioGoal } from '@types';
+import { ScenarioCreation } from '@types';
 import { filter, map, shareReplay, take } from 'rxjs';
 import { ScenarioState } from 'src/app/scenario/scenario.state';
-import { GoalOverlayService } from 'src/app/plan/goal-overlay/goal-overlay.service';
-import { ButtonComponent, SectionComponent } from '@styleguide';
+import { ButtonComponent, SectionComponent, StepDirective } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
-import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FeaturesModule } from '../../features/features.module';
@@ -25,7 +23,6 @@ import { getGroupedGoals } from '../scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MatRadioModule } from '@angular/material/radio';
 
 @UntilDestroy()
@@ -82,12 +79,10 @@ export class Step1Component
   );
 
   constructor(
-    private goalOverlayService: GoalOverlayService,
     private treatmentGoalsService: TreatmentGoalsService,
     private scenarioState: ScenarioState,
     private newScenarioState: NewScenarioState,
-    private route: ActivatedRoute,
-    private featureService: FeatureService
+    private route: ActivatedRoute
   ) {
     super();
   }
@@ -111,27 +106,12 @@ export class Step1Component
       });
   }
 
-  selectStatewideGoal(goal: ScenarioGoal) {
-    // TODO: note-when we incorporate SCENARIO_CONFIG_UI, also remove the goaloverlay component and service
-    if (
-      !this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI') &&
-      this.form.get('treatment_goal')?.enabled
-    ) {
-      this.goalOverlayService.setStateWideGoal(goal);
-    }
-  }
-
   reverseAlpha(a: KeyValue<string, any>, b: KeyValue<string, any>): number {
     return b.key.localeCompare(a.key);
   }
 
   getData() {
     return this.form.value;
-  }
-
-  // TODO: remove when SCENARIO_CONFIG_UI is removed
-  get configUiFlagIsOn() {
-    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
   }
 
   get selectedStandSize() {

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioCreationComponent } from './scenario-creation.component';
-import { MockDeclarations, MockProvider } from 'ng-mocks';
+import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
@@ -8,7 +8,6 @@ import { of } from 'rxjs';
 import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
-import { Step1Component } from '../step1/step1.component';
 import { ScenarioState } from '../scenario.state';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -17,8 +16,9 @@ import { NewScenarioState } from '../new-scenario.state';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { AvailableStands } from '@types';
 import { TreatmentTargetComponent } from '../treatment-target/treatment-target.component';
-import { FeaturesModule } from 'src/app/features/features.module';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { SharedModule } from '@shared';
+import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -32,6 +32,14 @@ describe('ScenarioCreationComponent', () => {
         MatSnackBarModule,
         NgxMaskModule.forRoot(),
         NoopAnimationsModule,
+        MockModule(SharedModule),
+        MockComponents(
+          Step1WithOverviewComponent,
+          DataLayersComponent,
+          StandLevelConstraintsComponent,
+          TreatmentTargetComponent,
+          BaseLayersComponent
+        ),
       ],
       providers: [
         MockProvider(ActivatedRoute, {
@@ -48,16 +56,6 @@ describe('ScenarioCreationComponent', () => {
           stepIndex$: of(0),
           scenarioConfig$: of({}),
         }),
-      ],
-      declarations: [
-        MockDeclarations(
-          DataLayersComponent,
-          Step1Component,
-          StandLevelConstraintsComponent,
-          TreatmentTargetComponent,
-          BaseLayersComponent
-        ),
-        FeaturesModule,
       ],
     }).compileComponents();
 

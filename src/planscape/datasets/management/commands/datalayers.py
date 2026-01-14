@@ -271,7 +271,7 @@ class Command(PlanscapeCommand):
                 *module_keys,
             ]
         )
-        base_url = f"{self.get_base_url()}/planscape-backend/admin/datasets/datalayer/"
+        base_url = f"{self.get_base_url()}admin/datasets/datalayer"
 
         datalayers = DataLayer.objects.select_related(
             "dataset",

@@ -403,9 +403,13 @@ BROWSE_DATASETS_TTL = config("BROWSE_DATASETS_TTL", DEFAULT_CACHE_TTL)
 CATEGORY_PATH_TTL = config("CATEGORY_PATH_TTL", 3600)  # 1 hour
 S3_PUBLIC_URL_TTL = config("S3_PUBLIC_URL_TTL", 3600)  # 1 hour
 GCS_PUBLIC_URL_TTL = config("GCS_PUBLIC_URL_TTL", 3600, cast=int)  # 1 hour
-GCS_DEFAULT_CACHE_MAX_AGE = config("GCS_DEFAULT_CACHE_MAX_AGE", 86400, cast=int)  # 1 day
+GCS_DEFAULT_CACHE_MAX_AGE = config(
+    "GCS_DEFAULT_CACHE_MAX_AGE", 86400, cast=int
+)  # 1 day
 GCS_DEFAULT_CACHE_DIRECTIVES = config(
-    "GCS_DEFAULT_CACHE_DIRECTIVES", f"public, max-age={GCS_DEFAULT_CACHE_MAX_AGE}, immutable", cast=str
+    "GCS_DEFAULT_CACHE_DIRECTIVES",
+    f"public, max-age={GCS_DEFAULT_CACHE_MAX_AGE}, immutable",
+    cast=str,
 )
 
 # CELERY
@@ -530,6 +534,7 @@ ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
 # OPENPANEL config
+OPENPANEL_INTEGRATION = config("OPENPANEL_INTEGRATION", default=False, cast=bool)
 OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
 OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
 OPENPANEL_CLIENT_SECRET = config(

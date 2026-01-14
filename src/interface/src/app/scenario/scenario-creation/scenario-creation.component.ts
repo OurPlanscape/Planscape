@@ -38,10 +38,8 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { GoalOverlayService } from '../../plan/goal-overlay/goal-overlay.service';
 import { Step1Component } from '../step1/step1.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Step2Component } from '../step2/step2.component';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
@@ -62,7 +60,6 @@ import { ScenarioState } from '../scenario.state';
 import { ExcludeAreasSelectorComponent } from '../exclude-areas-selector/exclude-areas-selector.component';
 import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-map.component';
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
-import { FeatureService } from '../../features/feature.service';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
@@ -88,7 +85,6 @@ enum ScenarioTabs {
     LegacyMaterialModule,
     StepComponent,
     Step1Component,
-    Step2Component,
     StandLevelConstraintsComponent,
     TreatmentTargetComponent,
     BaseLayersComponent,
@@ -178,13 +174,11 @@ export class ScenarioCreationComponent implements OnInit {
     private scenarioService: ScenarioService,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute,
-    private goalOverlayService: GoalOverlayService,
     private dialog: MatDialog,
     private router: Router,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar,
-    private featureService: FeatureService,
     private treatmentGoalsService: TreatmentGoalsService
   ) {
     this.dataLayersStateService.paths$
@@ -396,7 +390,6 @@ export class ScenarioCreationComponent implements OnInit {
   stepChanged(i: number) {
     this.localIndex = i;
     this.newScenarioState.setStepIndex(i);
-    this.goalOverlayService.close();
   }
 
   scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {
@@ -439,10 +432,5 @@ export class ScenarioCreationComponent implements OnInit {
       this.dialog.open(ScenarioErrorModalComponent);
       return false;
     }
-  }
-
-  // remove when flag is published
-  get withDynamicScenarioUi() {
-    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
   }
 }
