@@ -19,9 +19,9 @@
   <div class="padding-section">
      <span
         class="error-message ng-invalid"
-        *ngIf="true || 
-          form.get('treatment_goal')?.touched &&
-          form.get('treatment_goal')?.hasError('required')
+        *ngIf="
+          form.get('dataLayers')?.touched &&
+          form.get('dataLayers')?.hasError('required')
         ">
         Please select a priority objective to continue
       </span>

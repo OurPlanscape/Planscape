@@ -56,9 +56,7 @@ export class CustomPriorityObjectivesComponent
       this.form.patchValue({
         dataLayers: datalayers,
       });
-      // this.selectedDataLayers = datalayers;
-      // this.form.markAsTouched();
-      // this.cdr.markForCheck();
+      this.form.markAsTouched();
     });
   }
 
