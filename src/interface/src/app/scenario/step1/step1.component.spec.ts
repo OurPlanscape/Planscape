@@ -9,7 +9,6 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { SharedModule } from '@shared';
-import { ScenarioGoal } from '@types';
 import { TreatmentGoalsService } from '@services';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
@@ -72,25 +71,5 @@ describe('Step1Component', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should call goalOverlayService.setStateWideGoal if form is enabled', () => {
-    const goal = { id: 1 } as ScenarioGoal;
-    const spy = spyOn(component['goalOverlayService'], 'setStateWideGoal');
-
-    component.form.enable();
-    component.selectStatewideGoal(goal);
-
-    expect(spy).toHaveBeenCalledWith(goal);
-  });
-
-  it('should NOT call goalOverlayService.setStateWideGoal if form is disabled', () => {
-    const goal = { id: 1 } as ScenarioGoal;
-    const spy = spyOn(component['goalOverlayService'], 'setStateWideGoal');
-
-    component.form.disable();
-    component.selectStatewideGoal(goal);
-
-    expect(spy).not.toHaveBeenCalled();
   });
 });

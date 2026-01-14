@@ -7,8 +7,8 @@ import {
   map,
   Observable,
   of,
-  take,
   shareReplay,
+  take,
   takeWhile,
 } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -27,7 +27,6 @@ import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialo
 import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
 import { ScenarioComponent } from '../scenario.component';
-import { FeatureService } from '../../features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -60,8 +59,7 @@ export class ScenarioRoutePlaceholderComponent
     private router: Router,
     private dialog: MatDialog,
     private scenarioState: ScenarioState,
-    private newScenarioState: NewScenarioState,
-    private featureService: FeatureService
+    private newScenarioState: NewScenarioState
   ) {}
 
   isDraft = false;
@@ -116,8 +114,4 @@ export class ScenarioRoutePlaceholderComponent
     }),
     shareReplay(1)
   );
-
-  get configUiFlagIsOn() {
-    return this.featureService.isFeatureEnabled('SCENARIO_CONFIG_UI');
-  }
 }

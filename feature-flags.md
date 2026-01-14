@@ -23,8 +23,6 @@ The name and value of the flag will be shared by frontend and backend.
 
 `FORSYS_PREPROCESSED`: Enable Forsys execution with pre-processed data (forsys_input field)
 
-`SCENARIO_CONFIG_UI` : Enables new scenario configuration UI
-
 `CUSTOM_EXCEPTION_HANDLER` : Enables common error format in backend payloads
 
 `CUSTOM_SCENARIOS` : Allows custom scenarios
