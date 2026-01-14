@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -6,10 +6,12 @@ import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers
 import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { MAX_SELECTED_DATALAYERS } from 'src/app/data-layers/data-layers/max-selected-datalayers.token';
-import { ScenarioCreation } from '@types';
+import { ScenarioCreation, DataLayer } from '@types';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
+@UntilDestroy()
 @Component({
   selector: 'app-custom-priority-objectives',
   standalone: true,
@@ -30,11 +32,14 @@ const MAX_SELECTABLE_LAYERS = 2;
 })
 export class CustomPriorityObjectivesComponent
   extends StepDirective<ScenarioCreation>
-  implements OnInit
 {
   form = new FormGroup({
-    scenarioPriorities: new FormControl('', [Validators.required]),
+    dataLayers: new FormControl<DataLayer[]>(
+      [],
+      [Validators.required, Validators.minLength(1)]
+    ),
   });
+
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
 
   selectedItems$ = this.dataLayersStateService.selectedDataLayers$;
@@ -43,15 +48,26 @@ export class CustomPriorityObjectivesComponent
 
   constructor(private dataLayersStateService: DataLayersStateService) {
     super();
+  
+
+  this.dataLayersStateService.selectedDataLayers$
+    .pipe(untilDestroyed(this))
+    .subscribe((datalayers : DataLayer[]) => {
+      this.form.patchValue({
+        dataLayers: datalayers,
+      });
+      // this.selectedDataLayers = datalayers;
+      // this.form.markAsTouched();
+      // this.cdr.markForCheck();
+    });
   }
 
   handleRemoveItem(layer: any) {
     this.dataLayersStateService.removeSelectedLayer(layer);
   }
 
-  ngOnInit(): void {}
-
   getData() {
-    return {scenario_priorities: []}
+    const datalayers = this.form.getRawValue().dataLayers;
+    return {scenario_priorities: datalayers?.map(layer => layer.id) ?? []}
   }
 }
