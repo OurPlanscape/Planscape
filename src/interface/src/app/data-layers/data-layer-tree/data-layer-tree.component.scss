@@ -69,6 +69,10 @@
   color: $color-standard-blue;
 }
 
+.button-column, .select-column {
+  width: 42px;
+}
+
 .select-button {
   display: flex;
   align-items: center;
@@ -114,4 +118,15 @@
   flex-direction: row;
   justify-content: space-between;
   gap: 16px;
+}
+
+.first-header {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  color: $color-md-gray;
+  padding-left: 8px;
 }

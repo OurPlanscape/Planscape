@@ -10,7 +10,6 @@ import {
 import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { MAX_SELECTED_DATALAYERS } from 'src/app/data-layers/data-layers/max-selected-datalayers.token';
 import { ScenarioCreation, DataLayer } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
@@ -29,8 +28,6 @@ const MAX_SELECTABLE_LAYERS = 2;
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
-    { provide: MAX_SELECTED_DATALAYERS, useValue: MAX_SELECTABLE_LAYERS },
-    DataLayersStateService,
   ],
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
@@ -52,6 +49,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
   constructor(private dataLayersStateService: DataLayersStateService) {
     super();
 
+    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.selectedDataLayers$
       .pipe(untilDestroyed(this))
       .subscribe((datalayers: DataLayer[]) => {
@@ -67,6 +65,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
   }
 
   getData() {
+    this.dataLayersStateService.clearDataLayer();
     const datalayers = this.form.getRawValue().dataLayers;
     return { scenario_priorities: datalayers?.map((layer) => layer.id) ?? [] };
   }

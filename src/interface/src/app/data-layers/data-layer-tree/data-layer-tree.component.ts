@@ -128,6 +128,15 @@ export class DataLayerTreeComponent {
     this.dataLayersStateService.toggleLayerAdition(dl);
   }
 
+  hasLeafChildren(node: any): boolean {
+    if (node.children && node.children.length > 0) {
+      return node.children.some(
+        (child: any) => !child.children || child.children.length === 0
+      );
+    }
+    return false;
+  }
+
   hasChild = (_: number, node: TreeNode) =>
     !!node.children && node.children.length > 0;
 }

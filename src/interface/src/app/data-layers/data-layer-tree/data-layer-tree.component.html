@@ -14,25 +14,27 @@
       matTreeNodePadding
       class="data-layer"
       [class.padded]="displayAddButton">
-      <button
-        *ngIf="displayAddButton"
-        mat-icon-button
-        class="select-button"
-        [ngClass]="{
-          selected: isDatalayerSelected(node.item),
-          disabled: (isSelectionCompleted$ | async),
-        }"
-        [matTooltip]="
-          (isSelectionCompleted$ | async) && !isDatalayerSelected(node.item)
-            ? 'You have selected the maximum number of layers'
-            : ''
-        "
-        (click)="toggleDataLayerSelection(node.item)"
-        type="button">
-        <mat-icon>{{
-          isDatalayerSelected(node.item) ? 'remove' : 'add'
-        }}</mat-icon>
-      </button>
+      <span class="button-column"
+        ><button
+          *ngIf="displayAddButton"
+          mat-icon-button
+          class="select-button"
+          [ngClass]="{
+            selected: isDatalayerSelected(node.item),
+            disabled: (isSelectionCompleted$ | async),
+          }"
+          [matTooltip]="
+            (isSelectionCompleted$ | async) && !isDatalayerSelected(node.item)
+              ? 'You have selected the maximum number of layers'
+              : ''
+          "
+          (click)="toggleDataLayerSelection(node.item)"
+          type="button">
+          <mat-icon>{{
+            isDatalayerSelected(node.item) ? 'remove' : 'add'
+          }}</mat-icon>
+        </button>
+      </span>
       <mat-radio-button
         [value]="node.item.id"
         class="data-layer-input"
@@ -75,7 +77,9 @@
         *ngIf="treeControl.isExpanded(node)"
         role="group"
         class="data-layer-cat">
-        <div *ngIf="displayAddButton">SELECT | VIEW LAYER PLACEHOLDER</div>
+        <div *ngIf="hasLeafChildren(node)" class="first-header">
+          <span class="select-column">Select</span><span>View Layer</span>
+        </div>
         <ng-container matTreeNodeOutlet></ng-container>
       </div>
     </mat-nested-tree-node>
