@@ -71,6 +71,7 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   excluded_areas: number[];
   name: string;
   planning_area: number;
+  scenario_priorities: number[]; // TODO: does our Config need another attribute?
 }
 
 export interface ScenarioConfigPayload {
