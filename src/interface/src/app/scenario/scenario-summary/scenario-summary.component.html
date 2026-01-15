@@ -12,9 +12,14 @@
       </dd>
     </div>
 
-    <div class="list-row">
+    <div class="list-row" *ngIf="treatmentGoal">
       <dt class="list-label">Treatment Goal:</dt>
       <dd class="list-value">{{ treatmentGoal }}</dd>
+    </div>
+
+    <div class="list-row" *ngIf="priorityObjective">
+      <dt class="list-label">Priority Objective(s):</dt>
+      <dd class="list-value">{{ priorityObjective }}</dd>
     </div>
   </dl>
 </sg-section>
