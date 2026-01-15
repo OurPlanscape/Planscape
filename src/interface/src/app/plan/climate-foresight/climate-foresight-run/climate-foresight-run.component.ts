@@ -459,7 +459,7 @@ export class ClimateForesightRunComponent implements OnInit {
     inputDatalayers: InputDatalayer[],
     nextStep: number,
     newFurthestStep: number,
-    pillarsUpdated = false
+    runAnalysis = true
   ): void {
     this.climateForesightService
       .updateRun(this.runId!, {
@@ -469,7 +469,7 @@ export class ClimateForesightRunComponent implements OnInit {
       })
       .subscribe({
         next: (updatedRun) => {
-          if (!pillarsUpdated) {
+          if (runAnalysis) {
             this.currentRun = updatedRun;
             this.runAnalysis();
           }
@@ -613,6 +613,6 @@ export class ClimateForesightRunComponent implements OnInit {
       const updatedPillar = layers.find((p) => p.datalayer === input.datalayer);
       input.pillar = updatedPillar?.pillar || null;
     });
-    this.saveRun(inputDatalayers, currentStep, currentStep, true);
+    this.saveRun(inputDatalayers, currentStep, currentStep, false);
   }
 }
