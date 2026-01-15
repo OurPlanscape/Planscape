@@ -1140,6 +1140,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             )
         )
         self.user = UserFactory.create()
+        # Planning area in western US but outside California
         self.planning_area1 = PlanningAreaFactory.create(
             user=self.user, geometry=westwide_geom
         )
@@ -1316,7 +1317,9 @@ class RunScenarioEndpointTest(APITestCase):
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch(
+                "planning.views_v2.trigger_scenario_run"
+            ) as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 
@@ -1336,7 +1339,9 @@ class RunScenarioEndpointTest(APITestCase):
                 "planning.views_v2.validate_scenario_configuration",
                 return_value=["Provide either `max_budget` or `max_area`."],
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch(
+                "planning.views_v2.trigger_scenario_run"
+            ) as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 
