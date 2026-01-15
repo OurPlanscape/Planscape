@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  EventEmitter,
   inject,
   Input,
   OnChanges,
+  Output,
   SimpleChanges,
 } from '@angular/core';
 import { SectionComponent, ButtonComponent, StepDirective } from '@styleguide';
@@ -46,6 +48,7 @@ export class AssignPillarsComponent
   implements OnChanges
 {
   @Input({ required: true }) run!: ClimateForesightRun;
+  @Output() pillarsUpdated = new EventEmitter();
 
   private dialog: MatDialog = inject(MatDialog);
   climateService: ClimateForesightService = inject(ClimateForesightService);
@@ -65,7 +68,6 @@ export class AssignPillarsComponent
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['run'] && this.run) {
       this.getDataLayers();
-      this.getPillars();
     }
   }
 
@@ -84,6 +86,7 @@ export class AssignPillarsComponent
         event.currentIndex
       );
     }
+    this.pillarsUpdated.emit(this.getData());
   }
 
   addPillar() {
@@ -137,6 +140,7 @@ export class AssignPillarsComponent
 
   getDataLayers() {
     this.loadingDatalayers = true;
+    this.loadingPillars = true;
     this.climateService.getDataLayers().subscribe({
       next: (datalayers) => {
         // Filtering just the enabled datalayers
@@ -154,7 +158,7 @@ export class AssignPillarsComponent
           availableLayerIDs?.includes(dl.id)
         );
         this.datalayers = availableLayers;
-        this.loadingDatalayers = false;
+        this.getPillars();
       },
       error: () => {
         this.loadingDatalayers = false;
@@ -167,17 +171,31 @@ export class AssignPillarsComponent
     this.climateService.getPillars(this.run.id).subscribe({
       next: (res) => {
         this.pillars = res.map((p) => {
+          // Filtering the list of input layers for a particular pillar
+          const assignedLayers = this.run.input_datalayers.filter(
+            (d) => d.pillar === p.id
+          );
+          // Getting the selected DataLayers that match our InputDatalayer
+          const pillarLayers = this.datalayers.filter((d) =>
+            assignedLayers.some((layer) => layer.datalayer === d.id)
+          );
+          // Removing assigned Datalayers from the unassigned list
+          this.datalayers = this.datalayers.filter((d) =>
+            assignedLayers.every((layer) => layer.datalayer !== d.id)
+          );
           const obj: PillarDragAndDrop = {
             ...p,
             isOpen: false,
-            dataLayers: [],
+            dataLayers: pillarLayers,
           };
           return obj;
         });
         this.loadingPillars = false;
+        this.loadingDatalayers = false;
       },
       error: () => {
         this.loadingPillars = false;
+        this.loadingDatalayers = false;
       },
     });
   }
