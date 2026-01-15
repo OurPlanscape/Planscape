@@ -1085,6 +1085,42 @@ class PatchScenarioConfigurationTest(APITestCase):
 
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
+        westwide_geom = MultiPolygon(
+            GEOSGeometry(
+                json.dumps(
+                    {
+                        "coordinates": [
+                            [
+                                [-123.0, 44.0],
+                                [-123.0, 44.5],
+                                [-122.5, 44.5],
+                                [-122.5, 44.0],
+                                [-123.0, 44.0],
+                            ]
+                        ],
+                        "type": "Polygon",
+                    }
+                )
+            )
+        )
+        eastwide_geom = MultiPolygon(
+            GEOSGeometry(
+                json.dumps(
+                    {
+                        "coordinates": [
+                            [
+                                [-80.0, 40.0],
+                                [-80.0, 40.5],
+                                [-79.5, 40.5],
+                                [-79.5, 40.0],
+                                [-80.0, 40.0],
+                            ]
+                        ],
+                        "type": "Polygon",
+                    }
+                )
+            )
+        )
         california_pa_geom = MultiPolygon(
             GEOSGeometry(
                 json.dumps(
@@ -1104,9 +1140,15 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             )
         )
         self.user = UserFactory.create()
-        self.planning_area1 = PlanningAreaFactory.create(user=self.user)
+        # Planning area in western US but outside California
+        self.planning_area1 = PlanningAreaFactory.create(
+            user=self.user, geometry=westwide_geom
+        )
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.user, geometry=california_pa_geom
+        )
+        self.planning_area3 = PlanningAreaFactory.create(
+            user=self.user, geometry=eastwide_geom
         )
         self.tg_conus = TreatmentGoalFactory.create(
             group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
@@ -1127,6 +1169,13 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             treatment_goal=self.treatment_goal,
             configuration={"stand_size": "LARGE"},
             name="caps-view2",
+        )
+        self.scenario3 = ScenarioFactory.create(
+            planning_area=self.planning_area3,
+            user=self.user,
+            treatment_goal=self.tg_conus,
+            configuration={"stand_size": "LARGE"},
+            name="caps-view3",
         )
 
     def test_capabilities_present_in_detail_outside_california(self):
@@ -1156,6 +1205,19 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         self.assertSetEqual(
             set(caps), {"MAP", "FORSYS", "IMPACTS", "CLIMATE_FORESIGHT"}
         )
+
+    def test_capabilities_present_in_detail_outside_future_climate(self):
+        self.scenario3.capabilities = compute_scenario_capabilities(self.scenario3)
+        self.scenario3.save(update_fields=["capabilities"])
+
+        self.client.force_authenticate(self.user)
+        url = reverse("api:planning:scenarios-detail", args=[self.scenario3.pk])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        caps = resp.data.get("capabilities")
+        self.assertIsInstance(caps, list)
+        self.assertSetEqual(set(caps), {"MAP", "FORSYS"})
 
 
 class CreateScenarioForDraftsTest(APITestCase):
@@ -1255,7 +1317,9 @@ class RunScenarioEndpointTest(APITestCase):
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch(
+                "planning.views_v2.trigger_scenario_run"
+            ) as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 
@@ -1275,7 +1339,9 @@ class RunScenarioEndpointTest(APITestCase):
                 "planning.views_v2.validate_scenario_configuration",
                 return_value=["Provide either `max_budget` or `max_area`."],
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch(
+                "planning.views_v2.trigger_scenario_run"
+            ) as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 
