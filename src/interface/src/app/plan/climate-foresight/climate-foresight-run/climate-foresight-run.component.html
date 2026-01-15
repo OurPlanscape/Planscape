@@ -45,6 +45,7 @@
     <sg-step label="Assign Pillars">
       <app-assign-pillars
         [run]="currentRun!"
+        (pillarsUpdated)="pillarsUpdated($event)"
         cdkDropListGroup></app-assign-pillars>
     </sg-step>
 

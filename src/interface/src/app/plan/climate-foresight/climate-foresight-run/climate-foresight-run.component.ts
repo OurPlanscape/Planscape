@@ -458,7 +458,8 @@ export class ClimateForesightRunComponent implements OnInit {
   saveRun(
     inputDatalayers: InputDatalayer[],
     nextStep: number,
-    newFurthestStep: number
+    newFurthestStep: number,
+    pillarsUpdated = false
   ): void {
     this.climateForesightService
       .updateRun(this.runId!, {
@@ -468,11 +469,12 @@ export class ClimateForesightRunComponent implements OnInit {
       })
       .subscribe({
         next: (updatedRun) => {
-          this.currentRun = updatedRun;
-          this.runAnalysis();
+          if (!pillarsUpdated) {
+            this.currentRun = updatedRun;
+            this.runAnalysis();
+          }
         },
         error: (error) => {
-          console.error('Error saving pillars:', error);
           if (
             this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
           ) {
@@ -600,5 +602,17 @@ export class ClimateForesightRunComponent implements OnInit {
           console.error('Error polling for run status:', err);
         },
       });
+  }
+
+  pillarsUpdated(layers: InputDatalayer[]) {
+    const currentStep = (this.currentStepIndex || 0) + 1;
+    const inputDatalayers = this.currentRun?.input_datalayers || [];
+
+    // Assign pillar for each input datalayer
+    inputDatalayers.forEach((input) => {
+      const updatedPillar = layers.find((p) => p.datalayer === input.datalayer);
+      input.pillar = updatedPillar?.pillar || null;
+    });
+    this.saveRun(inputDatalayers, currentStep, currentStep, true);
   }
 }
