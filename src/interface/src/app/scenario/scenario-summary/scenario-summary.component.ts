@@ -13,7 +13,8 @@ import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 export class ScenarioSummaryComponent {
   @Input() title: string = '';
 
-  @Input() treatmentGoal: string = '';
+  @Input() treatmentGoal?: string;
+  @Input() priorityObjective?: string;
 
   @Input() standSize: STAND_SIZE | null = null;
 
