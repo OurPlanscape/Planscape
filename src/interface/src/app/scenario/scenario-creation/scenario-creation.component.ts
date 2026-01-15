@@ -65,6 +65,7 @@ import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.se
 import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives/custom-priority-objectives.component';
 import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
 import { FeatureService } from '../../features/feature.service';
+import { CustomCobenefitsComponent } from '../custom-cobenefits/custom-cobenefits.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -100,6 +101,7 @@ enum ScenarioTabs {
     ScenarioSummaryComponent,
     SharedModule,
     CustomPriorityObjectivesComponent,
+    CustomCobenefitsComponent,
     ProcessOverviewComponent,
   ],
   templateUrl: './scenario-creation.component.html',

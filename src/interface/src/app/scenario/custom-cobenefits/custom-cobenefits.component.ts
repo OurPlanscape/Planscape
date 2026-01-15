@@ -1,24 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { ScenarioCreation, DataLayer } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
-const MAX_SELECTABLE_LAYERS = 2;
+const MAX_SELECTABLE_LAYERS = 10;
 
 @UntilDestroy()
 @Component({
-  selector: 'app-custom-priority-objectives',
+  selector: 'app-custom-cobenefits',
   standalone: true,
+  templateUrl: './custom-cobenefits.component.html',
+  styleUrl: './custom-cobenefits.component.scss',
   imports: [
     ChipSelectorComponent,
     CommonModule,
@@ -27,21 +24,16 @@ const MAX_SELECTABLE_LAYERS = 2;
     ReactiveFormsModule,
   ],
   providers: [
-    { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
+    { provide: StepDirective, useExisting: CustomCobenefitsComponent },
     DataLayersStateService,
   ],
-  templateUrl: './custom-priority-objectives.component.html',
-  styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent
+export class CustomCobenefitsComponent
   extends StepDirective<ScenarioCreation>
   implements OnInit
 {
   form = new FormGroup({
-    dataLayers: new FormControl<DataLayer[]>(
-      [],
-      [Validators.required, Validators.minLength(1)]
-    ),
+    dataLayers: new FormControl<DataLayer[]>([]),
   });
 
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
@@ -53,7 +45,6 @@ export class CustomPriorityObjectivesComponent
   constructor(private dataLayersStateService: DataLayersStateService) {
     super();
 
-    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.selectedDataLayers$
       .pipe(untilDestroyed(this))
       .subscribe((datalayers: DataLayer[]) => {
@@ -69,13 +60,13 @@ export class CustomPriorityObjectivesComponent
   }
 
   ngOnInit() {
-    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.updateSelectedLayers([]);
+    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
   }
 
   getData() {
     this.dataLayersStateService.clearDataLayer();
     const datalayers = this.form.getRawValue().dataLayers;
-    return { priority_objectives: datalayers?.map((layer) => layer.id) ?? [] };
+    return { cobenefits: datalayers?.map((layer) => layer.id) ?? [] };
   }
 }
