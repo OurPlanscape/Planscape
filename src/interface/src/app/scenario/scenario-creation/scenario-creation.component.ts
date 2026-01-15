@@ -64,6 +64,7 @@ import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.c
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
 import { FeatureService } from '../../features/feature.service';
+import { Step1CustomComponent } from '../step1-custom/step1-custom.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -99,6 +100,7 @@ enum ScenarioTabs {
     ScenarioSummaryComponent,
     SharedModule,
     ProcessOverviewComponent,
+    Step1CustomComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',

@@ -48,9 +48,11 @@
     </ng-container>
 
     <ng-container *ngIf="isCustomScenario()">
-      <sg-step class="full-screen-step">Stand Size and Overview</sg-step>
-      <sg-step class="full-screen-step">Priority Objectives</sg-step>
-      <sg-step class="full-screen-step">Co-Benefits</sg-step>
+      <sg-step>
+        <app-step1-custom></app-step1-custom>
+      </sg-step>
+      <cdk-step>Priority Objectives</cdk-step>
+      <cdk-step>Co-Benefits</cdk-step>
       <sg-step>
         <app-exclude-areas-selector></app-exclude-areas-selector>
       </sg-step>
