@@ -71,8 +71,8 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   excluded_areas: number[];
   name: string;
   planning_area: number;
-  priority_objectives: number[]; // TODO: ensure this matches up with backend field
-  cobenefits: number[]; // TODO: ensure this matches up with backend field
+  priority_objectives?: number[]; // TODO: ensure this matches up with backend field
+  cobenefits?: number[]; // TODO: ensure this matches up with backend field
 }
 
 export interface ScenarioConfigPayload {
@@ -90,8 +90,8 @@ export interface ScenarioV3Config {
   excluded_areas: number[];
   stand_size: STAND_SIZE;
   includes: number[];
-  priority_objectives: number[]; // TODO: ensure this matches up with backend field
-  cobenefits: number[]; // TODO: ensure this matches up with backend field
+  priority_objectives?: number[]; // TODO: ensure this matches up with backend field
+  cobenefits?: number[]; // TODO: ensure this matches up with backend field
   constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
   treatment_goal: number;
   targets: {
