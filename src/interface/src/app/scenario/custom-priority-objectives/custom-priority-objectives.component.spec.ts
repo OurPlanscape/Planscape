@@ -15,7 +15,7 @@ describe('CustomPriorityObjectivesComponent', () => {
         HttpClientTestingModule,
         NoopAnimationsModule,
       ],
-      providers: [DataLayersStateService]
+      providers: [DataLayersStateService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CustomPriorityObjectivesComponent);

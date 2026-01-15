@@ -101,7 +101,8 @@ export const LotsOfItems: Story = {
       { id: 37, name: 'Chrono-critical Studies' },
       { id: 38, name: 'Futuristic Liminality' },
       { id: 39, name: 'Collective Cognitive Dissonance' },
-      { id: 40, name: 'Simulacra Discourse' }],
+      { id: 40, name: 'Simulacra Discourse' },
+    ],
     maxCollapsedItems: 4,
   },
 };
