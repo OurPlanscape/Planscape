@@ -63,6 +63,8 @@ import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-ov
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives/custom-priority-objectives.component';
+import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
+import { FeatureService } from '../../features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -98,6 +100,7 @@ enum ScenarioTabs {
     ScenarioSummaryComponent,
     SharedModule,
     CustomPriorityObjectivesComponent,
+    ProcessOverviewComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -181,7 +184,8 @@ export class ScenarioCreationComponent implements OnInit {
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar,
-    private treatmentGoalsService: TreatmentGoalsService
+    private treatmentGoalsService: TreatmentGoalsService,
+    private featureService: FeatureService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -209,6 +213,7 @@ export class ScenarioCreationComponent implements OnInit {
         this.breadcrumbService.updateBreadCrumb({
           label: 'Scenario: ' + scenario.name,
           backUrl: getPlanPath(this.planId),
+          icon: 'close',
         });
         this.scenarioName = scenario.name;
         //this loads the list of scenario names and looks for dupes.
@@ -325,6 +330,7 @@ export class ScenarioCreationComponent implements OnInit {
               this.breadcrumbService.updateBreadCrumb({
                 label: 'Scenario: ' + newName,
                 backUrl: getPlanPath(this.planId),
+                icon: 'close',
               });
               this.scenarioName = newName;
             },
@@ -432,5 +438,10 @@ export class ScenarioCreationComponent implements OnInit {
       this.dialog.open(ScenarioErrorModalComponent);
       return false;
     }
+  }
+
+  // Placeholder while we develop the feature. Will return true if the flag is on.
+  isCustomScenario() {
+    return this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS');
   }
 }

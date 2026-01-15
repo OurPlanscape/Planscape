@@ -32,18 +32,37 @@
         (treatmentGoalName$ | async) || ''
       "></app-scenario-summary>
 
-    <sg-step class="full-screen-step">
-      <app-step1-with-overview></app-step1-with-overview>
-    </sg-step>
-    <sg-step>
-      <app-exclude-areas-selector></app-exclude-areas-selector>
-    </sg-step>
-    <sg-step>
-      <app-stand-level-constraints></app-stand-level-constraints>
-    </sg-step>
-    <sg-step>
-      <app-treatment-target></app-treatment-target>
-    </sg-step>
+    <ng-container *ngIf="!isCustomScenario()">
+      <sg-step class="full-screen-step">
+        <app-step1-with-overview></app-step1-with-overview>
+      </sg-step>
+      <sg-step>
+        <app-exclude-areas-selector></app-exclude-areas-selector>
+      </sg-step>
+      <sg-step>
+        <app-stand-level-constraints></app-stand-level-constraints>
+      </sg-step>
+      <sg-step>
+        <app-treatment-target></app-treatment-target>
+      </sg-step>
+    </ng-container>
+
+    <ng-container *ngIf="isCustomScenario()">
+      <sg-step class="full-screen-step">Stand Size and Overview</sg-step>
+      <sg-step>
+        <app-custom-priority-objectives></app-custom-priority-objectives>
+      </sg-step>
+      <sg-step class="full-screen-step">Co-Benefits</sg-step>
+      <sg-step>
+        <app-exclude-areas-selector></app-exclude-areas-selector>
+      </sg-step>
+      <sg-step>
+        <app-stand-level-constraints></app-stand-level-constraints>
+      </sg-step>
+      <sg-step>
+        <app-treatment-target></app-treatment-target>
+      </sg-step>
+    </ng-container>
   </sg-steps>
 
   <app-scenario-map
