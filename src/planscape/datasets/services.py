@@ -9,6 +9,7 @@ from uuid import uuid4
 import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
+from core.flags import feature_enabled
 from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
@@ -415,6 +416,7 @@ def create_datalayer(
 def browse(
     dataset: Dataset,
     type: Optional[DataLayerType] = None,
+    module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
 ) -> QuerySet[DataLayer]:
     datalayers = (
@@ -435,6 +437,10 @@ def browse(
 
     if geometry is not None:
         datalayers = datalayers.filter(outline__intersects=geometry)
+
+    if feature_enabled("BROWSE_WITH_MODULE"):
+        if module:
+            datalayers = datalayers.filter(metadata__modules__has_key=module)
 
     return datalayers
 
@@ -486,6 +492,10 @@ def find_anything(
         "organization__name__icontains": term,
         "visibility": VisibilityOptions.PUBLIC,
     }
+
+    if feature_enabled("FIND_ANYTHING_WITH_MODULE"):
+        datalayer_filter["metadata__modules__has_key"] = module
+        category_filter["metadata__modules__has_key"] = module
 
     if dataset_ids:
         datalayer_filter["dataset_id__in"] = dataset_ids
