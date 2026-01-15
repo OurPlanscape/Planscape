@@ -1,6 +1,7 @@
 @import "variables";
 @import "media";
 @import "colors";
+@import 'mixins';
 
 :host {
   display: flex;
@@ -8,6 +9,28 @@
 
   @include on-small() {
     display: block;
+  }
+
+  ::ng-deep {
+    .mat-mdc-form-field-subscript-wrapper {
+      font-size: 14px;
+    }
+
+    .mat-mdc-form-field-error-wrapper {
+      padding: 0;
+    }
+
+    .mat-mdc-form-field-required-marker {
+      color: $color-error;
+    }
+
+    .mdc-text-field--outlined {
+      padding: 0;
+    }
+
+    .mat-mdc-select-trigger {
+      padding: $steps-padding;
+    }
   }
 }
 
@@ -48,11 +71,56 @@ sg-process-overview {
 }
 
 
-app-step1 {
+.stand-size {
+  width: 100%;
+  margin-top: 10px;
+}
+
+
+.option-text {
+  width: 100%;
+  margin: 0;
+}
+
+.option-description {
+  @include xs-label();
+  color: $color-text-gray;
+}
+
+
+.stand-label {
+  margin: 0 0 8px 0;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: $color-text-gray;
+}
+
+.stand-icon {
+  flex-shrink: 0;
+  color: $color-dark-magenta;
+  position: relative;
+
+  // add a smaller layer on top to simulate fill
+  &::after {
+    content: 'hexagon';
+    display: block;
+    color: $color-light-magenta;
+    position: absolute;
+    z-index: 1000;
+    width: 10px;
+    height: 20px;
+    top: 2px;
+    font-size: 20px;
+    left: 2px;
+  }
+}
+
+
+.stand-size-section {
   display: block;
   margin: 0 auto;
   max-width: 680px;
   padding: 16px;
 }
-
 

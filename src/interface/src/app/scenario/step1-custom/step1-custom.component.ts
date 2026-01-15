@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Step1Component } from '../step1/step1.component';
 import {
   OverviewStep,
@@ -6,22 +6,31 @@ import {
 } from '../process-overview/process-overview.component';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
-import { StandSizeComponent } from '../stand-size/stand-size.component';
-import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
+import { KeyValue, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { filter, take } from 'rxjs';
+import { STAND_OPTIONS, STAND_SIZE } from '../../plan/plan-helpers';
+import { NewScenarioState } from '../new-scenario.state';
+import { ActivatedRoute } from '@angular/router';
 
+@UntilDestroy()
 @Component({
   selector: 'app-step1-custom',
   standalone: true,
   imports: [
     Step1Component,
     ProcessOverviewComponent,
-    StandSizeComponent,
     KeyValuePipe,
     MatFormFieldModule,
     MatIconModule,
@@ -39,24 +48,51 @@ import { MatSelectModule } from '@angular/material/select';
 })
 export class Step1CustomComponent
   extends StepDirective<ScenarioCreation>
-  implements AfterContentInit
+  implements OnInit
 {
-  steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
-  @ViewChild(StandSizeComponent, { static: true }) inner!: StandSizeComponent;
+  readonly standSizeOptions = STAND_OPTIONS;
+  readonly planId = this.route.parent?.snapshot.data['planId'];
 
-  ngAfterContentInit() {
-    if (!this.inner) {
-      throw new Error(
-        'Step1CustomComponent: inner StandSizeComponent not found'
-      );
-    }
+  steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
+
+  form = new FormGroup({
+    stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [
+      Validators.required,
+    ]),
+  });
+
+  constructor(
+    private newScenarioState: NewScenarioState,
+    private route: ActivatedRoute
+  ) {
+    super();
   }
 
-  get form(): FormGroup {
-    return this.inner!.form;
+  ngOnInit(): void {
+    // Reading the config from the scenario state
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.stand_size || !!c?.treatment_goal),
+        take(1)
+      )
+      .subscribe((config) => {
+        if (config.stand_size) {
+          this.form.get('stand_size')?.setValue(config.stand_size);
+        }
+      });
+  }
+
+  reverseAlpha(a: KeyValue<string, any>, b: KeyValue<string, any>): number {
+    return b.key.localeCompare(a.key);
   }
 
   getData() {
-    return this.inner!.getData();
+    return this.form.value;
+  }
+
+  get selectedStandSize() {
+    const key = this.form.get('stand_size')?.value as STAND_SIZE | null;
+    return key ? this.standSizeOptions[key] : null;
   }
 }
