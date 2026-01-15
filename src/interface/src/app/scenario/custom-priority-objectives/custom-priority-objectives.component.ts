@@ -46,7 +46,8 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
 
   maxLayers = MAX_SELECTABLE_LAYERS;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  constructor(private dataLayersStateService: DataLayersStateService,
+  ) {
     super();
 
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
@@ -67,6 +68,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
   getData() {
     this.dataLayersStateService.clearDataLayer();
     const datalayers = this.form.getRawValue().dataLayers;
-    return { scenario_priorities: datalayers?.map((layer) => layer.id) ?? [] };
+    return { priority_objectives: datalayers ?? [] };
   }
 }
