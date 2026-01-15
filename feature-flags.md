@@ -11,6 +11,11 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
+`FIND_ANYTHING_WITH_MODULE`: Enables the module filter for find_anything endpoint. This checks datalayer metadata for filtering
+
+`BROWSE_WITH_MODULE`: Enables the module filter for browse endpoint. This
+checks datalayer metadata for filtering
+
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool
 
 `AUTO_CREATE_STANDS`: Enables the creation of stands during the creation of new planning areas
