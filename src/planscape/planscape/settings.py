@@ -575,3 +575,9 @@ STAND_METRICS_API_URL = config(
 # RequestsSessionWrap settings
 REQUESTS_RETRIES = config("REQUESTS_RETRIES", default=3, cast=int)
 REQUESTS_BACKOFF_FACTOR = config("REQUESTS_BACKOFF_FACTOR", default=1, cast=float)
+
+# module filtering
+FIND_ANYTHING_WITH_MODULE = config(
+    "FIND_ANYTHING_WITH_MODULE", default=False, cast=bool
+)
+BROWSE_WITH_MODULE = config("BROWSE_WITH_MODULE", default=False, cast=bool)

@@ -573,6 +573,16 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
 
 
 class BrowseDataSetSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        from modules.base import MODULE_HANDLERS
+
+        super().__init__(*args, **kwargs)
+        choices = list(MODULE_HANDLERS.keys())
+        self.fields["module"] = serializers.ChoiceField(
+            choices=choices,
+            required=False,
+        )
+
     type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
 
     geometry = GeometryTypeField(
