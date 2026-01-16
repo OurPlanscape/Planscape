@@ -59,6 +59,8 @@ enum SidebarTabs {
     // 2. Alias its own type to that same instance
     { provide: MultiMapConfigState, useExisting: MapConfigState },
     MapConfigService,
+    // Providing PlanState in order to clear the plan state if we come from a scenario
+    PlanState,
   ],
 })
 export class ExploreComponent implements OnDestroy {

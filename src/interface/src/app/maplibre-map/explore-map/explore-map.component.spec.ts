@@ -11,6 +11,7 @@ import { PlanState } from '../../plan/plan.state';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '../../features/features.module';
+import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
 describe('ExploreMapComponent', () => {
   let component: ExploreMapComponent;
@@ -40,6 +41,11 @@ describe('ExploreMapComponent', () => {
             main_datasets: [],
             base_datasets: [],
           }),
+        }),
+        MockProvider(PlanState, {
+          currentPlan$: of(MOCK_PLAN),
+          currentPlanId$: of(123),
+          planningAreaGeometry$: of(MOCK_GEOMETRY),
         }),
       ],
     }).compileComponents();
