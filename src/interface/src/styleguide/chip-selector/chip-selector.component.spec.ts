@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChipSelectorComponent } from './chip-selector.component';
 
 describe('ChipSelectorComponent', () => {
-  let component: ChipSelectorComponent;
-  let fixture: ComponentFixture<ChipSelectorComponent>;
+  let component: ChipSelectorComponent<any>;
+  let fixture: ComponentFixture<ChipSelectorComponent<any>>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({

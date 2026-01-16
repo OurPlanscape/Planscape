@@ -4,6 +4,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 
+// Accepts anything with a name attribute
+interface HasName {
+  name: string;
+}
+
 @Component({
   selector: 'sg-chip-selector',
   standalone: true,
@@ -11,12 +16,12 @@ import { ButtonComponent } from '@styleguide';
   templateUrl: './chip-selector.component.html',
   styleUrl: './chip-selector.component.scss',
 })
-export class ChipSelectorComponent {
-  @Input() items: string[] = [];
+export class ChipSelectorComponent<T extends HasName> {
+  @Input() items: T[] = [];
   @Input() maxCollapsedItems = 4;
 
-  @Output() addItem = new EventEmitter<string>();
-  @Output() removeItem = new EventEmitter<string>();
+  @Output() addItem = new EventEmitter<any>();
+  @Output() removeItem = new EventEmitter<any>();
 
   expanded: boolean = false;
 
@@ -28,7 +33,7 @@ export class ChipSelectorComponent {
     }
   }
 
-  handleRemove(item: string) {
+  handleRemove(item: any) {
     this.removeItem.emit(item);
   }
 
