@@ -129,6 +129,7 @@ export class ScenarioCreationComponent implements OnInit {
 
   isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
 
+  // last step label on the navigation is different from the overview
   private scenarioSteps = [
     ...SCENARIO_OVERVIEW_STEPS.slice(0, -1),
     {
@@ -136,6 +137,7 @@ export class ScenarioCreationComponent implements OnInit {
       label: 'Save & Run Scenario',
     },
   ];
+  // last step label on the navigation is different from the overview
   private customSteps = [
     ...CUSTOM_SCENARIO_OVERVIEW_STEPS.slice(0, -1),
     {
@@ -144,7 +146,6 @@ export class ScenarioCreationComponent implements OnInit {
     },
   ];
 
-  // last step label on the navigation is different from the overview
   steps = this.isCustomScenario() ? this.customSteps : this.scenarioSteps;
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(

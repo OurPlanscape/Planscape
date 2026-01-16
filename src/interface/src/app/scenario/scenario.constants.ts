@@ -40,12 +40,12 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
   {
     label: 'Priority Objectives',
     description: 'Choose your key objectives that ForSys will prioritize.',
-    icon: '/assets/svg/icons/overview/treatment-goal.svg',
+    icon: '/assets/svg/icons/overview/priority.svg',
   },
   {
     label: 'Co-Benefits',
     description: 'Add supporting objectives to refine your plan further.',
-    icon: '/assets/svg/icons/overview/exclude-areas.svg',
+    icon: '/assets/svg/icons/overview/co-benefits.svg',
   },
   {
     label: 'Exclude Areas',
