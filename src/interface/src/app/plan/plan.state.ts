@@ -31,25 +31,25 @@ export class PlanState {
 
   // Listen to ID changes and trigger network calls, returning typed results.
   private currentPlanResource$: Observable<Resource<Plan>> = combineLatest([
-    this._currentPlanId$.pipe(
-      distinctUntilChanged(),
-      filter((id): id is number => !!id)
-    ),
+    this._currentPlanId$.pipe(distinctUntilChanged()),
     this._reloadPlan$,
   ]).pipe(
     switchMap(([id]) => {
+      // clear resource when id is not provided
+      if (id == null) {
+        return of({ isLoading: false } as Resource<Plan>);
+      }
+
       return concat(
         // when loading emit object with loading
         of({ isLoading: true }),
         this.planService.getPlan(id.toString()).pipe(
-          // when done, emit object with loading false and data
           map((data) => ({ data, isLoading: false }) as LoadedResult<Plan>),
           // when we have errors, emit object with loading false and error
           catchError((error) => of({ isLoading: false, error: error }))
         )
       );
     }),
-    // ensure each new subscriber gets the cached result immediately without re-fetching
     shareReplay(1)
   );
 
@@ -60,12 +60,11 @@ export class PlanState {
    */
   public currentPlan$ = this.currentPlanResource$.pipe(
     filter((d) => !d.isLoading),
-    map((d) => {
-      if (d.data) {
-        return d.data;
-      }
-      throw d.error;
-    })
+    filter((d) => {
+      if (d.error) throw d.error; // throw real errors
+      return !!d.data; // only emit when we actually have a plan
+    }),
+    map((d) => d.data as Plan)
   );
 
   /**
