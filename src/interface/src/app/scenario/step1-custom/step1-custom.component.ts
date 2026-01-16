@@ -12,7 +12,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
+import { CUSTOM_SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
 import { KeyValue, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -53,7 +53,7 @@ export class Step1CustomComponent
   readonly standSizeOptions = STAND_OPTIONS;
   readonly planId = this.route.parent?.snapshot.data['planId'];
 
-  steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
+  steps: OverviewStep[] = CUSTOM_SCENARIO_OVERVIEW_STEPS;
 
   form = new FormGroup({
     stand_size: new FormControl<STAND_SIZE | undefined>(undefined, [

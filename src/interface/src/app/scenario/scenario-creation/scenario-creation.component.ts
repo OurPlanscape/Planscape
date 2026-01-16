@@ -52,7 +52,10 @@ import { TreatmentTargetComponent } from '../treatment-target/treatment-target.c
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
 
-import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
+import {
+  CUSTOM_SCENARIO_OVERVIEW_STEPS,
+  SCENARIO_OVERVIEW_STEPS,
+} from '../scenario.constants';
 
 import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -126,14 +129,23 @@ export class ScenarioCreationComponent implements OnInit {
 
   isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
 
-  // last step label on the navigation is different from the overview
-  steps = [
+  private scenarioSteps = [
     ...SCENARIO_OVERVIEW_STEPS.slice(0, -1),
     {
       ...SCENARIO_OVERVIEW_STEPS.at(-1)!,
       label: 'Save & Run Scenario',
     },
   ];
+  private customSteps = [
+    ...CUSTOM_SCENARIO_OVERVIEW_STEPS.slice(0, -1),
+    {
+      ...CUSTOM_SCENARIO_OVERVIEW_STEPS.at(-1)!,
+      label: 'Save & Run Scenario',
+    },
+  ];
+
+  // last step label on the navigation is different from the overview
+  steps = this.isCustomScenario() ? this.customSteps : this.scenarioSteps;
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
@@ -347,7 +359,9 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   showRunScenarioConfirmation() {
-    this.localIndex = this.steps.length - 1;
+    this.localIndex = this.isCustomScenario()
+      ? this.steps.length
+      : this.steps.length - 1;
 
     this.dialog
       .open(ConfirmationDialogComponent, {

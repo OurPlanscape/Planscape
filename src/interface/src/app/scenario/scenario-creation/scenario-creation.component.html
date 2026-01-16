@@ -1,8 +1,12 @@
 <app-nav-bar area="NEW_SCENARIO"></app-nav-bar>
 <!--New scenario ui flow-->
 <sg-steps-nav
+  *ngIf="
+    !isCustomScenario() ||
+    (isCustomScenario() && stepsComponent.selectedIndex !== 0)
+  "
   [steps]="steps"
-  [selectedIndex]="localIndex"
+  [selectedIndex]="isCustomScenario() ? localIndex - 1 : localIndex"
   [allowNavigation]="true"
   [linear]="true"
   (selectionChange)="

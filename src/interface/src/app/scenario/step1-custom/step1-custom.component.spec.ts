@@ -1,18 +1,32 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Step1CustomComponent } from './step1-custom.component';
-import { MockComponents } from 'ng-mocks';
+import { MockComponents, MockProvider } from 'ng-mocks';
 import { Step1Component } from '../step1/step1.component';
-import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
+import { BehaviorSubject } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { NewScenarioState } from '../new-scenario.state';
 
-describe('Step1WithOverviewComponent', () => {
+describe('Step1CustomComponent', () => {
   let component: Step1CustomComponent;
   let fixture: ComponentFixture<Step1CustomComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Step1CustomComponent],
-      declarations: [MockComponents(Step1Component, ProcessOverviewComponent)],
+      declarations: [MockComponents(Step1Component)],
+      providers: [
+        MockProvider(NewScenarioState, {
+          scenarioConfig$: new BehaviorSubject({}),
+        }),
+        MockProvider(ActivatedRoute, {
+          snapshot: {
+            data: {
+              planId: 24,
+            },
+          } as any,
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Step1CustomComponent);
