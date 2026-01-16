@@ -49,6 +49,7 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
+    ScenarioType,
     TreatmentGoal,
     TreatmentGoalUsageType,
 )
