@@ -46,6 +46,7 @@ import { MapModuleService } from '@services/map-module.service';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { MAX_SELECTED_DATALAYERS } from 'src/app/data-layers/data-layers/max-selected-datalayers.token';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { SEND_GEOMETRY } from 'src/app/data-layers/data-layers/geometry-datalayers.token';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -84,6 +85,7 @@ type SaveStepData = {
     { provide: MAX_SELECTED_DATALAYERS, useValue: MAX_CLIMATE_DATALAYERS },
     MapModuleService,
     { provide: MAP_MODULE_NAME, useValue: 'climate_foresight' },
+    { provide: SEND_GEOMETRY, useValue: true },
   ],
 })
 export class ClimateForesightRunComponent implements OnInit {

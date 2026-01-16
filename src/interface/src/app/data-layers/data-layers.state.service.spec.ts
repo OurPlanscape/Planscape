@@ -7,6 +7,8 @@ import { of } from 'rxjs';
 import { DataSet, Pagination } from '@types';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '../features/features.module';
+import { PlanState } from '../plan/plan.state';
+import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
 describe('DataLayersStateService', () => {
   let service: DataLayersStateService;
@@ -24,6 +26,11 @@ describe('DataLayersStateService', () => {
             main_datasets: [],
             base_datasets: [],
           }),
+        }),
+        MockProvider(PlanState, {
+          currentPlan$: of(MOCK_PLAN),
+          currentPlanId$: of(123),
+          planningAreaGeometry$: of(MOCK_GEOMETRY),
         }),
       ],
     });
