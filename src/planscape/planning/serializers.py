@@ -522,6 +522,22 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
+    priority_objectives = serializers.ListField(
+        child=serializers.CharField(max_length=256),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+        help_text="Priority objectives for the scenario.",
+    )
+
+    cobenifits = serializers.ListField(
+        child=serializers.CharField(max_length=256),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+        help_text="Co-benefits for the scenario.",
+    )
+
     included_areas = serializers.ListField(
         source="included_areas_ids",
         child=serializers.IntegerField(),
@@ -557,7 +573,13 @@ class ConfigurationV3Serializer(serializers.Serializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        for field in ["included_areas", "excluded_areas", "constraints"]:
+        for field in [
+            "included_areas",
+            "excluded_areas",
+            "constraints",
+            "priority_objectives",
+            "cobenifits",
+        ]:
             if field not in data or data[field] is None:
                 data[field] = []
         return data
