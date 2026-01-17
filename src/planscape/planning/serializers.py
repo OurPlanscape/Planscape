@@ -564,6 +564,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
         child=serializers.IntegerField(),
         allow_empty=True,
         min_length=0,
+        max_length=2,
         required=False,
     )
 
@@ -571,6 +572,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
         child=serializers.IntegerField(),
         allow_empty=True,
         min_length=0,
+        max_length=10,
         required=False,
     )
 
