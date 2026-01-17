@@ -206,6 +206,11 @@ class ScenarioOrigin(models.TextChoices):
     USER = "USER", "User"
 
 
+class ScenarioType(models.TextChoices):
+    PRESET = "PRESET", "Preset"
+    CUSTOM = "CUSTOM", "Custom"
+
+
 class ScenarioVersion(models.TextChoices):
     # Legacy version (v1) treatment goals are stored in the configuration field.
     V1 = "V1", "Version 1"
@@ -410,6 +415,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     origin = models.CharField(
         choices=ScenarioOrigin.choices, null=True, help_text="Scenario Origin."
+    )
+
+    type = models.CharField(
+        choices=ScenarioType.choices,
+        max_length=16,
+        null=True,
+        blank=True,
+        help_text="Scenario type.",
     )
 
     notes = models.TextField(null=True, help_text="Scenario notes.")
