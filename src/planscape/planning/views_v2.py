@@ -269,6 +269,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create_draft(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.validated_data.pop("type")
         configuration_data = {
             "targets": serializer.validated_data.get("targets", []),
         }

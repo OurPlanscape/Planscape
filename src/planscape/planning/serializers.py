@@ -872,6 +872,12 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
 class UpsertScenarioV3Serializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     name = serializers.CharField(max_length=100, required=True)
+    type = serializers.ChoiceField(
+        choices=["PRESET", "CUSTOM"],
+        default="PRESET",
+        required=False,
+        write_only=True,
+    )
 
     class Meta:
         model = Scenario
@@ -879,6 +885,7 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
             "user",
             "planning_area",
             "name",
+            "type",
             "origin",
             "type",
             "notes",
