@@ -63,6 +63,7 @@ export const MOCK_SCENARIO: Scenario = {
   },
   geopackage_status: null,
   geopackage_url: null,
+  type: 'PRESET',
 };
 
 export const MOCK_GEOMETRY: Geometry = {

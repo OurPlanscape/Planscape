@@ -35,7 +35,7 @@ describe('PlanState', () => {
     expect(planService.getPlan).toHaveBeenCalledWith('123');
   });
 
-  it('should emit loading = false initially, then true then false in isPlanLoading$', () => {
+  it('should emit initial false, then true then false in isPlanLoading$', () => {
     planService.getPlan.and.returnValue(of({ id: 1 } as Plan));
 
     const loadingStates: boolean[] = [];
@@ -91,7 +91,7 @@ describe('PlanState', () => {
     sub.unsubscribe();
   });
 
-  it('should emit isLoading = false initially, then true then false when getPlan fails', () => {
+  it('should emit initial false, then true, then false with error when getPlan fails', () => {
     planService.getPlan.and.returnValue(
       throwError(() => new Error('network error'))
     );

@@ -2,6 +2,7 @@ import { STAND_SIZE } from '../plan/plan-helpers';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
+export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM';
 
 export interface Scenario {
   id?: number; // undefined when we are creating a new scenario
@@ -27,6 +28,7 @@ export interface Scenario {
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
   capabilities?: Capabilities[];
+  type: SCENARIO_TYPE;
 }
 
 /**
