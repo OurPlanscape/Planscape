@@ -19,6 +19,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioResult,
+    ScenarioType,
     SharedLink,
     TreatmentGoal,
     TreatmentGoalCategory,
@@ -873,9 +874,8 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     name = serializers.CharField(max_length=100, required=True)
     type = serializers.ChoiceField(
-        choices=["PRESET", "CUSTOM"],
-        default="PRESET",
-        required=False,
+        choices=ScenarioType.choices,
+        required=True,
         write_only=True,
     )
 
