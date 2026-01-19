@@ -157,7 +157,7 @@ class ClimateForesightModule(BaseModule):
         self.future_climate_coverage = self._get_future_climate_coverage_polygon()
 
     def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
-        return True
+        return self.future_climate_coverage.contains(runnable.geometry)
 
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         scenario_geometry = runnable.planning_area.geometry
