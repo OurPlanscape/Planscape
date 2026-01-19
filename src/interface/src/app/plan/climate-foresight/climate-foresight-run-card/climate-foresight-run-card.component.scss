@@ -91,3 +91,14 @@
     color: $color-brand-green;
   }
 }
+
+.disabled-content {
+  color: $color-text-gray;
+  cursor: default;
+
+  border-color: $color-soft-gray;
+
+  .detail-label {
+    color: $color-text-gray;
+  }
+}
