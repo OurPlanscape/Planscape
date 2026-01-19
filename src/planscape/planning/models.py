@@ -31,6 +31,13 @@ from utils.uuid_utils import generate_short_uuid
 logger = logging.getLogger(__name__)
 
 
+class ScenarioCapability(models.TextChoices):
+    FORSYS = ("FORSYS", "Forsys")
+    IMPACTS = ("IMPACTS", "Impacts")
+    MAP = ("MAP", "Map")
+    CLIMATE_FORESIGHT = ("CLIMATE_FORESIGHT", "Climate Foresight")
+
+
 class PlanningAreaManager(AliveObjectsManager):
     def list_by_user(self, user: User) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
@@ -106,6 +113,13 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         choices=PlanningAreaMapStatus.choices,
         null=True,
         help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
+    )
+
+    capabilities = ArrayField(
+        base_field=models.CharField(max_length=32, choices=ScenarioCapability.choices),
+        default=list,
+        blank=True,
+        help_text="List of enabled capabilities for this Planning Area.",
     )
 
     scenario_count = models.IntegerField(null=True)
@@ -386,11 +400,6 @@ class GeoPackageStatus(models.TextChoices):
     PROCESSING = ("PROCESSING", "Processing")
     PENDING = ("PENDING", "Pending")
     FAILED = ("FAILED", "Failed")
-
-
-class ScenarioCapability(models.TextChoices):
-    FORSYS = ("FORSYS", "Forsys")
-    IMPACTS = ("IMPACTS", "Impacts")
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):

@@ -185,6 +185,16 @@ def compute_scenario_capabilities(scenario: Scenario) -> List[ScenarioCapability
     return caps
 
 
+def compute_planning_area_capabilities(
+    planning_area: PlanningArea,
+) -> List[ScenarioCapability]:
+    caps = list()
+    for key, module in MODULE_HANDLERS.items():
+        if module.can_run(planning_area):
+            caps.append(key.upper())
+    return caps
+
+
 MODULE_HANDLERS = {
     "forsys": ForsysModule(),
     "impacts": ImpactsModule(),
