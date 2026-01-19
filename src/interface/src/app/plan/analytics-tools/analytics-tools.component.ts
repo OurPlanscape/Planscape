@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TileButtonComponent } from '../../../styleguide';
 import { FeatureService } from '../../features/feature.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { Capabilities } from '@types';
 
 interface AnalyticTool {
   id: string;
@@ -22,16 +23,8 @@ interface AnalyticTool {
   styleUrls: ['./analytics-tools.component.scss'],
 })
 export class AnalyticsToolsComponent implements OnInit {
-  analyticsTools: AnalyticTool[] = [
-    {
-      id: 'climate-foresight',
-      backgroundImage: '/assets/svg/climate-foresight.svg',
-      title: 'Climate Foresight',
-      subtitle: 'Integrate climate data...',
-      featureFlag: 'CLIMATE_FORESIGHT',
-      enabled: false,
-    },
-  ];
+  @Input() planningAreaCapabilities: Capabilities[] = [];
+  analyticsTools: AnalyticTool[] = [];
 
   hasEnabledTools: boolean = false;
 
@@ -43,13 +36,27 @@ export class AnalyticsToolsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.checkEnabledTools();
+    this.initEnabledTools();
   }
 
-  private checkEnabledTools(): void {
-    this.analyticsTools.forEach((tool) => {
-      tool.enabled = this.featureService.isFeatureEnabled(tool.featureFlag);
-    });
+  /**
+   * We will add tools based on the logic related to each tool
+   */
+  private initEnabledTools(): void {
+    // CLIMATE FORESIGHT TOOL
+    if (
+      this.featureService.isFeatureEnabled('CLIMATE_FORESIGHT') &&
+      this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')
+    ) {
+      this.analyticsTools.push({
+        id: 'climate-foresight',
+        backgroundImage: '/assets/svg/climate-foresight.svg',
+        title: 'Climate Foresight',
+        subtitle: 'Integrate climate data...',
+        featureFlag: 'CLIMATE_FORESIGHT',
+        enabled: true,
+      });
+    }
 
     this.hasEnabledTools = this.analyticsTools.some((tool) => tool.enabled);
   }

@@ -41,6 +41,7 @@ describe('AnalyticsToolsComponent', () => {
     creator: 'Test Creator',
     scenario_count: 0,
     latest_updated: '2024-01-01',
+    capabilities: [],
     permissions: ['read', 'write'],
   };
 
@@ -48,7 +49,7 @@ describe('AnalyticsToolsComponent', () => {
     mockFeatureService = jasmine.createSpyObj('FeatureService', [
       'isFeatureEnabled',
     ]);
-    mockFeatureService.isFeatureEnabled.and.returnValue(false);
+    mockFeatureService.isFeatureEnabled.and.returnValue(true);
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -81,6 +82,7 @@ describe('AnalyticsToolsComponent', () => {
 
     fixture = TestBed.createComponent(AnalyticsToolsComponent);
     component = fixture.componentInstance;
+    component.planningAreaCapabilities = ['CLIMATE_FORESIGHT'];
   });
 
   it('should create', () => {
@@ -88,6 +90,8 @@ describe('AnalyticsToolsComponent', () => {
   });
 
   it('should initialize analytics tools with correct properties', () => {
+    mockFeatureService.isFeatureEnabled.and.returnValue(true);
+    fixture.detectChanges();
     expect(component.analyticsTools.length).toBe(1);
     expect(component.analyticsTools[0].id).toBe('climate-foresight');
     expect(component.analyticsTools[0].title).toBe('Climate Foresight');
@@ -97,6 +101,7 @@ describe('AnalyticsToolsComponent', () => {
   });
 
   it('should hide container when no tools are enabled', () => {
+    component.planningAreaCapabilities = [];
     fixture.detectChanges();
     const container = fixture.nativeElement.querySelector(
       '.analytics-tools-container'

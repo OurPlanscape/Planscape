@@ -57,6 +57,7 @@ describe('ClimateForesightComponent', () => {
     creator: 'Test Creator',
     scenario_count: 2,
     latest_updated: '2024-01-01',
+    capabilities: [],
     permissions: ['read', 'write'],
   };
 
