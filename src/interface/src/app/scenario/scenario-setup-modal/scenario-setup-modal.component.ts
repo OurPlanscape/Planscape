@@ -16,7 +16,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
 import { Router, UrlTree } from '@angular/router';
-import { Scenario, ScenarioV3Config, ScenarioV3Payload } from '@types';
+import {
+  Scenario,
+  SCENARIO_TYPE,
+  ScenarioV3Config,
+  ScenarioV3Payload,
+} from '@types';
 import { map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
@@ -54,6 +59,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       fromClone: boolean;
       scenario?: Scenario;
       defaultName?: string;
+      type: SCENARIO_TYPE;
     },
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
@@ -159,7 +165,8 @@ export class ScenarioSetupModalComponent implements OnInit {
       return;
     }
     const planId = this.data.planId;
-    this.scenarioService.createScenarioFromName(name, planId).subscribe({
+    const type = this.data.type;
+    this.scenarioService.createScenarioFromDraft(name, planId, type).subscribe({
       next: (result) => {
         this.dialogRef.close(result);
         this.submitting = false;

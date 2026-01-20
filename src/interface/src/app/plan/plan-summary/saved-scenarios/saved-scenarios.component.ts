@@ -13,7 +13,7 @@ import {
   tap,
   timer,
 } from 'rxjs';
-import { Plan, Scenario } from '@types';
+import { Plan, Scenario, SCENARIO_TYPE } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   getPlanPath,
@@ -23,9 +23,8 @@ import {
   POLLING_INTERVAL,
 } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
-import { PLANNINGAREA_SIZE_ALERT_THRESHOLD } from '@shared';
+import { PLANNINGAREA_SIZE_ALERT_THRESHOLD, SNACK_ERROR_CONFIG } from '@shared';
 import { canAddScenario } from '../../permissions';
-import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
@@ -192,18 +191,15 @@ export class SavedScenariosComponent implements OnInit {
     return this.plan && planningAreaMetricsFailed(this.plan);
   }
 
-  private openScenarioSetupDialog() {
+  public openScenarioSetupDialog(type: SCENARIO_TYPE) {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
         planId: this.plan?.id,
         fromClone: false,
+        type: type,
       },
     });
-  }
-
-  handleNewScenarioButton(configId?: number): void {
-    this.openScenarioSetupDialog();
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
