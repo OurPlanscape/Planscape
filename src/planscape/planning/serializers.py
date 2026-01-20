@@ -658,8 +658,8 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
     def validate_priority_objectives(self, priority_objectives):
         return [objective.pk for objective in priority_objectives]
 
-    def validate_cobenifits(self, cobenifits):
-        return [benefit.pk for benefit in cobenifits]
+    def validate_cobenefits(self, cobenefits):
+        return [benefit.pk for benefit in cobenefits]
 
     def update(self, instance, validated_data):
         instance.configuration = {
