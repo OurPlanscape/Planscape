@@ -638,7 +638,7 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         max_length=2,
         required=False,
     )
-    cobenifits = serializers.ListField(
+    cobenefits = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
         allow_empty=True,
         min_length=0,
