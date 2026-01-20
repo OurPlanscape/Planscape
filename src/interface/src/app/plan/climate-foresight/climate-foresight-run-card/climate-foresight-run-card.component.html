@@ -1,4 +1,7 @@
-<mat-card class="run-card" (click)="onCardClick()">
+<mat-card
+  class="run-card"
+  (click)="onCardClick()"
+  [class.disabled-content]="disabledContent">
   <mat-card-content>
     <div class="card-header">
       <h3 class="run-name">{{ run.name }}</h3>
