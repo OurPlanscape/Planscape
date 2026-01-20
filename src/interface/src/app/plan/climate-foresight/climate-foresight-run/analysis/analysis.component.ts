@@ -103,9 +103,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   adaptProtectLayer: OutputLayer | null = null;
   integratedConditionLayer: OutputLayer | null = null;
 
-  currentConditionsLayers: OutputLayer[] = [];
-  futureConditionsLayers: OutputLayer[] = [];
-
   selectedLayerId: string | null = null;
   selectedLayer: OutputLayer | null = null;
   opacity = 70;
@@ -255,54 +252,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         scale: [0, 100],
       };
     }
-
-    this.currentConditionsLayers = [];
-
-    if (this.run.landscape_rollup?.current_datalayer_id) {
-      this.currentConditionsLayers.push({
-        id: 'combined_current',
-        name: 'Combined Current Conditions',
-        datalayerId: this.run.landscape_rollup.current_datalayer_id,
-        datalayer: this.run.landscape_rollup.current_datalayer,
-        type: 'continuous',
-        group: 'current',
-        scale: [0, 1],
-      });
-    }
-
-    if (this.run.pillar_rollups) {
-      for (const rollup of this.run.pillar_rollups) {
-        this.currentConditionsLayers.push({
-          id: `pillar_${rollup.pillar}`,
-          name: rollup.pillar_name,
-          datalayerId: rollup.rollup_datalayer_id,
-          datalayer: rollup.rollup_datalayer,
-          type: 'continuous',
-          group: 'current',
-          scale: [0, 1],
-        });
-      }
-    }
-
-    this.futureConditionsLayers = [];
-
-    if (this.run.landscape_rollup?.future_mapping) {
-      const mapping = this.run.landscape_rollup.future_mapping;
-      for (const [pillarName, entry] of Object.entries(mapping)) {
-        const layerName = entry.matched
-          ? entry.layer_name || pillarName
-          : 'Generic';
-
-        this.futureConditionsLayers.push({
-          id: `future_${pillarName.replace(/\s+/g, '_')}`,
-          name: layerName,
-          datalayerId: entry.layer_id,
-          type: 'continuous',
-          group: 'future',
-          scale: [0, 100],
-        });
-      }
-    }
   }
 
   selectLayer(layer: OutputLayer): void {
@@ -318,11 +267,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       this.integratedConditionLayer,
     ].filter((l): l is OutputLayer => l !== null);
 
-    const allLayers = [
-      ...primaryLayers,
-      ...this.currentConditionsLayers,
-      ...this.futureConditionsLayers,
-    ];
+    const allLayers = [...primaryLayers];
     const layer = allLayers.find((l) => l.id === layerId);
     if (layer) {
       this.selectLayer(layer);

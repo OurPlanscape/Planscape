@@ -76,50 +76,6 @@
           <span class="layer-name">{{ integratedConditionLayer.name }}</span>
           <mat-icon class="info-icon">info_outline</mat-icon>
         </div>
-
-        <!-- Current Conditions Translated-->
-        <sg-section
-          *ngIf="currentConditionsLayers.length > 0"
-          headline="Current Conditions Translated"
-          [defaultExpanded]="false"
-          [isCollapsible]="true">
-          <div
-            *ngFor="let layer of currentConditionsLayers"
-            class="layer-item grouped"
-            [class.selected]="selectedLayerId === layer.id"
-            (click)="selectLayer(layer)">
-            <mat-icon class="radio-icon">
-              {{
-                selectedLayerId === layer.id
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ layer.name }}</span>
-          </div>
-        </sg-section>
-
-        <!-- Future Conditions -->
-        <sg-section
-          *ngIf="futureConditionsLayers.length > 0"
-          headline="Future Conditions"
-          [defaultExpanded]="false"
-          [isCollapsible]="true">
-          <div
-            *ngFor="let layer of futureConditionsLayers"
-            class="layer-item grouped"
-            [class.selected]="selectedLayerId === layer.id"
-            (click)="selectLayer(layer)">
-            <mat-icon class="radio-icon">
-              {{
-                selectedLayerId === layer.id
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ layer.name }}</span>
-          </div>
-        </sg-section>
       </div>
     </div>
 
