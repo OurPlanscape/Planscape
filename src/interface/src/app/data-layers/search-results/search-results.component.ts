@@ -33,6 +33,7 @@ export class SearchResultsComponent {
     groupedLayers: GroupedResults;
   } | null = null;
   @Input() searchTerm = '';
+  @Input() displayAddButton = false;
 
   goToDataSet(result: DataSetSearchResult) {
     this.dataLayersStateService.selectDataSet(result.data);
