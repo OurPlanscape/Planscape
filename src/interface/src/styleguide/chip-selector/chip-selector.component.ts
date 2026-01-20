@@ -20,8 +20,8 @@ export class ChipSelectorComponent<T extends HasName> {
   @Input() items: T[] = [];
   @Input() maxCollapsedItems = 4;
 
-  @Output() addItem = new EventEmitter<any>();
-  @Output() removeItem = new EventEmitter<any>();
+  @Output() addItem = new EventEmitter<T>();
+  @Output() removeItem = new EventEmitter<T>();
 
   expanded: boolean = false;
 
@@ -33,7 +33,7 @@ export class ChipSelectorComponent<T extends HasName> {
     }
   }
 
-  handleRemove(item: any) {
+  handleRemove(item: T) {
     this.removeItem.emit(item);
   }
 

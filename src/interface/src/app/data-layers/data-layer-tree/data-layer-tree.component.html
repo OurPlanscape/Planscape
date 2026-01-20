@@ -14,9 +14,8 @@
       matTreeNodePadding
       class="data-layer"
       [class.padded]="displayAddButton">
-      <span class="button-column"
+      <span class="button-column" *ngIf="displayAddButton"
         ><button
-          *ngIf="displayAddButton"
           mat-icon-button
           class="select-button"
           [ngClass]="{
@@ -77,7 +76,7 @@
         *ngIf="treeControl.isExpanded(node)"
         role="group"
         class="data-layer-cat">
-        <div *ngIf="hasLeafChildren(node)" class="first-header">
+        <div *ngIf="displayAddButton && hasLeafChildren(node)" class="first-header">
           <span class="select-column">Select</span><span>View Layer</span>
         </div>
         <ng-container matTreeNodeOutlet></ng-container>
