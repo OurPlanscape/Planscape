@@ -65,6 +65,7 @@ import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-m
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
+import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives/custom-priority-objectives.component';
 import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
 import { FeatureService } from '../../features/feature.service';
 import { Step1CustomComponent } from '../step1-custom/step1-custom.component';
@@ -78,7 +79,7 @@ enum ScenarioTabs {
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-creation',
-  providers: [BaseLayersStateService],
+  providers: [BaseLayersStateService, DataLayersStateService],
   standalone: true,
   imports: [
     AsyncPipe,
@@ -102,6 +103,7 @@ enum ScenarioTabs {
     NgClass,
     ScenarioSummaryComponent,
     SharedModule,
+    CustomPriorityObjectivesComponent,
     ProcessOverviewComponent,
     Step1CustomComponent,
   ],

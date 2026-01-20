@@ -165,7 +165,7 @@ export class DataLayersStateService {
     private service: DataLayersService,
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
-    private readonly maxSelectedDatalayers: number,
+    private maxSelectedDatalayers: number,
     @Inject(SEND_GEOMETRY)
     private readonly sendGeometry: boolean,
     private planState: PlanState
@@ -289,5 +289,9 @@ export class DataLayersStateService {
   // Return the max number of selected layers for this instance of the service
   getMaxSelectedLayers(): number {
     return this.maxSelectedDatalayers;
+  }
+
+  setMaxSelectedLayers(max: number): void {
+    this.maxSelectedDatalayers = max;
   }
 }
