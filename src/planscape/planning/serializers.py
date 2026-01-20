@@ -560,6 +560,22 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
+    priority_objectives = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=0,
+        max_length=2,
+        required=False,
+    )
+
+    cobenifits = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=0,
+        max_length=10,
+        required=False,
+    )
+
     targets = TargetsSerializer(
         required=False,
         help_text="Scenario targets: max_area, max_project_count, estimated_cost.",
@@ -615,6 +631,20 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         allow_empty=True,
         required=False,
     )
+    priority_objectives = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        allow_empty=True,
+        min_length=0,
+        max_length=2,
+        required=False,
+    )
+    cobenifits = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        allow_empty=True,
+        min_length=0,
+        max_length=10,
+        required=False,
+    )
 
     def validate_included_areas(self, included_areas):
         return [included_area.pk for included_area in included_areas]
@@ -624,6 +654,12 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
 
     def validate_constraints(self, constraints):
         return [{**c, "datalayer": c["datalayer"].pk} for c in (constraints or [])]
+
+    def validate_priority_objectives(self, priority_objectives):
+        return [objective.pk for objective in priority_objectives]
+
+    def validate_cobenifits(self, cobenifits):
+        return [benefit.pk for benefit in cobenifits]
 
     def update(self, instance, validated_data):
         instance.configuration = {
