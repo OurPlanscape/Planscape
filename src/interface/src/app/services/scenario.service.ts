@@ -48,7 +48,7 @@ export class ScenarioService {
     });
   }
 
-  createScenarioFromDraft(name: string, planId: number, type: SCENARIO_TYPE) {
+  createScenario(name: string, planId: number, type: SCENARIO_TYPE) {
     const scenarioParameters = {
       name: name,
       planning_area: planId,
