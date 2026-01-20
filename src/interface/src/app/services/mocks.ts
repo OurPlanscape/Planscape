@@ -17,6 +17,7 @@ export const MOCK_PLAN: Plan = {
   permissions: [],
   scenario_count: 0,
   role: 'Creator',
+  capabilities: [],
   map_status: 'DONE',
 };
 
