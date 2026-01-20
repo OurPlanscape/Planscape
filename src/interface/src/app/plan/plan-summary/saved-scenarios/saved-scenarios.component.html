@@ -39,6 +39,7 @@
         [matTooltipDisabled]="isValidPlanningArea"
         *ngIf="canAddScenarioForPlan"
         [disabled]="!isValidPlanningArea || planningAreaIsLarge"
+        (click)="openScenarioSetupDialog('PRESET')"
         data-id="new-scenario"
         icon="add"
         variant="primary">

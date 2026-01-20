@@ -166,7 +166,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
     const planId = this.data.planId;
     const type = this.data.type;
-    this.scenarioService.createScenarioFromName(name, planId, type).subscribe({
+    this.scenarioService.createScenarioFromDraft(name, planId, type).subscribe({
       next: (result) => {
         this.dialogRef.close(result);
         this.submitting = false;
