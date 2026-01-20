@@ -568,7 +568,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
-    cobenifits = serializers.ListField(
+    cobenefits = serializers.ListField(
         child=serializers.IntegerField(),
         allow_empty=True,
         min_length=0,
