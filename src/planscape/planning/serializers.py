@@ -19,6 +19,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioResult,
+    ScenarioType,
     SharedLink,
     TreatmentGoal,
     TreatmentGoalCategory,
@@ -872,6 +873,11 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
 class UpsertScenarioV3Serializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     name = serializers.CharField(max_length=100, required=True)
+    type = serializers.ChoiceField(
+        choices=ScenarioType.choices,
+        required=True,
+        write_only=True,
+    )
 
     class Meta:
         model = Scenario
@@ -879,6 +885,7 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
             "user",
             "planning_area",
             "name",
+            "type",
             "origin",
             "type",
             "notes",
