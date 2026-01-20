@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
-import { map, filter } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -34,8 +34,8 @@ import {
   ResourceType,
 } from 'maplibre-gl';
 import {
-  getBoundsFromGeometry,
   addRequestHeaders,
+  getBoundsFromGeometry,
 } from '../../../../maplibre-map/maplibre.helper';
 import { AuthService, ClimateForesightService } from '@services';
 import { DataLayersService } from '../../../../services/data-layers.service';
@@ -44,8 +44,8 @@ import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
 import { MapConfigService } from '../../../../maplibre-map/map-config.service';
 import {
-  MpatLegendComponent,
   LegendEntry,
+  MpatLegendComponent,
 } from './mpat-legend/mpat-legend.component';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
@@ -651,6 +651,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     );
 
     const colors = sortedEntries.map((e) => e.color).join(', ');
-    return `linear-gradient(to bottom, ${colors})`;
+    return `linear-gradient(to top, ${colors})`;
   }
 }
