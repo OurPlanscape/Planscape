@@ -10,6 +10,7 @@ import {
   SearchResult,
 } from '@types';
 import { map } from 'rxjs';
+import { Geometry } from 'geojson';
 
 @Injectable({
   providedIn: 'root',
@@ -27,27 +28,42 @@ export class DataLayersService {
     );
   }
 
-  listDataLayers(dataSetId: number, module: string) {
-    return this.http.get<DataLayer[]>(
+  listDataLayers(dataSetId: number, module: string, geometry?: Geometry) {
+    let body = {
+      type: 'RASTER',
+      module: module,
+    };
+    if (geometry) {
+      body = {
+        ...body,
+        ...{ geometry: geometry },
+      };
+    }
+    return this.http.post<DataLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
+      body,
       {
         withCredentials: true,
-        params: { type: 'RASTER', module: module },
       }
     );
   }
 
   search(query: SearchQuery) {
-    return this.http.get<Pagination<SearchResult>>(
+    let body = {
+      term: query.term,
+      type: 'RASTER',
+      ...(query.module ? { module: query.module } : {}),
+      ...(query.geometry ? { geometry: query.geometry } : {}),
+    };
+
+    return this.http.post<Pagination<SearchResult>>(
       environment.backend_endpoint + '/v2/datalayers/find_anything/',
+      body,
       {
         withCredentials: true,
         params: {
-          term: query.term,
-          type: 'RASTER',
           limit: query.limit,
           ...(query.offset ? { offset: query.offset } : {}),
-          ...(query.module ? { module: query.module } : {}),
         },
       }
     );

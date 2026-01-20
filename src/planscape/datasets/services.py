@@ -440,7 +440,8 @@ def browse(
 
     if feature_enabled("BROWSE_WITH_MODULE"):
         if module:
-            datalayers = datalayers.filter(metadata__modules__has_key=module)
+            filter = {f"metadata__modules__{module}__enabled": True}
+            datalayers = datalayers.filter(**filter)
 
     return datalayers
 
@@ -494,8 +495,8 @@ def find_anything(
     }
 
     if feature_enabled("FIND_ANYTHING_WITH_MODULE"):
-        datalayer_filter["metadata__modules__has_key"] = module
-        category_filter["metadata__modules__has_key"] = module
+        datalayer_filter[f"metadata__modules__{module}__enabled"] = True
+        category_filter[f"metadata__modules__{module}__enabled"] = True
 
     if dataset_ids:
         datalayer_filter["dataset_id__in"] = dataset_ids

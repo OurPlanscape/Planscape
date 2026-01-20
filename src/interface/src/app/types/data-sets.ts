@@ -145,6 +145,7 @@ export interface SearchQuery {
   limit: number;
   offset?: number;
   module?: string;
+  geometry?: Geometry;
 }
 
 export interface DataSetSearchResult extends SearchResult {

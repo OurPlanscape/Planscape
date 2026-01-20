@@ -35,7 +35,7 @@ export class Step1WithOverviewComponent
   ngAfterContentInit() {
     if (!this.inner) {
       throw new Error(
-        'Step1WithOverviewLogic: inner AppStep1Component not found'
+        'Step1WithOverviewComponent: inner Step1Component not found'
       );
     }
   }

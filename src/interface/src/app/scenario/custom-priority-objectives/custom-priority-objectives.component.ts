@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
@@ -28,15 +28,11 @@ const MAX_SELECTABLE_LAYERS = 2;
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
-    DataLayersStateService,
   ],
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent
-  extends StepDirective<ScenarioCreation>
-  implements OnInit
-{
+export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -68,14 +64,8 @@ export class CustomPriorityObjectivesComponent
     this.dataLayersStateService.removeSelectedLayer(layer);
   }
 
-  ngOnInit() {
-    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
-    this.dataLayersStateService.updateSelectedLayers([]);
-  }
-
   getData() {
-    this.dataLayersStateService.clearDataLayer();
     const datalayers = this.form.getRawValue().dataLayers;
-    return { priority_objectives: datalayers?.map((layer) => layer.id) ?? [] };
+    return { priority_objectives: datalayers?.map((dl) => dl.id) ?? [] };
   }
 }

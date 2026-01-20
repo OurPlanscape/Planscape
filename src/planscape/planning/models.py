@@ -31,6 +31,13 @@ from utils.uuid_utils import generate_short_uuid
 logger = logging.getLogger(__name__)
 
 
+class ScenarioCapability(models.TextChoices):
+    FORSYS = ("FORSYS", "Forsys")
+    IMPACTS = ("IMPACTS", "Impacts")
+    MAP = ("MAP", "Map")
+    CLIMATE_FORESIGHT = ("CLIMATE_FORESIGHT", "Climate Foresight")
+
+
 class PlanningAreaManager(AliveObjectsManager):
     def list_by_user(self, user: User) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
@@ -106,6 +113,13 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         choices=PlanningAreaMapStatus.choices,
         null=True,
         help_text="Controls the status of all the processes needed to allow the dynamic map to work.",
+    )
+
+    capabilities = ArrayField(
+        base_field=models.CharField(max_length=32, choices=ScenarioCapability.choices),
+        default=list,
+        blank=True,
+        help_text="List of enabled capabilities for this Planning Area.",
     )
 
     scenario_count = models.IntegerField(null=True)
@@ -204,6 +218,11 @@ class ScenarioOrigin(models.TextChoices):
     SYSTEM = "SYSTEM", "System"
     # project comes from direct user creation / import
     USER = "USER", "User"
+
+
+class ScenarioType(models.TextChoices):
+    PRESET = "PRESET", "Preset"
+    CUSTOM = "CUSTOM", "Custom"
 
 
 class ScenarioVersion(models.TextChoices):
@@ -383,11 +402,6 @@ class GeoPackageStatus(models.TextChoices):
     FAILED = ("FAILED", "Failed")
 
 
-class ScenarioCapability(models.TextChoices):
-    FORSYS = ("FORSYS", "Forsys")
-    IMPACTS = ("IMPACTS", "Impacts")
-
-
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     planning_area_id: int
@@ -410,6 +424,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     origin = models.CharField(
         choices=ScenarioOrigin.choices, null=True, help_text="Scenario Origin."
+    )
+
+    type = models.CharField(
+        choices=ScenarioType.choices,
+        max_length=16,
+        null=True,
+        blank=True,
+        help_text="Scenario type.",
     )
 
     notes = models.TextField(null=True, help_text="Scenario notes.")

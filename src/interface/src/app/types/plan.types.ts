@@ -1,4 +1,5 @@
 import { Geometry } from 'geojson';
+import { Capabilities } from './scenario.types';
 
 export interface Plan {
   area_acres: number;
@@ -14,6 +15,7 @@ export interface Plan {
   role: string;
   scenario_count: number;
   user: number;
+  capabilities: Capabilities[];
   map_status?: 'DONE' | 'PENDING' | 'IN_PROGRESS' | 'STANDS_DONE' | 'FAILED';
 }
 

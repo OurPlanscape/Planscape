@@ -25,6 +25,8 @@ import { MapModuleService } from '@services/map-module.service';
 import { MAX_SELECTED_DATALAYERS } from './data-layers/max-selected-datalayers.token';
 
 import { distinctUntilChanged } from 'rxjs/operators';
+import { PlanState } from '../plan/plan.state';
+import { SEND_GEOMETRY } from './data-layers/geometry-datalayers.token';
 
 @Injectable()
 export class DataLayersStateService {
@@ -71,14 +73,20 @@ export class DataLayersStateService {
     })
   );
 
-  dataTree$ = this.selectedDataSet$.pipe(
-    switchMap((dataset) => {
+  dataTree$ = combineLatest([
+    this.selectedDataSet$,
+    // Setting an initial value when there is no plan
+    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+  ]).pipe(
+    tap(() => this.loadingSubject.next(true)),
+    switchMap(([dataset, planningAreaGeometry]) => {
       if (!dataset) {
         this.loadingSubject.next(false);
         return of(null);
       }
+      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
       return this.service
-        .listDataLayers(dataset.id, this.mapModuleService.moduleName)
+        .listDataLayers(dataset.id, this.mapModuleService.moduleName, geometry)
         .pipe(
           map((items) => buildPathTree(items)),
           tap((s) => this.loadingSubject.next(false))
@@ -113,20 +121,25 @@ export class DataLayersStateService {
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,
     this._offset,
+    // Setting an initial value when there is no plan
+    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([term, offset]) => {
+    switchMap(([term, offset, planningAreaGeometry]) => {
       if (!term) {
         return of(null);
       }
 
       const module = this.mapModuleService.moduleName;
+      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
+
       return this.service
         .search({
           term,
           limit: this.limit,
           offset,
           module,
+          geometry,
         })
         .pipe(
           startWith(null),
@@ -152,7 +165,10 @@ export class DataLayersStateService {
     private service: DataLayersService,
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
-    private maxSelectedDatalayers: number
+    private maxSelectedDatalayers: number,
+    @Inject(SEND_GEOMETRY)
+    private readonly sendGeometry: boolean,
+    private planState: PlanState
   ) {}
 
   selectDataSet(dataset: BaseDataSet) {

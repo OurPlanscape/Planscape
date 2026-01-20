@@ -148,14 +148,20 @@ class MapModule(BaseModule):
 class ClimateForesightModule(BaseModule):
     name = "climate_foresight"
 
+    def _get_future_climate_coverage_polygon(self):
+        with open("../assets/future_climate_conditions.geojson") as fp:
+            data = json.loads(fp.read())
+            return GEOSGeometry(json.dumps(data.get("geometry")))
+
     def __init__(self):
-        pass
+        self.future_climate_coverage = self._get_future_climate_coverage_polygon()
 
     def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
-        return True
+        return self.future_climate_coverage.contains(runnable.geometry)
 
     def _can_run_scenario(self, runnable: Scenario) -> bool:
-        return True
+        scenario_geometry = runnable.planning_area.geometry
+        return self.future_climate_coverage.contains(scenario_geometry)
 
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
         return Dataset.objects.filter(
@@ -175,6 +181,16 @@ def compute_scenario_capabilities(scenario: Scenario) -> List[ScenarioCapability
     caps = list()
     for key, module in MODULE_HANDLERS.items():
         if module.can_run(scenario):
+            caps.append(key.upper())
+    return caps
+
+
+def compute_planning_area_capabilities(
+    planning_area: PlanningArea,
+) -> List[ScenarioCapability]:
+    caps = list()
+    for key, module in MODULE_HANDLERS.items():
+        if module.can_run(planning_area):
             caps.append(key.upper())
     return caps
 

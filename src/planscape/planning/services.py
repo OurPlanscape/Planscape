@@ -29,7 +29,10 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
-from modules.base import compute_scenario_capabilities
+from modules.base import (
+    compute_planning_area_capabilities,
+    compute_scenario_capabilities,
+)
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 from pyproj import Geod
@@ -120,6 +123,8 @@ def create_planning_area(
         map_status=PlanningAreaMapStatus.PENDING,
         scenario_count=0,
     )
+    planning_area.capabilities = compute_planning_area_capabilities(planning_area)
+    planning_area.save(update_fields=["capabilities"])
     acres = get_acreage(planning_area.geometry)
     if acres >= settings.OVERSIZE_PLANNING_AREA_ACRES:
         planning_area.map_status = PlanningAreaMapStatus.OVERSIZE
