@@ -1,4 +1,4 @@
-import { AnalyticsToolsComponent } from './analytics-tools/analytics-tools.component';
+import { PlanningAnalyticsToolsComponent } from './analytics-tools/planning-analytics-tools.component';
 import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { CommonModule } from '@angular/common';
 import { FeaturesModule } from '../features/features.module';
@@ -63,7 +63,7 @@ import { MatCardModule } from '@angular/material/card';
     PlanRoutingModule,
     RouterModule,
     SharedModule,
-    AnalyticsToolsComponent,
+    PlanningAnalyticsToolsComponent,
     ButtonComponent,
     DeleteDialogComponent,
     UploadProjectAreasModalComponent,

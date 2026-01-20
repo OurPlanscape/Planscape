@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AnalyticsToolsComponent } from './analytics-tools.component';
+import { PlanningAnalyticsToolsComponent } from './planning-analytics-tools.component';
 import { FeatureService } from '../../features/feature.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PlanState } from '../plan.state';
@@ -7,9 +7,9 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of } from 'rxjs';
 import { Plan } from '@types';
 
-describe('AnalyticsToolsComponent', () => {
-  let component: AnalyticsToolsComponent;
-  let fixture: ComponentFixture<AnalyticsToolsComponent>;
+describe('PlanningAnalyticsToolsComponent', () => {
+  let component: PlanningAnalyticsToolsComponent;
+  let fixture: ComponentFixture<PlanningAnalyticsToolsComponent>;
   let mockFeatureService: jasmine.SpyObj<FeatureService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockActivatedRoute: any;
@@ -70,7 +70,7 @@ describe('AnalyticsToolsComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [AnalyticsToolsComponent],
+      imports: [PlanningAnalyticsToolsComponent],
       providers: [
         { provide: FeatureService, useValue: mockFeatureService },
         { provide: Router, useValue: mockRouter },
@@ -80,7 +80,7 @@ describe('AnalyticsToolsComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AnalyticsToolsComponent);
+    fixture = TestBed.createComponent(PlanningAnalyticsToolsComponent);
     component = fixture.componentInstance;
     component.planningAreaCapabilities = ['CLIMATE_FORESIGHT'];
   });

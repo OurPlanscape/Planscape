@@ -16,13 +16,13 @@ interface AnalyticTool {
 }
 
 @Component({
-  selector: 'app-analytics-tools',
+  selector: 'app-planning-analytics-tools',
   standalone: true,
   imports: [CommonModule, TileButtonComponent],
-  templateUrl: './analytics-tools.component.html',
-  styleUrls: ['./analytics-tools.component.scss'],
+  templateUrl: './planning-analytics-tools.component.html',
+  styleUrls: ['./planning-analytics-tools.component.scss'],
 })
-export class AnalyticsToolsComponent implements OnInit {
+export class PlanningAnalyticsToolsComponent implements OnInit {
   @Input() planningAreaCapabilities: Capabilities[] = [];
   analyticsTools: AnalyticTool[] = [];
 
