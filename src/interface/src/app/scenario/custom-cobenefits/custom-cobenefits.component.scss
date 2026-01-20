@@ -15,11 +15,8 @@
     color: $color-error;
     margin: 0;
   }
-
 }
 
-::ng-deep .cobenefits-selection .mat-expansion-panel-body {
-  padding: 0 !important;
-  padding-left: 0;
-  padding-right: 0;
+.cobenefits-selection ::ng-deep .mat-expansion-panel-body {
+  padding: 0;
 }
