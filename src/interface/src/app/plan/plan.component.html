@@ -18,7 +18,10 @@
         [canAddNotes]="canAddScenario(plan)"
         noNotesTitleText="No Notes For This Planning Area Yet"
         noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
-      <app-analytics-tools></app-analytics-tools>
+      <app-planning-analytics-tools
+        [planningAreaCapabilities]="
+          plan.capabilities
+        "></app-planning-analytics-tools>
     </div>
 
     <mat-divider [vertical]="true"></mat-divider>

@@ -1,8 +1,12 @@
 <app-nav-bar area="NEW_SCENARIO"></app-nav-bar>
 <!--New scenario ui flow-->
 <sg-steps-nav
+  *ngIf="
+    !isCustomScenario() ||
+    (isCustomScenario() && stepsComponent.selectedIndex !== 0)
+  "
   [steps]="steps"
-  [selectedIndex]="localIndex"
+  [selectedIndex]="isCustomScenario() ? localIndex - 1 : localIndex"
   [allowNavigation]="true"
   [linear]="true"
   (selectionChange)="
@@ -48,7 +52,9 @@
     </ng-container>
 
     <ng-container *ngIf="isCustomScenario()">
-      <sg-step class="full-screen-step">Stand Size and Overview</sg-step>
+      <sg-step>
+        <app-step1-custom></app-step1-custom>
+      </sg-step>
       <sg-step>
         <app-custom-priority-objectives></app-custom-priority-objectives>
       </sg-step>

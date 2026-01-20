@@ -76,7 +76,9 @@
         *ngIf="treeControl.isExpanded(node)"
         role="group"
         class="data-layer-cat">
-        <div *ngIf="displayAddButton && hasLeafChildren(node)" class="first-header">
+        <div
+          *ngIf="displayAddButton && hasLeafChildren(node)"
+          class="first-header">
           <span class="select-column">Select</span><span>View Layer</span>
         </div>
         <ng-container matTreeNodeOutlet></ng-container>

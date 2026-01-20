@@ -13,7 +13,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
 import { ScenarioCreation } from '@types';
 import { filter, map, shareReplay, take } from 'rxjs';
-import { ScenarioState } from 'src/app/scenario/scenario.state';
 import { ButtonComponent, SectionComponent, StepDirective } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
@@ -74,13 +73,8 @@ export class Step1Component
       shareReplay(1)
     );
 
-  scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
-    map((s) => s.treatment_goal?.name || '')
-  );
-
   constructor(
     private treatmentGoalsService: TreatmentGoalsService,
-    private scenarioState: ScenarioState,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute
   ) {

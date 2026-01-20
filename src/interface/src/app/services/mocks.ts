@@ -1,5 +1,5 @@
 import { Plan, Scenario } from '@types';
-import { GeoJSON } from 'geojson';
+import { GeoJSON, Geometry } from 'geojson';
 
 export const MOCK_PLAN: Plan = {
   id: 1,
@@ -17,6 +17,7 @@ export const MOCK_PLAN: Plan = {
   permissions: [],
   scenario_count: 0,
   role: 'Creator',
+  capabilities: [],
   map_status: 'DONE',
 };
 
@@ -62,4 +63,17 @@ export const MOCK_SCENARIO: Scenario = {
   },
   geopackage_status: null,
   geopackage_url: null,
+};
+
+export const MOCK_GEOMETRY: Geometry = {
+  type: 'Polygon',
+  coordinates: [
+    [
+      [-118.45, 34.05],
+      [-118.35, 34.05],
+      [-118.35, 34.0],
+      [-118.45, 34.0],
+      [-118.45, 34.05],
+    ],
+  ],
 };

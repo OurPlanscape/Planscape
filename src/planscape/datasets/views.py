@@ -68,6 +68,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         results = self._get_browse_result(
             dataset,
             type=serializer.validated_data.get("type"),
+            module=serializer.validated_data.get("module"),
             geometry=serializer.validated_data.get("geometry"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
@@ -93,10 +94,16 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         self,
         dataset,
         type: Optional[DataLayerType] = None,
+        module: Optional[str] = None,
         geometry: Optional[GEOSGeometry] = None,
     ):
         dataset = self.get_object()
-        datalayers = browse(dataset, type=type, geometry=geometry)
+        datalayers = browse(
+            dataset,
+            type=type,
+            module=module,
+            geometry=geometry,
+        )
         return list(datalayers.all())
 
 

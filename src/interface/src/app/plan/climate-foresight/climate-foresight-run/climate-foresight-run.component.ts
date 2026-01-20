@@ -46,6 +46,7 @@ import { MapModuleService } from '@services/map-module.service';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { MAX_SELECTED_DATALAYERS } from 'src/app/data-layers/data-layers/max-selected-datalayers.token';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { SEND_GEOMETRY } from 'src/app/data-layers/data-layers/geometry-datalayers.token';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -84,6 +85,7 @@ type SaveStepData = {
     { provide: MAX_SELECTED_DATALAYERS, useValue: MAX_CLIMATE_DATALAYERS },
     MapModuleService,
     { provide: MAP_MODULE_NAME, useValue: 'climate_foresight' },
+    { provide: SEND_GEOMETRY, useValue: true },
   ],
 })
 export class ClimateForesightRunComponent implements OnInit {
@@ -458,7 +460,8 @@ export class ClimateForesightRunComponent implements OnInit {
   saveRun(
     inputDatalayers: InputDatalayer[],
     nextStep: number,
-    newFurthestStep: number
+    newFurthestStep: number,
+    runAnalysis = true
   ): void {
     this.climateForesightService
       .updateRun(this.runId!, {
@@ -468,11 +471,12 @@ export class ClimateForesightRunComponent implements OnInit {
       })
       .subscribe({
         next: (updatedRun) => {
-          this.currentRun = updatedRun;
-          this.runAnalysis();
+          if (runAnalysis) {
+            this.currentRun = updatedRun;
+            this.runAnalysis();
+          }
         },
         error: (error) => {
-          console.error('Error saving pillars:', error);
           if (
             this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
           ) {
@@ -600,5 +604,17 @@ export class ClimateForesightRunComponent implements OnInit {
           console.error('Error polling for run status:', err);
         },
       });
+  }
+
+  pillarsUpdated(layers: InputDatalayer[]) {
+    const currentStep = (this.currentStepIndex || 0) + 1;
+    const inputDatalayers = this.currentRun?.input_datalayers || [];
+
+    // Assign pillar for each input datalayer
+    inputDatalayers.forEach((input) => {
+      const updatedPillar = layers.find((p) => p.datalayer === input.datalayer);
+      input.pillar = updatedPillar?.pillar || null;
+    });
+    this.saveRun(inputDatalayers, currentStep, currentStep, false);
   }
 }
