@@ -71,7 +71,6 @@ import { FeatureService } from '../../features/feature.service';
 import { Step1CustomComponent } from '../step1-custom/step1-custom.component';
 import { CustomCobenefitsComponent } from '../custom-cobenefits/custom-cobenefits.component';
 
-
 enum ScenarioTabs {
   CONFIG,
   DATA_LAYERS,
