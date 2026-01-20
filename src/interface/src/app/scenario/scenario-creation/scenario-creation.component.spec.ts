@@ -19,6 +19,7 @@ import { TreatmentTargetComponent } from '../treatment-target/treatment-target.c
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SharedModule } from '@shared';
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
+import { MOCK_SCENARIO } from '@services/mocks';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -49,7 +50,9 @@ describe('ScenarioCreationComponent', () => {
           getScenariosForPlan: () =>
             of([{ name: 'Scenario A' }, { name: 'Scenario B' }] as any),
         }),
-        MockProvider(ScenarioState),
+        MockProvider(ScenarioState, {
+          currentScenario$: of(MOCK_SCENARIO),
+        }),
         MockProvider(DataLayersStateService, { paths$: of([]) }),
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),

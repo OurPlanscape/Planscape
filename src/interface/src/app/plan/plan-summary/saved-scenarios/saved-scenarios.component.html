@@ -40,7 +40,6 @@
         *ngIf="canAddScenarioForPlan"
         [disabled]="!isValidPlanningArea || planningAreaIsLarge"
         data-id="new-scenario"
-        (click)="handleNewScenarioButton()"
         icon="add"
         variant="primary">
         New Scenario
@@ -66,7 +65,7 @@
       <mat-menu #menu="matMenu" class="scenario-options-menu">
         <button
           mat-menu-item
-          (click)="handleNewScenarioButton()"
+          (click)="openScenarioSetupDialog('PRESET')"
           class="scenario-option">
           <mat-icon class="material-symbols-outlined">contract</mat-icon>
           Choose Treatment Goal
@@ -75,7 +74,10 @@
             constraints
           </span>
         </button>
-        <button mat-menu-item class="scenario-option">
+        <button
+          mat-menu-item
+          (click)="openScenarioSetupDialog('CUSTOM')"
+          class="scenario-option">
           <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
           Create Custom Scenario
           <span>

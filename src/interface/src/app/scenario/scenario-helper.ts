@@ -3,10 +3,11 @@ import {
   Constraint,
   NamedConstraint,
   Scenario,
+  SCENARIO_TYPE,
   ScenarioCreation,
+  ScenarioGoal,
   ScenarioV3Config,
   ScenarioV3Payload,
-  ScenarioGoal,
 } from '@types';
 
 /**
@@ -154,4 +155,8 @@ export function suggestUniqueName(providedName: string, knownNames: string[]) {
 
 export function isScenarioPending(scenario: Scenario) {
   return scenario.scenario_result?.status === 'PENDING';
+}
+
+export function isCustomScenario(type: SCENARIO_TYPE) {
+  return type === 'CUSTOM';
 }

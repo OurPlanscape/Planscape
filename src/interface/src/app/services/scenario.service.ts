@@ -5,6 +5,7 @@ import {
   AvailableStands,
   Constraint,
   Scenario,
+  SCENARIO_TYPE,
   ScenarioCreationPayload,
   ScenarioV3Payload,
 } from '@types';
@@ -47,8 +48,12 @@ export class ScenarioService {
     });
   }
 
-  createScenarioFromName(name: string, planId: number) {
-    const scenarioParameters = { name: name, planning_area: planId };
+  createScenarioFromName(name: string, planId: number, type: SCENARIO_TYPE) {
+    const scenarioParameters = {
+      name: name,
+      planning_area: planId,
+      type: type,
+    };
     return this.http.post<Scenario>(
       this.v2Path + 'draft/',
       scenarioParameters,
