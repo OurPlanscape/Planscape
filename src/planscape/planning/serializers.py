@@ -530,7 +530,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
         help_text="Priority objectives for the scenario.",
     )
 
-    cobenifits = serializers.ListField(
+    cobenefits = serializers.ListField(
         child=serializers.CharField(max_length=256),
         allow_empty=True,
         min_length=0,
@@ -578,7 +578,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
             "excluded_areas",
             "constraints",
             "priority_objectives",
-            "cobenifits",
+            "cobenefits",
         ]:
             if field not in data or data[field] is None:
                 data[field] = []
