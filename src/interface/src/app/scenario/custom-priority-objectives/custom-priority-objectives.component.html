@@ -25,7 +25,7 @@
         Please select a priority objective to continue
       </span>
       <div>
-        Select 1 or 2 Priority Objectives to guide where ForSys will focus
+        Select 1 or {{ maxLayers }} Priority Objectives to guide where ForSys will focus
         treatments.
       </div>
 
@@ -34,8 +34,8 @@
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
     </div>
-    <section>
-      <app-data-layers mapId="1" [displayAddButton]="true"></app-data-layers>
+    <section class="datalayers-section">
+      <app-data-layers [displayAddButton]="true"></app-data-layers>
     </section>
   </form>
 </sg-section>

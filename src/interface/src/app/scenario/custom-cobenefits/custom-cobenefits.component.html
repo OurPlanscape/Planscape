@@ -15,7 +15,7 @@ No, only your selected Priority Objectives influence how ForSys ranks areas for 
   <form [formGroup]="form">
     <div class="padding-section">
       <div>
-        Select <b>up to 10 Co-Benefits</b> to track the broader outcomes of your
+        Select <b>up to {{ maxLayers }} Co-Benefits</b> to track the broader outcomes of your
         scenario.
       </div>
 
@@ -25,7 +25,7 @@ No, only your selected Priority Objectives influence how ForSys ranks areas for 
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
     </div>
     <section>
-      <app-data-layers mapId="1" [displayAddButton]="true"></app-data-layers>
+      <app-data-layers [displayAddButton]="true"></app-data-layers>
     </section>
   </form>
 </sg-section>
