@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -28,10 +28,7 @@ const MAX_SELECTABLE_LAYERS = 10;
     DataLayersStateService,
   ],
 })
-export class CustomCobenefitsComponent
-  extends StepDirective<ScenarioCreation>
-  implements OnInit
-{
+export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>([]),
   });
@@ -45,6 +42,7 @@ export class CustomCobenefitsComponent
   constructor(private dataLayersStateService: DataLayersStateService) {
     super();
 
+    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.selectedDataLayers$
       .pipe(untilDestroyed(this))
       .subscribe((datalayers: DataLayer[]) => {
@@ -59,13 +57,7 @@ export class CustomCobenefitsComponent
     this.dataLayersStateService.removeSelectedLayer(layer);
   }
 
-  ngOnInit() {
-    this.dataLayersStateService.updateSelectedLayers([]);
-    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
-  }
-
   getData() {
-    this.dataLayersStateService.clearDataLayer();
     const datalayers = this.form.getRawValue().dataLayers;
     return { cobenefits: datalayers?.map((layer) => layer.id) ?? [] };
   }
