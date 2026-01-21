@@ -42,7 +42,11 @@ class BaseModule:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+        return Dataset.objects.filter(
+            modules__contains=[self.name],
+            preferred_display_type__isnull=False,
+            visibility=VisibilityOptions.PUBLIC,
+        ).select_related("organization")
 
     def _get_main_datasets(self):
         return self.get_datasets().filter(
@@ -93,9 +97,6 @@ class ForsysModule(BaseModule):
             "inclusions": list(inclusions),
             "thresholds": {"slope": slope, "distance_from_roads": distance_from_roads},
         }
-
-    def get_datasets(self, **kwargs):
-        return Dataset.objects.none()
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return ForsysModuleSerializer
