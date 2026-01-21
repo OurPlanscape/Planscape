@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DataLayer, DataLayerSearchResult } from '@types';
 import { ButtonComponent, HighlighterDirective } from '@styleguide';
@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
 import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-data-set',
@@ -18,12 +19,14 @@ import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tool
     MatIconModule,
     ButtonComponent,
     NgIf,
+    NgClass,
     MatProgressSpinnerModule,
     MatRadioModule,
     HighlighterDirective,
     AsyncPipe,
     MatMenuModule,
     DataLayerTooltipComponent,
+    MatTooltipModule,
   ],
   templateUrl: './data-set.component.html',
   styleUrl: './data-set.component.scss',
@@ -34,6 +37,7 @@ export class DataSetComponent {
   @Input() layers?: DataLayerSearchResult[];
   @Input() path?: string[];
   @Input() searchTerm = '';
+  @Input() displayAddButton = false;
 
   @Output() selectDataset = new EventEmitter<void>();
 
@@ -45,9 +49,24 @@ export class DataSetComponent {
 
   displayTooltipLayer = false;
 
+  isSelectionCompleted$ = this.dataLayersStateService.selectedDataLayers$.pipe(
+    map(
+      (layers) =>
+        layers.length === this.dataLayersStateService.getMaxSelectedLayers()
+    )
+  );
+
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   selectDataLayer(dataLayer: DataLayer) {
     this.dataLayersStateService.selectDataLayer(dataLayer);
+  }
+
+  isDatalayerSelected(layer: DataLayer) {
+    return this.dataLayersStateService.isSelectedLayer(layer);
+  }
+
+  toggleDataLayerSelection(dl: DataLayer) {
+    this.dataLayersStateService.toggleLayerAdition(dl);
   }
 }
