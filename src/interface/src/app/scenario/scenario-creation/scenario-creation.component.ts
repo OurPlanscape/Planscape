@@ -73,6 +73,7 @@ import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives
 import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
 import { FeatureService } from '../../features/feature.service';
 import { Step1CustomComponent } from '../step1-custom/step1-custom.component';
+import { CustomCobenefitsComponent } from '../custom-cobenefits/custom-cobenefits.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -108,6 +109,7 @@ enum ScenarioTabs {
     ScenarioSummaryComponent,
     SharedModule,
     CustomPriorityObjectivesComponent,
+    CustomCobenefitsComponent,
     ProcessOverviewComponent,
     Step1CustomComponent,
   ],
