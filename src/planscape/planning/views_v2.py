@@ -25,7 +25,6 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioResultStatus,
-    ScenarioType,
     ScenarioVersion,
     TreatmentGoal,
 )
