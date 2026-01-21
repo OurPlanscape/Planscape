@@ -137,6 +137,15 @@ export class DataLayerTreeComponent {
     return false;
   }
 
+  hasAnyNestedNodes(treeData: any[]): boolean {
+    for (const node of treeData) {
+      if (this.hasChild(0, node)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   hasChild = (_: number, node: TreeNode) =>
     !!node.children && node.children.length > 0;
 }
