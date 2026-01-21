@@ -25,6 +25,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioResultStatus,
+    ScenarioType,
     ScenarioVersion,
     TreatmentGoal,
 )
@@ -270,6 +271,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create_draft(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        scenario_type = serializer.validated_data.get("type") or ScenarioType.PRESET
         configuration_data = create_config(
             targets=serializer.validated_data.get("targets") or {},
             constraints=[],
