@@ -51,6 +51,7 @@ from planning.serializers import (
     UpsertScenarioV3Serializer,
 )
 from planning.services import (
+    create_config,
     create_planning_area,
     create_scenario,
     create_scenario_from_upload,
@@ -269,9 +270,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create_draft(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        configuration_data = {
-            "targets": serializer.validated_data.get("targets", []),
-        }
+        configuration_data = create_config(
+            targets=serializer.validated_data.get("targets") or {},
+            constraints=[],
+            included_areas=[],
+            excluded_areas=[],
+            priorities=[],
+            cobenefits=[],
+        )
         validated_data = {
             **serializer.validated_data,
             "configuration": configuration_data,
@@ -348,6 +354,18 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             instance, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
+        configuration_data = serializer.validated_data.get("configuration")
+        if configuration_data:
+            serializer.validated_data["configuration"] = create_config(
+                stand_size=configuration_data.get("stand_size"),
+                targets=configuration_data.get("targets") or {},
+                constraints=configuration_data.get("constraints", []),
+                included_areas=configuration_data.get("included_areas_ids", []),
+                excluded_areas=configuration_data.get("excluded_areas_ids", []),
+                priorities=configuration_data.get("priority_objectives", []),
+                cobenefits=configuration_data.get("cobenefits", []),
+                seed=configuration_data.get("seed"),
+            )
         self.perform_update(serializer)
         response_serializer = ScenarioV3Serializer(instance)
         planning_area = instance.planning_area

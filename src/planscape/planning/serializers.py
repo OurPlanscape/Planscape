@@ -522,22 +522,6 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
-    priority_objectives = serializers.ListField(
-        child=serializers.CharField(max_length=256),
-        allow_empty=True,
-        min_length=0,
-        required=False,
-        help_text="Priority objectives for the scenario.",
-    )
-
-    cobenefits = serializers.ListField(
-        child=serializers.CharField(max_length=256),
-        allow_empty=True,
-        min_length=0,
-        required=False,
-        help_text="Co-benefits for the scenario.",
-    )
-
     included_areas = serializers.ListField(
         source="included_areas_ids",
         child=serializers.IntegerField(),
@@ -563,7 +547,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
     priority_objectives = serializers.ListField(
         child=serializers.IntegerField(),
         allow_empty=True,
-        min_length=0,
+        min_length=1,
         max_length=2,
         required=False,
     )
@@ -571,7 +555,7 @@ class ConfigurationV3Serializer(serializers.Serializer):
     cobenefits = serializers.ListField(
         child=serializers.IntegerField(),
         allow_empty=True,
-        min_length=0,
+        min_length=1,
         max_length=10,
         required=False,
     )
@@ -634,32 +618,17 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
     priority_objectives = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
         allow_empty=True,
-        min_length=0,
+        min_length=1,
         max_length=2,
         required=False,
     )
     cobenefits = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
         allow_empty=True,
-        min_length=0,
+        min_length=1,
         max_length=10,
         required=False,
     )
-
-    def validate_included_areas(self, included_areas):
-        return [included_area.pk for included_area in included_areas]
-
-    def validate_excluded_areas(self, excluded_areas):
-        return [excluded_area.pk for excluded_area in excluded_areas]
-
-    def validate_constraints(self, constraints):
-        return [{**c, "datalayer": c["datalayer"].pk} for c in (constraints or [])]
-
-    def validate_priority_objectives(self, priority_objectives):
-        return [objective.pk for objective in priority_objectives]
-
-    def validate_cobenefits(self, cobenefits):
-        return [benefit.pk for benefit in cobenefits]
 
     def update(self, instance, validated_data):
         instance.configuration = {
@@ -961,10 +930,6 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         if "configuration" in validated_data:
             cfg = instance.configuration or {}
             incoming = validated_data["configuration"]
-            if "excluded_areas" in incoming:
-                cfg["excluded_areas_ids"] = incoming.pop("excluded_areas")
-            if "included_areas" in incoming:
-                cfg["included_areas_ids"] = incoming.pop("included_areas")
             cfg.update(incoming)
             instance.configuration = cfg
 

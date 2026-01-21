@@ -55,6 +55,8 @@ from planning.models import (
 
 logger = logging.getLogger(__name__)
 
+DataLayerList = List[DataLayer]
+
 
 def create_metrics_task(
     stand_ids: List[int],
@@ -221,6 +223,33 @@ def get_treatment_goal_from_configuration(
             "Create-Scenario: Treatment goal with id %s does not exist.", question_id
         )
     return treatment_goal
+
+
+def create_config(
+    *,
+    stand_size: Optional[StandSizeChoices] = None,
+    targets: Dict[str, Any],
+    constraints: List[Dict[str, Any]],
+    included_areas: DataLayerList,
+    excluded_areas: DataLayerList,
+    priorities: DataLayerList,
+    cobenefits: DataLayerList,
+    seed: Optional[int] = None,
+) -> Dict[str, Any]:
+    config: Dict[str, Any] = {}
+
+    if stand_size is not None:
+        config["stand_size"] = stand_size
+    config["targets"] = targets
+    config["constraints"] = [{**c, "datalayer": c["datalayer"].pk} for c in constraints]
+    config["included_areas_ids"] = [area.pk for area in included_areas]
+    config["excluded_areas_ids"] = [area.pk for area in excluded_areas]
+    config["priority_objectives"] = [priority.pk for priority in priorities]
+    config["cobenefits"] = [benefit.pk for benefit in cobenefits]
+    if seed is not None:
+        config["seed"] = seed
+
+    return config
 
 
 @transaction.atomic()
