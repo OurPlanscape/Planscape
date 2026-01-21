@@ -16,7 +16,13 @@ export interface Plan {
   scenario_count: number;
   user: number;
   capabilities: Capabilities[];
-  map_status?: 'DONE' | 'PENDING' | 'IN_PROGRESS' | 'STANDS_DONE' | 'FAILED';
+  map_status?:
+    | 'DONE'
+    | 'PENDING'
+    | 'IN_PROGRESS'
+    | 'STANDS_DONE'
+    | 'FAILED'
+    | 'OVERSIZE';
 }
 
 export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;
