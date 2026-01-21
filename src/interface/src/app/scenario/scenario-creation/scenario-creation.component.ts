@@ -34,6 +34,7 @@ import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
   Scenario,
+  SCENARIO_TYPE,
   ScenarioCreation,
   ScenarioV3Config,
   ScenarioV3Payload,
@@ -41,7 +42,10 @@ import {
 import { Step1Component } from '../step1/step1.component';
 import { MatDialog } from '@angular/material/dialog';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
-import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
+import {
+  convertFlatConfigurationToDraftPayload,
+  isCustomScenario,
+} from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -65,9 +69,11 @@ import { ScenarioMapComponent } from '../../maplibre-map/scenario-map/scenario-m
 import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-overview.component';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
+import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives/custom-priority-objectives.component';
 import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
 import { FeatureService } from '../../features/feature.service';
 import { Step1CustomComponent } from '../step1-custom/step1-custom.component';
+import { CustomCobenefitsComponent } from '../custom-cobenefits/custom-cobenefits.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -78,7 +84,7 @@ enum ScenarioTabs {
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-creation',
-  providers: [BaseLayersStateService],
+  providers: [BaseLayersStateService, DataLayersStateService],
   standalone: true,
   imports: [
     AsyncPipe,
@@ -102,6 +108,8 @@ enum ScenarioTabs {
     NgClass,
     ScenarioSummaryComponent,
     SharedModule,
+    CustomPriorityObjectivesComponent,
+    CustomCobenefitsComponent,
     ProcessOverviewComponent,
     Step1CustomComponent,
   ],
@@ -146,7 +154,7 @@ export class ScenarioCreationComponent implements OnInit {
     },
   ];
 
-  steps = this.isCustomScenario() ? this.customSteps : this.scenarioSteps;
+  steps: { icon: string; description: string; label: string }[] = [];
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
@@ -171,6 +179,10 @@ export class ScenarioCreationComponent implements OnInit {
 
   // copy of index locally to show the last step as completed
   localIndex = 0;
+
+  scenarioType$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.type)
+  );
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -228,6 +240,9 @@ export class ScenarioCreationComponent implements OnInit {
           backUrl: getPlanPath(this.planId),
           icon: 'close',
         });
+        this.steps = isCustomScenario(scenario.type)
+          ? this.customSteps
+          : this.scenarioSteps;
         this.scenarioName = scenario.name;
         //this loads the list of scenario names and looks for dupes.
         //we pass an id to avoid matching against this current scenario id name
@@ -320,10 +335,14 @@ export class ScenarioCreationComponent implements OnInit {
       );
   }
 
-  async onFinish() {
+  async onFinish(type: SCENARIO_TYPE) {
     this.newScenarioState.setLoading(false);
 
     this.newScenarioState.setDraftFinished(true);
+    // TODO this needs to check type
+    this.localIndex = this.isCustomScenario(type)
+      ? this.steps.length
+      : this.steps.length - 1;
     this.showRunScenarioConfirmation();
   }
 
@@ -360,10 +379,6 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   showRunScenarioConfirmation() {
-    this.localIndex = this.isCustomScenario()
-      ? this.steps.length
-      : this.steps.length - 1;
-
     this.dialog
       .open(ConfirmationDialogComponent, {
         data: {
@@ -455,8 +470,10 @@ export class ScenarioCreationComponent implements OnInit {
     }
   }
 
-  // Placeholder while we develop the feature. Will return true if the flag is on.
-  isCustomScenario() {
-    return this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS');
+  isCustomScenario(type: SCENARIO_TYPE) {
+    return (
+      this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS') &&
+      isCustomScenario(type)
+    );
   }
 }

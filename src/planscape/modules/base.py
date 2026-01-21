@@ -42,7 +42,11 @@ class BaseModule:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+        return Dataset.objects.filter(
+            modules__contains=[self.name],
+            preferred_display_type__isnull=False,
+            visibility=VisibilityOptions.PUBLIC,
+        ).select_related("organization")
 
     def _get_main_datasets(self):
         return self.get_datasets().filter(
@@ -93,9 +97,6 @@ class ForsysModule(BaseModule):
             "inclusions": list(inclusions),
             "thresholds": {"slope": slope, "distance_from_roads": distance_from_roads},
         }
-
-    def get_datasets(self, **kwargs):
-        return Dataset.objects.none()
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return ForsysModuleSerializer
@@ -157,7 +158,7 @@ class ClimateForesightModule(BaseModule):
         self.future_climate_coverage = self._get_future_climate_coverage_polygon()
 
     def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
-        return True
+        return self.future_climate_coverage.contains(runnable.geometry)
 
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         scenario_geometry = runnable.planning_area.geometry
@@ -181,6 +182,16 @@ def compute_scenario_capabilities(scenario: Scenario) -> List[ScenarioCapability
     caps = list()
     for key, module in MODULE_HANDLERS.items():
         if module.can_run(scenario):
+            caps.append(key.upper())
+    return caps
+
+
+def compute_planning_area_capabilities(
+    planning_area: PlanningArea,
+) -> List[ScenarioCapability]:
+    caps = list()
+    for key, module in MODULE_HANDLERS.items():
+        if module.can_run(planning_area):
             caps.append(key.upper())
     return caps
 

@@ -1234,6 +1234,7 @@ class CreateScenarioForDraftsTest(APITestCase):
         payload = {
             "name": "my dear scenario",
             "planning_area": self.planning_area.pk,
+            "type": "PRESET",
         }
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -1247,10 +1248,29 @@ class CreateScenarioForDraftsTest(APITestCase):
         self.assertIsNotNone(scenario.get("id"))
         self.assertEqual(scenario.get("scenario_result").get("status"), "DRAFT")
         self.assertEqual(scenario.get("version"), "V3")
+        self.assertEqual(scenario.get("type"), "PRESET")
+
+    def test_create_with_custom_type(self):
+        payload = {
+            "name": "custom scenario",
+            "planning_area": self.planning_area.pk,
+            "type": "CUSTOM",
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        scenario = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(scenario.get("type"), "CUSTOM")
 
     def test_create_without_name(self):
         payload = {
             "planning_area": self.planning_area.pk,
+            "type": "PRESET",
         }
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -1261,6 +1281,23 @@ class CreateScenarioForDraftsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
             b'{"name":["This field is required."]}',
+            response.content,
+        )
+
+    def test_create_without_type(self):
+        payload = {
+            "name": "missing type",
+            "planning_area": self.planning_area.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            b'{"type":["This field is required."]}',
             response.content,
         )
 

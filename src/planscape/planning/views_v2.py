@@ -25,6 +25,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioResultStatus,
+    ScenarioType,
     ScenarioVersion,
     TreatmentGoal,
 )
@@ -281,6 +282,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         validated_data = {
             **serializer.validated_data,
             "configuration": configuration_data,
+            "type": scenario_type,
         }
         scenario = create_scenario(**validated_data)
 

@@ -1,4 +1,5 @@
 import { Geometry } from 'geojson';
+import { Capabilities } from './scenario.types';
 
 export interface Plan {
   area_acres: number;
@@ -14,7 +15,14 @@ export interface Plan {
   role: string;
   scenario_count: number;
   user: number;
-  map_status?: 'DONE' | 'PENDING' | 'IN_PROGRESS' | 'STANDS_DONE' | 'FAILED';
+  capabilities: Capabilities[];
+  map_status?:
+    | 'DONE'
+    | 'PENDING'
+    | 'IN_PROGRESS'
+    | 'STANDS_DONE'
+    | 'FAILED'
+    | 'OVERSIZE';
 }
 
 export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;

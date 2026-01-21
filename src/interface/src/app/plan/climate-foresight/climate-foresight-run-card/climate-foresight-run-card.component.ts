@@ -25,18 +25,14 @@ export class ClimateForesightRunCardComponent {
   @Output() copyRun = new EventEmitter<ClimateForesightRun>();
   @Output() openRun = new EventEmitter<ClimateForesightRun>();
 
-  get statusClass(): string {
-    const status = this.run.status || 'draft';
-    return `status-${status}`;
-  }
-
-  get statusLabel(): string {
-    const status = this.run.status || 'draft';
-    return status.charAt(0).toUpperCase() + status.slice(1);
+  get disabledContent() {
+    return !['draft', 'done'].includes(this.run.status);
   }
 
   onCardClick(): void {
-    this.openRun.emit(this.run);
+    if (['draft', 'done'].includes(this.run.status)) {
+      this.openRun.emit(this.run);
+    }
   }
 
   onDelete(event: Event): void {
@@ -47,5 +43,15 @@ export class ClimateForesightRunCardComponent {
   onCopy(event: Event): void {
     event.stopPropagation();
     this.copyRun.emit(this.run);
+  }
+
+  get statusClass(): string {
+    const status = this.run.status || 'draft';
+    return `status-${status}`;
+  }
+
+  get statusLabel(): string {
+    const status = this.run.status || 'draft';
+    return status.charAt(0).toUpperCase() + status.slice(1);
   }
 }

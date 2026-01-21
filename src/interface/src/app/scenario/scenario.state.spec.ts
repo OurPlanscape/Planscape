@@ -42,6 +42,7 @@ describe('ScenarioState', () => {
     },
     geopackage_status: null,
     geopackage_url: null,
+    type: 'PRESET',
   };
 
   beforeEach(() => {

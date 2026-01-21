@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
-import { map, filter } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -34,8 +34,8 @@ import {
   ResourceType,
 } from 'maplibre-gl';
 import {
-  getBoundsFromGeometry,
   addRequestHeaders,
+  getBoundsFromGeometry,
 } from '../../../../maplibre-map/maplibre.helper';
 import { AuthService, ClimateForesightService } from '@services';
 import { DataLayersService } from '../../../../services/data-layers.service';
@@ -44,8 +44,8 @@ import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
 import { MapConfigService } from '../../../../maplibre-map/map-config.service';
 import {
-  MpatLegendComponent,
   LegendEntry,
+  MpatLegendComponent,
 } from './mpat-legend/mpat-legend.component';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
@@ -102,9 +102,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   mpatMatrixLayer: OutputLayer | null = null;
   adaptProtectLayer: OutputLayer | null = null;
   integratedConditionLayer: OutputLayer | null = null;
-
-  currentConditionsLayers: OutputLayer[] = [];
-  futureConditionsLayers: OutputLayer[] = [];
 
   selectedLayerId: string | null = null;
   selectedLayer: OutputLayer | null = null;
@@ -255,54 +252,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         scale: [0, 100],
       };
     }
-
-    this.currentConditionsLayers = [];
-
-    if (this.run.landscape_rollup?.current_datalayer_id) {
-      this.currentConditionsLayers.push({
-        id: 'combined_current',
-        name: 'Combined Current Conditions',
-        datalayerId: this.run.landscape_rollup.current_datalayer_id,
-        datalayer: this.run.landscape_rollup.current_datalayer,
-        type: 'continuous',
-        group: 'current',
-        scale: [0, 1],
-      });
-    }
-
-    if (this.run.pillar_rollups) {
-      for (const rollup of this.run.pillar_rollups) {
-        this.currentConditionsLayers.push({
-          id: `pillar_${rollup.pillar}`,
-          name: rollup.pillar_name,
-          datalayerId: rollup.rollup_datalayer_id,
-          datalayer: rollup.rollup_datalayer,
-          type: 'continuous',
-          group: 'current',
-          scale: [0, 1],
-        });
-      }
-    }
-
-    this.futureConditionsLayers = [];
-
-    if (this.run.landscape_rollup?.future_mapping) {
-      const mapping = this.run.landscape_rollup.future_mapping;
-      for (const [pillarName, entry] of Object.entries(mapping)) {
-        const layerName = entry.matched
-          ? entry.layer_name || pillarName
-          : 'Generic';
-
-        this.futureConditionsLayers.push({
-          id: `future_${pillarName.replace(/\s+/g, '_')}`,
-          name: layerName,
-          datalayerId: entry.layer_id,
-          type: 'continuous',
-          group: 'future',
-          scale: [0, 100],
-        });
-      }
-    }
   }
 
   selectLayer(layer: OutputLayer): void {
@@ -318,11 +267,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       this.integratedConditionLayer,
     ].filter((l): l is OutputLayer => l !== null);
 
-    const allLayers = [
-      ...primaryLayers,
-      ...this.currentConditionsLayers,
-      ...this.futureConditionsLayers,
-    ];
+    const allLayers = [...primaryLayers];
     const layer = allLayers.find((l) => l.id === layerId);
     if (layer) {
       this.selectLayer(layer);
@@ -706,6 +651,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     );
 
     const colors = sortedEntries.map((e) => e.color).join(', ');
-    return `linear-gradient(to bottom, ${colors})`;
+    return `linear-gradient(to top, ${colors})`;
   }
 }

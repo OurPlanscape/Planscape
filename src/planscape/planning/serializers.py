@@ -19,6 +19,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioResult,
+    ScenarioType,
     SharedLink,
     TreatmentGoal,
     TreatmentGoalCategory,
@@ -84,6 +85,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "notes",
             "region_name",
             "scenario_count",
+            "capabilities",
             "latest_updated",
             "created_at",
             "area_acres",
@@ -197,6 +199,7 @@ class PlanningAreaSerializer(
             "notes",
             "region_name",
             "scenario_count",
+            "capabilities",
             "latest_updated",
             "created_at",
             "area_acres",
@@ -784,6 +787,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "tx_plan_count",
             "bbox",
             "origin",
+            "type",
             "version",
             "capabilities",
         )
@@ -814,6 +818,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "planning_area",
             "name",
             "origin",
+            "type",
             "notes",
             "configuration",
             "treatment_goal",
@@ -846,6 +851,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "planning_area",
             "name",
             "origin",
+            "type",
             "notes",
             "configuration",
             "treatment_goal",
@@ -874,6 +880,7 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "planning_area",
             "name",
             "origin",
+            "type",
             "notes",
             "configuration",
             "treatment_goal",
@@ -893,6 +900,11 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
 class UpsertScenarioV3Serializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     name = serializers.CharField(max_length=100, required=True)
+    type = serializers.ChoiceField(
+        choices=ScenarioType.choices,
+        required=True,
+        write_only=True,
+    )
 
     class Meta:
         model = Scenario
@@ -900,7 +912,9 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
             "user",
             "planning_area",
             "name",
+            "type",
             "origin",
+            "type",
             "notes",
         )
 
@@ -955,6 +969,7 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
             "planning_area",
             "name",
             "origin",
+            "type",
             "notes",
             "configuration",
             "treatment_goal",
@@ -1027,6 +1042,7 @@ class ScenarioSerializer(
             "planning_area",
             "name",
             "origin",
+            "type",
             "notes",
             "configuration",
             "treatment_goal",
@@ -1063,6 +1079,7 @@ class ScenarioAndProjectAreasSerializer(serializers.ModelSerializer):
             "updated_at",
             "created_at",
             "origin",
+            "type",
             "planning_area",
             "name",
             "notes",

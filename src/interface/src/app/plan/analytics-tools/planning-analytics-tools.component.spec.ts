@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AnalyticsToolsComponent } from './analytics-tools.component';
+import { PlanningAnalyticsToolsComponent } from './planning-analytics-tools.component';
 import { FeatureService } from '../../features/feature.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PlanState } from '../plan.state';
@@ -7,9 +7,9 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of } from 'rxjs';
 import { Plan } from '@types';
 
-describe('AnalyticsToolsComponent', () => {
-  let component: AnalyticsToolsComponent;
-  let fixture: ComponentFixture<AnalyticsToolsComponent>;
+describe('PlanningAnalyticsToolsComponent', () => {
+  let component: PlanningAnalyticsToolsComponent;
+  let fixture: ComponentFixture<PlanningAnalyticsToolsComponent>;
   let mockFeatureService: jasmine.SpyObj<FeatureService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockActivatedRoute: any;
@@ -41,6 +41,7 @@ describe('AnalyticsToolsComponent', () => {
     creator: 'Test Creator',
     scenario_count: 0,
     latest_updated: '2024-01-01',
+    capabilities: [],
     permissions: ['read', 'write'],
   };
 
@@ -48,7 +49,7 @@ describe('AnalyticsToolsComponent', () => {
     mockFeatureService = jasmine.createSpyObj('FeatureService', [
       'isFeatureEnabled',
     ]);
-    mockFeatureService.isFeatureEnabled.and.returnValue(false);
+    mockFeatureService.isFeatureEnabled.and.returnValue(true);
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -69,7 +70,7 @@ describe('AnalyticsToolsComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [AnalyticsToolsComponent],
+      imports: [PlanningAnalyticsToolsComponent],
       providers: [
         { provide: FeatureService, useValue: mockFeatureService },
         { provide: Router, useValue: mockRouter },
@@ -79,8 +80,9 @@ describe('AnalyticsToolsComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AnalyticsToolsComponent);
+    fixture = TestBed.createComponent(PlanningAnalyticsToolsComponent);
     component = fixture.componentInstance;
+    component.planningAreaCapabilities = ['CLIMATE_FORESIGHT'];
   });
 
   it('should create', () => {
@@ -88,6 +90,8 @@ describe('AnalyticsToolsComponent', () => {
   });
 
   it('should initialize analytics tools with correct properties', () => {
+    mockFeatureService.isFeatureEnabled.and.returnValue(true);
+    fixture.detectChanges();
     expect(component.analyticsTools.length).toBe(1);
     expect(component.analyticsTools[0].id).toBe('climate-foresight');
     expect(component.analyticsTools[0].title).toBe('Climate Foresight');
@@ -97,6 +101,7 @@ describe('AnalyticsToolsComponent', () => {
   });
 
   it('should hide container when no tools are enabled', () => {
+    component.planningAreaCapabilities = [];
     fixture.detectChanges();
     const container = fixture.nativeElement.querySelector(
       '.analytics-tools-container'

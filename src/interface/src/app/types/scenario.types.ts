@@ -2,6 +2,7 @@ import { STAND_SIZE } from '../plan/plan-helpers';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
+export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM';
 
 export interface Scenario {
   id?: number; // undefined when we are creating a new scenario
@@ -26,7 +27,8 @@ export interface Scenario {
   version?: string;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
-  capabilities?: ScenarioCapabilities[];
+  capabilities?: Capabilities[];
+  type: SCENARIO_TYPE;
 }
 
 /**
@@ -71,6 +73,8 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   excluded_areas: number[];
   name: string;
   planning_area: number;
+  priority_objectives?: number[]; // TODO: ensure this matches up with backend field
+  cobenefits?: number[]; // TODO: ensure this matches up with backend field
 }
 
 export interface ScenarioConfigPayload {
@@ -88,6 +92,8 @@ export interface ScenarioV3Config {
   excluded_areas: number[];
   stand_size: STAND_SIZE;
   includes: number[];
+  priority_objectives?: number[]; // TODO: ensure this matches up with backend field
+  cobenefits?: number[]; // TODO: ensure this matches up with backend field
   constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
   treatment_goal: number;
   targets: {
@@ -129,7 +135,7 @@ export type GeoPackageStatus =
   | 'FAILED'
   | null;
 
-export type ScenarioCapabilities = 'IMPACTS' | 'FORSYS';
+export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
 
 export interface TreatmentGoalConfig {
   category_name?: string;

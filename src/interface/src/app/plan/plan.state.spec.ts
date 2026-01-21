@@ -14,7 +14,6 @@ describe('PlanState', () => {
     TestBed.configureTestingModule({
       providers: [
         PlanState,
-        // Provide a mock PlanService, explicitly making "getPlan" a spy
         MockProvider(PlanService, {
           getPlan: jasmine.createSpy('getPlan'),
         }),
@@ -26,7 +25,7 @@ describe('PlanState', () => {
   });
 
   it('should call getPlan with the correct ID', () => {
-    // 1) Subscribe to trigger the internal switchMap pipeline.
+    // Subscribe to trigger the internal pipeline.
     planState.isPlanLoading$.subscribe();
 
     planService.getPlan.and.returnValue(of({ id: 123 } as Plan));
@@ -36,7 +35,7 @@ describe('PlanState', () => {
     expect(planService.getPlan).toHaveBeenCalledWith('123');
   });
 
-  it('should emit loading = true then false in isPlanLoading$', () => {
+  it('should emit initial false, then true then false in isPlanLoading$', () => {
     planService.getPlan.and.returnValue(of({ id: 1 } as Plan));
 
     const loadingStates: boolean[] = [];
@@ -46,7 +45,7 @@ describe('PlanState', () => {
 
     planState.setPlanId(1);
 
-    expect(loadingStates).toEqual([true, false]);
+    expect(loadingStates).toEqual([false, true, false]);
     sub.unsubscribe();
   });
 
@@ -56,6 +55,7 @@ describe('PlanState', () => {
       name: 'Test Plan',
       geometry: { type: 'Point', coordinates: [0, 0] } as Geometry,
     } as Plan;
+
     planService.getPlan.and.returnValue(of(mockPlan));
 
     const emittedPlans: Plan[] = [];
@@ -77,6 +77,7 @@ describe('PlanState', () => {
       name: 'Geometry Plan',
       geometry: { type: 'Polygon', coordinates: [] } as Geometry,
     } as Plan;
+
     planService.getPlan.and.returnValue(of(mockPlan));
 
     let emittedGeometry: GeoJSON | undefined;
@@ -90,7 +91,7 @@ describe('PlanState', () => {
     sub.unsubscribe();
   });
 
-  it('should emit isLoading = true, then isLoading = false with error when getPlan fails', () => {
+  it('should emit initial false, then true, then false with error when getPlan fails', () => {
     planService.getPlan.and.returnValue(
       throwError(() => new Error('network error'))
     );
@@ -102,7 +103,45 @@ describe('PlanState', () => {
 
     planState.setPlanId(666);
 
-    expect(loadingStates).toEqual([true, false]);
+    expect(loadingStates).toEqual([false, true, false]);
     sub.unsubscribe();
+  });
+
+  it('should clear cached plan state when resetPlanId() is called (no refetch, loading becomes false)', () => {
+    const mockPlan: Plan = {
+      id: 42,
+      name: 'Plan to Reset',
+      geometry: { type: 'Point', coordinates: [1, 2] } as Geometry,
+    } as Plan;
+
+    planService.getPlan.and.returnValue(of(mockPlan));
+
+    const emittedPlans: Plan[] = [];
+    const planSub = planState.currentPlan$.subscribe((p) =>
+      emittedPlans.push(p)
+    );
+
+    const loadingStates: boolean[] = [];
+    const loadingSub = planState.isPlanLoading$.subscribe((v) =>
+      loadingStates.push(v)
+    );
+
+    // Load once
+    planState.setPlanId(42);
+
+    expect(emittedPlans).toEqual([mockPlan]);
+    expect(planService.getPlan).toHaveBeenCalledTimes(1);
+    expect(loadingStates).toEqual([false, true, false]);
+
+    // Reset should clear the cached resource (emit isLoading=false),
+    // and must NOT call getPlan again.
+    planState.resetPlanId();
+
+    expect(planService.getPlan).toHaveBeenCalledTimes(1);
+    expect(emittedPlans).toEqual([mockPlan]); // no new plan emission on reset
+    expect(loadingStates).toEqual([false, true, false, false]); // extra false from cleared resource
+
+    planSub.unsubscribe();
+    loadingSub.unsubscribe();
   });
 });
