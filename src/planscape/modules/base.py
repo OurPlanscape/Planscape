@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Type, Union
 
-from datasets.models import DataLayer, Dataset, PreferredDisplayType
+from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
 from planning.models import (
@@ -45,6 +45,7 @@ class BaseModule:
         return Dataset.objects.filter(
             modules__contains=[self.name],
             preferred_display_type__isnull=False,
+            visibility=VisibilityOptions.PUBLIC,
         ).select_related("organization")
 
     def _get_main_datasets(self):
