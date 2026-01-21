@@ -153,7 +153,6 @@ export class ClimateForesightRunComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.mapModuleService.loadMapModule();
     this.route.params.pipe(untilDestroyed(this)).subscribe((params) => {
       this.runId = params['runId'] ? +params['runId'] : null;
       if (this.runId) {
@@ -164,6 +163,7 @@ export class ClimateForesightRunComponent implements OnInit {
     this.planState.currentPlan$
       .pipe(untilDestroyed(this))
       .subscribe((plan: Plan) => {
+        this.mapModuleService.loadMapModule();
         this.currentPlan = plan;
       });
   }

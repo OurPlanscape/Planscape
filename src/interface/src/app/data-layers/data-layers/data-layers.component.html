@@ -18,7 +18,8 @@
         </div>
         <app-search-results
           [searchTerm]="searchTerm"
-          [results]="results"></app-search-results>
+          [results]="results"
+          [displayAddButton]="displayAddButton"></app-search-results>
         <div *ngIf="resultCount === 0">
           <sg-no-results></sg-no-results>
         </div>
