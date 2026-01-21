@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Type, Union
 
-from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
+from datasets.models import DataLayer, Dataset, PreferredDisplayType
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
 from planning.models import (
@@ -42,7 +42,10 @@ class BaseModule:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+        return Dataset.objects.filter(
+            modules__contains=[self.name],
+            preferred_display_type__isnull=False,
+        ).select_related("organization")
 
     def _get_main_datasets(self):
         return self.get_datasets().filter(
@@ -93,9 +96,6 @@ class ForsysModule(BaseModule):
             "inclusions": list(inclusions),
             "thresholds": {"slope": slope, "distance_from_roads": distance_from_roads},
         }
-
-    def get_datasets(self, **kwargs):
-        return Dataset.objects.none()
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return ForsysModuleSerializer
