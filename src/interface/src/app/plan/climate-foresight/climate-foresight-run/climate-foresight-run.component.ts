@@ -2,12 +2,12 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  interval,
   Observable,
   of,
-  take,
-  interval,
   Subject,
   switchMap,
+  take,
   takeUntil,
 } from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -15,21 +15,20 @@ import { FormGroup } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 
 import {
-  StepsComponent,
-  StepsNavComponent,
-  StepsActionsComponent,
   StepComponent,
   StepConfig,
+  StepsComponent,
+  StepsNavComponent,
 } from '@styleguide';
 import { SharedModule } from '../../../shared/shared.module';
 import { PlanState } from '../../plan.state';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import {
-  Plan,
   ClimateForesightRun,
+  DataLayer,
   InputDatalayer,
   Pillar,
-  DataLayer,
+  Plan,
 } from '@types';
 import { DataLayerSelectionComponent } from './data-layer-selection/data-layer-selection.component';
 import { AssignFavorabilityComponent } from './assign-favorability/assign-favorability.component';
@@ -41,12 +40,12 @@ import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dia
 import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MAX_CLIMATE_DATALAYERS, SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
-import { CdkDrag, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { MapModuleService } from '@services/map-module.service';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { MAX_SELECTED_DATALAYERS } from 'src/app/data-layers/data-layers/max-selected-datalayers.token';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { SEND_GEOMETRY } from 'src/app/data-layers/data-layers/geometry-datalayers.token';
+import { USE_GEOMETRY } from 'src/app/data-layers/data-layers/geometry-datalayers.token';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -67,7 +66,6 @@ type SaveStepData = {
     SharedModule,
     StepsComponent,
     StepsNavComponent,
-    StepsActionsComponent,
     StepComponent,
     CdkStepperModule,
     MatSnackBarModule,
@@ -75,8 +73,6 @@ type SaveStepData = {
     AssignPillarsComponent,
     AssignFavorabilityComponent,
     CdkDropListGroup,
-    CdkDropList,
-    CdkDrag,
   ],
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],
@@ -85,7 +81,7 @@ type SaveStepData = {
     { provide: MAX_SELECTED_DATALAYERS, useValue: MAX_CLIMATE_DATALAYERS },
     MapModuleService,
     { provide: MAP_MODULE_NAME, useValue: 'climate_foresight' },
-    { provide: SEND_GEOMETRY, useValue: true },
+    { provide: USE_GEOMETRY, useValue: true },
   ],
 })
 export class ClimateForesightRunComponent implements OnInit {

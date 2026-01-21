@@ -26,7 +26,7 @@ import { MAX_SELECTED_DATALAYERS } from './data-layers/max-selected-datalayers.t
 
 import { distinctUntilChanged } from 'rxjs/operators';
 import { PlanState } from '../plan/plan.state';
-import { SEND_GEOMETRY } from './data-layers/geometry-datalayers.token';
+import { USE_GEOMETRY } from './data-layers/geometry-datalayers.token';
 
 @Injectable()
 export class DataLayersStateService {
@@ -166,7 +166,7 @@ export class DataLayersStateService {
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,
-    @Inject(SEND_GEOMETRY)
+    @Inject(USE_GEOMETRY)
     private readonly sendGeometry: boolean,
     private planState: PlanState
   ) {}

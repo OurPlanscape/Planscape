@@ -65,11 +65,20 @@ import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives
 import { FeatureService } from '../../features/feature.service';
 import { Step1CustomComponent } from '../step1-custom/step1-custom.component';
 import { CustomCobenefitsComponent } from '../custom-cobenefits/custom-cobenefits.component';
+import { MAP_MODULE_NAME } from '@services/map-module.token';
+import { USE_GEOMETRY } from '../../data-layers/data-layers/geometry-datalayers.token';
+import { MapModuleService } from '@services/map-module.service';
 
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-creation',
-  providers: [BaseLayersStateService, DataLayersStateService],
+  providers: [
+    { provide: MAP_MODULE_NAME, useValue: 'forsys' },
+    { provide: USE_GEOMETRY, useValue: true },
+    BaseLayersStateService,
+    DataLayersStateService,
+    MapModuleService,
+  ],
   standalone: true,
   imports: [
     AsyncPipe,
@@ -179,10 +188,13 @@ export class ScenarioCreationComponent implements OnInit {
     private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar,
     private treatmentGoalsService: TreatmentGoalsService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private mapModuleService: MapModuleService
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
+    // pre load datasets
+    this.mapModuleService.loadMapModule();
   }
 
   ngOnInit(): void {
