@@ -52,6 +52,7 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
+    ScenarioType,
     TreatmentGoal,
     TreatmentGoalUsageType,
 )
@@ -519,11 +520,12 @@ def zip_directory(file_obj, source_dir):
 
 
 def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
+    scenario_type = scenario.type
     # treatment goal datalayers
     tx_goal = scenario.treatment_goal
 
     datalayers = []
-    if tx_goal:
+    if scenario_type == ScenarioType.PRESET and tx_goal:
         datalayers = [
             {
                 "id": tgudl.datalayer.id,
@@ -567,6 +569,39 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 }
             )
 
+    if scenario_type == ScenarioType.CUSTOM:
+        priority_objectives = cfg.get("priority_objectives") or []
+        datalayers.extend(
+            [
+                {
+                    "id": priority.id,
+                    "name": priority.name,
+                    "metric": get_datalayer_metric(priority),
+                    "type": priority.type,
+                    "geometry_type": priority.geometry_type,
+                    "threshold": None,
+                    "usage_type": TreatmentGoalUsageType.PRIORITY,
+                }
+                for priority in DataLayer.objects.filter(pk__in=priority_objectives)
+            ]
+        )
+
+        cobenefits = cfg.get("cobenefits") or []
+        datalayers.extend(
+            [
+                {
+                    "id": benefit.id,
+                    "name": benefit.name,
+                    "metric": get_datalayer_metric(benefit),
+                    "type": benefit.type,
+                    "geometry_type": benefit.geometry_type,
+                    "threshold": None,
+                    "usage_type": TreatmentGoalUsageType.SECONDARY_METRIC,
+                }
+                for benefit in DataLayer.objects.filter(pk__in=cobenefits)
+            ]
+        )
+
     number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
 
     min_area_project = get_min_project_area(scenario)
@@ -608,10 +643,19 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if scenario.status == ScenarioStatus.ARCHIVED:
         errors.append("Archived scenarios cannot be run.")
 
-    if not scenario.treatment_goal:
-        errors.append("Scenario has no Treatment Goal assigned.")
-
     cfg = dict(getattr(scenario, "configuration", {}) or {})
+    scenario_type = scenario.type
+
+    if scenario_type == ScenarioType.PRESET:
+        if not scenario.treatment_goal:
+            errors.append("Scenario has no Treatment Goal assigned.")
+    elif scenario_type == ScenarioType.CUSTOM:
+        priority_ids = cfg.get("priority_objectives") or []
+        cobenefit_ids = cfg.get("cobenefits") or []
+        if not priority_ids:
+            errors.append("Configuration field `priority_objectives` is required.")
+        if not cobenefit_ids:
+            errors.append("Configuration field `cobenefits` is required.")
     targets = cfg.get("targets") or {}
 
     stand_size = cfg.get("stand_size")

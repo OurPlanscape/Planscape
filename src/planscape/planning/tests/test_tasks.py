@@ -18,6 +18,7 @@ from planning.tasks import (
     async_pre_forsys_process,
     async_send_email_large_planning_area,
     async_send_email_scenario_finished,
+    prepare_scenarios_for_forsys_and_run,
     trigger_geopackage_generation,
     trigger_scenario_ready_emails,
 )
@@ -26,6 +27,7 @@ from planning.tests.factories import (
     ScenarioFactory,
     TreatmentGoalFactory,
 )
+from planning.models import ScenarioType
 
 
 class AsyncCalculateStandMetricsTest(TestCase):
@@ -136,7 +138,9 @@ class AsyncPreForsysProcessTest(TestCase):
             "seed": 42,
         }
         self.scenario = ScenarioFactory.create(
-            treatment_goal=self.treatment_goal, configuration=configuration
+            treatment_goal=self.treatment_goal,
+            configuration=configuration,
+            type=ScenarioType.PRESET,
         )
 
     def test_async_pre_forsys_process(self):
@@ -165,6 +169,106 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(variables["number_of_projects"], 10)
         self.assertEqual(variables["min_area_project"], 500)
         self.assertEqual(variables["max_area_project"], 4000)
+
+    def test_async_pre_forsys_process_custom_scenario(self):
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
+        configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "priority_objectives": [priority.id],
+            "cobenefits": [cobenefit.id],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration=configuration,
+        )
+
+        async_pre_forsys_process(scenario.pk)
+
+        scenario.refresh_from_db()
+        self.assertIsNotNone(scenario.forsys_input)
+
+        datalayers = scenario.forsys_input["datalayers"]
+        self.assertEqual(len(datalayers), 2)
+        self.assertEqual(
+            {datalayer["id"] for datalayer in datalayers},
+            {priority.id, cobenefit.id},
+        )
+        self.assertEqual(
+            {datalayer["usage_type"] for datalayer in datalayers},
+            {"PRIORITY", "SECONDARY_METRIC"},
+        )
+
+
+class PrepareScenariosForForsysTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create(with_stands=True)
+
+    @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_preset_missing_treatment_goal(self, mock_chord):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.PRESET,
+        )
+
+        prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        mock_chord.assert_not_called()
+
+    @mock.patch("planning.tasks.group")
+    @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_custom_uses_config_datalayers(
+        self, mock_chord, mock_group
+    ):
+        mock_group.side_effect = lambda tasks: tasks
+        mock_chord.return_value = mock.Mock(
+            on_error=mock.Mock(), apply_async=mock.Mock()
+        )
+        mock_chord.return_value.on_error.return_value = mock_chord.return_value
+
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "priority_objectives": [priority.id],
+                "cobenefits": [cobenefit.id],
+            },
+        )
+
+        prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        mock_chord.assert_called_once()
+
+    @mock.patch("planning.tasks.group")
+    @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_preset_uses_treatment_goal_datalayers(
+        self, mock_chord, mock_group
+    ):
+        mock_group.side_effect = lambda tasks: tasks
+        mock_chord.return_value = mock.Mock(
+            on_error=mock.Mock(), apply_async=mock.Mock()
+        )
+        mock_chord.return_value.on_error.return_value = mock_chord.return_value
+
+        treatment_goal = TreatmentGoalFactory.create()
+        datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=treatment_goal,
+            type=ScenarioType.PRESET,
+        )
+        with mock.patch.object(
+            treatment_goal, "get_raster_datalayers", return_value=[datalayer]
+        ):
+            prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        mock_chord.assert_called_once()
 
 
 @override_settings(FEATURE_FLAGS="")
