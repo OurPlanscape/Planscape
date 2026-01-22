@@ -21,7 +21,13 @@
   </div>
 </div>
 <div class="data-set-layers" *ngIf="layers">
-  <div class="data-layer" *ngFor="let layer of layers">
+  <div *ngIf="displayAddButton" class="nodes-header">
+    <span class="select-column">Select</span><span>View Layer</span>
+  </div>
+  <div
+    class="data-layer"
+    [class.with-add-button]="displayAddButton"
+    *ngFor="let layer of layers">
     <span class="button-column" *ngIf="displayAddButton"
       ><button
         mat-icon-button

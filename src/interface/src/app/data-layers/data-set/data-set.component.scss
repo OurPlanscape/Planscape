@@ -75,6 +75,10 @@
   display: flex;
   width: 100%;
   align-items: center;
+  
+  &.with-add-button {
+    gap:16px;
+  }
 }
 
 .info-icon {
@@ -122,4 +126,15 @@
   &.selected:hover {
     background-color: $color-main-blue;
   }
+}
+
+.nodes-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  color: $color-md-gray;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
