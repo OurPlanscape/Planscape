@@ -651,11 +651,8 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
             errors.append("Scenario has no Treatment Goal assigned.")
     elif scenario_type == ScenarioType.CUSTOM:
         priority_ids = cfg.get("priority_objectives") or []
-        cobenefit_ids = cfg.get("cobenefits") or []
         if not priority_ids:
             errors.append("Configuration field `priority_objectives` is required.")
-        if not cobenefit_ids:
-            errors.append("Configuration field `cobenefits` is required.")
     targets = cfg.get("targets") or {}
 
     stand_size = cfg.get("stand_size")

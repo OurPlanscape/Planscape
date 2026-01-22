@@ -884,24 +884,6 @@ class ValidateScenarioConfigurationTest(TestCase):
             self.assertIn(
                 "Configuration field `priority_objectives` is required.", errors
             )
-            self.assertIn("Configuration field `cobenefits` is required.", errors)
-
-    def test_custom_scenario_requires_cobenefits(self):
-        self.scenario = ScenarioFactory.create(
-            planning_area=self.planning_area,
-            treatment_goal=None,
-            type=ScenarioType.CUSTOM,
-        )
-        self.scenario.configuration = {
-            "stand_size": StandSizeChoices.LARGE,
-            "targets": {"max_area": 9999, "max_project_count": 2},
-            "priority_objectives": [1],
-        }
-        with mock.patch(
-            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-        ):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertIn("Configuration field `cobenefits` is required.", errors)
 
     def test_preset_scenario_requires_treatment_goal(self):
         self.scenario = ScenarioFactory.create(
