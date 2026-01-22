@@ -121,7 +121,6 @@
 }
 
 .first-header {
-  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -129,12 +128,11 @@
   gap: 16px;
   color: $color-md-gray;
   padding-left: 8px;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 
 .nodes-header {
-  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -142,5 +140,5 @@
   gap: 16px;
   color: $color-md-gray;
   padding-left: 16px;
-  margin-top: 16px;
+  padding-top: 16px;
 }
