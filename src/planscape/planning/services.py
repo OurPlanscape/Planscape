@@ -549,8 +549,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
     priority_objectives = cfg.get("priority_objectives") or []
-    cobenefit_ids = cfg.get("cobenefits") or []
-    custom_datalayer_ids = set([*priority_objectives, *cobenefit_ids])
+    cobenefits = cfg.get("cobenefits") or []
+    custom_datalayer_ids = set([*priority_objectives, *cobenefits])
     custom_thresholds = {}
 
     for constraint in constraints:
@@ -583,7 +583,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
 
     # custom scenario datalayers
     if priority_objectives:
-        priorities = DataLayer.objects.filter(pk__in=priority_objectives)
+        priority_objectives = DataLayer.objects.filter(pk__in=priority_objectives)
         datalayers.extend(
             [
                 {
@@ -595,11 +595,12 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                     "threshold": custom_thresholds.get(priority.id),
                     "usage_type": TreatmentGoalUsageType.PRIORITY,
                 }
-                for priority in priorities
+                for priority in priority_objectives
             ]
         )
-    if cobenefit_ids:
-        cobenefits = DataLayer.objects.filter(pk__in=cobenefit_ids)
+
+    if cobenefits:
+        cobenefits = DataLayer.objects.filter(pk__in=cobenefits)
         datalayers.extend(
             [
                 {
@@ -657,15 +658,6 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         errors.append("Archived scenarios cannot be run.")
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
-    scenario_type = scenario.type
-
-    if scenario_type == ScenarioType.PRESET:
-        if not scenario.treatment_goal:
-            errors.append("Scenario has no Treatment Goal assigned.")
-    elif scenario_type == ScenarioType.CUSTOM:
-        priority_ids = cfg.get("priority_objectives") or []
-        if not priority_ids:
-            errors.append("Configuration field `priority_objectives` is required.")
     targets = cfg.get("targets") or {}
 
     stand_size = cfg.get("stand_size")
