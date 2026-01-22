@@ -54,6 +54,7 @@ import {
 import { SharedModule } from '../../../../shared/shared.module';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MatMenuModule } from '@angular/material/menu';
 
 type ColorFunction = (pixel: TypedArray, rgba: Uint8ClampedArray) => void;
 
@@ -65,6 +66,7 @@ export interface OutputLayer {
   type: 'mpat' | 'continuous';
   group: string;
   scale?: [number, number]; // [min, max] for continuous layers, e.g. [0, 1] or [0, 100]
+  tooltip?: string;
 }
 
 @UntilDestroy()
@@ -84,6 +86,7 @@ export interface OutputLayer {
     PlanningAreaLayerComponent,
     MpatLegendComponent,
     SectionComponent,
+    MatMenuModule,
   ],
   providers: [MapConfigService],
   templateUrl: './analysis.component.html',
@@ -230,6 +233,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         datalayer: promote.mpat_strength_datalayer,
         type: 'mpat',
         group: 'primary',
+        tooltip: promote.mpat_strength_datalayer?.metadata?.['tooltip'],
       };
 
       this.adaptProtectLayer = {
@@ -240,6 +244,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         type: 'continuous',
         group: 'primary',
         scale: [0, 100],
+        tooltip: promote.adapt_protect_datalayer?.metadata?.['tooltip'],
       };
 
       this.integratedConditionLayer = {
@@ -250,6 +255,8 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         type: 'continuous',
         group: 'primary',
         scale: [0, 100],
+        tooltip:
+          promote.integrated_condition_score_datalayer?.metadata?.['tooltip'],
       };
     }
   }
