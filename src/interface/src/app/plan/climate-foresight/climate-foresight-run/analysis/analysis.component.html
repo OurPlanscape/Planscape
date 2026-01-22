@@ -40,7 +40,17 @@
             }}
           </mat-icon>
           <span class="layer-name">{{ mpatMatrixLayer.name }}</span>
-          <mat-icon class="info-icon">info_outline</mat-icon>
+          <ng-container *ngIf="mpatMatrixLayer.tooltip">
+            <mat-icon
+              class="info-icon"
+              [matMenuTriggerFor]="tooltipMenu"
+              (click)="$event.stopPropagation()"
+              >info_outline</mat-icon
+            >
+            <mat-menu #tooltipMenu="matMenu">
+              <div class="tooltip" [innerHTML]="mpatMatrixLayer.tooltip"></div>
+            </mat-menu>
+          </ng-container>
         </div>
 
         <!-- Adapt-Protect Score -->
@@ -57,7 +67,19 @@
             }}
           </mat-icon>
           <span class="layer-name">{{ adaptProtectLayer.name }}</span>
-          <mat-icon class="info-icon">info_outline</mat-icon>
+          <ng-container *ngIf="adaptProtectLayer.tooltip">
+            <mat-icon
+              class="info-icon"
+              [matMenuTriggerFor]="tooltipMenu"
+              (click)="$event.stopPropagation()"
+              >info_outline</mat-icon
+            >
+            <mat-menu #tooltipMenu="matMenu">
+              <div
+                class="tooltip"
+                [innerHTML]="adaptProtectLayer.tooltip"></div>
+            </mat-menu>
+          </ng-container>
         </div>
 
         <!-- Integrated Condition Score -->
@@ -74,7 +96,19 @@
             }}
           </mat-icon>
           <span class="layer-name">{{ integratedConditionLayer.name }}</span>
-          <mat-icon class="info-icon">info_outline</mat-icon>
+          <ng-container *ngIf="integratedConditionLayer.tooltip">
+            <mat-icon
+              class="info-icon"
+              [matMenuTriggerFor]="tooltipMenu"
+              (click)="$event.stopPropagation()"
+              >info_outline</mat-icon
+            >
+            <mat-menu #tooltipMenu="matMenu">
+              <div
+                class="tooltip"
+                [innerHTML]="integratedConditionLayer.tooltip"></div>
+            </mat-menu>
+          </ng-container>
         </div>
       </div>
     </div>
