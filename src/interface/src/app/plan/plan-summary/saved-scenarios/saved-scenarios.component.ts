@@ -23,7 +23,7 @@ import {
   POLLING_INTERVAL,
 } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
-import { PLANNINGAREA_SIZE_ALERT_THRESHOLD, SNACK_ERROR_CONFIG } from '@shared';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import { canAddScenario } from '../../permissions';
 import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
@@ -166,11 +166,7 @@ export class SavedScenariosComponent implements OnInit {
 
   // Check PA for acreage, and if it doesn't have active scenarios
   get planningAreaIsLarge() {
-    const acres = this.plan?.area_acres ?? 0;
-    return (
-      this.plan?.scenario_count === 0 &&
-      acres >= PLANNINGAREA_SIZE_ALERT_THRESHOLD
-    );
+    return this.plan?.map_status === 'OVERSIZE';
   }
 
   get scenarioDisabledTooltipReason() {

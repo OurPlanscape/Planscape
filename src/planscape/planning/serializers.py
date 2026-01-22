@@ -547,6 +547,22 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
+    priority_objectives = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=1,
+        max_length=2,
+        required=False,
+    )
+
+    cobenefits = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=1,
+        max_length=10,
+        required=False,
+    )
+
     targets = TargetsSerializer(
         required=False,
         help_text="Scenario targets: max_area, max_project_count, estimated_cost.",
@@ -560,7 +576,13 @@ class ConfigurationV3Serializer(serializers.Serializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        for field in ["included_areas", "excluded_areas", "constraints"]:
+        for field in [
+            "included_areas",
+            "excluded_areas",
+            "constraints",
+            "priority_objectives",
+            "cobenefits",
+        ]:
             if field not in data or data[field] is None:
                 data[field] = []
         return data
@@ -596,15 +618,20 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         allow_empty=True,
         required=False,
     )
-
-    def validate_included_areas(self, included_areas):
-        return [included_area.pk for included_area in included_areas]
-
-    def validate_excluded_areas(self, excluded_areas):
-        return [excluded_area.pk for excluded_area in excluded_areas]
-
-    def validate_constraints(self, constraints):
-        return [{**c, "datalayer": c["datalayer"].pk} for c in (constraints or [])]
+    priority_objectives = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        allow_empty=True,
+        min_length=1,
+        max_length=2,
+        required=False,
+    )
+    cobenefits = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        allow_empty=True,
+        min_length=1,
+        max_length=10,
+        required=False,
+    )
 
     def update(self, instance, validated_data):
         instance.configuration = {
@@ -917,10 +944,6 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         if "configuration" in validated_data:
             cfg = instance.configuration or {}
             incoming = validated_data["configuration"]
-            if "excluded_areas" in incoming:
-                cfg["excluded_areas_ids"] = incoming.pop("excluded_areas")
-            if "included_areas" in incoming:
-                cfg["included_areas_ids"] = incoming.pop("included_areas")
             cfg.update(incoming)
             instance.configuration = cfg
 
