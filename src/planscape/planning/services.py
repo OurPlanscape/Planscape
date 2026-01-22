@@ -551,12 +551,12 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     constraints = cfg.get("constraints") or []
     priority_objectives = cfg.get("priority_objectives") or []
     cobenefit_ids = cfg.get("cobenefits") or []
-    objective_ids = set(
+    custom_datalayer_ids = set(
         [*priority_objectives, *cobenefit_ids]
         if scenario_type == ScenarioType.CUSTOM
         else []
     )
-    objective_thresholds = {}
+    custom_thresholds = {}
 
     for constraint in constraints:
         datalayer_id = constraint.get("datalayer")
@@ -566,8 +566,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         if datalayer_id and operator and value is None:
             continue
 
-        if datalayer_id in objective_ids:
-            objective_thresholds[datalayer_id] = (
+        if datalayer_id in custom_datalayer_ids:
+            custom_thresholds[datalayer_id] = (
                 f"value {OPERATOR_MAP.get(operator, operator)} {value}"
             )
             continue
@@ -595,7 +595,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                     "metric": get_datalayer_metric(priority),
                     "type": priority.type,
                     "geometry_type": priority.geometry_type,
-                    "threshold": objective_thresholds.get(priority.id),
+                    "threshold": custom_thresholds.get(priority.id),
                     "usage_type": TreatmentGoalUsageType.PRIORITY,
                 }
                 for priority in priorities
@@ -611,7 +611,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                     "metric": get_datalayer_metric(benefit),
                     "type": benefit.type,
                     "geometry_type": benefit.geometry_type,
-                    "threshold": objective_thresholds.get(benefit.id),
+                    "threshold": custom_thresholds.get(benefit.id),
                     "usage_type": TreatmentGoalUsageType.SECONDARY_METRIC,
                 }
                 for benefit in cobenefits
