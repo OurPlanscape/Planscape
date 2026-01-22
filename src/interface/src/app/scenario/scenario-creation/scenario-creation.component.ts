@@ -1,9 +1,5 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-
+import { Component, HostListener, OnInit } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-
-import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -15,7 +11,6 @@ import {
   Observable,
   of,
   shareReplay,
-  skip,
   switchMap,
   take,
 } from 'rxjs';
@@ -30,7 +25,6 @@ import {
 } from '@angular/forms';
 import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
 import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
   Scenario,
@@ -39,7 +33,6 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { Step1Component } from '../step1/step1.component';
 import { MatDialog } from '@angular/material/dialog';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import {
@@ -48,7 +41,6 @@ import {
 } from '../scenario-helper';
 import { ScenarioErrorModalComponent } from '../scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from '../new-scenario.state';
-import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from 'src/app/plan/plan-helpers';
 import { FeaturesModule } from 'src/app/features/features.module';
@@ -70,36 +62,33 @@ import { Step1WithOverviewComponent } from '../step1-with-overview/step1-with-ov
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 import { CustomPriorityObjectivesComponent } from '../custom-priority-objectives/custom-priority-objectives.component';
-import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
 import { FeatureService } from '../../features/feature.service';
 import { Step1CustomComponent } from '../step1-custom/step1-custom.component';
 import { CustomCobenefitsComponent } from '../custom-cobenefits/custom-cobenefits.component';
-
-enum ScenarioTabs {
-  CONFIG,
-  DATA_LAYERS,
-  BASE_LAYERS,
-}
+import { MAP_MODULE_NAME } from '@services/map-module.token';
+import { USE_GEOMETRY } from '../../data-layers/data-layers/geometry-datalayers.token';
+import { MapModuleService } from '@services/map-module.service';
 
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-creation',
-  providers: [BaseLayersStateService, DataLayersStateService],
+  providers: [
+    { provide: MAP_MODULE_NAME, useValue: 'forsys' },
+    { provide: USE_GEOMETRY, useValue: true },
+    BaseLayersStateService,
+    DataLayersStateService,
+    MapModuleService,
+  ],
   standalone: true,
   imports: [
     AsyncPipe,
-    MatTabsModule,
     ReactiveFormsModule,
     NgIf,
-    DataLayersComponent,
     StepsComponent,
     CdkStepperModule,
-    LegacyMaterialModule,
     StepComponent,
-    Step1Component,
     StandLevelConstraintsComponent,
     TreatmentTargetComponent,
-    BaseLayersComponent,
     FeaturesModule,
     ExcludeAreasSelectorComponent,
     StepsNavComponent,
@@ -110,15 +99,12 @@ enum ScenarioTabs {
     SharedModule,
     CustomPriorityObjectivesComponent,
     CustomCobenefitsComponent,
-    ProcessOverviewComponent,
     Step1CustomComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
 })
 export class ScenarioCreationComponent implements OnInit {
-  @ViewChild('tabGroup') tabGroup!: MatTabGroup;
-
   config: Partial<ScenarioV3Config> = {};
 
   planId = this.route.parent?.snapshot.data['planId'];
@@ -177,7 +163,7 @@ export class ScenarioCreationComponent implements OnInit {
     map((goal) => goal?.name)
   );
 
-  // copy of index locally to show the last step as completed
+  // Copy of index locally to show the last step as completed
   localIndex = 0;
 
   scenarioType$ = this.scenarioState.currentScenario$.pipe(
@@ -187,20 +173,12 @@ export class ScenarioCreationComponent implements OnInit {
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
-      /* Most browsers will display their own default dialog to confirm navigation away
-        from a window or URL. e.g, "Changes that you made may not be saved"
-
-        Older browsers will display the message in the string below.
-
-        All browsers require this string to be non-empty, in order to display anything.
-      */
       $event.returnValue =
         'Are you sure you want to leave this page? Your unsaved changes will be lost.';
     }
   }
 
   constructor(
-    private dataLayersStateService: DataLayersStateService,
     private scenarioService: ScenarioService,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute,
@@ -210,18 +188,13 @@ export class ScenarioCreationComponent implements OnInit {
     private scenarioState: ScenarioState,
     private matSnackBar: MatSnackBar,
     private treatmentGoalsService: TreatmentGoalsService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private mapModuleService: MapModuleService
   ) {
-    this.dataLayersStateService.paths$
-      .pipe(untilDestroyed(this), skip(1))
-      .subscribe((path) => {
-        if (path.length > 0) {
-          this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
-        }
-      });
-
-    // pre load goals
+    // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
+    // pre load datasets
+    this.mapModuleService.loadMapModule();
   }
 
   ngOnInit(): void {
@@ -261,7 +234,7 @@ export class ScenarioCreationComponent implements OnInit {
   convertSavedConfigToNewConfig(scenario: Scenario): Partial<ScenarioV3Config> {
     const newState = Object.fromEntries(
       Object.entries(scenario.configuration)
-        .filter(([_, value]) => value != null)
+        .filter(([, value]) => value != null)
         .map(([key, value]) => [key, value as NonNullable<typeof value>])
     );
     // Adding excluded areas and treatment goal
@@ -394,7 +367,7 @@ export class ScenarioCreationComponent implements OnInit {
       .subscribe(() => this.runScenario());
   }
 
-  async runScenario() {
+  runScenario() {
     this.newScenarioState.setLoading(true);
     this.scenarioService
       .runScenario(this.scenarioId)
@@ -413,7 +386,7 @@ export class ScenarioCreationComponent implements OnInit {
             state: { showInProgressModal: true },
           });
         },
-        error: (e) => {
+        error: () => {
           this.dialog.open(ScenarioErrorModalComponent);
           this.newScenarioState.setLoading(false);
         },
