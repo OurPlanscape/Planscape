@@ -109,6 +109,17 @@ export function convertFlatConfigurationToDraftPayload(
   if (constraints.length > 0) {
     config.constraints = constraints;
   }
+
+  // Custom Scenarios - priority objectives
+  if (formData.priority_objectives) {
+    config.priority_objectives = formData.priority_objectives;
+  }
+
+  // Custom Scenarios - co-benefits
+  if (formData.cobenefits) {
+    config.cobenefits = formData.cobenefits;
+  }
+
   payload.configuration = config;
   return payload;
 }

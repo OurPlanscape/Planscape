@@ -73,8 +73,8 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   excluded_areas: number[];
   name: string;
   planning_area: number;
-  priority_objectives?: number[]; // TODO: ensure this matches up with backend field
-  cobenefits?: number[]; // TODO: ensure this matches up with backend field
+  priority_objectives?: number[];
+  cobenefits?: number[];
 }
 
 export interface ScenarioConfigPayload {
