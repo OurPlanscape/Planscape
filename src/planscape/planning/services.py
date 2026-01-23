@@ -520,11 +520,10 @@ def zip_directory(file_obj, source_dir):
 
 
 def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
-    scenario_type = scenario.type
     # treatment goal datalayers
     tx_goal = scenario.treatment_goal
-
     datalayers = []
+    
     if tx_goal:
         datalayers = [
             {
@@ -562,6 +561,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         if datalayer_id and operator and value is None:
             continue
 
+        # Defer custom objectives/cobenefits so their thresholds get applied later.
         if datalayer_id in custom_datalayer_ids:
             custom_thresholds[datalayer_id] = (
                 f"value {OPERATOR_MAP.get(operator, operator)} {value}"
@@ -581,6 +581,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             }
         )
 
+    # custom scenario datalayers
     if priority_objectives:
         priorities = DataLayer.objects.filter(pk__in=priority_objectives)
         datalayers.extend(
@@ -597,7 +598,6 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 for priority in priorities
             ]
         )
-
     if cobenefit_ids:
         cobenefits = DataLayer.objects.filter(pk__in=cobenefit_ids)
         datalayers.extend(
