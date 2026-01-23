@@ -58,8 +58,11 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
 
   getData() {
     const datalayers = this.form.getRawValue().dataLayers;
+    return { cobenefits: datalayers?.map((layer) => layer.id) ?? [] };
+  }
+
+  override beforeStepExit() {
     this.dataLayersStateService.clearDataLayer();
     this.dataLayersStateService.updateSelectedLayers([]);
-    return { cobenefits: datalayers?.map((layer) => layer.id) ?? [] };
   }
 }
