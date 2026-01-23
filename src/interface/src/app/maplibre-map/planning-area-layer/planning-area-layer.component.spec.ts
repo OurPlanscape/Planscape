@@ -48,15 +48,12 @@ describe('PlanningAreaLayerComponent', () => {
 
     const tilesUrl = await firstValueFrom(component.tilesUrl$);
 
-    expect(tilesUrl).toBe(
-      `${MARTIN_SOURCES.planningArea.tilesUrl}?id=42`
-    );
+    expect(tilesUrl).toBe(`${MARTIN_SOURCES.planningArea.tilesUrl}?id=42`);
   });
 
   it('renders the vector source and layer when tiles URL is available', () => {
-    const vectorSource = fixture.nativeElement.querySelector(
-      'mgl-vector-source'
-    );
+    const vectorSource =
+      fixture.nativeElement.querySelector('mgl-vector-source');
     const layer = fixture.nativeElement.querySelector('mgl-layer');
 
     expect(vectorSource).toBeTruthy();

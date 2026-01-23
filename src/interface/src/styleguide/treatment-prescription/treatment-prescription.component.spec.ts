@@ -34,9 +34,7 @@ describe('TreatmentPrescriptionComponent', () => {
     component.treatmentType = 'SINGLE';
     component.action = 'RX_FIRE';
 
-    expect(component.singleRxTitleText()).toBe(
-      PRESCRIPTIONS.SINGLE.RX_FIRE
-    );
+    expect(component.singleRxTitleText()).toBe(PRESCRIPTIONS.SINGLE.RX_FIRE);
   });
 
   it('derives title for sequence prescriptions', () => {
@@ -44,9 +42,10 @@ describe('TreatmentPrescriptionComponent', () => {
     component.treatmentType = 'SEQUENCE';
     component.action = 'HEAVY_THINNING_BURN_PLUS_RX_FIRE';
 
-    const expected = PRESCRIPTIONS.SEQUENCE.HEAVY_THINNING_BURN_PLUS_RX_FIRE
-      .map((d) => d.description)
-      .join(' ');
+    const expected =
+      PRESCRIPTIONS.SEQUENCE.HEAVY_THINNING_BURN_PLUS_RX_FIRE.map(
+        (d) => d.description
+      ).join(' ');
 
     expect(component.singleRxTitleText()).toBe(expected);
   });
