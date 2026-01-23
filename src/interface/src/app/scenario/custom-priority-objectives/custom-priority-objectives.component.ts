@@ -65,8 +65,9 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
   }
 
   getData() {
-    this.dataLayersStateService.clearDataLayer();
     const datalayers = this.form.getRawValue().dataLayers;
+    this.dataLayersStateService.clearDataLayer();
+    this.dataLayersStateService.updateSelectedLayers([]);
     return { priority_objectives: datalayers?.map((dl) => dl.id) ?? [] };
   }
 }

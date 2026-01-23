@@ -25,7 +25,6 @@ const MAX_SELECTABLE_LAYERS = 10;
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomCobenefitsComponent },
-    DataLayersStateService,
   ],
 })
 export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
@@ -58,8 +57,9 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
   }
 
   getData() {
-    this.dataLayersStateService.clearDataLayer();
     const datalayers = this.form.getRawValue().dataLayers;
+    this.dataLayersStateService.clearDataLayer();
+    this.dataLayersStateService.updateSelectedLayers([]);
     return { cobenefits: datalayers?.map((layer) => layer.id) ?? [] };
   }
 }
