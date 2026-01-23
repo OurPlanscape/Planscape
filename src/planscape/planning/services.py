@@ -525,7 +525,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     tx_goal = scenario.treatment_goal
 
     datalayers = []
-    if scenario_type == ScenarioType.PRESET and tx_goal:
+    if tx_goal:
         datalayers = [
             {
                 "id": tgudl.datalayer.id,
@@ -551,11 +551,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     constraints = cfg.get("constraints") or []
     priority_objectives = cfg.get("priority_objectives") or []
     cobenefit_ids = cfg.get("cobenefits") or []
-    custom_datalayer_ids = set(
-        [*priority_objectives, *cobenefit_ids]
-        if scenario_type == ScenarioType.CUSTOM
-        else []
-    )
+    custom_datalayer_ids = set([*priority_objectives, *cobenefit_ids])
     custom_thresholds = {}
 
     for constraint in constraints:
@@ -585,7 +581,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             }
         )
 
-    if scenario_type == ScenarioType.CUSTOM:
+    if priority_objectives:
         priorities = DataLayer.objects.filter(pk__in=priority_objectives)
         datalayers.extend(
             [
@@ -602,6 +598,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             ]
         )
 
+    if cobenefit_ids:
         cobenefits = DataLayer.objects.filter(pk__in=cobenefit_ids)
         datalayers.extend(
             [
