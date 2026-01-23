@@ -11,7 +11,7 @@
     "lint:fix": "ng lint --fix",
     "format:styles": "prettier --write \"**/*.scss\"",
     "build:prod": "ng build --configuration production",
-    "test:prod": "ng test --browsers=ChromeHeadlessWithWebGL --watch=false --code-coverage",
+    "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",

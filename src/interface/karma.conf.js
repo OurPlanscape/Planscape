@@ -34,21 +34,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['ChromeHeadlessWithWebGL'],
-    customLaunchers: {
-      ChromeHeadlessWithWebGL: {
-        base: 'ChromeHeadless',
-        flags: [
-          '--no-sandbox',
-          '--disable-dev-shm-usage',
-
-          // WebGL-safe in headless (MapLibre / WebGL)
-          '--use-gl=angle',
-          '--use-angle=swiftshader-webgl',
-          '--enable-unsafe-swiftshader',
-        ],
-      },
-    },
+    browsers: ['Chrome'],
     singleRun: false,
     restartOnFileChange: true,
   });
