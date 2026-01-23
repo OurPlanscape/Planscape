@@ -359,16 +359,21 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         configuration_data = serializer.validated_data.get("configuration")
         if configuration_data:
-            serializer.validated_data["configuration"] = create_config(
+            existing = instance.configuration or {}
+            incoming_config = create_config(
                 stand_size=configuration_data.get("stand_size"),
                 targets=configuration_data.get("targets") or {},
-                constraints=configuration_data.get("constraints", []),
-                included_areas=configuration_data.get("included_areas_ids", []),
-                excluded_areas=configuration_data.get("excluded_areas_ids", []),
-                priorities=configuration_data.get("priority_objectives", []),
-                cobenefits=configuration_data.get("cobenefits", []),
+                constraints=configuration_data.get("constraints") or [],
+                included_areas=configuration_data.get("included_areas_ids") or [],
+                excluded_areas=configuration_data.get("excluded_areas_ids") or [],
+                priorities=configuration_data.get("priority_objectives") or [],
+                cobenefits=configuration_data.get("cobenefits") or [],
                 seed=configuration_data.get("seed"),
             )
+            updated_config = dict(existing)
+            for key in configuration_data.keys():
+                updated_config[key] = incoming_config.get(key)
+            serializer.validated_data["configuration"] = updated_config
         self.perform_update(serializer)
         response_serializer = ScenarioV3Serializer(instance)
         planning_area = instance.planning_area
