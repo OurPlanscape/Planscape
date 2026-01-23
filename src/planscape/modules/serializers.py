@@ -1,4 +1,3 @@
-from core.flags import feature_enabled
 from datasets.models import DataLayer, Dataset
 from datasets.serializers import BrowseDataLayerSerializer
 from organizations.models import Organization
