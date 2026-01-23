@@ -32,7 +32,7 @@ import { combineLatest, map, Observable, Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
-import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
@@ -79,7 +79,7 @@ import { FrontendConstants } from '../../map/map.constants';
     MapTooltipComponent,
     PlanningAreaLayerComponent,
     ControlComponent,
-    MatLegacySlideToggleModule,
+    MatSlideToggleModule,
     OpacitySliderComponent,
     FeaturesModule,
     MapBaseDropdownComponent,

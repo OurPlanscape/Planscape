@@ -30,7 +30,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
 import { ApplyTreatmentComponent } from '../apply-treatment/apply-treatment.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
-import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
@@ -56,7 +56,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     FeaturesModule,
     SharedModule,
     ButtonComponent,
-    MatLegacySlideToggleModule,
+    MatSlideToggleModule,
     MatIconModule,
     MatMenuModule,
     TreatmentNavbarMenuComponent,

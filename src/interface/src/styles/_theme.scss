@@ -3,26 +3,26 @@
 @import "colors";
 
 $styleguide: (
-  'header-1': mat.define-typography-level(30px, 32px, 700),
-  'header-2' : mat.define-typography-level(26px, 28px, 700),
-  'header-3': mat.define-typography-level(22px, 24px, 600),
-  'header-4': mat.define-typography-level(18px, 24px, 600),
-  'header-5': mat.define-typography-level(16px, 24px, 600),
-  'standard-input-label': mat.define-typography-level(16px, 22px, 500),
-  'standard-label': mat.define-typography-level(16px, 24px, 500),
-  'standard-label-sm': mat.define-typography-level(14px, 24px, 500),
-  'xs-label': mat.define-typography-level(14px, 14px, 600),
-  'regular-paragraph': mat.define-typography-level(16px, 26px, 400),
-  'small-paragraph': mat.define-typography-level(14px, 22px, 400),
-  'important-paragraph': mat.define-typography-level(18px, 32px, 400),
-  'button-text': mat.define-typography-level(16px, 16px, 500),
-  'button-text-sm' : mat.define-typography-level(14px, 16px, 500),
-  'input': mat.define-typography-level(14px, 1em, 500),
-  'top-level-label': mat.define-typography-level(16px, 20px, 700),
+  'header-1': mat.m2-define-typography-level(30px, 32px, 700),
+  'header-2' : mat.m2-define-typography-level(26px, 28px, 700),
+  'header-3': mat.m2-define-typography-level(22px, 24px, 600),
+  'header-4': mat.m2-define-typography-level(18px, 24px, 600),
+  'header-5': mat.m2-define-typography-level(16px, 24px, 600),
+  'standard-input-label': mat.m2-define-typography-level(16px, 22px, 500),
+  'standard-label': mat.m2-define-typography-level(16px, 24px, 500),
+  'standard-label-sm': mat.m2-define-typography-level(14px, 24px, 500),
+  'xs-label': mat.m2-define-typography-level(14px, 14px, 600),
+  'regular-paragraph': mat.m2-define-typography-level(16px, 26px, 400),
+  'small-paragraph': mat.m2-define-typography-level(14px, 22px, 400),
+  'important-paragraph': mat.m2-define-typography-level(18px, 32px, 400),
+  'button-text': mat.m2-define-typography-level(16px, 16px, 500),
+  'button-text-sm' : mat.m2-define-typography-level(14px, 16px, 500),
+  'input': mat.m2-define-typography-level(14px, 1em, 500),
+  'top-level-label': mat.m2-define-typography-level(16px, 20px, 700),
 );
 
 // see https://v16.material.angular.io/guide/typography#using-typography-styles-in-your-application
-$planscape-typography: mat.define-typography-config(
+$planscape-typography: mat.m2-define-typography-config(
   // base font family
   $font-family: '"Public Sans", sans-serif',
     //  One-off header, usually at the top of the page (e.g. a hero header).
@@ -46,33 +46,33 @@ $planscape-typography: mat.define-typography-config(
     // body 2
   $body-2: map.get($styleguide, 'small-paragraph'),
     // caption
-  $caption: mat.define-typography-level(12px, 22px, 400),
+  $caption: mat.m2-define-typography-level(12px, 22px, 400),
     // button
   $button: map.get($styleguide, 'button-text-sm'),
 );
 
 
 // Create a custom palette using the primary color
-$custom-primary-palette: map.merge(mat.$indigo-palette, (500: $color-standard-blue));
+$custom-primary-palette: map.merge(mat.$m2-indigo-palette, (500: $color-standard-blue));
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$planscape-frontend-primary: mat.define-palette($custom-primary-palette);
+$planscape-frontend-primary: mat.m2-define-palette($custom-primary-palette);
 
-$planscape-error-palette: map.merge(mat.$red-palette, (500: $color-error));
+$planscape-error-palette: map.merge(mat.$m2-red-palette, (500: $color-error));
 
 // Create the theme object. A theme consists of configurations for individual
 // theming systems such as "color" or "typography".
-$planscape-frontend-theme: mat.define-light-theme(
+$planscape-frontend-theme: mat.m2-define-light-theme(
     (
       color: (
         primary: $planscape-frontend-primary,
         accent: $planscape-frontend-primary, // not really used
-        warn: mat.define-palette($planscape-error-palette)
+        warn: mat.m2-define-palette($planscape-error-palette)
       ),
     )
 );
 
-$color-config: mat.get-color-config($planscape-frontend-theme);
+$color-config: mat.m2-get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
 
