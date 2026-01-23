@@ -1,4 +1,4 @@
-<section class="welcome">
+<section class="welcome" data-testid="home-welcome">
   <h1 class="mat-h2">Welcome to Planscape</h1>
 
   <p>
@@ -8,13 +8,19 @@
   </p>
 
   <div class="actions">
-    <a sg-button variant="ghost" routerLink="/explore">Explore</a>
-    <a sg-button variant="primary" routerLink="/login">Sign in</a>
+    <a sg-button variant="ghost" routerLink="/explore" data-testid="cta-explore"
+      >Explore</a
+    >
+    <a sg-button variant="primary" routerLink="/login" data-testid="cta-sign-in"
+      >Sign in</a
+    >
   </div>
 
   <div class="secondary">
     <h5>New to Planscape?</h5>
-    <a routerLink="/signup" class="text-link">Create account</a>
+    <a routerLink="/signup" class="text-link" data-testid="cta-create-account"
+      >Create account</a
+    >
   </div>
 </section>
 <section class="info">
