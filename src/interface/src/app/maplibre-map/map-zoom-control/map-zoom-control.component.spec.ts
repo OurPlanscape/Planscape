@@ -1,33 +1,27 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MapConfigState } from '../map-config.state';
 import { MapZoomControlComponent } from './map-zoom-control.component';
-import { MockDeclarations, MockProvider } from 'ng-mocks';
-import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { MockBuilder, MockRender } from 'ng-mocks';
+import { MockMapLibreMap } from 'src/testing/maplibre-gl.mock';
 
 describe('MapZoomControlComponent', () => {
   let component: MapZoomControlComponent;
-  let fixture: ComponentFixture<MapZoomControlComponent>;
-  let mapLibreMap: MapLibreMap;
+  let fixture: any;
+  let mockMap: MockMapLibreMap;
 
-  beforeEach(async () => {
-    mapLibreMap = new MapLibreMap({
+  beforeEach(() => MockBuilder(MapZoomControlComponent).mock(MapConfigState));
+
+  beforeEach(() => {
+    mockMap = new MockMapLibreMap({
       container: document.createElement('div'),
       center: [0, 0],
       zoom: 1,
     });
 
-    await TestBed.configureTestingModule({
-      imports: [MapZoomControlComponent],
-      providers: [MockProvider(MapConfigState)],
-      declarations: MockDeclarations(ControlComponent),
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(MapZoomControlComponent);
-    component = fixture.componentInstance;
-    component.mapLibreMap = mapLibreMap; // Assign the mock map
-
-    fixture.detectChanges();
+    // Pass mapLibreMap as input to ensure it's set before ngOnInit
+    fixture = MockRender(MapZoomControlComponent, {
+      mapLibreMap: mockMap as any,
+    });
+    component = fixture.point.componentInstance;
   });
 
   it('should create', () => {
