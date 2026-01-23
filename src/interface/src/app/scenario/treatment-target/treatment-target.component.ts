@@ -1,11 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  CommonModule,
-  CurrencyPipe,
-  DecimalPipe,
-  NgClass,
-  NgIf,
-} from '@angular/common';
+import { CommonModule, DecimalPipe, NgIf } from '@angular/common';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { NgxMaskModule } from 'ngx-mask';
@@ -33,12 +27,10 @@ import { STAND_SIZES } from 'src/app/plan/plan-helpers';
   standalone: true,
   imports: [
     CommonModule,
-    CurrencyPipe,
     DecimalPipe,
     MatDividerModule,
     MatInputModule,
     MatFormFieldModule,
-    NgClass,
     NgIf,
     NgxMaskModule,
     ReactiveFormsModule,
@@ -60,6 +52,9 @@ export class TreatmentTargetComponent
   form!: FormGroup;
 
   summary$ = this.newScenarioState.availableStands$.pipe(map((s) => s.summary));
+
+  // TODO interim fix to bypass some forys issues.
+  private readonly standSizeMultiplier = 2;
 
   constructor(private newScenarioState: NewScenarioState) {
     super();
@@ -99,7 +94,7 @@ export class TreatmentTargetComponent
         )
         .subscribe((config) => {
           this.minAcreage = config.stand_size
-            ? STAND_SIZES[config.stand_size]
+            ? STAND_SIZES[config.stand_size] * this.standSizeMultiplier
             : 0;
           if (config.targets) {
             if (config.targets.estimated_cost) {
