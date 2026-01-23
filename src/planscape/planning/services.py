@@ -521,8 +521,8 @@ def zip_directory(file_obj, source_dir):
 def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     # treatment goal datalayers
     tx_goal = scenario.treatment_goal
-
     datalayers = []
+    
     if tx_goal:
         datalayers = [
             {
@@ -547,25 +547,73 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
+    priority_objectives = cfg.get("priority_objectives") or []
+    cobenefits = cfg.get("cobenefits") or []
+    custom_datalayer_ids = set([*priority_objectives, *cobenefits])
+    custom_thresholds = {}
 
     for constraint in constraints:
         datalayer_id = constraint.get("datalayer")
         operator = constraint.get("operator")
         value = constraint.get("value")
 
-        if datalayer_id and operator and value is not None:
-            dl = DataLayer.objects.get(pk=datalayer_id)
-            datalayers.append(
-                {
-                    "id": dl.pk,
-                    "name": dl.name,
-                    "metric": get_datalayer_metric(dl),
-                    "type": dl.type,
-                    "geometry_type": dl.geometry_type,
-                    "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
-                    "usage_type": "THRESHOLD",
-                }
+        if datalayer_id and operator and value is None:
+            continue
+
+        # Defer custom objectives/cobenefits so their thresholds get applied later.
+        if datalayer_id in custom_datalayer_ids:
+            custom_thresholds[datalayer_id] = (
+                f"value {OPERATOR_MAP.get(operator, operator)} {value}"
             )
+            continue
+
+        dl = DataLayer.objects.get(pk=datalayer_id)
+        datalayers.append(
+            {
+                "id": dl.pk,
+                "name": dl.name,
+                "metric": get_datalayer_metric(dl),
+                "type": dl.type,
+                "geometry_type": dl.geometry_type,
+                "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
+                "usage_type": "THRESHOLD",
+            }
+        )
+
+    # custom scenario datalayers
+    if priority_objectives:
+        priority_objectives = DataLayer.objects.filter(pk__in=priority_objectives)
+        datalayers.extend(
+            [
+                {
+                    "id": priority.id,
+                    "name": priority.name,
+                    "metric": get_datalayer_metric(priority),
+                    "type": priority.type,
+                    "geometry_type": priority.geometry_type,
+                    "threshold": custom_thresholds.get(priority.id),
+                    "usage_type": TreatmentGoalUsageType.PRIORITY,
+                }
+                for priority in priority_objectives
+            ]
+        )
+
+    if cobenefits:
+        cobenefits = DataLayer.objects.filter(pk__in=cobenefits)
+        datalayers.extend(
+            [
+                {
+                    "id": benefit.id,
+                    "name": benefit.name,
+                    "metric": get_datalayer_metric(benefit),
+                    "type": benefit.type,
+                    "geometry_type": benefit.geometry_type,
+                    "threshold": custom_thresholds.get(benefit.id),
+                    "usage_type": TreatmentGoalUsageType.SECONDARY_METRIC,
+                }
+                for benefit in cobenefits
+            ]
+        )
 
     number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
 
@@ -607,9 +655,6 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
     if scenario.status == ScenarioStatus.ARCHIVED:
         errors.append("Archived scenarios cannot be run.")
-
-    if not scenario.treatment_goal:
-        errors.append("Scenario has no Treatment Goal assigned.")
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
     targets = cfg.get("targets") or {}

@@ -3,7 +3,7 @@ import logging
 import rasterio
 from celery import chord, group
 from core.flags import feature_enabled
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import MultiPolygon
@@ -31,6 +31,7 @@ from planning.models import (
     PlanningAreaMapStatus,
     Scenario,
     ScenarioResultStatus,
+    ScenarioType,
     TreatmentGoalUsageType,
 )
 from planning.services import (
@@ -276,13 +277,7 @@ def prepare_planning_area(planning_area_id: int) -> int:
 def async_pre_forsys_process(scenario_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
 
-    tx_goal = scenario.treatment_goal
     planning_area = scenario.planning_area
-    if not tx_goal:
-        log.warning(
-            f"Scenario {scenario_id} does not have an associated TreatmentGoal."
-        )
-        return
 
     excluded_datalayers = None
     excluded_areas_ids = scenario.configuration.get("excluded_areas_ids")
@@ -315,9 +310,26 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
         )
         return
 
-    treatment_goal = scenario.treatment_goal
-
-    datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+    scenario_type = scenario.type
+    if scenario_type == ScenarioType.PRESET:
+        treatment_goal = scenario.treatment_goal
+        if not treatment_goal:
+            log.warning(
+                f"Scenario {scenario_id} does not have an associated TreatmentGoal."
+            )
+            return
+        datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
+    elif scenario_type == ScenarioType.CUSTOM:
+        configuration = getattr(scenario, "configuration", {}) or {}
+        priority_ids = configuration.get("priority_objectives") or []
+        cobenefit_ids = configuration.get("cobenefits") or []
+        datalayers = DataLayer.objects.filter(
+            pk__in=[*priority_ids, *cobenefit_ids],
+            type=DataLayerType.RASTER,
+        )
+    else:
+        log.warning("Scenario %s has no scenario type set.", scenario_id)
+        return
 
     tasks = [async_pre_forsys_process.si(scenario_id=scenario.pk)]
     for datalayer in datalayers:

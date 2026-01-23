@@ -937,6 +937,36 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         model = Scenario
         fields = ("treatment_goal", "configuration")
 
+    def validate(self, attrs):
+        instance = self.instance
+        scenario_type = instance.type
+        treatment_goal = attrs.get("treatment_goal", instance.treatment_goal)
+        configuration = attrs.get("configuration", {})
+        merged_config = {**(instance.configuration or {}), **configuration}
+        errors = {}
+
+        if scenario_type == ScenarioType.PRESET:
+            if not treatment_goal:
+                errors["treatment_goal"] = "Scenario has no Treatment Goal assigned."
+            if "configuration" in attrs:
+                if configuration.get("priority_objectives") or configuration.get("cobenefits"):
+                    errors["configuration"] = (
+                        "Preset scenarios cannot set `priority_objectives` or `cobenefits`."
+                    )
+
+        if scenario_type == ScenarioType.CUSTOM:
+            if "treatment_goal" in attrs and treatment_goal is not None:
+                errors["treatment_goal"] = "Custom scenarios cannot set a Treatment Goal."
+            priority_ids = merged_config.get("priority_objectives") or []
+            if not priority_ids:
+                errors["configuration"] = {
+                    "priority_objectives": "Configuration field `priority_objectives` is required."
+                }
+
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
     def update(self, instance: Scenario, validated_data):
         if "treatment_goal" in validated_data:
             instance.treatment_goal = validated_data["treatment_goal"]
