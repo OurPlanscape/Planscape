@@ -1106,9 +1106,9 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(
             response.json(),
             {
-                "configuration": (
+                "configuration": [
                     "Preset scenarios cannot set `priority_objectives` or `cobenefits`."
-                )
+                ]
             },
         )
 
@@ -1129,7 +1129,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json(),
-            {"treatment_goal": "Custom scenarios cannot set a Treatment Goal."},
+            {"treatment_goal": ["Custom scenarios cannot set a Treatment Goal."]},
         )
 
     def test_patch_custom_requires_priority_objectives(self):
