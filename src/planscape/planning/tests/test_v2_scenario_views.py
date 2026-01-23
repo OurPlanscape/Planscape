@@ -1141,7 +1141,11 @@ class PatchScenarioConfigurationTest(APITestCase):
             treatment_goal=None,
         )
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"stand_size": "SMALL"}}
+        payload = {
+            "configuration": {
+                "targets": {"max_area": 1000, "max_project_count": 1},
+            }
+        }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
@@ -1156,6 +1160,38 @@ class PatchScenarioConfigurationTest(APITestCase):
                 }
             },
         )
+
+    def test_patch_custom_allows_stand_size_without_priority_objectives(self):
+        scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.CUSTOM,
+            configuration={},
+            treatment_goal=None,
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"stand_size": "SMALL"}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("configuration", {}).get("stand_size"), "SMALL")
+
+    def test_patch_preset_allows_stand_size_without_treatment_goal(self):
+        scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+            configuration={},
+            treatment_goal=None,
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"stand_size": "SMALL"}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("configuration", {}).get("stand_size"), "SMALL")
 
 
 class ScenarioCapabilitiesViewTest(APITestCase):

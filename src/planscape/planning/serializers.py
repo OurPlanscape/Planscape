@@ -942,11 +942,17 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         scenario_type = instance.type
         treatment_goal = attrs.get("treatment_goal", instance.treatment_goal)
         configuration = attrs.get("configuration", {})
+        # Allow updates that only change the stand_size without other validations as it is the first step
+        stand_size_only_update = (
+            "configuration" in attrs
+            and "stand_size" in configuration
+            and set(configuration) == {"stand_size"}
+        )
         merged_config = {**(instance.configuration or {}), **configuration}
         errors = {}
 
         if scenario_type == ScenarioType.PRESET:
-            if not treatment_goal:
+            if not treatment_goal and not stand_size_only_update:
                 errors["treatment_goal"] = "Scenario has no Treatment Goal assigned."
             if "configuration" in attrs:
                 if configuration.get("priority_objectives") or configuration.get("cobenefits"):
@@ -958,7 +964,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             if "treatment_goal" in attrs and treatment_goal is not None:
                 errors["treatment_goal"] = "Custom scenarios cannot set a Treatment Goal."
             priority_ids = merged_config.get("priority_objectives") or []
-            if not priority_ids:
+            if not priority_ids and not stand_size_only_update:
                 errors["configuration"] = {
                     "priority_objectives": "Configuration field `priority_objectives` is required."
                 }
