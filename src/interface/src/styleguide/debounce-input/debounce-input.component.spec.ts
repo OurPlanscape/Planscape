@@ -12,7 +12,6 @@ import {
   DebounceInputComponent,
 } from './debounce-input.component';
 
-
 describe('DebounceInputComponent', () => {
   let component: DebounceInputComponent;
   let fixture: ComponentFixture<DebounceInputComponent>;

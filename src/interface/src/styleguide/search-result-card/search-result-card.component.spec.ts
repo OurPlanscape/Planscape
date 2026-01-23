@@ -98,9 +98,13 @@ describe('SearchResultCardComponent', () => {
     expect(attributes[0].description).toContain('Thin');
 
     component.searchString = 'burn';
-    expect(component.sequenceDescriptionMatches(attributes[0].description)).toBeTrue();
+    expect(
+      component.sequenceDescriptionMatches(attributes[0].description)
+    ).toBeTrue();
 
     component.searchString = 'masticate';
-    expect(component.sequenceDescriptionMatches(attributes[0].description)).toBeFalse();
+    expect(
+      component.sequenceDescriptionMatches(attributes[0].description)
+    ).toBeFalse();
   });
 });

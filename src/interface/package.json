@@ -124,6 +124,7 @@
     "prettier": "^3.0.2",
     "prettier-eslint": "^15.0.1",
     "storybook": "^8.0.5",
-    "typescript": "~5.4.3"
+    "typescript": "~5.4.3",
+    "wait-on": "^7.2.0"
   }
 }

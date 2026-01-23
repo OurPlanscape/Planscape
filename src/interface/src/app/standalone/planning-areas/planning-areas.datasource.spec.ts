@@ -62,9 +62,7 @@ describe('PlanningAreasDataSource', () => {
     queryParamsServiceSpy.getInitialCreatorsIdParam.and.returnValue([2]);
     createDataSource();
 
-    const selectedCreators = await firstValueFrom(
-      dataSource.selectedCreators$
-    );
+    const selectedCreators = await firstValueFrom(dataSource.selectedCreators$);
 
     expect(selectedCreators.map((creator) => creator.id)).toEqual([2]);
   });

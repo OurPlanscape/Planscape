@@ -16,7 +16,9 @@ describe('ChangeOverTimeChartComponent', () => {
   let fixture: ComponentFixture<ChangeOverTimeChartComponent>;
   let treatmentsServiceSpy: jasmine.SpyObj<TreatmentsService>;
   let treatmentPlan$: BehaviorSubject<any>;
-  let reportMetrics$: BehaviorSubject<Record<'blue' | 'purple' | 'orange' | 'green', Metric>>;
+  let reportMetrics$: BehaviorSubject<
+    Record<'blue' | 'purple' | 'orange' | 'green', Metric>
+  >;
   let selectedProjectArea$: BehaviorSubject<any>;
   let filteredTreatmentTypes$: BehaviorSubject<any[]>;
 
@@ -157,7 +159,9 @@ describe('ChangeOverTimeChartComponent', () => {
       },
     ];
     filteredTreatmentTypes$.next(['Thin' as any]);
-    treatmentsServiceSpy.getTreatmentImpactCharts.and.returnValue(of(resultData));
+    treatmentsServiceSpy.getTreatmentImpactCharts.and.returnValue(
+      of(resultData)
+    );
 
     const chartData = await firstValueFrom(component.barChartData$);
 
@@ -185,7 +189,9 @@ describe('ChangeOverTimeChartComponent', () => {
         relative_year: 0,
       },
     ];
-    treatmentsServiceSpy.getTreatmentImpactCharts.and.returnValue(of(resultData));
+    treatmentsServiceSpy.getTreatmentImpactCharts.and.returnValue(
+      of(resultData)
+    );
 
     const chartData = await firstValueFrom(component.barChartData$);
 

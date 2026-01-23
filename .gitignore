@@ -175,6 +175,10 @@ node_modules/
 # Cypress artifacts
 src/interface/cypress/screenshots/
 
+# Playwright artifacts
+src/interface/test-results/
+src/interface/playwright-report/
+
 
 pyrightconfig.json
 
