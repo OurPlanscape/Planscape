@@ -27,7 +27,6 @@ from planning.models import (
     PlanningAreaMapStatus,
     ScenarioResultStatus,
     ScenarioStatus,
-    ScenarioType,
     TreatmentGoalUsageType,
 )
 from planning.services import (
