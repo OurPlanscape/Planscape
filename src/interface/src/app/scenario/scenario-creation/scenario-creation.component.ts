@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
-import { CdkStepperModule } from '@angular/cdk/stepper';
+import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   catchError,
@@ -399,6 +399,14 @@ export class ScenarioCreationComponent implements OnInit {
   stepChanged(i: number) {
     this.localIndex = i;
     this.newScenarioState.setStepIndex(i);
+  }
+
+  handleStepChangeEvent(event: StepperSelectionEvent) {
+    console.log('we have stepped to a step?', event);
+    const newStep = event.selectedStep;
+    if (newStep instanceof StepComponent && newStep.stepLogic) {
+      newStep.stepLogic.beforeStepLoad();
+    }
   }
 
   scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {

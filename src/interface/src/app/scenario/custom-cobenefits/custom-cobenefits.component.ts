@@ -61,6 +61,10 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
     return { cobenefits: datalayers?.map((layer) => layer.id) ?? [] };
   }
 
+  override beforeStepLoad() {
+    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+  }
+
   override beforeStepExit() {
     this.dataLayersStateService.clearDataLayer();
     this.dataLayersStateService.updateSelectedLayers([]);
