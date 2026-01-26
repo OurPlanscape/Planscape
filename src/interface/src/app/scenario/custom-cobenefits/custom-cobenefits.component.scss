@@ -2,13 +2,14 @@
 @import 'mixins';
 @import 'variables';
 
+$footer-height: 72px;
+$header-height: 350px;
+$navbar-height: 170px;
+
 :host {
-  position: sticky;
-  top: 0;
   z-index: 1;
   display: block;
-  min-height: 10px;
-  height: 10px; // todo: figure out proper reqd height
+  min-height: 100vh;
 
   .padding-section {
     padding-left: 16px;
@@ -22,6 +23,11 @@
     color: $color-error;
     margin: 0;
   }
+
+  .cobenefits-selection {
+    position: sticky;
+    top: 0px;
+  }
 }
 
 .cobenefits-selection ::ng-deep .mat-expansion-panel-body {
@@ -29,6 +35,10 @@
 }
 
 .cobenefits-selection ::ng-deep .mat-expansion-panel-body .scrollable {
-    max-height: 100vh;
-    overflow-y: auto;
+  max-height: calc(100vh - ($header-height + $navbar-height));
+
+  &.with-footer {
+    max-height: calc(100vh - ($header-height + $navbar-height + $footer-height));
+
   }
+}

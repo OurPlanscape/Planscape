@@ -2,6 +2,10 @@
 @import 'mixins';
 @import 'variables';
 
+$footer-height: 72px;
+$header-height: 350px;
+$navbar-height: 170px;
+
 :host {
   z-index: 1;
   display: block;
@@ -21,9 +25,8 @@
   }
 
   .priority-selection {
-   height: 230px;
-  position: sticky;
-  top: 0px;
+    position: sticky;
+    top: 0px;
   }
 
 }
@@ -33,6 +36,11 @@
 }
 
 .priority-selection ::ng-deep .mat-expansion-panel-body .scrollable {
-    max-height: calc(100vh - (420px + 100px)); // todo: include "clear" footer in calc, when exists
-    overflow-y: auto;
+  max-height: calc(100vh - ($header-height + $navbar-height));
+  overflow-y: auto;
+
+  &.with-footer {
+    max-height: calc(100vh - ($header-height + $navbar-height + $footer-height));
+
   }
+}
