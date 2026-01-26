@@ -3,12 +3,10 @@
 @import 'variables';
 
 :host {
-  position: sticky;
-  top: 0;
+
   z-index: 1;
   display: block;
-  min-height: 10px;
-  height: 10px; // todo: figure out this calc 
+  min-height: 2000px;
 
   .padding-section {
     padding-left: 16px;
@@ -22,6 +20,13 @@
     color: $color-error;
     margin: 0;
   }
+
+  .priority-selection {
+   height: 230px;
+  position: sticky;
+  top: 0px;
+  }
+
 }
 
 .priority-selection ::ng-deep .mat-expansion-panel-body {
@@ -29,6 +34,6 @@
 }
 
 .priority-selection ::ng-deep .mat-expansion-panel-body .scrollable {
-    max-height: 100vh;
+    max-height: 510px;
     overflow-y: auto;
   }
