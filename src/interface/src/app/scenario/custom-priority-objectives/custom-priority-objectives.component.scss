@@ -3,10 +3,9 @@
 @import 'variables';
 
 :host {
-
   z-index: 1;
   display: block;
-  min-height: 2000px;
+  min-height: 100vh;
 
   .padding-section {
     padding-left: 16px;
@@ -34,6 +33,6 @@
 }
 
 .priority-selection ::ng-deep .mat-expansion-panel-body .scrollable {
-    max-height: 510px;
+    max-height: calc(100vh - (420px + 100px)); // todo: include "clear" footer in calc, when exists
     overflow-y: auto;
   }
