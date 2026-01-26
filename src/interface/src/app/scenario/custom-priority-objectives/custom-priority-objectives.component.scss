@@ -41,6 +41,5 @@ $navbar-height: 170px;
 
   &.with-footer {
     max-height: calc(100vh - ($header-height + $navbar-height + $footer-height));
-
   }
 }
