@@ -402,7 +402,6 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   handleStepChangeEvent(event: StepperSelectionEvent) {
-    console.log('we have stepped to a step?', event);
     const newStep = event.selectedStep;
     if (newStep instanceof StepComponent && newStep.stepLogic) {
       newStep.stepLogic.beforeStepLoad();
