@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
@@ -15,6 +15,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
 import { of, map, take, switchMap } from 'rxjs';
 import { DataLayersService } from '@services';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -26,6 +27,7 @@ const MAX_SELECTABLE_LAYERS = 2;
     ChipSelectorComponent,
     CommonModule,
     DataLayersComponent,
+    MatProgressSpinnerModule,
     SectionComponent,
     ReactiveFormsModule,
   ],
@@ -35,7 +37,10 @@ const MAX_SELECTABLE_LAYERS = 2;
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
+export class CustomPriorityObjectivesComponent
+  extends StepDirective<ScenarioCreation>
+  implements OnInit
+{
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -67,6 +72,10 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
         });
         this.form.markAsTouched();
       });
+  }
+
+  ngOnInit(): void {
+    this.mapConfigToUI();
   }
 
   handleRemoveItem(layer: any) {
@@ -104,6 +113,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
   }
 
   override beforeStepLoad() {
+    this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.mapConfigToUI();
   }

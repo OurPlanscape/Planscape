@@ -28,7 +28,7 @@
         Select 1 or {{ maxLayers }} Priority Objectives to guide where ForSys
         will focus treatments.
       </div>
-      <div *ngIf="uiLoading">loading placeholder</div>
+      <mat-spinner diameter="20" *ngIf="uiLoading"></mat-spinner>
       <div *ngIf="!uiLoading">
         {{ selectionCount$ | async }}/{{ maxLayers }} Selected
       </div>

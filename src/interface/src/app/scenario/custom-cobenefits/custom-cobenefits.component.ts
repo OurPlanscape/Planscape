@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import { DataLayer, ScenarioCreation } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersService } from '@services';
 import { NewScenarioState } from '../new-scenario.state';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { of, map, take, switchMap } from 'rxjs';
 
 const MAX_SELECTABLE_LAYERS = 10;
@@ -23,6 +24,7 @@ const MAX_SELECTABLE_LAYERS = 10;
     ChipSelectorComponent,
     CommonModule,
     DataLayersComponent,
+    MatProgressSpinnerModule,
     NgIf,
     SectionComponent,
     ReactiveFormsModule,
@@ -31,7 +33,10 @@ const MAX_SELECTABLE_LAYERS = 10;
     { provide: StepDirective, useExisting: CustomCobenefitsComponent },
   ],
 })
-export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
+export class CustomCobenefitsComponent
+  extends StepDirective<ScenarioCreation>
+  implements OnInit
+{
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>([]),
   });
@@ -60,6 +65,10 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
         });
         this.form.markAsTouched();
       });
+  }
+
+  ngOnInit(): void {
+    this.mapConfigToUI();
   }
 
   mapConfigToUI(): void {
@@ -97,6 +106,7 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
   }
 
   override beforeStepLoad() {
+    this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.mapConfigToUI();
   }
