@@ -81,7 +81,6 @@ export class NewScenarioState {
         this.setLoading(false); // we never otherwise call this unless the step is < 3
       }
     }),
-    filter(([standsLoaded, stepIndex]) => stepIndex < 3),
     tap(() => this.setLoading(true)),
     switchMap(([_, step, standSize, excludedAreas, constraints]) =>
       this.scenarioService
