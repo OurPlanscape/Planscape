@@ -101,6 +101,7 @@ export interface ScenarioV3Config {
     max_area: number;
     max_project_count: number;
   };
+  type?: SCENARIO_TYPE;
 }
 
 export interface ScenarioV3Payload {

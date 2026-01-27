@@ -73,7 +73,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     this.step$
       .pipe(
         untilDestroyed(this),
-        filter((step) => step === 1)
+        filter((step) => step === this.newScenarioState.excludedStandsStep)
       )
       .subscribe((step) => {
         this.constrainedStands.forEach((id) =>
@@ -99,7 +99,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     this.newScenarioState.excludedStands$,
   ]).pipe(
     map(([step, excluded]): FilterSpecification | undefined =>
-      step > 1 && excluded.length
+      step > this.newScenarioState.excludedStandsStep && excluded.length
         ? ['!', ['in', ['get', 'id'], ['literal', excluded]]]
         : undefined
     )

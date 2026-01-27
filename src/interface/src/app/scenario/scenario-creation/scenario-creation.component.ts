@@ -240,6 +240,7 @@ export class ScenarioCreationComponent implements OnInit {
     // Adding excluded areas and treatment goal
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
+    newState['type'] = scenario.type;
     return newState as Partial<ScenarioCreation>;
   }
 

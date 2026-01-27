@@ -27,7 +27,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
-import { getNamedConstraints } from './scenario-helper';
+import { getNamedConstraints, isCustomScenario } from './scenario-helper';
 
 @Injectable()
 export class NewScenarioState {
@@ -81,6 +81,10 @@ export class NewScenarioState {
         this.setLoading(false); // we never otherwise call this unless the step is < 3
       }
     }),
+
+    filter(
+      ([standsLoaded, stepIndex]) => stepIndex < this.maxStepThatUpdatesMap()
+    ),
     tap(() => this.setLoading(true)),
     switchMap(([_, step, standSize, excludedAreas, constraints]) =>
       this.scenarioService
@@ -217,5 +221,28 @@ export class NewScenarioState {
 
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
+  }
+
+  private maxStepThatUpdatesMap() {
+    if (
+      this._scenarioConfig$.value?.type &&
+      isCustomScenario(this._scenarioConfig$.value.type)
+    ) {
+      return 5;
+    } else {
+      return 3;
+    }
+  }
+
+  // this needs to be 1 for preset, 3 for custom
+  get excludedStandsStep() {
+    if (
+      this._scenarioConfig$.value?.type &&
+      isCustomScenario(this._scenarioConfig$.value.type)
+    ) {
+      return 3;
+    } else {
+      return 1;
+    }
   }
 }
