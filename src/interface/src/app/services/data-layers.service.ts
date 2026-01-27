@@ -69,6 +69,17 @@ export class DataLayersService {
     );
   }
 
+  getDataLayersByIds(layer_ids: number[]) {
+    const id_list = layer_ids.join(',');
+    return this.http.get<BaseLayer[]>(
+      environment.backend_endpoint + '/v2/datalayers/',
+      {
+        withCredentials: true,
+        params: { id_in: id_list },
+      }
+    );
+  }
+
   listBaseLayersByDataSet(dataSetId: number) {
     return this.http.get<BaseLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
