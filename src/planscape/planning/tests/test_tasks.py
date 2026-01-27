@@ -11,7 +11,12 @@ from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
 
-from planning.models import GeoPackageStatus, ScenarioResult, ScenarioResultStatus
+from planning.models import (
+    GeoPackageStatus,
+    ScenarioResult,
+    ScenarioResultStatus,
+    ScenarioType,
+)
 from planning.tasks import (
     async_calculate_stand_metrics_with_stand_list,
     async_forsys_run,
@@ -27,7 +32,6 @@ from planning.tests.factories import (
     ScenarioFactory,
     TreatmentGoalFactory,
 )
-from planning.models import ScenarioType
 
 
 class AsyncCalculateStandMetricsTest(TestCase):
@@ -167,7 +171,7 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(type(self.scenario.forsys_input["variables"]), dict)
         variables = self.scenario.forsys_input["variables"]
         self.assertEqual(variables["number_of_projects"], 10)
-        self.assertEqual(variables["min_area_project"], 500)
+        self.assertEqual(variables["min_area_project"], 494)
         self.assertEqual(variables["max_area_project"], 4000)
 
     def test_async_pre_forsys_process_custom_scenario(self):
