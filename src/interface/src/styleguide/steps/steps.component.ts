@@ -124,9 +124,15 @@ export class StepsComponent<T> extends CdkStepper {
   }
 
   private moveNextOrFinish() {
+    const currentStep = this.selected;
     if (this.outerForm && this.outerForm.invalid) {
       this.outerForm.markAllAsTouched();
       return;
+    }
+
+    // call the beforeStepExit function for any cleanup
+    if (currentStep instanceof StepComponent && currentStep.stepLogic) {
+      currentStep.stepLogic.beforeStepExit();
     }
 
     if (this.isLastStep) {
@@ -137,6 +143,10 @@ export class StepsComponent<T> extends CdkStepper {
   }
 
   goBack(): void {
+    const currentStep = this.selected;
+    if (currentStep instanceof StepComponent && currentStep.stepLogic) {
+      currentStep.stepLogic.beforeStepExit();
+    }
     this.previous();
   }
 
