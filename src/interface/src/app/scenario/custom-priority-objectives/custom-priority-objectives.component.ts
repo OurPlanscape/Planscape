@@ -35,9 +35,7 @@ const MAX_SELECTABLE_LAYERS = 2;
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent
-  extends StepDirective<ScenarioCreation>
-{
+export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],

@@ -44,10 +44,10 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
 
   maxLayers = MAX_SELECTABLE_LAYERS;
 
-  constructor(private dataLayersStateService: DataLayersStateService,
-        private dataLayersService: DataLayersService,
-        private newScenarioState: NewScenarioState
-    
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private dataLayersService: DataLayersService,
+    private newScenarioState: NewScenarioState
   ) {
     super();
 
@@ -61,7 +61,6 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
         this.form.markAsTouched();
       });
   }
-
 
   mapConfigToUI(): void {
     this.uiLoading = true;

@@ -19,7 +19,9 @@ No, only your selected Priority Objectives influence how ForSys ranks areas for 
         outcomes of your scenario.
       </div>
       <div *ngIf="uiLoading">loading placeholder</div>
-      <div *ngIf="!uiLoading">{{ selectionCount$ | async }}/{{ maxLayers }} Selected</div>
+      <div *ngIf="!uiLoading">
+        {{ selectionCount$ | async }}/{{ maxLayers }} Selected
+      </div>
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
