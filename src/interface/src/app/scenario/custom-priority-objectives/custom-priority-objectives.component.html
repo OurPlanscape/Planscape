@@ -28,8 +28,8 @@
         Select 1 or {{ maxLayers }} Priority Objectives to guide where ForSys
         will focus treatments.
       </div>
-
-      <div>{{ selectionCount$ | async }}/{{ maxLayers }} Selected</div>
+      <div *ngIf="uiLoading">loading placeholder</div>
+      <div *ngIf="!uiLoading">{{ selectionCount$ | async }}/{{ maxLayers }} Selected</div>
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>

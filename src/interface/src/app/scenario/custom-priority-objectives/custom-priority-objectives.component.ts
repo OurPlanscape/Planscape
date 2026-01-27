@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
@@ -37,7 +37,6 @@ const MAX_SELECTABLE_LAYERS = 2;
 })
 export class CustomPriorityObjectivesComponent
   extends StepDirective<ScenarioCreation>
-  implements OnInit
 {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
@@ -45,6 +44,8 @@ export class CustomPriorityObjectivesComponent
       [Validators.required, Validators.minLength(1)]
     ),
   });
+
+  uiLoading = false;
 
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
 
@@ -79,7 +80,8 @@ export class CustomPriorityObjectivesComponent
     return { priority_objectives: datalayers?.map((dl) => dl.id) ?? [] };
   }
 
-  ngOnInit(): void {
+  mapConfigToUI(): void {
+    this.uiLoading = true;
     this.newScenarioState.scenarioConfig$
       .pipe(
         untilDestroyed(this),
@@ -98,12 +100,14 @@ export class CustomPriorityObjectivesComponent
         if (this.form.get('dataLayers')?.value) {
           this.form.get('dataLayers')?.setValue(layers);
           this.dataLayersStateService.updateSelectedLayers(layers);
+          this.uiLoading = false;
         }
       });
   }
 
   override beforeStepLoad() {
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+    this.mapConfigToUI();
   }
 
   override beforeStepExit(): void {
