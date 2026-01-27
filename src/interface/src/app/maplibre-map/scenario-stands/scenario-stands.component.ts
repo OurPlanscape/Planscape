@@ -69,11 +69,11 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private mapConfigState: MapConfigState
   ) {
-    // remove constrainedStands when going back to step 1
+    // remove constrainedStands when going back to previous steps
     this.step$
       .pipe(
         untilDestroyed(this),
-        filter((step) => step === this.newScenarioState.excludedStandsStep)
+        filter((step) => step <= this.newScenarioState.excludedStandsStep)
       )
       .subscribe((step) => {
         this.constrainedStands.forEach((id) =>

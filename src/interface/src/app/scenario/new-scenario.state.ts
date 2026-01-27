@@ -91,8 +91,8 @@ export class NewScenarioState {
         .getExcludedStands(
           this.planId,
           standSize,
-          step > 0 ? excludedAreas : undefined,
-          step > 1 ? constraints : undefined
+          step >= this.excludedStandsStep ? excludedAreas : undefined,
+          step >= this.constraintsStep ? constraints : undefined
         )
         .pipe(
           tap(() => this.setLoading(false)),
@@ -244,5 +244,9 @@ export class NewScenarioState {
     } else {
       return 1;
     }
+  }
+
+  get constraintsStep() {
+    return this.excludedStandsStep + 1;
   }
 }
