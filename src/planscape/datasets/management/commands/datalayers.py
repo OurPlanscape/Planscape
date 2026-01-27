@@ -192,6 +192,13 @@ class Command(PlanscapeCommand):
             required=False,
             type=json.loads,
         )
+        for module_name in MODULE_HANDLERS.keys():
+            create_parser.add_argument(
+                f"--no-{module_name}",
+                required=False,
+                dest=f"no_{module_name}",
+                action="store_true",
+            )
         create_parser.add_argument(
             "--skip-existing",
             required=False,
@@ -390,6 +397,26 @@ class Command(PlanscapeCommand):
         )
         return response
 
+    def _merge_metadata(
+        self, metadata: Dict[str, Any], excluded_modules: List[str]
+    ) -> Dict[str, Any]:
+        breakpoint()
+
+        modules = metadata.get("modules") or {}
+        merged_modules: Dict[str, Dict[str, Any]] = {}
+        remaining_modules = [
+            module
+            for module in MODULE_HANDLERS.keys()
+            if module not in excluded_modules
+        ]
+        for module_name in remaining_modules:
+            user_options = modules.get(module_name, {})
+            if not isinstance(user_options, dict):
+                user_options = {}
+            merged_modules[module_name] = {"enabled": True, **user_options}
+        metadata["modules"] = merged_modules
+        return metadata
+
     def _create_datalayer_request(
         self,
         name: str,
@@ -456,9 +483,17 @@ class Command(PlanscapeCommand):
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         map_service_type = kwargs.pop("map_service_type", None)
-        metadata = kwargs.pop("metadata", None)
-        layer_type = kwargs.pop("layer_type", None)
+        excluded_modules = []
+        for module_name in MODULE_HANDLERS.keys():
+            if kwargs.pop(f"no_{module_name}", False):
+                excluded_modules.append(module_name)
 
+        metadata = kwargs.pop("metadata", {}) or {}
+        metadata = self._merge_metadata(
+            metadata,
+            excluded_modules,
+        )
+        layer_type = kwargs.pop("layer_type", None)
         if url and not layer_type:
             raise ValueError("Missing required layer_type when using url.")
         cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
