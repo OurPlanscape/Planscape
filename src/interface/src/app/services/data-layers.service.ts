@@ -9,7 +9,7 @@ import {
   SearchQuery,
   SearchResult,
 } from '@types';
-import { map } from 'rxjs';
+import { map, of } from 'rxjs';
 import { Geometry } from 'geojson';
 
 @Injectable({
@@ -70,6 +70,11 @@ export class DataLayersService {
   }
 
   getDataLayersByIds(layer_ids: number[]) {
+    // just return empty if there are no layer ids
+    if (!layer_ids || layer_ids.length === 0) {
+      return of([]);
+    }
+
     const id_list = layer_ids.join(',');
     return this.http
       .get<{ results: DataLayer[] }>(

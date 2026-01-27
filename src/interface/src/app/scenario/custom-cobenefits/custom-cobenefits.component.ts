@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -33,10 +33,7 @@ const MAX_SELECTABLE_LAYERS = 10;
     { provide: StepDirective, useExisting: CustomCobenefitsComponent },
   ],
 })
-export class CustomCobenefitsComponent
-  extends StepDirective<ScenarioCreation>
-  implements OnInit
-{
+export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>([]),
   });
@@ -65,10 +62,6 @@ export class CustomCobenefitsComponent
         });
         this.form.markAsTouched();
       });
-  }
-
-  ngOnInit(): void {
-    this.mapConfigToUI();
   }
 
   mapConfigToUI(): void {

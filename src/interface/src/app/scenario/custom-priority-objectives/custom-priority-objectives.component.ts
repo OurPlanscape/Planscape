@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
@@ -37,10 +37,7 @@ const MAX_SELECTABLE_LAYERS = 2;
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent
-  extends StepDirective<ScenarioCreation>
-  implements OnInit
-{
+export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -72,10 +69,6 @@ export class CustomPriorityObjectivesComponent
         });
         this.form.markAsTouched();
       });
-  }
-
-  ngOnInit(): void {
-    this.mapConfigToUI();
   }
 
   handleRemoveItem(layer: any) {
