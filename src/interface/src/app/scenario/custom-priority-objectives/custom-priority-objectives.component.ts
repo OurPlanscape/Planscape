@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
@@ -12,6 +12,9 @@ import { ChipSelectorComponent } from 'src/styleguide/chip-selector/chip-selecto
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { ScenarioCreation, DataLayer } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { NewScenarioState } from '../new-scenario.state';
+import { of, map, take, switchMap } from 'rxjs';
+import { DataLayersService } from '@services';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -32,7 +35,10 @@ const MAX_SELECTABLE_LAYERS = 2;
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
+export class CustomPriorityObjectivesComponent
+  extends StepDirective<ScenarioCreation>
+  implements OnInit
+{
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -46,7 +52,11 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
 
   maxLayers = MAX_SELECTABLE_LAYERS;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private dataLayersService: DataLayersService,
+    private newScenarioState: NewScenarioState
+  ) {
     super();
 
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
@@ -67,6 +77,29 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
   getData() {
     const datalayers = this.form.getRawValue().dataLayers;
     return { priority_objectives: datalayers?.map((dl) => dl.id) ?? [] };
+  }
+
+  ngOnInit(): void {
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        take(1),
+        switchMap((config) => {
+          if (config.priority_objectives) {
+            const ids = config.priority_objectives;
+            return this.dataLayersService
+              .getDataLayersByIds(ids)
+              .pipe(map((layers: DataLayer[]) => ({ config, layers })));
+          }
+          return of({ config, layers: [] });
+        })
+      )
+      .subscribe(({ layers }) => {
+        if (this.form.get('dataLayers')?.value) {
+          this.form.get('dataLayers')?.setValue(layers);
+          this.dataLayersStateService.updateSelectedLayers(layers);
+        }
+      });
   }
 
   override beforeStepLoad() {
