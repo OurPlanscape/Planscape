@@ -400,6 +400,8 @@ class Command(PlanscapeCommand):
     def _merge_metadata(
         self, metadata: Dict[str, Any], excluded_modules: List[str]
     ) -> Dict[str, Any]:
+        breakpoint()
+
         modules = metadata.get("modules") or {}
         merged_modules: Dict[str, Dict[str, Any]] = {}
         remaining_modules = [
@@ -485,12 +487,13 @@ class Command(PlanscapeCommand):
         for module_name in MODULE_HANDLERS.keys():
             if kwargs.pop(f"no_{module_name}", False):
                 excluded_modules.append(module_name)
+
+        metadata = kwargs.pop("metadata", {}) or {}
         metadata = self._merge_metadata(
-            kwargs.pop("metadata", {}),
+            metadata,
             excluded_modules,
         )
         layer_type = kwargs.pop("layer_type", None)
-
         if url and not layer_type:
             raise ValueError("Missing required layer_type when using url.")
         cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
