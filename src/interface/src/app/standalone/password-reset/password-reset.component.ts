@@ -13,7 +13,7 @@ import { AuthService, PasswordResetToken } from '@services';
 
 import { CommonModule } from '@angular/common';
 
-import { SharedModule } from '@shared';
+import { MIN_PASSWORD_LENGTH, SharedModule } from '@shared';
 import { AboutComponent } from '../about/about.component';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { passwordsMustMatchValidator } from '../../validators/passwords';
@@ -47,6 +47,7 @@ export class PasswordResetComponent implements OnInit {
     'newPasswordsMustMatch',
   ]);
   showHint = false;
+  MIN_PASSWORD_LENGTH = MIN_PASSWORD_LENGTH;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -60,7 +61,7 @@ export class PasswordResetComponent implements OnInit {
       {
         password1: this.formBuilder.control('', [
           Validators.required,
-          Validators.minLength(8),
+          Validators.minLength(MIN_PASSWORD_LENGTH),
         ]),
         password2: this.formBuilder.control('', Validators.required),
       },
