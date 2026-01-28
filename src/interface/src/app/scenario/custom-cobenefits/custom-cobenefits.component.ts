@@ -10,7 +10,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersService } from '@services';
 import { NewScenarioState } from '../new-scenario.state';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { of, map, take, switchMap } from 'rxjs';
+import { catchError, finalize, of, map, take, switchMap } from 'rxjs';
+import * as Sentry from '@sentry/angular';
 
 const MAX_SELECTABLE_LAYERS = 10;
 
@@ -73,19 +74,26 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
         switchMap((config) => {
           if (config.cobenefits) {
             const ids = config.cobenefits;
-            return this.dataLayersService
-              .getDataLayersByIds(ids)
-              .pipe(map((layers: DataLayer[]) => ({ config, layers })));
+            return this.dataLayersService.getDataLayersByIds(ids).pipe(
+              map((layers: DataLayer[]) => layers),
+              catchError((error) => {
+                Sentry.captureException(error);
+                throw error;
+              })
+            );
           }
-          return of({ config, layers: [] });
-        })
+          return of([]);
+        }),
+        finalize(() => (this.uiLoading = false))
       )
-      .subscribe(({ layers }) => {
-        if (this.form.get('dataLayers')?.value) {
+      .subscribe({
+        next: (layers) => {
           this.form.get('dataLayers')?.setValue(layers);
           this.dataLayersStateService.updateSelectedLayers(layers);
-          this.uiLoading = false;
-        }
+        },
+        error: (error) => {
+          console.error('Error in mapConfigToUI:', error);
+        },
       });
   }
 

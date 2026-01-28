@@ -13,9 +13,10 @@ import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.se
 import { ScenarioCreation, DataLayer } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
-import { of, map, take, switchMap } from 'rxjs';
+import { catchError, finalize, of, map, take, switchMap } from 'rxjs';
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import * as Sentry from '@sentry/angular';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -89,19 +90,26 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
         switchMap((config) => {
           if (config.priority_objectives) {
             const ids = config.priority_objectives;
-            return this.dataLayersService
-              .getDataLayersByIds(ids)
-              .pipe(map((layers: DataLayer[]) => ({ config, layers })));
+            return this.dataLayersService.getDataLayersByIds(ids).pipe(
+              map((layers: DataLayer[]) => layers),
+              catchError((error) => {
+                Sentry.captureException(error);
+                throw error;
+              })
+            );
           }
-          return of({ config, layers: [] });
-        })
+          return of([]);
+        }),
+        finalize(() => (this.uiLoading = false))
       )
-      .subscribe(({ layers }) => {
-        if (this.form.get('dataLayers')?.value) {
+      .subscribe({
+        next: (layers) => {
           this.form.get('dataLayers')?.setValue(layers);
           this.dataLayersStateService.updateSelectedLayers(layers);
-          this.uiLoading = false;
-        }
+        },
+        error: (error) => {
+          console.error('Error in mapConfigToUI:', error);
+        },
       });
   }
 
