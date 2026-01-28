@@ -61,7 +61,10 @@ export class SignupComponent {
           Validators.required,
           Validators.minLength(8),
         ]),
-        password2: this.formBuilder.control('', Validators.required),
+        password2: this.formBuilder.control('', [
+          Validators.required,
+          Validators.minLength(8),
+        ]),
       },
       {
         validators: [passwordsMustMatchValidator('password1', 'password2')],
