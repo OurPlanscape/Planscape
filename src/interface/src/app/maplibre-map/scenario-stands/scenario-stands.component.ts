@@ -69,11 +69,13 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private mapConfigState: MapConfigState
   ) {
-    // remove constrainedStands when going back to step 1
+    // remove constrainedStands in not included on the step.
     this.step$
       .pipe(
         untilDestroyed(this),
-        filter((step) => step === 1)
+        filter(
+          (step) => !this.newScenarioState.includeConstraintsInCurrentStep(step)
+        )
       )
       .subscribe((step) => {
         this.constrainedStands.forEach((id) =>
@@ -99,7 +101,10 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     this.newScenarioState.excludedStands$,
   ]).pipe(
     map(([step, excluded]): FilterSpecification | undefined =>
-      step > 1 && excluded.length
+      // if we are showing both excluded and constraints, filter out the excluded stands on the map.
+      this.newScenarioState.includeExcludedAreasInCurrentStep(step) &&
+      this.newScenarioState.includeConstraintsInCurrentStep(step) &&
+      excluded.length
         ? ['!', ['in', ['get', 'id'], ['literal', excluded]]]
         : undefined
     )
