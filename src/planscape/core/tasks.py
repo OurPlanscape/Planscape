@@ -20,6 +20,7 @@ def track(payload: Dict[str, Any]) -> None:
     headers = {
         "openpanel-client-id": settings.OPENPANEL_CLIENT_ID,
         "openpanel-client-secret": settings.OPENPANEL_CLIENT_SECRET,
+        "Content-Type": "application/json",
     }
     data = json.dumps(payload, cls=DjangoJSONEncoder)
     response = requests.post(url, data=data, headers=headers)
