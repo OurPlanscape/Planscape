@@ -18,8 +18,10 @@ No, only your selected Priority Objectives influence how ForSys ranks areas for 
         Select <b>up to {{ maxLayers }} Co-Benefits</b> to track the broader
         outcomes of your scenario.
       </div>
-
-      <div>{{ selectionCount$ | async }}/{{ maxLayers }} Selected</div>
+      <mat-spinner diameter="20" *ngIf="uiLoading"></mat-spinner>
+      <div *ngIf="!uiLoading">
+        {{ selectionCount$ | async }}/{{ maxLayers }} Selected
+      </div>
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
