@@ -373,6 +373,10 @@ class TreatmentGoalUsesDataLayer(
         null=True,
         help_text="Threshold for the data layer.",
     )
+    weight = models.FloatField(
+        default=1.0,
+        help_text="Weight for PRIORITY usage type (relative importance)"
+    )
 
     @property
     def treatment_goal_name(self):

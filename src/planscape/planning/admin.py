@@ -8,10 +8,9 @@ from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
 
 class TreatmentGoalUsesDataLayerInline(admin.TabularInline):
     model = TreatmentGoalUsesDataLayer
-
     form = TreatmentGoalUsesDataLayerAdminForm
     raw_id_fields = ["datalayer"]
-
+    fields = ("usage_type", "datalayer", "threshold", "weight")
 
 class TreatmentGoalAdmin(admin.ModelAdmin):
     """
@@ -33,7 +32,7 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
         return {"created_by": request.user}
 
     def save_form(self, request, form, change):
-        instace = form.instance
+        instance = form.instance
         try:
             db_instance = TreatmentGoal.objects.get(pk=instace.pk)
             instace.geometry = db_instance.geometry
@@ -48,7 +47,7 @@ class TreatmentGoalUsesDataLayerAdmin(admin.ModelAdmin):
     Admin interface for TreatmentGoalUsesDataLayer model.
     """
 
-    list_display = ("id", "usage_type", "treatment_goal", "datalayer", "threshold")
+    list_display = ("id", "usage_type", "treatment_goal", "datalayer", "threshold", "weight")
     list_display_links = ("id", "usage_type")
     search_fields = ["usage_type", "treatment_goal__name", "datalayer__name"]
     list_filter = ["usage_type", "treatment_goal__name", "datalayer__name"]

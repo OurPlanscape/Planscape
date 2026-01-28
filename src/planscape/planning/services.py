@@ -522,10 +522,10 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     # treatment goal datalayers
     tx_goal = scenario.treatment_goal
     datalayers = []
-    
+
     if tx_goal:
-        datalayers = [
-            {
+        for tgudl in tx_goal.datalayer_usages.all():
+            item = {
                 "id": tgudl.datalayer.id,
                 "name": tgudl.datalayer.name,
                 "metric": get_datalayer_metric(tgudl.datalayer),
@@ -534,8 +534,11 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 "threshold": tgudl.threshold,
                 "usage_type": tgudl.usage_type,
             }
-            for tgudl in tx_goal.datalayer_usages.all()
-        ]
+
+            if tgudl.usage_type == TreatmentGoalUsageType.PRIORITY:
+                item["weight"] = float(tgudl.weight) if tgudl.weight is not None else 1.0
+
+            datalayers.append(item)
 
     # constraints datalayers from scenario configuration
     OPERATOR_MAP = {
@@ -593,6 +596,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                     "geometry_type": priority.geometry_type,
                     "threshold": custom_thresholds.get(priority.id),
                     "usage_type": TreatmentGoalUsageType.PRIORITY,
+                    "weight": 1.0,
                 }
                 for priority in priority_objectives
             ]
