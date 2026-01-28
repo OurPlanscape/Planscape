@@ -16,7 +16,6 @@ import { NewScenarioState } from '../new-scenario.state';
 import { catchError, finalize, of, map, take, switchMap } from 'rxjs';
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import * as Sentry from '@sentry/angular';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -93,7 +92,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
             return this.dataLayersService.getDataLayersByIds(ids).pipe(
               map((layers: DataLayer[]) => layers),
               catchError((error) => {
-                Sentry.captureException(error);
                 throw error;
               })
             );
@@ -108,7 +106,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
           this.dataLayersStateService.updateSelectedLayers(layers);
         },
         error: (error) => {
-          console.error('Error in mapConfigToUI:', error);
+          console.error('Error fetching datalayers ', error);
         },
       });
   }

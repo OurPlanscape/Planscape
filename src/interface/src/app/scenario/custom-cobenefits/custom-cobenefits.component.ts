@@ -11,7 +11,6 @@ import { DataLayersService } from '@services';
 import { NewScenarioState } from '../new-scenario.state';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { catchError, finalize, of, map, take, switchMap } from 'rxjs';
-import * as Sentry from '@sentry/angular';
 
 const MAX_SELECTABLE_LAYERS = 10;
 
@@ -77,7 +76,6 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
             return this.dataLayersService.getDataLayersByIds(ids).pipe(
               map((layers: DataLayer[]) => layers),
               catchError((error) => {
-                Sentry.captureException(error);
                 throw error;
               })
             );
@@ -92,7 +90,7 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
           this.dataLayersStateService.updateSelectedLayers(layers);
         },
         error: (error) => {
-          console.error('Error in mapConfigToUI:', error);
+          console.error('Error fetching datalayers ', error);
         },
       });
   }
