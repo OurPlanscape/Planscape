@@ -27,12 +27,18 @@ def get_styles_for_filter(request: Optional[Request]) -> "QuerySet[Style]":
     return Style.objects.all()
 
 
+class NumberInFilter(filters.BaseInFilter, filters.NumberFilter):
+    # Custom class that allows to search multiple values of integer field
+    pass
+
+
 class DataLayerFilterSet(filters.FilterSet):
     dataset = filters.ModelChoiceFilter(
         queryset=get_datasets_for_filter,
         field_name="dataset",
         help_text="dataset id",
     )
+    id__in = NumberInFilter(field_name='pk', lookup_expr='in')
 
     class Meta:
         model = DataLayer

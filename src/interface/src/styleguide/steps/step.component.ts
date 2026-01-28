@@ -17,6 +17,9 @@ export abstract class StepDirective<T> {
   abstract form: FormGroup;
 
   abstract getData(): PartialDeep<T>;
+
+  beforeStepLoad(): void {}
+  beforeStepExit(): void {}
 }
 
 @Component({
@@ -47,6 +50,12 @@ export class StepComponent<T> extends CdkStep implements AfterViewInit {
   getData(): PartialDeep<T> {
     return this.stepLogic?.getData() || {};
   }
+
+  // a hook that we call whenever we load the step
+  beforeStepLoad(): void {}
+
+  // a hook that we call whenever we leave the step
+  beforeStepExit(): void {}
 
   get form() {
     return this.stepLogic?.form;

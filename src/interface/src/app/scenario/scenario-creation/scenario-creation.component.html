@@ -26,6 +26,7 @@
       continueLabel="Save & Continue"
       [save]="saveStep.bind(this)"
       (selectedIndexChange)="stepChanged($event)"
+      (selectionChange)="handleStepChangeEvent($event)"
       (finished)="onFinish(scenarioType)"
       [outerForm]="form"
       [savingStep]="(loading$ | async) ?? false"
