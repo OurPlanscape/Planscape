@@ -5,6 +5,7 @@ import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.se
 import { CustomCobenefitsComponent } from './custom-cobenefits.component';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
+import { NewScenarioState } from '../new-scenario.state';
 
 describe('CustomCobenefitsComponent', () => {
   let component: CustomCobenefitsComponent;
@@ -18,6 +19,12 @@ describe('CustomCobenefitsComponent', () => {
         NoopAnimationsModule,
       ],
       providers: [
+        MockProvider(NewScenarioState, {
+          scenarioConfig$: of({}),
+          excludedStands$: of([]),
+          doesNotMeetConstraintsStands$: of([]),
+          stepIndex$: of(0),
+        }),
         MockProvider(DataLayersStateService, {
           viewedDataLayer$: of(null),
           selectedDataLayers$: of([]),
