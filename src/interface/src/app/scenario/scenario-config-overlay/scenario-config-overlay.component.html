@@ -13,12 +13,12 @@
             ' acres)'
         }}
       </dd>
-      <ng-container *ngIf="(isCustomScenario$ | async) === false">
-        <dt>Goal:</dt>
-        <dd>
-          {{ scenarioGoal$ | async }}
-        </dd>
-      </ng-container>
+
+      <dt>Goal:</dt>
+      <dd>
+        {{ scenarioGoal$ | async }}
+      </dd>
+
       <dt>Excluded Areas:</dt>
       <dd>
         {{ selectedExcludedAreas$ | async }}

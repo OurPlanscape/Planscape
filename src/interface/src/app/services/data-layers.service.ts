@@ -78,7 +78,7 @@ export class DataLayersService {
     const id_list = layer_ids.join(',');
     return this.http
       .get<{ results: DataLayer[] }>(
-        environment.backend_endpoint + '/v2/datalayers',
+        environment.backend_endpoint + '/v2/datalayers/',
         {
           withCredentials: true,
           params: { id__in: id_list },
