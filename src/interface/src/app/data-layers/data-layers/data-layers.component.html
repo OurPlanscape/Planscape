@@ -8,7 +8,7 @@
     (clearSearch)="clearSearch()"
     [searchValue]="(searchTerm$ | async) || ''"></sg-search-bar>
 </div>
-<div class="scrollable" [class.with-footer]="showFooter$ | async">
+<div class="scrollable">
   <!--When performing search, show results.-->
   <ng-container *ngIf="(isBrowsing$ | async) === false">
     <ng-container *ngIf="searchTerm$ | async as searchTerm">
@@ -71,7 +71,7 @@
     class="loader"></mat-spinner>
 </div>
 
-<div class="footer" *ngIf="showFooter$ | async">
+<div class="footer" *ngIf="useClearFooter && (showFooter$ | async)">
   <!-- Search pagination -->
   <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
     <sg-paginator

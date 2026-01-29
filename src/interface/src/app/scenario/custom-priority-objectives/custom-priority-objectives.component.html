@@ -37,7 +37,9 @@
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
     </div>
     <section class="datalayers-section">
-      <app-data-layers [displayAddButton]="true"></app-data-layers>
+      <app-data-layers
+        [useClearFooter]="false"
+        [displayAddButton]="true"></app-data-layers>
     </section>
   </form>
 </sg-section>

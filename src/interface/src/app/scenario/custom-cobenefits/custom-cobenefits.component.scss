@@ -2,7 +2,6 @@
 @import 'mixins';
 @import 'variables';
 
-$footer-height: 72px;
 $header-height: 350px;
 $navbar-height: 170px;
 
@@ -36,10 +35,6 @@ $navbar-height: 170px;
 
 .cobenefits-selection ::ng-deep .mat-expansion-panel-body .scrollable {
   max-height: calc(100vh - ($header-height + $navbar-height));
-
-  &.with-footer {
-    max-height: calc(100vh - ($header-height + $navbar-height + $footer-height));
-  }
 }
 
 
@@ -51,9 +46,5 @@ $navbar-height: 170px;
 
   .cobenefits-selection ::ng-deep .mat-expansion-panel-body .scrollable {
     max-height: none;
-
-    &.with-footer {
-      max-height: none;
-    }
   }
 }

@@ -20,4 +20,8 @@ export class DataLayerNameComponent {
   goToViewedLayer(layer: DataLayer) {
     this.dataLayersStateService.goToSelectedLayer(layer);
   }
+
+  clearDataLayer() {
+    this.dataLayersStateService.clearDataLayer();
+  }
 }

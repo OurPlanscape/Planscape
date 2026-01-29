@@ -2,7 +2,6 @@
 @import 'mixins';
 @import 'variables';
 
-$footer-height: 72px;
 $header-height: 350px;
 $navbar-height: 170px;
 
@@ -38,10 +37,6 @@ $navbar-height: 170px;
 .priority-selection ::ng-deep .mat-expansion-panel-body .scrollable {
   max-height: calc(100vh - ($header-height + $navbar-height));
   overflow-y: auto;
-
-  &.with-footer {
-    max-height: calc(100vh - ($header-height + $navbar-height + $footer-height));
-  }
 }
 
 // don't constrain the height if we're in small width view
@@ -53,8 +48,5 @@ $navbar-height: 170px;
   .priority-selection ::ng-deep .mat-expansion-panel-body .scrollable {
     max-height: none;
 
-    &.with-footer {
-    max-height: none;
-     }
   }
 }

@@ -61,6 +61,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class DataLayersComponent {
   @Input() displayAddButton = false;
+  @Input() useClearFooter = true;
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 

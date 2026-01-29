@@ -31,3 +31,14 @@
   font-weight: 500;
   line-height: 20px;
 }
+
+.clear-layer {
+  color: $color-standard-blue;
+  margin-right: auto;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+    &:hover {
+    text-decoration: underline;
+  }
+}
