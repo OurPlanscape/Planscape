@@ -27,4 +27,4 @@ def track(payload: Dict[str, Any]) -> None:
         log.error("Something went wrong while posting data to OpenPanel")
         return
 
-    log.info("Event {event_name} tracked")
+    log.info("Event tracked")
