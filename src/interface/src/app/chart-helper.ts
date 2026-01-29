@@ -238,23 +238,30 @@ export function getDarkGridConfig() {
   };
 }
 
-export function whiteTooltipBaseConfig() {
+export function chartTooltipBaseConfig() {
   return {
     enabled: true,
-    backgroundColor: '#FFF',
-    titleColor: '#000',
-    bodyColor: '#000',
-    borderColor: '#E1E1E1',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    titleColor: '#FFF',
+    bodyColor: '#FFF',
+    borderColor: 'rgba(0, 0, 0, 0.85)',
     borderWidth: 1,
     titleFont: {
       ...getChartFontConfig(),
-      weight: 'bold',
+      size: 12,
+      weight: '600',
     },
     bodyFont: {
       ...getChartFontConfig(),
-      weight: '500',
+      size: 12,
+      weight: '400',
     },
-    padding: 8,
+    padding: {
+      top: 8,
+      bottom: 8,
+      left: 12,
+      right: 12,
+    },
     displayColors: false,
     animation: {
       duration: 0,
