@@ -28,6 +28,4 @@ checks datalayer metadata for filtering
 
 `FORSYS_PREPROCESSED`: Enable Forsys execution with pre-processed data (forsys_input field)
 
-`CUSTOM_EXCEPTION_HANDLER` : Enables common error format in backend payloads
-
 `CUSTOM_SCENARIOS` : Allows custom scenarios

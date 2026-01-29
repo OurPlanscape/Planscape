@@ -20,7 +20,6 @@ import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-login',
@@ -49,8 +48,7 @@ export class LoginComponent {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private snackbar: MatSnackBar,
-    private featureService: FeatureService
+    private snackbar: MatSnackBar
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
@@ -95,11 +93,7 @@ export class LoginComponent {
         // present the user with the strings that we decided for UX, rather than
         //  the errors provided by the backend and dj-rest-auth
         let errorMsg: string = '';
-        let errorObject = error.error;
-
-        if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
-          errorObject = error.error.errors;
-        }
+        const errorObject = error.error.errors;
 
         if (errorObject.email) {
           this.form.controls['email'].setErrors({
