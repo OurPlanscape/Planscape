@@ -1,16 +1,22 @@
-from collaboration.models import UserObjectRole
+import logging
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from planscape.celery import app
-import logging
-
 from utils.frontend import get_frontend_url
+
+from collaboration.models import UserObjectRole
 
 logger = logging.getLogger(__name__)
 
 
-@app.task()
+@app.task(
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={"max_retries": 3},
+)
 def send_invitation(
     user_object_role_id: int,
     collaborator_exists: bool,
@@ -42,7 +48,7 @@ def send_invitation(
             ),
         }
 
-        subject = f"[Planscape] {user_object_role.inviter.get_full_name() } invited you to be {role_article} {role} on '{planning_area.name}'"
+        subject = f"[Planscape] {user_object_role.inviter.get_full_name()} invited you to be {role_article} {role} on '{planning_area.name}'"
 
         txt = render_to_string("invites/new_invite_message.txt", context)
         html = render_to_string("invites/new_invite_message.html", context)
