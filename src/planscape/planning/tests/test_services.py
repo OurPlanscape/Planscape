@@ -113,7 +113,7 @@ class MaxAreaProjectTest(TestCase):
             },
         )
         max_project_area = get_max_area_project(scenario=scenario)
-        self.assertEqual(max_project_area, 500)
+        self.assertEqual(max_project_area, 494.0)
 
 
 class ValidateScenarioTreatmentRatioTest(TestCase):

@@ -247,7 +247,7 @@ class DataLayerQuerySet(models.QuerySet):
 
 class DataLayerManager(models.Manager):
     def get_queryset(self):
-        return DataLayerQuerySet(self.model, using=self._db)
+        return DataLayerQuerySet(self.model, using=self._db).filter(deleted_at=None)
 
 
 class Style(

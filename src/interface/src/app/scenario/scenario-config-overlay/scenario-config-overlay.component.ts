@@ -8,7 +8,6 @@ import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
 import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { isCustomScenario } from '../scenario-helper';
 
 @UntilDestroy()
 @Component({
@@ -49,10 +48,6 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     catchError(() => {
       return '--';
     })
-  );
-
-  isCustomScenario$ = this.currentScenario$.pipe(
-    map((scenario) => isCustomScenario(scenario.type))
   );
 
   scenarioGoal$ = this.scenarioState.currentScenario$.pipe(

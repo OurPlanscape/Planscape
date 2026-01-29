@@ -89,7 +89,6 @@ export class ExcludeAreasSelectorComponent
   }
 
   getData() {
-    this.clearViewedLayers(); // clears layer selection after step in completed
     return { excluded_areas: this.getSelectedExcludedAreaIds() };
   }
 
@@ -97,5 +96,9 @@ export class ExcludeAreasSelectorComponent
     this.baseLayersStateService.enableBaseLayerHover(false);
     this.baseLayersStateService.setBaseLayers([]);
     this.viewingAreas = [];
+  }
+
+  override beforeStepExit(): void {
+    this.clearViewedLayers(); // clears layer selection after step in completed
   }
 }

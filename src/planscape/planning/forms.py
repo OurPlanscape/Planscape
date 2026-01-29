@@ -1,7 +1,11 @@
 from django import forms
 from martor.widgets import AdminMartorWidget
 
-from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
+from planning.models import (
+    TreatmentGoal,
+    TreatmentGoalUsageType,
+    TreatmentGoalUsesDataLayer,
+)
 
 
 class TreatmentGoalAdminForm(forms.ModelForm):
@@ -17,9 +21,7 @@ class TreatmentGoalAdminForm(forms.ModelForm):
 
     class Meta:
         model = TreatmentGoal
-        widgets = {
-            "description": AdminMartorWidget,
-        }
+        widgets = {"description": AdminMartorWidget}
         fields = (
             "name",
             "category",
@@ -38,7 +40,29 @@ class TreatmentGoalUsesDataLayerAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields["threshold"].required = False
+
+        if "weight" in self.fields:
+            self.fields["weight"].required = False
+            self.fields[
+                "weight"
+            ].help_text = "Only applies when Usage Type = PRIORITY. "
+
+    def clean(self):
+        cleaned = super().clean()
+        usage_type = cleaned.get("usage_type")
+        weight = cleaned.get("weight")
+
+        if usage_type != TreatmentGoalUsageType.PRIORITY:
+            cleaned["weight"] = None
+            return cleaned
+
+        if weight in (None, ""):
+            raise forms.ValidationError(
+                {"weight": "Required for PRIORITY. Must be a positive integer (>= 1)."}
+            )
+        return cleaned
 
     class Meta:
         model = TreatmentGoalUsesDataLayer
@@ -47,4 +71,5 @@ class TreatmentGoalUsesDataLayerAdminForm(forms.ModelForm):
             "treatment_goal",
             "datalayer",
             "threshold",
+            "weight",
         )

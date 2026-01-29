@@ -53,9 +53,6 @@ export class TreatmentTargetComponent
 
   summary$ = this.newScenarioState.availableStands$.pipe(map((s) => s.summary));
 
-  // TODO interim fix to bypass some forys issues.
-  private readonly standSizeMultiplier = 2;
-
   constructor(private newScenarioState: NewScenarioState) {
     super();
   }
@@ -94,7 +91,7 @@ export class TreatmentTargetComponent
         )
         .subscribe((config) => {
           this.minAcreage = config.stand_size
-            ? STAND_SIZES[config.stand_size] * this.standSizeMultiplier
+            ? STAND_SIZES[config.stand_size]
             : 0;
           if (config.targets) {
             if (config.targets.estimated_cost) {

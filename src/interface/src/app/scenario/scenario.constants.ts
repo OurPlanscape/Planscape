@@ -11,28 +11,43 @@ export const SCENARIO_OVERVIEW_STEPS = [
     description:
       'Select important data layers that will be used throughout the workflow.',
     icon: '/assets/svg/icons/overview/treatment-goal.svg',
+    includeConstraints: false,
+    includeExcludedAreas: false,
+    refreshAvailableStands: true,
   },
   {
     label: 'Exclude Areas',
     description: 'Include and exclude specific areas based on your plan.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
+    includeConstraints: false,
+    includeExcludedAreas: true,
+    refreshAvailableStands: true,
   },
   {
     label: 'Stand-level Constraints',
     description:
       'Define the minimum or maximum values for key factors to guide decision-making.',
     icon: '/assets/svg/icons/overview/stand-level.svg',
+    includeConstraints: true,
+    includeExcludedAreas: true,
+    refreshAvailableStands: true,
   },
   {
     label: 'Treatment Target',
     description:
       'Set limits on treatment areas to align with real-world restrictions.',
     icon: '/assets/svg/icons/overview/treatment-target.svg',
+    includeConstraints: true,
+    includeExcludedAreas: true,
+    refreshAvailableStands: false,
   },
   {
     label: 'Generate Output',
     description: 'View scenario results from Forsys.',
     icon: '/assets/svg/icons/overview/generate-output.svg',
+    includeConstraints: true,
+    includeExcludedAreas: true,
+    refreshAvailableStands: false,
   },
 ];
 
@@ -41,32 +56,50 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     label: 'Priority Objectives',
     description: 'Choose your key objectives that ForSys will prioritize.',
     icon: '/assets/svg/icons/overview/priority.svg',
+    includeConstraints: false,
+    includeExcludedAreas: false,
+    refreshAvailableStands: true,
   },
   {
     label: 'Co-Benefits',
     description: 'Add supporting objectives to refine your plan further.',
     icon: '/assets/svg/icons/overview/co-benefits.svg',
+    includeConstraints: false,
+    includeExcludedAreas: false,
+    refreshAvailableStands: true,
   },
   {
     label: 'Exclude Areas',
     description: 'Include and exclude specific areas based on your plan.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
+    includeConstraints: false,
+    includeExcludedAreas: true,
+    refreshAvailableStands: true,
   },
   {
     label: 'Stand-level Constraints',
     description:
       'Define the minimum or maximum values for key factors to guide decision-making.',
     icon: '/assets/svg/icons/overview/stand-level.svg',
+    includeConstraints: true,
+    includeExcludedAreas: true,
+    refreshAvailableStands: true,
   },
   {
     label: 'Treatment Target',
     description:
       'Set limits on treatment areas to align with real-world restrictions.',
     icon: '/assets/svg/icons/overview/treatment-target.svg',
+    includeConstraints: true,
+    includeExcludedAreas: true,
+    refreshAvailableStands: false,
   },
   {
     label: 'Generate Output',
     description: 'View scenario results from Forsys.',
     icon: '/assets/svg/icons/overview/generate-output.svg',
+    includeConstraints: true,
+    includeExcludedAreas: true,
+    refreshAvailableStands: false,
   },
 ];

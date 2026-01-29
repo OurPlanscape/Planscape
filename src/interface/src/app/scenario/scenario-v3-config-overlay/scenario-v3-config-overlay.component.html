@@ -13,10 +13,29 @@
             ' acres)'
         }}
       </dd>
-      <dt>Goal:</dt>
-      <dd>
-        {{ scenarioGoal$ | async }}
-      </dd>
+
+      <ng-container *ngIf="(isCustomScenario$ | async) === false">
+        <dt>Goal:</dt>
+        <dd>
+          {{ scenarioGoal$ | async }}
+        </dd>
+      </ng-container>
+      <ng-container *ngIf="isCustomScenario$ | async">
+        <dt>Priority Objectives:</dt>
+        <dd>
+          <mat-spinner
+            diameter="20"
+            *ngIf="(priorityObjectives$ | async) === null"></mat-spinner>
+          {{ priorityObjectives$ | async }}
+        </dd>
+        <dt>Co-Benefits:</dt>
+        <dd>
+          <mat-spinner
+            diameter="20"
+            *ngIf="(cobenefits$ | async) === null"></mat-spinner>
+          {{ cobenefits$ | async }}
+        </dd>
+      </ng-container>
       <dt>Excluded Areas:</dt>
       <dd>
         {{ selectedExcludedAreas$ | async }}

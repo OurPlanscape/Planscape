@@ -5,10 +5,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
-import { catchError, combineLatest, map } from 'rxjs';
+import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { ScenarioV3Config } from '@types';
+import { DataLayer, ScenarioV3Config } from '@types';
+import { isCustomScenario } from '../scenario-helper';
+import { DataLayersService } from '@services';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @UntilDestroy()
 @Component({
@@ -20,6 +23,7 @@ import { ScenarioV3Config } from '@types';
     MatIconModule,
     ButtonComponent,
     DecimalPipe,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './scenario-v3-config-overlay.component.html',
   styleUrl: './scenario-v3-config-overlay.component.scss',
@@ -27,6 +31,7 @@ import { ScenarioV3Config } from '@types';
 export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   private scenarioState: ScenarioState = inject(ScenarioState);
   private forsysService: ForsysService = inject(ForsysService);
+  private dataLayersService: DataLayersService = inject(DataLayersService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -68,6 +73,30 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
 
   scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
     map((s) => s.treatment_goal?.name || '')
+  );
+
+  isCustomScenario$ = this.currentScenario$.pipe(
+    map((scenario) => isCustomScenario(scenario.type))
+  );
+
+  priorityObjectives$ = this.currentScenario$.pipe(
+    switchMap((s) =>
+      this.dataLayersService.getDataLayersByIds(
+        s.configuration?.priority_objectives ?? []
+      )
+    ),
+    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    shareReplay(1)
+  );
+
+  cobenefits$ = this.currentScenario$.pipe(
+    switchMap((s) =>
+      this.dataLayersService.getDataLayersByIds(
+        s.configuration?.cobenefits ?? []
+      )
+    ),
+    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    shareReplay(1)
   );
 
   close() {

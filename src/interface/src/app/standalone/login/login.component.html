@@ -20,18 +20,19 @@
             required
             formControlName="email"
             matInput
-            (blur)="checkEmailErrors()"
-            (keyup)="clearEmailErrors()"
             autocomplete="email" />
+          <mat-error
+            *ngIf="
+              this.form.get('email')?.invalid &&
+              (this.form.get('email')?.dirty || this.form.get('email')?.touched)
+            ">
+            @if (this.form.get('email')?.hasError('required')) {
+              Email is required.
+            } @else if (this.form.get('email')?.hasError('pattern')) {
+              Email must be in a proper format.
+            }
+          </mat-error>
         </mat-form-field>
-        <app-field-alert
-          *ngIf="
-            this.emailError &&
-            this.form.controls['email'].errors &&
-            this.form.controls['email'].dirty
-          "
-          message="{{ emailError }}"
-          title="email error"></app-field-alert>
 
         <mat-label class="standard-label"
           >Password
@@ -44,12 +45,15 @@
             formControlName="password"
             autocomplete="current-password"
             matInput />
+          <mat-error
+            *ngIf="
+              this.form.get('password')?.hasError('required') &&
+              (this.form.get('password')?.dirty ||
+                this.form.get('password')?.touched)
+            ">
+            Password is required.
+          </mat-error>
         </mat-form-field>
-        <app-field-alert
-          *ngIf="passwordError"
-          message="{{ passwordError }}"
-          class="mb-10"
-          title="password error"></app-field-alert>
 
         <app-form-message
           [messageType]="FormMessageType.ERROR"

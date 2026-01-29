@@ -22,14 +22,14 @@
             formControlName="firstName"
             matInput
             autocomplete="given-name" />
+          <mat-error
+            *ngIf="
+              form.get('firstName')?.hasError('required') &&
+              form.get('firstName')?.touched
+            ">
+            This field must contain a value.
+          </mat-error>
         </mat-form-field>
-        <app-field-alert
-          *ngIf="
-            !!form.controls['firstName'].errors &&
-            form.controls['firstName'].dirty === true
-          "
-          message="This field must contain a value."
-          title="First Name Error"></app-field-alert>
 
         <mat-label class="standard-label"
           >Last Name
@@ -42,14 +42,14 @@
             formControlName="lastName"
             matInput
             autocomplete="family-name" />
+          <mat-error
+            *ngIf="
+              form.get('lastName')?.hasError('required') &&
+              form.get('lastName')?.touched
+            ">
+            This field must contain a value.
+          </mat-error>
         </mat-form-field>
-        <app-field-alert
-          *ngIf="
-            !!form.controls['lastName'].errors &&
-            form.controls['lastName'].dirty
-          "
-          message="This field must contain a value."
-          title="Last Name Error"></app-field-alert>
 
         <mat-label class="standard-label"
           >Email
@@ -63,13 +63,13 @@
             matInput
             autocomplete="email"
             (blur)="getEmailError()" />
+          <mat-error
+            *ngIf="
+              form.controls['email'].touched && !!form.controls['email'].errors
+            ">
+            {{ getEmailError() }}
+          </mat-error>
         </mat-form-field>
-        <app-field-alert
-          *ngIf="
-            form.controls['email'].touched && !!form.controls['email'].errors
-          "
-          [message]="getEmailError()"
-          title="email error"></app-field-alert>
 
         <mat-label class="standard-label"
           >Create Password
@@ -82,21 +82,17 @@
             formControlName="password1"
             matInput
             autocomplete="new-password"
-            [errorStateMatcher]="passwordStateMatcher"
-            (focus)="showHint = true"
-            (blur)="showHint = false" />
+            [errorStateMatcher]="passwordStateMatcher" />
+          <mat-error
+            *ngIf="
+              (form.get('password1')?.hasError('required') ||
+                form.get('password1')?.hasError('minlength')) &&
+              form.get('password1')?.touched
+            ">
+            Your password needs to be at least 8 characters long.
+          </mat-error>
         </mat-form-field>
-        <app-field-alert
-          [messageType]="FormMessageType.ALERT"
-          *ngIf="showHint && !form.get('password1')?.value"
-          title="Password requirements"
-          message="Your password needs to be at least 8 characters long.">
-        </app-field-alert>
-        <app-field-alert
-          [messageType]="FormMessageType.ERROR"
-          *ngIf="!showHint && form.get('password1')?.errors?.['minlength']"
-          title="Password Error"
-          message="Your password needs to be at least 8 characters long."></app-field-alert>
+
         <mat-label class="standard-label"
           >Confirm Password
           <span class="required-blurb">required</span>
@@ -108,14 +104,20 @@
             formControlName="password2"
             autocomplete="new-password"
             matInput />
+          <mat-error
+            *ngIf="
+              form.get('password2')?.hasError('required') ||
+              (form.get('password2')?.hasError('minlength') &&
+                form.get('password2')?.touched)
+            ">
+            Your password needs to be at least 8 characters long.
+          </mat-error>
         </mat-form-field>
 
-        <app-form-message
-          [messageType]="FormMessageType.ERROR"
-          *ngIf="!!form.errors"
-          title="Signup Error"
-          [message]="getFormErrors()">
-        </app-form-message>
+        <!-- Form errrors -->
+        <mat-error>
+          {{ getFormErrors() }}
+        </mat-error>
 
         <div class="button-row">
           <button

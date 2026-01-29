@@ -12,6 +12,7 @@ import {
   combineLatest,
   EMPTY,
   filter,
+  firstValueFrom,
   map,
   mapTo,
   merge,
@@ -27,7 +28,11 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
-import { getNamedConstraints } from './scenario-helper';
+import { getNamedConstraints, isCustomScenario } from './scenario-helper';
+import {
+  CUSTOM_SCENARIO_OVERVIEW_STEPS,
+  SCENARIO_OVERVIEW_STEPS,
+} from './scenario.constants';
 
 @Injectable()
 export class NewScenarioState {
@@ -76,20 +81,22 @@ export class NewScenarioState {
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
-    tap(([, stepIndex]) => {
-      if (stepIndex >= 3) {
-        this.setLoading(false); // we never otherwise call this unless the step is < 3
-      }
+    filter(([standsLoaded, stepIndex]) =>
+      this.refreshAvailableStandsOnStep(stepIndex)
+    ),
+    tap(() => {
+      this.setLoading(false);
     }),
-    filter(([standsLoaded, stepIndex]) => stepIndex < 3),
     tap(() => this.setLoading(true)),
     switchMap(([_, step, standSize, excludedAreas, constraints]) =>
       this.scenarioService
         .getExcludedStands(
           this.planId,
           standSize,
-          step > 0 ? excludedAreas : undefined,
-          step > 1 ? constraints : undefined
+          this.includeExcludedAreasInCurrentStep(step)
+            ? excludedAreas
+            : undefined,
+          this.includeConstraintsInCurrentStep(step) ? constraints : undefined
         )
         .pipe(
           tap(() => this.setLoading(false)),
@@ -191,7 +198,8 @@ export class NewScenarioState {
   }
 
   // TODO - remove and use setConstraints when we implement dynamic constraints
-  setNamedConstraints(namedConstraints: NamedConstraint[]) {
+  async setNamedConstraints(namedConstraints: NamedConstraint[]) {
+    await firstValueFrom(this.forsysService.forsysData$);
     const constraints: Constraint[] = namedConstraints.map((c) => {
       const datalayer =
         c.name === 'maxSlope' ? this.slopeId : this.distanceToRoadsId;
@@ -218,5 +226,23 @@ export class NewScenarioState {
 
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
+  }
+
+  includeExcludedAreasInCurrentStep(step: number) {
+    return this.getScenarioStep(step).includeExcludedAreas;
+  }
+  includeConstraintsInCurrentStep(step: number) {
+    return this.getScenarioStep(step).includeConstraints;
+  }
+
+  refreshAvailableStandsOnStep(step: number) {
+    return this.getScenarioStep(step).refreshAvailableStands;
+  }
+
+  private getScenarioStep(step: number) {
+    return this._scenarioConfig$.value.type &&
+      isCustomScenario(this._scenarioConfig$.value.type)
+      ? CUSTOM_SCENARIO_OVERVIEW_STEPS[step - 1 > -1 ? step - 1 : 0] // watch out - custom scenario has an extra step
+      : SCENARIO_OVERVIEW_STEPS[step];
   }
 }

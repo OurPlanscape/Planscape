@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
-import { CdkStepperModule } from '@angular/cdk/stepper';
+import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   catchError,
@@ -240,6 +240,7 @@ export class ScenarioCreationComponent implements OnInit {
     // Adding excluded areas and treatment goal
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
+    newState['type'] = scenario.type;
     return newState as Partial<ScenarioCreation>;
   }
 
@@ -399,6 +400,13 @@ export class ScenarioCreationComponent implements OnInit {
   stepChanged(i: number) {
     this.localIndex = i;
     this.newScenarioState.setStepIndex(i);
+  }
+
+  handleStepChangeEvent(event: StepperSelectionEvent) {
+    const newStep = event.selectedStep;
+    if (newStep instanceof StepComponent && newStep.stepLogic) {
+      newStep.stepLogic.beforeStepLoad();
+    }
   }
 
   scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {

@@ -13,7 +13,10 @@
     [allowNavigation]="true"
     [linear]="true"
     (selectionChange)="
-      stepsComponent && (stepsComponent.selectedIndex = $event)
+      stepsComponent &&
+        (stepsComponent.selectedIndex = isCustomScenario(scenarioType)
+          ? $event + 1
+          : $event)
     "></sg-steps-nav>
   <section class="container" [ngClass]="{ first: isFirstIndex$ | async }">
     <sg-steps
@@ -26,6 +29,7 @@
       continueLabel="Save & Continue"
       [save]="saveStep.bind(this)"
       (selectedIndexChange)="stepChanged($event)"
+      (selectionChange)="handleStepChangeEvent($event)"
       (finished)="onFinish(scenarioType)"
       [outerForm]="form"
       [savingStep]="(loading$ | async) ?? false"

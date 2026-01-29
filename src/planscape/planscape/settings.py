@@ -374,10 +374,9 @@ OVERSIZE_PLANNING_AREA_ACRES = config(
 
 # Scenario planning settings
 DEFAULT_MAX_PROJECT_COUNT = config("DEFAULT_MAX_PROJECT_COUNT", 10, cast=int)
-MIN_AREA_PROJECT_SMALL = config("MIN_AREA_PROJECT_SMALL", 10, cast=int)
-MIN_AREA_PROJECT_MEDIUM = config("MIN_AREA_PROJECT_MEDIUM", 100, cast=int)
-MIN_AREA_PROJECT_LARGE = config("MIN_AREA_PROJECT_LARGE", 500, cast=int)
-
+MIN_AREA_PROJECT_SMALL = config("MIN_AREA_PROJECT_SMALL", 9.884, cast=int)
+MIN_AREA_PROJECT_MEDIUM = config("MIN_AREA_PROJECT_MEDIUM", 98.84, cast=int)
+MIN_AREA_PROJECT_LARGE = config("MIN_AREA_PROJECT_LARGE", 494.2, cast=int)
 # Forsys settings
 FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 FORSYS_SDW = config("FORSYS_SDW", 0.5, cast=float)
@@ -534,7 +533,7 @@ ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
 # OPENPANEL config
-OPENPANEL_INTEGRATION = config("OPENPANEL_INTEGRATION", default=False, cast=bool)
+OPENPANEL_INTEGRATION = config("OPENPANEL_INTEGRATION", default=True, cast=bool)
 OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
 OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
 OPENPANEL_CLIENT_SECRET = config(
@@ -575,3 +574,11 @@ STAND_METRICS_API_URL = config(
 # RequestsSessionWrap settings
 REQUESTS_RETRIES = config("REQUESTS_RETRIES", default=3, cast=int)
 REQUESTS_BACKOFF_FACTOR = config("REQUESTS_BACKOFF_FACTOR", default=1, cast=float)
+
+# DJANGO
+# 2621440 * 10 = 25Mb
+DATA_UPLOAD_MAX_MEMORY_SIZE = config(
+    "DATA_UPLOAD_MAX_MEMORY_SIZE",
+    default=2621440 * 10,
+    cast=int,
+)

@@ -61,18 +61,6 @@ export class LoginComponent {
     });
   }
 
-  checkEmailErrors() {
-    if (this.form.controls['email'].errors !== null) {
-      this.emailError = 'Email must be in a proper format.';
-    }
-  }
-
-  clearEmailErrors() {
-    if (this.emailError !== '') {
-      this.emailError = '';
-    }
-  }
-
   resendVerification() {
     const email = this.form.get('email')?.value;
     this.authService.resendValidationEmail(email).subscribe({

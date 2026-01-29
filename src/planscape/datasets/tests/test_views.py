@@ -149,6 +149,23 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(21, data.get("count"))
 
+    def test_by_multiple_ids(self):
+        datalayer_ids = []
+        for i in range(10):
+            datalayer = DataLayerFactory.create(
+                dataset=self.dataset, name=f"Foo {i}", type=DataLayerType.RASTER
+            )
+            datalayer_ids.append(str(datalayer.pk))
+        
+        filter = {
+            "id__in": ",".join(datalayer_ids[:3]),
+        }
+        url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(3, data.get("count"))
+
     def test_get_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
         url = reverse("api:datasets:datalayers-list")

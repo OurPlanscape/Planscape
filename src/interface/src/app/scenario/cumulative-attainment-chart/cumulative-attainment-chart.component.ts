@@ -13,7 +13,7 @@ import {
   getChartBorderDash,
   getChartFontConfig,
   getDarkGridConfig,
-  whiteTooltipBaseConfig,
+  chartTooltipBaseConfig,
 } from '../../chart-helper';
 import { ChartComponent } from '@styleguide';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
@@ -86,7 +86,7 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     },
     plugins: {
       tooltip: {
-        ...whiteTooltipBaseConfig(),
+        ...chartTooltipBaseConfig(),
         callbacks: {
           title: () => '',
           label: (context: TooltipItem<'line'>) => context.dataset.label ?? '',

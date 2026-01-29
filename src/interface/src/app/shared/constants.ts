@@ -132,3 +132,5 @@ export const DEFAULT_MAX_SELECTED_LAYERS = 3;
 
 // Max datalayers that we can select on climate foresight
 export const MAX_CLIMATE_DATALAYERS = 10;
+
+export const MIN_PASSWORD_LENGTH = 8;

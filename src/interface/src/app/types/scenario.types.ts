@@ -56,6 +56,8 @@ export interface ScenarioConfig {
   question_id?: number;
   scenario_output_fields?: string[]; // this value comes from saved scenarios
   seed?: number | null;
+  priority_objectives?: number[];
+  cobenefits?: number[];
 }
 
 export interface ScenarioResult {
@@ -101,6 +103,7 @@ export interface ScenarioV3Config {
     max_area: number;
     max_project_count: number;
   };
+  type?: SCENARIO_TYPE;
 }
 
 export interface ScenarioV3Payload {

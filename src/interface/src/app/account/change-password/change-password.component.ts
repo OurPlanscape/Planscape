@@ -9,6 +9,7 @@ import {
 import { FormMessageType } from '@types';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MIN_PASSWORD_LENGTH } from '@shared';
 
 type State = 'view' | 'editing' | 'saving';
 
@@ -26,6 +27,7 @@ export class ChangePasswordComponent {
   form: FormGroup;
   error: any;
   success = false;
+  MIN_PASSWORD_LENGTH = MIN_PASSWORD_LENGTH;
   username$ = this.authService.loggedInUser$.pipe(
     map((user) => user?.username)
   );
@@ -56,7 +58,7 @@ export class ChangePasswordComponent {
         current: this.fb.control('', [Validators.required]),
         newPassword: this.fb.control('', [
           Validators.required,
-          Validators.minLength(8),
+          Validators.minLength(MIN_PASSWORD_LENGTH),
         ]),
         passwordConfirm: this.fb.control('', [Validators.required]),
       },
