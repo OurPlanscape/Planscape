@@ -574,3 +574,11 @@ STAND_METRICS_API_URL = config(
 # RequestsSessionWrap settings
 REQUESTS_RETRIES = config("REQUESTS_RETRIES", default=3, cast=int)
 REQUESTS_BACKOFF_FACTOR = config("REQUESTS_BACKOFF_FACTOR", default=1, cast=float)
+
+# DJANGO
+# 2621440 * 10 = 25Mb
+DATA_UPLOAD_MAX_MEMORY_SIZE = config(
+    "DATA_UPLOAD_MAX_MEMORY_SIZE",
+    default=2621440 * 10,
+    cast=int,
+)
