@@ -7,3 +7,4 @@ export * from './plan.types';
 export * from './scenario.types';
 export * from './treatment.types';
 export * from './user.types';
+export { AvailableStands } from './scenario.draft.types';

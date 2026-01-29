@@ -174,25 +174,3 @@ export interface Constraint {
   operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
   value: number; // be supports string
 }
-
-// TODO - remove this and use `Constraint` when we implement dynamic constraints
-export interface NamedConstraint {
-  name: string;
-  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
-  value: number; // be supports string
-}
-
-export interface AvailableStands {
-  unavailable: {
-    by_inclusions: number[];
-    by_exclusions: number[];
-    by_thresholds: number[];
-  };
-  summary: {
-    total_area: number; // total PA stands area
-    available_area: number; // total area - exclusions
-    treatable_area: number; // available area - thresholds
-    unavailable_area: number; // unavailable area
-    treatable_stand_count: number; // number of available stands
-  };
-}
