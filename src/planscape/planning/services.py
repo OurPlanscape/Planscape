@@ -524,19 +524,19 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     datalayers = []
 
     if tx_goal:
-        for tgudl in tx_goal.datalayer_usages.all():
+        for usage in tx_goal.datalayer_usages.all():
             item = {
-                "id": tgudl.datalayer.id,
-                "name": tgudl.datalayer.name,
-                "metric": get_datalayer_metric(tgudl.datalayer),
-                "type": tgudl.datalayer.type,
-                "geometry_type": tgudl.datalayer.geometry_type,
-                "threshold": tgudl.threshold,
-                "usage_type": tgudl.usage_type,
+                "id": usage.datalayer.id,
+                "name": usage.datalayer.name,
+                "metric": get_datalayer_metric(usage.datalayer),
+                "type": usage.datalayer.type,
+                "geometry_type": usage.datalayer.geometry_type,
+                "threshold": usage.threshold,
+                "usage_type": usage.usage_type,
             }
 
-            if tgudl.usage_type == TreatmentGoalUsageType.PRIORITY:
-                item["weight"] = float(tgudl.weight) if tgudl.weight is not None else 1.0
+            if usage.usage_type == TreatmentGoalUsageType.PRIORITY:
+                item["weight"] = usage.weight
 
             datalayers.append(item)
 
@@ -584,6 +584,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         )
 
     # custom scenario datalayers
+    # TODO: support weights for custom scenario priorities/cobenefits (currently defaults to 1.0)
     if priority_objectives:
         priority_objectives = DataLayer.objects.filter(pk__in=priority_objectives)
         datalayers.extend(
@@ -596,7 +597,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                     "geometry_type": priority.geometry_type,
                     "threshold": custom_thresholds.get(priority.id),
                     "usage_type": TreatmentGoalUsageType.PRIORITY,
-                    "weight": 1.0,
+                    "weight": 1,
                 }
                 for priority in priority_objectives
             ]

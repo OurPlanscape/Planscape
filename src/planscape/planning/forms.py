@@ -3,8 +3,8 @@ from martor.widgets import AdminMartorWidget
 
 from planning.models import (
     TreatmentGoal,
-    TreatmentGoalUsesDataLayer,
     TreatmentGoalUsageType,
+    TreatmentGoalUsesDataLayer,
 )
 
 
@@ -36,7 +36,6 @@ class TreatmentGoalAdminForm(forms.ModelForm):
 class TreatmentGoalUsesDataLayerAdminForm(forms.ModelForm):
     """
     Admin form for TreatmentGoalUsesDataLayer model.
-    Weight is always editable, but enforced on save.
     """
 
     def __init__(self, *args, **kwargs):
@@ -46,22 +45,23 @@ class TreatmentGoalUsesDataLayerAdminForm(forms.ModelForm):
 
         if "weight" in self.fields:
             self.fields["weight"].required = False
-            self.fields["weight"].help_text = (
-                "Only applies when Usage Type = PRIORITY. "
-                "Non-PRIORITY will be saved as 1.0."
-            )
+            self.fields[
+                "weight"
+            ].help_text = "Only applies when Usage Type = PRIORITY. "
 
     def clean(self):
         cleaned = super().clean()
         usage_type = cleaned.get("usage_type")
+        weight = cleaned.get("weight")
 
         if usage_type != TreatmentGoalUsageType.PRIORITY:
-            cleaned["weight"] = 1.0
+            cleaned["weight"] = None
             return cleaned
 
-        weight = cleaned.get("weight")
         if weight in (None, ""):
-            cleaned["weight"] = 1.0
+            raise forms.ValidationError(
+                {"weight": "Required for PRIORITY. Must be a positive integer (>= 1)."}
+            )
         return cleaned
 
     class Meta:
