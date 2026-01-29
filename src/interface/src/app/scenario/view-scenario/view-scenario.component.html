@@ -10,7 +10,6 @@
           *ngIf="scenarioHasResults(scenario)"
           [scenarioVersion]="scenario.version || ''"
           [results]="scenario.scenario_result || null"
-          [priorities]="scenarioPriorities(scenario)"
           [scenarioName]="scenario.name"
           [usageTypes]="scenario.usage_types || null"
           [scenarioId]="scenarioId!">

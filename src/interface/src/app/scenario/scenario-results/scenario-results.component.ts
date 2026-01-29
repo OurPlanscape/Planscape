@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { ScenarioResult, UsageType } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
@@ -21,7 +21,6 @@ import { getGroupedAttainment } from 'src/app/chart-helper';
 @Component({
   standalone: true,
   imports: [
-    AsyncPipe,
     NgIf,
     SectionComponent,
     TreatmentOpportunityChartComponent,
@@ -39,7 +38,6 @@ export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioVersion!: string;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
-  @Input() priorities: string[] = [];
   @Input() usageTypes: UsageType[] | null = [];
 
   areas: ProjectAreaReport[] = [];
