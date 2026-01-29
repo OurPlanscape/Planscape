@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import migrations, models
 
 
@@ -10,9 +11,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="treatmentgoalusesdatalayer",
             name="weight",
-            field=models.FloatField(
-                default=1.0,
-                help_text="Weight for PRIORITY usage type (relative importance)",
+            field=models.PositiveIntegerField(
+                null=True,
+                validators=[MinValueValidator(1)],
+                help_text="Only applies when Usage Type = PRIORITY. Must be a positive integer (>= 1).",
             ),
         ),
     ]

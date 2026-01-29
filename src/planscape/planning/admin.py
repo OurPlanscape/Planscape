@@ -12,6 +12,7 @@ class TreatmentGoalUsesDataLayerInline(admin.TabularInline):
     raw_id_fields = ["datalayer"]
     fields = ("usage_type", "datalayer", "threshold", "weight")
 
+
 class TreatmentGoalAdmin(admin.ModelAdmin):
     """
     Admin interface for TreatmentGoal model.
@@ -47,7 +48,14 @@ class TreatmentGoalUsesDataLayerAdmin(admin.ModelAdmin):
     Admin interface for TreatmentGoalUsesDataLayer model.
     """
 
-    list_display = ("id", "usage_type", "treatment_goal", "datalayer", "threshold", "weight")
+    list_display = (
+        "id",
+        "usage_type",
+        "treatment_goal",
+        "datalayer",
+        "threshold",
+        "weight",
+    )
     list_display_links = ("id", "usage_type")
     search_fields = ["usage_type", "treatment_goal__name", "datalayer__name"]
     list_filter = ["usage_type", "treatment_goal__name", "datalayer__name"]
