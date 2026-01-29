@@ -4,6 +4,26 @@ export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM';
 
+export type ScenarioResultStatus =
+  | 'LOADING' // when loading results
+  | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
+  | 'PENDING' // Scenario created, in queue
+  | 'RUNNING' // Scenario created, being processed
+  | 'SUCCESS' // Run completed successfully
+  | 'FAILURE' // Run failed;
+  | 'PANIC' // Run failed; panic
+  | 'TIMED_OUT'
+  | 'DRAFT'; // Creating a scenario but not completed the steps yet.
+
+export type GeoPackageStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | null;
+
+export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
+
 export interface Scenario {
   id?: number; // undefined when we are creating a new scenario
   name: string;
@@ -118,27 +138,6 @@ export interface ScenarioCreationPayload {
   planning_area: number;
   treatment_goal: number;
 }
-
-export type ScenarioResultStatus =
-  | 'LOADING' // when loading results
-  | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
-  | 'PENDING' // Scenario created, in queue
-  | 'RUNNING' // Scenario created, being processed
-  | 'SUCCESS' // Run completed successfully
-  | 'FAILURE' // Run failed;
-  | 'PANIC' // Run failed; panic
-  | 'TIMED_OUT'
-  | 'DRAFT'; // Creating a scenario but not completed the steps yet.
-
-export type GeoPackageStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'SUCCEEDED'
-  | 'FAILED'
-  | null;
-
-export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
-
 // TODO is this the right type?
 export interface FeatureCollection extends GeoJSON.FeatureCollection {
   properties: any;
