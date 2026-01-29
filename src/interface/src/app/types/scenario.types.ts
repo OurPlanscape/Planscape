@@ -1,4 +1,5 @@
 import { STAND_SIZE } from '../plan/plan-helpers';
+import { DataLayer } from './data-sets';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
@@ -77,6 +78,12 @@ export interface ScenarioConfig {
   seed?: number | null;
   priority_objectives?: number[];
   cobenefits?: number[];
+}
+
+// FE type-scenario with populated config
+export interface ScenarioHydrated extends Scenario {
+  priority_objectives?: DataLayer[];
+  cobenefits?: DataLayer[];
 }
 
 export interface ScenarioResult {

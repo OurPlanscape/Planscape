@@ -5,12 +5,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
-import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
+import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { DataLayer, ScenarioV3Config } from '@types';
+import { ScenarioV3Config } from '@types';
 import { isCustomScenario } from '../scenario-helper';
-import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @UntilDestroy()
@@ -31,7 +30,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   private scenarioState: ScenarioState = inject(ScenarioState);
   private forsysService: ForsysService = inject(ForsysService);
-  private dataLayersService: DataLayersService = inject(DataLayersService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -80,23 +78,13 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   );
 
   priorityObjectives$ = this.currentScenario$.pipe(
-    switchMap((s) =>
-      this.dataLayersService.getDataLayersByIds(
-        s.configuration?.priority_objectives ?? []
-      )
-    ),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
-    shareReplay(1)
+    map((scenario) =>
+      scenario.priority_objectives?.map((dl) => dl.name).join(', ')
+    )
   );
 
   cobenefits$ = this.currentScenario$.pipe(
-    switchMap((s) =>
-      this.dataLayersService.getDataLayersByIds(
-        s.configuration?.cobenefits ?? []
-      )
-    ),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
-    shareReplay(1)
+    map((scenario) => scenario.cobenefits?.map((dl) => dl.name).join(', '))
   );
 
   close() {
