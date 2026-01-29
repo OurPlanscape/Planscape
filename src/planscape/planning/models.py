@@ -22,6 +22,7 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import MinValueValidator
 from django.db.models import F, Q, QuerySet
 from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
@@ -372,6 +373,11 @@ class TreatmentGoalUsesDataLayer(
         max_length=256,
         null=True,
         help_text="Threshold for the data layer.",
+    )
+    weight = models.FloatField(
+        null=True,
+        validators=[MinValueValidator(1)],
+        help_text="Only applies when Usage Type = PRIORITY. Must be a positive integer (>= 1).",
     )
 
     @property
