@@ -42,3 +42,26 @@ class ValidateDatasetModulesTest(TestCase):
     def test_rejects_unknown_modules(self):
         with self.assertRaises(ValidationError):
             validate_dataset_modules(["not-a-module"])
+
+
+class DataLayerModelTest(TestCase):
+    def setUp(self):
+        # 1 DataLayer added on migrations
+        DataLayerFactory.create(name="Layer 1")
+        DataLayerFactory.create(name="Layer 2")
+        DataLayerFactory.create(name="DataLayer 3")
+
+    def test_find_by_name(self):
+        self.assertEqual(DataLayer.objects.all().count(), 4)
+        self.assertEqual(DataLayer.objects.filter(name="Layer 1").count(), 1)
+        self.assertEqual(DataLayer.objects.filter(name__startswith="Layer").count(), 2)
+
+    def test_deleted_datalayer_not_listed(self):
+        deleted_datalayer = DataLayerFactory.create(name="Deleted Layer")
+
+        self.assertEqual(DataLayer.objects.all().count(), 5)
+
+        deleted_datalayer.delete()
+
+        self.assertEqual(DataLayer.objects.all().count(), 4)
+
