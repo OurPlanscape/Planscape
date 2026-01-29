@@ -21,6 +21,7 @@ import { StepDirective } from '../../../../../styleguide/steps/step.component';
 import { interval, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { chartTooltipBaseConfig } from 'src/app/chart-helper';
 
 interface LayerFavorability {
   datalayer: number;
@@ -236,7 +237,8 @@ export class AssignFavorabilityComponent
           display: false,
         },
         tooltip: {
-          enabled: true,
+          ...chartTooltipBaseConfig(),
+          displayColors: true,
           callbacks: {
             label: (context) => {
               if (context.datasetIndex === 1) {

@@ -10,7 +10,7 @@ import {
   getChartFontConfig,
   getDarkGridConfig,
   getProjectAreaLabelsFromFeatures,
-  whiteTooltipBaseConfig,
+  chartTooltipBaseConfig,
 } from 'src/app/chart-helper';
 import { ChartComponent } from '@styleguide';
 import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
@@ -39,15 +39,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
     maintainAspectRatio: false,
     plugins: {
       tooltip: {
-        ...whiteTooltipBaseConfig(),
-        titleFont: {
-          ...whiteTooltipBaseConfig().titleFont,
-          weight: '600',
-        },
-        bodyFont: {
-          ...whiteTooltipBaseConfig().bodyFont,
-          weight: '500',
-        },
+        ...chartTooltipBaseConfig(),
         callbacks: {
           title: (items) => {
             const dataset = items[0]?.dataset as CustomChartDataset;
