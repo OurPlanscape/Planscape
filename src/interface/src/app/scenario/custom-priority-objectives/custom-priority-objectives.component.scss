@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'media';
 @import 'mixins';
 @import 'variables';
 
@@ -35,6 +36,11 @@ $navbar-height: 170px;
   padding: 0;
 }
 
+.priority-selection ::ng-deep .datalayers-section {
+  display: flex;
+  flex-direction: column;
+}
+
 .priority-selection ::ng-deep .mat-expansion-panel-body .scrollable {
   max-height: calc(100vh - ($header-height + $navbar-height));
   overflow-y: auto;
@@ -45,14 +51,14 @@ $navbar-height: 170px;
 }
 
 // don't constrain the height if we're in small width view
-@media (max-width: 768px) {
+@include on-small() {
   :host {
-    min-height: unset;
+    max-height: unset;
   }
 
   .priority-selection ::ng-deep .mat-expansion-panel-body .scrollable {
     max-height: none;
-
+    overflow-y:visible;
     &.with-footer {
     max-height: none;
      }

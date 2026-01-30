@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'media';
 @import 'mixins';
 @import 'variables';
 
@@ -44,14 +45,14 @@ $navbar-height: 170px;
 
 
 // don't constrain the height if we're in small width view
-@media (max-width: 768px) {
+@include on-small() {
   :host {
-    min-height: unset;
+    max-height: unset;
   }
 
   .cobenefits-selection ::ng-deep .mat-expansion-panel-body .scrollable {
     max-height: none;
-
+    overflow-y:visible;
     &.with-footer {
       max-height: none;
     }
