@@ -65,6 +65,7 @@ describe('ScenarioService', () => {
         geopackage_status: null,
         geopackage_url: null,
         type: 'PRESET',
+        user: 1,
       };
 
       service.getScenario(1).subscribe((res) => {

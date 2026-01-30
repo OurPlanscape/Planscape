@@ -47,6 +47,7 @@ export const MOCK_FEATURE_COLLECTION: GeoJSON = {
 
 export const MOCK_SCENARIO: Scenario = {
   id: 1,
+  user: 1,
   name: 'name',
   planning_area: 1,
   configuration: {
