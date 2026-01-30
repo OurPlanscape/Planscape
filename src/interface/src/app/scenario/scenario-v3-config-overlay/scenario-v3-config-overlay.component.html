@@ -23,9 +23,6 @@
       <ng-container *ngIf="isCustomScenario$ | async">
         <dt>Priority Objectives:</dt>
         <dd>
-          <mat-spinner
-            diameter="20"
-            *ngIf="(priorityObjectives$ | async) === null"></mat-spinner>
           {{ priorityObjectives$ | async }}
         </dd>
         <dt>Co-Benefits:</dt>
