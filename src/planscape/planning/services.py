@@ -533,10 +533,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 "geometry_type": usage.datalayer.geometry_type,
                 "threshold": usage.threshold,
                 "usage_type": usage.usage_type,
+                "weight": usage.weight,
             }
-
-            if usage.usage_type == TreatmentGoalUsageType.PRIORITY:
-                item["weight"] = usage.weight
 
             datalayers.append(item)
 
@@ -580,6 +578,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 "geometry_type": dl.geometry_type,
                 "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
                 "usage_type": "THRESHOLD",
+                "weight": None,
             }
         )
 
@@ -615,6 +614,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                     "geometry_type": benefit.geometry_type,
                     "threshold": custom_thresholds.get(benefit.id),
                     "usage_type": TreatmentGoalUsageType.SECONDARY_METRIC,
+                    "weight": None,
                 }
                 for benefit in cobenefits
             ]
