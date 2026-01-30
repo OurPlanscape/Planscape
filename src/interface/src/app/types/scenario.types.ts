@@ -24,6 +24,7 @@ export type GeoPackageStatus =
 
 export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
 
+// Backend scenario model returned by /v2/scenarios endpoints.
 export interface Scenario {
   id: number;
   name: string;
@@ -60,6 +61,7 @@ export interface Scenario {
  * Similarly, `question_id` only exists on the backend payload, while on the FE side
  * this is part of `treatment_goal`.
  */
+// Legacy backend config (V1/V2) stored on Scenario.configuration (flat fields).
 export interface ScenarioConfig {
   estimated_cost?: number;
   max_budget?: number;
@@ -77,6 +79,7 @@ export interface ScenarioConfig {
   cobenefits?: number[];
 }
 
+// Backend scenario run result object.
 export interface ScenarioResult {
   status: ScenarioResultStatus;
   completed_at: string;
@@ -87,15 +90,7 @@ export interface ScenarioResult {
   };
 }
 
-export interface ScenarioCreation extends ScenarioConfigPayload {
-  treatment_goal: number;
-  excluded_areas: number[];
-  name: string;
-  planning_area: number;
-  priority_objectives?: number[];
-  cobenefits?: number[];
-}
-
+// Base draft/wizard shape (legacy flat config fields) used by FE draft types.
 export interface ScenarioConfigPayload {
   estimated_cost: number;
   excluded_areas: number[];
@@ -107,6 +102,7 @@ export interface ScenarioConfigPayload {
   max_project_count?: number;
 }
 
+// Backend V3 config shape stored on Scenario.configuration for V3 scenarios.
 export interface ScenarioV3Config {
   excluded_areas: number[];
   stand_size: STAND_SIZE;
@@ -131,24 +127,18 @@ export interface ScenarioV3Payload {
 }
 
 // TODO is this the right type?
+// Backend/analytics GeoJSON feature collection shape for scenario outputs.
 export interface FeatureCollection extends GeoJSON.FeatureCollection {
   properties: any;
 }
 
-export interface ProjectArea {
-  id: string;
-  projectId?: string;
-  projectArea: GeoJSON.GeoJSON;
-  owner?: string;
-  estimatedAreaTreated?: number;
-  actualAcresTreated?: number;
-}
-
+// Backend usage type entry for scenario outputs.
 export interface UsageType {
   usage_type: string;
   datalayer: string;
 }
 
+// Backend scenario goal metadata.
 export interface ScenarioGoal {
   id: number;
   name: string;
@@ -160,6 +150,7 @@ export interface ScenarioGoal {
   group_text: string;
 }
 
+// Backend constraint definition (thresholds for stands).
 export interface Constraint {
   datalayer: number;
   operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
