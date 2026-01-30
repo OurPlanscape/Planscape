@@ -67,8 +67,6 @@ export interface ScenarioConfig {
   max_project_count?: number;
   max_slope?: number;
   min_distance_from_road?: number;
-  // TODO is this even being used??
-  project_areas?: ProjectArea[];
   excluded_areas?: number[];
   stand_size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   scenario_priorities?: string[];
@@ -132,12 +130,6 @@ export interface ScenarioV3Payload {
   treatment_goal: number;
 }
 
-export interface ScenarioCreationPayload {
-  configuration: ScenarioConfigPayload;
-  name: string;
-  planning_area: number;
-  treatment_goal: number;
-}
 // TODO is this the right type?
 export interface FeatureCollection extends GeoJSON.FeatureCollection {
   properties: any;
