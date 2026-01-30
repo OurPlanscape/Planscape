@@ -4,7 +4,7 @@
   [required]="true"
   tooltipContent="<b>What are Priority Objectives?</b>
   These are the main outcomes you want ForSys to focus on when identifying areas for treatment — like reducing wildfire risk, protecting species, or preserving carbon.
-  
+
   <b>What happens if you select only one priority objective?</b>
 
   If you select 1 objective, ForSy
@@ -37,7 +37,9 @@
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
     </div>
     <section class="datalayers-section">
-      <app-data-layers [displayAddButton]="true"></app-data-layers>
+      <app-data-layers
+        [displayAddButton]="true"
+        class="sticky-search"></app-data-layers>
     </section>
   </form>
 </sg-section>
