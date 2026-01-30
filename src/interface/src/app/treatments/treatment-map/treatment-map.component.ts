@@ -216,9 +216,6 @@ export class TreatmentMapComponent {
     this.mapConfigState.baseMap$.pipe(untilDestroyed(this)).subscribe(() => {
       this.selectedStandsState.backUpAndClearSelectedStands();
     });
-
-    // Treatment tooltip should be turned off
-    this.treatmentsState.enableTreatmentTooltips(false);
   }
 
   afterStandsLoaded() {
