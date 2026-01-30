@@ -11,7 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
-import { ScenarioCreation } from '@types';
+import { ScenarioDraftConfiguration } from '@types';
 import { filter, map, shareReplay, take } from 'rxjs';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from '@plan/plan-helpers';
@@ -49,7 +49,7 @@ import { PopoverComponent } from '@styleguide/popover/popover.component';
   styleUrl: './step1.component.scss',
 })
 export class Step1Component
-  extends StepDirective<ScenarioCreation>
+  extends StepDirective<ScenarioDraftConfiguration>
   implements OnInit
 {
   form = new FormGroup({
