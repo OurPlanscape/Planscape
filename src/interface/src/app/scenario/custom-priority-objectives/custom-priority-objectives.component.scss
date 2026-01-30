@@ -2,13 +2,7 @@
 @import 'mixins';
 @import 'variables';
 
-$header-height: 350px;
-$navbar-height: 170px;
-
 :host {
-  z-index: 1;
-  display: block;
-  min-height: 100vh;
 
   .padding-section {
     padding-left: 16px;
@@ -21,11 +15,6 @@ $navbar-height: 170px;
   .error-message {
     color: $color-error;
     margin: 0;
-  }
-
-  .priority-selection {
-    position: sticky;
-    top: 0px;
   }
 
 }
