@@ -25,7 +25,7 @@ export type GeoPackageStatus =
 export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
 
 export interface Scenario {
-  id?: number; // undefined when we are creating a new scenario
+  id: number;
   name: string;
   notes?: string;
   creator?: string;
@@ -33,7 +33,7 @@ export interface Scenario {
   configuration: ScenarioConfig;
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;
-  user?: number;
+  user: number;
   max_treatment_area?: number;
   created_at?: string;
   max_budget?: number;
