@@ -1,10 +1,9 @@
 import {
-  getGroupedGoals,
   convertFlatConfigurationToDraftPayload,
-  getNamedConstraints,
+  getGroupedGoals,
   suggestUniqueName,
 } from './scenario-helper';
-import { Constraint, ScenarioCreation, ScenarioGoal } from '@types';
+import { ScenarioCreation, ScenarioGoal } from '@types';
 
 describe('getGroupedGoals', () => {
   const makeGoal = (overrides: Partial<ScenarioGoal> = {}): ScenarioGoal => ({
@@ -207,53 +206,6 @@ describe('convertFlatConfigurationToDraftPayload', () => {
         },
       },
     });
-  });
-});
-
-describe('getNamedConstraints', () => {
-  const slopeId = 10;
-
-  it('should map constraints with matching datalayer to maxSlope', () => {
-    const constraints: Constraint[] = [
-      { datalayer: 10, operator: 'lt', value: 25 },
-      { datalayer: 10, operator: 'lte', value: 30 },
-    ];
-
-    const result = getNamedConstraints(constraints, slopeId);
-
-    expect(result).toEqual([
-      { name: 'maxSlope', operator: 'lt', value: 25 },
-      { name: 'maxSlope', operator: 'lte', value: 30 },
-    ]);
-  });
-
-  // TODO: This will change if we add more constraints for now we handle just 2
-  it('should map constraints with different datalayer to distanceToRoads', () => {
-    const constraints: Constraint[] = [
-      { datalayer: 20, operator: 'lt', value: 100 },
-      { datalayer: 30, operator: 'lte', value: 150 },
-    ];
-
-    const result = getNamedConstraints(constraints, slopeId);
-
-    expect(result).toEqual([
-      { name: 'distanceToRoads', operator: 'lt', value: 100 },
-      { name: 'distanceToRoads', operator: 'lte', value: 150 },
-    ]);
-  });
-
-  it('should handle a mix of datalayers correctly', () => {
-    const constraints: Constraint[] = [
-      { datalayer: 10, operator: 'lt', value: 50 },
-      { datalayer: 99, operator: 'lte', value: 200 },
-    ];
-
-    const result = getNamedConstraints(constraints, slopeId);
-
-    expect(result).toEqual([
-      { name: 'maxSlope', operator: 'lt', value: 50 },
-      { name: 'distanceToRoads', operator: 'lte', value: 200 },
-    ]);
   });
 });
 

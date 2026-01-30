@@ -13,11 +13,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SectionComponent } from '@styleguide';
 import { NgxMaskModule } from 'ngx-mask';
 import { StepDirective } from 'src/styleguide/steps/step.component';
-import { NamedConstraint, ScenarioCreation } from '@types';
+import { Constraint, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
-import { debounceTime } from 'rxjs';
+import { debounceTime, map, switchMap } from 'rxjs';
 import { distinctUntilChanged, filter, take } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ForsysService } from '@services/forsys.service';
 
 @UntilDestroy()
 @Component({
@@ -54,7 +55,10 @@ export class StandLevelConstraintsComponent
     ]),
   });
 
-  constructor(private newScenarioState: NewScenarioState) {
+  constructor(
+    private newScenarioState: NewScenarioState,
+    private forsysService: ForsysService
+  ) {
     super();
   }
 
@@ -63,60 +67,73 @@ export class StandLevelConstraintsComponent
   }
 
   ngOnInit(): void {
-    this.form.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe((form: any) => {
-        if (this.form.valid) {
-          const constraints: NamedConstraint[] = [];
-          if (!(form.max_slope === null || form.max_slope === '')) {
-            constraints.push({
-              name: 'maxSlope',
-              operator: 'lte',
-              value: form.max_slope,
-            });
-          }
-          if (
-            !(
-              form.min_distance_from_road === null ||
-              form.min_distance_from_road === ''
-            )
-          ) {
-            constraints.push({
-              name: 'distanceToRoads',
-              operator: 'lte',
-              value: form.min_distance_from_road,
-            });
-          }
-          this.newScenarioState.setNamedConstraints(constraints);
-        }
-      });
+    this.forsysService.forsysData$
+      .pipe(
+        take(1),
+        switchMap((forsysData) =>
+          this.form.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            map((data: any) => {
+              if (this.form.valid) {
+                const constraints: Constraint[] = [];
+                if (!(data.max_slope === null || data.max_slope === '')) {
+                  constraints.push({
+                    datalayer: forsysData.thresholds.slope.id,
+                    operator: 'lte',
+                    value: data.max_slope,
+                  });
+                }
+                if (
+                  !(
+                    data.min_distance_from_road === null ||
+                    data.min_distance_from_road === ''
+                  )
+                ) {
+                  constraints.push({
+                    datalayer: forsysData.thresholds.distance_from_roads.id,
+                    operator: 'lte',
+                    value: data.min_distance_from_road,
+                  });
+                }
+                this.newScenarioState.setConstraints(constraints);
+              }
+            })
+          )
+        )
+      )
+      .subscribe();
 
-    // Reading the config from the scenario state
+    // Reading the config from the initial scenario config...?
     this.newScenarioState.scenarioConfig$
       .pipe(
         untilDestroyed(this),
         filter((c) => !!c?.constraints),
-        take(1)
+        take(1),
+        switchMap((config) =>
+          this.forsysService.forsysData$.pipe(
+            map((data) => {
+              const slope = config.constraints?.find(
+                (c) => c.datalayer === data.thresholds.slope.id
+              );
+              if (slope) {
+                this.form.get('max_slope')?.setValue(slope.value);
+              }
+
+              const distance = config.constraints?.find(
+                (c) => c.datalayer === data.thresholds.distance_from_roads.id
+              );
+              if (distance) {
+                this.form
+                  .get('min_distance_from_road')
+                  ?.setValue(distance.value);
+              }
+
+              return config;
+            })
+          )
+        )
       )
-      .subscribe((config) => {
-        if (config.constraints && config.constraints.length > 0) {
-          const max_slope = this.newScenarioState
-            .getNamedConstraints(config.constraints)
-            .find((c) => c?.name === 'maxSlope');
-
-          if (max_slope) {
-            this.form.get('max_slope')?.setValue(max_slope.value);
-          }
-
-          const min_distance_from_road = this.newScenarioState
-            .getNamedConstraints(config.constraints)
-            .find((c) => c?.name === 'distanceToRoads');
-          if (min_distance_from_road) {
-            this.form
-              .get('min_distance_from_road')
-              ?.setValue(min_distance_from_road.value);
-          }
-        }
-      });
+      .subscribe((config) => {});
   }
 }

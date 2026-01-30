@@ -1,18 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import {
-  Constraint,
-  NamedConstraint,
-  ScenarioCreation,
-  ScenarioV3Config,
-} from '@types';
+import { Constraint, ScenarioCreation, ScenarioV3Config } from '@types';
 import {
   BehaviorSubject,
   catchError,
   combineLatest,
   EMPTY,
   filter,
-  firstValueFrom,
   map,
   mapTo,
   merge,
@@ -28,7 +22,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
-import { getNamedConstraints, isCustomScenario } from './scenario-helper';
+import { isCustomScenario } from './scenario-helper';
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
@@ -195,25 +189,6 @@ export class NewScenarioState {
 
   setStepIndex(i: number) {
     this._stepIndex$.next(i);
-  }
-
-  // TODO - remove and use setConstraints when we implement dynamic constraints
-  async setNamedConstraints(namedConstraints: NamedConstraint[]) {
-    await firstValueFrom(this.forsysService.forsysData$);
-    const constraints: Constraint[] = namedConstraints.map((c) => {
-      const datalayer =
-        c.name === 'maxSlope' ? this.slopeId : this.distanceToRoadsId;
-      return {
-        datalayer: datalayer,
-        value: c.value,
-        operator: c.operator,
-      };
-    });
-    this.setConstraints(constraints);
-  }
-
-  getNamedConstraints(constraints: Constraint[]): NamedConstraint[] {
-    return getNamedConstraints(constraints, this.slopeId);
   }
 
   setBaseStandsLoaded(loaded: boolean) {
