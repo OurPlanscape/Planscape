@@ -29,9 +29,9 @@ import { nameMustBeNew } from 'src/app/validators/unique-scenario';
 import {
   Scenario,
   SCENARIO_TYPE,
-  ScenarioDraftConfiguration,
+  ScenarioCreation,
   ScenarioV3Config,
-  ScenarioDraftPatchPayload,
+  ScenarioV3Payload,
 } from '@types';
 import { MatDialog } from '@angular/material/dialog';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
@@ -241,10 +241,10 @@ export class ScenarioCreationComponent implements OnInit {
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
-    return newState as Partial<ScenarioDraftConfiguration>;
+    return newState as Partial<ScenarioCreation>;
   }
 
-  saveStep(data: Partial<ScenarioDraftConfiguration>): Observable<boolean> {
+  saveStep(data: Partial<ScenarioCreation>): Observable<boolean> {
     return this.newScenarioState.isValidToGoNext$.pipe(
       take(1),
       switchMap((valid) => {
@@ -279,7 +279,7 @@ export class ScenarioCreationComponent implements OnInit {
     );
   }
 
-  savePatch(data: Partial<ScenarioDraftPatchPayload>): Observable<boolean> {
+  savePatch(data: Partial<ScenarioV3Payload>): Observable<boolean> {
     this.newScenarioState.setLoading(true);
     const thresholdsIdMap = new Map<string, number>();
     thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());

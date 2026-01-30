@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ScenarioService } from '@services';
-import { Constraint, ScenarioDraftConfiguration, ScenarioV3Config } from '@types';
+import { Constraint, ScenarioCreation, ScenarioV3Config } from '@types';
 import {
   BehaviorSubject,
   catchError,
@@ -176,7 +176,7 @@ export class NewScenarioState {
     this._excludedAreas$.next(value);
   }
 
-  setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {
+  setScenarioConfig(config: Partial<ScenarioCreation>) {
     this._scenarioConfig$.next(config);
     if (config.excluded_areas) {
       this.setExcludedAreas(config.excluded_areas);

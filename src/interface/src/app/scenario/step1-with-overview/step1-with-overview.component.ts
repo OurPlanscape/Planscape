@@ -5,7 +5,7 @@ import {
   ProcessOverviewComponent,
 } from '../process-overview/process-overview.component';
 import { StepDirective } from '@styleguide';
-import { ScenarioDraftConfiguration } from '@types';
+import { ScenarioCreation } from '@types';
 import { FormGroup } from '@angular/forms';
 import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
 
@@ -21,7 +21,7 @@ import { SCENARIO_OVERVIEW_STEPS } from '../scenario.constants';
   ],
 })
 export class Step1WithOverviewComponent
-  extends StepDirective<ScenarioDraftConfiguration>
+  extends StepDirective<ScenarioCreation>
   implements AfterContentInit
 {
   steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;

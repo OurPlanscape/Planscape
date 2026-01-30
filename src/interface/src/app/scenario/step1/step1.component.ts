@@ -11,7 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { TreatmentGoalsService } from '@services';
-import { ScenarioDraftConfiguration } from '@types';
+import { ScenarioCreation } from '@types';
 import { filter, map, shareReplay, take } from 'rxjs';
 import { ButtonComponent, SectionComponent, StepDirective } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from 'src/app/plan/plan-helpers';
@@ -48,7 +48,7 @@ import { MatRadioModule } from '@angular/material/radio';
   styleUrl: './step1.component.scss',
 })
 export class Step1Component
-  extends StepDirective<ScenarioDraftConfiguration>
+  extends StepDirective<ScenarioCreation>
   implements OnInit
 {
   form = new FormGroup({

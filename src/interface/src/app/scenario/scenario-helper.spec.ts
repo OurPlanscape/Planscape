@@ -3,7 +3,7 @@ import {
   getGroupedGoals,
   suggestUniqueName,
 } from './scenario-helper';
-import { ScenarioDraftConfiguration, ScenarioGoal } from '@types';
+import { ScenarioCreation, ScenarioGoal } from '@types';
 
 describe('getGroupedGoals', () => {
   const makeGoal = (overrides: Partial<ScenarioGoal> = {}): ScenarioGoal => ({
@@ -125,7 +125,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     ['slope', 200],
   ]);
   it('should return the correct values for standsize and tx goal', () => {
-    const formData: Partial<ScenarioDraftConfiguration> = {
+    const formData: Partial<ScenarioCreation> = {
       stand_size: 'LARGE',
       treatment_goal: 1,
     };
@@ -140,7 +140,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     });
   });
   it('should return the correct values for excluded areas', () => {
-    const formData: Partial<ScenarioDraftConfiguration> = {
+    const formData: Partial<ScenarioCreation> = {
       excluded_areas: [555, 444, 333],
     };
     const payloadResult = convertFlatConfigurationToDraftPayload(
@@ -153,7 +153,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     });
   });
   it('should allow the user to set an empty excluded_areas array', () => {
-    const formData: Partial<ScenarioDraftConfiguration> = {
+    const formData: Partial<ScenarioCreation> = {
       excluded_areas: [],
     };
     const payloadResult = convertFlatConfigurationToDraftPayload(
@@ -166,7 +166,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     });
   });
   it('should return the correct values for thresholds', () => {
-    const formData: Partial<ScenarioDraftConfiguration> = {
+    const formData: Partial<ScenarioCreation> = {
       min_distance_from_road: 100,
       max_slope: 99,
     };
@@ -187,7 +187,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     });
   });
   it('should return the correct values for targets with maxarea', () => {
-    const formData: Partial<ScenarioDraftConfiguration> = {
+    const formData: Partial<ScenarioCreation> = {
       max_area: 43999,
       max_project_count: 10,
       estimated_cost: 2470,

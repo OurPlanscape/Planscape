@@ -5,7 +5,7 @@ import {
   ProcessOverviewComponent,
 } from '../process-overview/process-overview.component';
 import { SectionComponent, StepDirective } from '@styleguide';
-import { ScenarioDraftConfiguration } from '@types';
+import { ScenarioCreation } from '@types';
 import {
   FormControl,
   FormGroup,
@@ -47,7 +47,7 @@ import { ActivatedRoute } from '@angular/router';
   providers: [{ provide: StepDirective, useExisting: Step1CustomComponent }],
 })
 export class Step1CustomComponent
-  extends StepDirective<ScenarioDraftConfiguration>
+  extends StepDirective<ScenarioCreation>
   implements OnInit
 {
   readonly standSizeOptions = STAND_OPTIONS;
