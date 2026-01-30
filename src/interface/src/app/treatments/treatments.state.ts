@@ -66,10 +66,6 @@ export class TreatmentsState {
     })
   );
 
-  private _treatmentTooltipsEnabled$ = new BehaviorSubject(true);
-  public treatmentTooltipsEnabled$ =
-    this._treatmentTooltipsEnabled$.asObservable();
-
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
   public showApplyTreatmentsDialog$ =
     this._showApplyTreatmentsDialog$.asObservable();
@@ -355,9 +351,5 @@ export class TreatmentsState {
   getTotalAcres() {
     const summary = this.getCurrentSummary();
     return summary.total_area_acres;
-  }
-
-  enableTreatmentTooltips(value: boolean) {
-    this._treatmentTooltipsEnabled$.next(value);
   }
 }
