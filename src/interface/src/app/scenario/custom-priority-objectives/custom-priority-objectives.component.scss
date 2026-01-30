@@ -9,7 +9,7 @@ $navbar-height: 170px;
 :host {
   z-index: 1;
   display: block;
-  min-height: 100vh;
+  max-height: 100vh;
 
   .padding-section {
     padding-left: 16px;
