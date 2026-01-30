@@ -5,13 +5,24 @@ import { NgxMaskModule } from 'ngx-mask';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
+import { ForsysService } from '@services/forsys.service';
+import { ForsysData } from '@types';
 
 describe('StandLevelConstraintsComponent', () => {
   let component: StandLevelConstraintsComponent;
   let fixture: ComponentFixture<StandLevelConstraintsComponent>;
 
   beforeEach(async () => {
+    const forsysData: ForsysData = {
+      inclusions: [],
+      exclusions: [],
+      thresholds: {
+        slope: { id: 1 },
+        distance_from_roads: { id: 2 },
+      },
+    };
+
     await TestBed.configureTestingModule({
       imports: [
         StandLevelConstraintsComponent,
@@ -20,9 +31,12 @@ describe('StandLevelConstraintsComponent', () => {
         NgxMaskModule.forRoot(),
       ],
       providers: [
-        MockProvider(NewScenarioState),
         MockProvider(NewScenarioState, {
           scenarioConfig$: new BehaviorSubject({}),
+          setConstraints: jasmine.createSpy('setConstraints'),
+        }),
+        MockProvider(ForsysService, {
+          forsysData$: of(forsysData),
         }),
       ],
     }).compileComponents();

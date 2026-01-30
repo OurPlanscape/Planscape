@@ -206,10 +206,6 @@ export class ViewScenarioComponent {
     return scenario.scenario_result?.status || 'PENDING';
   }
 
-  scenarioPriorities(s: Scenario) {
-    return s.configuration.treatment_question?.scenario_priorities || [];
-  }
-
   scenarioCanHaveTreatmentPlans(s: Scenario) {
     return scenarioCanHaveTreatmentPlans(s);
   }
