@@ -9,7 +9,7 @@ import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
 import { DataLayer, ScenarioV3Config } from '@types';
-import { isCustomScenario } from '../scenario-helper';
+import { isCustomScenario, isScenarioV3 } from '../scenario-helper';
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -56,9 +56,10 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   ]).pipe(
     untilDestroyed(this),
     map(([scenario, excludedAreas]) => {
-      //TODO: when we have a ScenarioBase type and a way to query just config
-      // we should replace this cast
-      this.configuration = scenario.configuration as ScenarioV3Config;
+      if (!isScenarioV3(scenario)) {
+        return '--';
+      }
+      this.configuration = scenario.configuration;
 
       const ids = this.configuration.excluded_areas ?? [];
       const labels = ids

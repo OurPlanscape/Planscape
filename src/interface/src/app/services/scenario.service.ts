@@ -6,8 +6,7 @@ import {
   Constraint,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioCreationPayload,
-  ScenarioV3Payload,
+  ScenarioDraftPatchPayload,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -88,42 +87,11 @@ export class ScenarioService {
     );
   }
 
-  /** Creates a scenario in the backend with stepper Returns scenario ID. */
-  createScenarioFromSteps(
-    scenarioParameters: ScenarioCreationPayload
-  ): Observable<Scenario> {
-    return this.http
-      .post<Scenario>(this.v2Path, scenarioParameters, {
-        withCredentials: true,
-      })
-      .pipe(
-        catchError((error) => {
-          if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-          ) {
-            const message =
-              error.error.errors?.global?.[0] ||
-              'Please change your settings and try again.';
-            throw new CreateScenarioError(
-              'Your scenario config is invalid. ' + message
-            );
-          } else {
-            const message =
-              error.error?.global?.[0] ||
-              'Please change your settings and try again.';
-            throw new CreateScenarioError(
-              'Your scenario config is invalid. ' + message
-            );
-          }
-        })
-      );
-  }
-
   //sends a partial scenario configuration using PATCH
   // returns success or failure, based on backend results
   patchScenarioConfig(
     scenarioId: number,
-    configPayload: Partial<ScenarioV3Payload>
+    configPayload: Partial<ScenarioDraftPatchPayload>
   ) {
     return this.http
       .patch<Scenario>(this.v2Path + scenarioId + '/draft/', configPayload, {

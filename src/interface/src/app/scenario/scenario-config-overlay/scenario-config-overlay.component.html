@@ -4,48 +4,46 @@
   </div>
   <div class="content" *ngIf="currentScenario$ | async as scenario">
     <dl>
-      <dt>Stand Size:</dt>
-      <dd *ngIf="scenario.configuration.stand_size">
-        {{
-          standSizeOptions[scenario.configuration.stand_size].label +
-            ' (' +
-            standSizeOptions[scenario.configuration.stand_size].acres +
-            ' acres)'
-        }}
-      </dd>
-
-      <dt>Goal:</dt>
-      <dd>
-        {{ scenarioGoal$ | async }}
-      </dd>
-
-      <dt>Excluded Areas:</dt>
-      <dd>
-        {{ selectedExcludedAreas$ | async }}
-      </dd>
-      <dt>Stand Level Constraints:</dt>
-      <dd>
-        {{
-          scenario.configuration.max_slope
-            ? 'Slope less or equal than (<=) ' +
-              scenario.configuration.max_slope +
-              '%'
-            : '--'
-        }}
-      </dd>
-      <dt>Treatment Target:</dt>
-      <dd>
-        @if (scenario.configuration.max_area) {
-          Planning Area Acres
-          {{ scenario.configuration.max_area | number: '1.0-0' }}
-        } @else if (scenario.configuration.max_budget) {
-          Planning Area Budget ${{
-            scenario.configuration.max_budget | number: '1.0-2'
+      <ng-container *ngIf="legacyConfig(scenario) as legacy">
+        <dt>Stand Size:</dt>
+        <dd *ngIf="legacy.stand_size">
+          {{
+            standSizeOptions[legacy.stand_size].label +
+              ' (' +
+              standSizeOptions[legacy.stand_size].acres +
+              ' acres)'
           }}
-        } @else {
-          --
-        }
-      </dd>
+        </dd>
+
+        <dt>Goal:</dt>
+        <dd>
+          {{ scenarioGoal$ | async }}
+        </dd>
+
+        <dt>Excluded Areas:</dt>
+        <dd>
+          {{ selectedExcludedAreas$ | async }}
+        </dd>
+        <dt>Stand Level Constraints:</dt>
+        <dd>
+          {{
+            legacy.max_slope
+              ? 'Slope less or equal than (<=) ' + legacy.max_slope + '%'
+              : '--'
+          }}
+        </dd>
+        <dt>Treatment Target:</dt>
+        <dd>
+          @if (legacy.max_area) {
+            Planning Area Acres
+            {{ legacy.max_area | number: '1.0-0' }}
+          } @else if (legacy.max_budget) {
+            Planning Area Budget ${{ legacy.max_budget | number: '1.0-2' }}
+          } @else {
+            --
+          }
+        </dd>
+      </ng-container>
     </dl>
   </div>
   <div class="footer">

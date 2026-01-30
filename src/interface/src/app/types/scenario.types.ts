@@ -23,17 +23,19 @@ export type GeoPackageStatus =
   | null;
 
 export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
+export type ScenarioVersion = 'V1' | 'V2' | 'V3';
 
+// This is the Scenario type as it it comes from /planscape-backend/v2/scenarios/{id}/
 export interface Scenario {
-  id?: number; // undefined when we are creating a new scenario
+  id: number;
   name: string;
   notes?: string;
   creator?: string;
   planning_area: number;
-  configuration: ScenarioConfig;
+  configuration: ScenarioLegacyConfig | ScenarioV3Config;
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;
-  user?: number;
+  user: number;
   max_treatment_area?: number;
   created_at?: string;
   max_budget?: number;
@@ -44,7 +46,7 @@ export interface Scenario {
     name: string;
   };
   usage_types?: UsageType[];
-  version?: string;
+  version?: ScenarioVersion;
   geopackage_status: GeoPackageStatus;
   geopackage_url: string | null;
   capabilities?: Capabilities[];
@@ -52,23 +54,15 @@ export interface Scenario {
 }
 
 /**
- * TODO this type is used for the backend payload
- * as well as the frontend interface before saving the scenario.
- * This is bad, as the types are not the same.
- * For example, `treatment_goal` only exists on the FE but does not exists on
- * the backend payload.
- * Similarly, `question_id` only exists on the backend payload, while on the FE side
- * this is part of `treatment_goal`.
+ * Legacy backend config for V1/V2 scenarios.
  */
-export interface ScenarioConfig {
+export interface ScenarioLegacyConfig {
   estimated_cost?: number;
   max_budget?: number;
   max_area?: number | null;
   max_project_count?: number;
   max_slope?: number;
   min_distance_from_road?: number;
-  // TODO is this even being used??
-  project_areas?: ProjectArea[];
   excluded_areas?: number[];
   stand_size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   scenario_priorities?: string[];
@@ -89,26 +83,6 @@ export interface ScenarioResult {
   };
 }
 
-export interface ScenarioCreation extends ScenarioConfigPayload {
-  treatment_goal: number;
-  excluded_areas: number[];
-  name: string;
-  planning_area: number;
-  priority_objectives?: number[];
-  cobenefits?: number[];
-}
-
-export interface ScenarioConfigPayload {
-  estimated_cost: number;
-  excluded_areas: number[];
-  max_area: number;
-  max_slope: number | null;
-  min_distance_from_road: number | null;
-  stand_size: STAND_SIZE;
-  max_budget?: number;
-  max_project_count?: number;
-}
-
 export interface ScenarioV3Config {
   excluded_areas: number[];
   stand_size: STAND_SIZE;
@@ -125,19 +99,6 @@ export interface ScenarioV3Config {
   type?: SCENARIO_TYPE;
 }
 
-export interface ScenarioV3Payload {
-  configuration: Partial<ScenarioV3Config>;
-  name: string;
-  planning_area: number;
-  treatment_goal: number;
-}
-
-export interface ScenarioCreationPayload {
-  configuration: ScenarioConfigPayload;
-  name: string;
-  planning_area: number;
-  treatment_goal: number;
-}
 // TODO is this the right type?
 export interface FeatureCollection extends GeoJSON.FeatureCollection {
   properties: any;
