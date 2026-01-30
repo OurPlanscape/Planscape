@@ -26,7 +26,6 @@ import { map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
-import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -64,8 +63,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private scenarioService: ScenarioService,
     private router: Router,
-    private forsysService: ForsysService,
-    private featureService: FeatureService
+    private forsysService: ForsysService
   ) {
     this.forsysService.forsysData$
       .pipe(take(1))
@@ -181,36 +179,19 @@ export class ScenarioSetupModalComponent implements OnInit {
       },
       error: (e) => {
         this.submitting = false;
-        if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
-          if (
-            e.error.errors?.global &&
-            e.error.errors?.global.some((msg: string) =>
-              msg.includes(
-                'The fields planning_area, name must make a unique set.'
-              )
+        if (
+          e.error.errors?.global &&
+          e.error.errors?.global.some((msg: string) =>
+            msg.includes(
+              'The fields planning_area, name must make a unique set.'
             )
-          ) {
-            this.errorMessage =
-              'This name is already used by another scenario in this planning area.';
-          } else {
-            this.showGenericErrorSnackbar();
-            this.dialogRef.close(false);
-          }
+          )
+        ) {
+          this.errorMessage =
+            'This name is already used by another scenario in this planning area.';
         } else {
-          if (
-            e.error?.global &&
-            e.error?.global.some((msg: string) =>
-              msg.includes(
-                'The fields planning_area, name must make a unique set.'
-              )
-            )
-          ) {
-            this.errorMessage =
-              'This name is already used by another scenario in this planning area.';
-          } else {
-            this.showGenericErrorSnackbar();
-            this.dialogRef.close(false);
-          }
+          this.showGenericErrorSnackbar();
+          this.dialogRef.close(false);
         }
       },
     });
@@ -240,36 +221,17 @@ export class ScenarioSetupModalComponent implements OnInit {
           // detect known errors
           this.submitting = false;
           if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
+            e.error.errors?.global &&
+            e.error.errors?.global.some((msg: string) =>
+              msg.includes(
+                'The fields planning_area, name must make a unique set.'
+              )
+            )
           ) {
-            if (
-              e.error.errors?.global &&
-              e.error.errors?.global.some((msg: string) =>
-                msg.includes(
-                  'The fields planning_area, name must make a unique set.'
-                )
-              )
-            ) {
-              this.errorMessage =
-                'This name is already used by another scenario in this planning area.';
-            } else {
-              this.showGenericErrorSnackbar();
-            }
+            this.errorMessage =
+              'This name is already used by another scenario in this planning area.';
           } else {
-            if (
-              e.error?.global &&
-              e.error?.global.some((msg: string) =>
-                msg.includes(
-                  'The fields planning_area, name must make a unique set.'
-                )
-              )
-            ) {
-              this.errorMessage =
-                'This name is already used by another scenario in this planning area.';
-            } else {
-              this.errorMessage =
-                'Something went wrong while saving your changes. Please try again in a moment.';
-            }
+            this.showGenericErrorSnackbar();
           }
         },
       });

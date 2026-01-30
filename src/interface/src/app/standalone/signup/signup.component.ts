@@ -16,7 +16,6 @@ import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { InfoCardComponent } from '../info-card/info-card.component';
 import { CommonModule } from '@angular/common';
-import { FeatureService } from 'src/app/features/feature.service';
 import { ButtonComponent } from '@styleguide';
 
 @Component({
@@ -46,7 +45,6 @@ export class SignupComponent {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private featureService: FeatureService,
     private router: Router
   ) {
     this.form = this.formBuilder.group(
@@ -125,73 +123,33 @@ export class SignupComponent {
         error: (error: HttpErrorResponse) => {
           this.submitting = false;
 
-          if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-          ) {
-            if (error.status == 400) {
-              this.errors = Object.values(error.error.errors);
-              if (
-                this.errors.filter((s) =>
-                  s[0].includes('This password is too common.')
-                ).length > 0
-              ) {
-                this.form.setErrors({ passwordTooCommon: true });
-              }
-              if (
-                this.errors.filter((s) => s[0].includes('too similar')).length >
-                0
-              ) {
-                this.form.setErrors({ passwordTooSimilar: true });
-              }
-              // Backend Error: An account already exists with this email.
-              this.emailAlreadyExists =
-                this.errors.filter((s) => s[0].includes('already registered'))
-                  .length > 0;
-              if (this.emailAlreadyExists) {
-                this.form.controls['email'].setErrors({ accountExists: true });
-              }
-            } else if (error.status == 500) {
-              this.form.setErrors({ serverError: true });
-            } else if (error instanceof TimeoutError) {
-              this.form.setErrors({ timeoutError: true });
-            } else {
-              this.form.setErrors({ unexpectedError: true });
+          if (error.status == 400) {
+            this.errors = Object.values(error.error.errors);
+            if (
+              this.errors.filter((s) =>
+                s[0].includes('This password is too common.')
+              ).length > 0
+            ) {
+              this.form.setErrors({ passwordTooCommon: true });
             }
+            if (
+              this.errors.filter((s) => s[0].includes('too similar')).length > 0
+            ) {
+              this.form.setErrors({ passwordTooSimilar: true });
+            }
+            // Backend Error: An account already exists with this email.
+            this.emailAlreadyExists =
+              this.errors.filter((s) => s[0].includes('already registered'))
+                .length > 0;
+            if (this.emailAlreadyExists) {
+              this.form.controls['email'].setErrors({ accountExists: true });
+            }
+          } else if (error.status == 500) {
+            this.form.setErrors({ serverError: true });
+          } else if (error instanceof TimeoutError) {
+            this.form.setErrors({ timeoutError: true });
           } else {
-            // Without FF
-            if (error.status == 400) {
-              this.errors = Object.values(error.error);
-
-              // Backend Error: Password is too common
-              if (
-                this.errors.filter((s) =>
-                  s[0].includes('This password is too common.')
-                ).length > 0
-              ) {
-                this.form.setErrors({ passwordTooCommon: true });
-              }
-
-              if (
-                this.errors.filter((s) => s[0].includes('too similar')).length >
-                0
-              ) {
-                this.form.setErrors({ passwordTooSimilar: true });
-              }
-
-              // Backend Error: An account already exists with this email.
-              this.emailAlreadyExists =
-                this.errors.filter((s) => s[0].includes('already registered'))
-                  .length > 0;
-              if (this.emailAlreadyExists) {
-                this.form.controls['email'].setErrors({ accountExists: true });
-              }
-            } else if (error.status == 500) {
-              this.form.setErrors({ serverError: true });
-            } else if (error instanceof TimeoutError) {
-              this.form.setErrors({ timeoutError: true });
-            } else {
-              this.form.setErrors({ unexpectedError: true });
-            }
+            this.form.setErrors({ unexpectedError: true });
           }
         },
       });
