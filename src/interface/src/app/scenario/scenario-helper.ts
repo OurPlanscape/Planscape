@@ -3,7 +3,7 @@ import {
   Constraint,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioCreation,
+  ScenarioDraftConfiguration,
   ScenarioGoal,
   ScenarioV3Config,
   ScenarioV3Payload,
@@ -54,7 +54,7 @@ export function scenarioCanHaveTreatmentPlans(
 }
 
 export function convertFlatConfigurationToDraftPayload(
-  formData: Partial<ScenarioCreation>,
+  formData: Partial<ScenarioDraftConfiguration>,
   thresholdIds: Map<string, number>
 ): Partial<ScenarioV3Payload> {
   const payload: Partial<ScenarioV3Payload> = {};
