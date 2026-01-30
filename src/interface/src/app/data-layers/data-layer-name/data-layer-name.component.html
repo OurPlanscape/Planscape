@@ -4,5 +4,7 @@
   *ngIf="viewedDataLayer$ | async as viewedDataLayer">
   <mat-icon class="icon-back">arrow_back</mat-icon>
   {{ viewedDataLayer.name }}
-  <mat-icon class="close-btn" (click)="clearDataLayer()">close</mat-icon>
+  <mat-icon *ngIf="showClearButton" class="close-btn" (click)="clearDataLayer()"
+    >close</mat-icon
+  >
 </button>
