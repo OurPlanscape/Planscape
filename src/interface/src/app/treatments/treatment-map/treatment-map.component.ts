@@ -169,8 +169,6 @@ export class TreatmentMapComponent {
   mouseLngLat: LngLat | null = null;
   hoveredProjectAreaId$ = new Subject<number | null>();
 
-  treatmentTooltipsEnabled$ = this.treatmentsState.treatmentTooltipsEnabled$;
-
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
     combineLatest([
       this.treatmentsState.summary$,
@@ -218,9 +216,6 @@ export class TreatmentMapComponent {
     this.mapConfigState.baseMap$.pipe(untilDestroyed(this)).subscribe(() => {
       this.selectedStandsState.backUpAndClearSelectedStands();
     });
-
-    // Treatment tooltip should be turned off
-    this.treatmentsState.enableTreatmentTooltips(false);
   }
 
   afterStandsLoaded() {
