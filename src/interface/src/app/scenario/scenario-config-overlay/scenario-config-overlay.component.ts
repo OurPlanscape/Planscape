@@ -8,6 +8,7 @@ import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
 import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
+import { Scenario, ScenarioLegacyConfig } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -53,6 +54,13 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
     map((s) => s.treatment_goal?.name || '')
   );
+
+  legacyConfig(scenario: Scenario): ScenarioLegacyConfig | null {
+    if (scenario.version === 'V3') {
+      return null;
+    }
+    return scenario.configuration as ScenarioLegacyConfig;
+  }
 
   close() {
     this.scenarioState.setDisplayOverlay(false);

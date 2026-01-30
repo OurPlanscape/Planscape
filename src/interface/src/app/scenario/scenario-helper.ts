@@ -2,11 +2,11 @@ import { isNumber } from '@turf/helpers';
 import {
   Constraint,
   Scenario,
-  SCENARIO_TYPE,
-  ScenarioCreation,
-  ScenarioGoal,
   ScenarioV3Config,
-  ScenarioV3Payload,
+  SCENARIO_TYPE,
+  ScenarioDraftConfiguration,
+  ScenarioGoal,
+  ScenarioDraftPatchPayload,
 } from '@types';
 
 /**
@@ -53,11 +53,17 @@ export function scenarioCanHaveTreatmentPlans(
   return false;
 }
 
+export function isScenarioV3(
+  scenario: Scenario
+): scenario is Scenario & { configuration: ScenarioV3Config } {
+  return scenario.version === 'V3';
+}
+
 export function convertFlatConfigurationToDraftPayload(
-  formData: Partial<ScenarioCreation>,
+  formData: Partial<ScenarioDraftConfiguration>,
   thresholdIds: Map<string, number>
-): Partial<ScenarioV3Payload> {
-  const payload: Partial<ScenarioV3Payload> = {};
+): Partial<ScenarioDraftPatchPayload> {
+  const payload: Partial<ScenarioDraftPatchPayload> = {};
   const config: Partial<ScenarioV3Config> = {};
   if (formData.treatment_goal !== undefined) {
     payload.treatment_goal = formData.treatment_goal;
