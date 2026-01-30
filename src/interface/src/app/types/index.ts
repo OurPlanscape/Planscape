@@ -8,8 +8,4 @@ export * from './plan.types';
 export * from './scenario.types';
 export * from './treatment.types';
 export * from './user.types';
-export {
-  AvailableStands,
-  ScenarioDraftConfiguration,
-  ScenarioDraftPatchPayload,
-} from './scenario.draft.types';
+export { AvailableStands } from './scenario.draft.types';

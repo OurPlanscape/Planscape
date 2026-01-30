@@ -13,7 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SectionComponent } from '@styleguide';
 import { NgxMaskModule } from 'ngx-mask';
 import { StepDirective } from 'src/styleguide/steps/step.component';
-import { Constraint, ScenarioDraftConfiguration } from '@types';
+import { Constraint, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime, map, switchMap } from 'rxjs';
 import { distinctUntilChanged, filter, take } from 'rxjs/operators';
@@ -41,7 +41,7 @@ import { ForsysService } from '@services/forsys.service';
   styleUrl: './stand-level-constraints.component.scss',
 })
 export class StandLevelConstraintsComponent
-  extends StepDirective<ScenarioDraftConfiguration>
+  extends StepDirective<ScenarioCreation>
   implements OnInit
 {
   form = new FormGroup({

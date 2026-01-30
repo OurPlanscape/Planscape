@@ -20,13 +20,10 @@ import {
   Scenario,
   SCENARIO_TYPE,
   ScenarioV3Config,
-  ScenarioDraftPatchPayload,
+  ScenarioV3Payload,
 } from '@types';
 import { map, take } from 'rxjs';
-import {
-  convertFlatConfigurationToDraftPayload,
-  isScenarioV3,
-} from '../scenario-helper';
+import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 import { FeatureService } from 'src/app/features/feature.service';
@@ -120,9 +117,10 @@ export class ScenarioSetupModalComponent implements OnInit {
   }
 
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
-    let newPayload: Partial<ScenarioDraftPatchPayload> = {};
-    if (isScenarioV3(oldScenario)) {
-      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
+    let newPayload: Partial<ScenarioV3Payload> = {};
+    if (oldScenario.version === 'V3') {
+      const oldConfig: Partial<ScenarioV3Config> =
+        oldScenario.configuration as ScenarioV3Config;
       newPayload = {
         configuration: oldConfig,
       };

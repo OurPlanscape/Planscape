@@ -1,7 +1,7 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { ScenarioService } from './scenario.service';
-import { Scenario, ScenarioLegacyConfig } from '@types';
+import { Scenario, ScenarioConfig } from '@types';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -45,12 +45,13 @@ describe('ScenarioService', () => {
   // TODO Update once Project/Scenario types are updated
   describe('getScenario', () => {
     it('should make HTTP request to backend', fakeAsync(() => {
-      const scenarioConfig: ScenarioLegacyConfig = {
+      const scenarioConfig: ScenarioConfig = {
         estimated_cost: undefined,
         max_budget: undefined,
         min_distance_from_road: undefined,
         max_slope: undefined,
         max_area: undefined,
+        project_areas: [],
         excluded_areas: undefined,
         stand_size: 'MEDIUM',
       };
@@ -65,7 +66,6 @@ describe('ScenarioService', () => {
         geopackage_status: null,
         geopackage_url: null,
         type: 'PRESET',
-        user: 1,
       };
 
       service.getScenario(1).subscribe((res) => {
