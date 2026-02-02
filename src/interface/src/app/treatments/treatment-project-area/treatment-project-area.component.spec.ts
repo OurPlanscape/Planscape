@@ -56,9 +56,6 @@ describe('TreatmentProjectAreaComponent', () => {
               geometry: mockGeometry,
               prescriptions: [],
             }),
-            enableTreatmentTooltips: jasmine.createSpy(
-              'enableTreatmentTooltips'
-            ),
           },
         },
         {
