@@ -1,5 +1,4 @@
-@import "colors";
-
+@import 'colors';
 
 table {
   width: 100%;
@@ -7,14 +6,14 @@ table {
   text-align: left;
 }
 
-th, td {
+th,
+td {
   padding: 2px 10px 2px 20px;
 }
 
 th {
   font-weight: bold;
 }
-
 
 tr:nth-child(even):not(.total-row) {
   background-color: $color-light-gray;
@@ -25,17 +24,11 @@ tr:nth-child(even):not(.total-row) {
   font-weight: bold;
 }
 
-
-.tooltip {
-  padding: 20px;
-}
-
 .rank {
   width: 100%;
   border-left: 8px solid transparent;
   display: block;
   padding: 2px 10px;
-
 }
 
 .right {

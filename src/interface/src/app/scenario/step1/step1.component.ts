@@ -23,6 +23,7 @@ import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatRadioModule } from '@angular/material/radio';
+import { PopoverComponent } from 'src/styleguide/popover/popover.component';
 
 @UntilDestroy()
 @Component({
@@ -42,6 +43,7 @@ import { MatRadioModule } from '@angular/material/radio';
     KeyValuePipe,
     MatIconModule,
     FeaturesModule,
+    PopoverComponent,
   ],
   providers: [{ provide: StepDirective, useExisting: Step1Component }],
   templateUrl: './step1.component.html',

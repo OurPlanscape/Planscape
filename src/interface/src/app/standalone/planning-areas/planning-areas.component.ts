@@ -40,6 +40,7 @@ import { combineLatest, map } from 'rxjs';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { PlanState } from 'src/app/plan/plan.state';
+import { PopoverComponent } from 'src/styleguide/popover/popover.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -71,6 +72,7 @@ import { PlanState } from 'src/app/plan/plan.state';
     PaginatorComponent,
     OverlayLoaderComponent,
     FeaturesModule,
+    PopoverComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',

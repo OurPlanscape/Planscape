@@ -6,19 +6,12 @@
     <div class="title-txt">
       {{ headline }}<span class="required" *ngIf="required"> *</span>
     </div>
-    <button
+    <sg-popover
       *ngIf="tooltipContent"
-      (click)="stopPropagation($event)"
-      class="tooltip-btn"
-      sg-button
-      variant="icon-only"
-      [outlined]="true"
+      class="popover-right"
+      [content]="tooltipContent"
       [icon]="tooltipIcon"
-      [matMenuTriggerFor]="tooltipMenu">
-      <mat-menu #tooltipMenu="matMenu">
-        <div class="tooltip" [innerHTML]="tooltipContent"></div>
-      </mat-menu>
-    </button>
+      size="lg"></sg-popover>
   </mat-expansion-panel-header>
   <ng-content></ng-content>
 </mat-expansion-panel>

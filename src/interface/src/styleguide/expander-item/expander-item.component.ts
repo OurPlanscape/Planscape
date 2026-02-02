@@ -3,6 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { NgIf, NgSwitchCase } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { PopoverComponent } from '../popover/popover.component';
 
 /**
  * This component is used in combination with `<sg-expander-section>`.
@@ -12,7 +13,14 @@ import { MatMenuModule } from '@angular/material/menu';
 @Component({
   selector: 'sg-expander-item',
   standalone: true,
-  imports: [MatIconModule, MatMenuModule, NgSwitchCase, NgIf, MatButtonModule],
+  imports: [
+    MatIconModule,
+    MatMenuModule,
+    NgSwitchCase,
+    NgIf,
+    MatButtonModule,
+    PopoverComponent,
+  ],
   templateUrl: './expander-item.component.html',
   styleUrl: './expander-item.component.scss',
 })

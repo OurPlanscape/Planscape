@@ -1,0 +1,21 @@
+<button
+  sg-button
+  variant="icon-only"
+  [icon]="icon"
+  [outlined]="true"
+  class="info-icon"
+  [ngClass]="iconColor"
+  (click)="$event.stopPropagation()"
+  [matMenuTriggerFor]="menu"></button>
+
+<mat-menu #menu="matMenu" class="info-popover-menu">
+  <div class="tooltip">
+    <ng-container *ngIf="content; else projected">
+      <div [innerHTML]="content"></div>
+    </ng-container>
+
+    <ng-template #projected>
+      <ng-content></ng-content>
+    </ng-template>
+  </div>
+</mat-menu>

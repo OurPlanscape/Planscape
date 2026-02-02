@@ -55,6 +55,7 @@ import { SharedModule } from '../../../../shared/shared.module';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
+import { PopoverComponent } from 'src/styleguide/popover/popover.component';
 
 type ColorFunction = (pixel: TypedArray, rgba: Uint8ClampedArray) => void;
 
@@ -87,6 +88,7 @@ export interface OutputLayer {
     MpatLegendComponent,
     SectionComponent,
     MatMenuModule,
+    PopoverComponent,
   ],
   providers: [MapConfigService],
   templateUrl: './analysis.component.html',

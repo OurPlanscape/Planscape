@@ -7,7 +7,6 @@
     padding-left: 10px;
   }
 
-
   ::ng-deep {
     .txgoals .mat-expansion-panel-body {
       padding-right: 4px;
@@ -20,7 +19,7 @@
     .mat-mdc-form-field-subscript-wrapper {
       font-size: 14px;
     }
-    
+
     .long-question-tooltip.mat-tooltip {
       border: 1px solid $color-text-gray;
       border-radius: 11px;
@@ -173,16 +172,6 @@ sg-section {
   }
 }
 
-.tooltip {
-  padding: 20px;
-  white-space: pre-line;
-}
-
 .info-icon {
   color: $color-standard-blue;
-}
-
-::ng-deep .goal-tooltip-panel.mat-mdc-menu-panel {
-  width: 520px;
-  max-width: 520px;
 }

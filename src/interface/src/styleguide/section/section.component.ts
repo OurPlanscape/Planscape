@@ -4,6 +4,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ButtonComponent } from '../button/button.component';
+import { PopoverComponent } from '../popover/popover.component';
 
 /**
  * SectionComponent displays a panel with a title and optional tooltip.
@@ -19,6 +20,7 @@ import { ButtonComponent } from '../button/button.component';
     MatButtonModule,
     ButtonComponent,
     MatExpansionModule,
+    PopoverComponent,
   ],
   templateUrl: './section.component.html',
   styleUrl: './section.component.scss',

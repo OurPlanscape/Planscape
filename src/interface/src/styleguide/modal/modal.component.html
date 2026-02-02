@@ -9,15 +9,10 @@
     <div>{{ title }}</div>
   </div>
   <div class="title-buttons">
-    <button
-      mat-icon-button
-      [matMenuTriggerFor]="tooltipMenu"
-      *ngIf="hasTooltipContent">
-      <mat-icon>help_outline</mat-icon>
-    </button>
-    <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
-      <div [innerHTML]="tooltipContent" class="tooltip-content"></div>
-    </mat-menu>
+    <sg-popover
+      *ngIf="hasTooltipContent"
+      icon="help_outline"
+      [content]="tooltipContent"></sg-popover>
 
     <button
       mat-icon-button
