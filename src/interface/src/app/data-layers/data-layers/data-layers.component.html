@@ -71,7 +71,7 @@
     class="loader"></mat-spinner>
 </div>
 
-<div class="footer" *ngIf="showFooter$ | async">
+<div class="footer" *ngIf="useClearFooter && (showFooter$ | async)">
   <!-- Search pagination -->
   <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
     <sg-paginator

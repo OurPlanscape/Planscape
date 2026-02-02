@@ -27,7 +27,10 @@ No, only your selected Priority Objectives influence how ForSys ranks areas for 
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
     </div>
     <section>
-      <app-data-layers [displayAddButton]="true"></app-data-layers>
+      <app-data-layers
+        [useClearFooter]="false"
+        [displayAddButton]="true"
+        class="sticky-search"></app-data-layers>
     </section>
   </form>
 </sg-section>

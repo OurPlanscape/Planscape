@@ -111,7 +111,7 @@
   flex-direction: column;
   height: calc(
     100% -
-      ($climate-steps-bar + $navbar-height + $toolbar-height + $stepper-bar)
+    ($climate-steps-bar + $navbar-height + $toolbar-height + $stepper-bar)
   );
   transform: translateX(-400px);
 

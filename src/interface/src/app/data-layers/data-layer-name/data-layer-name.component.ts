@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
@@ -15,9 +15,15 @@ import { DataLayer } from '@types';
 export class DataLayerNameComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
+  @Input() showClearButton = false;
+
   viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   goToViewedLayer(layer: DataLayer) {
     this.dataLayersStateService.goToSelectedLayer(layer);
+  }
+
+  clearDataLayer() {
+    this.dataLayersStateService.clearDataLayer();
   }
 }

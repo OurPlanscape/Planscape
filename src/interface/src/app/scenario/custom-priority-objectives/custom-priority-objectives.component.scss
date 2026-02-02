@@ -3,6 +3,7 @@
 @import 'variables';
 
 :host {
+
   .padding-section {
     padding-left: 16px;
     padding-right: 16px;
@@ -20,4 +21,27 @@
 
 .priority-selection ::ng-deep .mat-expansion-panel-body {
   padding: 0;
+}
+
+// Make the search bar sticky within the parent div.step scroll container.
+// We must ensure no ancestor between div.step and the search bar sets
+// overflow to anything other than visible, as that breaks position: sticky.
+:host ::ng-deep {
+  sg-section,
+  .mat-expansion-panel,
+  .mat-expansion-panel-content,
+  .mat-expansion-panel-body,
+  .datalayers-section,
+  app-data-layers {
+    overflow: visible !important;
+  }
+
+  app-data-layers {
+    display: block;
+  }
+
+
+  app-data-layers .scrollable {
+    overflow-y: visible;
+  }
 }

@@ -1,6 +1,8 @@
 @import "mixins";
 @import "colors";
 
+$search-container-height: 79px;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -72,13 +74,15 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  height: 70px;
+  height: $search-container-height;
   padding: 4px 16px;
   border-bottom: 1px $color-soft-gray solid;
   top: 0;
   background: $color-white;
   z-index: 100;
+  box-sizing: border-box;
 }
+
 
 :host {
   ::ng-deep .search-bar .input-wrapper {
@@ -115,3 +119,17 @@
 }
 
 // end component
+
+
+:host(.sticky-search) {
+  .side-search-container {
+    position: sticky;
+    top: -16px; // the padding of the container
+    z-index: 100;
+  }
+
+  // as we are making the search bar also sticky, push this down
+  .sticky {
+    top: calc($search-container-height - 16px);
+  }
+}
