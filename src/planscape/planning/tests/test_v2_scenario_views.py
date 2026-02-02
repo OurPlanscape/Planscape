@@ -707,6 +707,41 @@ class ScenarioDetailTest(APITestCase):
             self.assertIn("usage_type", entry)
             self.assertIn("datalayer", entry)
 
+    def test_detail_scenario_v3_custom_usage_types(self):
+        priority = DataLayerFactory(name="Priority Layer")
+        cobenefit = DataLayerFactory(name="Cobenefit Layer")
+        v3_config = {
+            "targets": {
+                "max_area": 5000.0,
+                "max_project_count": 5,
+                "estimated_cost": 100.0,
+            },
+            "priority_objectives": [priority.pk],
+            "cobenefits": [cobenefit.pk],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            configuration=v3_config,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+        )
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-detail", args=[scenario.pk]),
+            format="json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            data.get("usage_types"),
+            [
+                {"usage_type": "PRIORITY", "datalayer": "Priority Layer"},
+                {"usage_type": "SECONDARY_METRIC", "datalayer": "Cobenefit Layer"},
+            ],
+        )
+
     def test_detail_scenario_v2_scenario_result(self):
         ScenarioResultFactory(scenario=self.scenario)
         self.client.force_authenticate(self.owner_user)
