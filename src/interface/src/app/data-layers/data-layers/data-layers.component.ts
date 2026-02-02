@@ -137,7 +137,7 @@ export class DataLayersComponent {
     this.dataLayersStateService.clearSearch();
   }
 
-  clearDataLayer() {
-    this.dataLayersStateService.clearDataLayer();
+  clearViewedDataLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 }

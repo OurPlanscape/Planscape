@@ -13,7 +13,7 @@
     class="clear-btn"
     *ngIf="showStepIndex === false && (viewedDataLayer$ | async)"
     sg-button
-    (click)="clearDataLayer()"
+    (click)="clearViewedDataLayer()"
     variant="text">
     Clear Map
   </button>

@@ -23,7 +23,7 @@ export class DataLayerNameComponent {
     this.dataLayersStateService.goToSelectedLayer(layer);
   }
 
-  clearDataLayer() {
-    this.dataLayersStateService.clearDataLayer();
+  clearViewedDataLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 }

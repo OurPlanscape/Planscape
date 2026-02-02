@@ -194,7 +194,7 @@ export class DataLayersStateService {
     this.loadingLayer.next(status);
   }
 
-  clearDataLayer() {
+  clearViewedDataLayer() {
     this._viewedDataLayer$.next(null);
   }
 
@@ -250,7 +250,7 @@ export class DataLayersStateService {
 
   resetAll() {
     this.resetPath();
-    this.clearDataLayer();
+    this.clearViewedDataLayer();
     this.clearSearch();
   }
 
