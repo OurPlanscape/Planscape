@@ -111,7 +111,7 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
   }
 
   override beforeStepExit() {
-    this.dataLayersStateService.clearDataLayer();
+    this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
   }
 }

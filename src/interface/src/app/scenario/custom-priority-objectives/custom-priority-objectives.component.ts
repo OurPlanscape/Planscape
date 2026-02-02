@@ -118,7 +118,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
   }
 
   override beforeStepExit(): void {
-    this.dataLayersStateService.clearDataLayer();
+    this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
   }
 }

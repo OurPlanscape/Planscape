@@ -162,7 +162,7 @@ export class StepsComponent<T> extends CdkStepper {
     return this.selectedIndex === this.steps.length - 1;
   }
 
-  clearDataLayer() {
-    this.dataLayersStateService.clearDataLayer();
+  clearViewedDataLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 }
