@@ -52,3 +52,37 @@ class TestDataLayerAdminActions(TestCase):
             request,
             "Queued outline calculation for 0 datalayers.",
         )
+
+    def test_enable_module_actions_use_shared_helper(self):
+        datalayer_one = DataLayerFactory.create()
+        datalayer_two = DataLayerFactory.create()
+        request = self.factory.post("/")
+        request.user = self.admin_user
+        queryset = DataLayer.objects.filter(id__in=[datalayer_one.id, datalayer_two.id])
+
+        action_map = {
+            "enable_forsys": "forsys",
+            "enable_impacts": "impacts",
+            "enable_map": "map",
+            "enable_climate_foresight": "climate_foresight",
+        }
+
+        with (
+            mock.patch("datasets.admin.enable_datalayer_module") as enable_mock,
+            mock.patch.object(DataLayerAdmin, "message_user") as message_mock,
+        ):
+            for action_name, module in action_map.items():
+                message_mock.reset_mock()
+                enable_mock.reset_mock()
+
+                action = getattr(self.admin, action_name)
+                action(request, queryset)
+
+                called_ids = {call.args[0].id for call in enable_mock.call_args_list}
+                called_modules = {call.args[1] for call in enable_mock.call_args_list}
+                self.assertSetEqual(called_ids, {datalayer_one.id, datalayer_two.id})
+                self.assertSetEqual(called_modules, {module})
+                message_mock.assert_called_once_with(
+                    request,
+                    f"Enabled {module} module for 2 datalayers.",
+                )

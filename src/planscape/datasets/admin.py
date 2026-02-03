@@ -11,6 +11,7 @@ from datasets.forms import (
     StyleAdminForm,
 )
 from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.services import enable_datalayer_module
 from datasets.tasks import calculate_datalayer_outline
 
 
@@ -98,7 +99,21 @@ class DataLayerAdmin(admin.ModelAdmin):
         "deleted_at",
     ]
     inlines = [DataLayerHasStyleAdmin]
-    actions = ["calculate_outline"]
+    actions = [
+        "calculate_outline",
+        "enable_forsys",
+        "enable_impacts",
+        "enable_map",
+        "enable_climate_foresight",
+    ]
+
+    def _enable_module(self, request, queryset, module: str) -> None:
+        for datalayer in queryset:
+            enable_datalayer_module(datalayer, module)
+        self.message_user(
+            request,
+            f"Enabled {module} module for {queryset.count()} datalayers.",
+        )
 
     @admin.action(description="Calculate outline for selected datalayers")
     def calculate_outline(self, request, queryset):
@@ -106,6 +121,22 @@ class DataLayerAdmin(admin.ModelAdmin):
         for datalayer_id in ids:
             calculate_datalayer_outline.delay(datalayer_id)
         self.message_user(request, f"Queued outline calculation for {len(ids)} datalayers.")
+
+    @admin.action(description="enable forsys")
+    def enable_forsys(self, request, queryset):
+        self._enable_module(request, queryset, "forsys")
+
+    @admin.action(description="enable impacts")
+    def enable_impacts(self, request, queryset):
+        self._enable_module(request, queryset, "impacts")
+
+    @admin.action(description="enable map")
+    def enable_map(self, request, queryset):
+        self._enable_module(request, queryset, "map")
+
+    @admin.action(description="enable climate_foresight")
+    def enable_climate_foresight(self, request, queryset):
+        self._enable_module(request, queryset, "climate_foresight")
 
 
 class AssociateStyleWithDataLayer(admin.TabularInline):
