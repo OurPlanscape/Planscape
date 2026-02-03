@@ -31,3 +31,5 @@ checks datalayer metadata for filtering
 `CUSTOM_EXCEPTION_HANDLER` : Enables common error format in backend payloads
 
 `CUSTOM_SCENARIOS` : Allows custom scenarios
+
+`PLANNING_APPROACH` : Allows planning approach where users can prioritize sub-units during scenario workflow
