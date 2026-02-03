@@ -23,6 +23,7 @@ from gis.geometry import geodjango_to_multi, to_geodjango_geometry
 from gis.rasters import get_estimated_mask as get_estimated_mask_raster
 from modules.base import get_module
 from organizations.models import Organization
+from planning.models import TreatmentGoalUsageType
 from planscape.openpanel import track_openpanel
 
 from datasets.models import (
@@ -603,3 +604,53 @@ def get_datalayer_outline(datalayer: DataLayer) -> Optional[GEOSGeometry]:
             if not datalayer.table:
                 raise ValueError("datalayer table is none")
             return get_table_mask(datalayer)
+
+
+def enable_datalayer_module(
+    datalayer: DataLayer,
+    module: str,
+    module_options: Optional[Dict[str, Any]],
+) -> DataLayer:
+    from modules.base import MODULE_HANDLERS
+
+    if module not in MODULE_HANDLERS:
+        raise ValueError(f"Unknown module: {module}")
+
+    if (
+        module == "forsys"
+        and not module_options
+        and datalayer.type == DataLayerType.RASTER
+    ):
+        module_options = {
+            "capabilities": [
+                TreatmentGoalUsageType.PRIORITY,
+                TreatmentGoalUsageType.SECONDARY_METRIC,
+                TreatmentGoalUsageType.THRESHOLD,
+            ]
+        }
+
+    metadata = datalayer.metadata if isinstance(datalayer.metadata, dict) else {}
+    metadata = metadata.copy()
+    modules = metadata.get("modules")
+    if not isinstance(modules, dict):
+        modules = {}
+    module_metadata = modules.get(module)
+    if not isinstance(module_metadata, dict):
+        module_metadata = {}
+    if not module_options:
+        module_metadata = {
+            **module_metadata,
+            "enabled": True,
+        }
+    else:
+        module_metadata = {
+            **module_metadata,
+            **module_options,
+            "enabled": True,
+        }
+
+    modules = {**modules, module: module_metadata}
+    metadata["modules"] = modules
+    datalayer.metadata = metadata
+    datalayer.save(update_fields=["metadata", "updated_at"])
+    return datalayer

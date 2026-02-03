@@ -24,6 +24,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsageType,
     TreatmentGoalUsesDataLayer,
     User,
     UserPrefs,
@@ -861,9 +862,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
 class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV3Serializer()
     geopackage_url = serializers.SerializerMethodField()
-    usage_types = TreatmentGoalUsageSerializer(
-        source="treatment_goal.datalayer_usages", many=True, read_only=True
-    )
+    usage_types = serializers.SerializerMethodField()
 
     def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
         """
@@ -871,6 +870,37 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
         If the scenario is currently being exported, returns None.
         """
         return scenario.get_geopackage_url()
+
+    def get_usage_types(self, scenario: Scenario) -> List[dict]:
+        if scenario.type == ScenarioType.CUSTOM:
+            cfg = scenario.configuration or {}
+            priority_ids = cfg.get("priority_objectives") or []
+            cobenefit_ids = cfg.get("cobenefits") or []
+            ids = [*priority_ids, *cobenefit_ids]
+            if not ids:
+                return []
+            names = dict(DataLayer.objects.filter(pk__in=ids).values_list("id", "name"))
+            return [
+                *(
+                    {"usage_type": TreatmentGoalUsageType.PRIORITY, "datalayer": name}
+                    for name in (names.get(i) for i in priority_ids)
+                    if name
+                ),
+                *(
+                    {
+                        "usage_type": TreatmentGoalUsageType.SECONDARY_METRIC,
+                        "datalayer": name,
+                    }
+                    for name in (names.get(i) for i in cobenefit_ids)
+                    if name
+                ),
+            ]
+        if scenario.treatment_goal:
+            return TreatmentGoalUsageSerializer(
+                scenario.treatment_goal.datalayer_usages.all(),
+                many=True,
+            ).data
+        return []
 
     class Meta:
         fields = (

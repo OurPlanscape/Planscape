@@ -86,6 +86,26 @@ def datalayer_uploaded(
     process_datalayer(datalayer_id, status)
 
 
+@app.task()
+def calculate_datalayer_outline(datalayer_id: int) -> None:
+    from datasets.services import get_datalayer_outline
+
+    try:
+        datalayer = DataLayer.objects.get(pk=datalayer_id)
+    except DataLayer.DoesNotExist:
+        logger.warning("Datalayer %s does not exist", datalayer_id)
+        return
+
+    try:
+        datalayer.outline = get_datalayer_outline(datalayer)
+        datalayer.save(update_fields=["outline", "updated_at"])
+    except Exception:
+        logger.exception(
+            "Failed to calculate outline for datalayer %s",
+            datalayer_id,
+        )
+
+
 def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
     """
     Check if the datastore table exists in the database,
