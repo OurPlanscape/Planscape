@@ -9,11 +9,11 @@ import { CurrencyPipe } from '@angular/common';
 
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder';
 import { ResourceUnavailableComponent } from 'src/app/shared/resource-unavailable/resource-unavailable.component';
-import { ScenarioCreationComponent } from '../scenario-creation/scenario-creation.component';
+import { ScenarioCreationComponent } from '../../scenario-creation/scenario-creation.component';
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
 
-import { NewScenarioState } from '../new-scenario.state';
+import { NewScenarioState } from '../../scenario-creation/new-scenario.state';
 import { ScenarioState } from '../scenario.state';
 import { AuthService } from '@services';
 import { Resource, Scenario } from '@types';
