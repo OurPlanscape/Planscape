@@ -11,6 +11,7 @@ from datasets.forms import (
     StyleAdminForm,
 )
 from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.tasks import calculate_datalayer_outline
 
 
 class CategoryAdmin(TreeAdmin):
@@ -97,6 +98,14 @@ class DataLayerAdmin(admin.ModelAdmin):
         "deleted_at",
     ]
     inlines = [DataLayerHasStyleAdmin]
+    actions = ["calculate_outline"]
+
+    @admin.action(description="Calculate outline for selected datalayers")
+    def calculate_outline(self, request, queryset):
+        ids = list(queryset.values_list("id", flat=True))
+        for datalayer_id in ids:
+            calculate_datalayer_outline.delay(datalayer_id)
+        self.message_user(request, f"Queued outline calculation for {len(ids)} datalayers.")
 
 
 class AssociateStyleWithDataLayer(admin.TabularInline):
