@@ -33,6 +33,7 @@ import { take } from 'rxjs';
 import * as shp from 'shpjs';
 import { MatMenuModule } from '@angular/material/menu';
 import { FeatureService } from 'src/app/features/feature.service';
+import { PopoverComponent } from 'src/styleguide/popover/popover.component';
 
 export interface DialogData {
   planning_area_name: string;
@@ -61,6 +62,7 @@ export interface DialogData {
     ReactiveFormsModule,
     MatMenuModule,
     InputDirective,
+    PopoverComponent,
   ],
 })
 export class UploadProjectAreasModalComponent {
@@ -77,6 +79,9 @@ export class UploadProjectAreasModalComponent {
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   uploadingData = false;
+
+  tooltipContent =
+    '<p>The stand sizes represent the number of acres per stand.</p><p><strong>Small</strong> stand size is 10 acres/stand. <br /><strong>Medium</strong> stand size is 100 acres/stand.<br /><strong>Large</strong> stand size is 500 acres/stand.</p>';
 
   constructor(
     private fb: FormBuilder,

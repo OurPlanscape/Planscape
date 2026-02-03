@@ -64,21 +64,9 @@
                         {{ goal.name }}
                       </mat-radio-button>
 
-                      <button
-                        sg-button
+                      <sg-popover
                         *ngIf="goal.description"
-                        variant="icon-only"
-                        icon="info"
-                        class="info-icon"
-                        [outlined]="true"
-                        [matMenuTriggerFor]="popoverMenu"></button>
-                      <mat-menu
-                        #popoverMenu="matMenu"
-                        class="goal-tooltip-panel">
-                        <div
-                          class="tooltip"
-                          [innerHTML]="goal.description"></div>
-                      </mat-menu>
+                        [content]="goal.description"></sg-popover>
                     </div>
                   </mat-expansion-panel>
                 </div>

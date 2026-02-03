@@ -1,6 +1,6 @@
-@import "colors";
-@import "mixins";
-@import "media";
+@import 'colors';
+@import 'mixins';
+@import 'media';
 
 :host {
   width: 100%;
@@ -9,7 +9,6 @@
   box-sizing: border-box;
   background-color: $color-light-gray;
 }
-
 
 .title-nav {
   display: flex;
@@ -20,7 +19,6 @@
   h3 {
     margin: 0 auto 0 0;
   }
-
 }
 
 .filter-bar {
@@ -29,25 +27,23 @@
   gap: 8px;
 }
 
-
 table.planning-areas {
-
-  --mat-table-header-headline-font: "Public Sans", sans-serif;
-  --mat-table-row-item-label-text-font: "Public Sans", sans-serif;
-  --mat-table-footer-supporting-text-font: "Public Sans", sans-serif;
+  --mat-table-header-headline-font: 'Public Sans', sans-serif;
+  --mat-table-row-item-label-text-font: 'Public Sans', sans-serif;
+  --mat-table-footer-supporting-text-font: 'Public Sans', sans-serif;
   --mat-table-header-container-height: 61px;
   --mat-table-footer-container-height: 61px;
   --mat-table-row-item-container-height: 61px;
-  --mat-table-row-item-outline-color: #E1E1E1;
+  --mat-table-row-item-outline-color: #e1e1e1;
   --mat-table-row-item-label-text-line-height: 22px;
-
 
   border: 1px solid $color-soft-gray;
   border-radius: 4px;
   margin: 16px 0;
   overflow: hidden;
 
-  .mat-column-name, .mat-column-creator {
+  .mat-column-name,
+  .mat-column-creator {
     width: 25%;
   }
 
@@ -64,7 +60,6 @@ table.planning-areas {
     font-weight: 600;
   }
 
-
   .mat-column-menu {
     padding: 0;
     width: 62px;
@@ -78,9 +73,7 @@ table.planning-areas {
   .mdc-data-table__row:hover {
     background-color: $color-soft-gray;
   }
-
 }
-
 
 @include on-small() {
   table.planning-areas {
@@ -96,9 +89,7 @@ table.planning-areas {
       width: auto;
     }
   }
-
 }
-
 
 .main-loader {
   margin: 32px auto;
@@ -131,18 +122,10 @@ table.planning-areas {
   }
 }
 
-.tooltip {
-  padding: 20px;
-
-  p:last-child {
-    margin-bottom: 0;
-  }
-}
-
 .overlay-loader {
   position: fixed;
   inset: 0;
-  background-color: rgba(255, 255, 255, 0.50);
+  background-color: rgba(255, 255, 255, 0.5);
   z-index: 1000;
   display: flex;
   align-items: center;

@@ -28,7 +28,6 @@ section {
   box-sizing: border-box;
 }
 
-
 .legend {
   display: inline-flex;
   align-items: center;
@@ -84,11 +83,6 @@ section {
       background-color: $map_light_gray;
     }
   }
-}
-
-::ng-deep .legend-tooltip {
-  --mdc-plain-tooltip-container-color: rgba(0, 0, 0, 0.7);
-  --mdc-plain-tooltip-supporting-text-color: #fff;
 }
 
 @media print {

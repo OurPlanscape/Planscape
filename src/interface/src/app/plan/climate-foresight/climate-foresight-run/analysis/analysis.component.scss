@@ -88,14 +88,6 @@ sg-section {
       color: $color-dark-gray;
       flex: 1;
     }
-
-    .info-icon {
-      color: $color-standard-blue;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
   }
 }
 
@@ -194,9 +186,4 @@ sg-section {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.tooltip {
-  padding: 20px;
-  white-space: pre-line;
 }

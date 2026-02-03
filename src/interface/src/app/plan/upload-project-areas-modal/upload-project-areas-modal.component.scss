@@ -45,13 +45,13 @@
   }
 
   .field-label-row {
-    height: 24px;
     font-weight: 500;
     font-size: 16px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     line-height: 24px;
+    align-items: center;
   }
 
   .field-label-required {
@@ -80,13 +80,5 @@
 
   .stands-info-icon {
     color: $color-standard-blue;
-  }
-}
-
-.tooltip {
-  padding: 14px 20px;
-
-  p:last-child {
-    margin-bottom: 0;
   }
 }

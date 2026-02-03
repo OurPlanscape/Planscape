@@ -13,6 +13,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { ButtonComponent, ButtonVariant } from '../button/button.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
+import { PopoverComponent } from '../popover/popover.component';
 
 @Component({
   selector: 'sg-modal',
@@ -29,6 +30,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatMenuModule,
     MatProgressSpinnerModule,
     MatButtonModule,
+    PopoverComponent,
   ],
 })
 export class ModalComponent {

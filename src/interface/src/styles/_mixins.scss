@@ -4,7 +4,7 @@ Declare mixins based on styleguide and apply to classes
 */
 
 @use 'sass:map';
-@import "theme";
+@import 'theme';
 
 // helper mixin to parse and use `mat.define-typography-level` results
 @mixin defToStyles($definition) {
@@ -13,7 +13,6 @@ Declare mixins based on styleguide and apply to classes
   font-weight: map.get($definition, 'font-weight');
   letter-spacing: map.get($definition, 'letter-spacing');
 }
-
 
 @mixin button-text {
   font-weight: 400;
@@ -29,33 +28,32 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin important-paragraph {
-  @include defToStyles(map.get($styleguide, 'important-paragraph'))
+  @include defToStyles(map.get($styleguide, 'important-paragraph'));
 }
 
 @mixin regular-paragraph {
-  @include defToStyles(map.get($styleguide, 'regular-paragraph'))
+  @include defToStyles(map.get($styleguide, 'regular-paragraph'));
 }
 
 @mixin small-paragraph {
-  @include defToStyles(map.get($styleguide, 'small-paragraph'))
+  @include defToStyles(map.get($styleguide, 'small-paragraph'));
 }
 
 @mixin small-input-label {
-  @include defToStyles(map.get($styleguide, 'standard-label-sm'))
+  @include defToStyles(map.get($styleguide, 'standard-label-sm'));
 }
 
 @mixin xs-label {
-  @include defToStyles(map.get($styleguide, 'xs-label'))
+  @include defToStyles(map.get($styleguide, 'xs-label'));
 }
 
 @mixin standard-input-label {
-  @include defToStyles(map.get($styleguide, 'standard-input-label'))
+  @include defToStyles(map.get($styleguide, 'standard-input-label'));
 }
 
 @mixin standard-label {
-  @include defToStyles(map.get($styleguide, 'standard-label'))
+  @include defToStyles(map.get($styleguide, 'standard-label'));
 }
-
 
 @mixin standard-label-bold {
   @include standard-label();
@@ -70,23 +68,23 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin h1 {
-  @include defToStyles(map.get($styleguide, 'header-1'))
+  @include defToStyles(map.get($styleguide, 'header-1'));
 }
 
 @mixin h2 {
-  @include defToStyles(map.get($styleguide, 'header-2'))
+  @include defToStyles(map.get($styleguide, 'header-2'));
 }
 
 @mixin h3 {
-  @include defToStyles(map.get($styleguide, 'header-3'))
+  @include defToStyles(map.get($styleguide, 'header-3'));
 }
 
 @mixin h4 {
-  @include defToStyles(map.get($styleguide, 'header-4'))
+  @include defToStyles(map.get($styleguide, 'header-4'));
 }
 
 @mixin h5 {
-  @include defToStyles(map.get($styleguide, 'header-5'))
+  @include defToStyles(map.get($styleguide, 'header-5'));
 }
 
 @mixin top-level-label {
@@ -94,7 +92,6 @@ Declare mixins based on styleguide and apply to classes
   line-height: 26px;
   font-weight: 500;
 }
-
 
 @mixin standard-button {
   @include button-text();
@@ -118,5 +115,5 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin public-sans() {
-  font-family: "Public Sans", sans-serif;
+  font-family: 'Public Sans', sans-serif;
 }

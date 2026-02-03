@@ -6,15 +6,6 @@
   [checked]="checked"
   (click)="optionSelected.emit(value)" />
 <label [for]="'layer-' + value">{{ label }}</label>
-<ng-container *ngIf="showTooltip">
-  <button mat-icon-button class="info" [matMenuTriggerFor]="tooltipMenu">
-    <mat-icon class="material-symbols-outlined info" color="primary">
-      info_outline
-    </mat-icon>
-  </button>
-  <mat-menu #tooltipMenu="matMenu">
-    <div class="tooltip">
-      <ng-content></ng-content>
-    </div>
-  </mat-menu>
-</ng-container>
+<sg-popover *ngIf="showTooltip">
+  <ng-content></ng-content>
+</sg-popover>

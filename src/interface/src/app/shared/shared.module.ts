@@ -13,6 +13,7 @@ import { FormMessageBoxComponent } from './form-message-box/form-message-box.com
 import { SectionLoaderComponent } from './section-loader/section-loader.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { ButtonComponent } from '@styleguide';
+import { PopoverComponent } from 'src/styleguide/popover/popover.component';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import { ButtonComponent } from '@styleguide';
     FeaturesModule,
     RouterLink,
     ButtonComponent,
+    PopoverComponent,
   ],
 })
 export class SharedModule {}
