@@ -44,6 +44,7 @@
     "@turf/boolean-within": "^6.5.0",
     "@turf/flatten": "^7.2.0",
     "@turf/helpers": "^6.5.0",
+    "@turf/kinks": "^7.3.3",
     "@types/file-saver": "^2.0.5",
     "@watergis/maplibre-gl-terradraw": "^1.3.14",
     "chart.js": "^3.6.0",
