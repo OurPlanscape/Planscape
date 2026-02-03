@@ -911,6 +911,7 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "name",
             "origin",
             "type",
+            "approach",
             "notes",
             "configuration",
             "treatment_goal",
@@ -945,6 +946,7 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
             "type",
             "origin",
             "type",
+            "approach",
             "notes",
         )
 
