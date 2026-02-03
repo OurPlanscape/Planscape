@@ -603,3 +603,26 @@ def get_datalayer_outline(datalayer: DataLayer) -> Optional[GEOSGeometry]:
             if not datalayer.table:
                 raise ValueError("datalayer table is none")
             return get_table_mask(datalayer)
+
+
+def enable_datalayer_module(datalayer: DataLayer, module: str) -> DataLayer:
+    from modules.base import MODULE_HANDLERS
+
+    if module not in MODULE_HANDLERS:
+        raise ValueError(f"Unknown module: {module}")
+
+    metadata = datalayer.metadata if isinstance(datalayer.metadata, dict) else {}
+    metadata = metadata.copy()
+    modules = metadata.get("modules")
+    if not isinstance(modules, dict):
+        modules = {}
+    module_metadata = modules.get(module)
+    if not isinstance(module_metadata, dict):
+        module_metadata = {}
+
+    module_metadata = {**module_metadata, "enabled": True}
+    modules = {**modules, module: module_metadata}
+    metadata["modules"] = modules
+    datalayer.metadata = metadata
+    datalayer.save(update_fields=["metadata", "updated_at"])
+    return datalayer
