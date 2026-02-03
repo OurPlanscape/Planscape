@@ -37,6 +37,8 @@ export class NavBarComponent implements OnInit {
 
   breadcrumb$ = this.breadcrumbService.breadcrumb$;
 
+  @Input() showForsysLogo = false;
+
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,

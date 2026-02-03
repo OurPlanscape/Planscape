@@ -136,6 +136,14 @@ const routes: Routes = [
         },
       },
       {
+        path: 'forsys',
+        canActivate: [RedirectGuard],
+        component: RedirectGuard,
+        data: {
+          externalUrl: 'https://www.forsysplanning.org/',
+        },
+      },
+      {
         path: 'plan',
 
         loadChildren: () =>
