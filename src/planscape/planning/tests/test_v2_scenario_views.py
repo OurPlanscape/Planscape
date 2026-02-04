@@ -1238,12 +1238,12 @@ class PatchScenarioConfigurationTest(APITestCase):
             treatment_goal=None,
         )
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"stand_size": "SMALL"}, "planning_approach": ScenarioPlanningApproach.PRIOR_SUB_UNITS.value}
+        payload = {"configuration": {"stand_size": "SMALL"}, "planning_approach": ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get("planning_approach"), ScenarioPlanningApproach.PRIOR_SUB_UNITS.value)
+        self.assertEqual(response.data.get("planning_approach"), ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value)
 
 
 class ScenarioCapabilitiesViewTest(APITestCase):
