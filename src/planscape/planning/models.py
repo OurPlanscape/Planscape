@@ -444,6 +444,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Scenario type.",
     )
 
+    planning_approach = models.CharField(
+        choices=ScenarioPlanningApproach.choices,
+        max_length=32,
+        null=True,
+        blank=True,
+        help_text="Scenario's Planning Approach.",
+    )
+
     notes = models.TextField(null=True, help_text="Scenario notes.")
 
     configuration = models.JSONField(default=dict, help_text="Scenario configuration.")

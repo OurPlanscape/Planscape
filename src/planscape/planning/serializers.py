@@ -453,14 +453,6 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
-    planning_approach = serializers.ChoiceField(
-        choices=ScenarioPlanningApproach.choices,
-        required=False,
-        allow_null=True,
-        help_text="Scenario's planning approach.",
-    )
-
-
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
         source="excluded_areas_ids",
@@ -581,13 +573,6 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
         allow_null=True,
         help_text="Optional seed for reproducible randomization.",
-    )
-
-    planning_approach = serializers.ChoiceField(
-        choices=ScenarioPlanningApproach.choices,
-        required=False,
-        allow_null=True,
-        help_text="Scenario's planning approach.",
     )
 
     def to_representation(self, instance):
@@ -731,6 +716,12 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text="Name of the creator of the Scenario.",
     )
+    planning_approach = serializers.ChoiceField(
+        choices=ScenarioPlanningApproach.choices,
+        required=False,
+        allow_null=True,
+        help_text="Scenario's Planning Approach."
+    )
     tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
     treatment_goal = TreatmentGoalSimpleSerializer(
         read_only=True,
@@ -806,6 +797,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "type",
             "version",
             "capabilities",
+            "planning_approach",
         )
         model = Scenario
 
@@ -938,6 +930,7 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "geopackage_url",
             "geopackage_status",
             "capabilities",
+            "planning_approach",
         )
         model = Scenario
 
@@ -969,6 +962,13 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
 
 
 class PatchScenarioV3Serializer(serializers.ModelSerializer):
+    planning_approach = serializers.ChoiceField(
+        choices=ScenarioPlanningApproach.choices,
+        required=False,
+        allow_null=True,
+        help_text="Scenario's Planning Approach."
+    )
+
     treatment_goal = serializers.PrimaryKeyRelatedField(
         queryset=TreatmentGoal.objects.all(),
         required=False,
@@ -980,7 +980,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scenario
-        fields = ("treatment_goal", "configuration")
+        fields = ("planning_approach", "treatment_goal", "configuration")
 
     def validate(self, attrs):
         instance = self.instance
@@ -991,7 +991,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         stand_size_only_update = (
             "configuration" in attrs
             and "stand_size" in configuration
-            and (set(configuration) == {"stand_size"} or set(configuration) == {"stand_size", "planning_approach"})
+            and (set(configuration) == {"stand_size"})
         )
         merged_config = {**(instance.configuration or {}), **configuration}
         errors = {}
@@ -1027,8 +1027,11 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             incoming = validated_data["configuration"]
             cfg.update(incoming)
             instance.configuration = cfg
+        
+        if "planning_approach" in validated_data:
+            instance.planning_approach = validated_data["planning_approach"]
 
-        instance.save(update_fields=["treatment_goal", "configuration"])
+        instance.save(update_fields=["treatment_goal", "configuration", "planning_approach"])
         instance.refresh_from_db()
         serializer = ScenarioV3Serializer(instance)
         return serializer.data
