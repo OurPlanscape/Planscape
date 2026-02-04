@@ -331,11 +331,7 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         )
 
         for name in ["slope", "distance_from_roads"]:
-            query = {"modules": {"forsys": {"name": name}}}
-            datalayer = DataLayer.objects.filter(
-                type=DataLayerType.RASTER,
-                metadata__contains=query,
-            ).first()
+            datalayer = DataLayer.objects.all().by_meta_name(name=name)
             if datalayer:
                 datalayers.append(datalayer)
         return datalayers
@@ -575,11 +571,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             datalayers = list(datalayers)
             
             for name in ["slope", "distance_from_roads"]:
-                query = {"modules": {"forsys": {"name": name}}}
-                datalayer = DataLayer.objects.filter(
-                    type=DataLayerType.RASTER,
-                    metadata__contains=query,
-                ).first()
+                datalayer = DataLayer.objects.all().by_meta_name(name=name)
                 if datalayer:
                     datalayers.append(datalayer)
 
