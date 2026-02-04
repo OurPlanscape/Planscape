@@ -110,7 +110,7 @@ def update_priority_objective_weights(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning", "0078_add_weight_column_to_tgud"),
+        ("planning", "0079_scenario_planning_approach_and_more"),
         ("datasets", "0026_dataset_modules"),
     ]
 
