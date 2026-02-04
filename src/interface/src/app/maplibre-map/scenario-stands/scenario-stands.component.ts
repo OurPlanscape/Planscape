@@ -20,7 +20,7 @@ import {
 } from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
 import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
-import { NewScenarioState } from '../../scenario/new-scenario.state';
+import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '../../map/map.constants';
