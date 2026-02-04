@@ -2,8 +2,6 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import * as shp from 'shpjs';
-import booleanValid from '@turf/boolean-valid';
-import kinks from '@turf/kinks';
 import {
   FormBuilder,
   FormGroup,
@@ -92,28 +90,13 @@ export class UploadPlanningAreaBoxComponent {
           if (geom.type !== 'GeometryCollection') {
             if (!geom.coordinates || geom.coordinates.length === 0) {
               throw new InvalidCoordinatesError(
-                `Invalid Shapefile: Feature at index ${index} is empty.`
+                `Invalid Shapefile: Geometry coordinates at feature ${index} are empty.`
               );
             }
           } else {
             if (geom.geometries.length === 0) {
               throw new InvalidCoordinatesError(
                 `Invalid Shapefile: GeometryCollection at index ${index} is empty.`
-              );
-            }
-          }
-
-          if (!booleanValid(feature)) {
-            // Note: kinks() is pretty timeconsuming, so running it only if the feature is invalid
-            //  might be the best combination of speed with granular detail
-            const kinksResults = kinks(feature as any);
-            if (kinksResults.features.length > 0) {
-              throw new InvalidCoordinatesError(
-                'Invalid Shapefile: This shapefile contains self-intersections.'
-              );
-            } else {
-              throw new InvalidCoordinatesError(
-                `Invalid Shapefile: The feature at index ${index} is invalid.`
               );
             }
           }
@@ -134,7 +117,10 @@ export class UploadPlanningAreaBoxComponent {
     } catch (e) {
       this.uploadElementStatus = 'failed';
       if (e instanceof InvalidCoordinatesError) {
-        this.uploadFormError = e.message;
+        // Note: here we only display a generic form error, until further discussion w/ Product
+        //  but Sentry should catch the detailed message
+        this.uploadFormError =
+          'The upload contains features with invalid coordinates.';
       } else {
         this.uploadFormError =
           'The zip file does not appear to contain a valid shapefile.';
