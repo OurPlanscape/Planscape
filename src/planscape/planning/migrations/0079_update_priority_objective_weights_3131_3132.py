@@ -19,13 +19,15 @@ def get_treatment_goal(TreatmentGoal, tg_name: str):
     )
 
 
-def upsert_usage(TGUD, tg, datalayer, usage_type: str, threshold=None, weight=None):
+def upsert_usage(
+    tg_datalayer_usage, tg, datalayer, usage_type: str, threshold=None, weight=None
+):
     """
     Create or update the TreatmentGoalUsesDataLayer row (ignores soft-deleted rows).
     Updates threshold and/or weight if provided.
     """
     obj = (
-        TGUD.objects.filter(
+        tg_datalayer_usage.objects.filter(
             treatment_goal=tg,
             datalayer=datalayer,
             usage_type=usage_type,
@@ -50,7 +52,7 @@ def upsert_usage(TGUD, tg, datalayer, usage_type: str, threshold=None, weight=No
             obj.save(update_fields=update_fields)
         return
 
-    TGUD.objects.create(
+    tg_datalayer_usage.objects.create(
         treatment_goal=tg,
         datalayer=datalayer,
         usage_type=usage_type,
@@ -61,7 +63,7 @@ def upsert_usage(TGUD, tg, datalayer, usage_type: str, threshold=None, weight=No
 
 def update_priority_objective_weights(apps, schema_editor):
     TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
-    TGUD = apps.get_model("planning", "TreatmentGoalUsesDataLayer")
+    tg_datalayer_usage = apps.get_model("planning", "TreatmentGoalUsesDataLayer")
     DataLayer = apps.get_model("datasets", "DataLayer")
 
     goals = [
@@ -97,7 +99,7 @@ def update_priority_objective_weights(apps, schema_editor):
                 continue
 
             upsert_usage(
-                TGUD,
+                tg_datalayer_usage,
                 tg,
                 datalayer,
                 usage_type="PRIORITY",
