@@ -49,6 +49,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioOrigin,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -240,6 +241,7 @@ def create_config(
     priorities: DataLayerList,
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
+    planning_approach: Optional[ScenarioPlanningApproach] = None,
 ) -> Dict[str, Any]:
     config: Dict[str, Any] = {}
 
@@ -253,6 +255,8 @@ def create_config(
     config["cobenefits"] = [benefit.pk for benefit in cobenefits]
     if seed is not None:
         config["seed"] = seed
+    if planning_approach is not None:
+        config["planning_approach"] = planning_approach
 
     return config
 

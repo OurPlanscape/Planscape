@@ -214,6 +214,10 @@ class ScenarioManager(AliveObjectsManager):
         return self.get_queryset().filter(planning_area__id__in=planning_areas)
 
 
+class ScenarioPlanningApproach(models.TextChoices):
+    PRIORITIZE_SUB_UNITS = "PRIORITIZE_SUB_UNITS", "Prioritize Sub-Units"
+    OPTIMIZE_PROJECT_AREAS = "OPTIMIZE_PROJECT_AREAS", "Optimize Project Areas"
+
 class ScenarioOrigin(models.TextChoices):
     # project comes from optimization algorithm, such as forsys
     SYSTEM = "SYSTEM", "System"
@@ -438,6 +442,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         blank=True,
         help_text="Scenario type.",
+    )
+
+    planning_approach = models.CharField(
+        choices=ScenarioPlanningApproach.choices,
+        max_length=32,
+        null=True,
+        blank=True,
+        help_text="Scenario's Planning Approach.",
     )
 
     notes = models.TextField(null=True, help_text="Scenario notes.")
