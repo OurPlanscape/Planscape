@@ -215,8 +215,8 @@ class ScenarioManager(AliveObjectsManager):
 
 
 class ScenarioPlanningApproach(models.TextChoices):
-    PRIOR_SUB_UNITS = "PRIOR_SUB_UNITS", "Prioritize Sub-Units"
-    OPTMIZE_PROJECT_AREAS = "OPTMIZE_PROJECT_AREAS", "Optmize Project Areas"
+    PRIORITIZE_SUB_UNITS = "PRIORITIZE_SUB_UNITS", "Prioritize Sub-Units"
+    OPTIMIZE_PROJECT_AREAS = "OPTIMIZE_PROJECT_AREAS", "Optimize Project Areas"
 
 class ScenarioOrigin(models.TextChoices):
     # project comes from optimization algorithm, such as forsys
