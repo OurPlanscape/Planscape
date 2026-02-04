@@ -18,6 +18,7 @@ from planning.models import (
     PlanningAreaNote,
     ProjectArea,
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioType,
     SharedLink,
@@ -452,6 +453,13 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
+    planning_approach = serializers.ChoiceField(
+        choices=ScenarioPlanningApproach.choices,
+        required=False,
+        allow_null=True,
+        help_text="Scenario's planning approach.",
+    )
+
 
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
@@ -573,6 +581,13 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
         allow_null=True,
         help_text="Optional seed for reproducible randomization.",
+    )
+
+    planning_approach = serializers.ChoiceField(
+        choices=ScenarioPlanningApproach.choices,
+        required=False,
+        allow_null=True,
+        help_text="Scenario's planning approach.",
     )
 
     def to_representation(self, instance):
@@ -911,7 +926,6 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "name",
             "origin",
             "type",
-            "approach",
             "notes",
             "configuration",
             "treatment_goal",
@@ -946,7 +960,6 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
             "type",
             "origin",
             "type",
-            "approach",
             "notes",
         )
 
@@ -978,7 +991,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         stand_size_only_update = (
             "configuration" in attrs
             and "stand_size" in configuration
-            and set(configuration) == {"stand_size"}
+            and (set(configuration) == {"stand_size"} or set(configuration) == {"stand_size", "planning_approach"})
         )
         merged_config = {**(instance.configuration or {}), **configuration}
         errors = {}
