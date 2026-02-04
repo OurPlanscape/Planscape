@@ -1,0 +1,9 @@
+::ng-deep .sub-unit-selector .mat-expansion-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .list-header {
+    font-size: 14px;
+  }
+}
