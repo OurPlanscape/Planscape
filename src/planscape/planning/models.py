@@ -565,6 +565,27 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         )
         logger.info("PUBLIC URL GENERATED %s", signed_url)
         return signed_url
+    
+    def get_raster_datalayers(self) -> Collection[DataLayer]:
+        if self.type == ScenarioType.CUSTOM:
+            priority_objectives = self.configuration.get("priority_objectives", [])
+            cobenefits = self.configuration.get("cobenefits", [])
+            datalayer_ids = priority_objectives + cobenefits
+            datalayers = DataLayer.objects.filter(id__in=datalayer_ids).filter(type=DataLayerType.RASTER)
+            datalayers = list(datalayers)
+            
+            for name in ["slope", "distance_from_roads"]:
+                query = {"modules": {"forsys": {"name": name}}}
+                datalayer = DataLayer.objects.filter(
+                    type=DataLayerType.RASTER,
+                    metadata__contains=query,
+                ).first()
+                if datalayer:
+                    datalayers.append(datalayer)
+
+            return datalayers
+        else:
+            return self.treatment_goal.get_raster_datalayers() # type: ignore
 
     objects = ScenarioManager()
 
