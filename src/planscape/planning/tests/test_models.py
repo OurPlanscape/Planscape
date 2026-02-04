@@ -4,7 +4,8 @@ from datasets.tests.factories import DataLayerFactory
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
-from planning.models import PlanningArea, RegionChoices, ScenarioStatus
+from planning.models import PlanningArea, RegionChoices, ScenarioType, ScenarioStatus
+from datasets.models import DataLayerType
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
@@ -106,3 +107,26 @@ class TreatmentGoalUsesDataLayerTest(TestCase):
 
         self.assertEqual(tx_goal.datalayers.count(), 5)
         self.assertEqual(tx_goal.active_datalayers.count(), 0)
+
+
+class ScenarioModelTest(TestCase):
+    def setUp(self):
+        self.datalayers = DataLayerFactory.create_batch(size=5, type=DataLayerType.RASTER)
+        self.treatment_goal = TreatmentGoalFactory.create(datalayers=self.datalayers)
+
+    def test_get_raster_datalayers_preset_scenario(self):
+        scenario = ScenarioFactory(
+            type=ScenarioType.PRESET, 
+            treatment_goal=self.treatment_goal
+        )
+        datalayers = scenario.get_raster_datalayers()
+        self.assertEqual(len(datalayers), 5)
+
+    def test_get_raster_datalayers_custom_scenario(self):
+        scenario = ScenarioFactory(
+            type=ScenarioType.CUSTOM, 
+            with_priority_objectives=self.datalayers[:2], 
+            with_cobenefits=self.datalayers[2:]
+        )
+        datalayers = scenario.get_raster_datalayers()
+        self.assertEqual(len(datalayers), 5)
