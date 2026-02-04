@@ -262,7 +262,7 @@ class TestFlattenGeojsonSanitization(TestCase):
             ],
         }
         dl = SimpleNamespace(pk=1, name="Expected Annual Total Volume Killed")
-        scenario.treatment_goal.get_raster_datalayers.return_value = [dl]
+        scenario.get_raster_datalayers.return_value = [dl]
         out = get_flatten_geojson(scenario)
         props = out["features"][0]["properties"]
         self.assertIn("datalayer_expected-annual-total-volume-killed", props)
