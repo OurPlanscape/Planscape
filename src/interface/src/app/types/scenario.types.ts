@@ -96,6 +96,7 @@ export interface ScenarioCreation extends ScenarioConfigPayload {
   planning_area: number;
   priority_objectives?: number[];
   cobenefits?: number[];
+  subunit?: number;
 }
 
 export interface ScenarioConfigPayload {

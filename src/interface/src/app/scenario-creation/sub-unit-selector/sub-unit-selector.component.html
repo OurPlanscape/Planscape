@@ -1,7 +1,27 @@
-<sg-section headline="Select Sub-Unit" class="sub-units-selector">
-  <section>
-    <form [formGroup]="form">
-     
-    </form>
-  </section>
+<sg-section
+  headline="Select Sub-Unit"
+  class="sub-units-selector"
+  [required]="true">
+  <form [formGroup]="form">
+    <ng-container *ngIf="subUnitOptions$ | async as subUnitOptions">
+      <mat-radio-group
+        name="subUnitSelect"
+        aria-label="Select an option"
+        color="primary"
+        [formControlName]="'subunit'">
+        <div>
+          <div class="subunit-loader" *ngIf="(loadingItems$ | async) === null">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+          <div
+            *ngFor="let subunit of subUnitOptions"
+            class="layer-control-container">
+            <mat-radio-button [value]="subunit.id">
+              {{ subunit.name }}
+            </mat-radio-button>
+          </div>
+        </div>
+      </mat-radio-group>
+    </ng-container>
+  </form>
 </sg-section>

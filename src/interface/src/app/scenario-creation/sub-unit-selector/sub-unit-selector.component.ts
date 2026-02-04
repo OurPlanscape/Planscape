@@ -1,12 +1,26 @@
 import { Component } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormGroup,
+  ReactiveFormsModule,
+  FormControl,
+  Validators,
+} from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { ScenarioCreation } from '@types';
 import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { Observable, of } from 'rxjs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+
+// TODO: move this to a central place
+interface SubUnitOption {
+  id: number;
+  name: string;
+}
 
 @Component({
   selector: 'app-sub-unit-selector',
@@ -16,38 +30,44 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   imports: [
     CommonModule,
     MatCheckboxModule,
-    SectionComponent,
+    MatProgressSpinnerModule,
+    MatRadioModule,
     ReactiveFormsModule,
+    SectionComponent,
     SelectableListComponent,
   ],
   providers: [
     { provide: StepDirective, useExisting: SubUnitSelectorComponent },
   ],
 })
-export class SubUnitSelectorComponent
-  extends StepDirective<ScenarioCreation> {
-  constructor(
-    private baseLayersStateService: BaseLayersStateService
-  ) {
+export class SubUnitSelectorComponent extends StepDirective<ScenarioCreation> {
+  constructor(private baseLayersStateService: BaseLayersStateService) {
     baseLayersStateService.enableBaseLayerHover(false);
     super();
   }
 
-  form = new FormGroup({}); // keeping the inheritance happy
+  form = new FormGroup({
+    subunit: new FormControl<number | undefined>(undefined, [
+      Validators.required,
+    ]),
+  });
 
-  //TODO...
-  //  subUnitTypes$ // 
+  //TODO...these are placeholders
+  subUnitOptions$: Observable<SubUnitOption[]> = of([
+    { id: 0, name: 'test-Subwatersheds (HUC-12)' },
+    { id: 1, name: 'test-PODs' },
+    { id: 2, name: 'test-Subfiresheds' },
+  ]);
 
   loadingItems$ = this.baseLayersStateService.loadingLayers$;
 
   getData() {
-    return {}; // TODO: this is a placeholder
+    return this.form.value;
   }
 
   override beforeStepLoad(): void {
     //
   }
 
-  override beforeStepExit(): void {
-  }
+  override beforeStepExit(): void {}
 }

@@ -3,6 +3,7 @@ import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { SubUnitSelectorComponent } from './sub-unit-selector/sub-unit-selector.component';
 import {
   catchError,
   finalize,
@@ -94,6 +95,7 @@ import { MapModuleService } from '@services/map-module.service';
     StepsNavComponent,
     ScenarioMapComponent,
     Step1WithOverviewComponent,
+    SubUnitSelectorComponent,
     NgClass,
     ScenarioSummaryComponent,
     SharedModule,
