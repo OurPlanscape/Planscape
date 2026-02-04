@@ -214,7 +214,7 @@ class ScenarioManager(AliveObjectsManager):
         return self.get_queryset().filter(planning_area__id__in=planning_areas)
 
 
-class ScenarioApproach(models.TextChoices):
+class ScenarioPlanningApproach(models.TextChoices):
     PRIOR_SUB_UNITS = "PRIOR_SUB_UNITS", "Prioritize Sub-Units"
     OPTMIZE_PROJECT_AREAS = "OPTMIZE_PROJECT_AREAS", "Optmize Project Areas"
 
@@ -442,14 +442,6 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         blank=True,
         help_text="Scenario type.",
-    )
-
-    approach = models.CharField(
-        choices=ScenarioApproach.choices,
-        max_length=32,
-        null=True,
-        blank=True,
-        help_text="Scenario approach."
     )
 
     notes = models.TextField(null=True, help_text="Scenario notes.")
