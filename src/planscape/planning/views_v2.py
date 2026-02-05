@@ -336,7 +336,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
     @extend_schema(description="Update Scenario's configuration.")
-    @action(methods=["patch"], detail=True, url_path="configuration")
+    @action(methods=["patch"], detail=True, url_path="configuration", serializer_class=UpsertConfigurationV2Serializer)
     def patch_configuration(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = UpsertConfigurationV2Serializer(

@@ -564,6 +564,11 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
+    sub_units_layer = serializers.IntegerField(
+        required=False,
+        help_text="Vector Layer ID that contains Sub Units.",
+    )
+
     targets = TargetsSerializer(
         required=False,
         help_text="Scenario targets: max_area, max_project_count, estimated_cost.",
@@ -632,6 +637,11 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         min_length=0,
         max_length=10,
         required=False,
+    )
+    sub_units_layer = serializers.PrimaryKeyRelatedField(
+        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR).all(),
+        required=False,
+        help_text="Vector Layer ID that contains Sub Units.",
     )
 
     def update(self, instance, validated_data):
