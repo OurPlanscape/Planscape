@@ -47,6 +47,7 @@
 
       <app-data-layer-tree
         *ngIf="(hasNoData$ | async) === false"
+        [layersToOmit]="layersToOmit"
         [displayAddButton]="displayAddButton"></app-data-layer-tree>
 
       <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>

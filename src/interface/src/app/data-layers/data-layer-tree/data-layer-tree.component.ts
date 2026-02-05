@@ -39,6 +39,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class DataLayerTreeComponent {
   @Input() displayAddButton = false;
+  @Input() layersToOmit = [];
 
   constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$

@@ -63,6 +63,8 @@ export class DataLayersComponent {
   @Input() displayAddButton = false;
   @Input() useClearFooter = true;
 
+  @Input() layersToOmit = [];
+  
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   loading$ = this.dataLayersStateService.loading$;
