@@ -14,7 +14,7 @@ import {
   switchMap,
   take,
 } from 'rxjs';
-import { DataLayersStateService } from '../data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import {
   AbstractControl,
   FormControl,
@@ -29,7 +29,7 @@ import {
   TreatmentGoalsService,
 } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
-import { nameMustBeNew } from '../validators/unique-scenario';
+import { nameMustBeNew } from '@validators/unique-scenario';
 import {
   DataLayer,
   Scenario,
@@ -40,39 +40,37 @@ import {
   ScenarioV3Payload,
 } from '@types';
 import { MatDialog } from '@angular/material/dialog';
-import { StandLevelConstraintsComponent } from './step3/stand-level-constraints.component';
+import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import {
   convertFlatConfigurationToDraftPayload,
   isCustomScenario,
-} from '../scenario/scenario-helper';
-import { ScenarioErrorModalComponent } from '../scenario/scenario-error-modal/scenario-error-modal.component';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+} from '@scenario/scenario-helper';
+import { ScenarioErrorModalComponent } from '@scenario/scenario-error-modal/scenario-error-modal.component';
+import { NewScenarioState } from './new-scenario.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { getPlanPath } from '../plan/plan-helpers';
-import { FeaturesModule } from '../features/features.module';
-import { TreatmentTargetComponent } from 'src/app/scenario-creation/treatment-target/treatment-target.component';
+import { getPlanPath } from '@plan/plan-helpers';
+import { FeaturesModule } from '@features/features.module';
+import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
-import { ConfirmationDialogComponent } from '../standalone/confirmation-dialog/confirmation-dialog.component';
-
+import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
-} from '../scenario/scenario.constants';
-
+} from '@scenario/scenario.constants';
 import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ScenarioState } from '../scenario/scenario.state';
-import { ExcludeAreasSelectorComponent } from './exclude-areas-selector/exclude-areas-selector.component';
-import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
-import { Step1WithOverviewComponent } from './step1-with-overview/step1-with-overview.component';
-import { ScenarioSummaryComponent } from './scenario-summary/scenario-summary.component';
-import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
-import { CustomPriorityObjectivesComponent } from './custom-priority-objectives/custom-priority-objectives.component';
-import { FeatureService } from '../features/feature.service';
-import { Step1CustomComponent } from './step1-custom/step1-custom.component';
-import { CustomCobenefitsComponent } from './custom-cobenefits/custom-cobenefits.component';
+import { ScenarioState } from '@scenario/scenario.state';
+import { ExcludeAreasSelectorComponent } from '@scenario-creation/exclude-areas-selector/exclude-areas-selector.component';
+import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
+import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
+import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/scenario-summary.component';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
+import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-priority-objectives/custom-priority-objectives.component';
+import { FeatureService } from '@features/feature.service';
+import { Step1CustomComponent } from '@scenario-creation/step1-custom/step1-custom.component';
+import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
-import { USE_GEOMETRY } from '../data-layers/data-layers/geometry-datalayers.token';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { MapModuleService } from '@services/map-module.service';
 
 @UntilDestroy()

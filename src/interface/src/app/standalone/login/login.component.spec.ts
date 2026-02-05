@@ -9,7 +9,7 @@ import { LoginComponent } from './login.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { Location } from '@angular/common';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @Component({

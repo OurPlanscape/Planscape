@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { LoginRedirectStorageService } from '@services/local-storage.service';
+import { LoginRedirectStorageService } from './local-storage.service';
 
 export interface RedirectData {
   url: string;

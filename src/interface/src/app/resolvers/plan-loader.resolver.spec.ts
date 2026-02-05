@@ -4,7 +4,7 @@ import {
   ParamMap,
   RouterStateSnapshot,
 } from '@angular/router';
-import { PlanState } from '../plan/plan.state';
+import { PlanState } from '@plan/plan.state';
 import { planLoaderResolver } from './plan-loader.resolver';
 import { PlanService } from '@services';
 import { MockProvider } from 'ng-mocks';

@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, take } from 'rxjs';
 import { MapConfigState } from './map-config.state';
 import { MultiMapsStorageService } from '@services/local-storage.service';
-import { MAP_WEST_CONUS_BOUNDS } from '../map/map.constants';
+import { MAP_WEST_CONUS_BOUNDS } from '@map/map.constants';
 import { Extent } from '@types';
-import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 export type LayoutOption = 1 | 2 | 4;
 

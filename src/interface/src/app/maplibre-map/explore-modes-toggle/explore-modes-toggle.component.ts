@@ -8,10 +8,10 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { UploadPlanningAreaBoxComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
-import { CreatePlanDialogComponent } from '../../explore/create-plan-dialog/create-plan-dialog.component';
-import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
-import { BlockDialogComponent } from '../../standalone/block-dialog/block-dialog.component';
+import { UploadPlanningAreaBoxComponent } from '@explore/upload-planning-area-box/upload-planning-area-box.component';
+import { CreatePlanDialogComponent } from '@explore/create-plan-dialog/create-plan-dialog.component';
+import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
+import { BlockDialogComponent } from '@standalone/block-dialog/block-dialog.component';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',

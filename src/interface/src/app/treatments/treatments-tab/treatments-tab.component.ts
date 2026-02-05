@@ -17,9 +17,9 @@ import {
   PrescriptionSingleAction,
 } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
-import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
-import { FeaturesModule } from 'src/app/features/features.module';
+import { MapConfigState } from '@maplibre-map/map-config.state';
+import { LeftLoadingOverlayComponent } from '@treatments/left-loading-overlay/left-loading-overlay.component';
+import { FeaturesModule } from '@features/features.module';
 
 @Component({
   selector: 'app-project-area-tx-tab',

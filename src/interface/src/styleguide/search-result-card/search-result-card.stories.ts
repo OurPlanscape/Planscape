@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { SearchResultCardComponent } from './search-result-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { TreatmentProjectArea } from 'src/app/types';
+import { TreatmentProjectArea } from '@types';
 
 const containerStyle = `style="display: flex;
   width: 100%;

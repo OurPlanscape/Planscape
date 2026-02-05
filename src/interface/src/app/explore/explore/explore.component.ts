@@ -1,27 +1,27 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { AsyncPipe, CommonModule, NgClass, NgIf } from '@angular/common';
-import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { SharedModule } from '@shared';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
-import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
-import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
+import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
+import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
+import { MultiMapControlComponent } from '@maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
 import { firstValueFrom, map, of, skip, switchMap, take } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
-import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
-import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
-import { MapSelectorComponent } from '../map-selector/map-selector.component';
-import { DrawService } from 'src/app/maplibre-map/draw.service';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { ExploreModesToggleComponent } from '@maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
+import { MapSelectorComponent } from '@explore/map-selector/map-selector.component';
+import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
-import { MapConfigService } from '../../maplibre-map/map-config.service';
-import { PlanState } from '../../plan/plan.state';
-import { getPlanPath } from '../../plan/plan-helpers';
+import { MapConfigService } from '@maplibre-map/map-config.service';
+import { PlanState } from '@plan/plan.state';
+import { getPlanPath } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { FrontendConstants } from '../../map/map.constants';
+import { FrontendConstants } from '@map/map.constants';
 
 enum SidebarTabs {
   DATA_LAYERS,

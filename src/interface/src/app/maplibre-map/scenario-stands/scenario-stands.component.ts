@@ -1,12 +1,12 @@
 import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { BASE_COLORS } from '../../treatments/map.styles';
+import { BASE_COLORS } from '@treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { ActivatedRoute } from '@angular/router';
-import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { MARTIN_SOURCES } from '@treatments/map.sources';
 import {
   animationFrameScheduler,
   auditTime,
@@ -20,10 +20,10 @@ import {
 } from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
 import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { FrontendConstants } from '../../map/map.constants';
+import { FrontendConstants } from '@map/map.constants';
 
 @UntilDestroy()
 @Component({

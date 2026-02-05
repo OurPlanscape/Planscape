@@ -2,7 +2,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { BehaviorSubject, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { ScenarioStandsComponent } from './scenario-stands.component';
-import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { MARTIN_SOURCES } from '@treatments/map.sources';
 import {
   ImageComponent,
   LayerComponent,
@@ -10,7 +10,7 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 
 import { MockDeclarations, MockProvider } from 'ng-mocks';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { AvailableStands } from '@types';
 import { MapConfigState } from '../map-config.state';
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 import { TreatmentPlan, TreatmentSummary } from '@types';
-import { MetricId, MetricResult } from '../treatments/metrics';
-import { PrescriptionAction } from '../treatments/prescriptions';
+import { MetricId, MetricResult } from '@treatments/metrics';
+import { PrescriptionAction } from '@treatments/prescriptions';
 
 @Injectable({
   providedIn: 'root',

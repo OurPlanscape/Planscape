@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AccountPageComponent } from './account-page/account-page.component';
+import { AccountPageComponent } from '@account/account-page/account-page.component';
 import { AuthGuard } from '@services';
-import { DetailsComponent } from './details/details.component';
-import { DeleteAccountComponent } from './delete-account/delete-account.component';
-import { ChangePasswordComponent } from './change-password/change-password.component';
+import { DetailsComponent } from '@account/details/details.component';
+import { DeleteAccountComponent } from '@account/delete-account/delete-account.component';
+import { ChangePasswordComponent } from '@account/change-password/change-password.component';
 
 const routes: Routes = [
   {

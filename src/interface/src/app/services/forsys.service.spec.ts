@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { ForsysService } from './forsys.service';
 import { MockProvider } from 'ng-mocks';
-import { ModuleService } from '@services/module.service';
+import { ModuleService } from './module.service';
 
 describe('ForsysService', () => {
   let service: ForsysService;

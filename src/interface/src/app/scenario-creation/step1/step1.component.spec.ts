@@ -12,11 +12,11 @@ import { SharedModule } from '@shared';
 import { TreatmentGoalsService } from '@services';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
-import { ScenarioState } from '../../scenario/scenario.state';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
+import { ScenarioState } from '@scenario/scenario.state';
 import { MOCK_SCENARIO } from '@services/mocks';
 import { Step1Component } from './step1.component';
-import { STAND_SIZE } from '../../plan/plan-helpers';
+import { STAND_SIZE } from '@plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
 import { NewScenarioState } from '../new-scenario.state';
 

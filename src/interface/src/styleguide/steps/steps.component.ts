@@ -14,10 +14,10 @@ import { CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
 import { Observable, take } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { Directionality } from '@angular/cdk/bidi';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 import { StepComponent } from './step.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).

@@ -15,8 +15,8 @@ import {
   NgIf,
   NgSwitch,
 } from '@angular/common';
-import { ButtonComponent } from '../button/button.component';
-import { InputFieldComponent } from '../input/input-field.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
+import { InputFieldComponent } from '@styleguide/input/input-field.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import {
@@ -28,7 +28,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { InputDirective } from '../input/input.directive';
+import { InputDirective } from '@styleguide/input/input.directive';
 
 /**
  * Search Bar component to encapsulate search behavior. This includes an optional autocomplete list.

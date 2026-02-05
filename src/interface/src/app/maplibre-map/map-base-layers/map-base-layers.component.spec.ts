@@ -3,7 +3,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { MapBaseLayersComponent } from './map-base-layers.component';
 import { MockProvider } from 'ng-mocks';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { of } from 'rxjs';
 
 describe('MapBaseLayersComponent', () => {

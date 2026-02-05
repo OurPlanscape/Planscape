@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { CustomPriorityObjectivesComponent } from './custom-priority-objectives.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '../new-scenario.state';
 import { of } from 'rxjs';

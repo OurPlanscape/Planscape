@@ -1,13 +1,13 @@
 import { AfterContentInit, Component, ViewChild } from '@angular/core';
-import { Step1Component } from '../step1/step1.component';
+import { Step1Component } from '@scenario-creation/step1/step1.component';
 import {
   OverviewStep,
   ProcessOverviewComponent,
-} from '../process-overview/process-overview.component';
+} from '@scenario-creation/process-overview/process-overview.component';
 import { StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { FormGroup } from '@angular/forms';
-import { SCENARIO_OVERVIEW_STEPS } from '../../scenario/scenario.constants';
+import { SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
 
 @Component({
   selector: 'app-step1-with-overview',

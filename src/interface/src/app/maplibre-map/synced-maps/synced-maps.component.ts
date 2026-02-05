@@ -6,7 +6,7 @@ import {
   getExtentFromLngLatBounds,
   syncMaps,
 } from '../maplibre.helper';
-import { ExploreMapComponent } from '../explore-map/explore-map.component';
+import { ExploreMapComponent } from '@maplibre-map/explore-map/explore-map.component';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 

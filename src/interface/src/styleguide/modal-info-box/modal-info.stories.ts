@@ -4,7 +4,7 @@ import {
   moduleMetadata,
   StoryObj,
 } from '@storybook/angular';
-import { ModalComponent } from '../modal/modal.component';
+import { ModalComponent } from '@styleguide/modal/modal.component';
 import { ModalInfoComponent } from './modal-info.component';
 import {
   MAT_DIALOG_DATA,

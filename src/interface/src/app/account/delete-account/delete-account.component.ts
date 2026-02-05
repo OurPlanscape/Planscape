@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '@services';
 import { Router } from '@angular/router';
-import { DeleteAccountDialogComponent } from '../delete-account-dialog/delete-account-dialog.component';
+import { DeleteAccountDialogComponent } from '@account/delete-account-dialog/delete-account-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({

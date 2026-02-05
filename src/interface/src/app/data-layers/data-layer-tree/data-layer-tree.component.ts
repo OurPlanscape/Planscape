@@ -5,14 +5,14 @@ import { MatTreeModule } from '@angular/material/tree';
 import { map, shareReplay, switchMap } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
-import { TreeNode } from '../data-layers/tree-node';
+import { TreeNode } from '@data-layers/data-layers/tree-node';
 import { DataLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
-import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
+import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 

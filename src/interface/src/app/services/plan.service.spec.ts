@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { Plan } from '@types';
 import { PlanService } from './plan.service';
 import { MOCK_PLAN } from './mocks';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 
 describe('PlanService', () => {
   let httpTestingController: HttpTestingController;

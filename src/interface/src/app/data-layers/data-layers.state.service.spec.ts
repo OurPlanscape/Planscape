@@ -6,8 +6,8 @@ import { DataLayersService } from '@services/data-layers.service';
 import { of } from 'rxjs';
 import { DataSet, Pagination } from '@types';
 import { MapModuleService } from '@services/map-module.service';
-import { FeaturesModule } from '../features/features.module';
-import { PlanState } from '../plan/plan.state';
+import { FeaturesModule } from '@features/features.module';
+import { PlanState } from '@plan/plan.state';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
 describe('DataLayersStateService', () => {

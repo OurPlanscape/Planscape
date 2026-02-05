@@ -17,9 +17,9 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { NamePillarModalComponent } from '../../name-pillar-modal/name-pillar-modal.component';
+import { NamePillarModalComponent } from '@plan/climate-foresight/name-pillar-modal/name-pillar-modal.component';
 import { MatDialog } from '@angular/material/dialog';
-import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { ClimateForesightService } from '@services';
 import { ClimateForesightRun, DataLayer, InputDatalayer, Pillar } from '@types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';

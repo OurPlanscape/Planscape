@@ -10,7 +10,7 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ModalInfoComponent } from '../modal-info-box/modal-info.component';
+import { ModalInfoComponent } from '@styleguide/modal-info-box/modal-info.component';
 import { ExpandedPanelComponent } from './expanded-panel.component';
 
 const meta: Meta<ExpandedPanelComponent> = {

@@ -1,9 +1,9 @@
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import * as Sentry from '@sentry/angular';
-import { AppModule } from './app/app.module';
+import { AppModule } from '@app/app.module';
 import { createSentryConfig } from './sentry.config';
-import { environment } from './environments/environment';
+import { environment } from '@env/environment';
 
 if (environment.production) {
   enableProdMode();

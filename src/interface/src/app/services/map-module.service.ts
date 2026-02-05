@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
-import { ModuleService } from '@services/module.service';
-import { ApiModule, MapData } from '../types/module.types';
+import { ModuleService } from './module.service';
+import { ApiModule, MapData } from '@types';
 import { BehaviorSubject, map, shareReplay } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MAP_MODULE_NAME } from './map-module.token';

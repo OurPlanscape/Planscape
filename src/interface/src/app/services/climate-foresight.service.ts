@@ -8,7 +8,7 @@ import {
   GeoPackageDownloadResponse,
   Pillar,
 } from '@types';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root',

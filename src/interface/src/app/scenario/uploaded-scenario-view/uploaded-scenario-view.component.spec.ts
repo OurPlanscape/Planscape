@@ -5,7 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MockProvider } from 'ng-mocks';
-import { FeatureService } from 'src/app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 
 describe('UploadedScenarioViewComponent', () => {
   let component: UploadedScenarioViewComponent;

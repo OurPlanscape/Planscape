@@ -18,15 +18,15 @@ import {
   Pagination,
   SearchResult,
 } from '@types';
-import { buildPathTree } from './data-layers/tree-node';
+import { buildPathTree } from '@data-layers/data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 
-import { MAX_SELECTED_DATALAYERS } from './data-layers/max-selected-datalayers.token';
+import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
 
 import { distinctUntilChanged } from 'rxjs/operators';
-import { PlanState } from '../plan/plan.state';
-import { USE_GEOMETRY } from './data-layers/geometry-datalayers.token';
+import { PlanState } from '@plan/plan.state';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 
 @Injectable()
 export class DataLayersStateService {

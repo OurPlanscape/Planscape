@@ -9,7 +9,7 @@ import {
 import { PlanService } from './plan.service';
 import { of } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
-import { FeatureService } from '../features/feature.service';
+import { FeatureService } from '@features/feature.service';
 
 describe('ScenarioService', () => {
   let service: ScenarioService;
