@@ -23,18 +23,13 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import {
-  DataLayersService,
-  ScenarioService,
-  TreatmentGoalsService,
-} from '@services';
+import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { nameMustBeNew } from '@validators/unique-scenario';
 import {
   DataLayer,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioConfig,
   ScenarioCreation,
   ScenarioV3Config,
   ScenarioV3Payload,
@@ -51,7 +46,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from '@plan/plan-helpers';
 import { FeaturesModule } from '@features/features.module';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
-import { distinctUntilChanged, filter } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
@@ -167,28 +162,10 @@ export class ScenarioCreationComponent implements OnInit {
     map((goal) => goal?.name)
   );
 
-  // TODO: in anticipation of using this within other components...
-  priorityObjectivesDetails$ = this.newScenarioState.scenarioConfig$.pipe(
-    map((config: ScenarioConfig) => config.priority_objectives),
-    filter((ids): ids is number[] => Array.isArray(ids) && ids.length > 0),
-    distinctUntilChanged(
-      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
-    ),
-    switchMap((ids: number[]) =>
-      this.dataLayersService.getDataLayersByIds(ids).pipe(
-        map((layers) => layers ?? ([] as DataLayer[])),
-        catchError((error) => {
-          console.error('Error fetching data layers:', error);
-          return of<DataLayer[]>([]);
-        })
-      )
-    ),
-    shareReplay(1)
-  );
-
-  priorityObjectivesNames$ = this.priorityObjectivesDetails$.pipe(
-    map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
-  );
+  priorityObjectivesNames$ =
+    this.newScenarioState.priorityObjectivesDetails$.pipe(
+      map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
+    );
 
   // Copy of index locally to show the last step as completed
   localIndex = 0;
@@ -216,8 +193,7 @@ export class ScenarioCreationComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private treatmentGoalsService: TreatmentGoalsService,
     private featureService: FeatureService,
-    private mapModuleService: MapModuleService,
-    private dataLayersService: DataLayersService
+    private mapModuleService: MapModuleService
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
