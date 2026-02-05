@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { AsyncPipe, NgClass, NgIf, NgFor } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -82,7 +82,6 @@ import { MapModuleService } from '@services/map-module.service';
   imports: [
     AsyncPipe,
     ReactiveFormsModule,
-    NgFor,
     NgIf,
     StepsComponent,
     CdkStepperModule,
