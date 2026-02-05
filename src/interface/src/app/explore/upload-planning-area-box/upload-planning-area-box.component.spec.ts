@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { UploadPlanningAreaBoxComponent } from '@app/explore/upload-planning-area-box/upload-planning-area-box.component';
+import { MapConfigState } from '@maplibre/map-config.state';
+import { UploadPlanningAreaBoxComponent } from './upload-planning-area-box.component';
 import { MockProvider } from 'ng-mocks';
-import { DrawService } from '@app/maplibre-map/draw.service';
+import { DrawService } from '@maplibre/draw.service';
 
 describe('UploadPlanningAreaBoxComponent', () => {
   let component: UploadPlanningAreaBoxComponent;

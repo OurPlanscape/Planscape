@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef } from '@angular/material/dialog';
-import { GeopackageFailureModalComponent } from '@app/scenario/geopackage-failure-modal/geopackage-failure-modal.component';
+import { GeopackageFailureModalComponent } from './geopackage-failure-modal.component';
 
 describe('GeopackageFailureModalComponent', () => {
   let component: GeopackageFailureModalComponent;

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScenarioSummaryComponent } from '@app/scenario-creation/scenario-summary/scenario-summary.component';
+import { ScenarioSummaryComponent } from './scenario-summary.component';
 import { MockDeclaration } from 'ng-mocks';
 import { SectionComponent } from '@styleguide';
 

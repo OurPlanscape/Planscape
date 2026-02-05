@@ -5,9 +5,9 @@ import {
   Cleanup,
   getExtentFromLngLatBounds,
   syncMaps,
-} from '@app/maplibre-map/maplibre.helper';
-import { ExploreMapComponent } from '@app/maplibre-map/explore-map/explore-map.component';
-import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
+} from '../maplibre.helper';
+import { ExploreMapComponent } from '@maplibre/explore-map/explore-map.component';
+import { MultiMapConfigState } from '../multi-map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()

@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FeatureFlagDirective } from '@app/features/feature-flag.directive';
-import { FeatureService } from '@app/features/feature.service';
-import { FEATURES_JSON } from '@app/features/features-config';
-import { parseFeatureFlags } from '@app/features/features';
+import { FeatureFlagDirective } from './feature-flag.directive';
+import { FeatureService } from './feature.service';
+import { FEATURES_JSON } from './features-config';
+import { parseFeatureFlags } from './features';
 
 @NgModule({
   declarations: [FeatureFlagDirective],

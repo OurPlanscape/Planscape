@@ -5,7 +5,7 @@ import { BehaviorSubject, of } from 'rxjs';
 
 import { AuthService } from '@services';
 import { User } from '@types';
-import { TopBarComponent } from '@shared/top-bar/top-bar.component';
+import { TopBarComponent } from './top-bar.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -13,7 +13,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { LegacyMaterialModule } from '@app/material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { MockDeclarations } from 'ng-mocks';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuHarness } from '@angular/material/menu/testing';

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { AnalyticsService } from '@services/analytics.service';
+import { AnalyticsService } from './analytics.service';
 import { GoogleAnalyticsService } from 'ngx-google-analytics';
 
 // Mock for GoogleAnalyticsService

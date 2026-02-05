@@ -15,7 +15,7 @@ import { BaseLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BASE_LAYERS_DEFAULT, SNACK_ERROR_CONFIG } from '@shared';
-import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersService } from '@services';
 import { MapDataDataSet } from '@types';

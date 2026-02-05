@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DetailsComponent } from '@app/account/details/details.component';
+import { DetailsComponent } from './details.component';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
-import { EditUserFieldComponent } from '@app/account/edit-user-field/edit-user-field.component';
+import { EditUserFieldComponent } from '@account/edit-user-field/edit-user-field.component';
 
 describe('DetailsComponent', () => {
   let component: DetailsComponent;

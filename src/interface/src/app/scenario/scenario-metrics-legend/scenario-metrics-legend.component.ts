@@ -6,7 +6,7 @@ import {
   MatCheckboxModule,
   MatCheckboxChange,
 } from '@angular/material/checkbox';
-import { ScenarioResultsChartsService } from '@app/scenario/scenario-results-charts.service';
+import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()

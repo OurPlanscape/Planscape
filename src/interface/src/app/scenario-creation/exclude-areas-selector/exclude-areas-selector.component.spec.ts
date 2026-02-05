@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ExcludeAreasSelectorComponent } from '@app/scenario-creation/exclude-areas-selector/exclude-areas-selector.component';
+import { ExcludeAreasSelectorComponent } from './exclude-areas-selector.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MockProvider } from 'ng-mocks';
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { BehaviorSubject, of } from 'rxjs';
-import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 describe('ExcludeAreasSelectorComponent', () => {
   let component: ExcludeAreasSelectorComponent;

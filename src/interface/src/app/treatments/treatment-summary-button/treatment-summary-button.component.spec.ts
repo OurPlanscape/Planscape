@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentSummaryButtonComponent } from '@app/treatments/treatment-summary-button/treatment-summary-button.component';
+import { TreatmentSummaryButtonComponent } from './treatment-summary-button.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatmentsState } from '../treatments.state';
 import { BehaviorSubject } from 'rxjs';
 
 describe('TreatmentSummaryButtonComponent', () => {

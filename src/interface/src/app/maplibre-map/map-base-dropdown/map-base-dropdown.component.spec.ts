@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapBaseDropdownComponent } from '@app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
+import { MapBaseDropdownComponent } from './map-base-dropdown.component';
 import { MockProvider } from 'ng-mocks';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapConfigState } from '../map-config.state';
 
 describe('MapBaseDropdownComponent', () => {
   let component: MapBaseDropdownComponent;

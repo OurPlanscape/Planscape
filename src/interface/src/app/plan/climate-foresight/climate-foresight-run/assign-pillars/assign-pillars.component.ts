@@ -17,14 +17,14 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { NamePillarModalComponent } from '@app/plan/climate-foresight/name-pillar-modal/name-pillar-modal.component';
+import { NamePillarModalComponent } from '@plan/climate-foresight/name-pillar-modal/name-pillar-modal.component';
 import { MatDialog } from '@angular/material/dialog';
-import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { ClimateForesightService } from '@services';
 import { ClimateForesightRun, DataLayer, InputDatalayer, Pillar } from '@types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormGroup } from '@angular/forms';
-import { PillarDragAndDrop } from '@app/plan/climate-foresight/climate-foresight-run/climate-foresight-run.component';
+import { PillarDragAndDrop } from '../climate-foresight-run.component';
 
 @Component({
   selector: 'app-assign-pillars',

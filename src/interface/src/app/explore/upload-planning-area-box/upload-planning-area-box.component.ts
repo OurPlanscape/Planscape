@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DrawService } from '@app/maplibre-map/draw.service';
+import { DrawService } from '@maplibre/draw.service';
 import { FileUploadFieldComponent, ModalInfoComponent } from '@styleguide';
 import { InvalidCoordinatesError } from '@services/errors';
 import * as Sentry from '@sentry/browser';

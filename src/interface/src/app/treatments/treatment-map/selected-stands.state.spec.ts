@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
+import { SelectedStandsState } from './selected-stands.state';
 
 describe('SelectedStandsState', () => {
   let service: SelectedStandsState;

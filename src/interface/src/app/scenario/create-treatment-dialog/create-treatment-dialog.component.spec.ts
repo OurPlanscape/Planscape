@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
+import { CreateTreatmentDialogComponent } from './create-treatment-dialog.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { LegacyMaterialModule } from '@app/material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { MockProvider } from 'ng-mocks';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 

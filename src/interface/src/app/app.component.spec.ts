@@ -3,8 +3,8 @@ import { AuthService } from '@services';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { AppComponent } from '@app/app.component';
-import { FeaturesModule } from '@app/features/features.module';
+import { AppComponent } from './app.component';
+import { FeaturesModule } from '@features/features.module';
 import { MockDeclaration } from 'ng-mocks';
 import { TopBarComponent } from '@shared/top-bar/top-bar.component';
 

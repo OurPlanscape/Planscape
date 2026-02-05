@@ -5,7 +5,7 @@ import {
   StoryObj,
 } from '@storybook/angular';
 import { ModalComponent } from '@styleguide/modal/modal.component';
-import { ModalInfoComponent } from '@styleguide/modal-info-box/modal-info.component';
+import { ModalInfoComponent } from './modal-info.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,

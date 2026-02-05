@@ -21,35 +21,29 @@ import {
   ResourceType,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
-import {
-  addRequestHeaders,
-  getBoundsFromGeometry,
-} from '@app/maplibre-map/maplibre.helper';
+import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
-import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
+import { MapConfigState } from '../map-config.state';
+import { baseMapStyles } from '../map-base-layers';
+import { MapBaseLayersComponent } from '@maplibre/map-base-layers/map-base-layers.component';
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
+import { MultiMapConfigState } from '../multi-map-config.state';
 import { firstValueFrom, map, switchMap, take, tap } from 'rxjs';
-import { MapDrawingToolboxComponent } from '@app/maplibre-map/map-drawing-toolbox/map-drawing-toolbox.component';
-import {
-  DefaultSelectConfig,
-  DrawService,
-} from '@app/maplibre-map/draw.service';
-import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { MapDrawingToolboxComponent } from '@maplibre/map-drawing-toolbox/map-drawing-toolbox.component';
+import { DefaultSelectConfig, DrawService } from '../draw.service';
+import { MapTooltipComponent } from '@treatments/map-tooltip/map-tooltip.component';
 import { FeatureId } from 'terra-draw/dist/extend';
-import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
-import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
-import { MapBoundaryLayerComponent } from '@app/maplibre-map/map-boundary-layer/map-boundary-layer.component';
-import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
-import { PlanState } from '@app/plan/plan.state';
+import { MapDataLayerComponent } from '@maplibre/map-data-layer/map-data-layer.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { DataLayersRegistryService } from '@explore/data-layers-registry';
+import { MapLayerColorLegendComponent } from '@maplibre/map-layer-color-legend/map-layer-color-legend.component';
+import { MapBoundaryLayerComponent } from '@maplibre/map-boundary-layer/map-boundary-layer.component';
+import { PlanningAreaLayerComponent } from '@maplibre/planning-area-layer/planning-area-layer.component';
+import { PlanState } from '@plan/plan.state';
 import { DataLayer } from '@types';
 import { MultiMapsStorageService } from '@services/local-storage.service';
-import { FrontendConstants } from '@app/map/map.constants';
+import { FrontendConstants } from '@map/map.constants';
 
 @UntilDestroy()
 @Component({

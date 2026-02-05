@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProcessOverviewComponent } from '@app/scenario-creation/process-overview/process-overview.component';
+import { ProcessOverviewComponent } from './process-overview.component';
 
 describe('ProcessOverviewComponent', () => {
   let component: ProcessOverviewComponent;

@@ -1,10 +1,10 @@
 import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
+import { baseMapStyles } from './map-base-layers';
 import { Extent } from '@types';
 import { filter } from 'rxjs/operators';
 import { BaseMapType, DEFAULT_BASE_MAP } from '@types';
-import { FrontendConstants } from '@app/map/map.constants';
+import { FrontendConstants } from '@map/map.constants';
 
 export type MapInteractionMode = 'draw' | 'view' | 'upload';
 

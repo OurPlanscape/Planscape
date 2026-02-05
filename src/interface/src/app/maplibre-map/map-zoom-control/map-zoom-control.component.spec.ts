@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
+import { MapConfigState } from '../map-config.state';
+import { MapZoomControlComponent } from './map-zoom-control.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { Map as MapLibreMap } from 'maplibre-gl';

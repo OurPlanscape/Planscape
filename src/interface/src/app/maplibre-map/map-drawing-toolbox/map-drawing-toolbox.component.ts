@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
-import { DrawService } from '@app/maplibre-map/draw.service';
+import { DrawService } from '../draw.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({

@@ -7,12 +7,9 @@ import {
   SequenceIconComponent,
   TreatmentTypeIconComponent,
 } from '@styleguide';
-import {
-  PrescriptionAction,
-  PRESCRIPTIONS,
-} from '@app/treatments/prescriptions';
+import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
 import { MatDividerModule } from '@angular/material/divider';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre/map-config.state';
 
 /**
  * Treatment Legend

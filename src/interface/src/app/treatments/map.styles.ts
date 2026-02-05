@@ -5,7 +5,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   SEQUENCE_PATTERNS,
-} from '@app/treatments/prescriptions';
+} from './prescriptions';
 
 export const BASE_COLORS = {
   white: '#FFF',

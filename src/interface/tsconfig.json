@@ -10,6 +10,102 @@
       "@app/*": [
         "src/app/*"
       ],
+      "@account": [
+        "src/app/account"
+      ],
+      "@account/*": [
+        "src/app/account/*"
+      ],
+      "@base-layers": [
+        "src/app/base-layers"
+      ],
+      "@base-layers/*": [
+        "src/app/base-layers/*"
+      ],
+      "@data-layers": [
+        "src/app/data-layers"
+      ],
+      "@data-layers/*": [
+        "src/app/data-layers/*"
+      ],
+      "@explore": [
+        "src/app/explore"
+      ],
+      "@explore/*": [
+        "src/app/explore/*"
+      ],
+      "@features": [
+        "src/app/features"
+      ],
+      "@features/*": [
+        "src/app/features/*"
+      ],
+      "@home": [
+        "src/app/home"
+      ],
+      "@home/*": [
+        "src/app/home/*"
+      ],
+      "@map": [
+        "src/app/map"
+      ],
+      "@map/*": [
+        "src/app/map/*"
+      ],
+      "@maplibre": [
+        "src/app/maplibre-map"
+      ],
+      "@maplibre/*": [
+        "src/app/maplibre-map/*"
+      ],
+      "@material": [
+        "src/app/material"
+      ],
+      "@material/*": [
+        "src/app/material/*"
+      ],
+      "@plan": [
+        "src/app/plan"
+      ],
+      "@plan/*": [
+        "src/app/plan/*"
+      ],
+      "@resolvers": [
+        "src/app/resolvers"
+      ],
+      "@resolvers/*": [
+        "src/app/resolvers/*"
+      ],
+      "@scenario": [
+        "src/app/scenario"
+      ],
+      "@scenario/*": [
+        "src/app/scenario/*"
+      ],
+      "@scenario-creation": [
+        "src/app/scenario-creation"
+      ],
+      "@scenario-creation/*": [
+        "src/app/scenario-creation/*"
+      ],
+      "@standalone": [
+        "src/app/standalone"
+      ],
+      "@standalone/*": [
+        "src/app/standalone/*"
+      ],
+      "@treatments": [
+        "src/app/treatments"
+      ],
+      "@treatments/*": [
+        "src/app/treatments/*"
+      ],
+      "@validators": [
+        "src/app/validators"
+      ],
+      "@validators/*": [
+        "src/app/validators/*"
+      ],
       "@services": [
         "src/app/services"
       ],

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExpandedPanelComponent } from '@styleguide/expanded-panel/expanded-panel.component';
+import { ExpandedPanelComponent } from './expanded-panel.component';
 
 describe('ExpandedPanelComponent', () => {
   let component: ExpandedPanelComponent;

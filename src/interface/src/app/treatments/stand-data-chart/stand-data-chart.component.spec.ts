@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { StandDataChartComponent } from '@app/treatments/stand-data-chart/stand-data-chart.component';
+import { StandDataChartComponent } from './stand-data-chart.component';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { MockProvider } from 'ng-mocks';
-import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { BehaviorSubject } from 'rxjs';
-import { METRICS } from '@app/treatments/metrics';
+import { METRICS } from '../metrics';
 
 describe('StandDataChartComponent', () => {
   let component: StandDataChartComponent;

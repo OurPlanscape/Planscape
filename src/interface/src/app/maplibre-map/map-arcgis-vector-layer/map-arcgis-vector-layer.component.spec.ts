@@ -5,10 +5,10 @@ import {
   MockProvider,
   MockRender,
 } from 'ng-mocks';
-import { MapArcgisVectorLayerComponent } from '@app/maplibre-map/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
+import { MapArcgisVectorLayerComponent } from './map-arcgis-vector-layer.component';
 import { MapLayerMouseEvent } from 'maplibre-gl';
 import { of } from 'rxjs';
-import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 function createMapSpy() {
   return jasmine.createSpyObj('MapLibreMap', [

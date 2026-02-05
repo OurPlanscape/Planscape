@@ -15,11 +15,11 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
-} from '@app/treatments/prescriptions';
-import { TreatmentsState } from '@app/treatments/treatments.state';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { LeftLoadingOverlayComponent } from '@app/treatments/left-loading-overlay/left-loading-overlay.component';
-import { FeaturesModule } from '@app/features/features.module';
+} from '../prescriptions';
+import { TreatmentsState } from '../treatments.state';
+import { MapConfigState } from '@maplibre/map-config.state';
+import { LeftLoadingOverlayComponent } from '@treatments/left-loading-overlay/left-loading-overlay.component';
+import { FeaturesModule } from '@features/features.module';
 
 @Component({
   selector: 'app-project-area-tx-tab',

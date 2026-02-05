@@ -21,17 +21,17 @@ import {
   planningAreaMetricsAreReady,
   planningAreaMetricsFailed,
   POLLING_INTERVAL,
-} from '@app/plan/plan-helpers';
+} from '@plan/plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
 import { SNACK_ERROR_CONFIG } from '@shared';
-import { canAddScenario } from '@app/plan/permissions';
+import { canAddScenario } from '@plan/permissions';
 import { MatTab } from '@angular/material/tabs';
-import { UploadProjectAreasModalComponent } from '@app/plan/upload-project-areas-modal/upload-project-areas-modal.component';
-import { ScenarioCreateConfirmationComponent } from '@app/plan/scenario-create-confirmation/scenario-create-confirmation.component';
+import { UploadProjectAreasModalComponent } from '@plan/upload-project-areas-modal/upload-project-areas-modal.component';
+import { ScenarioCreateConfirmationComponent } from '@plan/scenario-create-confirmation/scenario-create-confirmation.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { ScenarioSetupModalComponent } from '@app/scenario/scenario-setup-modal/scenario-setup-modal.component';
-import { PlanState } from '@app/plan/plan.state';
+import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
+import { PlanState } from '@plan/plan.state';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface ScenarioRow extends Scenario {

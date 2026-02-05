@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
 
-import { NoResultsComponent } from '@styleguide/no-results/no-results.component';
+import { NoResultsComponent } from './no-results.component';
 
 const meta: Meta<NoResultsComponent> = {
   title: 'Components/No Results',

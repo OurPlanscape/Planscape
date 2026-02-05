@@ -7,32 +7,32 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
-import { ClimateForesightRunCardComponent } from '@app/plan/climate-foresight/climate-foresight-run-card/climate-foresight-run-card.component';
+import { ClimateForesightRunCardComponent } from '@plan/climate-foresight/climate-foresight-run-card/climate-foresight-run-card.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PlanState } from '@app/plan/plan.state';
+import { PlanState } from '../plan.state';
 import { SharedModule } from '@shared/shared.module';
 import { Plan, ClimateForesightRun } from '@types';
 import { take, map, switchMap, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { ClimateForesightService } from '@services/climate-foresight.service';
-import { DeleteRunModalComponent } from '@app/plan/climate-foresight/delete-run-modal/delete-run-modal.component';
+import { DeleteRunModalComponent } from '@plan/climate-foresight/delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { ButtonComponent, SectionComponent } from '@styleguide';
-import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '@maplibre/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
   RequestTransformFunction,
   ResourceType,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre/map-config.state';
 import {
   addRequestHeaders,
   getBoundsFromGeometry,
-} from '@app/maplibre-map/maplibre.helper';
-import { FrontendConstants } from '@app/map/map.constants';
+} from '@maplibre/maplibre.helper';
+import { FrontendConstants } from '@map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { NewAnalysisModalComponent } from '@app/plan/climate-foresight/new-analysis-modal/new-analysis-modal.component';
+import { NewAnalysisModalComponent } from '@plan/climate-foresight/new-analysis-modal/new-analysis-modal.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 

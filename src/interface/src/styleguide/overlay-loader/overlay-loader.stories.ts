@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OverlayLoaderComponent } from '@styleguide/overlay-loader/overlay-loader.component';
+import { OverlayLoaderComponent } from './overlay-loader.component';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
 
 @Component({

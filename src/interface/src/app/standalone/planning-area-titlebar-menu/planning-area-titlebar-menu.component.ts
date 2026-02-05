@@ -3,7 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterLink } from '@angular/router';
 import { Plan, PreviewPlan } from '@types';
-import { canDeletePlanningArea } from '@app/plan/permissions';
+import { canDeletePlanningArea } from '@plan/permissions';
 import { take } from 'rxjs';
 import { SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
@@ -14,7 +14,7 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { ButtonComponent } from '@styleguide';
-import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-planning-area-titlebar-menu',

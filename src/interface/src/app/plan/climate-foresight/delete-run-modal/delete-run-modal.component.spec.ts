@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DeleteRunModalComponent } from '@app/plan/climate-foresight/delete-run-modal/delete-run-modal.component';
+import { DeleteRunModalComponent } from './delete-run-modal.component';
 
 describe('DeleteRunModalComponent', () => {
   let component: DeleteRunModalComponent;

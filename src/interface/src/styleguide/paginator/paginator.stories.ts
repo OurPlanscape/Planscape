@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { PaginatorComponent } from '@styleguide/paginator/paginator.component';
+import { PaginatorComponent } from './paginator.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<PaginatorComponent> = {

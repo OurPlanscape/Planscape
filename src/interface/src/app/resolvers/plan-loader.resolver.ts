@@ -5,7 +5,7 @@ import {
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
-import { PlanState } from '@app/plan/plan.state';
+import { PlanState } from '@plan/plan.state';
 
 /**
  * Returns the id of the plan from route params

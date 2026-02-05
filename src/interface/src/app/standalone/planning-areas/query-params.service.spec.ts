@@ -3,7 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
-} from '@app/standalone/planning-areas/query-params.service';
+} from './query-params.service';
 import { ActivatedRoute, Router, UrlTree } from '@angular/router';
 import { Location } from '@angular/common';
 import { Sort } from '@angular/material/sort';

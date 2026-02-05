@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { SearchResultCardComponent } from '@styleguide/search-result-card/search-result-card.component';
+import { SearchResultCardComponent } from './search-result-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { TreatmentProjectArea } from '@types';
 

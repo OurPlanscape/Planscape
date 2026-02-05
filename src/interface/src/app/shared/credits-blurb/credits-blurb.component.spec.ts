@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CreditsBlurbComponent } from '@shared/credits-blurb/credits-blurb.component';
+import { CreditsBlurbComponent } from './credits-blurb.component';
 
 describe('CreditsBlurbComponent', () => {
   let component: CreditsBlurbComponent;

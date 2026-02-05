@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PlanningAreasComponent } from '@app/standalone/planning-areas/planning-areas.component';
+import { PlanningAreasComponent } from './planning-areas.component';
 import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
-} from '@app/standalone/planning-areas/query-params.service';
+} from './query-params.service';
 import { AuthService, PlanService } from '@services';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Sort } from '@angular/material/sort';
 import { BehaviorSubject, of } from 'rxjs';
-import { PlanningAreasDataSource } from '@app/standalone/planning-areas/planning-areas.datasource';
+import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MockProvider } from 'ng-mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 

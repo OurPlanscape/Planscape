@@ -4,7 +4,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { StepsComponent } from '@styleguide/steps/steps.component';
+import { StepsComponent } from './steps.component';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { Component, ViewChild } from '@angular/core';
 import {
@@ -14,7 +14,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { of, throwError } from 'rxjs';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 
 @Component({

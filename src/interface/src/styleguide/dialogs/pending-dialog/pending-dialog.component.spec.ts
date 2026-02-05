@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PendingDialogComponent } from '@styleguide/dialogs/pending-dialog/pending-dialog.component';
+import { PendingDialogComponent } from './pending-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 describe('PendingDialogComponent', () => {

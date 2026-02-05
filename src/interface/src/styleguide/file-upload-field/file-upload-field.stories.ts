@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { FileUploadFieldComponent } from '@styleguide/file-upload-field/file-upload-field.component';
+import { FileUploadFieldComponent } from './file-upload-field.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<FileUploadFieldComponent> = {

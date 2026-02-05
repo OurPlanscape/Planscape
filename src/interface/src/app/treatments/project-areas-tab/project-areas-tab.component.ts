@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatmentsState } from '../treatments.state';
 import { Prescription, TreatmentSummary } from '@types';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -16,7 +16,7 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
-} from '@app/treatments/prescriptions';
+} from '../prescriptions';
 
 @Component({
   selector: 'app-project-areas-tab',

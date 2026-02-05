@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NonForestedDataComponent } from '@app/treatments/non-forested-data/non-forested-data.component';
+import { NonForestedDataComponent } from './non-forested-data.component';
 import { MockProvider, MockProviders } from 'ng-mocks';
-import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { TreatmentsState } from '../treatments.state';
 import { TreatmentsService } from '@services/treatments.service';
 import { of } from 'rxjs';
 

@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StandLevelConstraintsComponent } from '@app/scenario-creation/step3/stand-level-constraints.component';
+import { StandLevelConstraintsComponent } from './stand-level-constraints.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxMaskModule } from 'ngx-mask';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MockProvider } from 'ng-mocks';
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { BehaviorSubject, of } from 'rxjs';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '@types';

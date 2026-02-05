@@ -1,5 +1,5 @@
 import { FormControl } from '@angular/forms';
-import { nameMustBeNew } from '@app/validators/unique-scenario';
+import { nameMustBeNew } from './unique-scenario';
 
 describe('Scenario name validators', () => {
   describe('nameMustBeNew (sync validator)', () => {

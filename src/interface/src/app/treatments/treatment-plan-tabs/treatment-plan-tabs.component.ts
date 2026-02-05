@@ -1,11 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { ProjectAreasTabComponent } from '@app/treatments/project-areas-tab/project-areas-tab.component';
-import { FeaturesModule } from '@app/features/features.module';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
+import { ProjectAreasTabComponent } from '@treatments/project-areas-tab/project-areas-tab.component';
+import { FeaturesModule } from '@features/features.module';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { skip } from 'rxjs';
 
 @UntilDestroy()

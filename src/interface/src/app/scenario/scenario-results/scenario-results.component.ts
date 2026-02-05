@@ -3,19 +3,16 @@ import { NgIf } from '@angular/common';
 import { ScenarioResult, UsageType } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '@shared/files';
-import { ScenarioResultsChartsService } from '@app/scenario/scenario-results-charts.service';
-import { TreatmentOpportunityChartComponent } from '@app/scenario/treatment-opportunity-chart/treatment-opportunity-chart.component';
+import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
+import { TreatmentOpportunityChartComponent } from '@scenario/treatment-opportunity-chart/treatment-opportunity-chart.component';
 import { ButtonComponent, SectionComponent } from '@styleguide';
-import { CumulativeAttainmentChartComponent } from '@app/scenario/cumulative-attainment-chart/cumulative-attainment-chart.component';
+import { CumulativeAttainmentChartComponent } from '@scenario/cumulative-attainment-chart/cumulative-attainment-chart.component';
 import {
   ProjectAreaReport,
   ProjectAreasComponent,
-} from '@app/plan/project-areas/project-areas.component';
-import { ScenarioMetricsLegendComponent } from '@app/scenario/scenario-metrics-legend/scenario-metrics-legend.component';
-import {
-  hasAnalytics,
-  parseResultsToProjectAreas,
-} from '@app/plan/plan-helpers';
+} from '@plan/project-areas/project-areas.component';
+import { ScenarioMetricsLegendComponent } from '@scenario/scenario-metrics-legend/scenario-metrics-legend.component';
+import { hasAnalytics, parseResultsToProjectAreas } from '@plan/plan-helpers';
 import { getGroupedAttainment } from '@app/chart-helper';
 
 @Component({

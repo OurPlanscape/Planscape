@@ -17,41 +17,41 @@ import {
   MapMouseEvent,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { MapStandsComponent } from '@app/treatments/map-stands/map-stands.component';
-import { MapRectangleComponent } from '@app/treatments/map-rectangle/map-rectangle.component';
-import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapStandsComponent } from '@treatments/map-stands/map-stands.component';
+import { MapRectangleComponent } from '@treatments/map-rectangle/map-rectangle.component';
+import { MapActionButtonComponent } from '@treatments/map-action-button/map-action-button.component';
+import { MapConfigState } from '@maplibre/map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
-import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { MapTooltipComponent } from '@treatments/map-tooltip/map-tooltip.component';
 import { AuthService } from '@services';
-import { TreatmentsState } from '@app/treatments/treatments.state';
-import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
-import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
+import { TreatmentsState } from '../treatments.state';
+import { addRequestHeaders } from '@maplibre/maplibre.helper';
+import { PlanningAreaLayerComponent } from '@maplibre/planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, Observable, Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
-import { canEditTreatmentPlan } from '@app/plan/permissions';
+import { SelectedStandsState } from './selected-stands.state';
+import { canEditTreatmentPlan } from '@plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
-import { FeaturesModule } from '@app/features/features.module';
-import { MapBaseDropdownComponent } from '@app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
-import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
+import { FeaturesModule } from '@features/features.module';
+import { MapBaseDropdownComponent } from '@maplibre/map-base-dropdown/map-base-dropdown.component';
+import { MapNavbarComponent } from '@maplibre/map-nav-bar/map-nav-bar.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { MapProjectAreasComponent } from '@maplibre/map-project-areas/map-project-areas.component';
 import { TreatmentProjectArea } from '@types';
-import { DataLayerNameComponent } from '@app/data-layers/data-layer-name/data-layer-name.component';
+import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PlanState } from '@app/plan/plan.state';
-import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
-import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
-import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
-import { RxSelectionToggleComponent } from '@app/maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
+import { PlanState } from '@plan/plan.state';
+import { MapLayerColorLegendComponent } from '@maplibre/map-layer-color-legend/map-layer-color-legend.component';
+import { MapDataLayerComponent } from '@maplibre/map-data-layer/map-data-layer.component';
+import { MapZoomControlComponent } from '@maplibre/map-zoom-control/map-zoom-control.component';
+import { RxSelectionToggleComponent } from '@maplibre/rx-selection-toggle/rx-selection-toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
-import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
-import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
-import { FrontendConstants } from '@app/map/map.constants';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { MapBaseLayersComponent } from '@maplibre/map-base-layers/map-base-layers.component';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
+import { FrontendConstants } from '@map/map.constants';
 
 @UntilDestroy()
 @Component({

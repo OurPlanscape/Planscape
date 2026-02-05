@@ -1,7 +1,7 @@
 import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapRectangleComponent } from '@app/treatments/map-rectangle/map-rectangle.component';
+import { MapRectangleComponent } from './map-rectangle.component';
 import {
   GeoJSONSourceComponent,
   LayerComponent,

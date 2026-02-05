@@ -1,15 +1,15 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
-import { ScenarioService } from '@services/scenario.service';
+import { ScenarioService } from './scenario.service';
 import { Scenario, ScenarioConfig } from '@types';
 import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { PlanService } from '@services/plan.service';
+import { PlanService } from './plan.service';
 import { of } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
-import { FeatureService } from '@app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 
 describe('ScenarioService', () => {
   let service: ScenarioService;

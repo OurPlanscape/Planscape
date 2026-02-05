@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
+import { MapActionButtonComponent } from './map-action-button.component';
 import { MockDeclarations } from 'ng-mocks';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';

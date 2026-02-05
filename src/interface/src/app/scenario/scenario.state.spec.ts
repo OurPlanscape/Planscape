@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ScenarioState } from '@app/scenario/scenario.state';
+import { ScenarioState } from './scenario.state';
 import { ScenarioService } from '@services';
 import { Scenario } from '@types';
 import { of, throwError } from 'rxjs';

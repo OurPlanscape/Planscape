@@ -2,15 +2,15 @@ import { Component, Input } from '@angular/core';
 import { Scenario } from '@types';
 import { map, Observable } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { TreatmentsTabComponent } from '@app/scenario/treatments-tab/treatments-tab.component';
-import { NewTreatmentFooterComponent } from '@app/scenario/new-treatment-footer/new-treatment-footer.component';
+import { TreatmentsTabComponent } from '@scenario/treatments-tab/treatments-tab.component';
+import { NewTreatmentFooterComponent } from '@scenario/new-treatment-footer/new-treatment-footer.component';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { PlanState } from '@app/plan/plan.state';
-import { userCanAddTreatmentPlan } from '@app/plan/permissions';
-import { scenarioCanHaveTreatmentPlans } from '@app/scenario/scenario-helper';
-import { ScenarioState } from '@app/scenario/scenario.state';
+import { PlanState } from '@plan/plan.state';
+import { userCanAddTreatmentPlan } from '@plan/permissions';
+import { scenarioCanHaveTreatmentPlans } from '../scenario-helper';
+import { ScenarioState } from '../scenario.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { getPlanPath } from '@app/plan/plan-helpers';
+import { getPlanPath } from '@plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
 
 @UntilDestroy()

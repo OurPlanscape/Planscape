@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
+import { SuccessDialogComponent } from './success-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 describe('SuccessDialogComponent', () => {

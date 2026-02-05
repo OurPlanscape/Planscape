@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
-import { StatusChipComponent } from '@styleguide/status-chip/status-chip.component';
+import { StatusChipComponent } from './status-chip.component';
 
 const meta: Meta<StatusChipComponent> = {
   title: 'Components/Status Chip',

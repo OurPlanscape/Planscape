@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { ScenarioCardComponent } from '@styleguide/scenario-card/scenario-card.component';
+import { ScenarioCardComponent } from './scenario-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<ScenarioCardComponent> = {

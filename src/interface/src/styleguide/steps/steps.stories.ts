@@ -6,7 +6,7 @@ import {
 } from '@storybook/angular';
 
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { StepsComponent } from '@styleguide/steps/steps.component';
+import { StepsComponent } from './steps.component';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
 import { mergeMap, of, throwError, timer } from 'rxjs';
-import { StepComponent, StepDirective } from '@styleguide/steps/step.component';
+import { StepComponent, StepDirective } from './step.component';
 
 // interface just for testing
 interface Person {

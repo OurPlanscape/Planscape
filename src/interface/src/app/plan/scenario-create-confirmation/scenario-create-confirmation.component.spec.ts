@@ -4,7 +4,7 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { ScenarioCreateConfirmationComponent } from '@app/plan/scenario-create-confirmation/scenario-create-confirmation.component';
+import { ScenarioCreateConfirmationComponent } from './scenario-create-confirmation.component';
 
 describe('ScenarioCreateConfirmationComponent', () => {
   let component: ScenarioCreateConfirmationComponent;

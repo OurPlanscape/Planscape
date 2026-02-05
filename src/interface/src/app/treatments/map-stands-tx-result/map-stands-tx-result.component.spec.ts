@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MapStandsTxResultComponent } from '@app/treatments/map-stands-tx-result/map-stands-tx-result.component';
+import { MapStandsTxResultComponent } from './map-stands-tx-result.component';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
-import { METRICS } from '@app/treatments/metrics';
+import { METRICS } from '../metrics';
 import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
-import { TreatmentsState } from '@app/treatments/treatments.state';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { TreatmentsState } from '../treatments.state';
+import { MapConfigState } from '@maplibre/map-config.state';
 
 describe('MapStandsTxResultComponent', () => {
   let component: MapStandsTxResultComponent;

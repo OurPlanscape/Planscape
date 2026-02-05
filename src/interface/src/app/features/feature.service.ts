@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { FEATURES_JSON, FeaturesConfig } from '@app/features/features-config';
+import { FEATURES_JSON, FeaturesConfig } from './features-config';
 
 @Injectable({
   providedIn: 'root',

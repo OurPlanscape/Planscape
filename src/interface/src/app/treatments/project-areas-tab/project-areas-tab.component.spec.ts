@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProjectAreasTabComponent } from '@app/treatments/project-areas-tab/project-areas-tab.component';
+import { ProjectAreasTabComponent } from './project-areas-tab.component';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ProjectAreasTabComponent', () => {

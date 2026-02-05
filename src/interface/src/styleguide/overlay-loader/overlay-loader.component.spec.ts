@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { OverlayLoaderComponent } from '@styleguide/overlay-loader/overlay-loader.component';
+import { OverlayLoaderComponent } from './overlay-loader.component';
 
 describe('OverlayLoaderComponent', () => {
   let component: OverlayLoaderComponent;

@@ -3,7 +3,7 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { TreatmentsService } from '@services/treatments.service';
+import { TreatmentsService } from './treatments.service';
 import { TreatmentPlan } from '@types';
 
 describe('TreatmentsService', () => {

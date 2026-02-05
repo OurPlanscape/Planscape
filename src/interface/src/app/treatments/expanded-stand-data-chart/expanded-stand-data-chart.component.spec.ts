@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ExpandedStandDataChartComponent } from '@app/treatments/expanded-stand-data-chart/expanded-stand-data-chart.component';
+import { ExpandedStandDataChartComponent } from './expanded-stand-data-chart.component';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
-import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { StandDataChartComponent } from '@app/treatments/stand-data-chart/stand-data-chart.component';
+import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data-chart.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ExpandedStandDataChartComponent', () => {

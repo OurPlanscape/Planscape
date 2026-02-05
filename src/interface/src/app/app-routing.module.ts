@@ -6,7 +6,7 @@ import {
   Routes,
   TitleStrategy,
 } from '@angular/router';
-import { HomeComponent } from '@app/home/home.component';
+import { HomeComponent } from '@home/home.component';
 import {
   AuthGuard,
   DevelopmentRouteGuard,
@@ -14,12 +14,12 @@ import {
   RedirectGuard,
   redirectResolver,
 } from '@services';
-import { numberResolver } from '@app/resolvers/number.resolver';
+import { numberResolver } from '@resolvers/number.resolver';
 import {
   planLoaderResolver,
   planResetResolver,
-} from '@app/resolvers/plan-loader.resolver';
-import { scenarioLoaderResolver } from '@app/resolvers/scenario-loader.resolver';
+} from '@resolvers/plan-loader.resolver';
+import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 
 const routes: Routes = [
   {
@@ -31,7 +31,7 @@ const routes: Routes = [
         path: 'login',
         title: 'Login',
         loadComponent: () =>
-          import('@app/standalone/login/login.component').then(
+          import('@standalone/login/login.component').then(
             (m) => m.LoginComponent
           ),
       },
@@ -40,17 +40,17 @@ const routes: Routes = [
         title: 'Password reset',
         resolve: { passwordResetToken: passwordResetTokenResolver },
         loadComponent: () =>
-          import(
-            '@app/standalone/password-reset/password-reset.component'
-          ).then((m) => m.PasswordResetComponent),
+          import('@standalone/password-reset/password-reset.component').then(
+            (m) => m.PasswordResetComponent
+          ),
       },
       {
         path: 'reset',
         title: 'Forget password',
         loadComponent: () =>
-          import(
-            '@app/standalone/forget-password/forget-password.component'
-          ).then((m) => m.ForgetPasswordComponent),
+          import('@standalone/forget-password/forget-password.component').then(
+            (m) => m.ForgetPasswordComponent
+          ),
       },
       {
         path: 'home',
@@ -62,7 +62,7 @@ const routes: Routes = [
         title: 'Signup',
         resolve: { redirectUrl: redirectResolver },
         loadComponent: () =>
-          import('@app/standalone/signup/signup.component').then(
+          import('@standalone/signup/signup.component').then(
             (m) => m.SignupComponent
           ),
       },
@@ -70,7 +70,7 @@ const routes: Routes = [
         path: 'thankyou',
         title: 'Thank You',
         loadComponent: () =>
-          import('@app/standalone/thank-you/thank-you.component').then(
+          import('@standalone/thank-you/thank-you.component').then(
             (m) => m.ThankYouComponent
           ),
       },
@@ -80,7 +80,7 @@ const routes: Routes = [
         canActivate: [DevelopmentRouteGuard],
         loadComponent: () =>
           import(
-            '@app/standalone/sentry-error-test/sentry-error-test.component'
+            '@standalone/sentry-error-test/sentry-error-test.component'
           ).then((m) => m.SentryErrorTestComponent),
       },
       {
@@ -88,7 +88,7 @@ const routes: Routes = [
         title: 'Account E-mail Validation',
         loadComponent: () =>
           import(
-            '@app/standalone/account-validation/account-validation.component'
+            '@standalone/account-validation/account-validation.component'
           ).then((m) => m.AccountValidationComponent),
       },
 
@@ -96,7 +96,7 @@ const routes: Routes = [
         path: 'explore',
         title: 'Explore',
         loadComponent: () =>
-          import('@app/explore/explore/explore.component').then(
+          import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
           ),
         resolve: {
@@ -107,7 +107,7 @@ const routes: Routes = [
         path: 'explore/:planId',
         title: 'Explore',
         loadComponent: () =>
-          import('@app/explore/explore/explore.component').then(
+          import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
           ),
 
@@ -147,7 +147,7 @@ const routes: Routes = [
         path: 'plan',
 
         loadChildren: () =>
-          import('@app/plan/plan.module').then((m) => m.PlanModule),
+          import('@plan/plan.module').then((m) => m.PlanModule),
       },
       {
         path: 'plan/:planId/scenario',
@@ -156,7 +156,7 @@ const routes: Routes = [
         },
 
         loadChildren: () =>
-          import('@app/scenario/scenario.module').then((m) => m.ScenarioModule),
+          import('@scenario/scenario.module').then((m) => m.ScenarioModule),
       },
       {
         // follow the route structure of plan, but without nesting modules and components
@@ -168,14 +168,14 @@ const routes: Routes = [
           scenarioInit: scenarioLoaderResolver,
         },
         loadChildren: () =>
-          import('@app/treatments/treatments.module').then(
+          import('@treatments/treatments.module').then(
             (m) => m.TreatmentsModule
           ),
       },
       {
         path: 'account',
         loadChildren: () =>
-          import('@app/account/account.module').then((m) => m.AccountModule),
+          import('@account/account.module').then((m) => m.AccountModule),
       },
       { path: '**', redirectTo: 'home', pathMatch: 'full' },
     ],

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { FilterDropdownComponent } from '@styleguide/filter-dropdown/filter-dropdown.component';
+import { FilterDropdownComponent } from './filter-dropdown.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<FilterDropdownComponent<string>> = {

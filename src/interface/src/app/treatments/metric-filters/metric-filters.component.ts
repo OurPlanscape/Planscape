@@ -2,14 +2,14 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { AsyncPipe, NgFor } from '@angular/common';
 
-import { MetricSelectorComponent } from '@app/treatments/metric-selector/metric-selector.component';
+import { MetricSelectorComponent } from '@treatments/metric-selector/metric-selector.component';
 import {
   ImpactsMetric,
   ImpactsMetricSlot,
   Metric,
   METRICS,
   SLOT_COLORS,
-} from '@app/treatments/metrics';
+} from '../metrics';
 import { FilterDropdownComponent } from '@styleguide';
 
 @Component({

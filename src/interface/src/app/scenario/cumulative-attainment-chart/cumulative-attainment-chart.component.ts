@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ScenarioResult } from '@types';
-import { processCumulativeAttainment } from '@app/plan/plan-helpers';
+import { processCumulativeAttainment } from '@plan/plan-helpers';
 import {
   ChartDataset,
   ChartOptions,
@@ -16,7 +16,7 @@ import {
   chartTooltipBaseConfig,
 } from '@app/chart-helper';
 import { ChartComponent } from '@styleguide';
-import { ScenarioResultsChartsService } from '@app/scenario/scenario-results-charts.service';
+import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BehaviorSubject } from 'rxjs';
 

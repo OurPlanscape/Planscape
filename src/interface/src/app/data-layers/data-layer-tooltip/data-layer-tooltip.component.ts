@@ -6,7 +6,7 @@ import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
 import { DataLayersService } from '@services/data-layers.service';
 import { Observable, shareReplay, take } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
-import { AccountRoutingModule } from '@app/account/account-routing.module';
+import { AccountRoutingModule } from '@account/account-routing.module';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()

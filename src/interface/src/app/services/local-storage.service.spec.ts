@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { BaseLocalStorageService } from '@services/local-storage.service';
+import { BaseLocalStorageService } from './local-storage.service';
 
 interface TestData {
   key1: string;

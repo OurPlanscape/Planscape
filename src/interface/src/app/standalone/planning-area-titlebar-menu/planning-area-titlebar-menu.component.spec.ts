@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PlanningAreaTitlebarMenuComponent } from '@app/standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
+import { PlanningAreaTitlebarMenuComponent } from './planning-area-titlebar-menu.component';
 import { MockProvider } from 'ng-mocks';
 import { AuthService, PlanService } from '@services';
 

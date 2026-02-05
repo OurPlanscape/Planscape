@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { LegacyMaterialModule } from '@app/material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { FileUploaderComponent } from '@shared/file-uploader/file-uploader.component';
 import { NavBarComponent } from '@shared/nav-bar/nav-bar.component';
-import { FeaturesModule } from '@app/features/features.module';
+import { FeaturesModule } from '@features/features.module';
 import { RouterLink } from '@angular/router';
 import { TypeSafeMatCellDef } from '@shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
 import { FieldAlertComponent } from '@shared/field-alert/field-alert.component';

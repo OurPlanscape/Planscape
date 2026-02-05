@@ -6,7 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
 
 import { AuthService } from '@services';
-import { ForgetPasswordComponent } from '@app/standalone/forget-password/forget-password.component';
+import { ForgetPasswordComponent } from './forget-password.component';
 import { MatDialogModule } from '@angular/material/dialog';
 
 describe('ForgetPasswordComponent', () => {

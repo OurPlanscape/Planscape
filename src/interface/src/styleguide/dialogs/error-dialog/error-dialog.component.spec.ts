@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ErrorDialogComponent } from '@styleguide/dialogs/error-dialog/error-dialog.component';
+import { ErrorDialogComponent } from './error-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 describe('ErrorDialogComponent', () => {

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { UploadProjectAreasModalComponent } from '@app/plan/upload-project-areas-modal/upload-project-areas-modal.component';
+import { UploadProjectAreasModalComponent } from './upload-project-areas-modal.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {
   MatDialogModule,

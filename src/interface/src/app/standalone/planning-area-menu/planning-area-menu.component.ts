@@ -7,21 +7,21 @@ import {
   canDeletePlanningArea,
   canEditPlanName,
   canViewCollaborators,
-} from '@app/plan/permissions';
+} from '@plan/permissions';
 import { take } from 'rxjs';
 import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SharePlanDialogComponent } from '@app/home/share-plan-dialog/share-plan-dialog.component';
+import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
 import {
   MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { CreatePlanDialogComponent } from '@app/explore/create-plan-dialog/create-plan-dialog.component';
+import { CreatePlanDialogComponent } from '@explore/create-plan-dialog/create-plan-dialog.component';
 import { NgIf } from '@angular/common';
-import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({

@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
 import { BannerComponent, ModalComponent } from '@styleguide';
-import {
-  PrescriptionAction,
-  PRESCRIPTIONS,
-} from '@app/treatments/prescriptions';
+import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
-import { KeyPipe } from '@app/standalone/key.pipe';
+import { KeyPipe } from '@standalone/key.pipe';
 import { MatRadioModule } from '@angular/material/radio';
 import {
   FormControl,
@@ -14,14 +11,14 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
+import { TreatmentsState } from '../treatments.state';
 
-import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
+import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { combineLatest, map, take } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
-import { FeatureService } from '@app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';

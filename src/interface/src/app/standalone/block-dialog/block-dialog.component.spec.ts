@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BlockDialogComponent } from '@app/standalone/block-dialog/block-dialog.component';
+import { BlockDialogComponent } from './block-dialog.component';
 import { ModalComponent } from '@styleguide';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 

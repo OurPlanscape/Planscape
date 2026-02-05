@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { SearchResultCardComponent } from '@styleguide/search-result-card/search-result-card.component';
-import { PRESCRIPTIONS } from '@app/treatments/prescriptions';
+import { SearchResultCardComponent } from './search-result-card.component';
+import { PRESCRIPTIONS } from '@treatments/prescriptions';
 import { TreatmentProjectArea } from '@types';
 
 describe('SearchResultCardComponent', () => {

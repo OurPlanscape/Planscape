@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { CustomCobenefitsComponent } from '@app/scenario-creation/custom-cobenefits/custom-cobenefits.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { CustomCobenefitsComponent } from './custom-cobenefits.component';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 
 describe('CustomCobenefitsComponent', () => {
   let component: CustomCobenefitsComponent;

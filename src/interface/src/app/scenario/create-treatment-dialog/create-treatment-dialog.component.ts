@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { LegacyMaterialModule } from '@app/material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import {
   InputDirective,
   InputFieldComponent,

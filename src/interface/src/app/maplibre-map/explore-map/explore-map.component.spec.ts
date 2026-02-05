@@ -1,19 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExploreMapComponent } from '@app/maplibre-map/explore-map/explore-map.component';
+import { ExploreMapComponent } from './explore-map.component';
 import { MockProvider, MockProviders } from 'ng-mocks';
-import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
-import {
-  MapConfigState,
-  MapInteractionMode,
-} from '@app/maplibre-map/map-config.state';
+import { MultiMapConfigState } from '../multi-map-config.state';
+import { MapConfigState, MapInteractionMode } from '../map-config.state';
 import { AuthService, DataLayersService } from '@services';
-import { DrawService } from '@app/maplibre-map/draw.service';
+import { DrawService } from '../draw.service';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
-import { PlanState } from '@app/plan/plan.state';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { PlanState } from '@plan/plan.state';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapModuleService } from '@services/map-module.service';
-import { FeaturesModule } from '@app/features/features.module';
+import { FeaturesModule } from '@features/features.module';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
 describe('ExploreMapComponent', () => {

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 
-import { FeatureService } from '@app/features/feature.service';
-import { FeaturesModule } from '@app/features/features.module';
-import { FEATURES_JSON } from '@app/features/features-config';
+import { FeatureService } from './feature.service';
+import { FeaturesModule } from './features.module';
+import { FEATURES_JSON } from './features-config';
 
 describe('FeatureService', () => {
   let service: FeatureService;

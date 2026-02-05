@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MockProvider } from 'ng-mocks';
-import { ExploreModesToggleComponent } from '@app/maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
+import { ExploreModesToggleComponent } from './explore-modes-toggle.component';
+import { MapConfigState } from '../map-config.state';
+import { MultiMapConfigState } from '../multi-map-config.state';
 import { MatDialogModule } from '@angular/material/dialog';
-import { DrawService } from '@app/maplibre-map/draw.service';
+import { DrawService } from '../draw.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ExploreModesToggleComponent', () => {

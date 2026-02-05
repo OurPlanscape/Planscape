@@ -5,8 +5,8 @@ import {
   moduleMetadata,
 } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { InputDirective } from '@styleguide/input/input.directive';
-import { InputFieldComponent } from '@styleguide/input/input-field.component';
+import { InputDirective } from './input.directive';
+import { InputFieldComponent } from './input-field.component';
 
 type InputAndCustomArgs = InputFieldComponent & { placeholder: string };
 

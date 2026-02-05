@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
-import { TileButtonComponent } from '@styleguide/tile-button/tile-button.component';
+import { TileButtonComponent } from './tile-button.component';
 
 type PagePropsAndCustomArgs = TileButtonComponent & { content?: string };
 

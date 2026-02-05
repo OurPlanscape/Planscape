@@ -5,7 +5,7 @@ import {
   RouterStateSnapshot,
 } from '@angular/router';
 import { Observable } from 'rxjs';
-import { numberResolver } from '@app/resolvers/number.resolver';
+import { numberResolver } from './number.resolver';
 
 describe('numberResolver', () => {
   let mockRouter: jasmine.SpyObj<Router>;

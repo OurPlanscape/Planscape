@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AcresTreatedComponent } from '@app/treatments/acres-treated/acres-treated.component';
+import { AcresTreatedComponent } from './acres-treated.component';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsState } from '@app/treatments/treatments.state';
-import { MOCK_SUMMARY } from '@app/treatments/mocks';
+import { TreatmentsState } from '../treatments.state';
+import { MOCK_SUMMARY } from '../mocks';
 import { of } from 'rxjs';
 
 describe('AcresTreatedComponent', () => {

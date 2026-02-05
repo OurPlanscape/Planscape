@@ -1,12 +1,7 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import {
-  ImpactsMetric,
-  ImpactsMetricSlot,
-  Metric,
-  METRICS,
-} from '@app/treatments/metrics';
+import { ImpactsMetric, ImpactsMetricSlot, Metric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { PrescriptionAction } from '@app/treatments/prescriptions';
+import { PrescriptionAction } from './prescriptions';
 import { TreatmentProjectArea } from '@types';
 import { Injectable } from '@angular/core';
 

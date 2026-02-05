@@ -5,7 +5,7 @@ import {
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
-import { FeatureService } from '@app/features/feature.service';
+import { FeatureService } from './feature.service';
 
 interface FeatureGuardOptions {
   featureName: string;

@@ -8,7 +8,7 @@ import {
 import { Router } from '@angular/router';
 
 import { AuthService } from '@services';
-import { ResetPasswordDialogComponent } from '@app/standalone/reset-password-dialog/reset_password_dialog.component';
+import { ResetPasswordDialogComponent } from '@standalone/reset-password-dialog/reset_password_dialog.component';
 
 import {
   EMAIL_VALIDATION_REGEX,
@@ -17,8 +17,8 @@ import {
 } from '@shared';
 import { FormMessageType } from '@types';
 import { CommonModule } from '@angular/common';
-import { LegacyMaterialModule } from '@app/material/legacy-material.module';
-import { AboutComponent } from '@app/standalone/about/about.component';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
+import { AboutComponent } from '@standalone/about/about.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({

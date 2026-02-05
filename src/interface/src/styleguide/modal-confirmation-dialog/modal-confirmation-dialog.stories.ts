@@ -5,7 +5,7 @@ import {
   StoryObj,
 } from '@storybook/angular';
 import { ModalComponent } from '@styleguide/modal/modal.component';
-import { ModalConfirmationDialogComponent } from '@styleguide/modal-confirmation-dialog/modal-confirmation-dialog.component';
+import { ModalConfirmationDialogComponent } from './modal-confirmation-dialog.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,

@@ -2,10 +2,10 @@ import { AsyncPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { ButtonComponent } from '@styleguide';
 import { delay, map, startWith } from 'rxjs';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
-import { DynamicDataLayersComponent } from '@app/explore/dynamic-data-layers/dynamic-data-layers.component';
-import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { MultiMapConfigState } from '@maplibre/multi-map-config.state';
+import { DynamicDataLayersComponent } from '@explore/dynamic-data-layers/dynamic-data-layers.component';
+import { DataLayersRegistryService } from '../data-layers-registry';
 
 @Component({
   selector: 'app-map-selector',

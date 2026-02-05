@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ModalComponent } from '@styleguide/modal/modal.component';
 import { ErrorDialogComponent } from '@styleguide/dialogs/error-dialog/error-dialog.component';
 import { PendingDialogComponent } from '@styleguide/dialogs/pending-dialog/pending-dialog.component';
-import { DialogData } from '@styleguide/dialogs/dialogs';
+import { DialogData } from './dialogs';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 
 // Common styles for both stories

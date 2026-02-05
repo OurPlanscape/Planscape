@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { DebounceInputComponent } from '@styleguide/debounce-input/debounce-input.component';
+import { DebounceInputComponent } from './debounce-input.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<DebounceInputComponent> = {

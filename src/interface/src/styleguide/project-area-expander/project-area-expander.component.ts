@@ -22,7 +22,7 @@ import {
   PrescriptionSingleAction,
   PrescriptionSequenceAction,
   SequenceAttributes,
-} from '@app/treatments/prescriptions';
+} from '@treatments/prescriptions';
 /**
  * Project Area Expander component
  * A component to be used in the Project Area panel to show project area details

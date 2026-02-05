@@ -1,23 +1,23 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { SharedModule } from '@shared';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre/map-config.state';
 
 import { ButtonComponent, ExpandedPanelComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
-import { MetricFiltersComponent } from '@app/treatments/metric-filters/metric-filters.component';
-import { ImpactsMetric } from '@app/treatments/metrics';
+import { MetricFiltersComponent } from '@treatments/metric-filters/metric-filters.component';
+import { ImpactsMetric } from '../metrics';
 
-import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
-import { ChangeOverTimeChartComponent } from '@app/treatments/change-over-time-chart/change-over-time-chart.component';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { ChangeOverTimeChartComponent } from '@treatments/change-over-time-chart/change-over-time-chart.component';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Scenario, TreatmentProjectArea } from '@types';
-import { TreatmentFilterComponent } from '@app/treatments/treatment-filter/treatment-filter.component';
+import { TreatmentFilterComponent } from '@treatments/treatment-filter/treatment-filter.component';
 
 @Component({
   selector: 'app-expanded-change-over-time-chart',

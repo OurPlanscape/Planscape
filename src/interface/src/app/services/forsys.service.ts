@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, shareReplay } from 'rxjs';
-import { ModuleService } from '@services/module.service';
+import { ModuleService } from './module.service';
 import { ApiModule, ForsysData } from '@types';
 import { filter } from 'rxjs/operators';
 

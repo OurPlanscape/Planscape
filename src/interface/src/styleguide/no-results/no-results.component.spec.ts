@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NoResultsComponent } from '@styleguide/no-results/no-results.component';
+import { NoResultsComponent } from './no-results.component';
 
 describe('NoResultsComponent', () => {
   let component: NoResultsComponent;

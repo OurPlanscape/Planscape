@@ -11,9 +11,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Note, TreatmentPlanNotesService } from '@services/notes.service';
 import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject, distinctUntilChanged, take } from 'rxjs';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 
 @UntilDestroy()
 @Component({

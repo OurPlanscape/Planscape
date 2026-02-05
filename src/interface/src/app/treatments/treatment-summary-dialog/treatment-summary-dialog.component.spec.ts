@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentSummaryDialogComponent } from '@app/treatments/treatment-summary-dialog/treatment-summary-dialog.component';
+import { TreatmentSummaryDialogComponent } from './treatment-summary-dialog.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,

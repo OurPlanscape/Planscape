@@ -14,13 +14,13 @@ import { AuthService, PasswordResetToken } from '@services';
 import { CommonModule } from '@angular/common';
 
 import { MIN_PASSWORD_LENGTH, SharedModule } from '@shared';
-import { AboutComponent } from '@app/standalone/about/about.component';
-import { PasswordStateMatcher } from '@app/validators/error-matchers';
-import { passwordsMustMatchValidator } from '@app/validators/passwords';
-import { PasswordConfirmationDialogComponent } from '@app/standalone/password-confirmation-dialog/password-confirmation-dialog.component';
-import { LegacyMaterialModule } from '@app/material/legacy-material.module';
+import { AboutComponent } from '@standalone/about/about.component';
+import { PasswordStateMatcher } from '@validators/error-matchers';
+import { passwordsMustMatchValidator } from '@validators/passwords';
+import { PasswordConfirmationDialogComponent } from '@standalone/password-confirmation-dialog/password-confirmation-dialog.component';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { MatDialog } from '@angular/material/dialog';
-import { FeatureService } from '@app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({

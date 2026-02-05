@@ -15,29 +15,29 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { ScenarioState } from '@app/scenario/scenario.state';
+import { ScenarioState } from '../scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { Scenario } from '@types';
 import { filter } from 'rxjs/operators';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { ScenarioDownloadFooterComponent } from '@app/scenario/scenario-download-footer/scenario-download-footer.component';
-import { NewTreatmentFooterComponent } from '@app/scenario/new-treatment-footer/new-treatment-footer.component';
-import { TreatmentsTabComponent } from '@app/scenario/treatments-tab/treatments-tab.component';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-import { ScenarioFailureComponent } from '@app/scenario/scenario-failure/scenario-failure.component';
-import { ScenarioResultsComponent } from '@app/scenario/scenario-results/scenario-results.component';
-import { userCanAddTreatmentPlan } from '@app/plan/permissions';
-import { PlanState } from '@app/plan/plan.state';
-import { getPlanPath, POLLING_INTERVAL } from '@app/plan/plan-helpers';
-import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
+import { ScenarioDownloadFooterComponent } from '@scenario/scenario-download-footer/scenario-download-footer.component';
+import { NewTreatmentFooterComponent } from '@scenario/new-treatment-footer/new-treatment-footer.component';
+import { TreatmentsTabComponent } from '@scenario/treatments-tab/treatments-tab.component';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { ScenarioFailureComponent } from '@scenario/scenario-failure/scenario-failure.component';
+import { ScenarioResultsComponent } from '@scenario/scenario-results/scenario-results.component';
+import { userCanAddTreatmentPlan } from '@plan/permissions';
+import { PlanState } from '@plan/plan.state';
+import { getPlanPath, POLLING_INTERVAL } from '@plan/plan-helpers';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import {
   scenarioCanHaveTreatmentPlans,
   suggestUniqueName,
-} from '@app/scenario/scenario-helper';
-import { ScenarioSetupModalComponent } from '@app/scenario/scenario-setup-modal/scenario-setup-modal.component';
+} from '../scenario-helper';
+import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioService } from '@services';

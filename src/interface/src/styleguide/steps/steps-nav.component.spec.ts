@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StepsNavComponent } from '@styleguide/steps/steps-nav.component';
+import { StepsNavComponent } from './steps-nav.component';
 
 describe('StepsNavComponent', () => {
   let component: StepsNavComponent;

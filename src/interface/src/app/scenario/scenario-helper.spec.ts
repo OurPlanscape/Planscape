@@ -2,7 +2,7 @@ import {
   convertFlatConfigurationToDraftPayload,
   getGroupedGoals,
   suggestUniqueName,
-} from '@app/scenario/scenario-helper';
+} from './scenario-helper';
 import { ScenarioCreation, ScenarioGoal } from '@types';
 
 describe('getGroupedGoals', () => {

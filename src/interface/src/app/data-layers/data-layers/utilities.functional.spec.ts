@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { StyleJson } from '@types';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { generateColorFunction } from '@app/data-layers/utilities';
+import { generateColorFunction } from '../utilities';
 
 describe('Color Function Test For RAMP type', () => {
   let colorFunction: any;

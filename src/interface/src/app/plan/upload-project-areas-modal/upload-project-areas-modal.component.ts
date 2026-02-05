@@ -32,7 +32,7 @@ import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { FeatureService } from '@app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 export interface DialogData {

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CumulativeAttainmentChartComponent } from '@app/scenario/cumulative-attainment-chart/cumulative-attainment-chart.component';
+import { CumulativeAttainmentChartComponent } from './cumulative-attainment-chart.component';
 import { ScenarioResult } from '@types';
 import { TooltipItem, TooltipModel } from 'chart.js';
 import { HttpClientTestingModule } from '@angular/common/http/testing';

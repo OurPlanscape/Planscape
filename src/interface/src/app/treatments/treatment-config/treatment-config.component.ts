@@ -12,35 +12,35 @@ import {
   RouterLink,
   RouterOutlet,
 } from '@angular/router';
-import { TreatmentMapComponent } from '@app/treatments/treatment-map/treatment-map.component';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.component';
+import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre/map-config.state';
 import { catchError, map, of, switchMap } from 'rxjs';
-import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
-import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
+import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
+import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
-import { FeaturesModule } from '@app/features/features.module';
+import { FeaturesModule } from '@features/features.module';
 import { SharedModule } from '@shared';
 import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { TreatmentNavbarMenuComponent } from '@app/treatments/treatment-navbar-menu/treatment-navbar-menu.component';
-import { ApplyTreatmentComponent } from '@app/treatments/apply-treatment/apply-treatment.component';
-import { TreatmentLegendComponent } from '@app/treatments/treatment-legend/treatment-legend.component';
+import { TreatmentNavbarMenuComponent } from '@treatments/treatment-navbar-menu/treatment-navbar-menu.component';
+import { ApplyTreatmentComponent } from '@treatments/apply-treatment/apply-treatment.component';
+import { TreatmentLegendComponent } from '@treatments/treatment-legend/treatment-legend.component';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { MatDialog } from '@angular/material/dialog';
-import { ReviewTreatmentPlanDialogComponent } from '@app/treatments/review-treatment-plan-dialog/review-treatment-plan-dialog.component';
-import { getMergedRouteData } from '@app/treatments/treatments-routing-data';
-import { TreatmentToPDFService } from '@app/treatments/treatment-to-pdf.service';
+import { ReviewTreatmentPlanDialogComponent } from '@treatments/review-treatment-plan-dialog/review-treatment-plan-dialog.component';
+import { getMergedRouteData } from '../treatments-routing-data';
+import { TreatmentToPDFService } from '../treatment-to-pdf.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { canRunTreatmentAnalysis } from '@app/plan/permissions';
+import { canRunTreatmentAnalysis } from '@plan/permissions';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
-import { PlanState } from '@app/plan/plan.state';
+import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @UntilDestroy()

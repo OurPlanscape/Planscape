@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { HighlighterDirective } from '@styleguide/highlighter/highlighter.directive';
+import { HighlighterDirective } from './highlighter.directive';
 import { Component } from '@angular/core';
 
 @Component({

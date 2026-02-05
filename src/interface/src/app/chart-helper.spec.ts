@@ -4,7 +4,7 @@ import {
   getProjectAreaLabelsFromFeatures,
   CustomChartDataset,
   sortByTypeAndName,
-} from '@app/chart-helper';
+} from './chart-helper';
 
 describe('Chart helpers', () => {
   describe('convertTo2DecimalsNumbers', () => {

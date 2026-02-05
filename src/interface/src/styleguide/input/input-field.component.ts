@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { InputDirective } from '@styleguide/input/input.directive';
+import { InputDirective } from './input.directive';
 
 export type ShowSupportMessage = 'always' | 'on-error' | false;
 

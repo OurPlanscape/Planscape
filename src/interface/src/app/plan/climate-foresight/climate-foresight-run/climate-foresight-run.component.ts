@@ -21,7 +21,7 @@ import {
   StepsNavComponent,
 } from '@styleguide';
 import { SharedModule } from '@shared/shared.module';
-import { PlanState } from '@app/plan/plan.state';
+import { PlanState } from '@plan/plan.state';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import {
   ClimateForesightRun,
@@ -30,22 +30,22 @@ import {
   Pillar,
   Plan,
 } from '@types';
-import { DataLayerSelectionComponent } from '@app/plan/climate-foresight/climate-foresight-run/data-layer-selection/data-layer-selection.component';
-import { AssignFavorabilityComponent } from '@app/plan/climate-foresight/climate-foresight-run/assign-favorability/assign-favorability.component';
+import { DataLayerSelectionComponent } from '@plan/climate-foresight/climate-foresight-run/data-layer-selection/data-layer-selection.component';
+import { AssignFavorabilityComponent } from '@plan/climate-foresight/climate-foresight-run/assign-favorability/assign-favorability.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AssignPillarsComponent } from '@app/plan/climate-foresight/climate-foresight-run/assign-pillars/assign-pillars.component';
+import { AssignPillarsComponent } from '@plan/climate-foresight/climate-foresight-run/assign-pillars/assign-pillars.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialogComponent } from '@app/standalone/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
-import { FeatureService } from '@app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 import { MAX_CLIMATE_DATALAYERS, SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { MapModuleService } from '@services/map-module.service';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
-import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { USE_GEOMETRY } from '@app/data-layers/data-layers/geometry-datalayers.token';
+import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;

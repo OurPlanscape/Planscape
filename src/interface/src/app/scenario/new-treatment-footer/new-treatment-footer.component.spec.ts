@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NewTreatmentFooterComponent } from '@app/scenario/new-treatment-footer/new-treatment-footer.component';
+import { NewTreatmentFooterComponent } from './new-treatment-footer.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MatSnackBarModule } from '@angular/material/snack-bar';

@@ -20,7 +20,7 @@ import {
   throwError,
 } from 'rxjs';
 import { User } from '@types';
-import { RedirectService } from '@services/redirect.service';
+import { RedirectService } from './redirect.service';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
 

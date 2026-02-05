@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ScenarioState } from '@app/scenario/scenario.state';
+import { ScenarioState } from '../scenario.state';
 import {
   catchError,
   combineLatest,
@@ -14,19 +14,19 @@ import {
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ResourceUnavailableComponent } from '@shared/resource-unavailable/resource-unavailable.component';
-import { UploadedScenarioViewComponent } from '@app/scenario/uploaded-scenario-view/uploaded-scenario-view.component';
-import { ViewScenarioComponent } from '@app/scenario/view-scenario/view-scenario.component';
-import { ScenarioCreationComponent } from '@app/scenario-creation/scenario-creation.component';
+import { UploadedScenarioViewComponent } from '@scenario/uploaded-scenario-view/uploaded-scenario-view.component';
+import { ViewScenarioComponent } from '@scenario/view-scenario/view-scenario.component';
+import { ScenarioCreationComponent } from '@scenario-creation/scenario-creation.component';
 import { Router } from '@angular/router';
 import { AuthService } from '@services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialogComponent } from '@app/standalone/confirmation-dialog/confirmation-dialog.component';
-import { exitModalData } from '@app/scenario/scenario.constants';
-import { isScenarioPending } from '@app/scenario/scenario-helper';
-import { ScenarioComponent } from '@app/scenario/scenario.component';
+import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
+import { exitModalData } from '../scenario.constants';
+import { isScenarioPending } from '../scenario-helper';
+import { ScenarioComponent } from '../scenario.component';
 
 @UntilDestroy()
 @Component({

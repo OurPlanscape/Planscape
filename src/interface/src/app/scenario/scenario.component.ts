@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { SharedModule } from '@shared';
-import { ScenarioMapComponent } from '@app/maplibre-map/scenario-map/scenario-map.component';
+import { ScenarioMapComponent } from '@maplibre/scenario-map/scenario-map.component';
 
 /**
  * This component wraps the projected content on a right side panel and shows the

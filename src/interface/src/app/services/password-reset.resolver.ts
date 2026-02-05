@@ -7,7 +7,7 @@ import {
 } from '@angular/router';
 import { catchError, of, map } from 'rxjs';
 
-import { AuthService, PasswordResetToken } from '@services/auth.service';
+import { AuthService, PasswordResetToken } from './auth.service';
 
 /** Resolver to validate the password reset token. */
 export const passwordResetTokenResolver: ResolveFn<

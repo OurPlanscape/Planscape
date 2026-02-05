@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { NgForOf, NgIf } from '@angular/common';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent } from '..';
 
 // Accepts anything with a name attribute
 interface HasName {

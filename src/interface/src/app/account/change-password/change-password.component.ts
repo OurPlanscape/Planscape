@@ -5,10 +5,10 @@ import { map, take } from 'rxjs';
 import {
   passwordMustBeNewValidator,
   passwordsMustMatchValidator,
-} from '@app/validators/passwords';
+} from '@validators/passwords';
 import { FormMessageType } from '@types';
-import { PasswordStateMatcher } from '@app/validators/error-matchers';
-import { FeatureService } from '@app/features/feature.service';
+import { PasswordStateMatcher } from '@validators/error-matchers';
+import { FeatureService } from '@features/feature.service';
 import { MIN_PASSWORD_LENGTH } from '@shared';
 
 type State = 'view' | 'editing' | 'saving';

@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { UploadedScenarioViewComponent } from '@app/scenario/uploaded-scenario-view/uploaded-scenario-view.component';
+import { UploadedScenarioViewComponent } from './uploaded-scenario-view.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MockProvider } from 'ng-mocks';
-import { FeatureService } from '@app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 
 describe('UploadedScenarioViewComponent', () => {
   let component: UploadedScenarioViewComponent;

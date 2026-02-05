@@ -2,9 +2,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { BaseLayersListComponent } from '@app/base-layers/base-layers-list/base-layers-list.component';
+import { BaseLayersListComponent } from './base-layers-list.component';
 import { BaseLayer } from '@types';
-import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '../base-layers.state.service';
 import { DataLayersService } from '@services';
 import { MapDataDataSet } from '@types';
 import { MockProvider } from 'ng-mocks';

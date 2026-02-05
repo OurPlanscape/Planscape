@@ -4,7 +4,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   SequenceAttributes,
-} from '@app/treatments/prescriptions';
+} from '@treatments/prescriptions';
 import { DecimalPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 
 import { TreatmentTypeIconComponent } from '@styleguide/treatment-type-icon/treatment-type-icon.component';

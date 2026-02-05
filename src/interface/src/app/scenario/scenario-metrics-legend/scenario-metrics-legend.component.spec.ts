@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioResult } from '@types';
-import { ScenarioMetricsLegendComponent } from '@app/scenario/scenario-metrics-legend/scenario-metrics-legend.component';
+import { ScenarioMetricsLegendComponent } from './scenario-metrics-legend.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ScenarioMetricsLegendComponent', () => {

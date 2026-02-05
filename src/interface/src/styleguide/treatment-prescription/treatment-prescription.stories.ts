@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { TreatmentPrescriptionComponent } from '@styleguide/treatment-prescription/treatment-prescription.component';
+import { TreatmentPrescriptionComponent } from './treatment-prescription.component';
 
 const containerStyle = `style="display: flex;
   width: 100%;

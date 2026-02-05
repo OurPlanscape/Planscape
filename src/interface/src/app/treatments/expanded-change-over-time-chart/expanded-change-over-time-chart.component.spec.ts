@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExpandedChangeOverTimeChartComponent } from '@app/treatments/expanded-change-over-time-chart/expanded-change-over-time-chart.component';
+import { ExpandedChangeOverTimeChartComponent } from './expanded-change-over-time-chart.component';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
-import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { TreatmentsState } from '../treatments.state';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, of } from 'rxjs';
-import { StandDataChartComponent } from '@app/treatments/stand-data-chart/stand-data-chart.component';
+import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data-chart.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
+import { MapConfigState } from '@maplibre/map-config.state';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 

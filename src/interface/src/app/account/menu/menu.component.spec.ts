@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MenuComponent } from '@app/account/menu/menu.component';
+import { MenuComponent } from './menu.component';
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 

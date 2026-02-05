@@ -1,13 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScenarioResultsComponent } from '@app/scenario/scenario-results/scenario-results.component';
+import { ScenarioResultsComponent } from './scenario-results.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FileSaverService, ScenarioService } from '@services';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
-import { FeaturesModule } from '@app/features/features.module';
-import { ProjectAreasComponent } from '@app/plan/project-areas/project-areas.component';
+import { FeaturesModule } from '@features/features.module';
+import { ProjectAreasComponent } from '@plan/project-areas/project-areas.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CurrencyPipe } from '@angular/common';
 

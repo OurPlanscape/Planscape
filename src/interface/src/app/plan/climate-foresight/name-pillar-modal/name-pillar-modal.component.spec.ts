@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NamePillarModalComponent } from '@app/plan/climate-foresight/name-pillar-modal/name-pillar-modal.component';
+import { NamePillarModalComponent } from './name-pillar-modal.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { DrawService } from '@app/maplibre-map/draw.service';
+import { DrawService } from '@maplibre/draw.service';
 import { MockProvider } from 'ng-mocks';
 import { ClimateForesightService } from '@services';
 

@@ -5,11 +5,11 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
 import { AuthService } from '@services';
-import { SignupComponent } from '@app/standalone/signup/signup.component';
+import { SignupComponent } from './signup.component';
 
 import { MockComponent } from 'ng-mocks';
-import { InfoCardComponent } from '@app/standalone/info-card/info-card.component';
-import { LegacyMaterialModule } from '@app/material/legacy-material.module';
+import { InfoCardComponent } from '@standalone/info-card/info-card.component';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;

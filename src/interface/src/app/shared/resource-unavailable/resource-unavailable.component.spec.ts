@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ResourceUnavailableComponent } from '@shared/resource-unavailable/resource-unavailable.component';
+import { ResourceUnavailableComponent } from './resource-unavailable.component';
 
 describe('PlanUnavailableComponent', () => {
   let component: ResourceUnavailableComponent;

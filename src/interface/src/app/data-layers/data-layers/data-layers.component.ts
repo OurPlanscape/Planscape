@@ -13,7 +13,7 @@ import {
   SearchBarComponent,
 } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '../data-layers.state.service';
 import {
   catchError,
   combineLatest,
@@ -23,13 +23,10 @@ import {
   tap,
   throwError,
 } from 'rxjs';
-import {
-  groupSearchResults,
-  Results,
-} from '@app/data-layers/data-layers/search';
-import { DataLayerTreeComponent } from '@app/data-layers/data-layer-tree/data-layer-tree.component';
-import { SearchResultsComponent } from '@app/data-layers/search-results/search-results.component';
-import { DataSetComponent } from '@app/data-layers/data-set/data-set.component';
+import { groupSearchResults, Results } from './search';
+import { DataLayerTreeComponent } from '@data-layers/data-layer-tree/data-layer-tree.component';
+import { SearchResultsComponent } from '@data-layers/search-results/search-results.component';
+import { DataSetComponent } from '@data-layers/data-set/data-set.component';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
-import { ScenarioRow } from '@app/plan/plan-summary/saved-scenarios/saved-scenarios.component';
+import { ScenarioRow } from '@plan/plan-summary/saved-scenarios/saved-scenarios.component';
 import { OverlayLoaderComponent, ScenarioCardComponent } from '@styleguide';
 import {
   SharedModule,
@@ -10,25 +10,25 @@ import {
 import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
-} from '@app/plan/plan-helpers';
-import { scenarioCanHaveTreatmentPlans } from '@app/scenario/scenario-helper';
+} from '@plan/plan-helpers';
+import { scenarioCanHaveTreatmentPlans } from '@scenario/scenario-helper';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
-import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
+import { CreateTreatmentDialogComponent } from '@scenario/create-treatment-dialog/create-treatment-dialog.component';
 import { take } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
 import {
   canEditScenarioName,
   userCanAddTreatmentPlan,
-} from '@app/plan/permissions';
+} from '@plan/permissions';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ScenarioSetupModalComponent } from '@app/scenario/scenario-setup-modal/scenario-setup-modal.component';
-import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
+import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-scenarios-card-list',

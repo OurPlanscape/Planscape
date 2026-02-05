@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScenarioComponent } from '@app/scenario/scenario.component';
+import { ScenarioComponent } from './scenario.component';
 import { MockComponents, MockDeclarations } from 'ng-mocks';
-import { ScenarioMapComponent } from '@app/maplibre-map/scenario-map/scenario-map.component';
+import { ScenarioMapComponent } from '@maplibre/scenario-map/scenario-map.component';
 
 import { NavBarComponent, SharedModule } from '@shared';
 import { RouterTestingModule } from '@angular/router/testing';

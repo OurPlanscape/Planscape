@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
 import { of } from 'rxjs';
 import { DataSet, Pagination } from '@types';
 import { MapModuleService } from '@services/map-module.service';
-import { FeaturesModule } from '@app/features/features.module';
-import { PlanState } from '@app/plan/plan.state';
+import { FeaturesModule } from '@features/features.module';
+import { PlanState } from '@plan/plan.state';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
 describe('DataLayersStateService', () => {

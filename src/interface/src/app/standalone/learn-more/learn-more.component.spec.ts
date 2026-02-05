@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LearnMoreComponent } from '@app/standalone/learn-more/learn-more.component';
+import { LearnMoreComponent } from './learn-more.component';
 import { MockComponent } from 'ng-mocks';
-import { HorizonalCardComponent } from '@app/standalone/horizonal-card/horizonal-card.component';
+import { HorizonalCardComponent } from '@standalone/horizonal-card/horizonal-card.component';
 
 describe('LearnMoreComponent', () => {
   let component: LearnMoreComponent;

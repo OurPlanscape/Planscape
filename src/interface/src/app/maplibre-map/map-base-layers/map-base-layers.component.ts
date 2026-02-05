@@ -7,7 +7,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   LayerComponent,
@@ -18,13 +18,10 @@ import {
   MapGeoJSONFeature,
   MapMouseEvent,
 } from 'maplibre-gl';
-import { MapBaseLayerTooltipComponent } from '@app/maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
+import { MapBaseLayerTooltipComponent } from '@maplibre/map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
-import { MapArcgisVectorLayerComponent } from '@app/maplibre-map/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
-import {
-  defaultBaseLayerFill,
-  defaultBaseLayerLine,
-} from '@app/maplibre-map/maplibre.helper';
+import { MapArcgisVectorLayerComponent } from '@maplibre/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
+import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 
 @Component({

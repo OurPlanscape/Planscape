@@ -4,12 +4,12 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { HomeComponent } from '@app/home/home.component';
+import { HomeComponent } from './home.component';
 import { AuthService } from '@services';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { FeaturesModule } from '@app/features/features.module';
+import { FeaturesModule } from '@features/features.module';
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;

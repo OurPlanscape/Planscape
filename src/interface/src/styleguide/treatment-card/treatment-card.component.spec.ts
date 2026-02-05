@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentCardComponent } from '@styleguide/treatment-card/treatment-card.component';
+import { TreatmentCardComponent } from './treatment-card.component';
 
 describe('TreatmentCardComponent', () => {
   let component: TreatmentCardComponent;

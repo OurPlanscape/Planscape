@@ -10,7 +10,7 @@ import { BehaviorSubject } from 'rxjs';
 import {
   DebounceEditState,
   DebounceInputComponent,
-} from '@styleguide/debounce-input/debounce-input.component';
+} from './debounce-input.component';
 
 describe('DebounceInputComponent', () => {
   let component: DebounceInputComponent;

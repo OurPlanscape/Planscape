@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { generateColorFunction } from '@app/data-layers/utilities';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { generateColorFunction } from '@data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   Map as MapLibreMap,
@@ -13,9 +13,9 @@ import { SNACK_DEBUG_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { environment } from '@env/environment';
 import * as Sentry from '@sentry/browser';
 import { EventData } from '@maplibre/ngx-maplibre-gl';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapConfigState } from '../map-config.state';
 import { filter, firstValueFrom } from 'rxjs';
-import { FrontendConstants } from '@app/map/map.constants';
+import { FrontendConstants } from '@map/map.constants';
 
 @UntilDestroy()
 @Component({

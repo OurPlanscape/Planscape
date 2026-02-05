@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClickOutsideDirective } from '@app/standalone/click-outside-directive/click-outside.directive';
+import { ClickOutsideDirective } from './click-outside.directive';
 
 @Component({
   standalone: true,

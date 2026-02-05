@@ -1,11 +1,11 @@
 import { RouterModule, Routes } from '@angular/router';
-import { TreatmentOverviewComponent } from '@app/treatments/treatment-overview/treatment-overview.component';
+import { TreatmentOverviewComponent } from '@treatments/treatment-overview/treatment-overview.component';
 
 import { NgModule } from '@angular/core';
-import { numberResolver } from '@app/resolvers/number.resolver';
-import { TreatmentProjectAreaComponent } from '@app/treatments/treatment-project-area/treatment-project-area.component';
-import { TreatmentConfigComponent } from '@app/treatments/treatment-config/treatment-config.component';
-import { DirectImpactsComponent } from '@app/treatments/direct-impacts/direct-impacts.component';
+import { numberResolver } from '@resolvers/number.resolver';
+import { TreatmentProjectAreaComponent } from '@treatments/treatment-project-area/treatment-project-area.component';
+import { TreatmentConfigComponent } from '@treatments/treatment-config/treatment-config.component';
+import { DirectImpactsComponent } from '@treatments/direct-impacts/direct-impacts.component';
 
 const routes: Routes = [
   {

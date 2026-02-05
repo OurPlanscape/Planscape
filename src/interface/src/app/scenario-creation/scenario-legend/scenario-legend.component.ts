@@ -4,7 +4,7 @@ import { combineLatest, map } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ButtonComponent } from '@styleguide';
 
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { AsyncPipe, DecimalPipe, NgIf, PercentPipe } from '@angular/common';
 
 @Component({

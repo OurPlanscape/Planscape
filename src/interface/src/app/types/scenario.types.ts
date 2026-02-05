@@ -1,4 +1,4 @@
-import { STAND_SIZE } from '@app/plan/plan-helpers';
+import { STAND_SIZE } from '@plan/plan-helpers';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';

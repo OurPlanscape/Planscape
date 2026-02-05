@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '../data-layers.state.service';
 import { DataLayer } from '@types';
 
 @Component({

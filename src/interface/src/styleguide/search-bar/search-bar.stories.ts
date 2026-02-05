@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { SearchBarComponent } from '@styleguide/search-bar/search-bar.component';
+import { SearchBarComponent } from './search-bar.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<SearchBarComponent> = {

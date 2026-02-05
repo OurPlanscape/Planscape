@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { MapTooltipComponent } from './map-tooltip.component';
 import { MockDeclarations } from 'ng-mocks';
 import { PopupComponent } from '@maplibre/ngx-maplibre-gl';
 

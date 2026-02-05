@@ -5,11 +5,11 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StepDirective } from '@styleguide/steps/step.component';
 import { BaseLayer, ScenarioCreation } from '@types';
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
 import { filter, map, switchMap, take } from 'rxjs';
 import { SelectableListComponent } from '@styleguide/selectable-list/selectable-list.component';
-import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-exclude-areas-selector',

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { PlanState } from '@app/plan/plan.state';
+import { PlanState } from './plan.state';
 import { PlanService } from '@services';
 import { MockProvider } from 'ng-mocks';
 import { Plan } from '@types';

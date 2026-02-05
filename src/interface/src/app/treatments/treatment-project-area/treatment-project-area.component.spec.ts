@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
-import { TreatmentProjectAreaComponent } from '@app/treatments/treatment-project-area/treatment-project-area.component';
+import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
 import { RouterTestingModule } from '@angular/router/testing';
-import { TreatmentMapComponent } from '@app/treatments/treatment-map/treatment-map.component';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
-import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.component';
+import { MapConfigState } from '@maplibre/map-config.state';
+import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
+import { TreatmentsState } from '../treatments.state';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { Geometry } from 'geojson';
-import { AcresTreatedComponent } from '@app/treatments/acres-treated/acres-treated.component';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { AcresTreatedComponent } from '@treatments/acres-treated/acres-treated.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 
 describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;

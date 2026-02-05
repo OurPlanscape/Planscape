@@ -9,9 +9,9 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { DataLayersRegistryService } from '../data-layers-registry';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { NgIf } from '@angular/common';
 
 @Component({

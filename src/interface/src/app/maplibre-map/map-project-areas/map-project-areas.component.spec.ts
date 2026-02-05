@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
+import { MapProjectAreasComponent } from './map-project-areas.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MapConfigState } from '../map-config.state';
 import { BehaviorSubject, of } from 'rxjs';
-import { TreatmentsState } from '@app/treatments/treatments.state';
-import { ScenarioState } from '@app/scenario/scenario.state';
+import { TreatmentsState } from '@treatments/treatments.state';
+import { ScenarioState } from '@scenario/scenario.state';
 
 describe('MapProjectAreasComponent', () => {
   let component: MapProjectAreasComponent;

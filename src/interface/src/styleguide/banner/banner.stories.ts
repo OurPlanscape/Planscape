@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
-import { BannerComponent } from '@styleguide/banner/banner.component';
+import { BannerComponent } from './banner.component';
 
 const meta: Meta<BannerComponent> = {
   title: 'Components/Banner',

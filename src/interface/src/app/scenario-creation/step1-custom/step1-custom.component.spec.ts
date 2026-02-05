@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Step1CustomComponent } from '@app/scenario-creation/step1-custom/step1-custom.component';
+import { Step1CustomComponent } from './step1-custom.component';
 import { MockComponents, MockProvider } from 'ng-mocks';
-import { Step1Component } from '@app/scenario-creation/step1/step1.component';
+import { Step1Component } from '@scenario-creation/step1/step1.component';
 import { BehaviorSubject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 
 describe('Step1CustomComponent', () => {
   let component: Step1CustomComponent;

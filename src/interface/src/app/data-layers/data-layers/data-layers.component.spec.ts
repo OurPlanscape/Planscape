@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { DataLayersComponent } from './data-layers.component';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { FeaturesModule } from '@app/features/features.module';
+import { DataLayersStateService } from '../data-layers.state.service';
+import { FeaturesModule } from '@features/features.module';
 
 describe('DataLayersComponent', () => {
   let component: DataLayersComponent;

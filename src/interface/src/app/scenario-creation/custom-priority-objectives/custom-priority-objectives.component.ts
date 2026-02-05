@@ -7,12 +7,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioCreation } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { catchError, finalize, map, of, switchMap, take } from 'rxjs';
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';

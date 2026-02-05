@@ -15,7 +15,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   SequenceAttributes,
-} from '@app/treatments/prescriptions';
+} from '@treatments/prescriptions';
 import { HighlighterDirective } from '@styleguide/highlighter/highlighter.directive';
 
 /**
