@@ -184,10 +184,12 @@ export class ScenarioCreationComponent implements OnInit {
           return of<DataLayer[]>([]);
         })
       )
-    ), shareReplay(1));
+    ),
+    shareReplay(1)
+  );
 
   priorityObjectivesNames$ = this.priorityObjectivesDetails$.pipe(
-    map((layers: DataLayer[]) => layers.map(layer => layer.name).join(', '))
+    map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
   );
 
   // Copy of index locally to show the last step as completed
