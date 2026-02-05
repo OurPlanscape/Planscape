@@ -40,8 +40,9 @@
         [title]="scenarioName"
         [standSize]="(standSize$ | async) || null"
         [treatmentGoal]="
-          (treatmentGoalName$ | async) || ''
-        "></app-scenario-summary>
+          (treatmentGoalName$ | async) || ''"
+        [priorityObjectives]="(priorityObjectives$ | async) || ''"
+        ></app-scenario-summary>
 
       <ng-container *ngIf="!isCustomScenario(scenarioType)">
         <sg-step class="full-screen-step">
