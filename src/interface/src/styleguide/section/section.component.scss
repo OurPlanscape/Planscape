@@ -22,6 +22,12 @@
     }
   }
 
+  .no-header ::ng-deep {
+    .mat-expansion-panel-body {
+      padding: 16px;
+    }
+  }
+
   .panel-header {
     padding: 0 10px 0 22px;
 
