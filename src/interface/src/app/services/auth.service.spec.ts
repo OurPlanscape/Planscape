@@ -6,10 +6,10 @@ import { TestBed } from '@angular/core/testing';
 import { CookieService } from 'ngx-cookie-service';
 import { of } from 'rxjs';
 import { User } from '@types';
-import { AuthGuard, AuthService } from './auth.service';
-import { RedirectService } from './redirect.service';
+import { AuthGuard, AuthService } from '@services/auth.service';
+import { RedirectService } from '@services/redirect.service';
 import { MockProvider } from 'ng-mocks';
-import { environment } from 'src/environments/environment';
+import { environment } from '@env/environment';
 import { RouterTestingModule } from '@angular/router/testing';
 
 // Define a dummy component for the route

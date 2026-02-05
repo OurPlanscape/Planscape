@@ -8,21 +8,21 @@ import {
 } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonComponent } from '../button/button.component';
-import { InputFieldComponent } from '../input/input-field.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
+import { InputFieldComponent } from '@styleguide/input/input-field.component';
 import {
   BehaviorSubject,
   debounceTime,
   distinctUntilChanged,
   Subject,
 } from 'rxjs';
-import { InputDirective } from '../input/input.directive';
+import { InputDirective } from '@styleguide/input/input.directive';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { PopoverComponent } from '../popover/popover.component';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 export type DebounceEditState = 'INITIAL' | 'EDIT' | 'SAVING';
 

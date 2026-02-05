@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
-import { TreatmentTypeIconComponent } from './treatment-type-icon.component';
+import { TreatmentTypeIconComponent } from '@styleguide/treatment-type-icon/treatment-type-icon.component';
 
 const meta: Meta<TreatmentTypeIconComponent> = {
   title: 'Components/Treatment Type Icon',

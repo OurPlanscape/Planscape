@@ -1,6 +1,6 @@
-import { PlanningAreasDataSource } from './planning-areas.datasource';
+import { PlanningAreasDataSource } from '@app/standalone/planning-areas/planning-areas.datasource';
 import { PlanService } from '@services';
-import { QueryParamsService } from './query-params.service';
+import { QueryParamsService } from '@app/standalone/planning-areas/query-params.service';
 import { firstValueFrom, of } from 'rxjs';
 import { Sort } from '@angular/material/sort';
 

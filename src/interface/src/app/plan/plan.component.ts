@@ -13,15 +13,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { PlanState } from './plan.state';
-import { canAddScenario } from './permissions';
+import { PlanState } from '@app/plan/plan.state';
+import { canAddScenario } from '@app/plan/permissions';
 import {
   planningAreaMetricsAreReady,
   planningAreaMetricsFailed,
   POLLING_INTERVAL,
-} from './plan-helpers';
-import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
-import { SuccessDialogComponent } from '../../styleguide/dialogs/success-dialog/success-dialog.component';
+} from '@app/plan/plan-helpers';
+import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
+import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
 @Component({

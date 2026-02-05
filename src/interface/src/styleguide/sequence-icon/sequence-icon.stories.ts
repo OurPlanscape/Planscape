@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
-import { SequenceIconComponent } from './sequence-icon.component';
+import { SequenceIconComponent } from '@styleguide/sequence-icon/sequence-icon.component';
 
 const meta: Meta<SequenceIconComponent> = {
   title: 'Components/Sequence Icon',

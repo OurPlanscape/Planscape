@@ -4,11 +4,11 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { ProjectAreasComponent } from './project-areas.component';
+import { ProjectAreasComponent } from '@app/plan/project-areas/project-areas.component';
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@app/material/legacy-material.module';
 
 @Component({
   template: '<app-project-areas [areas]="areas"></app-project-areas>',

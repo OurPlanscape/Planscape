@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { InvitesService } from './invites.service';
+import { InvitesService } from '@services/invites.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('InvitesService', () => {

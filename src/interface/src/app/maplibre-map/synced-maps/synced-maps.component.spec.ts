@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SyncedMapsComponent } from './synced-maps.component';
+import { SyncedMapsComponent } from '@app/maplibre-map/synced-maps/synced-maps.component';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
-import { ExploreMapComponent } from '../explore-map/explore-map.component';
-import { MultiMapConfigState } from '../multi-map-config.state';
+import { ExploreMapComponent } from '@app/maplibre-map/explore-map/explore-map.component';
+import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
 import { of } from 'rxjs';
 import { LngLatBounds } from 'maplibre-gl';
-import { DummyMaplibreMap } from '../maplibre.mock.spec';
+import { DummyMaplibreMap } from '@app/maplibre-map/maplibre.mock.spec';
 
 describe('SyncedMapsComponent', () => {
   let fixture: ComponentFixture<SyncedMapsComponent>;

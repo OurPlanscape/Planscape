@@ -9,7 +9,7 @@ import {
 } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
+import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-area-notes',

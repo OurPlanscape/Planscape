@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BaseLayersComponent } from './base-layers.component';
+import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
 import { MockProvider } from 'ng-mocks';
-import { BaseLayersStateService } from '../base-layers.state.service';
+import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
 import { of } from 'rxjs';
 import { MapModuleService } from '@services/map-module.service';
-import { FeaturesModule } from '../../features/features.module';
+import { FeaturesModule } from '@app/features/features.module';
 
 describe('BaseLayersComponent', () => {
   let component: BaseLayersComponent;

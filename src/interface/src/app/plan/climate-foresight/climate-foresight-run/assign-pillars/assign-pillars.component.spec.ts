@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AssignPillarsComponent } from './assign-pillars.component';
+import { AssignPillarsComponent } from '@app/plan/climate-foresight/climate-foresight-run/assign-pillars/assign-pillars.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { ButtonComponent, SectionComponent } from '@styleguide';
 import { MatDialogModule } from '@angular/material/dialog';

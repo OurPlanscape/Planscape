@@ -1,6 +1,6 @@
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
-import { PasswordFieldsErrors } from './passwords';
+import { PasswordFieldsErrors } from '@app/validators/passwords';
 
 export class PasswordStateMatcher implements ErrorStateMatcher {
   constructor(private errors: (keyof PasswordFieldsErrors)[]) {}

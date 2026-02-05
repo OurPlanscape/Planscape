@@ -17,11 +17,11 @@ import { ChartConfiguration } from 'chart.js';
 import { ButtonComponent, PanelComponent, SectionComponent } from '@styleguide';
 import { Plan, ClimateForesightRun, DataLayer } from '@types';
 import { ClimateForesightService } from '@services';
-import { StepDirective } from '../../../../../styleguide/steps/step.component';
+import { StepDirective } from '@styleguide/steps/step.component';
 import { interval, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { chartTooltipBaseConfig } from 'src/app/chart-helper';
+import { chartTooltipBaseConfig } from '@app/chart-helper';
 
 interface LayerFavorability {
   datalayer: number;

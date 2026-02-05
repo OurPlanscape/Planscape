@@ -1,5 +1,5 @@
 import { Feature, Polygon, MultiPolygon } from 'geojson';
-import { acresForFeature } from './maplibre.helper';
+import { acresForFeature } from '@app/maplibre-map/maplibre.helper';
 
 describe('test acresForFeature helper function', () => {
   const standardPolygon: Feature<MultiPolygon> = {

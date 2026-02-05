@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { StepsActionsComponent } from './steps-actions.component';
+import { StepsActionsComponent } from '@styleguide/steps/steps-actions.component';
 
 type StoryArgs = StepsActionsComponent;
 

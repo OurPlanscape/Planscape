@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ScenariosCardListComponent } from './scenarios-card-list.component';
+import { ScenariosCardListComponent } from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterTestingModule } from '@angular/router/testing';
 

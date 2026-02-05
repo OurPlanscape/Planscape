@@ -7,15 +7,15 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
-} from './prescriptions';
+} from '@app/treatments/prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
-import { logoImg } from '../../assets/base64/icons';
+import { logoImg } from '@assets/base64/icons';
 import { Prescription, TreatmentProjectArea, TreatmentSummary } from '@types';
 
-import { TreatmentsState } from './treatments.state';
-import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import * as txIcons from '../../assets/base64/stand_icons/treatments';
-import { addRequestHeaders } from '../maplibre-map/maplibre.helper';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
+import * as txIcons from '@assets/base64/stand_icons/treatments';
+import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@services';
 
 const treatmentIcons: Record<PrescriptionAction, string> = {

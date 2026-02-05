@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 /**
  * Presentational step actions component that displays navigation buttons and step counter.

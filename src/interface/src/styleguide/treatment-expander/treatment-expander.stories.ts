@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { TreatmentExpanderComponent } from './treatment-expander.component';
+import { TreatmentExpanderComponent } from '@styleguide/treatment-expander/treatment-expander.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const containerStyle = `style="display: flex;

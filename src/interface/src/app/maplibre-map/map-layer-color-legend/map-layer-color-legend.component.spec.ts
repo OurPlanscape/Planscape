@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MapService } from '@maplibre/ngx-maplibre-gl';
-import { MapLayerColorLegendComponent } from './map-layer-color-legend.component';
+import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 
 describe('MapLayerColorLegendComponent', () => {
   let component: MapLayerColorLegendComponent;

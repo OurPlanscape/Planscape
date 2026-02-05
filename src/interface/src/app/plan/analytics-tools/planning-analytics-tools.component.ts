@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TileButtonComponent } from '../../../styleguide';
-import { FeatureService } from '../../features/feature.service';
+import { TileButtonComponent } from '@styleguide';
+import { FeatureService } from '@app/features/feature.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { Capabilities } from '@types';
 

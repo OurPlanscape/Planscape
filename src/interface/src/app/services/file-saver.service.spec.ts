@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { FileSaverService } from './file-saver.service';
+import { FileSaverService } from '@services/file-saver.service';
 
 describe('FileSaverService', () => {
   let service: FileSaverService;

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EditUserFieldComponent } from './edit-user-field.component';
+import { EditUserFieldComponent } from '@app/account/edit-user-field/edit-user-field.component';
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
 import { of } from 'rxjs';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@app/material/legacy-material.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonHarness } from '@angular/material/button/testing';
 

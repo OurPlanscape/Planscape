@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PlanningAnalyticsToolsComponent } from './planning-analytics-tools.component';
-import { FeatureService } from '../../features/feature.service';
+import { PlanningAnalyticsToolsComponent } from '@app/plan/analytics-tools/planning-analytics-tools.component';
+import { FeatureService } from '@app/features/feature.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { PlanState } from '../plan.state';
+import { PlanState } from '@app/plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of } from 'rxjs';
 import { Plan } from '@types';

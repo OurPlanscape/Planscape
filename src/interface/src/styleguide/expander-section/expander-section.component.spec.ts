@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExpanderSectionComponent } from './expander-section.component';
+import { ExpanderSectionComponent } from '@styleguide/expander-section/expander-section.component';
 
 describe('ExpanderSectionComponent', () => {
   let component: ExpanderSectionComponent;

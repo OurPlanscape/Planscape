@@ -1,4 +1,4 @@
-import { KeyPipe } from './key.pipe';
+import { KeyPipe } from '@app/standalone/key.pipe';
 
 describe('KeyPipe', () => {
   let pipe: KeyPipe;

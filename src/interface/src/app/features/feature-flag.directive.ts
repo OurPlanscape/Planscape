@@ -6,7 +6,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 
-import { FeatureService } from './feature.service';
+import { FeatureService } from '@app/features/feature.service';
 
 /** Directive to show or hide a DOM element based on whether a feature flag is enabled. */
 @Directive({

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TreatedStandsState } from './treated-stands.state';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
 import { TreatedStand } from '@types';
 
 describe('TreatedStandsState', () => {

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '@styleguide';
-import { CreateTreatmentDialogComponent } from '../create-treatment-dialog/create-treatment-dialog.component';
+import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
 import { take } from 'rxjs';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ActivatedRoute, Router } from '@angular/router';

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 import { AsyncPipe, DecimalPipe, NgClass, NgIf } from '@angular/common';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs';
 import { TreatmentSummary } from '@types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';

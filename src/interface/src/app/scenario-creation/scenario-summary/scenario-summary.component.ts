@@ -1,7 +1,7 @@
 import { NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { SectionComponent } from '@styleguide';
-import { STAND_OPTIONS, STAND_SIZE } from '../../plan/plan-helpers';
+import { STAND_OPTIONS, STAND_SIZE } from '@app/plan/plan-helpers';
 
 @Component({
   selector: 'app-scenario-summary',

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { SelectableListComponent } from './selectable-list.component';
+import { SelectableListComponent } from '@styleguide/selectable-list/selectable-list.component';
 
 interface DemoInterface {
   id: number;

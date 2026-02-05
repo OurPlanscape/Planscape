@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PlanningAreaLayerComponent } from './planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import {
   FeatureComponent,
@@ -8,8 +8,8 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { PlanState } from '../../plan/plan.state';
-import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { PlanState } from '@app/plan/plan.state';
+import { MARTIN_SOURCES } from '@app/treatments/map.sources';
 
 describe('PlanningAreaLayerComponent', () => {
   let component: PlanningAreaLayerComponent;

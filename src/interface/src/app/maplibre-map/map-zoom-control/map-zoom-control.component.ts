@@ -4,7 +4,7 @@ import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
 import { ControlPosition, Map as MapLibreMap } from 'maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { FrontendConstants } from '../../map/map.constants';
+import { FrontendConstants } from '@app/map/map.constants';
 
 @Component({
   selector: 'app-map-zoom-control',

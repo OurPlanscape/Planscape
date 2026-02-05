@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScenarioMapComponent } from './scenario-map.component';
+import { ScenarioMapComponent } from '@app/maplibre-map/scenario-map/scenario-map.component';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
-import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { AuthService, ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
-import { PlanState } from '../../plan/plan.state';
+import { PlanState } from '@app/plan/plan.state';
 import { Observable, of } from 'rxjs';
 import { Scenario } from '@types';
-import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
-import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
-import { MapConfigService } from '../map-config.service';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { DataLayerNameComponent } from '@app/data-layers/data-layer-name/data-layer-name.component';
+import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
+import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 
 describe('ScenarioMapComponent', () => {
   let component: ScenarioMapComponent;

@@ -9,7 +9,7 @@ import {
   PreviewPlan,
 } from '@types';
 import { GeoJsonObject } from 'geojson';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 import { Params } from '@angular/router';
 
 @Injectable({

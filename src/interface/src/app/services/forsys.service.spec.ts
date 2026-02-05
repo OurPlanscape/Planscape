@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ForsysService } from './forsys.service';
+import { ForsysService } from '@services/forsys.service';
 import { MockProvider } from 'ng-mocks';
 import { ModuleService } from '@services/module.service';
 

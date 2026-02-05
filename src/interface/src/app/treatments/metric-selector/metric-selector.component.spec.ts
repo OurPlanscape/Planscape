@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MetricSelectorComponent } from './metric-selector.component';
+import { MetricSelectorComponent } from '@app/treatments/metric-selector/metric-selector.component';
 import { MockProviders } from 'ng-mocks';
-import { METRICS } from '../metrics';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { METRICS } from '@app/treatments/metrics';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('MetricSelectorComponent', () => {

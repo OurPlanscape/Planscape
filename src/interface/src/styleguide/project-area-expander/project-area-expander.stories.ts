@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { ProjectAreaExpanderComponent } from './project-area-expander.component';
+import { ProjectAreaExpanderComponent } from '@styleguide/project-area-expander/project-area-expander.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Extent, Prescription, TreatmentType } from '@types';
 import { Point } from 'geojson';

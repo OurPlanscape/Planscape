@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { take } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '@shared';
-import { AboutComponent } from '../about/about.component';
+import { AboutComponent } from '@app/standalone/about/about.component';
 
 @Component({
   selector: 'app-account-validation',

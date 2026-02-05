@@ -1,13 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ApplyTreatmentComponent } from './apply-treatment.component';
+import { ApplyTreatmentComponent } from '@app/treatments/apply-treatment/apply-treatment.component';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsState } from '../treatments.state';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
-import { FeatureService } from 'src/app/features/feature.service';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('ApplyTreatmentComponent', () => {
   let component: ApplyTreatmentComponent;

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { MultiMapConfigState } from '../multi-map-config.state';
+import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { MapConfigState } from '../map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 @Component({
   selector: 'app-multi-map-control',

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { ScenarioCardComponent } from './scenario-card.component';
+import { ScenarioCardComponent } from '@styleguide/scenario-card/scenario-card.component';
 
 describe('ScenarioCardComponent', () => {
   let component: ScenarioCardComponent;

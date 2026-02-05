@@ -11,7 +11,10 @@ import { PreviewPlan } from '@types';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
-import { QueryParams, QueryParamsService } from './query-params.service';
+import {
+  QueryParams,
+  QueryParamsService,
+} from '@app/standalone/planning-areas/query-params.service';
 
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   private _dataStream = new BehaviorSubject<PreviewPlan[]>([]);

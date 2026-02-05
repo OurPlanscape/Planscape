@@ -4,10 +4,10 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { DynamicDataLayersComponent } from './dynamic-data-layers.component';
-import { DataLayersRegistryService } from '../data-layers-registry';
-import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DynamicDataLayersComponent } from '@app/explore/dynamic-data-layers/dynamic-data-layers.component';
+import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
+import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { MockDeclaration } from 'ng-mocks';
 
 describe('DynamicDataLayersComponent', () => {

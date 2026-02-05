@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { OpacitySliderComponent } from './opacity-slider.component';
+import { OpacitySliderComponent } from '@styleguide/opacity-slider/opacity-slider.component';
 
 const meta: Meta<OpacitySliderComponent> = {
   title: 'Components/Opacity Slider Card',

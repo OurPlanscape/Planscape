@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DirectImpactsMapComponent } from './direct-impacts-map.component';
+import { DirectImpactsMapComponent } from '@app/treatments/direct-impacts-map/direct-impacts-map.component';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { AuthService } from '@services';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { TreatmentsState } from '../treatments.state';
-import { ScenarioState } from 'src/app/scenario/scenario.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { ScenarioState } from '@app/scenario/scenario.state';
 import { BehaviorSubject } from 'rxjs';
 
 const fakeRoute = jasmine.createSpyObj(

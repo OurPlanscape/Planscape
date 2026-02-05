@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MetricFiltersComponent } from './metric-filters.component';
-import { Metric, METRICS } from '../metrics';
+import { MetricFiltersComponent } from '@app/treatments/metric-filters/metric-filters.component';
+import { Metric, METRICS } from '@app/treatments/metrics';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { TreatmentsState } from '../treatments.state';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 
 export const MockMetrics: Metric[] = [
   {

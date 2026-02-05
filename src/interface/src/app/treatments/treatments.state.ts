@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
-import { TreatedStandsState } from './treatment-map/treated-stands.state';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
 import {
   BehaviorSubject,
   catchError,
@@ -17,17 +17,17 @@ import {
   TreatmentProjectArea,
   TreatmentSummary,
 } from '@types';
-import { MapConfigState } from '../maplibre-map/map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
   RemovingStandsError,
   UpdatingStandsError,
-} from './treatment-errors';
-import { TreatmentRoutingData } from './treatments-routing-data';
+} from '@app/treatments/treatment-errors';
+import { TreatmentRoutingData } from '@app/treatments/treatments-routing-data';
 import { ActivatedRoute } from '@angular/router';
-import { getPrescriptionsFromSummary } from './prescriptions';
-import { DirectImpactsStateService } from './direct-impacts.state.service';
+import { getPrescriptionsFromSummary } from '@app/treatments/prescriptions';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 
 /**
  * Class that holds data of the current state, and makes it available

@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, ResolveFn } from '@angular/router';
-import { DataLayersStateService } from '../data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 
 /**
  * Resets data layers, so we can allow clean states between shared routes.

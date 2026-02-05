@@ -2,7 +2,7 @@ import { Plan, ScenarioResult } from '@types';
 import {
   ProjectAreaReport,
   ProjectTotalReport,
-} from './project-areas/project-areas.component';
+} from '@app/plan/project-areas/project-areas.component';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 import flatten from '@turf/flatten';
 import { Feature, MultiPolygon, Polygon } from 'geojson';

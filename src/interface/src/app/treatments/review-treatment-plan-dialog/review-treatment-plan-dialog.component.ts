@@ -6,7 +6,7 @@ import {
   PendingDialogComponent,
 } from '@styleguide';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';

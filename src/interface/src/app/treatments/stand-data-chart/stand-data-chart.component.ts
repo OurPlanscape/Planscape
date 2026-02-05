@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 import {
   distinctUntilChanged,
   map,
@@ -16,17 +16,17 @@ import {
   METRICS,
   SLOT_COLORS,
   YEAR_INTERVAL_PROPERTY,
-} from '../metrics';
+} from '@app/treatments/metrics';
 import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentTypeIconComponent } from '@styleguide';
 import { MatTableModule } from '@angular/material/table';
-import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
-import { standIsForested } from '../stands';
+import { NonForestedDataComponent } from '@app/treatments/non-forested-data/non-forested-data.component';
+import { standIsForested } from '@app/treatments/stands';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { getBasicChartOptions, updateYAxisRange } from '../../chart-helper';
+import { MetricSelectorComponent } from '@app/treatments/metric-selector/metric-selector.component';
+import { getBasicChartOptions, updateYAxisRange } from '@app/chart-helper';
 
 @UntilDestroy()
 @Component({

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { PaginatorComponent } from './paginator.component';
+import { PaginatorComponent } from '@styleguide/paginator/paginator.component';
 
 describe('PaginatorComponent', () => {
   let component: PaginatorComponent;

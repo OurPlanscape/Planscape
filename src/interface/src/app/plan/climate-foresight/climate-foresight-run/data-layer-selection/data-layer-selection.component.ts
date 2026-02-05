@@ -21,11 +21,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent, SectionComponent } from '@styleguide';
 import { Plan, ClimateForesightRun, DataLayer } from '@types';
 import { ClimateForesightService } from '@services';
-import { StepDirective } from '../../../../../styleguide/steps/step.component';
-import { MapConfigService } from '../../../../maplibre-map/map-config.service';
-import { DataLayersComponent } from 'src/app/data-layers/data-layers/data-layers.component';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { ClimateForesightMapComponent } from '../climate-foresight-map/climate-foresight-map.component';
+import { StepDirective } from '@styleguide/steps/step.component';
+import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { ClimateForesightMapComponent } from '@app/plan/climate-foresight/climate-foresight-run/climate-foresight-map/climate-foresight-map.component';
 import { MAX_CLIMATE_DATALAYERS } from '@shared';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 

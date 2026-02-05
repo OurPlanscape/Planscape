@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { ColorLegendInfo, LayerStyleEntry, RasterColorType } from '@types';
 import { tap } from 'rxjs';
 import { scaleLinear } from 'd3-scale';

@@ -2,11 +2,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { BaseLayersListComponent } from './base-layers-list.component';
+import { BaseLayersListComponent } from '@app/base-layers/base-layers-list/base-layers-list.component';
 import { BaseLayer } from '@types';
-import { BaseLayersStateService } from '../base-layers.state.service';
+import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
 import { DataLayersService } from '@services';
-import { MapDataDataSet } from '../../types/module.types';
+import { MapDataDataSet } from '@types';
 import { MockProvider } from 'ng-mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 

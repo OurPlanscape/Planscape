@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HorizonalCardComponent } from './horizonal-card.component';
+import { HorizonalCardComponent } from '@app/standalone/horizonal-card/horizonal-card.component';
 
 describe('HorizonalCardComponent', () => {
   let component: HorizonalCardComponent;

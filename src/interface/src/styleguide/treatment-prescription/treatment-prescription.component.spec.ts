@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentPrescriptionComponent } from './treatment-prescription.component';
-import { PRESCRIPTIONS } from '../../app/treatments/prescriptions';
+import { TreatmentPrescriptionComponent } from '@styleguide/treatment-prescription/treatment-prescription.component';
+import { PRESCRIPTIONS } from '@app/treatments/prescriptions';
 
 describe('TreatmentPrescriptionComponent', () => {
   let component: TreatmentPrescriptionComponent;

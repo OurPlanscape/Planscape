@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FieldAlertComponent } from './field-alert.component';
+import { FieldAlertComponent } from '@shared/field-alert/field-alert.component';
 
 describe('FieldAlertComponent', () => {
   let component: FieldAlertComponent;

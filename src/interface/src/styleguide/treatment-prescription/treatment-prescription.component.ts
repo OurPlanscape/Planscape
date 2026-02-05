@@ -4,12 +4,12 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   SequenceAttributes,
-} from '../../app/treatments/prescriptions';
+} from '@app/treatments/prescriptions';
 import { DecimalPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 
-import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
-import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
-import { HighlighterDirective } from '../highlighter/highlighter.directive';
+import { TreatmentTypeIconComponent } from '@styleguide/treatment-type-icon/treatment-type-icon.component';
+import { SequenceIconComponent } from '@styleguide/sequence-icon/sequence-icon.component';
+import { HighlighterDirective } from '@styleguide/highlighter/highlighter.directive';
 
 @Component({
   selector: 'sg-treatment-prescription',

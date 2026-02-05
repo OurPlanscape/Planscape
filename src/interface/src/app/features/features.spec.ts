@@ -1,4 +1,4 @@
-import { parseFeatureFlags } from './features';
+import { parseFeatureFlags } from '@app/features/features';
 
 describe('parseFeatureFlags', () => {
   it('returns an empty object when given an empty string', () => {

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { SelectableListComponent } from './selectable-list.component';
+import { SelectableListComponent } from '@styleguide/selectable-list/selectable-list.component';
 
 interface DemoItem {
   id: number;

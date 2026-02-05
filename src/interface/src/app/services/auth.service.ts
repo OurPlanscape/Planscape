@@ -20,8 +20,8 @@ import {
   throwError,
 } from 'rxjs';
 import { User } from '@types';
-import { RedirectService } from './redirect.service';
-import { environment } from '../../environments/environment';
+import { RedirectService } from '@services/redirect.service';
+import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface LogoutResponse {

@@ -6,8 +6,8 @@ import {
   MAT_DIALOG_DATA,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { ScenarioSetupModalComponent } from './scenario-setup-modal.component';
-import { FeatureService } from '../../features/feature.service';
+import { ScenarioSetupModalComponent } from '@app/scenario/scenario-setup-modal/scenario-setup-modal.component';
+import { FeatureService } from '@app/features/feature.service';
 import { MockProvider } from 'ng-mocks';
 
 describe('ScenarioSetupModalComponent', () => {

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
@@ -9,9 +9,9 @@ import {
   descriptionsForAction,
   PrescriptionAction,
   PRESCRIPTIONS,
-} from '../prescriptions';
+} from '@app/treatments/prescriptions';
 import { ButtonComponent } from '@styleguide';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()

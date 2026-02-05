@@ -14,16 +14,16 @@ import { TreatmentGoalsService } from '@services';
 import { ScenarioCreation } from '@types';
 import { filter, map, shareReplay, take } from 'rxjs';
 import { SectionComponent, StepDirective } from '@styleguide';
-import { STAND_OPTIONS, STAND_SIZE } from '../../plan/plan-helpers';
+import { STAND_OPTIONS, STAND_SIZE } from '@app/plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FeaturesModule } from '../../features/features.module';
-import { getGroupedGoals } from '../../scenario/scenario-helper';
-import { NewScenarioState } from '../new-scenario.state';
+import { FeaturesModule } from '@app/features/features.module';
+import { getGroupedGoals } from '@app/scenario/scenario-helper';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatRadioModule } from '@angular/material/radio';
-import { PopoverComponent } from '../../../styleguide/popover/popover.component';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 @UntilDestroy()
 @Component({

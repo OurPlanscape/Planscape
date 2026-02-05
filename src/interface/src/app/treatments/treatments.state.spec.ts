@@ -1,17 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 import { TreatmentsService } from '@services/treatments.service';
-import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { TreatmentsState } from './treatments.state';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { MockProvider, MockProviders } from 'ng-mocks';
-import { MapConfigState } from '../maplibre-map/map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { TreatedStand } from '@types';
 import { firstValueFrom, of, throwError } from 'rxjs';
-import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';
-import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from './mocks';
+import {
+  RemovingStandsError,
+  UpdatingStandsError,
+} from '@app/treatments/treatment-errors';
+import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from '@app/treatments/mocks';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { DirectImpactsStateService } from './direct-impacts.state.service';
-import { FeatureService } from '../features/feature.service';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;

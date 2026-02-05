@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentsService } from '@services/treatments.service';
-import { standIsNonBurnable } from '../stands';
+import { standIsNonBurnable } from '@app/treatments/stands';
 
 @UntilDestroy()
 @Component({

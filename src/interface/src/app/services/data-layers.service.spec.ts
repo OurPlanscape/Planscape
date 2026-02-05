@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DataLayersService } from './data-layers.service';
+import { DataLayersService } from '@services/data-layers.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('DatalayersService', () => {

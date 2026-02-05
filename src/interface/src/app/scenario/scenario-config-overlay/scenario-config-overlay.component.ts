@@ -1,10 +1,10 @@
 import { Component, inject, OnDestroy } from '@angular/core';
-import { ScenarioState } from '../scenario.state';
+import { ScenarioState } from '@app/scenario/scenario.state';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
-import { STAND_OPTIONS } from 'src/app/plan/plan-helpers';
+import { STAND_OPTIONS } from '@app/plan/plan-helpers';
 import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';

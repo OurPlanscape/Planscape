@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { MapModuleService } from './map-module.service';
+import { MapModuleService } from '@services/map-module.service';
 import { MockProvider } from 'ng-mocks';
 import { ModuleService } from '@services/module.service';
 

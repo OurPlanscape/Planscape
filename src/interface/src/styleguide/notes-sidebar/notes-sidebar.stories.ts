@@ -4,7 +4,7 @@ import {
   moduleMetadata,
   StoryObj,
 } from '@storybook/angular';
-import { NotesSidebarComponent } from './notes-sidebar.component';
+import { NotesSidebarComponent } from '@styleguide/notes-sidebar/notes-sidebar.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';

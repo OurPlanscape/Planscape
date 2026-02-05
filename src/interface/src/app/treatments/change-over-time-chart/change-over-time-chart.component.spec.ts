@@ -3,13 +3,13 @@ import { MockProvider } from 'ng-mocks';
 import {
   ChangeOverTimeChartComponent,
   ImpactsResultData,
-} from './change-over-time-chart.component';
+} from '@app/treatments/change-over-time-chart/change-over-time-chart.component';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { TreatmentsService } from '@services/treatments.service';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { Metric } from '../metrics';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
+import { Metric } from '@app/treatments/metrics';
 
 describe('ChangeOverTimeChartComponent', () => {
   let component: ChangeOverTimeChartComponent;

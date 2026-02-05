@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DataLayerNameComponent } from './data-layer-name.component';
+import { DataLayerNameComponent } from '@app/data-layers/data-layer-name/data-layer-name.component';
 import { MockProvider } from 'ng-mocks';
-import { DataLayersStateService } from '../data-layers.state.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { of } from 'rxjs';
 
 describe('DataLayerNameComponent', () => {

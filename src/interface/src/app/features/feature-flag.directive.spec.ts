@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { FeatureFlagDirective } from './feature-flag.directive';
-import { FeaturesModule } from './features.module';
-import { FEATURES_JSON } from './features-config';
+import { FeatureFlagDirective } from '@app/features/feature-flag.directive';
+import { FeaturesModule } from '@app/features/features.module';
+import { FEATURES_JSON } from '@app/features/features-config';
 
 describe('FeatureFlagDirective', () => {
   let fixture: ComponentFixture<TestComponent>;

@@ -22,11 +22,11 @@ import {
 } from 'maplibre-gl';
 
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
-import { getBoundingBox } from '../../maplibre-map/maplibre.helper';
-import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
+import { getBoundingBox } from '@app/maplibre-map/maplibre.helper';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
 import { combineLatest, distinctUntilChanged, map, pairwise } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
@@ -36,9 +36,13 @@ import {
   PROJECT_AREA_OUTLINE_PAINT,
   SELECTED_STANDS_PAINT,
   STANDS_CELL_PAINT,
-} from '../map.styles';
-import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
-import { MARTIN_SOURCES } from '../map.sources';
+} from '@app/treatments/map.styles';
+import {
+  PATTERN_NAMES,
+  PatternName,
+  SEQUENCE_ACTIONS,
+} from '@app/treatments/prescriptions';
+import { MARTIN_SOURCES } from '@app/treatments/map.sources';
 
 type MapLayerData = {
   readonly name: string;

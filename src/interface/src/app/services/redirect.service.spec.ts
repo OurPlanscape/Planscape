@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { RedirectService } from './redirect.service';
+import { RedirectService } from '@services/redirect.service';
 
 describe('RedirectService', () => {
   let service: RedirectService;

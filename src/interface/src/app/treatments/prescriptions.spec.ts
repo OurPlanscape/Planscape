@@ -1,5 +1,5 @@
 import { TreatmentSummary } from '@types';
-import { getPrescriptionsFromSummary } from './prescriptions';
+import { getPrescriptionsFromSummary } from '@app/treatments/prescriptions';
 
 describe('getPrescriptionsFromSummary', () => {
   it('should return an empty array if summary is null', () => {

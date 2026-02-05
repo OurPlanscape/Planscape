@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TileButtonComponent } from './tile-button.component';
+import { TileButtonComponent } from '@styleguide/tile-button/tile-button.component';
 
 describe('TileButtonComponent', () => {
   let component: TileButtonComponent;

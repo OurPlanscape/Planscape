@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScenarioLegendComponent } from 'src/app/scenario-creation/scenario-legend/scenario-legend.component';
+import { ScenarioLegendComponent } from '@app/scenario-creation/scenario-legend/scenario-legend.component';
 import { MockProvider } from 'ng-mocks';
-import { PlanState } from 'src/app/plan/plan.state';
+import { PlanState } from '@app/plan/plan.state';
 import { of } from 'rxjs';
 import { AvailableStands, Plan } from '@types';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 
 describe('ScenarioLegendComponent', () => {
   let component: ScenarioLegendComponent;

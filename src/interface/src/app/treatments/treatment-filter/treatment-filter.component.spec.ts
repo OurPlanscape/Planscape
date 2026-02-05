@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentFilterComponent } from './treatment-filter.component';
-import { TreatmentsState } from '../treatments.state';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { TreatmentFilterComponent } from '@app/treatments/treatment-filter/treatment-filter.component';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 

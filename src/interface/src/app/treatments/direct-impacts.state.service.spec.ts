@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DirectImpactsStateService } from './direct-impacts.state.service';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 
 describe('DirectImpactsStateService', () => {
   let service: DirectImpactsStateService;

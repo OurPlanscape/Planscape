@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LeftLoadingOverlayComponent } from './left-loading-overlay.component';
+import { LeftLoadingOverlayComponent } from '@app/treatments/left-loading-overlay/left-loading-overlay.component';
 
 describe('LeftLoadingOverlayComponent', () => {
   let component: LeftLoadingOverlayComponent;

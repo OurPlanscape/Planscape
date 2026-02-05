@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MapConfigState } from '../map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 @Component({
   selector: 'app-rx-selection-toggle',

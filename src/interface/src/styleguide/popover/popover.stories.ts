@@ -8,8 +8,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 
-import { PopoverComponent } from './popover.component';
-import { ButtonComponent } from '../button/button.component';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 const meta: Meta<PopoverComponent> = {
   title: 'Components/Info Popover',

@@ -1,24 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ScenarioCreationComponent } from './scenario-creation.component';
+import { ScenarioCreationComponent } from '@app/scenario-creation/scenario-creation.component';
 import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
-import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
+import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { DataLayersStateService } from '../data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { of } from 'rxjs';
 import { ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, ValidationErrors } from '@angular/forms';
-import { ScenarioState } from '../scenario/scenario.state';
-import { StandLevelConstraintsComponent } from './step3/stand-level-constraints.component';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { StandLevelConstraintsComponent } from '@app/scenario-creation/step3/stand-level-constraints.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxMaskModule } from 'ngx-mask';
-import { NewScenarioState } from './new-scenario.state';
-import { BaseLayersComponent } from '../base-layers/base-layers/base-layers.component';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
 import { AvailableStands } from '@types';
-import { TreatmentTargetComponent } from 'src/app/scenario-creation/treatment-target/treatment-target.component';
+import { TreatmentTargetComponent } from '@app/scenario-creation/treatment-target/treatment-target.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SharedModule } from '@shared';
-import { Step1WithOverviewComponent } from './step1-with-overview/step1-with-overview.component';
+import { Step1WithOverviewComponent } from '@app/scenario-creation/step1-with-overview/step1-with-overview.component';
 import { MOCK_SCENARIO } from '@services/mocks';
 
 describe('ScenarioCreationComponent', () => {

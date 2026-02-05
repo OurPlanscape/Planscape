@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StepsActionsComponent } from './steps-actions.component';
+import { StepsActionsComponent } from '@styleguide/steps/steps-actions.component';
 
 describe('StepsActionsComponent', () => {
   let component: StepsActionsComponent;

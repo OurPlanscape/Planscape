@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuthService, PlanningAreaNotesService } from '@services';
-import { AreaNotesComponent } from './area-notes.component';
+import { AreaNotesComponent } from '@app/plan/area-notes/area-notes.component';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { MatDialogModule } from '@angular/material/dialog';

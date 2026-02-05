@@ -5,33 +5,33 @@ import {
   LayerComponent,
   MapComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
-import { MapStandsComponent } from '../map-stands/map-stands.component';
-import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapRectangleComponent } from '@app/treatments/map-rectangle/map-rectangle.component';
+import { MapStandsComponent } from '@app/treatments/map-stands/map-stands.component';
+import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { AuthService } from '@services';
 import {
   Map as MapLibreMap,
   MapSourceDataEvent,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
-import { MapStandsTxResultComponent } from '../map-stands-tx-result/map-stands-tx-result.component';
+import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
+import { MapStandsTxResultComponent } from '@app/treatments/map-stands-tx-result/map-stands-tx-result.component';
 import {
   YEAR_INTERVAL_LABELS,
   YEAR_INTERVAL_PROPERTY,
   YearInterval,
-} from '../metrics';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
+} from '@app/treatments/metrics';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
+import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
-import { FeaturesModule } from '../../features/features.module';
-import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
+import { FeaturesModule } from '@app/features/features.module';
+import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
-import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
-import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
-import { FrontendConstants } from '../../map/map.constants';
+import { RxSelectionToggleComponent } from '@app/maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
+import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
+import { FrontendConstants } from '@app/map/map.constants';
 
 @UntilDestroy()
 @Component({

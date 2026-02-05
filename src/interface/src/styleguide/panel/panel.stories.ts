@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
-import { PanelComponent } from './panel.component';
+import { PanelComponent } from '@styleguide/panel/panel.component';
 
 const meta: Meta<PanelComponent> = {
   title: 'Components/Panel',

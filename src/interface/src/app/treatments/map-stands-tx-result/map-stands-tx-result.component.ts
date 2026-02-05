@@ -8,14 +8,17 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { LngLat, Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
-import { SINGLE_STAND_HOVER, SINGLE_STAND_SELECTED } from '../map.styles';
+import {
+  SINGLE_STAND_HOVER,
+  SINGLE_STAND_SELECTED,
+} from '@app/treatments/map.styles';
 import { map, switchMap, take } from 'rxjs';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { TreatmentsState } from '../treatments.state';
-import { descriptionsForAction } from '../prescriptions';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { descriptionsForAction } from '@app/treatments/prescriptions';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
-import { MARTIN_SOURCES } from '../map.sources';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MARTIN_SOURCES } from '@app/treatments/map.sources';
 
 @UntilDestroy()
 @Component({

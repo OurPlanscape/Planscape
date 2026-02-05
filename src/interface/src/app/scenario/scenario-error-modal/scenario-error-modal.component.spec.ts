@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScenarioErrorModalComponent } from './scenario-error-modal.component';
+import { ScenarioErrorModalComponent } from '@app/scenario/scenario-error-modal/scenario-error-modal.component';
 import { MatDialogRef } from '@angular/material/dialog';
 
 describe('SavingErrorModalComponent', () => {

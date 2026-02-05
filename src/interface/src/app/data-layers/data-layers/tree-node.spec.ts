@@ -1,5 +1,8 @@
-import { DataLayer } from '../../types/data-sets';
-import { buildPathTree, TreeNode } from './tree-node';
+import { DataLayer } from '@types';
+import {
+  buildPathTree,
+  TreeNode,
+} from '@app/data-layers/data-layers/tree-node';
 
 describe('buildPathTree', () => {
   it('should build the correct hierarchy for a typical set of DataLayer items', () => {

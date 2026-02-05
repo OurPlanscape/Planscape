@@ -5,7 +5,7 @@ import {
   LayerComponent,
   GeoJSONSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { DrawService } from '../draw.service';
+import { DrawService } from '@app/maplibre-map/draw.service';
 
 @Component({
   selector: 'app-map-boundary-layer',

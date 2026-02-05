@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ScenarioFailureComponent } from './scenario-failure.component';
+import { ScenarioFailureComponent } from '@app/scenario/scenario-failure/scenario-failure.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MockProvider } from 'ng-mocks';
 import { ScenarioService } from '@services';

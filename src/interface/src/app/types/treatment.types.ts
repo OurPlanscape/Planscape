@@ -1,5 +1,8 @@
 import { Point } from 'geojson';
-import { PrescriptionAction, PRESCRIPTIONS } from '../treatments/prescriptions';
+import {
+  PrescriptionAction,
+  PRESCRIPTIONS,
+} from '@app/treatments/prescriptions';
 
 export type TreatmentStatus =
   | 'FAILURE'

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { TreatmentCardComponent } from './treatment-card.component';
+import { TreatmentCardComponent } from '@styleguide/treatment-card/treatment-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<TreatmentCardComponent> = {

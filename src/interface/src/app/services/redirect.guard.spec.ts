@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { RedirectGuard } from './redirect.guard';
+import { RedirectGuard } from '@services/redirect.guard';
 
 describe('RedirectGuard', () => {
   let guard: RedirectGuard;

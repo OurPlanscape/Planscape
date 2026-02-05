@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SentryErrorTestComponent } from './sentry-error-test.component';
+import { SentryErrorTestComponent } from '@app/standalone/sentry-error-test/sentry-error-test.component';
 
 describe('SentryErrorTestComponent', () => {
   let component: SentryErrorTestComponent;

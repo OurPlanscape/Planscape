@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClimateForesightComponent } from './climate-foresight.component';
+import { ClimateForesightComponent } from '@app/plan/climate-foresight/climate-foresight.component';
 import { Router, ActivatedRoute } from '@angular/router';
-import { PlanState } from '../plan.state';
+import { PlanState } from '@app/plan/plan.state';
 import { AuthService, WINDOW } from '@services';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of, Subject } from 'rxjs';
 import { Plan } from '@types';

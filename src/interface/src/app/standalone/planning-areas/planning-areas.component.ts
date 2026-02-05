@@ -25,22 +25,22 @@ import {
 
 import { PlanService } from '@services';
 import { Creator, PreviewPlan } from '@types';
-import { PlanningAreasDataSource } from './planning-areas.datasource';
+import { PlanningAreasDataSource } from '@app/standalone/planning-areas/planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
-} from './query-params.service';
-import { KeyPipe } from '../key.pipe';
+} from '@app/standalone/planning-areas/query-params.service';
+import { KeyPipe } from '@app/standalone/key.pipe';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
-import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
+import { PlanningAreaMenuComponent } from '@app/standalone/planning-area-menu/planning-area-menu.component';
+import { PlanningAreasSearchComponent } from '@app/standalone/planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { FeaturesModule } from 'src/app/features/features.module';
-import { PlanState } from 'src/app/plan/plan.state';
-import { PopoverComponent } from 'src/styleguide/popover/popover.component';
+import { FeaturesModule } from '@app/features/features.module';
+import { PlanState } from '@app/plan/plan.state';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 @Component({
   selector: 'app-planning-areas',

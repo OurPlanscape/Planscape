@@ -1,6 +1,6 @@
 import { ActivatedRouteSnapshot, ResolveFn } from '@angular/router';
 import { inject } from '@angular/core';
-import { RedirectService } from './redirect.service';
+import { RedirectService } from '@services/redirect.service';
 
 export const redirectResolver: ResolveFn<string | boolean> = (
   route: ActivatedRouteSnapshot

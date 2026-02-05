@@ -3,11 +3,11 @@ import { Component } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
-import { ClickOutsideDirective } from 'src/app/standalone/click-outside-directive/click-outside.directive';
-import { baseMapStyles } from 'src/app/maplibre-map/map-base-layers';
-import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { ClickOutsideDirective } from '@app/standalone/click-outside-directive/click-outside.directive';
+import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BaseMapType } from '../../types/maplibre.map.types';
+import { BaseMapType } from '@types';
 
 @Component({
   selector: 'app-map-base-dropdown',

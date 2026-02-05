@@ -10,15 +10,15 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { Plan } from '@types';
 import { MatDialogModule } from '@angular/material/dialog';
-import { LegacyMaterialModule } from '../material/legacy-material.module';
+import { LegacyMaterialModule } from '@app/material/legacy-material.module';
 import { PlanningAreaNotesService } from '@services';
-import { PlanComponent } from './plan.component';
-import { PlanModule } from './plan.module';
+import { PlanComponent } from '@app/plan/plan.component';
+import { PlanModule } from '@app/plan/plan.module';
 import { NavBarComponent } from '@shared';
 import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
+import { PlanningAreaTitlebarMenuComponent } from '@app/standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { MockDeclaration } from 'ng-mocks';
 
 describe('PlanComponent', () => {

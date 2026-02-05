@@ -6,8 +6,8 @@ import {
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
-import { ScenarioState } from '../scenario/scenario.state';
-import { scenarioLoaderResolver } from './scenario-loader.resolver';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { scenarioLoaderResolver } from '@app/resolvers/scenario-loader.resolver';
 
 describe('scenarioLoaderResolver', () => {
   let mockScenarioState: jasmine.SpyObj<ScenarioState>;

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SectionComponent } from './section.component';
+import { SectionComponent } from '@styleguide/section/section.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('CollapsiblePanelComponent', () => {

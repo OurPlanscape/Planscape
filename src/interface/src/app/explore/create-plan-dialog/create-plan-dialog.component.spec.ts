@@ -4,10 +4,10 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { CreatePlanDialogComponent } from './create-plan-dialog.component';
+import { CreatePlanDialogComponent } from '@app/explore/create-plan-dialog/create-plan-dialog.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { DrawService } from '../../maplibre-map/draw.service';
+import { DrawService } from '@app/maplibre-map/draw.service';
 
 describe('ExplorePlanCreateDialogComponent', () => {
   let component: CreatePlanDialogComponent;

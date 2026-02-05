@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { ModalComponent } from '../../modal/modal.component';
-import { ModalConfirmationDialogComponent } from '../../modal-confirmation-dialog/modal-confirmation-dialog.component';
+import { ModalComponent } from '@styleguide/modal/modal.component';
+import { ModalConfirmationDialogComponent } from '@styleguide/modal-confirmation-dialog/modal-confirmation-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DialogData } from '../dialogs';
+import { DialogData } from '@styleguide/dialogs/dialogs';
 
 @Component({
   selector: 'sg-error-dialog',

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DrawService } from './draw.service';
+import { DrawService } from '@app/maplibre-map/draw.service';
 
 describe('DrawService', () => {
   let service: DrawService;

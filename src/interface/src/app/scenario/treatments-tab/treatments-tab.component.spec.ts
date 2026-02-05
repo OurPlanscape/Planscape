@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentsTabComponent } from './treatments-tab.component';
+import { TreatmentsTabComponent } from '@app/scenario/treatments-tab/treatments-tab.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsService } from '@services/treatments.service';
 import { MockProvider, MockProviders } from 'ng-mocks';

@@ -6,7 +6,10 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
-import { descriptionsForAction, PRESCRIPTIONS } from '../prescriptions';
+import {
+  descriptionsForAction,
+  PRESCRIPTIONS,
+} from '@app/treatments/prescriptions';
 import { SequenceIconComponent, TreatmentTypeIconComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { SummaryPrescription } from '@types';

@@ -2,7 +2,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import {
   getColorForProjectPosition,
   parseResultsToTotals,
-} from '../plan-helpers';
+} from '@app/plan/plan-helpers';
 import { PROJECT_AREA_COLORS } from '@shared';
 import { CurrencyPipe, DecimalPipe, NgFor } from '@angular/common';
 

@@ -3,7 +3,7 @@ import { take } from 'rxjs';
 import { AuthService } from '@services';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 
-import { environment } from '../environments/environment';
+import { environment } from '@env/environment';
 import { OpenPanel } from '@openpanel/web';
 import { ForsysService } from '@services/forsys.service';
 import { MapModuleService } from '@services/map-module.service';

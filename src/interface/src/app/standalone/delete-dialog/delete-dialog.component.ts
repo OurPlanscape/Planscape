@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@app/material/legacy-material.module';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ModalComponent } from '@styleguide';
 

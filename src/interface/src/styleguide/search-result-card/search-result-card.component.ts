@@ -2,16 +2,16 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
-import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
-import { Prescription, TreatmentProjectArea } from 'src/app/types';
+import { TreatmentTypeIconComponent } from '@styleguide/treatment-type-icon/treatment-type-icon.component';
+import { SequenceIconComponent } from '@styleguide/sequence-icon/sequence-icon.component';
+import { Prescription, TreatmentProjectArea } from '@types';
 import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   SequenceAttributes,
-} from '../../app/treatments/prescriptions';
-import { HighlighterDirective } from '../highlighter/highlighter.directive';
+} from '@app/treatments/prescriptions';
+import { HighlighterDirective } from '@styleguide/highlighter/highlighter.directive';
 
 /**
  * Search Result Card Component

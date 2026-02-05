@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ExpandedPanelComponent, ModalComponent } from '@styleguide';
-import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
+import { StandDataChartComponent } from '@app/treatments/stand-data-chart/stand-data-chart.component';
 import { MatDialogRef } from '@angular/material/dialog';
-import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
-import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { TreatmentMapComponent } from '@app/treatments/treatment-map/treatment-map.component';
+import { TreatmentLegendComponent } from '@app/treatments/treatment-legend/treatment-legend.component';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { DirectImpactsMapComponent } from '@app/treatments/direct-impacts-map/direct-impacts-map.component';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
 
 @Component({
   selector: 'app-expanded-direct-impact-map',

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DevelopmentRouteGuard } from './development-route.guard';
+import { DevelopmentRouteGuard } from '@services/development-route.guard';
 
 describe('DevelopmentRouteGuardService', () => {
   let guard: DevelopmentRouteGuard;

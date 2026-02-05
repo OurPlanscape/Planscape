@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, DecimalPipe, NgIf } from '@angular/common';
-import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
+import { TreatmentMapComponent } from '@app/treatments/treatment-map/treatment-map.component';
+import { TreatmentPlanTabsComponent } from '@app/treatments/treatment-plan-tabs/treatment-plan-tabs.component';
 import {
   ButtonComponent,
   DebounceEditState,
@@ -9,14 +9,14 @@ import {
 } from '@styleguide';
 import { TreatmentPlan } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
-import { TreatmentsState } from '../treatments.state';
-import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
-import { canEditTreatmentPlan } from 'src/app/plan/permissions';
-import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { AcresTreatedComponent } from '@app/treatments/acres-treated/acres-treated.component';
+import { canEditTreatmentPlan } from '@app/plan/permissions';
+import { TreatmentSummaryButtonComponent } from '@app/treatments/treatment-summary-button/treatment-summary-button.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
-import { FeaturesModule } from 'src/app/features/features.module';
-import { PlanState } from '../../plan/plan.state';
+import { TreatmentPlanNotesComponent } from '@app/treatments/treatment-plan-notes/treatment-plan-notes.component';
+import { FeaturesModule } from '@app/features/features.module';
+import { PlanState } from '@app/plan/plan.state';
 
 @Component({
   selector: 'app-treatment-overview',

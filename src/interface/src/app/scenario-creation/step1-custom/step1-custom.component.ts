@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {
   OverviewStep,
   ProcessOverviewComponent,
-} from '../process-overview/process-overview.component';
+} from '@app/scenario-creation/process-overview/process-overview.component';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import {
@@ -11,7 +11,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { CUSTOM_SCENARIO_OVERVIEW_STEPS } from '../../scenario/scenario.constants';
+import { CUSTOM_SCENARIO_OVERVIEW_STEPS } from '@app/scenario/scenario.constants';
 import { KeyValue, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,8 +19,8 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { filter, take } from 'rxjs';
-import { STAND_OPTIONS, STAND_SIZE } from '../../plan/plan-helpers';
-import { NewScenarioState } from '../new-scenario.state';
+import { STAND_OPTIONS, STAND_SIZE } from '@app/plan/plan-helpers';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { ActivatedRoute } from '@angular/router';
 
 @UntilDestroy()

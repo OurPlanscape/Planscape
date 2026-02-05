@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TreatmentOpportunityChartComponent } from './treatment-opportunity-chart.component';
+import { TreatmentOpportunityChartComponent } from '@app/scenario/treatment-opportunity-chart/treatment-opportunity-chart.component';
 import { MOCK_SCENARIO } from '@services/mocks';
 import { ScenarioResult } from '@types';
 

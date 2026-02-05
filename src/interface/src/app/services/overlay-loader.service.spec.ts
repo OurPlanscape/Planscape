@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { OverlayLoaderService } from './overlay-loader.service';
+import { OverlayLoaderService } from '@services/overlay-loader.service';
 
 describe('OverlayLoaderService', () => {
   let service: OverlayLoaderService;

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
-import { ChipSelectorComponent } from './chip-selector.component';
+import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 
 const meta: Meta<ChipSelectorComponent<LayerObject>> = {
   title: 'Components/Chip Selector',

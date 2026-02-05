@@ -1,6 +1,6 @@
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
 import { FormsModule } from '@angular/forms';
-import { HighlighterDirective } from './highlighter.directive';
+import { HighlighterDirective } from '@styleguide/highlighter/highlighter.directive';
 
 interface StoryProps {
   searchTerm?: string;

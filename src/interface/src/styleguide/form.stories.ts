@@ -3,15 +3,15 @@ import {
   type Meta,
   type StoryObj,
 } from '@storybook/angular';
-import { InputFieldComponent } from './input/input-field.component';
+import { InputFieldComponent } from '@styleguide/input/input-field.component';
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { InputDirective } from './input/input.directive';
+import { InputDirective } from '@styleguide/input/input.directive';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonComponent } from './button/button.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';

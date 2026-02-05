@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { resetDatalayerResolver } from '../resolvers/reset-datalayer.resolver';
-import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
-import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
-import { ScenarioComponent } from './scenario.component';
+import { resetDatalayerResolver } from '@app/resolvers/reset-datalayer.resolver';
+import { ScenarioRoutePlaceholderComponent } from '@app/scenario/scenario-route-placeholder/scenario-route-placeholder';
+import { scenarioLoaderResolver } from '@app/resolvers/scenario-loader.resolver';
+import { ScenarioComponent } from '@app/scenario/scenario.component';
 import { canDeactivateGuard } from '@services/can-deactivate.guard';
 
 const routes: Routes = [

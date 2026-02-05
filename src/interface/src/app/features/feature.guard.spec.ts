@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree } from '@angular/router';
-import { createFeatureGuard } from './feature.guard';
-import { FeatureService } from './feature.service';
+import { createFeatureGuard } from '@app/features/feature.guard';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('createFeatureGuard', () => {
   let featureServiceSpy: jasmine.SpyObj<FeatureService>;

@@ -4,9 +4,9 @@ import {
   argsToTemplate,
   moduleMetadata,
 } from '@storybook/angular';
-import { ExpanderSectionComponent } from '../expander-section/expander-section.component';
+import { ExpanderSectionComponent } from '@styleguide/expander-section/expander-section.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { ExpanderItemComponent } from '../expander-item/expander-item.component';
+import { ExpanderItemComponent } from '@styleguide/expander-item/expander-item.component';
 
 const meta: Meta<ExpanderSectionComponent> = {
   title: 'Components/Expander Section',

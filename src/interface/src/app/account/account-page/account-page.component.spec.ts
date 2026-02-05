@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AccountPageComponent } from './account-page.component';
+import { AccountPageComponent } from '@app/account/account-page/account-page.component';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MenuComponent } from '../menu/menu.component';
+import { MenuComponent } from '@app/account/menu/menu.component';
 
 describe('AccountPageComponent', () => {
   let component: AccountPageComponent;

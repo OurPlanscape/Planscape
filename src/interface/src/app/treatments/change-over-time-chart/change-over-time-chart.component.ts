@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { DirectImpactsStateService } from '@app/treatments/direct-impacts.state.service';
 import {
   combineLatest,
   distinctUntilChanged,
@@ -15,13 +15,13 @@ import {
   Metric,
   SLOT_COLORS,
   SLOT_PALETTES,
-} from '../metrics';
+} from '@app/treatments/metrics';
 import { TreatmentsService } from '@services/treatments.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import deepEqual from 'fast-deep-equal';
 import { TreatmentPlan } from '@types';
-import { getBasicChartOptions, updateYAxisRange } from '../../chart-helper';
+import { getBasicChartOptions, updateYAxisRange } from '@app/chart-helper';
 
 export interface ImpactsResultData {
   year: number;

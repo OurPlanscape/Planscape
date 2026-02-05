@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { InputFieldComponent } from './input-field.component';
-import { InputDirective } from './input.directive';
+import { InputFieldComponent } from '@styleguide/input/input-field.component';
+import { InputDirective } from '@styleguide/input/input.directive';
 import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';

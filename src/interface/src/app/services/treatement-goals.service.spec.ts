@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TreatmentGoalsService } from './treatment-goals.service';
+import { TreatmentGoalsService } from '@services/treatment-goals.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TreatmentGoalsService', () => {

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapBaseLayerTooltipComponent } from './map-base-layer-tooltip.component';
+import { MapBaseLayerTooltipComponent } from '@app/maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
 
 describe('MapBaseLayerTooltipComponent', () => {
   let component: MapBaseLayerTooltipComponent;

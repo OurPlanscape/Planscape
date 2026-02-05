@@ -1,9 +1,9 @@
 import { Component, Inject } from '@angular/core';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DialogData } from '../dialogs';
-import { ModalComponent } from '../../modal/modal.component';
-import { ModalConfirmationDialogComponent } from '../../modal-confirmation-dialog/modal-confirmation-dialog.component';
+import { DialogData } from '@styleguide/dialogs/dialogs';
+import { ModalComponent } from '@styleguide/modal/modal.component';
+import { ModalConfirmationDialogComponent } from '@styleguide/modal-confirmation-dialog/modal-confirmation-dialog.component';
 
 @Component({
   selector: 'sg-pending-dialog',

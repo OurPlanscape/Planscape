@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MenuCloseReason } from '@angular/material/menu';
-import { FilterDropdownComponent } from './filter-dropdown.component';
+import { FilterDropdownComponent } from '@styleguide/filter-dropdown/filter-dropdown.component';
 
 type Item = { id: number; name: string };
 

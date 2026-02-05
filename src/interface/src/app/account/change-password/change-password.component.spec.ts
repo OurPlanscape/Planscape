@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ChangePasswordComponent } from './change-password.component';
+import { ChangePasswordComponent } from '@app/account/change-password/change-password.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '@types';
-import { FeatureService } from 'src/app/features/feature.service';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('ChangePasswordComponent', () => {
   let component: ChangePasswordComponent;

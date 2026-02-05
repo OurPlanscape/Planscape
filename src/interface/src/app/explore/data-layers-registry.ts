@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DataLayersStateService } from '../data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })

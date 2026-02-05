@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SharePlanDialogComponent } from './share-plan-dialog.component';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { SharePlanDialogComponent } from '@app/home/share-plan-dialog/share-plan-dialog.component';
+import { LegacyMaterialModule } from '@app/material/legacy-material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthService, InvitesService } from '@services';
 import { BehaviorSubject, of } from 'rxjs';
 import { Plan, User } from '@types';
-import { ChipInputComponent } from '../chip-input/chip-input.component';
+import { ChipInputComponent } from '@app/home/chip-input/chip-input.component';
 import { SectionLoaderComponent } from '@shared';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
-import { PlanState } from '../../plan/plan.state';
+import { PlanState } from '@app/plan/plan.state';
 import { MOCK_PLAN } from '@services/mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 

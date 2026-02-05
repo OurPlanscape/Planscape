@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentNavbarMenuComponent } from './treatment-navbar-menu.component';
+import { TreatmentNavbarMenuComponent } from '@app/treatments/treatment-navbar-menu/treatment-navbar-menu.component';
 import { MockProviders } from 'ng-mocks';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { TreatmentsService } from '@services/treatments.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';

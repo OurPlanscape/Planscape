@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MapDataLayerComponent } from './map-data-layer.component';
+import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { MapConfigState } from '../map-config.state';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;

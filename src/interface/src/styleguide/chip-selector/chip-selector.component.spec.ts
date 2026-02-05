@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ChipSelectorComponent } from './chip-selector.component';
+import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 
 describe('ChipSelectorComponent', () => {
   let component: ChipSelectorComponent<any>;

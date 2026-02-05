@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ReviewTreatmentPlanDialogComponent } from './review-treatment-plan-dialog.component';
+import { ReviewTreatmentPlanDialogComponent } from '@app/treatments/review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { MOCK_SUMMARY } from '../mocks';
+import { MOCK_SUMMARY } from '@app/treatments/mocks';
 
 describe('ReviewTreatmentPlanDialogComponent', () => {
   let component: ReviewTreatmentPlanDialogComponent;

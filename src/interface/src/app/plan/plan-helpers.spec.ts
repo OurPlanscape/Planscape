@@ -5,7 +5,7 @@ import {
   processCumulativeAttainment,
   flattenMultipolygons,
   stripZCoords,
-} from './plan-helpers';
+} from '@app/plan/plan-helpers';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 import { GeoJSONStoreFeatures } from 'terra-draw';

@@ -16,9 +16,12 @@ import {
   MapLibreEvent,
 } from 'maplibre-gl';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
-import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
+import {
+  defaultBaseLayerFill,
+  defaultBaseLayerLine,
+} from '@app/maplibre-map/maplibre.helper';
 import { take } from 'rxjs';
-import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-map-arcgis-vector-layer',

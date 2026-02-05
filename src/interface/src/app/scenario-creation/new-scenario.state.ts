@@ -22,11 +22,11 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
-import { isCustomScenario } from 'src/app/scenario/scenario-helper';
+import { isCustomScenario } from '@app/scenario/scenario-helper';
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
-} from 'src/app/scenario/scenario.constants';
+} from '@app/scenario/scenario.constants';
 
 @Injectable()
 export class NewScenarioState {

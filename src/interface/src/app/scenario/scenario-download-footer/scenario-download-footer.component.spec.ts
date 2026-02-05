@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ScenarioDownloadFooterComponent } from './scenario-download-footer.component';
+import { ScenarioDownloadFooterComponent } from '@app/scenario/scenario-download-footer/scenario-download-footer.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 

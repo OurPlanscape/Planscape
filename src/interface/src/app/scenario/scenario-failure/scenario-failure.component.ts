@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { FormMessageType, ScenarioResultStatus } from '@types';
-import { FeaturesModule } from 'src/app/features/features.module';
+import { FeaturesModule } from '@app/features/features.module';
 
 @Component({
   standalone: true,

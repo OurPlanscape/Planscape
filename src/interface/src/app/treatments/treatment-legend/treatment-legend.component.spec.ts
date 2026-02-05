@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { TreatmentLegendComponent } from './treatment-legend.component';
+import { TreatmentLegendComponent } from '@app/treatments/treatment-legend/treatment-legend.component';
 import { MockProvider } from 'ng-mocks';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 describe('TreatmentLegendComponent', () => {
   let component: TreatmentLegendComponent;

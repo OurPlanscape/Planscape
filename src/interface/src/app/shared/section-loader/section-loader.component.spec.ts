@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SectionLoaderComponent } from './section-loader.component';
+import { SectionLoaderComponent } from '@shared/section-loader/section-loader.component';
 
 describe('SectionLoaderComponent', () => {
   let component: SectionLoaderComponent;

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapStandsComponent } from './map-stands.component';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { MapStandsComponent } from '@app/treatments/map-stands/map-stands.component';
+import { SelectedStandsState } from '@app/treatments/treatment-map/selected-stands.state';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import {
   ImageComponent,
@@ -9,9 +9,9 @@ import {
   MapComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { TreatmentsState } from '@app/treatments/treatments.state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { TreatedStandsState } from '@app/treatments/treatment-map/treated-stands.state';
 import { of } from 'rxjs';
 
 describe('MapStandsComponent', () => {

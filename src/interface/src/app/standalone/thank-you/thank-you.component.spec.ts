@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ThankYouComponent } from './thank-you.component';
+import { ThankYouComponent } from '@app/standalone/thank-you/thank-you.component';
 
 describe('ThankYouComponent', () => {
   let component: ThankYouComponent;

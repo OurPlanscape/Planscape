@@ -13,7 +13,7 @@ import {
 } from '@angular/common/http';
 import { throwError } from 'rxjs';
 
-import { LoggingHttpInterceptor } from './logging-http.interceptor';
+import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
 
 describe('LoggingHttpInterceptor', () => {
   let http: HttpClient;

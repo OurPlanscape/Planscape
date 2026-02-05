@@ -4,7 +4,7 @@ import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
-import { acresForFeature } from '../maplibre-map/maplibre.helper';
+import { acresForFeature } from '@app/maplibre-map/maplibre.helper';
 import { Feature, feature, MultiPolygon, Polygon } from '@turf/helpers';
 import {
   BehaviorSubject,

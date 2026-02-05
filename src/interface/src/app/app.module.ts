@@ -14,26 +14,26 @@ import {
   NgxGoogleAnalyticsModule,
   NgxGoogleAnalyticsRouterModule,
 } from 'ngx-google-analytics';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+import { AppRoutingModule } from '@app/app-routing.module';
+import { AppComponent } from '@app/app.component';
 import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
-import { ChipInputComponent } from './home/chip-input/chip-input.component';
+import { ChipInputComponent } from '@app/home/chip-input/chip-input.component';
 
-import { FeaturesModule } from './features/features.module';
-import { HomeComponent } from './home/home.component';
+import { FeaturesModule } from '@app/features/features.module';
+import { HomeComponent } from '@app/home/home.component';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
 
-import { LegacyMaterialModule } from './material/legacy-material.module';
+import { LegacyMaterialModule } from '@app/material/legacy-material.module';
 
 import { NgxMaskModule } from 'ngx-mask';
 
-import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
+import { SharePlanDialogComponent } from '@app/home/share-plan-dialog/share-plan-dialog.component';
 import { SharedModule } from '@shared';
-import { WelcomeComponent } from './home/welcome/welcome.component';
-import { environment } from 'src/environments/environment';
-import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
+import { WelcomeComponent } from '@app/home/welcome/welcome.component';
+import { environment } from '@env/environment';
+import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
 
-import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
+import { PlanningAreasComponent } from '@app/standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import * as Sentry from '@sentry/angular';
 import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';

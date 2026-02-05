@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate, moduleMetadata } from '@storybook/angular';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ChartComponent } from './chart.component';
+import { ChartComponent } from '@styleguide/chart/chart.component';
 import { NgChartsModule } from 'ng2-charts';
 
 const meta: Meta<ChartComponent> = {

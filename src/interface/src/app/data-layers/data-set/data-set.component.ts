@@ -4,11 +4,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { DataLayer, DataLayerSearchResult } from '@types';
 import { ButtonComponent, HighlighterDirective } from '@styleguide';
 import { MatRadioModule } from '@angular/material/radio';
-import { DataLayersStateService } from '../data-layers.state.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
+import { DataLayerTooltipComponent } from '@app/data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
