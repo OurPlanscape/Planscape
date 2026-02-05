@@ -49,7 +49,9 @@
         *ngIf="(hasNoData$ | async) === false"
         [displayAddButton]="displayAddButton"></app-data-layer-tree>
 
-      <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
+      <div *ngIf="hasNoData$ | async" class="no-data">
+        No data layers available for this planning area location.
+      </div>
     </ng-container>
 
     <!--Listing Datasets, no selection yet-->
