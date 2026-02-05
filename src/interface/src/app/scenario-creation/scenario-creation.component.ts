@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { AsyncPipe, NgClass, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf, NgFor } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -89,6 +89,7 @@ import { MapModuleService } from '@services/map-module.service';
   imports: [
     AsyncPipe,
     ReactiveFormsModule,
+    NgFor,
     NgIf,
     StepsComponent,
     CdkStepperModule,
@@ -168,7 +169,8 @@ export class ScenarioCreationComponent implements OnInit {
     map((goal) => goal?.name)
   );
 
-  priorityObjectives$ = this.newScenarioState.scenarioConfig$.pipe(
+  // TODO: in anticipation of using this within other components...
+  priorityObjectivesDetails$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config: ScenarioConfig) => config.priority_objectives),
     filter((ids): ids is number[] => Array.isArray(ids) && ids.length > 0),
     distinctUntilChanged(
@@ -182,8 +184,10 @@ export class ScenarioCreationComponent implements OnInit {
           return of<DataLayer[]>([]);
         })
       )
-    ),
-    map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
+    ), shareReplay(1));
+
+  priorityObjectivesNames$ = this.priorityObjectivesDetails$.pipe(
+    map((layers: DataLayer[]) => layers.map(layer => layer.name).join(', '))
   );
 
   // Copy of index locally to show the last step as completed

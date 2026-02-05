@@ -41,7 +41,7 @@
         [standSize]="(standSize$ | async) || null"
         [treatmentGoal]="(treatmentGoalName$ | async) || ''"
         [priorityObjectives]="
-          (priorityObjectives$ | async) || ''
+          (priorityObjectivesNames$ | async) || ''
         "></app-scenario-summary>
 
       <ng-container *ngIf="!isCustomScenario(scenarioType)">
