@@ -23,11 +23,11 @@ import {
   GeoPackageDownloadStatus,
   StyleJson,
 } from '@types';
-import { generateColorFunction as generateColorFunctionFromStyle } from '../../../../data-layers/utilities';
-import { MapConfigState } from '../../../../maplibre-map/map-config.state';
-import { PlanState } from '../../../plan.state';
+import { generateColorFunction as generateColorFunctionFromStyle } from '@data-layers/utilities';
+import { MapConfigState } from '@maplibre-map/map-config.state';
+import { PlanState } from '@plan/plan.state';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { PlanningAreaLayerComponent } from '../../../../maplibre-map/planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
   RequestTransformFunction,
@@ -36,26 +36,26 @@ import {
 import {
   addRequestHeaders,
   getBoundsFromGeometry,
-} from '../../../../maplibre-map/maplibre.helper';
+} from '@maplibre-map/maplibre.helper';
 import { AuthService, ClimateForesightService } from '@services';
-import { DataLayersService } from '../../../../services/data-layers.service';
-import { environment } from '../../../../../environments/environment';
+import { DataLayersService } from '@services/data-layers.service';
+import { environment } from '@env/environment';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
-import { MapConfigService } from '../../../../maplibre-map/map-config.service';
+import { MapConfigService } from '@maplibre-map/map-config.service';
 import {
   LegendEntry,
   MpatLegendComponent,
-} from './mpat-legend/mpat-legend.component';
+} from '@plan/climate-foresight/climate-foresight-run/analysis/mpat-legend/mpat-legend.component';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
-} from '../../../../shared/constants';
-import { SharedModule } from '../../../../shared/shared.module';
+} from '@shared/constants';
+import { SharedModule } from '@shared/shared.module';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
-import { PopoverComponent } from 'src/styleguide/popover/popover.component';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 type ColorFunction = (pixel: TypedArray, rgba: Uint8ClampedArray) => void;
 

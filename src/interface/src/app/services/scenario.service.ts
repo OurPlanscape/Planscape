@@ -10,8 +10,8 @@ import {
   ScenarioV3Payload,
 } from '@types';
 import { CreateScenarioError } from './errors';
-import { environment } from '../../environments/environment';
-import { FeatureService } from '../features/feature.service';
+import { environment } from '@env/environment';
+import { FeatureService } from '@features/feature.service';
 
 @Injectable({
   providedIn: 'root',

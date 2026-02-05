@@ -4,8 +4,8 @@ import { DataLayerSearchResult, DataSetSearchResult } from '@types';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent, SearchBarComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { GroupedResults } from '../data-layers/search';
-import { DataSetComponent } from '../data-set/data-set.component';
+import { GroupedResults } from '@data-layers/data-layers/search';
+import { DataSetComponent } from '@data-layers/data-set/data-set.component';
 import { DataLayersStateService } from '../data-layers.state.service';
 
 @Component({

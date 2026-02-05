@@ -14,7 +14,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { of, throwError } from 'rxjs';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 
 @Component({

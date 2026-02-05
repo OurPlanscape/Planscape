@@ -12,11 +12,11 @@ import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, switchMap } from 'rxjs';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
+import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
-import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
+import { DirectImpactsMapComponent } from '@treatments/direct-impacts-map/direct-impacts-map.component';
 
 import {
   ButtonComponent,
@@ -30,31 +30,31 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
-import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
-import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
+import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.component';
+import { TreatmentLegendComponent } from '@treatments/treatment-legend/treatment-legend.component';
+import { MetricFiltersComponent } from '@treatments/metric-filters/metric-filters.component';
 import { ImpactsMetric } from '../metrics';
 
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
+import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data-chart.component';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
+import { ChangeOverTimeChartComponent } from '@treatments/change-over-time-chart/change-over-time-chart.component';
 import { MatSelectModule } from '@angular/material/select';
-import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
-import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
+import { ExpandedStandDataChartComponent } from '@treatments/expanded-stand-data-chart/expanded-stand-data-chart.component';
+import { ExpandedChangeOverTimeChartComponent } from '@treatments/expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
+import { ExpandedDirectImpactMapComponent } from '@treatments/expanded-direct-impact-map/expanded-direct-impact-map.component';
 import { TreatmentProjectArea } from '@types';
 import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService } from '@services';
-import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
+import { STAND_SIZES, STAND_SIZES_LABELS } from '@plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
-import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
-import { ScenarioState } from 'src/app/scenario/scenario.state';
+import { MetricSelectorComponent } from '@treatments/metric-selector/metric-selector.component';
+import { TreatmentFilterComponent } from '@treatments/treatment-filter/treatment-filter.component';
+import { TreatmentSummaryButtonComponent } from '@treatments/treatment-summary-button/treatment-summary-button.component';
+import { ScenarioState } from '@scenario/scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 

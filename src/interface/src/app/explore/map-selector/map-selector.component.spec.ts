@@ -6,9 +6,9 @@ import {
 } from '@angular/core/testing';
 import { MapSelectorComponent } from './map-selector.component';
 import { BehaviorSubject, skip } from 'rxjs';
-import { MultiMapConfigState } from 'src/app/maplibre-map/multi-map-config.state';
+import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { DataLayersRegistryService } from '../data-layers-registry';
-import { DynamicDataLayersComponent } from '../dynamic-data-layers/dynamic-data-layers.component';
+import { DynamicDataLayersComponent } from '@explore/dynamic-data-layers/dynamic-data-layers.component';
 import { MockDeclaration } from 'ng-mocks';
 
 describe('MapSelectorComponent', () => {

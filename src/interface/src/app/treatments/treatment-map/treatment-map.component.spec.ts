@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TreatmentMapComponent } from './treatment-map.component';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { TreatedStandsState } from './treated-stands.state';
-import { MapStandsComponent } from '../map-stands/map-stands.component';
-import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
+import { MapStandsComponent } from '@treatments/map-stands/map-stands.component';
+import { MapRectangleComponent } from '@treatments/map-rectangle/map-rectangle.component';
 import { SelectedStandsState } from './selected-stands.state';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
@@ -12,10 +12,10 @@ import { Geometry } from 'geojson';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AuthService, PlanService } from '@services';
 import { TreatmentsState } from '../treatments.state';
-import { MapProjectAreasComponent } from 'src/app/maplibre-map/map-project-areas/map-project-areas.component';
+import { MapProjectAreasComponent } from '@maplibre-map/map-project-areas/map-project-areas.component';
 import { ActivatedRoute } from '@angular/router';
-import { DEFAULT_BASE_MAP } from '../../types/maplibre.map.types';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DEFAULT_BASE_MAP } from '@types';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;

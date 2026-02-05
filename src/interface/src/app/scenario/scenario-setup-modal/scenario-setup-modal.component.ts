@@ -25,8 +25,8 @@ import {
 import { map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
-import { ForsysData } from '../../types/module.types';
-import { FeatureService } from 'src/app/features/feature.service';
+import { ForsysData } from '@types';
+import { FeatureService } from '@features/feature.service';
 
 @Component({
   selector: 'app-scenario-setup-modal',

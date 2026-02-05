@@ -21,12 +21,12 @@ import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentTypeIconComponent } from '@styleguide';
 import { MatTableModule } from '@angular/material/table';
-import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
+import { NonForestedDataComponent } from '@treatments/non-forested-data/non-forested-data.component';
 import { standIsForested } from '../stands';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { getBasicChartOptions, updateYAxisRange } from '../../chart-helper';
+import { MetricSelectorComponent } from '@treatments/metric-selector/metric-selector.component';
+import { getBasicChartOptions, updateYAxisRange } from '@app/chart-helper';
 
 @UntilDestroy()
 @Component({

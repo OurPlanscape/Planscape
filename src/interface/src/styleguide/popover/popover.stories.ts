@@ -9,7 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 
 import { PopoverComponent } from './popover.component';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 const meta: Meta<PopoverComponent> = {
   title: 'Components/Info Popover',

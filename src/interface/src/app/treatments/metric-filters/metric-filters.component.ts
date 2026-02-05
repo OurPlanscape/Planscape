@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { AsyncPipe, NgFor } from '@angular/common';
 
-import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
+import { MetricSelectorComponent } from '@treatments/metric-selector/metric-selector.component';
 import {
   ImpactsMetric,
   ImpactsMetricSlot,
@@ -10,7 +10,7 @@ import {
   METRICS,
   SLOT_COLORS,
 } from '../metrics';
-import { FilterDropdownComponent } from 'src/styleguide';
+import { FilterDropdownComponent } from '@styleguide';
 
 @Component({
   selector: 'app-metric-filters',

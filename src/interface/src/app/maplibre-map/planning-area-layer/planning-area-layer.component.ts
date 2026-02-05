@@ -5,11 +5,11 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { BASE_COLORS } from '../../treatments/map.styles';
+import { BASE_COLORS } from '@treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { PlanState } from '../../plan/plan.state';
+import { PlanState } from '@plan/plan.state';
 import { map } from 'rxjs';
-import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { MARTIN_SOURCES } from '@treatments/map.sources';
 
 @Component({
   selector: 'app-planning-area-layer',

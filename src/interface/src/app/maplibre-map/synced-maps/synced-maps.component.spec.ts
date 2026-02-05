@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SyncedMapsComponent } from './synced-maps.component';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
-import { ExploreMapComponent } from '../explore-map/explore-map.component';
+import { ExploreMapComponent } from '@maplibre-map/explore-map/explore-map.component';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { of } from 'rxjs';
 import { LngLatBounds } from 'maplibre-gl';

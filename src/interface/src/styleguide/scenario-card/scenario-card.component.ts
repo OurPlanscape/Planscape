@@ -20,8 +20,8 @@ import { ScenarioResultStatus } from '@types';
 import {
   StatusChipComponent,
   StatusChipStatus,
-} from '../status-chip/status-chip.component';
-import { ButtonComponent } from '../button/button.component';
+} from '@styleguide/status-chip/status-chip.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
 

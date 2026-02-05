@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Step1WithOverviewComponent } from './step1-with-overview.component';
 import { MockComponents } from 'ng-mocks';
-import { Step1Component } from '../step1/step1.component';
-import { ProcessOverviewComponent } from '../process-overview/process-overview.component';
+import { Step1Component } from '@scenario-creation/step1/step1.component';
+import { ProcessOverviewComponent } from '@scenario-creation/process-overview/process-overview.component';
 
 describe('Step1WithOverviewComponent', () => {
   let component: Step1WithOverviewComponent;

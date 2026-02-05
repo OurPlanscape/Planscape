@@ -2,11 +2,11 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
-import { getFileExtensionFromFile, getSafeFileName } from '../../shared/files';
-import { DataLayersService } from '../../services/data-layers.service';
+import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
+import { DataLayersService } from '@services/data-layers.service';
 import { Observable, shareReplay, take } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
-import { AccountRoutingModule } from 'src/app/account/account-routing.module';
+import { AccountRoutingModule } from '@account/account-routing.module';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()

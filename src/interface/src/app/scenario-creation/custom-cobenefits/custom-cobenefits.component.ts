@@ -2,13 +2,13 @@ import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { ChipSelectorComponent } from '../../../styleguide/chip-selector/chip-selector.component';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioCreation } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersService } from '@services';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { catchError, finalize, map, of, switchMap, take } from 'rxjs';
 

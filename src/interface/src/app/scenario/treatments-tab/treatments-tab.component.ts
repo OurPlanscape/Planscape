@@ -3,16 +3,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TreatmentsService } from '@services/treatments.service';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@types';
-import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { interval, take } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
+import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import {
   canCloneTreatmentPlan,
   canDeleteTreatmentPlan,
-} from 'src/app/plan/permissions';
+} from '@plan/permissions';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TreatmentCardComponent } from '@styleguide';

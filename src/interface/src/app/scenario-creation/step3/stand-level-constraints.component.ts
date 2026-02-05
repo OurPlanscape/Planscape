@@ -12,7 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SectionComponent } from '@styleguide';
 import { NgxMaskModule } from 'ngx-mask';
-import { StepDirective } from '../../../styleguide/steps/step.component';
+import { StepDirective } from '@styleguide/steps/step.component';
 import { Constraint, ScenarioCreation } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { debounceTime, map, switchMap } from 'rxjs';

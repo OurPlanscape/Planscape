@@ -6,10 +6,10 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, of } from 'rxjs';
-import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
+import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data-chart.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 

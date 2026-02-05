@@ -3,8 +3,8 @@ import { NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { ButtonComponent } from '../button/button.component';
-import { PopoverComponent } from '../popover/popover.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 /**
  * SectionComponent displays a panel with a title and optional tooltip.

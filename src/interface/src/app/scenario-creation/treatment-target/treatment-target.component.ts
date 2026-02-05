@@ -17,9 +17,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
 import { filter, map, take } from 'rxjs';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { STAND_SIZES } from 'src/app/plan/plan-helpers';
+import { STAND_SIZES } from '@plan/plan-helpers';
 
 @UntilDestroy()
 @Component({

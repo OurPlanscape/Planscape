@@ -5,7 +5,7 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MenuComponent } from '../menu/menu.component';
+import { MenuComponent } from '@account/menu/menu.component';
 
 describe('AccountPageComponent', () => {
   let component: AccountPageComponent;

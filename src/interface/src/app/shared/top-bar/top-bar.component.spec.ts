@@ -13,7 +13,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { MockDeclarations } from 'ng-mocks';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuHarness } from '@angular/material/menu/testing';

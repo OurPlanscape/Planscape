@@ -4,7 +4,7 @@ import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
+import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data-chart.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ExpandedStandDataChartComponent', () => {

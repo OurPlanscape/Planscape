@@ -8,8 +8,8 @@ import { AuthService } from '@services';
 import { SignupComponent } from './signup.component';
 
 import { MockComponent } from 'ng-mocks';
-import { InfoCardComponent } from '../info-card/info-card.component';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { InfoCardComponent } from '@standalone/info-card/info-card.component';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;

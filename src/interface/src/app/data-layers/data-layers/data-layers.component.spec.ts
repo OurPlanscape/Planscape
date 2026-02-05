@@ -4,7 +4,7 @@ import { DataLayersComponent } from './data-layers.component';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { FeaturesModule } from '../../features/features.module';
+import { FeaturesModule } from '@features/features.module';
 
 describe('DataLayersComponent', () => {
   let component: DataLayersComponent;

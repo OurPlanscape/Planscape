@@ -15,7 +15,7 @@ import { TreatmentStatus } from '@types';
 import {
   StatusChipComponent,
   StatusChipStatus,
-} from '../status-chip/status-chip.component';
+} from '@styleguide/status-chip/status-chip.component';
 
 @Component({
   selector: 'sg-treatment-card',

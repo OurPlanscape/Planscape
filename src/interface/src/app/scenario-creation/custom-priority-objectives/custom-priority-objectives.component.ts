@@ -7,9 +7,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { ChipSelectorComponent } from '../../../styleguide/chip-selector/chip-selector.component';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioCreation } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';

@@ -4,7 +4,7 @@ import { CreateTreatmentDialogComponent } from './create-treatment-dialog.compon
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { MockProvider } from 'ng-mocks';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 

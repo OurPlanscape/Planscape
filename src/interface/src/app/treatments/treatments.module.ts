@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TreatmentsRoutingModule } from './treatments-routing.module';
-import { ReviewTreatmentPlanDialogComponent } from './review-treatment-plan-dialog/review-treatment-plan-dialog.component';
-import { TreatmentToPDFService } from 'src/app/treatments/treatment-to-pdf.service';
-import { MapConfigService } from '../maplibre-map/map-config.service';
-import { DataLayersStateService } from '../data-layers/data-layers.state.service';
+import { ReviewTreatmentPlanDialogComponent } from '@treatments/review-treatment-plan-dialog/review-treatment-plan-dialog.component';
+import { TreatmentToPDFService } from './treatment-to-pdf.service';
+import { MapConfigService } from '@maplibre-map/map-config.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 
 @NgModule({
   imports: [
