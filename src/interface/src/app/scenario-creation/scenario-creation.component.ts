@@ -109,8 +109,7 @@ export class ScenarioCreationComponent implements OnInit {
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
-  // TODO: we can remove this status check when the DRAFTS FF is removed
-  scenarioStatus = 'NOT_STARTED';
+
   scenarioName = '';
 
   form = new FormGroup({
@@ -227,7 +226,6 @@ export class ScenarioCreationComponent implements OnInit {
         this.newScenarioState.setScenarioConfig(currentConfig);
         // Setting the initial state for the configuration
         this.config = currentConfig;
-        this.scenarioStatus = scenario.scenario_result?.status ?? 'NOT STARTED';
       });
   }
 
@@ -261,19 +259,15 @@ export class ScenarioCreationComponent implements OnInit {
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
 
-        if (this.scenarioStatus === 'DRAFT') {
-          if (
-            this.scenarioName !== this.form.get('scenarioName')?.value &&
-            this.form.get('scenarioName')?.value !== null
-          ) {
-            this.handleNameChange(
-              this.form.get('scenarioName')?.value ?? this.scenarioName
-            );
-          }
-          return this.savePatch(data).pipe(catchError(() => of(false)));
+        if (
+          this.scenarioName !== this.form.get('scenarioName')?.value &&
+          this.form.get('scenarioName')?.value !== null
+        ) {
+          this.handleNameChange(
+            this.form.get('scenarioName')?.value ?? this.scenarioName
+          );
         }
-
-        return of(true);
+        return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
       catchError(() => of(false))
     );

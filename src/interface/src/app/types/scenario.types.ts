@@ -6,7 +6,6 @@ export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM';
 
 export type ScenarioResultStatus =
   | 'LOADING' // when loading results
-  | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
   | 'PENDING' // Scenario created, in queue
   | 'RUNNING' // Scenario created, being processed
   | 'SUCCESS' // Run completed successfully
