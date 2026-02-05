@@ -995,19 +995,26 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
     def validate(self, attrs):
         instance = self.instance
         scenario_type = instance.type
+        planning_approach = attrs.get("planning_approach", instance.planning_approach) 
         treatment_goal = attrs.get("treatment_goal", instance.treatment_goal)
         configuration = attrs.get("configuration", {})
-        # Allow updates that only change the stand_size without other validations as it is the first step
-        stand_size_only_update = (
+        # Allow updates that only change the stand_size or sub_units_layer without other validations as it is the first step
+        pre_objectives_options = (
             "configuration" in attrs
-            and "stand_size" in configuration
-            and (set(configuration) == {"stand_size"})
+            and (
+                "stand_size" in configuration and (set(configuration) == {"stand_size"})
+                or
+                "sub_units_layer" in configuration and (set(configuration) == {"sub_units_layer"})
+            )
         )
         merged_config = {**(instance.configuration or {}), **configuration}
         errors = {}
 
+        if planning_approach in (None, ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS) and configuration.get("sub_units_layer"):
+            errors["planning_approach"] = {"configuration": "Scenarios with `Optimize Project Areas` Planning Approach cannot have Sub Units Layer set."}
+
         if scenario_type == ScenarioType.PRESET:
-            if not treatment_goal and not stand_size_only_update:
+            if not treatment_goal and not pre_objectives_options:
                 errors["treatment_goal"] = "Scenario has no Treatment Goal assigned."
             if "configuration" in attrs:
                 if configuration.get("priority_objectives") or configuration.get("cobenefits"):
@@ -1019,7 +1026,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             if "treatment_goal" in attrs and treatment_goal is not None:
                 errors["treatment_goal"] = "Custom scenarios cannot set a Treatment Goal."
             priority_ids = merged_config.get("priority_objectives") or []
-            if not priority_ids and not stand_size_only_update:
+            if not priority_ids and not pre_objectives_options:
                 errors["configuration"] = {
                     "priority_objectives": "Configuration field `priority_objectives` is required."
                 }
