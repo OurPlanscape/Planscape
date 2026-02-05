@@ -11,7 +11,7 @@ import { Scenario } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
 import { MapConfigService } from '../map-config.service';
-import { NewScenarioState } from '../../scenario/new-scenario.state';
+import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
 
 describe('ScenarioMapComponent', () => {
   let component: ScenarioMapComponent;

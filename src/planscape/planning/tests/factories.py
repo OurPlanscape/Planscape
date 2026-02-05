@@ -12,6 +12,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioOrigin,
+    ScenarioType,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -180,6 +181,8 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
     status = ScenarioStatus.ACTIVE
 
+    type = ScenarioType.PRESET
+
     configuration = factory.LazyAttribute(lambda x: dict())
 
     result_status = ScenarioResultStatus.PENDING
@@ -193,6 +196,34 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
         if extracted:
             ScenarioResultFactory(scenario=self)
+
+    @factory.post_generation
+    def with_priority_objectives(self, create, extracted, **kwargs):
+        if not create:
+            return
+        
+        if extracted:
+            ids = []
+            for datalayer in extracted:
+                ids.append(datalayer.pk)
+
+            configuration = {"priority_objectives": ids}
+            merged_config = {**(self.configuration or {}), **configuration}
+            self.configuration = merged_config
+
+    @factory.post_generation
+    def with_cobenefits(self, create, extracted, **kwargs):
+        if not create:
+            return
+        
+        if extracted:
+            ids = []
+            for datalayer in extracted:
+                ids.append(datalayer.pk)
+
+            configuration = {"cobenefits": ids}
+            merged_config = {**(self.configuration or {}), **configuration}
+            self.configuration = merged_config
 
 
 class ScenarioResultFactory(factory.django.DjangoModelFactory):

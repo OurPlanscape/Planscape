@@ -369,6 +369,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 priorities=configuration_data.get("priority_objectives") or [],
                 cobenefits=configuration_data.get("cobenefits") or [],
                 seed=configuration_data.get("seed"),
+                planning_approach=configuration_data.get("planning_approach"),
             )
             updated_config = dict(existing)
             for key in configuration_data.keys():

@@ -13,7 +13,7 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, of, switchMap, mergeMap } from 'rxjs';
+import { combineLatest, map, mergeMap, of, switchMap } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
@@ -26,11 +26,11 @@ import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-laye
 import { MapConfigService } from '../map-config.service';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { FrontendConstants } from '../../map/map.constants';
-import { ScenarioLegendComponent } from '../../scenario/scenario-legend/scenario-legend.component';
+import { ScenarioLegendComponent } from 'src/app/scenario-creation/scenario-legend/scenario-legend.component';
 import { FeaturesModule } from '../../features/features.module';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { NewScenarioState } from '../../scenario/new-scenario.state';
+import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import { Scenario } from '@types';
 

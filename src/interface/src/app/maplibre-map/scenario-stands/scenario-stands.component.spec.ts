@@ -10,7 +10,7 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 
 import { MockDeclarations, MockProvider } from 'ng-mocks';
-import { NewScenarioState } from '../../scenario/new-scenario.state';
+import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
 import { AvailableStands } from '@types';
 import { MapConfigState } from '../map-config.state';
 

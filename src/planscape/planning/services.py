@@ -49,6 +49,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioOrigin,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -240,6 +241,7 @@ def create_config(
     priorities: DataLayerList,
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
+    planning_approach: Optional[ScenarioPlanningApproach] = None,
 ) -> Dict[str, Any]:
     config: Dict[str, Any] = {}
 
@@ -253,6 +255,8 @@ def create_config(
     config["cobenefits"] = [benefit.pk for benefit in cobenefits]
     if seed is not None:
         config["seed"] = seed
+    if planning_approach is not None:
+        config["planning_approach"] = planning_approach
 
     return config
 
@@ -879,7 +883,7 @@ def sanitize_shp_field_name(name: str) -> str:
 def _get_datalayers_id_lookup_table(scenario):
     # Lookup table to rename datalayer fields to their names
     # e.g. datalayer_1 -> datalaye_Elevation
-    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    datalayers = scenario.get_raster_datalayers()  # type: ignore
     dl_lookup = dict()
     for dl in datalayers:
         safe_name = sanitize_shp_field_name(dl.name)

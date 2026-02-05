@@ -13,6 +13,7 @@ from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioCapability,
     ScenarioResult,
     ScenarioType,
@@ -1227,6 +1228,22 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("configuration", {}).get("stand_size"), "SMALL")
+
+    def test_patch_scenario_approach(self):
+        scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+            configuration={},
+            treatment_goal=None,
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"stand_size": "SMALL"}, "planning_approach": ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("planning_approach"), ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value)
 
 
 class ScenarioCapabilitiesViewTest(APITestCase):

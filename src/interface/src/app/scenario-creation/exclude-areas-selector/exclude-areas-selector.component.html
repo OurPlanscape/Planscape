@@ -1,0 +1,19 @@
+<sg-section headline="Select Areas To Exclude (OPTIONAL)" class="exclude-areas">
+  <div>
+    Select areas you want to exclude from your Potential Treatable Area.
+  </div>
+  <section>
+    <form [formGroup]="form">
+      <sg-selectable-list
+        colorPath="styles[0].data.fill-color"
+        outlineColorPath="styles[0].data.fill-outline-color"
+        [items]="(excludableAreas$ | async) ?? []"
+        (selectedItemsChanged)="handleSelectedItemsChange($event)"
+        (viewedItemsChanged)="handleViewedItemsChange($event)"
+        [selectedItems]="selectedAreas"
+        [viewedItems]="viewingAreas"
+        [loadingItems]="(loadingAreas$ | async) ?? []">
+      </sg-selectable-list>
+    </form>
+  </section>
+</sg-section>
