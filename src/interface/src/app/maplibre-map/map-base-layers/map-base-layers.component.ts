@@ -18,9 +18,9 @@ import {
   MapGeoJSONFeature,
   MapMouseEvent,
 } from 'maplibre-gl';
-import { MapBaseLayerTooltipComponent } from '@maplibre/map-base-layer-tooltip/map-base-layer-tooltip.component';
+import { MapBaseLayerTooltipComponent } from '@maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
-import { MapArcgisVectorLayerComponent } from '@maplibre/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
+import { MapArcgisVectorLayerComponent } from '@maplibre-map/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 

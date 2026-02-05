@@ -3,7 +3,7 @@ import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.component';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { HttpClientTestingModule } from '@angular/common/http/testing';

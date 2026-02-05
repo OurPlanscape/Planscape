@@ -18,18 +18,18 @@ import { ClimateForesightService } from '@services/climate-foresight.service';
 import { DeleteRunModalComponent } from '@plan/climate-foresight/delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { ButtonComponent, SectionComponent } from '@styleguide';
-import { PlanningAreaLayerComponent } from '@maplibre/planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
   RequestTransformFunction,
   ResourceType,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import {
   addRequestHeaders,
   getBoundsFromGeometry,
-} from '@maplibre/maplibre.helper';
+} from '@maplibre-map/maplibre.helper';
 import { FrontendConstants } from '@map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NewAnalysisModalComponent } from '@plan/climate-foresight/new-analysis-modal/new-analysis-modal.component';

@@ -9,26 +9,26 @@ import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
-import { PlanningAreaLayerComponent } from '@maplibre/planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, mergeMap, of, switchMap } from 'rxjs';
-import { MapNavbarComponent } from '@maplibre/map-nav-bar/map-nav-bar.component';
+import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
-import { MapProjectAreasComponent } from '@maplibre/map-project-areas/map-project-areas.component';
+import { MapProjectAreasComponent } from '@maplibre-map/map-project-areas/map-project-areas.component';
 import { PlanState } from '@plan/plan.state';
 import { ScenarioState } from '@scenario/scenario.state';
-import { MapZoomControlComponent } from '@maplibre/map-zoom-control/map-zoom-control.component';
+import { MapZoomControlComponent } from '@maplibre-map/map-zoom-control/map-zoom-control.component';
 
-import { MapDataLayerComponent } from '@maplibre/map-data-layer/map-data-layer.component';
-import { MapLayerColorLegendComponent } from '@maplibre/map-layer-color-legend/map-layer-color-legend.component';
+import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-layer.component';
+import { MapLayerColorLegendComponent } from '@maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 import { MapConfigService } from '../map-config.service';
 import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-name.component';
 import { FrontendConstants } from '@map/map.constants';
 import { ScenarioLegendComponent } from '@scenario-creation/scenario-legend/scenario-legend.component';
 import { FeaturesModule } from '@features/features.module';
-import { ScenarioStandsComponent } from '@maplibre/scenario-stands/scenario-stands.component';
+import { ScenarioStandsComponent } from '@maplibre-map/scenario-stands/scenario-stands.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
-import { MapBaseLayersComponent } from '@maplibre/map-base-layers/map-base-layers.component';
+import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
 import { Scenario } from '@types';
 
 @Component({

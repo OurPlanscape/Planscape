@@ -9,7 +9,7 @@ import { PlanState } from '@plan/plan.state';
 import { Observable, of } from 'rxjs';
 import { Scenario } from '@types';
 import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-name.component';
-import { MapDataLayerComponent } from '@maplibre/map-data-layer/map-data-layer.component';
+import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-layer.component';
 import { MapConfigService } from '../map-config.service';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 

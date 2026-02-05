@@ -3,7 +3,7 @@ import { ClimateForesightComponent } from './climate-foresight.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { AuthService, WINDOW } from '@services';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of, Subject } from 'rxjs';
 import { Plan } from '@types';

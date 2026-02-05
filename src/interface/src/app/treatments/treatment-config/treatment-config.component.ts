@@ -16,7 +16,7 @@ import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.c
 import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { catchError, map, of, switchMap } from 'rxjs';
 import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';

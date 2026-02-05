@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { MapBaseDropdownComponent } from '@maplibre/map-base-dropdown/map-base-dropdown.component';
+import { MapBaseDropdownComponent } from '@maplibre-map/map-base-dropdown/map-base-dropdown.component';
 
 @Component({
   selector: 'app-map-nav-bar',

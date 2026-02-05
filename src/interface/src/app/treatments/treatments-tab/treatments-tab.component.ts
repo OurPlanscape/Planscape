@@ -17,7 +17,7 @@ import {
   PrescriptionSingleAction,
 } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { LeftLoadingOverlayComponent } from '@treatments/left-loading-overlay/left-loading-overlay.component';
 import { FeaturesModule } from '@features/features.module';
 

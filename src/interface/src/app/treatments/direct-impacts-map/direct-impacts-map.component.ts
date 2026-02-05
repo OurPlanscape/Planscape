@@ -8,14 +8,14 @@ import {
 import { MapRectangleComponent } from '@treatments/map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '@treatments/map-stands/map-stands.component';
 import { MapTooltipComponent } from '@treatments/map-tooltip/map-tooltip.component';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { AuthService } from '@services';
 import {
   Map as MapLibreMap,
   MapSourceDataEvent,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { addRequestHeaders } from '@maplibre/maplibre.helper';
+import { addRequestHeaders } from '@maplibre-map/maplibre.helper';
 import { MapStandsTxResultComponent } from '@treatments/map-stands-tx-result/map-stands-tx-result.component';
 import {
   YEAR_INTERVAL_LABELS,
@@ -25,12 +25,12 @@ import {
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MapActionButtonComponent } from '@treatments/map-action-button/map-action-button.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { MapProjectAreasComponent } from '@maplibre/map-project-areas/map-project-areas.component';
+import { MapProjectAreasComponent } from '@maplibre-map/map-project-areas/map-project-areas.component';
 import { FeaturesModule } from '@features/features.module';
-import { MapNavbarComponent } from '@maplibre/map-nav-bar/map-nav-bar.component';
+import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
-import { RxSelectionToggleComponent } from '@maplibre/rx-selection-toggle/rx-selection-toggle.component';
-import { MapZoomControlComponent } from '@maplibre/map-zoom-control/map-zoom-control.component';
+import { RxSelectionToggleComponent } from '@maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
+import { MapZoomControlComponent } from '@maplibre-map/map-zoom-control/map-zoom-control.component';
 import { FrontendConstants } from '@map/map.constants';
 
 @UntilDestroy()

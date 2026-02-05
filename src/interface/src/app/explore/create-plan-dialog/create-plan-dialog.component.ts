@@ -22,7 +22,7 @@ import { AnalyticsService } from '@services/analytics.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { NgIf } from '@angular/common';
-import type { DrawService } from '@maplibre/draw.service';
+import type { DrawService } from '@maplibre-map/draw.service';
 
 @Component({
   selector: 'app-create-plan-dialog-component',

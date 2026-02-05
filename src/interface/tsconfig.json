@@ -52,10 +52,10 @@
       "@map/*": [
         "src/app/map/*"
       ],
-      "@maplibre": [
+      "@maplibre-map": [
         "src/app/maplibre-map"
       ],
-      "@maplibre/*": [
+      "@maplibre-map/*": [
         "src/app/maplibre-map/*"
       ],
       "@material": [

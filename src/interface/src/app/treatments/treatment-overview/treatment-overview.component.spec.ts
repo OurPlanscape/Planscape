@@ -12,7 +12,7 @@ import { TreatmentsState } from '../treatments.state';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { ProjectAreasTabComponent } from '@treatments/project-areas-tab/project-areas-tab.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { TreatmentPlanTabsComponent } from '@treatments/treatment-plan-tabs/treatment-plan-tabs.component';
 import { AcresTreatedComponent } from '@treatments/acres-treated/acres-treated.component';
 import { TreatmentSummaryButtonComponent } from '@treatments/treatment-summary-button/treatment-summary-button.component';

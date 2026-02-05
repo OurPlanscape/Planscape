@@ -6,7 +6,7 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { DrawService } from '@maplibre/draw.service';
+import { DrawService } from '@maplibre-map/draw.service';
 import { MockProvider } from 'ng-mocks';
 import { ClimateForesightService } from '@services';
 

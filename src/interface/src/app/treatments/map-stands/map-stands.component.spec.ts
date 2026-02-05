@@ -10,7 +10,7 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { of } from 'rxjs';
 

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TreatmentsRoutingModule } from './treatments-routing.module';
 import { ReviewTreatmentPlanDialogComponent } from '@treatments/review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { TreatmentToPDFService } from './treatment-to-pdf.service';
-import { MapConfigService } from '@maplibre/map-config.service';
+import { MapConfigService } from '@maplibre-map/map-config.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 
 @NgModule({

@@ -15,7 +15,7 @@ import { Prescription, TreatmentProjectArea, TreatmentSummary } from '@types';
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import * as txIcons from '@assets/base64/stand_icons/treatments';
-import { addRequestHeaders } from '@maplibre/maplibre.helper';
+import { addRequestHeaders } from '@maplibre-map/maplibre.helper';
 import { AuthService } from '@services';
 
 const treatmentIcons: Record<PrescriptionAction, string> = {

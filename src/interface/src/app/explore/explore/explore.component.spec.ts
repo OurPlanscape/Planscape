@@ -4,7 +4,7 @@ import { ExploreComponent } from './explore.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { NavBarComponent, SharedModule } from '@shared';
-import { SyncedMapsComponent } from '@maplibre/synced-maps/synced-maps.component';
+import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ExploreStorageService } from '@services/local-storage.service';

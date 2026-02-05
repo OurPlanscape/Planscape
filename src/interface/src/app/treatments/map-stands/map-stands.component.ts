@@ -23,9 +23,9 @@ import {
 
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
-import { getBoundingBox } from '@maplibre/maplibre.helper';
+import { getBoundingBox } from '@maplibre-map/maplibre.helper';
 import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { combineLatest, distinctUntilChanged, map, pairwise } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';

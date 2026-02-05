@@ -30,10 +30,10 @@ import { UploadProjectAreasModalComponent } from '@plan/upload-project-areas-mod
 import { PlanningAreaTitlebarMenuComponent } from '@standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { ScenariosCardListComponent } from '@plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { MapConfigService } from '@maplibre/map-config.service';
+import { MapConfigService } from '@maplibre-map/map-config.service';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';

@@ -3,7 +3,7 @@ import { MockProvider, MockProviders } from 'ng-mocks';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ProjectAreaTreatmentsTabComponent } from './treatments-tab.component';
 import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
 import { of } from 'rxjs';
 

@@ -17,7 +17,7 @@ import {
   TreatmentProjectArea,
   TreatmentSummary,
 } from '@types';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,

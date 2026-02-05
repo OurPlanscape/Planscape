@@ -57,7 +57,7 @@ import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ExcludeAreasSelectorComponent } from '@scenario-creation/exclude-areas-selector/exclude-areas-selector.component';
-import { ScenarioMapComponent } from '@maplibre/scenario-map/scenario-map.component';
+import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';

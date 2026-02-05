@@ -5,7 +5,7 @@ import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data
 import { MatDialogRef } from '@angular/material/dialog';
 import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '@treatments/treatment-legend/treatment-legend.component';
-import { MapConfigState } from '@maplibre/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { DirectImpactsMapComponent } from '@treatments/direct-impacts-map/direct-impacts-map.component';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 
