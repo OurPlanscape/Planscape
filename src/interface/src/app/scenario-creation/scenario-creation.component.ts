@@ -23,7 +23,11 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { DataLayersService, ScenarioService, TreatmentGoalsService } from '@services';
+import {
+  DataLayersService,
+  ScenarioService,
+  TreatmentGoalsService,
+} from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { nameMustBeNew } from '../validators/unique-scenario';
 import {
@@ -179,7 +183,7 @@ export class ScenarioCreationComponent implements OnInit {
         })
       )
     ),
-    map((layers: DataLayer[]) => layers.map(layer => layer.name).join(', '))
+    map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
   );
 
   // Copy of index locally to show the last step as completed
@@ -209,7 +213,7 @@ export class ScenarioCreationComponent implements OnInit {
     private treatmentGoalsService: TreatmentGoalsService,
     private featureService: FeatureService,
     private mapModuleService: MapModuleService,
-    private dataLayersService: DataLayersService,
+    private dataLayersService: DataLayersService
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
