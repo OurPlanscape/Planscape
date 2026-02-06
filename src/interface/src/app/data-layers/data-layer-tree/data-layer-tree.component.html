@@ -25,12 +25,11 @@
             class="select-button"
             [ngClass]="{
               selected: isDatalayerSelected(node.item),
-              disabled: (isSelectionCompleted$ | async),
+              disabled:
+                isUnselectable(node.item) || (isSelectionCompleted$ | async),
             }"
             [matTooltip]="
-              (isSelectionCompleted$ | async) && !isDatalayerSelected(node.item)
-                ? 'You have selected the maximum number of layers'
-                : ''
+              getTooltipText(node.item, isSelectionCompleted$ | async)
             "
             (click)="toggleDataLayerSelection(node.item)"
             type="button">

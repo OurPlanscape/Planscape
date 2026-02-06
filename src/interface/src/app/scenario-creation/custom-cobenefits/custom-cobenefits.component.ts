@@ -107,6 +107,14 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
   override beforeStepLoad() {
     this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+    // ensure that priority_objective layers are unselectable
+    this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
+      if (config.priority_objectives) {
+        this.dataLayersStateService.setUnselectableLayerIds(
+          config.priority_objectives
+        );
+      }
+    });
     this.mapConfigToUI();
   }
 

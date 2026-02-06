@@ -56,6 +56,25 @@ export class DataSetComponent {
     )
   );
 
+  isUnselectable(layer: DataLayer) {
+    return this.dataLayersStateService.isLayerUnselectable(layer);
+  }
+
+  getTooltipText(
+    layer: DataLayer,
+    isSelectionCompleted: boolean | null
+  ): string {
+    if (!this.isDatalayerSelected(layer)) {
+      if (this.isUnselectable(layer)) {
+        return 'Cannot be selected';
+      }
+      if (isSelectionCompleted) {
+        return 'You have selected the maximum number of layers';
+      }
+    }
+    return '';
+  }
+
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   selectDataLayer(dataLayer: DataLayer) {
