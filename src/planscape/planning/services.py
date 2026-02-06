@@ -242,6 +242,7 @@ def create_config(
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
     planning_approach: Optional[ScenarioPlanningApproach] = None,
+    sub_units_layer: Optional[int] = None,
 ) -> Dict[str, Any]:
     config: Dict[str, Any] = {}
 
@@ -257,6 +258,8 @@ def create_config(
         config["seed"] = seed
     if planning_approach is not None:
         config["planning_approach"] = planning_approach
+    if sub_units_layer is not None:
+        config["sub_units_layer"] = sub_units_layer
 
     return config
 

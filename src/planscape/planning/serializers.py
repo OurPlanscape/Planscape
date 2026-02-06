@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import markdown
 from collaboration.services import get_permissions, get_role
-from datasets.models import DataLayer, DataLayerType, GeometryType
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.utils import timezone
@@ -639,10 +639,13 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         required=False,
     )
     sub_units_layer = serializers.PrimaryKeyRelatedField(
-        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR).all(),
+        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR, status=DataLayerStatus.READY).all(),
         required=False,
         help_text="Vector Layer ID that contains Sub Units.",
     )
+
+    def validate_sub_units_layer(self, sub_units_layer):
+        return sub_units_layer.pk
 
     def update(self, instance, validated_data):
         instance.configuration = {
