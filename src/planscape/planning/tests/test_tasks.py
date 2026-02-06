@@ -7,10 +7,6 @@ from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, override_settings
 from django.utils import timezone
-from planscape.exceptions import ForsysException, ForsysTimeoutException
-from stands.models import Stand, StandMetric, StandSizeChoices
-from stands.tests.factories import StandFactory
-
 from planning.models import (
     GeoPackageStatus,
     ScenarioResult,
@@ -32,6 +28,10 @@ from planning.tests.factories import (
     ScenarioFactory,
     TreatmentGoalFactory,
 )
+from stands.models import Stand, StandMetric, StandSizeChoices
+from stands.tests.factories import StandFactory
+
+from planscape.exceptions import ForsysException, ForsysTimeoutException
 
 
 class AsyncCalculateStandMetricsTest(TestCase):
@@ -275,47 +275,6 @@ class PrepareScenariosForForsysTest(TestCase):
         mock_chord.assert_called_once()
 
 
-@override_settings(FEATURE_FLAGS="")
-class AsyncCallForsysCommandLine(TestCase):
-    def setUp(self):
-        self.scenario = ScenarioFactory.create()
-        self.scenario_result = ScenarioResult.objects.create(scenario=self.scenario)
-
-    @mock.patch(
-        "utils.cli_utils._call_forsys_via_command_line",
-        return_value=True,
-    )
-    def test_async_call_forsys_command_line(self, mock_cmd_line):
-        async_forsys_run(self.scenario.pk)
-        self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
-
-    @mock.patch(
-        "utils.cli_utils._call_forsys_via_command_line",
-        side_effect=ForsysTimeoutException(
-            "Forsys command line call timed out after 60000 seconds."
-        ),
-    )
-    def test_async_call_forsys_command_line_timeout(self, mock_cmd_line):
-        async_forsys_run(self.scenario.pk)
-        self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.TIMED_OUT)
-        self.scenario_result.refresh_from_db()
-        self.assertEqual(self.scenario_result.status, ScenarioResultStatus.TIMED_OUT)
-
-    @mock.patch(
-        "utils.cli_utils._call_forsys_via_command_line",
-        side_effect=ForsysException("Forsys command line call failed"),
-    )
-    def test_async_call_forsys_command_line_panic(self, mock_cmd_line):
-        async_forsys_run(self.scenario.pk)
-        self.scenario.refresh_from_db()
-        self.assertEqual(self.scenario.result_status, ScenarioResultStatus.PANIC)
-        self.scenario_result.refresh_from_db()
-        self.assertEqual(self.scenario_result.status, ScenarioResultStatus.PANIC)
-
-
-@override_settings(FEATURE_FLAGS="FORSYS_VIA_API")
 class AsyncCallForsysViaAPI(TestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()
