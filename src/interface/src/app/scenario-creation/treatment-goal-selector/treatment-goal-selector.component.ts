@@ -5,7 +5,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { ActivatedRoute } from '@angular/router';
-import { FormFragment, formFragmentProviders, SectionComponent } from '@styleguide';
+import {
+  FormFragment,
+  formFragmentProviders,
+  SectionComponent,
+} from '@styleguide';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
 import { TreatmentGoalsService } from '@services';
 import { getGroupedGoals } from '@scenario/scenario-helper';
@@ -32,13 +36,10 @@ import { filter, map, shareReplay, take } from 'rxjs';
   styleUrl: './treatment-goal-selector.component.scss',
 })
 export class TreatmentGoalSelectorComponent
-  extends FormFragment<number | undefined>
+  extends FormFragment<number | null>
   implements OnInit
 {
-  control = new FormControl<number | undefined>(undefined, {
-    validators: [Validators.required],
-    nonNullable: true,
-  });
+  control = new FormControl<number | null>(null, Validators.required);
 
   private planId = this.route.parent?.snapshot.data['planId'];
 

@@ -22,8 +22,8 @@ import { TreatmentGoalSelectorComponent } from '../treatment-goal-selector/treat
 })
 export class Step1Component extends StepDirective<ScenarioDraftConfiguration> {
   form = new FormGroup({
-    stand_size: new FormControl<STAND_SIZE | undefined>(undefined),
-    treatment_goal: new FormControl<number | undefined>(undefined),
+    stand_size: new FormControl<STAND_SIZE | null>(null),
+    treatment_goal: new FormControl<number | null>(null),
   });
 
   getData() {

@@ -4,7 +4,11 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { FormFragment, formFragmentProviders, SectionComponent } from '@styleguide';
+import {
+  FormFragment,
+  formFragmentProviders,
+  SectionComponent,
+} from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from '@plan/plan-helpers';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -28,15 +32,12 @@ import { filter, take } from 'rxjs';
   styleUrl: './stand-size-selector.component.scss',
 })
 export class StandSizeSelectorComponent
-  extends FormFragment<STAND_SIZE | undefined>
+  extends FormFragment<STAND_SIZE | null>
   implements OnInit
 {
-  control = new FormControl<STAND_SIZE | undefined>(undefined, {
-    validators: [Validators.required],
-    nonNullable: true,
-  });
-
   readonly standSizeOptions = STAND_OPTIONS;
+
+  control = new FormControl<STAND_SIZE | null>(null, Validators.required);
 
   constructor(private newScenarioState: NewScenarioState) {
     super();
@@ -62,7 +63,8 @@ export class StandSizeSelectorComponent
   }
 
   get selectedStandSize() {
-    const key = this.control.value as STAND_SIZE | null;
-    return key ? this.standSizeOptions[key] : null;
+    return this.control.value
+      ? this.standSizeOptions[this.control.value]
+      : null;
   }
 }
