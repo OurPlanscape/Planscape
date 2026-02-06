@@ -2,7 +2,7 @@ import { forwardRef, Provider, Type } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 /**
- * Helper to generate the CVA + Validator providers.
+ * Provides NG_VALUE_ACCESSOR and NG_VALIDATORS for a FormFragment component.
  *
  * @example
  * ```typescript

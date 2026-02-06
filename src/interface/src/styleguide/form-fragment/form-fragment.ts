@@ -10,17 +10,17 @@ import {
 } from '@angular/forms';
 
 /**
- * Base class for reusable form fragments (CVA).
+ * Base class for reusable form fragments (CVA + Validator).
  *
- * Absorbs all the ControlValueAccessor and Validator boilerplate.
+ * Handles all ControlValueAccessor and Validator boilerplate.
  * Child only defines `control` with its validators.
  *
  * @example
  * ```typescript
  * @Component({
- *   providers: [formFragmentProviders(StandSizeSelectorComponent)],
+ *   providers: formFragmentProviders(MyComponent),
  * })
- * export class StandSizeSelectorComponent extends FormFragment<string> {
+ * export class MyComponent extends FormFragment<string> {
  *   control = new FormControl<string>('', Validators.required);
  * }
  * ```
@@ -45,26 +45,23 @@ export abstract class FormFragment<T>
   private ngControl: NgControl | null = null;
 
   ngOnInit(): void {
-    // Get the NgControl after injection is complete
     this.ngControl = this.injector.get(NgControl, null);
 
-    // Subscribe to status changes to notify parent when validation state changes
+    // Notify parent when validation state changes
     this.control.statusChanges.subscribe(() => {
       this.onValidatorChange();
     });
   }
 
   ngDoCheck(): void {
-    // Check if parent control was marked as touched and propagate to internal control
+    // Propagate touched state from parent to internal control
     if (this.ngControl?.touched && !this.wasTouched) {
       this.wasTouched = true;
       this.control.markAllAsTouched();
     }
   }
 
-  // ──────────────────────────────────────────────────────────────────
   // ControlValueAccessor
-  // ──────────────────────────────────────────────────────────────────
 
   writeValue(value: T): void {
     if (this.control instanceof FormControl) {
@@ -76,7 +73,6 @@ export abstract class FormFragment<T>
 
   registerOnChange(fn: (value: T) => void): void {
     this.onChange = fn;
-    // Subscribe once
     if (!this.subscribed) {
       this.control.valueChanges.subscribe((val) => this.onChange(val as T));
       this.subscribed = true;
@@ -91,24 +87,15 @@ export abstract class FormFragment<T>
     isDisabled ? this.control.disable() : this.control.enable();
   }
 
-  /** Call this from the template when the user interacts */
   markAsTouched(): void {
     this.onTouched();
     this.control.markAsTouched();
   }
 
-  // ──────────────────────────────────────────────────────────────────
   // Validator
-  // ──────────────────────────────────────────────────────────────────
 
   validate(_control: AbstractControl): ValidationErrors | null {
-    const result = this.control.valid ? null : (this.control.errors || { invalid: true });
-    console.log('[FormFragment] validate called', {
-      internalValid: this.control.valid,
-      internalErrors: this.control.errors,
-      returning: result
-    });
-    return result;
+    return this.control.valid ? null : this.control.errors || { invalid: true };
   }
 
   registerOnValidatorChange(fn: () => void): void {

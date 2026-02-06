@@ -22,17 +22,11 @@ import { TreatmentGoalSelectorComponent } from '../treatment-goal-selector/treat
 })
 export class Step1Component extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
-    stand_size: new FormControl<STAND_SIZE | undefined>(undefined),
-    treatment_goal: new FormControl<number | undefined>(undefined),
+    stand_size: new FormControl<STAND_SIZE | null>(null),
+    treatment_goal: new FormControl<number | null>(null),
   });
 
   getData() {
-    console.log('[Step1] getData called', {
-      formValid: this.form.valid,
-      formErrors: this.form.errors,
-      standSizeErrors: this.form.get('stand_size')?.errors,
-      treatmentGoalErrors: this.form.get('treatment_goal')?.errors,
-    });
     return this.form.value;
   }
 }

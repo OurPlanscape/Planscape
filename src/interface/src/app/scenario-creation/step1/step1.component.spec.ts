@@ -63,8 +63,8 @@ describe('Step1Component', () => {
     component = fixture.componentInstance;
 
     component.form = new FormGroup({
-      stand_size: new FormControl<STAND_SIZE | undefined>(undefined),
-      treatment_goal: new FormControl<number | undefined>(undefined),
+      stand_size: new FormControl<STAND_SIZE | null>(null),
+      treatment_goal: new FormControl<number | null>(null),
     });
     fixture.detectChanges();
   });

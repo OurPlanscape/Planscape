@@ -7,7 +7,6 @@
 You can only select one goal per run, but you can create as many scenarios as you like by choosing different goals and parameters each time.
 
 Click on a Treatment Goal option to see full scenario details.">
-
   <span
     class="error-message ng-invalid"
     *ngIf="control.touched && control.hasError('required')">
@@ -20,11 +19,14 @@ Click on a Treatment Goal option to see full scenario details.">
     color="primary"
     [formControl]="control">
     <div>
-      <div class="goal-loader" *ngIf="(categorizedStatewideGoals$ | async) === null">
+      <div
+        class="goal-loader"
+        *ngIf="(categorizedStatewideGoals$ | async) === null">
         <mat-spinner diameter="24"></mat-spinner>
       </div>
 
-      <ng-container *ngIf="categorizedStatewideGoals$ | async as categorizedScenarioGoals">
+      <ng-container
+        *ngIf="categorizedStatewideGoals$ | async as categorizedScenarioGoals">
         <!-- Displaying groups -->
         <div
           *ngFor="let goalGroup of categorizedScenarioGoals | keyvalue"
@@ -37,14 +39,18 @@ Click on a Treatment Goal option to see full scenario details.">
             <!-- Displaying categories -->
             <div
               class="goal-control-container"
-              *ngFor="let goalCategory of goalGroup.value | keyvalue: reverseAlpha">
+              *ngFor="
+                let goalCategory of goalGroup.value | keyvalue: reverseAlpha
+              ">
               <mat-expansion-panel expanded="true" [togglePosition]="'before'">
                 <mat-expansion-panel-header class="goal-panel-header">
                   {{ goalCategory.key }}
                 </mat-expansion-panel-header>
 
                 <!-- Treatment goals -->
-                <div *ngFor="let goal of goalCategory.value" class="layer-control-container">
+                <div
+                  *ngFor="let goal of goalCategory.value"
+                  class="layer-control-container">
                   <mat-radio-button [value]="goal.id">
                     {{ goal.name }}
                   </mat-radio-button>
