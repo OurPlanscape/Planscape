@@ -126,6 +126,8 @@ export interface ScenarioV3Config {
     max_area: number;
     max_project_count: number;
   };
+  sub_units_fixed_target: boolean;
+  sub_units_target_value: number;
   type?: SCENARIO_TYPE;
   planning_approach?: PLANNING_APPROACH;
 }
