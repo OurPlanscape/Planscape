@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import markdown
 from collaboration.services import get_permissions, get_role
-from datasets.models import DataLayer, DataLayerType, GeometryType
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.utils import timezone
@@ -18,12 +18,14 @@ from planning.models import (
     PlanningAreaNote,
     ProjectArea,
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioType,
     SharedLink,
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
+    TreatmentGoalUsageType,
     TreatmentGoalUsesDataLayer,
     User,
     UserPrefs,
@@ -451,7 +453,6 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
-
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
         source="excluded_areas_ids",
@@ -563,6 +564,11 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
+    sub_units_layer = serializers.IntegerField(
+        required=False,
+        help_text="Vector Layer ID that contains Sub Units.",
+    )
+
     targets = TargetsSerializer(
         required=False,
         help_text="Scenario targets: max_area, max_project_count, estimated_cost.",
@@ -632,6 +638,14 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         max_length=10,
         required=False,
     )
+    sub_units_layer = serializers.PrimaryKeyRelatedField(
+        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR, status=DataLayerStatus.READY).all(),
+        required=False,
+        help_text="Vector Layer ID that contains Sub Units.",
+    )
+
+    def validate_sub_units_layer(self, sub_units_layer):
+        return sub_units_layer.pk
 
     def update(self, instance, validated_data):
         instance.configuration = {
@@ -715,6 +729,12 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text="Name of the creator of the Scenario.",
     )
+    planning_approach = serializers.ChoiceField(
+        choices=ScenarioPlanningApproach.choices,
+        required=False,
+        allow_null=True,
+        help_text="Scenario's Planning Approach."
+    )
     tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
     treatment_goal = TreatmentGoalSimpleSerializer(
         read_only=True,
@@ -790,6 +810,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "type",
             "version",
             "capabilities",
+            "planning_approach",
         )
         model = Scenario
 
@@ -861,9 +882,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
 class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV3Serializer()
     geopackage_url = serializers.SerializerMethodField()
-    usage_types = TreatmentGoalUsageSerializer(
-        source="treatment_goal.datalayer_usages", many=True, read_only=True
-    )
+    usage_types = serializers.SerializerMethodField()
 
     def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
         """
@@ -871,6 +890,37 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
         If the scenario is currently being exported, returns None.
         """
         return scenario.get_geopackage_url()
+
+    def get_usage_types(self, scenario: Scenario) -> List[dict]:
+        if scenario.type == ScenarioType.CUSTOM:
+            cfg = scenario.configuration or {}
+            priority_ids = cfg.get("priority_objectives") or []
+            cobenefit_ids = cfg.get("cobenefits") or []
+            ids = [*priority_ids, *cobenefit_ids]
+            if not ids:
+                return []
+            names = dict(DataLayer.objects.filter(pk__in=ids).values_list("id", "name"))
+            return [
+                *(
+                    {"usage_type": TreatmentGoalUsageType.PRIORITY, "datalayer": name}
+                    for name in (names.get(i) for i in priority_ids)
+                    if name
+                ),
+                *(
+                    {
+                        "usage_type": TreatmentGoalUsageType.SECONDARY_METRIC,
+                        "datalayer": name,
+                    }
+                    for name in (names.get(i) for i in cobenefit_ids)
+                    if name
+                ),
+            ]
+        if scenario.treatment_goal:
+            return TreatmentGoalUsageSerializer(
+                scenario.treatment_goal.datalayer_usages.all(),
+                many=True,
+            ).data
+        return []
 
     class Meta:
         fields = (
@@ -893,6 +943,7 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "geopackage_url",
             "geopackage_status",
             "capabilities",
+            "planning_approach",
         )
         model = Scenario
 
@@ -924,6 +975,13 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
 
 
 class PatchScenarioV3Serializer(serializers.ModelSerializer):
+    planning_approach = serializers.ChoiceField(
+        choices=ScenarioPlanningApproach.choices,
+        required=False,
+        allow_null=True,
+        help_text="Scenario's Planning Approach."
+    )
+
     treatment_goal = serializers.PrimaryKeyRelatedField(
         queryset=TreatmentGoal.objects.all(),
         required=False,
@@ -935,24 +993,31 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scenario
-        fields = ("treatment_goal", "configuration")
+        fields = ("planning_approach", "treatment_goal", "configuration")
 
     def validate(self, attrs):
         instance = self.instance
         scenario_type = instance.type
+        planning_approach = attrs.get("planning_approach", instance.planning_approach) 
         treatment_goal = attrs.get("treatment_goal", instance.treatment_goal)
         configuration = attrs.get("configuration", {})
-        # Allow updates that only change the stand_size without other validations as it is the first step
-        stand_size_only_update = (
+        # Allow updates that only change the stand_size or sub_units_layer without other validations as it is the first step
+        pre_objectives_options = (
             "configuration" in attrs
-            and "stand_size" in configuration
-            and set(configuration) == {"stand_size"}
+            and (
+                "stand_size" in configuration and (set(configuration) == {"stand_size"})
+                or
+                "sub_units_layer" in configuration and (set(configuration) == {"sub_units_layer"})
+            )
         )
         merged_config = {**(instance.configuration or {}), **configuration}
         errors = {}
 
+        if planning_approach in (None, ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS) and configuration.get("sub_units_layer"):
+            errors["planning_approach"] = {"configuration": "Scenarios with `Optimize Project Areas` Planning Approach cannot have Sub Units Layer set."}
+
         if scenario_type == ScenarioType.PRESET:
-            if not treatment_goal and not stand_size_only_update:
+            if not treatment_goal and not pre_objectives_options:
                 errors["treatment_goal"] = "Scenario has no Treatment Goal assigned."
             if "configuration" in attrs:
                 if configuration.get("priority_objectives") or configuration.get("cobenefits"):
@@ -964,7 +1029,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             if "treatment_goal" in attrs and treatment_goal is not None:
                 errors["treatment_goal"] = "Custom scenarios cannot set a Treatment Goal."
             priority_ids = merged_config.get("priority_objectives") or []
-            if not priority_ids and not stand_size_only_update:
+            if not priority_ids and not pre_objectives_options:
                 errors["configuration"] = {
                     "priority_objectives": "Configuration field `priority_objectives` is required."
                 }
@@ -982,8 +1047,11 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             incoming = validated_data["configuration"]
             cfg.update(incoming)
             instance.configuration = cfg
+        
+        if "planning_approach" in validated_data:
+            instance.planning_approach = validated_data["planning_approach"]
 
-        instance.save(update_fields=["treatment_goal", "configuration"])
+        instance.save(update_fields=["treatment_goal", "configuration", "planning_approach"])
         instance.refresh_from_db()
         serializer = ScenarioV3Serializer(instance)
         return serializer.data

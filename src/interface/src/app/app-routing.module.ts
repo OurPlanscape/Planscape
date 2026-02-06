@@ -6,7 +6,7 @@ import {
   Routes,
   TitleStrategy,
 } from '@angular/router';
-import { HomeComponent } from './home/home.component';
+import { HomeComponent } from '@home/home.component';
 import {
   AuthGuard,
   DevelopmentRouteGuard,
@@ -14,12 +14,12 @@ import {
   RedirectGuard,
   redirectResolver,
 } from '@services';
-import { numberResolver } from './resolvers/number.resolver';
+import { numberResolver } from '@resolvers/number.resolver';
 import {
   planLoaderResolver,
   planResetResolver,
-} from './resolvers/plan-loader.resolver';
-import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
+} from '@resolvers/plan-loader.resolver';
+import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 
 const routes: Routes = [
   {
@@ -31,7 +31,7 @@ const routes: Routes = [
         path: 'login',
         title: 'Login',
         loadComponent: () =>
-          import('./standalone/login/login.component').then(
+          import('@standalone/login/login.component').then(
             (m) => m.LoginComponent
           ),
       },
@@ -40,7 +40,7 @@ const routes: Routes = [
         title: 'Password reset',
         resolve: { passwordResetToken: passwordResetTokenResolver },
         loadComponent: () =>
-          import('./standalone/password-reset/password-reset.component').then(
+          import('@standalone/password-reset/password-reset.component').then(
             (m) => m.PasswordResetComponent
           ),
       },
@@ -48,7 +48,7 @@ const routes: Routes = [
         path: 'reset',
         title: 'Forget password',
         loadComponent: () =>
-          import('./standalone/forget-password/forget-password.component').then(
+          import('@standalone/forget-password/forget-password.component').then(
             (m) => m.ForgetPasswordComponent
           ),
       },
@@ -62,7 +62,7 @@ const routes: Routes = [
         title: 'Signup',
         resolve: { redirectUrl: redirectResolver },
         loadComponent: () =>
-          import('./standalone/signup/signup.component').then(
+          import('@standalone/signup/signup.component').then(
             (m) => m.SignupComponent
           ),
       },
@@ -70,7 +70,7 @@ const routes: Routes = [
         path: 'thankyou',
         title: 'Thank You',
         loadComponent: () =>
-          import('./standalone/thank-you/thank-you.component').then(
+          import('@standalone/thank-you/thank-you.component').then(
             (m) => m.ThankYouComponent
           ),
       },
@@ -80,7 +80,7 @@ const routes: Routes = [
         canActivate: [DevelopmentRouteGuard],
         loadComponent: () =>
           import(
-            './standalone/sentry-error-test/sentry-error-test.component'
+            '@standalone/sentry-error-test/sentry-error-test.component'
           ).then((m) => m.SentryErrorTestComponent),
       },
       {
@@ -88,7 +88,7 @@ const routes: Routes = [
         title: 'Account E-mail Validation',
         loadComponent: () =>
           import(
-            './standalone/account-validation/account-validation.component'
+            '@standalone/account-validation/account-validation.component'
           ).then((m) => m.AccountValidationComponent),
       },
 
@@ -96,7 +96,7 @@ const routes: Routes = [
         path: 'explore',
         title: 'Explore',
         loadComponent: () =>
-          import('./explore/explore/explore.component').then(
+          import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
           ),
         resolve: {
@@ -107,7 +107,7 @@ const routes: Routes = [
         path: 'explore/:planId',
         title: 'Explore',
         loadComponent: () =>
-          import('./explore/explore/explore.component').then(
+          import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
           ),
 
@@ -136,10 +136,18 @@ const routes: Routes = [
         },
       },
       {
+        path: 'forsys',
+        canActivate: [RedirectGuard],
+        component: RedirectGuard,
+        data: {
+          externalUrl: 'https://www.forsysplanning.org/',
+        },
+      },
+      {
         path: 'plan',
 
         loadChildren: () =>
-          import('./plan/plan.module').then((m) => m.PlanModule),
+          import('@plan/plan.module').then((m) => m.PlanModule),
       },
       {
         path: 'plan/:planId/scenario',
@@ -148,7 +156,7 @@ const routes: Routes = [
         },
 
         loadChildren: () =>
-          import('./scenario/scenario.module').then((m) => m.ScenarioModule),
+          import('@scenario/scenario.module').then((m) => m.ScenarioModule),
       },
       {
         // follow the route structure of plan, but without nesting modules and components
@@ -160,14 +168,14 @@ const routes: Routes = [
           scenarioInit: scenarioLoaderResolver,
         },
         loadChildren: () =>
-          import('./treatments/treatments.module').then(
+          import('@treatments/treatments.module').then(
             (m) => m.TreatmentsModule
           ),
       },
       {
         path: 'account',
         loadChildren: () =>
-          import('./account/account.module').then((m) => m.AccountModule),
+          import('@account/account.module').then((m) => m.AccountModule),
       },
       { path: '**', redirectTo: 'home', pathMatch: 'full' },
     ],

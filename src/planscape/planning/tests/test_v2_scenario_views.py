@@ -13,6 +13,7 @@ from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioCapability,
     ScenarioResult,
     ScenarioType,
@@ -707,6 +708,41 @@ class ScenarioDetailTest(APITestCase):
             self.assertIn("usage_type", entry)
             self.assertIn("datalayer", entry)
 
+    def test_detail_scenario_v3_custom_usage_types(self):
+        priority = DataLayerFactory(name="Priority Layer")
+        cobenefit = DataLayerFactory(name="Cobenefit Layer")
+        v3_config = {
+            "targets": {
+                "max_area": 5000.0,
+                "max_project_count": 5,
+                "estimated_cost": 100.0,
+            },
+            "priority_objectives": [priority.pk],
+            "cobenefits": [cobenefit.pk],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            configuration=v3_config,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+        )
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-detail", args=[scenario.pk]),
+            format="json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            data.get("usage_types"),
+            [
+                {"usage_type": "PRIORITY", "datalayer": "Priority Layer"},
+                {"usage_type": "SECONDARY_METRIC", "datalayer": "Cobenefit Layer"},
+            ],
+        )
+
     def test_detail_scenario_v2_scenario_result(self):
         ScenarioResultFactory(scenario=self.scenario)
         self.client.force_authenticate(self.owner_user)
@@ -1192,6 +1228,71 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("configuration", {}).get("stand_size"), "SMALL")
+
+    def test_patch_scenario_approach(self):
+        scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+            configuration={},
+            treatment_goal=None,
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"stand_size": "SMALL"}, "planning_approach": ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("planning_approach"), ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value)
+
+    def test_patch_sub_units(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+        sub_units_layer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_layer": sub_units_layer.pk}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("configuration", {}).get("sub_units_layer"), sub_units_layer.pk)
+
+    def test_patch_sub_units_with_optimize_project_areas_approach(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+        )
+        sub_units_layer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_layer": sub_units_layer.pk}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'planning_approach': {'configuration': 'Scenarios with `Optimize Project Areas` Planning Approach cannot have Sub Units Layer set.'}})
+
+    def test_patch_sub_units_with_raster_datalayer(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+        raster_layer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_layer": raster_layer.pk}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class ScenarioCapabilitiesViewTest(APITestCase):

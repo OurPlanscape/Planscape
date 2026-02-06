@@ -17,8 +17,8 @@ import {
 } from '@shared';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
-import { AboutComponent } from '../about/about.component';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
+import { AboutComponent } from '@standalone/about/about.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({

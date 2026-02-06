@@ -20,8 +20,8 @@ import {
   planningAreaMetricsFailed,
   POLLING_INTERVAL,
 } from './plan-helpers';
-import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
-import { SuccessDialogComponent } from '../../styleguide/dialogs/success-dialog/success-dialog.component';
+import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
+import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -56,7 +56,6 @@ export class PlanComponent implements OnInit {
         this.breadcrumbService.updateBreadCrumb({
           label: 'Planning Area: ' + plan.name,
           backUrl: '/home',
-          icon: 'close',
         });
       },
       error: () => {

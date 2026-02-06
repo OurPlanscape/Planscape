@@ -3,10 +3,12 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 from celery.signals import worker_process_init
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from django.conf import settings
 
@@ -15,12 +17,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "planscape.settings")
 
 @worker_process_init.connect(weak=False)
 def init_celery_tracing(*args, **kwargs):
-    # Re-initialize the tracer provider and span processor for the new process
-    provider = TracerProvider()
-    span_processor = BatchSpanProcessor(ConsoleSpanExporter()) 
-    provider.add_span_processor(span_processor)
-    trace.set_tracer_provider(provider)
     CeleryInstrumentor().instrument()
+    resource = Resource.create({})
+    trace.set_tracer_provider(TracerProvider(resource=resource))
+    span_processor = BatchSpanProcessor(OTLPSpanExporter())
+    trace.get_tracer_provider().add_span_processor(span_processor)
 
 
 app = Celery("planscape")

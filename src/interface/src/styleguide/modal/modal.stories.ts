@@ -5,7 +5,7 @@ import {
   StoryObj,
 } from '@storybook/angular';
 import { ModalComponent } from './modal.component';
-import { ModalInfoComponent } from '../modal-info-box/modal-info.component';
+import { ModalInfoComponent } from '@styleguide/modal-info-box/modal-info.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -14,7 +14,7 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { InputDirective, InputFieldComponent } from '@styleguide';
+import { InputDirective, InputFieldComponent } from '..';
 
 const meta: Meta<ModalComponent> = {
   title: 'Components/Modal',

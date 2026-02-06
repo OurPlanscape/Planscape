@@ -1,18 +1,7 @@
 <div class="name-input-component" *ngIf="currentMode$ | async; let curMode">
   <div class="heading-line">
     <div *ngIf="title" class="title">{{ title }}</div>
-    <button
-      mat-icon-button
-      class="tooltip-button"
-      *ngIf="tooltipContent"
-      [matMenuTriggerFor]="tooltipMenu">
-      <mat-icon class="material-symbols-outlined" color="primary">
-        info_outline
-      </mat-icon>
-    </button>
-    <mat-menu class="tooltip-menu" #tooltipMenu="matMenu">
-      {{ tooltipContent }}
-    </mat-menu>
+    <sg-popover *ngIf="tooltipContent" [content]="tooltipContent"></sg-popover>
   </div>
   <sg-input-field
     class="name-input"

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '@shared';
-import { LearnMoreComponent } from '../learn-more/learn-more.component';
+import { LearnMoreComponent } from '@standalone/learn-more/learn-more.component';
 
 @Component({
   selector: 'app-thank-you',

@@ -9,7 +9,7 @@ import {
 import { PlanService } from './plan.service';
 import { of } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
-import { FeatureService } from '../features/feature.service';
+import { FeatureService } from '@features/feature.service';
 
 describe('ScenarioService', () => {
   let service: ScenarioService;
@@ -51,7 +51,6 @@ describe('ScenarioService', () => {
         min_distance_from_road: undefined,
         max_slope: undefined,
         max_area: undefined,
-        treatment_question: null,
         project_areas: [],
         excluded_areas: undefined,
         stand_size: 'MEDIUM',

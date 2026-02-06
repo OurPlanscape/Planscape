@@ -1,0 +1,36 @@
+<sg-section
+  headline="SELECT CO-BENEFITS (OPTIONAL)"
+  class="cobenefits-selection"
+  tooltipContent="<b>What are Co-Benefits?</b>
+These are secondary goals that help you understand the broader impact of your scenario — for example, benefits to water, wildlife, or carbon.  
+  
+<b>Are Co-Benefits used to prioritize treatments?</b>
+
+No, only your selected Priority Objectives influence how ForSys ranks areas for treatment.
+
+  <b>How do Co-Benefits impact Results?</b>
+
+  Co-benefits will support your evaluation of the best sub-units to treat by showing how additional outcomes can be supported.
+  ">
+  <form [formGroup]="form">
+    <div class="padding-section">
+      <div>
+        Select <b>up to {{ maxLayers }} Co-Benefits</b> to track the broader
+        outcomes of your scenario.
+      </div>
+      <mat-spinner diameter="20" *ngIf="uiLoading"></mat-spinner>
+      <div *ngIf="!uiLoading">
+        {{ selectionCount$ | async }}/{{ maxLayers }} Selected
+      </div>
+      <sg-chip-selector
+        [items]="(selectedItems$ | async) ?? []"
+        (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
+    </div>
+    <section>
+      <app-data-layers
+        [useClearFooter]="false"
+        [displayAddButton]="true"
+        class="sticky-search"></app-data-layers>
+    </section>
+  </form>
+</sg-section>

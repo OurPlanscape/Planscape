@@ -9,6 +9,14 @@
   <div class="step-count" *ngIf="showStepIndex">
     Step {{ selectedIndex + 1 }} of {{ steps.length }}
   </div>
+  <button
+    class="clear-btn"
+    *ngIf="showStepIndex === false && (viewedDataLayer$ | async)"
+    sg-button
+    (click)="clearViewedDataLayer()"
+    variant="text">
+    Clear Map
+  </button>
   <button sg-button [disabled]="selectedIndex === 0" (click)="goBack()">
     {{ backLabel }}
   </button>

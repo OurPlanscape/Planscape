@@ -28,14 +28,6 @@
   padding-right: 10px;
 }
 
-.tooltip {
-  padding: 20px;
-
-  p:last-child {
-    margin-bottom: 0;
-  }
-}
-
 .nav-heading {
   @include h4();
   text-overflow: ellipsis;
@@ -45,6 +37,10 @@
   display: flex;
   flex-direction: row;
   gap: 4px;
+}
+
+.forsys-logo {
+  height: 32px;
 }
 
 @media print {

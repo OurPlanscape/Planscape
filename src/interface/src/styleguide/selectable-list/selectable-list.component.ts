@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent } from '..';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';

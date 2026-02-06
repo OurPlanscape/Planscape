@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
-import { TreatedStandsState } from './treatment-map/treated-stands.state';
+import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import {
   BehaviorSubject,
   catchError,
@@ -17,7 +17,7 @@ import {
   TreatmentProjectArea,
   TreatmentSummary,
 } from '@types';
-import { MapConfigState } from '../maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
@@ -65,10 +65,6 @@ export class TreatmentsState {
       );
     })
   );
-
-  private _treatmentTooltipsEnabled$ = new BehaviorSubject(true);
-  public treatmentTooltipsEnabled$ =
-    this._treatmentTooltipsEnabled$.asObservable();
 
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
   public showApplyTreatmentsDialog$ =
@@ -355,9 +351,5 @@ export class TreatmentsState {
   getTotalAcres() {
     const summary = this.getCurrentSummary();
     return summary.total_area_acres;
-  }
-
-  enableTreatmentTooltips(value: boolean) {
-    this._treatmentTooltipsEnabled$.next(value);
   }
 }

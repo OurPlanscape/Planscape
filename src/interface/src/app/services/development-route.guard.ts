@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import { environment } from '@env/environment';
 import { Observable, of } from 'rxjs';
 import { Router, UrlTree } from '@angular/router';
 

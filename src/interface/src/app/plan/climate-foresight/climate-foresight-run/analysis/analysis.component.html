@@ -40,17 +40,9 @@
             }}
           </mat-icon>
           <span class="layer-name">{{ mpatMatrixLayer.name }}</span>
-          <ng-container *ngIf="mpatMatrixLayer.tooltip">
-            <mat-icon
-              class="info-icon"
-              [matMenuTriggerFor]="tooltipMenu"
-              (click)="$event.stopPropagation()"
-              >info_outline</mat-icon
-            >
-            <mat-menu #tooltipMenu="matMenu">
-              <div class="tooltip" [innerHTML]="mpatMatrixLayer.tooltip"></div>
-            </mat-menu>
-          </ng-container>
+          <sg-popover
+            *ngIf="mpatMatrixLayer.tooltip"
+            [content]="mpatMatrixLayer.tooltip"></sg-popover>
         </div>
 
         <!-- Adapt-Protect Score -->
@@ -67,19 +59,9 @@
             }}
           </mat-icon>
           <span class="layer-name">{{ adaptProtectLayer.name }}</span>
-          <ng-container *ngIf="adaptProtectLayer.tooltip">
-            <mat-icon
-              class="info-icon"
-              [matMenuTriggerFor]="tooltipMenu"
-              (click)="$event.stopPropagation()"
-              >info_outline</mat-icon
-            >
-            <mat-menu #tooltipMenu="matMenu">
-              <div
-                class="tooltip"
-                [innerHTML]="adaptProtectLayer.tooltip"></div>
-            </mat-menu>
-          </ng-container>
+          <sg-popover
+            *ngIf="adaptProtectLayer.tooltip"
+            [content]="adaptProtectLayer.tooltip"></sg-popover>
         </div>
 
         <!-- Integrated Condition Score -->
@@ -96,19 +78,9 @@
             }}
           </mat-icon>
           <span class="layer-name">{{ integratedConditionLayer.name }}</span>
-          <ng-container *ngIf="integratedConditionLayer.tooltip">
-            <mat-icon
-              class="info-icon"
-              [matMenuTriggerFor]="tooltipMenu"
-              (click)="$event.stopPropagation()"
-              >info_outline</mat-icon
-            >
-            <mat-menu #tooltipMenu="matMenu">
-              <div
-                class="tooltip"
-                [innerHTML]="integratedConditionLayer.tooltip"></div>
-            </mat-menu>
-          </ng-container>
+          <sg-popover
+            *ngIf="integratedConditionLayer.tooltip"
+            [content]="integratedConditionLayer.tooltip"></sg-popover>
         </div>
       </div>
     </div>

@@ -33,13 +33,14 @@ import {
 } from './query-params.service';
 import { KeyPipe } from '../key.pipe';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
-import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
+import { PlanningAreaMenuComponent } from '@standalone/planning-area-menu/planning-area-menu.component';
+import { PlanningAreasSearchComponent } from '@standalone/planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { FeaturesModule } from 'src/app/features/features.module';
-import { PlanState } from 'src/app/plan/plan.state';
+import { FeaturesModule } from '@features/features.module';
+import { PlanState } from '@plan/plan.state';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -71,6 +72,7 @@ import { PlanState } from 'src/app/plan/plan.state';
     PaginatorComponent,
     OverlayLoaderComponent,
     FeaturesModule,
+    PopoverComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',

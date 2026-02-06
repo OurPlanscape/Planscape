@@ -1,0 +1,29 @@
+@import 'colors';
+@import 'mixins';
+
+::ng-deep .info-popover-menu {
+  padding: 0;
+}
+
+.tooltip {
+  padding: 16px 24px;
+  @include small-paragraph();
+  white-space: pre-line;
+
+  // If we have paragraphs we don't want margin on the latest one
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.info-icon {
+  flex-shrink: 0;
+}
+
+.default {
+  color: $color-standard-blue;
+}
+
+.black {
+  color: $color-black;
+}

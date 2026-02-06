@@ -58,7 +58,6 @@
   border-bottom: 1px solid $color-soft-gray;
   box-sizing: border-box;
 
-
   .leading-icon {
     &.info {
       color: $color-black;
@@ -78,16 +77,11 @@
   }
 }
 
-.tooltip-content {
-  padding: 10px;
-}
-
 .title-buttons {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   gap: 16px;
-
 
   button {
     padding: 0;

@@ -10,9 +10,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ButtonComponent, ButtonVariant } from '../button/button.component';
+import {
+  ButtonComponent,
+  ButtonVariant,
+} from '@styleguide/button/button.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 @Component({
   selector: 'sg-modal',
@@ -29,6 +33,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatMenuModule,
     MatProgressSpinnerModule,
     MatButtonModule,
+    PopoverComponent,
   ],
 })
 export class ModalComponent {

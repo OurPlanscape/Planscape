@@ -11,10 +11,10 @@ import { FormMessageType } from '@types';
 import { AuthService } from '@services';
 import { timeout, TimeoutError } from 'rxjs';
 import { EMAIL_VALIDATION_REGEX, SharedModule } from '@shared';
-import { PasswordStateMatcher } from '../../validators/error-matchers';
-import { passwordsMustMatchValidator } from '../../validators/passwords';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
-import { InfoCardComponent } from '../info-card/info-card.component';
+import { PasswordStateMatcher } from '@validators/error-matchers';
+import { passwordsMustMatchValidator } from '@validators/passwords';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
+import { InfoCardComponent } from '@standalone/info-card/info-card.component';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 

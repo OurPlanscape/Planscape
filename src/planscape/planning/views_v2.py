@@ -336,7 +336,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
     @extend_schema(description="Update Scenario's configuration.")
-    @action(methods=["patch"], detail=True, url_path="configuration")
+    @action(methods=["patch"], detail=True, url_path="configuration", serializer_class=UpsertConfigurationV2Serializer)
     def patch_configuration(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = UpsertConfigurationV2Serializer(
@@ -369,6 +369,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 priorities=configuration_data.get("priority_objectives") or [],
                 cobenefits=configuration_data.get("cobenefits") or [],
                 seed=configuration_data.get("seed"),
+                planning_approach=configuration_data.get("planning_approach"),
+                sub_units_layer=configuration_data.get("sub_units_layer"),
             )
             updated_config = dict(existing)
             for key in configuration_data.keys():

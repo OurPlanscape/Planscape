@@ -1,8 +1,7 @@
-@import "colors";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
 
-$tooltip-background: #000000D9;
-
+$tooltip-background: rgba(0, 0, 0, 0.85);
 .black-tooltip {
   .maplibregl-popup-content {
     background-color: $tooltip-background;
@@ -12,7 +11,6 @@ $tooltip-background: #000000D9;
     @include small-paragraph();
     font-size: 12px;
   }
-
 
   &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
     border-left-color: $tooltip-background;

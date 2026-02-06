@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DrawService } from 'src/app/maplibre-map/draw.service';
+import { DrawService } from '@maplibre-map/draw.service';
 import { FileUploadFieldComponent, ModalInfoComponent } from '@styleguide';
 import { InvalidCoordinatesError } from '@services/errors';
 import * as Sentry from '@sentry/browser';
@@ -72,6 +72,36 @@ export class UploadPlanningAreaBoxComponent {
         fileAsArrayBuffer
       )) as GeoJSON.GeoJSON;
       if (geojson.type == 'FeatureCollection') {
+        if (geojson.features.length < 1) {
+          throw new InvalidCoordinatesError(
+            'Invalid Shapefile: No features were detected in this uploaded shapefile.'
+          );
+        }
+        // cycle through features to find invalid ones...
+        geojson.features.map((feature, index) => {
+          const geom = feature.geometry;
+
+          if (geom.type === 'LineString' || geom.type === 'Point') {
+            throw new InvalidCoordinatesError(
+              `Invalid Shapefile: Element at index: ${index} is a ${geom.type}.`
+            );
+          }
+
+          if (geom.type !== 'GeometryCollection') {
+            if (!geom.coordinates || geom.coordinates.length === 0) {
+              throw new InvalidCoordinatesError(
+                `Invalid Shapefile: Geometry coordinates at feature ${index} are empty.`
+              );
+            }
+          } else {
+            if (geom.geometries.length === 0) {
+              throw new InvalidCoordinatesError(
+                `Invalid Shapefile: GeometryCollection at index ${index} is empty.`
+              );
+            }
+          }
+        });
+
         this.drawService.addUploadedFeatures(geojson);
         this.uploadElementStatus = 'uploaded';
         this.uploadedShape.emit();
@@ -87,6 +117,8 @@ export class UploadPlanningAreaBoxComponent {
     } catch (e) {
       this.uploadElementStatus = 'failed';
       if (e instanceof InvalidCoordinatesError) {
+        // Note: here we only display a generic form error, until further discussion w/ Product
+        //  but Sentry should catch the detailed message
         this.uploadFormError =
           'The upload contains features with invalid coordinates.';
       } else {

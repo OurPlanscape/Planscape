@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ScenarioGoal } from '@types';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root',

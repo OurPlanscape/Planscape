@@ -8,7 +8,7 @@ import {
 import { MapArcgisVectorLayerComponent } from './map-arcgis-vector-layer.component';
 import { MapLayerMouseEvent } from 'maplibre-gl';
 import { of } from 'rxjs';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 function createMapSpy() {
   return jasmine.createSpyObj('MapLibreMap', [

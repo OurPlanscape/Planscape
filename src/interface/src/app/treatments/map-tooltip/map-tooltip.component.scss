@@ -1,10 +1,18 @@
+@import 'colors';
+@import 'mixins';
+
 ::ng-deep {
   .map-tooltip {
-    border-radius: 4px;
+    border-radius: 8px;
     box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
 
     .maplibregl-popup-content {
+      @include small-input-label();
+      font-weight: 600;
+      color: $color-white;
       padding: 8px;
+      background-color: $color-dark-gray;
+      border-radius: 8px;
     }
 
     .maplibregl-popup-tip {

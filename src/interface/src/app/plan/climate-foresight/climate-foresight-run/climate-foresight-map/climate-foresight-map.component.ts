@@ -10,21 +10,21 @@ import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
   addRequestHeaders,
   getBoundsFromGeometry,
-} from 'src/app/maplibre-map/maplibre.helper';
-import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+} from '@maplibre-map/maplibre.helper';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { map } from 'rxjs';
 import { OpacitySliderComponent } from '@styleguide';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { PlanState } from 'src/app/plan/plan.state';
-import { MapConfigService } from 'src/app/maplibre-map/map-config.service';
-import { MapNavbarComponent } from 'src/app/maplibre-map/map-nav-bar/map-nav-bar.component';
-import { MapZoomControlComponent } from 'src/app/maplibre-map/map-zoom-control/map-zoom-control.component';
-import { PlanningAreaLayerComponent } from 'src/app/maplibre-map/planning-area-layer/planning-area-layer.component';
-import { MapDataLayerComponent } from 'src/app/maplibre-map/map-data-layer/map-data-layer.component';
-import { MapBaseLayersComponent } from 'src/app/maplibre-map/map-base-layers/map-base-layers.component';
-import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
-import { FrontendConstants } from 'src/app/map/map.constants';
+import { PlanState } from '@plan/plan.state';
+import { MapConfigService } from '@maplibre-map/map-config.service';
+import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
+import { MapZoomControlComponent } from '@maplibre-map/map-zoom-control/map-zoom-control.component';
+import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
+import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-layer.component';
+import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
+import { MapLayerColorLegendComponent } from '@maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
+import { FrontendConstants } from '@map/map.constants';
 
 @Component({
   selector: 'app-climate-foresight-map',

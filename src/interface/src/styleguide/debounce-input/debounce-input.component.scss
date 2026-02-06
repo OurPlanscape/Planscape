@@ -16,7 +16,6 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    height: 28px;
   }
 
   .title {
@@ -65,8 +64,6 @@
   .save-spinner {
     right: 10px;
   }
-
-
 }
 
 ::ng-deep .name-input-component input {
@@ -93,9 +90,4 @@
 ::ng-deep .name-input.small .input-wrapper:focus-within {
   padding-right: 0px;
   border: 1px $color-standard-blue solid;
-}
-
-
-::ng-deep .tooltip-menu .mat-mdc-menu-content {
-  padding: 4px;
 }

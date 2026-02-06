@@ -9,22 +9,10 @@ from uuid import uuid4
 import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
-from core.flags import feature_enabled
 from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import connection, transaction
-from django.db.models import QuerySet
-from gis.geometry import geodjango_to_multi, to_geodjango_geometry
-from gis.rasters import get_estimated_mask as get_estimated_mask_raster
-from modules.base import get_module
-from organizations.models import Organization
-from planscape.openpanel import track_openpanel
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -41,6 +29,18 @@ from datasets.models import (
 )
 from datasets.search import datalayer_to_search_result, dataset_to_search_result
 from datasets.tasks import datalayer_uploaded
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import connection, transaction
+from django.db.models import QuerySet
+from gis.geometry import geodjango_to_multi, to_geodjango_geometry
+from gis.rasters import get_estimated_mask as get_estimated_mask_raster
+from modules.base import get_module
+from organizations.models import Organization
+from planning.models import TreatmentGoalUsageType
+
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -438,10 +438,9 @@ def browse(
     if geometry is not None:
         datalayers = datalayers.filter(outline__intersects=geometry)
 
-    if feature_enabled("BROWSE_WITH_MODULE"):
-        if module:
-            filter = {f"metadata__modules__{module}__enabled": True}
-            datalayers = datalayers.filter(**filter)
+    if module:
+        filter = {f"metadata__modules__{module}__enabled": True}
+        datalayers = datalayers.filter(**filter)
 
     return datalayers
 
@@ -494,7 +493,7 @@ def find_anything(
         "visibility": VisibilityOptions.PUBLIC,
     }
 
-    if feature_enabled("FIND_ANYTHING_WITH_MODULE"):
+    if module:
         datalayer_filter[f"metadata__modules__{module}__enabled"] = True
         category_filter[f"metadata__modules__{module}__enabled"] = True
 
@@ -603,3 +602,53 @@ def get_datalayer_outline(datalayer: DataLayer) -> Optional[GEOSGeometry]:
             if not datalayer.table:
                 raise ValueError("datalayer table is none")
             return get_table_mask(datalayer)
+
+
+def enable_datalayer_module(
+    datalayer: DataLayer,
+    module: str,
+    module_options: Optional[Dict[str, Any]],
+) -> DataLayer:
+    from modules.base import MODULE_HANDLERS
+
+    if module not in MODULE_HANDLERS:
+        raise ValueError(f"Unknown module: {module}")
+
+    if (
+        module == "forsys"
+        and not module_options
+        and datalayer.type == DataLayerType.RASTER
+    ):
+        module_options = {
+            "capabilities": [
+                TreatmentGoalUsageType.PRIORITY,
+                TreatmentGoalUsageType.SECONDARY_METRIC,
+                TreatmentGoalUsageType.THRESHOLD,
+            ]
+        }
+
+    metadata = datalayer.metadata if isinstance(datalayer.metadata, dict) else {}
+    metadata = metadata.copy()
+    modules = metadata.get("modules")
+    if not isinstance(modules, dict):
+        modules = {}
+    module_metadata = modules.get(module)
+    if not isinstance(module_metadata, dict):
+        module_metadata = {}
+    if not module_options:
+        module_metadata = {
+            **module_metadata,
+            "enabled": True,
+        }
+    else:
+        module_metadata = {
+            **module_metadata,
+            **module_options,
+            "enabled": True,
+        }
+
+    modules = {**modules, module: module_metadata}
+    metadata["modules"] = modules
+    datalayer.metadata = metadata
+    datalayer.save(update_fields=["metadata", "updated_at"])
+    return datalayer

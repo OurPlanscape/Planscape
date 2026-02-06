@@ -4,12 +4,12 @@ import { NavBarComponent } from './nav-bar.component';
 import { AuthService, WINDOW } from '@services';
 import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
-import { PlanState } from '../../plan/plan.state';
+import { PlanState } from '@plan/plan.state';
 import { Plan } from '@types';
 
 describe('NavBarComponent', () => {

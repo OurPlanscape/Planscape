@@ -46,9 +46,12 @@
       </div>
 
       <app-data-layer-tree
+        *ngIf="(hasNoData$ | async) === false"
         [displayAddButton]="displayAddButton"></app-data-layer-tree>
 
-      <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
+      <div *ngIf="hasNoData$ | async" class="no-data">
+        No data layers available for this planning area location.
+      </div>
     </ng-container>
 
     <!--Listing Datasets, no selection yet-->
@@ -71,7 +74,7 @@
     class="loader"></mat-spinner>
 </div>
 
-<div class="footer" *ngIf="showFooter$ | async">
+<div class="footer" *ngIf="useClearFooter && (showFooter$ | async)">
   <!-- Search pagination -->
   <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
     <sg-paginator
@@ -81,7 +84,7 @@
   </ng-container>
   <button
     sg-button
-    (click)="clearDataLayer()"
+    (click)="clearViewedDataLayer()"
     variant="text"
     class="clear-btn"
     *ngIf="viewedDataLayer$ | async">

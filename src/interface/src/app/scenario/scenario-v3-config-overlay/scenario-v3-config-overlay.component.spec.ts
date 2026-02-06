@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ScenarioV3ConfigOverlayComponent } from './scenario-v3-config-overlay.component';
 import { MockProvider } from 'ng-mocks';
-import { FeatureService } from 'src/app/features/feature.service';
+import { FeatureService } from '@features/feature.service';
 
 describe('ScenarioV3ConfigOverlayComponent', () => {
   let component: ScenarioV3ConfigOverlayComponent;

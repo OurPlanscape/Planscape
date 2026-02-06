@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { TreatmentSummaryDialogComponent } from '../treatment-summary-dialog/treatment-summary-dialog.component';
+import { TreatmentSummaryDialogComponent } from '@treatments/treatment-summary-dialog/treatment-summary-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';

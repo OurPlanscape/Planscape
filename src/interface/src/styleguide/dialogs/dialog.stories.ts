@@ -8,11 +8,11 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { ModalComponent } from './../modal/modal.component';
-import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
-import { PendingDialogComponent } from './pending-dialog/pending-dialog.component';
+import { ModalComponent } from '@styleguide/modal/modal.component';
+import { ErrorDialogComponent } from '@styleguide/dialogs/error-dialog/error-dialog.component';
+import { PendingDialogComponent } from '@styleguide/dialogs/pending-dialog/pending-dialog.component';
 import { DialogData } from './dialogs';
-import { SuccessDialogComponent } from './success-dialog/success-dialog.component';
+import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 
 // Common styles for both stories
 const containerStyle = `style="background-color: gray;

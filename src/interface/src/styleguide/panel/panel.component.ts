@@ -8,7 +8,7 @@ import {
 
 import { MatIconModule } from '@angular/material/icon';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 export interface PanelIconButton {
   icon: string;

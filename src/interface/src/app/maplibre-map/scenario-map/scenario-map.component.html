@@ -52,7 +52,7 @@
     </app-map-project-areas>
   </ng-container>
   <mgl-control position="bottom-left">
-    <app-data-layer-name></app-data-layer-name>
+    <app-data-layer-name [showClearButton]="true"></app-data-layer-name>
   </mgl-control>
 
   <ng-container *ngIf="showScenarioStands$ | async">

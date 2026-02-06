@@ -66,24 +66,7 @@
             <div>Select a stand size</div>
             <div class="required-star">*</div>
           </div>
-          <button
-            sg-button
-            variant="icon-only"
-            icon="info_outline"
-            [outlined]="true"
-            class="stands-info-icon"
-            [matMenuTriggerFor]="standsTooltip"></button>
-
-          <mat-menu #standsTooltip="matMenu">
-            <div class="tooltip">
-              <p>The stand sizes represent the number of acres per stand.</p>
-              <p>
-                <strong>Small</strong> stand size is 10 acres/stand. <br />
-                <strong>Medium</strong> stand size is 100 acres/stand.<br />
-                <strong>Large</strong> stand size is 500 acres/stand.
-              </p>
-            </div>
-          </mat-menu>
+          <sg-popover [content]="tooltipContent"></sg-popover>
         </div>
         <mat-form-field
           class="stand-picker-field"

@@ -6,7 +6,7 @@ import { BaseLayersListComponent } from './base-layers-list.component';
 import { BaseLayer } from '@types';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { DataLayersService } from '@services';
-import { MapDataDataSet } from '../../types/module.types';
+import { MapDataDataSet } from '@types';
 import { MockProvider } from 'ng-mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 

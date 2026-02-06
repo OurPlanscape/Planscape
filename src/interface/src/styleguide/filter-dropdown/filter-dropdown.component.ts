@@ -12,9 +12,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
-import { SearchBarComponent } from '../search-bar/search-bar.component';
-import { InputFieldComponent } from '../input/input-field.component';
-import { ButtonComponent } from '../button/button.component';
+import { SearchBarComponent } from '@styleguide/search-bar/search-bar.component';
+import { InputFieldComponent } from '@styleguide/input/input-field.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 /**
  * Filter dropdown that lets user select one or multiple strings as part of a search

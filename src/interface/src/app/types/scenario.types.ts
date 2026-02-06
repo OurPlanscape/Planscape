@@ -1,8 +1,27 @@
-import { STAND_SIZE } from '../plan/plan-helpers';
+import { STAND_SIZE } from '@plan/plan-helpers';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM';
+
+export type ScenarioResultStatus =
+  | 'LOADING' // when loading results
+  | 'PENDING' // Scenario created, in queue
+  | 'RUNNING' // Scenario created, being processed
+  | 'SUCCESS' // Run completed successfully
+  | 'FAILURE' // Run failed;
+  | 'PANIC' // Run failed; panic
+  | 'TIMED_OUT'
+  | 'DRAFT'; // Creating a scenario but not completed the steps yet.
+
+export type GeoPackageStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | null;
+
+export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
 
 export interface Scenario {
   id?: number; // undefined when we are creating a new scenario
@@ -49,7 +68,6 @@ export interface ScenarioConfig {
   min_distance_from_road?: number;
   // TODO is this even being used??
   project_areas?: ProjectArea[];
-  treatment_question?: TreatmentQuestionConfig | null;
   excluded_areas?: number[];
   stand_size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   scenario_priorities?: string[];
@@ -119,50 +137,9 @@ export interface ScenarioCreationPayload {
   planning_area: number;
   treatment_goal: number;
 }
-
-export type ScenarioResultStatus =
-  | 'LOADING' // when loading results
-  | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
-  | 'PENDING' // Scenario created, in queue
-  | 'RUNNING' // Scenario created, being processed
-  | 'SUCCESS' // Run completed successfully
-  | 'FAILURE' // Run failed;
-  | 'PANIC' // Run failed; panic
-  | 'TIMED_OUT'
-  | 'DRAFT'; // Creating a scenario but not completed the steps yet.
-
-export type GeoPackageStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'SUCCEEDED'
-  | 'FAILED'
-  | null;
-
-export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
-
-export interface TreatmentGoalConfig {
-  category_name?: string;
-  questions: TreatmentQuestionConfig[];
-}
-
 // TODO is this the right type?
 export interface FeatureCollection extends GeoJSON.FeatureCollection {
   properties: any;
-}
-
-export interface TreatmentQuestionConfig {
-  id?: number;
-  global_thresholds?: string[];
-  long_question_text?: string;
-  scenario_output_fields_paths?: {
-    [key: string]: string[];
-  };
-  scenario_priorities?: string[];
-  short_question_text?: string;
-  stand_thresholds?: string[];
-  weights?: number[];
-
-  description?: string[];
 }
 
 export interface ProjectArea {
@@ -172,19 +149,6 @@ export interface ProjectArea {
   owner?: string;
   estimatedAreaTreated?: number;
   actualAcresTreated?: number;
-}
-
-export interface PriorityRow {
-  selected?: boolean;
-  visible?: boolean; // Visible as raster data on map
-  expanded?: boolean; // Children in table are not hidden
-  hidden?: boolean; // Row hidden from table (independent of "visible" attribute)
-  disabled?: boolean; // Cannot be selected (because ancestor is selected)
-  conditionName: string;
-  displayName?: string;
-  filepath: string;
-  children: PriorityRow[];
-  level: number;
 }
 
 export interface UsageType {
@@ -203,34 +167,8 @@ export interface ScenarioGoal {
   group_text: string;
 }
 
-export interface CategorizedScenarioGoals {
-  [key: string]: ScenarioGoal[];
-}
-
 export interface Constraint {
   datalayer: number;
   operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
   value: number; // be supports string
-}
-
-// TODO - remove this and use `Constraint` when we implement dynamic constraints
-export interface NamedConstraint {
-  name: string;
-  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
-  value: number; // be supports string
-}
-
-export interface AvailableStands {
-  unavailable: {
-    by_inclusions: number[];
-    by_exclusions: number[];
-    by_thresholds: number[];
-  };
-  summary: {
-    total_area: number; // total PA stands area
-    available_area: number; // total area - exclusions
-    treatable_area: number; // available area - thresholds
-    unavailable_area: number; // unavailable area
-    treatable_stand_count: number; // number of available stands
-  };
 }

@@ -11,9 +11,9 @@ import {
   getDarkGridConfig,
   getProjectAreaLabelsFromFeatures,
   chartTooltipBaseConfig,
-} from 'src/app/chart-helper';
+} from '@app/chart-helper';
 import { ChartComponent } from '@styleguide';
-import { ScenarioResultsChartsService } from 'src/app/scenario/scenario-results-charts.service';
+import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
 import { BehaviorSubject } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 

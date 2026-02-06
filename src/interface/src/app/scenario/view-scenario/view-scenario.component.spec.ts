@@ -8,18 +8,18 @@ import {
 import { ViewScenarioComponent } from './view-scenario.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
-import { ScenarioState } from '../../scenario/scenario.state';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { ScenarioState } from '../scenario.state';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { MOCK_SCENARIO } from '@services/mocks';
-import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { Scenario, ScenarioResult } from '@types';
-import { ScenarioResultsComponent } from '../scenario-results/scenario-results.component';
-import { TreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
-import { PlanState } from 'src/app/plan/plan.state';
-import { POLLING_INTERVAL } from 'src/app/plan/plan-helpers';
+import { ScenarioResultsComponent } from '@scenario/scenario-results/scenario-results.component';
+import { TreatmentsTabComponent } from '@scenario/treatments-tab/treatments-tab.component';
+import { PlanState } from '@plan/plan.state';
+import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { ScenarioService } from '@services';
-import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatDialogModule } from '@angular/material/dialog';
 
 describe('ViewScenarioComponent (polling)', () => {

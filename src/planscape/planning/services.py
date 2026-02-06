@@ -49,6 +49,7 @@ from planning.models import (
     ProjectArea,
     Scenario,
     ScenarioOrigin,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -240,6 +241,8 @@ def create_config(
     priorities: DataLayerList,
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
+    planning_approach: Optional[ScenarioPlanningApproach] = None,
+    sub_units_layer: Optional[int] = None,
 ) -> Dict[str, Any]:
     config: Dict[str, Any] = {}
 
@@ -253,6 +256,10 @@ def create_config(
     config["cobenefits"] = [benefit.pk for benefit in cobenefits]
     if seed is not None:
         config["seed"] = seed
+    if planning_approach is not None:
+        config["planning_approach"] = planning_approach
+    if sub_units_layer is not None:
+        config["sub_units_layer"] = sub_units_layer
 
     return config
 
@@ -533,10 +540,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 "geometry_type": usage.datalayer.geometry_type,
                 "threshold": usage.threshold,
                 "usage_type": usage.usage_type,
+                "weight": usage.weight,
             }
-
-            if usage.usage_type == TreatmentGoalUsageType.PRIORITY:
-                item["weight"] = usage.weight
 
             datalayers.append(item)
 
@@ -580,6 +585,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                 "geometry_type": dl.geometry_type,
                 "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
                 "usage_type": "THRESHOLD",
+                "weight": None,
             }
         )
 
@@ -615,6 +621,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
                     "geometry_type": benefit.geometry_type,
                     "threshold": custom_thresholds.get(benefit.id),
                     "usage_type": TreatmentGoalUsageType.SECONDARY_METRIC,
+                    "weight": None,
                 }
                 for benefit in cobenefits
             ]
@@ -879,7 +886,7 @@ def sanitize_shp_field_name(name: str) -> str:
 def _get_datalayers_id_lookup_table(scenario):
     # Lookup table to rename datalayer fields to their names
     # e.g. datalayer_1 -> datalaye_Elevation
-    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    datalayers = scenario.get_raster_datalayers()  # type: ignore
     dl_lookup = dict()
     for dl in datalayers:
         safe_name = sanitize_shp_field_name(dl.name)

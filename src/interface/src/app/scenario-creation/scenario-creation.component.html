@@ -1,0 +1,85 @@
+<app-nav-bar area="NEW_SCENARIO" [showForsysLogo]="true"></app-nav-bar>
+<!--New scenario ui flow-->
+<ng-container *ngIf="scenarioType$ | async as scenarioType">
+  <sg-steps-nav
+    *ngIf="
+      !isCustomScenario(scenarioType) ||
+      (isCustomScenario(scenarioType) && stepsComponent.selectedIndex !== 0)
+    "
+    [steps]="steps"
+    [selectedIndex]="
+      isCustomScenario(scenarioType) ? localIndex - 1 : localIndex
+    "
+    [allowNavigation]="true"
+    [linear]="true"
+    (selectionChange)="
+      stepsComponent &&
+        (stepsComponent.selectedIndex = isCustomScenario(scenarioType)
+          ? $event + 1
+          : $event)
+    "></sg-steps-nav>
+  <section class="container" [ngClass]="{ first: isFirstIndex$ | async }">
+    <sg-steps
+      #stepsComponent
+      class="new-scenario-ui"
+      [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"
+      [showStepIndex]="false"
+      linear
+      finishLabel="Save & Run Scenario"
+      continueLabel="Save & Continue"
+      [save]="saveStep.bind(this)"
+      (selectedIndexChange)="stepChanged($event)"
+      (selectionChange)="handleStepChangeEvent($event)"
+      (finished)="onFinish(scenarioType)"
+      [outerForm]="form"
+      [savingStep]="(loading$ | async) ?? false"
+      [disabled]="(loading$ | async) || false">
+      <app-scenario-summary
+        sharedHeading
+        *ngIf="(isFirstIndex$ | async) === false"
+        [standSize]="(standSize$ | async) || null"
+        [treatmentGoal]="
+          (treatmentGoalName$ | async) || ''
+        "></app-scenario-summary>
+
+      <ng-container *ngIf="!isCustomScenario(scenarioType)">
+        <sg-step class="full-screen-step">
+          <app-step1-with-overview></app-step1-with-overview>
+        </sg-step>
+        <sg-step>
+          <app-exclude-areas-selector></app-exclude-areas-selector>
+        </sg-step>
+        <sg-step>
+          <app-stand-level-constraints></app-stand-level-constraints>
+        </sg-step>
+        <sg-step>
+          <app-treatment-target></app-treatment-target>
+        </sg-step>
+      </ng-container>
+
+      <ng-container *ngIf="isCustomScenario(scenarioType)">
+        <sg-step>
+          <app-step1-custom></app-step1-custom>
+        </sg-step>
+        <sg-step>
+          <app-custom-priority-objectives></app-custom-priority-objectives>
+        </sg-step>
+        <sg-step>
+          <app-custom-cobenefits></app-custom-cobenefits>
+        </sg-step>
+        <sg-step>
+          <app-exclude-areas-selector></app-exclude-areas-selector>
+        </sg-step>
+        <sg-step>
+          <app-stand-level-constraints></app-stand-level-constraints>
+        </sg-step>
+        <sg-step>
+          <app-treatment-target></app-treatment-target>
+        </sg-step>
+      </ng-container>
+    </sg-steps>
+
+    <app-scenario-map
+      *ngIf="(isFirstIndex$ | async) === false"></app-scenario-map>
+  </section>
+</ng-container>

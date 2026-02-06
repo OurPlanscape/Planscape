@@ -18,7 +18,7 @@ import { BASE_LAYERS_DEFAULT, SNACK_ERROR_CONFIG } from '@shared';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersService } from '@services';
-import { MapDataDataSet } from '../../types/module.types';
+import { MapDataDataSet } from '@types';
 import { catchError, map, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 

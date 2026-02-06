@@ -1,13 +1,13 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
 import { WINDOW } from '@services';
 
-import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
+import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
 import { Params } from '@angular/router';
 import { filter, lastValueFrom, map, take } from 'rxjs';
-import { canViewCollaborators } from '../../plan/permissions';
+import { canViewCollaborators } from '@plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
-import { PlanState } from 'src/app/plan/plan.state';
+import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @Component({
@@ -36,6 +36,8 @@ export class NavBarComponent implements OnInit {
   );
 
   breadcrumb$ = this.breadcrumbService.breadcrumb$;
+
+  @Input() showForsysLogo = false;
 
   constructor(
     @Inject(WINDOW) private window: Window,

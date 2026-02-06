@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HorizonalCardComponent } from '../horizonal-card/horizonal-card.component';
+import { HorizonalCardComponent } from '@standalone/horizonal-card/horizonal-card.component';
 
 @Component({
   selector: 'app-learn-more',

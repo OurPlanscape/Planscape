@@ -5,7 +5,7 @@ import { map, take } from 'rxjs';
 import {
   passwordMustBeNewValidator,
   passwordsMustMatchValidator,
-} from '../../validators/passwords';
+} from '@validators/passwords';
 import { FormMessageType } from '@types';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { MIN_PASSWORD_LENGTH } from '@shared';

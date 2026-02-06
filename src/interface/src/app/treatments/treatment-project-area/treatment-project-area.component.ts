@@ -3,17 +3,17 @@ import { MatDividerModule } from '@angular/material/divider';
 import { SharedModule } from '@shared';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
-import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { ProjectAreaTreatmentsTabComponent } from '@treatments/treatments-tab/treatments-tab.component';
+import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
-import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
-import { FeaturesModule } from 'src/app/features/features.module';
-import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { AcresTreatedComponent } from '@treatments/acres-treated/acres-treated.component';
+import { FeaturesModule } from '@features/features.module';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { skip } from 'rxjs';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 @UntilDestroy()
 @Component({

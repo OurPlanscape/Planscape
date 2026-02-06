@@ -1,0 +1,130 @@
+<!-- Treatment goals -->
+<ng-template #treatmentGoals>
+  <sg-section
+    class="txgoals"
+    headline="Select Treatment Goal"
+    [required]="true"
+    tooltipContent="Select a Treatment Goal based on your objective for treatment. Each goal includes different Priority Objects, Co-Benefits, and Thresholds aligned with the intent of your objective. ForSys uses these pre-selected parameters to generate project areas.
+
+  You can only select one goal per run, but you can create as many scenarios as you like by choosing different goals and parameters each time.
+
+  Click on a Treatment Goal option to see full scenario details.">
+    <form [formGroup]="form">
+      <span
+        class="error-message ng-invalid"
+        *ngIf="
+          form.get('treatment_goal')?.touched &&
+          form.get('treatment_goal')?.hasError('required')
+        ">
+        Please select a treatment goal to continue
+      </span>
+      <mat-radio-group
+        name="treatmentGoalSelect"
+        aria-label="Select an option"
+        color="primary"
+        [formControlName]="'treatment_goal'">
+        <div>
+          <div
+            class="goal-loader"
+            *ngIf="(categorizedStatewideGoals$ | async) === null">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+
+          <ng-container
+            *ngIf="
+              categorizedStatewideGoals$ | async as categorizedScenarioGoals
+            ">
+            <!-- Displaying groups -->
+            <div
+              *ngFor="let goalGroup of categorizedScenarioGoals | keyvalue"
+              class="goal-control-container">
+              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+                <mat-expansion-panel-header class="goal-panel-header">
+                  {{ goalGroup.key }}
+                </mat-expansion-panel-header>
+
+                <!-- Displaying categories -->
+                <div
+                  class="goal-control-container"
+                  *ngFor="
+                    let goalCategory of goalGroup.value | keyvalue: reverseAlpha
+                  ">
+                  <mat-expansion-panel
+                    expanded="true"
+                    [togglePosition]="'before'">
+                    <mat-expansion-panel-header class="goal-panel-header">
+                      {{ goalCategory.key }}
+                    </mat-expansion-panel-header>
+
+                    <!-- Treatment goals -->
+                    <div
+                      *ngFor="let goal of goalCategory.value"
+                      class="layer-control-container">
+                      <mat-radio-button [value]="goal.id">
+                        {{ goal.name }}
+                      </mat-radio-button>
+
+                      <sg-popover
+                        *ngIf="goal.description"
+                        [content]="goal.description"></sg-popover>
+                    </div>
+                  </mat-expansion-panel>
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </ng-container>
+        </div>
+      </mat-radio-group>
+    </form>
+  </sg-section>
+</ng-template>
+
+<!-- Stand size -->
+<ng-template #standSizes>
+  <sg-section headline="Stand Size" class="stand-step" [required]="true">
+    <div class="stand-label">
+      <mat-icon class="stand-icon">hexagon</mat-icon>
+      <div>
+        Choose the stand size ForSys will use to evaluate your planning area.
+        Stands are standarized hexagonal units that represent potential
+        treatment areas.
+      </div>
+    </div>
+
+    <form [formGroup]="form">
+      <mat-form-field class="stand-size" appearance="outline">
+        <mat-label> Stand Size</mat-label>
+        <mat-select formControlName="stand_size">
+          <mat-select-trigger>
+            {{ selectedStandSize?.label }} ({{ selectedStandSize?.acres }}
+            acres)
+          </mat-select-trigger>
+          <mat-option
+            *ngFor="let size of standSizeOptions | keyvalue: reverseAlpha"
+            [value]="size.key">
+            <p class="option-text">
+              {{ size.value.label + ' (' + size.value.acres + ' acres)' }}
+            </p>
+            <p
+              class="option-text option-description"
+              *ngIf="size.value.description">
+              {{ size.value.description }}
+            </p>
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="
+            form.get('stand_size')?.touched &&
+            form?.get('stand_size')?.hasError('required')
+          ">
+          Stand size is required
+        </mat-error>
+      </mat-form-field>
+    </form>
+  </sg-section>
+</ng-template>
+
+<!--TODO REMOVE THE CONTAINERS COMPLETELY-->
+
+<ng-container *ngTemplateOutlet="standSizes"></ng-container>
+<ng-container *ngTemplateOutlet="treatmentGoals"></ng-container>
