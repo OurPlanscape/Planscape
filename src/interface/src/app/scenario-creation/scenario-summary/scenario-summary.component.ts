@@ -11,9 +11,10 @@ import { STAND_OPTIONS, STAND_SIZE } from '@plan/plan-helpers';
   styleUrl: './scenario-summary.component.scss',
 })
 export class ScenarioSummaryComponent {
-  @Input() title: string = '';
+  @Input() planningApproach?: string;
 
   @Input() treatmentGoal?: string;
+  
   @Input() priorityObjectives?: string;
 
   @Input() standSize: STAND_SIZE | null = null;

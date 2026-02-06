@@ -1,5 +1,10 @@
-<sg-section [isCollapsible]="false" [headline]="title">
+<sg-section [isCollapsible]="false">
   <dl class="list">
+    <div class="list-row" *ngIf="planningApproach">
+      <dt class="list-label">Planning Approach:</dt>
+      <dd class="list-value">{{ planningApproach }}</dd>
+    </div>
+
     <div class="list-row" *ngIf="standSize">
       <dt class="list-label">Stand Size:</dt>
       <dd class="list-value">
