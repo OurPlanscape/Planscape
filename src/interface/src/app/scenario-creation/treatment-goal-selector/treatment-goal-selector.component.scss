@@ -1,0 +1,82 @@
+@import 'colors';
+
+:host {
+  display: block;
+
+  ::ng-deep .mat-radio-label {
+    padding-left: 10px;
+  }
+
+  ::ng-deep {
+    .txgoals .mat-expansion-panel-body {
+      padding-right: 4px;
+    }
+
+    .mat-radio-label-content {
+      white-space: normal !important;
+    }
+  }
+}
+
+.goal-control-container {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  margin: 0px;
+  background: $color-white;
+}
+
+.goal-panel-header {
+  font-size: 14px;
+  height: 40px !important;
+  line-height: 20px;
+  margin-top: 2px;
+}
+
+.mat-expansion-panel:not([class*='mat-elevation-z']) {
+  box-shadow: none;
+  width: 100%;
+}
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  height: 0px;
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+
+.goal-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  margin-left: -10px;
+  margin-bottom: 30px;
+}
+
+sg-section {
+  margin-bottom: 10px;
+}
+
+.error-message {
+  color: $color-error;
+  margin: 0;
+}
+
+.layer-control-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-right: 0;
+  align-items: center;
+  height: 36px;
+}
+
+.goal-control-container ::ng-deep .mat-expansion-panel-header {
+  padding: 0 4px;
+}
