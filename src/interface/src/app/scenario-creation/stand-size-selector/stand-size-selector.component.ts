@@ -1,14 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  FormFragment,
-  formFragmentProviders,
-  SectionComponent,
-} from '@styleguide';
+import { SectionComponent } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from '@plan/plan-helpers';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -27,24 +23,17 @@ import { filter, take } from 'rxjs';
     KeyValuePipe,
     SectionComponent,
   ],
-  providers: formFragmentProviders(StandSizeSelectorComponent),
   templateUrl: './stand-size-selector.component.html',
   styleUrl: './stand-size-selector.component.scss',
 })
-export class StandSizeSelectorComponent
-  extends FormFragment<STAND_SIZE | null>
-  implements OnInit
-{
+export class StandSizeSelectorComponent implements OnInit {
+  @Input() control!: FormControl<STAND_SIZE | null>;
+
   readonly standSizeOptions = STAND_OPTIONS;
 
-  control = new FormControl<STAND_SIZE | null>(null, Validators.required);
+  constructor(private newScenarioState: NewScenarioState) {}
 
-  constructor(private newScenarioState: NewScenarioState) {
-    super();
-  }
-
-  override ngOnInit(): void {
-    super.ngOnInit();
+  ngOnInit(): void {
     this.newScenarioState.scenarioConfig$
       .pipe(
         untilDestroyed(this),

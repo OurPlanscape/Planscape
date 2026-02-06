@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ScenarioCreation } from '@types';
 import { StepDirective } from '@styleguide';
 import { STAND_SIZE } from '@plan/plan-helpers';
@@ -22,8 +27,8 @@ import { TreatmentGoalSelectorComponent } from '../treatment-goal-selector/treat
 })
 export class Step1Component extends StepDirective<ScenarioCreation> {
   form = new FormGroup({
-    stand_size: new FormControl<STAND_SIZE | null>(null),
-    treatment_goal: new FormControl<number | null>(null),
+    stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
+    treatment_goal: new FormControl<number | null>(null, Validators.required),
   });
 
   getData() {

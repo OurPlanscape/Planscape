@@ -1,6 +1,4 @@
-<ng-container [formGroup]="form">
-  <app-stand-size-selector
-    formControlName="stand_size"></app-stand-size-selector>
-  <app-treatment-goal-selector
-    formControlName="treatment_goal"></app-treatment-goal-selector>
-</ng-container>
+<app-stand-size-selector
+  [control]="form.controls.stand_size"></app-stand-size-selector>
+<app-treatment-goal-selector
+  [control]="form.controls.treatment_goal"></app-treatment-goal-selector>

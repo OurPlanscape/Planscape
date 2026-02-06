@@ -9,8 +9,6 @@ export * from '@styleguide/expanded-panel/expanded-panel.component';
 export * from '@styleguide/expander-section/expander-section.component';
 export * from '@styleguide/file-upload-field/file-upload-field.component';
 export * from '@styleguide/filter-dropdown/filter-dropdown.component';
-export * from '@styleguide/form-fragment/form-fragment';
-export * from '@styleguide/form-fragment/form-fragment-providers';
 export * from '@styleguide/highlighter/highlighter.directive';
 export * from '@styleguide/input/input-field.component';
 export * from '@styleguide/input/input.directive';
