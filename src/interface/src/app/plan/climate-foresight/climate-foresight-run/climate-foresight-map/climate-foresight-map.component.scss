@@ -4,6 +4,11 @@
 :host {
   position: relative;
 
+  .climate-nav-bar {
+    justify-content: right;
+    padding-right: 10px;
+  }
+
   ::ng-deep {
     .maplibregl-ctrl-top-left {
       top: $map-nav-bar-height;
