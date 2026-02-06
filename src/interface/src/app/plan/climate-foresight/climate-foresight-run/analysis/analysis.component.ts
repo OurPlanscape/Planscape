@@ -260,7 +260,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         group: 'primary',
         scale: [0, 100],
         tooltip:
-          '<p>A scaled metric (0-100) that reflects a continuum of climate resilience strategies from the MPAT classification. Areas categorized as Monitor are closest to 0, indicating favorable current and future conditions. Adapt and Protect  are intermediate with equivalent weighting, representing balanced management strategies. Transform is nearest to 100, highlighting areas where significant change is likely and intervention is warranted.</p>',
+          '<p>A scaled metric (0-100) that reflects a continuum of climate resilience strategies from the MPAT classification.</p><p>Areas categorized as:<ul><li>Monitor are closest to 0, indicating favorable current and future conditions.</li><li>Adapt and Protect are intermediate with equivalent weighting, representing balanced management strategies.</li><li>Transform is nearest to 100, highlighting areas where significant change is likely.</li></ul></p>',
       };
     }
   }
