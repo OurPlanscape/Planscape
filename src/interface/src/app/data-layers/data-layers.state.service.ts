@@ -49,6 +49,9 @@ export class DataLayersStateService {
   private _selectedDataLayers$ = new BehaviorSubject<DataLayer[] | []>([]);
   selectedDataLayers$ = this._selectedDataLayers$.asObservable();
 
+  // Datalayers selected from the list of layers
+  private _unSelectableDataLayerIds$ = new BehaviorSubject<number[] | []>([]);
+
   // Selected datalayers count
   selectedLayersCount$ = this.selectedDataLayers$.pipe(
     map((items) => items.length)
@@ -265,6 +268,21 @@ export class DataLayersStateService {
       (l) => l.id !== layer.id
     );
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
+  }
+
+  //manage collection of layers that can't be selected
+  setUnselectableLayerIds(layerIds: number[]) {
+    this._unSelectableDataLayerIds$.next(layerIds);
+  }
+
+  clearUnselectableLayers() {
+    this._unSelectableDataLayerIds$.next([]);
+  }
+
+  isLayerUnselectable(layer: DataLayer) {
+    const unselectableLayers: number[] =
+      this._unSelectableDataLayerIds$.value ?? [];
+    return unselectableLayers.includes(layer.id);
   }
 
   // Adding or removing an item to the selected list
