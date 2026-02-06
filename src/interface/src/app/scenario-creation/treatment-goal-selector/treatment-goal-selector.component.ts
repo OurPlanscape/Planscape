@@ -1,15 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { ActivatedRoute } from '@angular/router';
-import {
-  FormFragment,
-  formFragmentProviders,
-  SectionComponent,
-} from '@styleguide';
+import { SectionComponent } from '@styleguide';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
 import { TreatmentGoalsService } from '@services';
 import { getGroupedGoals } from '@scenario/scenario-helper';
@@ -31,15 +27,11 @@ import { filter, map, shareReplay, take } from 'rxjs';
     SectionComponent,
     PopoverComponent,
   ],
-  providers: formFragmentProviders(TreatmentGoalSelectorComponent),
   templateUrl: './treatment-goal-selector.component.html',
   styleUrl: './treatment-goal-selector.component.scss',
 })
-export class TreatmentGoalSelectorComponent
-  extends FormFragment<number | null>
-  implements OnInit
-{
-  control = new FormControl<number | null>(null, Validators.required);
+export class TreatmentGoalSelectorComponent implements OnInit {
+  @Input() control!: FormControl<number | null>;
 
   private planId = this.route.parent?.snapshot.data['planId'];
 
@@ -54,12 +46,9 @@ export class TreatmentGoalSelectorComponent
     private treatmentGoalsService: TreatmentGoalsService,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute
-  ) {
-    super();
-  }
+  ) {}
 
-  override ngOnInit(): void {
-    super.ngOnInit();
+  ngOnInit(): void {
     this.newScenarioState.scenarioConfig$
       .pipe(
         untilDestroyed(this),
