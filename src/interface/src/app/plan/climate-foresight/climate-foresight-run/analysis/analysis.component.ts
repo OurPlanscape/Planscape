@@ -236,7 +236,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         type: 'mpat',
         group: 'primary',
         tooltip:
-          '<p>A categorical assessment that assigns each raster cell to one of four climatic response strategies—Monitor, Protect, Adapt, or Transform (MPAT)—based on the combination of <ul><li>1) the favorability of  current condition and </li><li>2) associated pillar’s vulnerability to future climate conditions.</li></ul>Strategies are further defined as strong or weak depending on the quantitative support for a given climate response strategy.</p><p>It helps prioritize areas for different levels of intervention, from passive (Strong Monitors) to transformative (Strong Transforms) management, ensuring landscapes are managed sustainably in response to future climate conditions.</p>',
+          '<p>A categorical assessment that assigns each raster cell to one of four climatic response strategies—Monitor, Protect, Adapt, or Transform (MPAT)—based on the combination of <ul><li>1) the favorability of  current condition and </li><li>2) associated pillar’s vulnerability to future climate conditions.</li></ul>Strategies are further defined as strong or weak depending on the quantitative support for a given climate response strategy.</p><p>This process provides a climate-informed methodology to help prioritize areas for different levels of intervention, from passive (Strong Monitors) to transformative (Strong Transforms) management, ensuring landscapes are managed sustainably in response to future climate conditions.</p>',
       };
 
       this.adaptProtectLayer = {
