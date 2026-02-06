@@ -1246,14 +1246,14 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.data.get("planning_approach"), ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value)
 
     def test_patch_sub_units(self):
-        scenario = ScenarioFactory(
+        scenario = ScenarioFactory.create(
             user=self.user,
             planning_area=self.planning_area,
             configuration={},
             treatment_goal=None,
             planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
         )
-        sub_units_layer = DataLayerFactory(type=DataLayerType.VECTOR)
+        sub_units_layer = DataLayerFactory.create(type=DataLayerType.VECTOR)
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {"configuration": {"sub_units_layer": sub_units_layer.pk}}
 
@@ -1263,13 +1263,13 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.data.get("configuration", {}).get("sub_units_layer"), sub_units_layer.pk)
 
     def test_patch_sub_units_with_optimize_project_areas_approach(self):
-        scenario = ScenarioFactory(
+        scenario = ScenarioFactory.create(
             user=self.user,
             planning_area=self.planning_area,
             configuration={},
             treatment_goal=None,
         )
-        sub_units_layer = DataLayerFactory(type=DataLayerType.VECTOR)
+        sub_units_layer = DataLayerFactory.create(type=DataLayerType.VECTOR)
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {"configuration": {"sub_units_layer": sub_units_layer.pk}}
 
@@ -1279,14 +1279,14 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.data, {'planning_approach': {'configuration': 'Scenarios with `Optimize Project Areas` Planning Approach cannot have Sub Units Layer set.'}})
 
     def test_patch_sub_units_with_raster_datalayer(self):
-        scenario = ScenarioFactory(
+        scenario = ScenarioFactory.create(
             user=self.user,
             planning_area=self.planning_area,
             configuration={},
             treatment_goal=None,
             planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
         )
-        raster_layer = DataLayerFactory(type=DataLayerType.RASTER)
+        raster_layer = DataLayerFactory.create(type=DataLayerType.RASTER)
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {"configuration": {"sub_units_layer": raster_layer.pk}}
 
