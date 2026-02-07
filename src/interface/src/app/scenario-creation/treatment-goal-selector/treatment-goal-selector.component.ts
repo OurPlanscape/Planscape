@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
@@ -31,8 +31,9 @@ import { filter, map, shareReplay, take } from 'rxjs';
   styleUrl: './treatment-goal-selector.component.scss',
 })
 export class TreatmentGoalSelectorComponent implements OnInit {
-  @Input() control!: FormControl<number | null>;
+  readonly control = new FormControl<number | null>(null, Validators.required);
 
+  // TODO use state or other mechanism not route directly
   private planId = this.route.parent?.snapshot.data['planId'];
 
   categorizedStatewideGoals$ = this.treatmentGoalsService

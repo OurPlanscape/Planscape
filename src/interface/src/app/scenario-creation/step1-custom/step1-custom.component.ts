@@ -1,10 +1,5 @@
-import { Component } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import {
   OverviewStep,
   ProcessOverviewComponent,
@@ -13,28 +8,37 @@ import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-select
 import { StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { CUSTOM_SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
-import { STAND_SIZE } from '@plan/plan-helpers';
 
 @Component({
   selector: 'app-step1-custom',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    ProcessOverviewComponent,
-    StandSizeSelectorComponent,
-  ],
+  imports: [ProcessOverviewComponent, StandSizeSelectorComponent],
   templateUrl: './step1-custom.component.html',
   styleUrl: './step1-custom.component.scss',
   providers: [{ provide: StepDirective, useExisting: Step1CustomComponent }],
 })
-export class Step1CustomComponent extends StepDirective<ScenarioCreation> {
+export class Step1CustomComponent
+  extends StepDirective<ScenarioCreation>
+  implements AfterViewInit
+{
+  @ViewChild(StandSizeSelectorComponent)
+  standSizeSelector!: StandSizeSelectorComponent;
+
   steps: OverviewStep[] = CUSTOM_SCENARIO_OVERVIEW_STEPS;
 
-  form = new FormGroup({
-    stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
-  });
+  form: FormGroup = new FormGroup({});
+
+  ngAfterViewInit(): void {
+    if (this.standSizeSelector) {
+      this.form = new FormGroup({
+        stand_size: this.standSizeSelector.control,
+      });
+    }
+  }
 
   getData() {
-    return this.form.value;
+    return {
+      stand_size: this.standSizeSelector.control.value,
+    };
   }
 }

@@ -1,10 +1,5 @@
-import { Component } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import {
   OverviewStep,
   ProcessOverviewComponent,
@@ -14,13 +9,11 @@ import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goa
 import { StepDirective } from '@styleguide';
 import { ScenarioCreation } from '@types';
 import { SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
-import { STAND_SIZE } from '@plan/plan-helpers';
 
 @Component({
   selector: 'app-step1-with-overview',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
     ProcessOverviewComponent,
     StandSizeSelectorComponent,
     TreatmentGoalSelectorComponent,
@@ -31,15 +24,35 @@ import { STAND_SIZE } from '@plan/plan-helpers';
     { provide: StepDirective, useExisting: Step1WithOverviewComponent },
   ],
 })
-export class Step1WithOverviewComponent extends StepDirective<ScenarioCreation> {
+export class Step1WithOverviewComponent
+  extends StepDirective<ScenarioCreation>
+  implements AfterViewInit
+{
+  @ViewChild(StandSizeSelectorComponent)
+  standSizeSelector!: StandSizeSelectorComponent;
+
+  @ViewChild(TreatmentGoalSelectorComponent)
+  treatmentGoalSelector!: TreatmentGoalSelectorComponent;
+
   steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
 
-  form = new FormGroup({
-    stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
-    treatment_goal: new FormControl<number | null>(null, Validators.required),
-  });
+  // Form built from children's controls
+  form: FormGroup = new FormGroup({});
+
+  ngAfterViewInit(): void {
+    // Build form from children's internal controls
+    if (this.standSizeSelector && this.treatmentGoalSelector) {
+      this.form = new FormGroup({
+        stand_size: this.standSizeSelector.control,
+        treatment_goal: this.treatmentGoalSelector.control,
+      });
+    }
+  }
 
   getData() {
-    return this.form.value;
+    return {
+      stand_size: this.standSizeSelector.control.value,
+      treatment_goal: this.treatmentGoalSelector.control.value,
+    };
   }
 }

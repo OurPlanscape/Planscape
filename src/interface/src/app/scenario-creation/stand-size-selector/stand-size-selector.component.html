@@ -27,7 +27,8 @@
         </p>
       </mat-option>
     </mat-select>
-    <mat-error *ngIf="control.touched && control.hasError('required')">
+    <mat-error
+      *ngIf="control.touched && control.hasError('required')">
       Stand size is required
     </mat-error>
   </mat-form-field>
