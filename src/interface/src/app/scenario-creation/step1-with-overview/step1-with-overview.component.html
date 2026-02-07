@@ -2,5 +2,10 @@
   <sg-process-overview [steps]="steps"></sg-process-overview>
 </section>
 <section class="main">
-  <app-step1></app-step1>
+  <div class="main-content">
+    <app-stand-size-selector
+      [control]="form.controls.stand_size"></app-stand-size-selector>
+    <app-treatment-goal-selector
+      [control]="form.controls.treatment_goal"></app-treatment-goal-selector>
+  </div>
 </section>

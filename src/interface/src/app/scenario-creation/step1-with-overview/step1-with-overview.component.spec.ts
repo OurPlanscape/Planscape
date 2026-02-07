@@ -2,8 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Step1WithOverviewComponent } from './step1-with-overview.component';
 import { MockComponents } from 'ng-mocks';
-import { Step1Component } from '@scenario-creation/step1/step1.component';
 import { ProcessOverviewComponent } from '@scenario-creation/process-overview/process-overview.component';
+import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
+import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goal-selector/treatment-goal-selector.component';
 
 describe('Step1WithOverviewComponent', () => {
   let component: Step1WithOverviewComponent;
@@ -12,7 +13,13 @@ describe('Step1WithOverviewComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Step1WithOverviewComponent],
-      declarations: [MockComponents(Step1Component, ProcessOverviewComponent)],
+      declarations: [
+        MockComponents(
+          ProcessOverviewComponent,
+          StandSizeSelectorComponent,
+          TreatmentGoalSelectorComponent
+        ),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Step1WithOverviewComponent);
