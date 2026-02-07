@@ -145,7 +145,13 @@ class ClimateForesightRunViewSetTest(APITestCase):
         response = self.client.post(self.base_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("planning_area", response.json())
+        expected_error = {
+            "detail": "Validation error.",
+            "errors": {
+                "planning_area": ["You don't have access to this planning area."]
+            },
+        }
+        self.assertEqual(response.json(), expected_error)
 
     def test_update_run(self):
         self.client.force_authenticate(user=self.user)
