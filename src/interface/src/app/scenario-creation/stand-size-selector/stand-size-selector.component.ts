@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,7 +27,10 @@ import { filter, take } from 'rxjs';
   styleUrl: './stand-size-selector.component.scss',
 })
 export class StandSizeSelectorComponent implements OnInit {
-  @Input() control!: FormControl<STAND_SIZE | null>;
+  readonly control = new FormControl<STAND_SIZE | null>(
+    null,
+    Validators.required
+  );
 
   readonly standSizeOptions = STAND_OPTIONS;
 
