@@ -7,6 +7,8 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:4200';
 
 export default defineConfig({
+  // globalSetup: './e2e/global.setup.ts',
+  // globalTeardown: './e2e/global.teardown.ts',
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
@@ -23,22 +25,23 @@ export default defineConfig({
   },
 
   projects: [
-    {
-      name: 'auth-setup',
-      testMatch: /auth\.setup\.ts/,
-    },
-    {
-      name: 'authenticated',
-      testMatch: /\.spec\.ts$/,
-      testIgnore: /\.public\.spec\.ts$/,
-      dependencies: ['auth-setup'],
-      use: {
-        storageState: 'e2e/.auth/user.json',
-      },
-    },
+    // {
+    //   name: 'auth-setup',
+    //   testMatch: /auth\.setup\.ts/,
+    // },
+    // {
+    //   name: 'authenticated',
+    //   testMatch: /\.spec\.ts$/,
+    //   testIgnore: /\.public\.spec\.ts$/,
+    //   dependencies: ['auth-setup'],
+    //   use: {
+    //     storageState: 'e2e/.auth/user.json',
+    //   },
+    // },
     {
       name: 'public',
-      testMatch: /\.public\.spec\.ts$/,
+      testMatch: /\.spec\.ts$/,
+      testIgnore: /\.skp\.spec\.ts$/,
     },
   ],
 

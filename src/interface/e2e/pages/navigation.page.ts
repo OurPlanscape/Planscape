@@ -5,7 +5,7 @@ export class NavigationPage {
   readonly logoutButton: Locator;
 
   constructor(private readonly page: Page) {
-    this.userMenuTrigger = page.locator('.user-menu');
+    this.userMenuTrigger = page.locator('[data-id="menu-trigger"]');
     this.logoutButton = page.locator('[data-id="logout"]');
   }
 

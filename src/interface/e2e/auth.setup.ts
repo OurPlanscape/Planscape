@@ -1,13 +1,13 @@
-import { test as setup } from '@playwright/test';
-import { LoginPage } from './pages/login.page';
+import { test as setup, request } from '@playwright/test';
 import { TEST_USER } from './fixtures/test-users';
+import { loginTestUser } from './helpers/api-client';
 
+const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:4200';
 const authFile = 'e2e/.auth/user.json';
 
-setup('authenticate', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login(TEST_USER.email, TEST_USER.password);
-  await page.waitForURL('**/home', { timeout: 15_000 });
-  await page.context().storageState({ path: authFile });
+setup('login via API and save auth cookies for authenticated tests', async ({}) => {
+  const api = await request.newContext({ baseURL });
+  await loginTestUser(api, TEST_USER);
+  await api.storageState({ path: authFile });
+  await api.dispose();
 });

@@ -4,29 +4,51 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
-  E2E_TEST_USER: ${{ secrets.E2E_TEST_USER }}
-  E2E_TEST_PASS: ${{ secrets.E2E_TEST_PASS }}
-
 jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: src/interface
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create .env for feature flags
+        run: |
+          echo 'FEATURE_FLAGS="${{ vars.FEATURE_FLAGS }}"' > .env
+
+      - name: Configure proxy to dev backend
+        run: |
+          cat > src/interface/proxy.conf.json << 'EOF'
+          {
+            "/planscape-backend": {
+              "target": "https://dev.planscape.org",
+              "secure": true,
+              "logLevel": "debug",
+              "changeOrigin": true
+            }
+          }
+          EOF
+
       - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
           cache-dependency-path: src/interface/package-lock.json
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npx playwright test
-      - uses: actions/upload-artifact@v4
+
+      - name: Install frontend dependencies
+        working-directory: src/interface
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: src/interface
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        working-directory: src/interface
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
