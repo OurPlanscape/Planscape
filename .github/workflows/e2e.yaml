@@ -29,6 +29,35 @@ jobs:
           }
           EOF
 
+      - name: Generate environment.dev.ts
+        run: |
+          cat > src/interface/src/environments/environment.dev.ts << EOF
+          export const environment = {
+            production: false,
+            environment: 'ci',
+            backend_endpoint: '/planscape-backend',
+            martin_server: 'https://dev.planscape.org/tiles/',
+            mapbox_key: '${{ secrets.MAPBOX_KEY }}',
+            open_panel_key: '${{ secrets.OPEN_PANEL_KEY }}',
+            open_panel_enabled: false,
+            google_analytics_id: '',
+            debug_layers: false,
+            sentry: {
+              dsn_url: '',
+              enable_extra_error_data: false,
+              enable_httpclient: false,
+              enable_browser_reporting: false,
+              enable_interventions_reporting: false,
+              enable_crash_reporting: false,
+              enable_profiling: false,
+              traces_sample_rate: 0.0,
+              profiling_sample_rate: 0.0,
+              enable_context_lines: false,
+              enable_deprecations_reporting: false,
+            },
+          };
+          EOF
+
       - uses: actions/setup-node@v4
         with:
           node-version: 18
