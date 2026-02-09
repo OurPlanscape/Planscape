@@ -7,8 +7,8 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:4200';
 
 export default defineConfig({
-  // globalSetup: './e2e/global.setup.ts',
-  // globalTeardown: './e2e/global.teardown.ts',
+  globalSetup: './e2e/global.setup.ts',
+  globalTeardown: './e2e/global.teardown.ts',
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
@@ -17,7 +17,9 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { outputFolder: 'e2e-report', open: 'never' }],
-    ...(process.env['CI'] ? [['json', { outputFile: 'e2e-results.json' }] as const] : []),
+    ...(process.env['CI']
+      ? [['json', { outputFile: 'e2e-results.json' }] as const]
+      : []),
   ],
   outputDir: 'e2e-results',
 
@@ -29,23 +31,22 @@ export default defineConfig({
   },
 
   projects: [
-    // {
-    //   name: 'auth-setup',
-    //   testMatch: /auth\.setup\.ts/,
-    // },
-    // {
-    //   name: 'authenticated',
-    //   testMatch: /\.spec\.ts$/,
-    //   testIgnore: /\.public\.spec\.ts$/,
-    //   dependencies: ['auth-setup'],
-    //   use: {
-    //     storageState: 'e2e/.auth/user.json',
-    //   },
-    // },
+    {
+      name: 'auth-setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+    {
+      name: 'authenticated',
+      testDir: './e2e/specs',
+      testIgnore: /\/public\//,
+      dependencies: ['auth-setup'],
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
     {
       name: 'public',
-      testMatch: /\.spec\.ts$/,
-      testIgnore: /\.skp\.spec\.ts$/,
+      testDir: './e2e/specs/public',
     },
   ],
 
