@@ -29,10 +29,11 @@ e2e/
 │   └── signup.page.ts
 └── specs/
     ├── auth/                # Authenticated tests (need login)
-    │   ├── create-account.spec.ts
-    │   ├── login.spec.ts
     │   └── logout.spec.ts
     └── public/              # Public tests (no auth needed)
+        ├── auth/
+        │   ├── create-account.spec.ts
+        │   └── login.spec.ts
         └── explore/
             └── explore.spec.ts
 ```

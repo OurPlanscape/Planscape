@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { SignupPage } from '../../pages/signup.page';
-import { LoginPage } from '../../pages/login.page';
-import { createSignupUser } from '../../fixtures/test-users';
-import { loginTestUser, destroyTestUser } from '../../helpers/api-client';
+import { SignupPage } from '../../../pages/signup.page';
+import { LoginPage } from '../../../pages/login.page';
+import { createSignupUser } from '../../../fixtures/test-users';
+import { loginTestUser, destroyTestUser } from '../../../helpers/api-client';
 
 const signupUser = createSignupUser();
 
