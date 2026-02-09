@@ -2,10 +2,11 @@ import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { DataLayer, ScenarioCreation } from '@types';
+import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersService } from '@services';
 import { NewScenarioState } from '../new-scenario.state';
@@ -33,7 +34,7 @@ const MAX_SELECTABLE_LAYERS = 10;
     { provide: StepDirective, useExisting: CustomCobenefitsComponent },
   ],
 })
-export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
+export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfiguration> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>([]),
   });

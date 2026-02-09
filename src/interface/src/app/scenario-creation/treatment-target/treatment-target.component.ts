@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe, NgIf } from '@angular/common';
 import { SectionComponent, StepDirective } from '@styleguide';
-import { ScenarioCreation } from '@types';
+import { ScenarioDraftConfiguration } from '@types';
 import { NgxMaskModule } from 'ngx-mask';
 import {
   AbstractControl,
@@ -43,7 +43,7 @@ import { STAND_SIZES } from '@plan/plan-helpers';
   styleUrl: './treatment-target.component.scss',
 })
 export class TreatmentTargetComponent
-  extends StepDirective<ScenarioCreation>
+  extends StepDirective<ScenarioDraftConfiguration>
   implements OnInit
 {
   minAcreage: number = 0;

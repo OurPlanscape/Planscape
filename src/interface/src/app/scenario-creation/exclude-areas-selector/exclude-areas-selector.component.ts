@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StepDirective } from '@styleguide/steps/step.component';
-import { BaseLayer, ScenarioCreation } from '@types';
+import { BaseLayer, ScenarioDraftConfiguration } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
 import { filter, map, switchMap, take } from 'rxjs';
@@ -29,7 +29,7 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
   styleUrl: './exclude-areas-selector.component.scss',
 })
 export class ExcludeAreasSelectorComponent
-  extends StepDirective<ScenarioCreation>
+  extends StepDirective<ScenarioDraftConfiguration>
   implements OnInit
 {
   constructor(
