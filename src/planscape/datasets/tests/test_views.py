@@ -1,13 +1,16 @@
+import json
 from urllib.parse import urlencode
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.contrib.gis.geos import GEOSGeometry
 from organizations.tests.factories import OrganizationFactory
 from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
 
 from datasets.models import DataLayer, DataLayerType, VisibilityOptions
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
+from planning.tests.factories import PlanningAreaFactory
 
 User = get_user_model()
 
@@ -309,6 +312,39 @@ class TestDatasetViewSet(APITestCase):
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
         datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
         query_params = {"name": "owl"}
+        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))
+
+    def test_browses_datalayers__filter_by_geometry(self):
+        self.client.force_authenticate(user=self.admin)
+        geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        geos_geometry = GEOSGeometry(json.dumps(geometry))
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat", outline=geos_geometry)
+        query_params = {"geometry": geometry}
+        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))
+
+    def test_browses_datalayers__filter_by_planning_area_id(self):        
+        self.client.force_authenticate(user=self.admin)
+        geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        geos_geometry = GEOSGeometry(json.dumps(geometry))
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat", outline=geos_geometry)
+        planning_area = PlanningAreaFactory.create(geometry=geos_geometry)
+        query_params = {"planning_area_id": planning_area.pk}
         url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
         response = self.client.get(url)
         data = response.json()

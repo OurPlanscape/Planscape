@@ -22,7 +22,7 @@ from datasets.styles import (
     get_default_vector_style,
     get_raster_style,
 )
-
+from planning.models import PlanningArea
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
     class Meta:
@@ -591,6 +591,26 @@ class BrowseDataSetSerializer(serializers.Serializer):
         coerce_multi=True,
         required=False,
     )
+
+    planning_area_id = serializers.PrimaryKeyRelatedField(
+        queryset=PlanningArea.objects.all(),
+        required=False,
+        help_text="Planning Area primary key (ID) that geometry will be used.",
+    )
+
+    def validate(self, attrs):
+        geometry = attrs.get("geometry")
+        planning_area_id = attrs.get("planning_area_id")
+
+        if all((geometry, planning_area_id)):
+            raise serializers.ValidationError(
+                "It is necessary to set `geometry` OR `planning_area_id`."
+            )
+        
+        if planning_area_id and not geometry:
+            attrs["geometry"] = planning_area_id.geometry
+
+        return super().validate(attrs)
 
 
 class FindAnythingSerializer(serializers.Serializer):
