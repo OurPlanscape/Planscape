@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  changes:
+  detect-backend-changes:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
@@ -21,8 +21,8 @@ jobs:
               - 'src/planscape/**'
 
   lint:
-    needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    needs: detect-backend-changes
+    if: needs.detect-backend-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [changes, lint]
-    if: needs.changes.outputs.backend == 'true'
+    needs: [detect-backend-changes, lint]
+    if: needs.detect-backend-changes.outputs.backend == 'true'
     strategy:
       max-parallel: 4
       matrix:
