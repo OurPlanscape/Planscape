@@ -14,7 +14,11 @@ export default defineConfig({
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 2 : 0,
   workers: process.env['CI'] ? 1 : undefined,
-  reporter: [['list'], ['html', { outputFolder: 'e2e-report', open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'e2e-report', open: 'never' }],
+    ...(process.env['CI'] ? [['json', { outputFile: 'e2e-results.json' }] as const] : []),
+  ],
   outputDir: 'e2e-results',
 
   use: {
