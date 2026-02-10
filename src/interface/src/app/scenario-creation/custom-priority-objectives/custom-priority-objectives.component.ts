@@ -7,14 +7,14 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { DataLayer, ScenarioCreation } from '@types';
+import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
-import { catchError, finalize, map, of, switchMap, take } from 'rxjs';
-import { DataLayersService } from '@services';
+import { finalize, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const MAX_SELECTABLE_LAYERS = 2;
@@ -37,7 +37,7 @@ const MAX_SELECTABLE_LAYERS = 2;
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
+export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDraftConfiguration> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -55,7 +55,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private dataLayersService: DataLayersService,
     private newScenarioState: NewScenarioState
   ) {
     super();
@@ -82,32 +81,14 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
 
   mapConfigToUI(): void {
     this.uiLoading = true;
-    this.newScenarioState.scenarioConfig$
+    this.newScenarioState.priorityObjectivesDetails$
       .pipe(
-        untilDestroyed(this),
         take(1),
-        switchMap((config) => {
-          if (config.priority_objectives) {
-            const ids = config.priority_objectives;
-            return this.dataLayersService.getDataLayersByIds(ids).pipe(
-              map((layers: DataLayer[]) => layers),
-              catchError((error) => {
-                throw error;
-              })
-            );
-          }
-          return of([]);
-        }),
         finalize(() => (this.uiLoading = false))
       )
-      .subscribe({
-        next: (layers) => {
-          this.form.get('dataLayers')?.setValue(layers);
-          this.dataLayersStateService.updateSelectedLayers(layers);
-        },
-        error: (error) => {
-          console.error('Error fetching datalayers ', error);
-        },
+      .subscribe((layers) => {
+        this.form.get('dataLayers')?.setValue(layers);
+        this.dataLayersStateService.updateSelectedLayers(layers);
       });
   }
 

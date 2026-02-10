@@ -51,7 +51,6 @@ describe('ScenarioService', () => {
         min_distance_from_road: undefined,
         max_slope: undefined,
         max_area: undefined,
-        project_areas: [],
         excluded_areas: undefined,
         stand_size: 'MEDIUM',
       };
@@ -66,6 +65,7 @@ describe('ScenarioService', () => {
         geopackage_status: null,
         geopackage_url: null,
         type: 'PRESET',
+        user: 1,
       };
 
       service.getScenario(1).subscribe((res) => {

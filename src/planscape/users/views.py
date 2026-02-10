@@ -191,6 +191,28 @@ def verify_password_reset_token(
     return JsonResponse({"valid": True})
 
 
+@api_view(["POST"])
+def destroy_user(request: Request) -> Response:
+    if not settings.ALLOW_DELETE_USERS:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    user = request.user
+    if not user or not user.is_authenticated:
+        return Response(
+            {"error": "Authentication required"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    user.delete()
+
+    response = Response(
+        {"detail": "User deleted."},
+        status=status.HTTP_200_OK,
+    )
+    unset_jwt_cookies(response)
+    return response
+
+
 PRIVATE_LAYERS = (
     "planning_area_by_id",
     "project_area_aggregate",

@@ -6,7 +6,6 @@ import {
   Constraint,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioCreationPayload,
   ScenarioV3Payload,
 } from '@types';
 import { CreateScenarioError } from './errors';
@@ -86,37 +85,6 @@ export class ScenarioService {
       { name, planning_area },
       { withCredentials: true }
     );
-  }
-
-  /** Creates a scenario in the backend with stepper Returns scenario ID. */
-  createScenarioFromSteps(
-    scenarioParameters: ScenarioCreationPayload
-  ): Observable<Scenario> {
-    return this.http
-      .post<Scenario>(this.v2Path, scenarioParameters, {
-        withCredentials: true,
-      })
-      .pipe(
-        catchError((error) => {
-          if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-          ) {
-            const message =
-              error.error.errors?.global?.[0] ||
-              'Please change your settings and try again.';
-            throw new CreateScenarioError(
-              'Your scenario config is invalid. ' + message
-            );
-          } else {
-            const message =
-              error.error?.global?.[0] ||
-              'Please change your settings and try again.';
-            throw new CreateScenarioError(
-              'Your scenario config is invalid. ' + message
-            );
-          }
-        })
-      );
   }
 
   //sends a partial scenario configuration using PATCH
