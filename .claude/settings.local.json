@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
+      "Bash(git add:*)",
+      "Bash(npx playwright test)",
+      "Bash(npx playwright test:*)",
+      "Bash(git checkout:*)"
+    ]
+  }
+}

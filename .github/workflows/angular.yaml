@@ -8,10 +8,11 @@ on:
 
 jobs:
 
-  detect-frontend-changes:
+  detect-changes:
     runs-on: ubuntu-latest
     outputs:
       frontend: ${{ steps.filter.outputs.frontend }}
+      styleguide: ${{ steps.filter.outputs.styleguide }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v3
@@ -20,10 +21,12 @@ jobs:
           filters: |
             frontend:
               - 'src/interface/**'
+            styleguide:
+              - 'src/interface/src/styleguide/**'
 
   lint-frontend:
-    needs: detect-frontend-changes
-    if: needs.detect-frontend-changes.outputs.frontend == 'true'
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,8 +48,8 @@ jobs:
       - run: npm run lint
 
   build:
-    needs: detect-frontend-changes
-    if: needs.detect-frontend-changes.outputs.frontend == 'true'
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -69,8 +72,8 @@ jobs:
       - run: npm run test:prod
 
   storybook:
-    needs: detect-frontend-changes
-    if: needs.detect-frontend-changes.outputs.frontend == 'true'
+    needs: detect-changes
+    if: needs.detect-changes.outputs.styleguide == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -90,3 +93,38 @@ jobs:
           cache-dependency-path: src/interface/package-lock.json
       - run: npm ci
       - run: npm run build-storybook
+
+  frontend-gate:
+    name: Frontend Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [detect-changes, lint-frontend, build, storybook]
+    steps:
+      - name: Check results
+        run: |
+          frontend="${{ needs.detect-changes.outputs.frontend }}"
+          styleguide="${{ needs.detect-changes.outputs.styleguide }}"
+
+          if [[ "$frontend" != "true" ]]; then
+            echo "No frontend changes — skipped"
+            exit 0
+          fi
+
+          failed=false
+          if [[ "${{ needs.lint-frontend.result }}" != "success" ]]; then
+            echo "Lint failed"
+            failed=true
+          fi
+          if [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "Build failed"
+            failed=true
+          fi
+          if [[ "$styleguide" == "true" && "${{ needs.storybook.result }}" != "success" ]]; then
+            echo "Storybook failed"
+            failed=true
+          fi
+
+          if [[ "$failed" == "true" ]]; then
+            exit 1
+          fi
+          echo "Frontend CI passed"
