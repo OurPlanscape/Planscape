@@ -27,6 +27,12 @@ import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-d
 import { distinctUntilChanged } from 'rxjs/operators';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import { UnselectableType } from '@app/shared';
+
+export interface unselectableLayer {
+  id: number;
+  reason: UnselectableType;
+}
 
 @Injectable()
 export class DataLayersStateService {
@@ -48,6 +54,11 @@ export class DataLayersStateService {
   // Datalayers selected from the list of layers
   private _selectedDataLayers$ = new BehaviorSubject<DataLayer[] | []>([]);
   selectedDataLayers$ = this._selectedDataLayers$.asObservable();
+
+  // Datalayers selected from the list of layers
+  private _unSelectableDataLayerIds$ = new BehaviorSubject<
+    unselectableLayer[] | []
+  >([]);
 
   // Selected datalayers count
   selectedLayersCount$ = this.selectedDataLayers$.pipe(
@@ -265,6 +276,30 @@ export class DataLayersStateService {
       (l) => l.id !== layer.id
     );
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
+  }
+
+  //manage collection of layers that can't be selected
+  setUnselectableLayers(layerIds: number[], reason: UnselectableType) {
+    const unselectableLayers = layerIds.map((layerId) => {
+      return { id: layerId, reason: reason };
+    });
+    this._unSelectableDataLayerIds$.next(unselectableLayers);
+  }
+
+  clearUnselectableLayers() {
+    this._unSelectableDataLayerIds$.next([]);
+  }
+
+  isLayerUnselectable(layer: DataLayer) {
+    const unselectableLayers: unselectableLayer[] =
+      this._unSelectableDataLayerIds$.value ?? [];
+    return unselectableLayers.some((ul) => ul.id === layer.id);
+  }
+
+  getUnselectableLayer(layer: DataLayer): unselectableLayer | undefined {
+    const unselectableLayers: unselectableLayer[] =
+      this._unSelectableDataLayerIds$.value ?? [];
+    return unselectableLayers.find((ul) => ul.id === layer.id);
   }
 
   // Adding or removing an item to the selected list

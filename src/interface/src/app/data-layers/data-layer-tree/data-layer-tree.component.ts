@@ -15,6 +15,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { unselectableReason } from '@app/shared';
 
 @UntilDestroy()
 @Component({
@@ -122,6 +123,26 @@ export class DataLayerTreeComponent {
 
   isDatalayerSelected(layer: DataLayer) {
     return this.dataLayersStateService.isSelectedLayer(layer);
+  }
+
+  isUnselectable(layer: DataLayer) {
+    return this.dataLayersStateService.isLayerUnselectable(layer);
+  }
+
+  getTooltipText(
+    layer: DataLayer,
+    isSelectionCompleted: boolean | null
+  ): string {
+    if (!this.isDatalayerSelected(layer)) {
+      const uLayer = this.dataLayersStateService.getUnselectableLayer(layer);
+      if (uLayer) {
+        return unselectableReason[uLayer.reason];
+      }
+      if (isSelectionCompleted) {
+        return 'You have selected the maximum number of layers';
+      }
+    }
+    return '';
   }
 
   toggleDataLayerSelection(dl: DataLayer) {

@@ -134,3 +134,10 @@ export const DEFAULT_MAX_SELECTED_LAYERS = 3;
 export const MAX_CLIMATE_DATALAYERS = 10;
 
 export const MIN_PASSWORD_LENGTH = 8;
+
+export type UnselectableType = 'PRIORITY_OBJECTIVE' | 'CO_BENEFIT';
+
+export const unselectableReason: Record<UnselectableType, string> = {
+  PRIORITY_OBJECTIVE: 'Layer selected as Priority Objective',
+  CO_BENEFIT: 'Layer selected as Co-Benefit',
+};
