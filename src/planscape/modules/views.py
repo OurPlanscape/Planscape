@@ -1,3 +1,5 @@
+from drf_spectacular.utils import extend_schema
+
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.mixins import RetrieveModelMixin
@@ -5,12 +7,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from modules.base import BaseModule, get_module
-from modules.serializers import InputModuleSerializer
+from modules.serializers import InputModuleSerializer, BaseModuleSerializer
 
 
 class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
     lookup_field = "pk"
-    serializer_class = InputModuleSerializer
+    serializer_class = BaseModuleSerializer
 
     def get_object(self) -> BaseModule:
         pk = str(self.kwargs.get(self.lookup_field))
@@ -26,6 +28,13 @@ class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
         serializer = SerializerClass(instance=payload)
         return Response(serializer.data)
 
+    @extend_schema(
+        description="Get Module's details filtering by geometry.",
+        request=InputModuleSerializer,
+        responses={
+            200: BaseModuleSerializer,
+        },
+    )
     @action(detail=True, methods=["post"])
     def details(self, request, pk=None):
         my_module = self.get_object()
