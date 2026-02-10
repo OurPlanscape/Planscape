@@ -1,10 +1,16 @@
 import { request } from '@playwright/test';
-import { TEST_USER } from './fixtures/test-users';
+import { mkdirSync, writeFileSync } from 'fs';
+import { dirname } from 'path';
+import { TEST_USER, PASSWORD_FILE } from './fixtures/test-users';
 import { registerTestUser } from './helpers/api-client';
 
 const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:4200';
 
 export default async function globalSetup() {
+  // Persist the generated password so worker processes can read it
+  mkdirSync(dirname(PASSWORD_FILE), { recursive: true });
+  writeFileSync(PASSWORD_FILE, TEST_USER.password);
+
   const api = await request.newContext({ baseURL });
 
   const res = await registerTestUser(api, TEST_USER);
