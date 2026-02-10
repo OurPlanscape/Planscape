@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
 from django.contrib.gis.geos import GEOSGeometry
@@ -41,8 +41,12 @@ class BaseModule:
     def get_configuration(self, **kwargs) -> Dict[str, Any]:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
-    def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.filter(
+    def get_datasets(self, geometry: Optional[GEOSGeometry] = None, **kwargs) -> QuerySet[Dataset]:
+        queryset = Dataset.objects.all()
+        if geometry:
+            queryset = queryset.by_outline_intersects(geometry=geometry)
+        
+        return queryset.filter(
             modules__contains=[self.name],
             preferred_display_type__isnull=False,
             visibility=VisibilityOptions.PUBLIC,
@@ -136,10 +140,9 @@ class MapModule(BaseModule):
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         return True
 
-    def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
+    def get_datasets(self, geometry: Optional[GEOSGeometry] = None, **kwargs) -> QuerySet[Dataset]:
         queryset = Dataset.objects.all()
-        if "geometry" in kwargs.keys():
-            geometry = kwargs.get("geometry")
+        if geometry:
             queryset = queryset.by_outline_intersects(geometry=geometry)
         
         return queryset.filter(
@@ -169,8 +172,12 @@ class ClimateForesightModule(BaseModule):
         scenario_geometry = runnable.planning_area.geometry
         return self.future_climate_coverage.contains(scenario_geometry)
 
-    def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.filter(
+    def get_datasets(self, geometry: Optional[GEOSGeometry] = None, **kwargs) -> QuerySet[Dataset]:
+        queryset = Dataset.objects.all()
+        if geometry:
+            queryset = queryset.by_outline_intersects(geometry=geometry)
+
+        return queryset.filter(
             Q(modules__contains=[self.name])
             & (
                 Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)

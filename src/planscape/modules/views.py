@@ -1,3 +1,4 @@
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.response import Response
@@ -23,6 +24,20 @@ class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
         input_serializer = InputModuleSerializer(data=request.query_params)
         input_serializer.is_valid(raise_exception=True)
         geometry = input_serializer.validated_data.get("geometry")
+        payload = my_module.get_configuration(geometry=geometry)
+        SerializerClass = my_module.get_serializer_class()
+        serializer = SerializerClass(instance=payload)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get", "post"])
+    def details(self, request, pk=None):
+        my_module = self.get_object()
+
+        params = request.query_params if request.method == "GET" else request.data
+        input_serializer = InputModuleSerializer(data=params)
+        input_serializer.is_valid(raise_exception=True)
+        geometry = input_serializer.validated_data.get("geometry")
+
         payload = my_module.get_configuration(geometry=geometry)
         SerializerClass = my_module.get_serializer_class()
         serializer = SerializerClass(instance=payload)
