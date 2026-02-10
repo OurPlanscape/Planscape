@@ -66,7 +66,6 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
     this.uiLoading = true;
     this.newScenarioState.coBenefitsDetails$
       .pipe(
-        untilDestroyed(this),
         take(1),
         finalize(() => (this.uiLoading = false))
       )

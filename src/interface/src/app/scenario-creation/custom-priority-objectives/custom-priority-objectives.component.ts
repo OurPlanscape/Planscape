@@ -82,7 +82,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCre
     this.uiLoading = true;
     this.newScenarioState.priorityObjectivesDetails$
       .pipe(
-        untilDestroyed(this),
         take(1),
         finalize(() => (this.uiLoading = false))
       )
