@@ -38,8 +38,9 @@
         sharedHeading
         *ngIf="(isFirstIndex$ | async) === false"
         [standSize]="(standSize$ | async) || null"
-        [treatmentGoal]="
-          (treatmentGoalName$ | async) || ''
+        [treatmentGoal]="(treatmentGoalName$ | async) || ''"
+        [priorityObjectives]="
+          (priorityObjectivesNames$ | async) || ''
         "></app-scenario-summary>
 
       <ng-container *ngIf="!isCustomScenario(scenarioType)">

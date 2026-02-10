@@ -14,8 +14,7 @@ import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
-import { catchError, finalize, map, of, switchMap, take } from 'rxjs';
-import { DataLayersService } from '@services';
+import { finalize, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const MAX_SELECTABLE_LAYERS = 2;
@@ -56,7 +55,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private dataLayersService: DataLayersService,
     private newScenarioState: NewScenarioState
   ) {
     super();
@@ -83,32 +81,14 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   mapConfigToUI(): void {
     this.uiLoading = true;
-    this.newScenarioState.scenarioConfig$
+    this.newScenarioState.priorityObjectivesDetails$
       .pipe(
-        untilDestroyed(this),
         take(1),
-        switchMap((config) => {
-          if (config.priority_objectives) {
-            const ids = config.priority_objectives;
-            return this.dataLayersService.getDataLayersByIds(ids).pipe(
-              map((layers: DataLayer[]) => layers),
-              catchError((error) => {
-                throw error;
-              })
-            );
-          }
-          return of([]);
-        }),
         finalize(() => (this.uiLoading = false))
       )
-      .subscribe({
-        next: (layers) => {
-          this.form.get('dataLayers')?.setValue(layers);
-          this.dataLayersStateService.updateSelectedLayers(layers);
-        },
-        error: (error) => {
-          console.error('Error fetching datalayers ', error);
-        },
+      .subscribe((layers) => {
+        this.form.get('dataLayers')?.setValue(layers);
+        this.dataLayersStateService.updateSelectedLayers(layers);
       });
   }
 

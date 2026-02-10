@@ -27,6 +27,7 @@ import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { nameMustBeNew } from '@validators/unique-scenario';
 import {
+  DataLayer,
   Scenario,
   SCENARIO_TYPE,
   ScenarioDraftConfiguration,
@@ -47,12 +48,10 @@ import { FeaturesModule } from '@features/features.module';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
-
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
 } from '@scenario/scenario.constants';
-
 import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '@scenario/scenario.state';
@@ -161,6 +160,11 @@ export class ScenarioCreationComponent implements OnInit {
     ),
     map((goal) => goal?.name)
   );
+
+  priorityObjectivesNames$ =
+    this.newScenarioState.priorityObjectivesDetails$.pipe(
+      map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
+    );
 
   // Copy of index locally to show the last step as completed
   localIndex = 0;
