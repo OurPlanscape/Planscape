@@ -1,4 +1,3 @@
-from urllib.parse import urlencode
 
 from unittest import mock
 
