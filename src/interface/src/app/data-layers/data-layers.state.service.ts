@@ -308,6 +308,7 @@ export class DataLayersStateService {
       this.removeSelectedLayer(layer);
     } else if (
       this._selectedDataLayers$.value.length < this.maxSelectedDatalayers
+    && !this.isLayerUnselectable(layer)
     ) {
       this._selectedDataLayers$.next([
         ...this._selectedDataLayers$.value,
