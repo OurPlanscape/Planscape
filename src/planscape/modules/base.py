@@ -48,21 +48,21 @@ class BaseModule:
             visibility=VisibilityOptions.PUBLIC,
         ).select_related("organization")
 
-    def _get_main_datasets(self):
-        return self.get_datasets().filter(
+    def _get_main_datasets(self, **kwargs):
+        return self.get_datasets(**kwargs).filter(
             preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
         )
 
-    def _get_base_datasets(self):
-        return self.get_datasets().filter(
+    def _get_base_datasets(self, **kwargs):
+        return self.get_datasets(**kwargs).filter(
             preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         )
 
     def _get_options(self, **kwargs) -> Dict[str, Any]:
         return {
             "datasets": {
-                "main_datasets": self._get_main_datasets(),
-                "base_datasets": self._get_base_datasets(),
+                "main_datasets": self._get_main_datasets(**kwargs),
+                "base_datasets": self._get_base_datasets(**kwargs),
             }
         }
 
@@ -137,7 +137,12 @@ class MapModule(BaseModule):
         return True
 
     def get_datasets(self, **kwargs) -> QuerySet[Dataset]:
-        return Dataset.objects.filter(
+        queryset = Dataset.objects.all()
+        if "geometry" in kwargs.keys():
+            geometry = kwargs.get("geometry")
+            queryset = queryset.by_outline_intersects(geometry=geometry)
+        
+        return queryset.filter(
             Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
             | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
         ).select_related("organization")

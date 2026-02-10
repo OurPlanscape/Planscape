@@ -4,12 +4,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from modules.base import BaseModule, get_module
-from modules.serializers import BaseModuleSerializer
+from modules.serializers import InputModuleSerializer
 
 
 class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
     lookup_field = "pk"
-    serializer_class = BaseModuleSerializer
+    serializer_class = InputModuleSerializer
 
     def get_object(self) -> BaseModule:
         pk = str(self.kwargs.get(self.lookup_field))
@@ -20,7 +20,10 @@ class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         my_module = self.get_object()
-        payload = my_module.get_configuration()
+        input_serializer = InputModuleSerializer(data=request.query_params)
+        input_serializer.is_valid(raise_exception=True)
+        geometry = input_serializer.validated_data.get("geometry")
+        payload = my_module.get_configuration(geometry=geometry)
         SerializerClass = my_module.get_serializer_class()
         serializer = SerializerClass(instance=payload)
         return Response(serializer.data)

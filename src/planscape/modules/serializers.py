@@ -1,3 +1,4 @@
+from core.fields import GeometryTypeField
 from datasets.models import DataLayer, Dataset
 from datasets.serializers import BrowseDataLayerSerializer
 from organizations.models import Organization
@@ -59,6 +60,14 @@ class ForsysOptionsSerializer(BaseModuleOptionsSerializer):
 class MapOptionsSerializer(BaseModuleOptionsSerializer):
     pass
 
+
+class InputModuleSerializer(serializers.Serializer):
+    geometry = GeometryTypeField(
+        geometry_type="MultiPolygon",
+        destination_srid=4269,
+        coerce_multi=True,
+        required=False,
+    )
 
 class BaseModuleSerializer(serializers.Serializer):
     name = serializers.CharField()
