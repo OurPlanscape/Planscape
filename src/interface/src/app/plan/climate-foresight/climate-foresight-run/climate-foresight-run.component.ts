@@ -13,7 +13,6 @@ import {
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormGroup } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
-
 import {
   StepComponent,
   StepConfig,
@@ -45,6 +44,7 @@ import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import * as Sentry from '@sentry/browser';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -190,7 +190,7 @@ export class ClimateForesightRunComponent implements OnInit {
           this.loadRunState(run);
         },
         error: (error) => {
-          console.error('Error loading run:', error);
+          Sentry.captureException(error);
           this.snackBar.open(
             'Failed to load run',
             'Close',
@@ -308,7 +308,7 @@ export class ClimateForesightRunComponent implements OnInit {
             observer.complete();
           },
           error: (error) => {
-            console.error('Error saving data layers:', error);
+            Sentry.captureException(error);
             this.snackBar.open(
               'Failed to save data layers: ' +
                 (error?.error.errors?.detail ||
@@ -379,8 +379,7 @@ export class ClimateForesightRunComponent implements OnInit {
             observer.complete();
           },
           error: (error) => {
-            console.error('Error saving favorability:', error);
-
+            Sentry.captureException(error);
             this.snackBar.open(
               'Failed to save favorability: ' +
                 (error?.error?.errors.detail ||
@@ -488,7 +487,7 @@ export class ClimateForesightRunComponent implements OnInit {
           );
         },
         error: (error) => {
-          console.error('Error triggering analysis:', error);
+          Sentry.captureException(error);
           this.snackBar.open(
             'Failed to trigger analysis: ' +
               (error?.error?.errors.detail ||
@@ -551,7 +550,7 @@ export class ClimateForesightRunComponent implements OnInit {
           }
         },
         error: (err) => {
-          console.error('Error polling for run status:', err);
+          Sentry.captureException(err);
         },
       });
   }
