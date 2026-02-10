@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from unittest import mock
 
 from django.test import TestCase
@@ -16,6 +18,24 @@ class ModuleAPITests(TestCase):
         get_module_mock.return_value = payload
 
         url = reverse("api:modules:modules-detail", kwargs={"pk": pk})
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsInstance(resp.data, dict)
+        self.assertEqual(resp.data.get("name"), "forsys")
+
+    @mock.patch("modules.base.get_module")
+    def test_retrieve_success_200_with_geometry(self, get_module_mock):
+        pk = "forsys"
+        payload = {"name": "forsys", "version": "1.0.0"}
+        get_module_mock.return_value = payload
+        geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        query_params = {"geometry": geometry}
+
+        url = f"{reverse('api:modules:modules-detail', kwargs={'pk': pk})}?{urlencode(query_params)}"
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
