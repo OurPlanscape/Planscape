@@ -61,18 +61,14 @@ export class DataSetComponent {
     return this.dataLayersStateService.isLayerUnselectable(layer);
   }
 
-  getUnselectableReason(layer: DataLayer): string {
-    const uLayer = this.dataLayersStateService.getUnselectableLayer(layer);
-    return uLayer ? unselectableReason[uLayer.reason] : 'Cannot be selected.';
-  }
-
   getTooltipText(
     layer: DataLayer,
     isSelectionCompleted: boolean | null
   ): string {
     if (!this.isDatalayerSelected(layer)) {
-      if (this.isUnselectable(layer)) {
-        return this.getUnselectableReason(layer);
+      const uLayer = this.dataLayersStateService.getUnselectableLayer(layer);
+      if (uLayer) {
+        return unselectableReason[uLayer.reason];
       }
       if (isSelectionCompleted) {
         return 'You have selected the maximum number of layers';
