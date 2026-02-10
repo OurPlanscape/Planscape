@@ -4,7 +4,7 @@ import {
   Constraint,
   DataLayer,
   ScenarioConfig,
-  ScenarioCreation,
+  ScenarioDraftConfiguration,
   ScenarioV3Config,
 } from '@types';
 import {
@@ -219,7 +219,7 @@ export class NewScenarioState {
     this._excludedAreas$.next(value);
   }
 
-  setScenarioConfig(config: Partial<ScenarioCreation>) {
+  setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {
     this._scenarioConfig$.next(config);
     if (config.excluded_areas) {
       this.setExcludedAreas(config.excluded_areas);

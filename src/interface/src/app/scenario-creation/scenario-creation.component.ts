@@ -30,7 +30,7 @@ import {
   DataLayer,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioCreation,
+  ScenarioDraftConfiguration,
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
@@ -243,10 +243,10 @@ export class ScenarioCreationComponent implements OnInit {
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
-    return newState as Partial<ScenarioCreation>;
+    return newState as Partial<ScenarioDraftConfiguration>;
   }
 
-  saveStep(data: Partial<ScenarioCreation>): Observable<boolean> {
+  saveStep(data: Partial<ScenarioDraftConfiguration>): Observable<boolean> {
     return this.newScenarioState.isValidToGoNext$.pipe(
       take(1),
       switchMap((valid) => {

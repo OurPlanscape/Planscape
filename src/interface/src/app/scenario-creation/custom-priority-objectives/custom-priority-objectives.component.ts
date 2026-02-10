@@ -7,10 +7,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { DataLayer, ScenarioCreation } from '@types';
+import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
 import { finalize, take } from 'rxjs';
@@ -36,7 +37,7 @@ const MAX_SELECTABLE_LAYERS = 2;
   templateUrl: './custom-priority-objectives.component.html',
   styleUrl: './custom-priority-objectives.component.scss',
 })
-export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioCreation> {
+export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDraftConfiguration> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],

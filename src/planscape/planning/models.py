@@ -374,7 +374,7 @@ class TreatmentGoalUsesDataLayer(
         null=True,
         help_text="Threshold for the data layer.",
     )
-    weight = models.FloatField(
+    weight = models.PositiveIntegerField(
         null=True,
         validators=[MinValueValidator(1)],
         help_text="Only applies when Usage Type = PRIORITY. Must be a positive integer (>= 1).",
