@@ -129,13 +129,9 @@ export class DataLayerTreeComponent {
     return this.dataLayersStateService.isLayerUnselectable(layer);
   }
 
-  // TODO: move this to state
-  unselectableReason(layer: DataLayer): string {
+  getUnselectableReason(layer: DataLayer): string {
     const uLayer = this.dataLayersStateService.getUnselectableLayer(layer);
-    if (uLayer) {
-      return unselectableReason[uLayer.reason];
-    }
-    return 'Cannot be selected.';
+    return uLayer ? unselectableReason[uLayer.reason] : 'Cannot be selected.';
   }
 
   getTooltipText(
@@ -144,7 +140,7 @@ export class DataLayerTreeComponent {
   ): string {
     if (!this.isDatalayerSelected(layer)) {
       if (this.isUnselectable(layer)) {
-        return this.unselectableReason(layer);
+        return this.getUnselectableReason(layer);
       }
       if (isSelectionCompleted) {
         return 'You have selected the maximum number of layers';

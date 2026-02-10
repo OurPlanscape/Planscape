@@ -10,6 +10,7 @@ import { map } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
 import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { unselectableReason } from '@app/shared';
 
 @Component({
   selector: 'app-data-set',
@@ -60,13 +61,18 @@ export class DataSetComponent {
     return this.dataLayersStateService.isLayerUnselectable(layer);
   }
 
+  getUnselectableReason(layer: DataLayer): string {
+    const uLayer = this.dataLayersStateService.getUnselectableLayer(layer);
+    return uLayer ? unselectableReason[uLayer.reason] : 'Cannot be selected.';
+  }
+
   getTooltipText(
     layer: DataLayer,
     isSelectionCompleted: boolean | null
   ): string {
     if (!this.isDatalayerSelected(layer)) {
       if (this.isUnselectable(layer)) {
-        return 'Cannot be selected';
+        return this.getUnselectableReason(layer);
       }
       if (isSelectionCompleted) {
         return 'You have selected the maximum number of layers';
