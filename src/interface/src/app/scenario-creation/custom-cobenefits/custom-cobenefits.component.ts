@@ -8,10 +8,9 @@ import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.c
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { DataLayersService } from '@services';
 import { NewScenarioState } from '../new-scenario.state';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { catchError, finalize, map, of, switchMap, take } from 'rxjs';
+import { finalize, take } from 'rxjs';
 
 const MAX_SELECTABLE_LAYERS = 10;
 
@@ -49,7 +48,6 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfig
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private dataLayersService: DataLayersService,
     private newScenarioState: NewScenarioState
   ) {
     super();
@@ -67,32 +65,14 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfig
 
   mapConfigToUI(): void {
     this.uiLoading = true;
-    this.newScenarioState.scenarioConfig$
+    this.newScenarioState.coBenefitsDetails$
       .pipe(
-        untilDestroyed(this),
         take(1),
-        switchMap((config) => {
-          if (config.cobenefits) {
-            const ids = config.cobenefits;
-            return this.dataLayersService.getDataLayersByIds(ids).pipe(
-              map((layers: DataLayer[]) => layers),
-              catchError((error) => {
-                throw error;
-              })
-            );
-          }
-          return of([]);
-        }),
         finalize(() => (this.uiLoading = false))
       )
-      .subscribe({
-        next: (layers) => {
-          this.form.get('dataLayers')?.setValue(layers);
-          this.dataLayersStateService.updateSelectedLayers(layers);
-        },
-        error: (error) => {
-          console.error('Error fetching datalayers ', error);
-        },
+      .subscribe((layers) => {
+        this.form.get('dataLayers')?.setValue(layers);
+        this.dataLayersStateService.updateSelectedLayers(layers);
       });
   }
 

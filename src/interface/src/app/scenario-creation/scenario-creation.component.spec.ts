@@ -58,6 +58,7 @@ describe('ScenarioCreationComponent', () => {
           availableStands$: of({ summary: {} } as AvailableStands),
           stepIndex$: of(0),
           scenarioConfig$: of({}),
+          priorityObjectivesDetails$: of([]),
         }),
       ],
     }).compileComponents();
