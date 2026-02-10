@@ -85,7 +85,8 @@ jobs:
           const groups = {};
           for (const fileSuite of r.suites) {
             const file = fileSuite.file || '';
-            const parts = file.replace(/^(e2e\/)?specs\//, '').split('/');
+            let parts = file.replace(/^(e2e\/)?specs\//, '').split('/');
+            if (parts[0] === 'public') parts = parts.slice(1);
             const group = parts.length > 1 ? parts[0] : 'other';
             if (!groups[group]) groups[group] = [];
             const nested = fileSuite.suites || [fileSuite];

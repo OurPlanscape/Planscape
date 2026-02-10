@@ -25,6 +25,20 @@ test('user can create an account and log in', { tag: ['@smoke'] }, async ({ page
   await expect(page).toHaveURL(/\/home/);
 });
 
+test('signup with mismatched passwords shows error and disables submit', async ({ page }) => {
+  const signupPage = new SignupPage(page);
+  await signupPage.goto();
+  await signupPage.firstNameInput.fill('Test');
+  await signupPage.lastNameInput.fill('User');
+  await signupPage.emailInput.fill('mismatch@planscape.local');
+  await signupPage.password1Input.fill('SomePass123!');
+  await signupPage.password2Input.fill('DifferentPass456!');
+  await signupPage.password2Input.press('Tab');
+
+  await expect(page.getByText('Given passwords must match.')).toBeVisible();
+  await expect(signupPage.submitButton).toBeDisabled();
+});
+
 test.afterAll(async ({ request }) => {
   // Cleanup: login via API then destroy the user (best-effort)
   try {

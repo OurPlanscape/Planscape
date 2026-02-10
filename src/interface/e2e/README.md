@@ -66,28 +66,9 @@ Set `E2E_BASE_URL` to skip the automatic dev server and test against a running i
 E2E_BASE_URL=http://localhost:4200 npx playwright test
 ```
 
-## Coverage from old Cypress tests
+## Coverage
 
-The previous Cypress suite was removed. Below is what it covered so we can track parity.
-
-### accounts.spec.cy.ts
-- [ ] Signup: fill form with mismatched passwords → shows "Given passwords must match.", submit button disabled
-- [x] Login and logout: log in → land on `/home` → `app-planning-areas` visible → log out → see "Welcome to Planscape"
-
-### map.spec.cy.ts (public, no auth)
-- [ ] Visit `/explore` → `app-map-control-panel` exists
-- [ ] Switch map count: click "Show 1/2/4 maps" → correct number of `.map` elements visible
-- [ ] Change basemap: Road → tile URL contains `stadiamaps`, Terrain → `World_Terrain_Base`, Satellite → `World_Imagery`
-
-### plan.spec.cy.ts
-- [ ] Login → land on `/home` → navigate to `/map` → "Map Control Panel" visible
-  _(was a stub — the actual "draw a plan" flow was never implemented)_
-
-### scenario.spec.cy.ts
-- [ ] Login → land on `/home` → navigate to `/map` → "Map Control Panel" visible
-  _(was a stub — the actual "create a scenario" flow was never implemented)_
-
-Items marked `[x]` are already covered by existing Playwright specs.
+All tests from the previous Cypress suite have been migrated to Playwright.
 
 ## Backend requirements
 

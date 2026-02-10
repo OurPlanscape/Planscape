@@ -18,6 +18,10 @@ export class LoginPage {
   async login(email: string, password: string) {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
+    const responsePromise = this.page.waitForResponse(
+      (res) => res.url().includes('/dj-rest-auth/login/'),
+    );
     await this.submitButton.click();
+    await responsePromise;
   }
 }
