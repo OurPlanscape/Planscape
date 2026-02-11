@@ -15,12 +15,14 @@ from planning.models import GeoPackageStatus, PlanningArea
 
 class ClimateForesightRunManager(models.Manager):
     def list_by_user(self, user: User):
-        """Returns ClimateForesightRun analyses for a given user."""
-        return self.filter(created_by=user)
+        planning_areas = list(
+            PlanningArea.objects.list_by_user(user).values_list("pk", flat=True)
+        )
+        return self.get_queryset().filter(planning_area_id__in=planning_areas)
 
     def list_by_planning_area(self, planning_area: PlanningArea, user: User):
         """Returns ClimateForesightRun analyses for a given planning area and user."""
-        return self.filter(planning_area=planning_area, created_by=user)
+        return self.list_by_user(user).filter(planning_area=planning_area)
 
 
 class ClimateForesightRunStatus(models.TextChoices):
