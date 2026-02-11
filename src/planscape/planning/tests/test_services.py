@@ -1096,6 +1096,31 @@ class ScenarioCountTrackingTest(TestCase):
         self.planning_area.refresh_from_db()
         self.assertEqual(self.planning_area.scenario_count, 0)
 
+    def test_create_scenario_allows_reusing_name_after_soft_delete(self):
+        scenario_name = "reusable-scenario-name"
+        deleted_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            name=scenario_name,
+            status=ScenarioStatus.ACTIVE,
+        )
+
+        ok, _msg = delete_scenario(user=self.user, scenario=deleted_scenario)
+        self.assertTrue(ok)
+
+        recreated_scenario = create_scenario(
+            user=self.user,
+            name=scenario_name,
+            planning_area=self.planning_area,
+            treatment_goal=self.treatment_goal,
+            configuration={
+                "stand_size": "LARGE",
+                "targets": {"max_area": 500, "max_project_count": 2},
+            },
+        )
+
+        self.assertEqual(recreated_scenario.name, scenario_name)
+
 
 @override_settings(OVERSIZE_PLANNING_AREA_ACRES=100)
 class CreatePlanningAreaOversizeTest(TestCase):

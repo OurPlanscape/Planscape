@@ -2,48 +2,8 @@
   <sg-process-overview [steps]="steps"></sg-process-overview>
 </section>
 <section class="main">
-  <sg-section
-    headline="Stand Size"
-    class="stand-size-section"
-    [required]="true">
-    <div class="stand-label">
-      <mat-icon class="stand-icon">hexagon</mat-icon>
-      <div>
-        Choose the stand size ForSys will use to evaluate your planning area.
-        Stands are standarized hexagonal units that represent potential
-        treatment areas.
-      </div>
-    </div>
-
-    <form [formGroup]="form">
-      <mat-form-field class="stand-size" appearance="outline">
-        <mat-label>Stand Size</mat-label>
-        <mat-select formControlName="stand_size">
-          <mat-select-trigger>
-            {{ selectedStandSize?.label }} ({{ selectedStandSize?.acres }}
-            acres)
-          </mat-select-trigger>
-          <mat-option
-            *ngFor="let size of standSizeOptions | keyvalue: reverseAlpha"
-            [value]="size.key">
-            <p class="option-text">
-              {{ size.value.label + ' (' + size.value.acres + ' acres)' }}
-            </p>
-            <p
-              class="option-text option-description"
-              *ngIf="size.value.description">
-              {{ size.value.description }}
-            </p>
-          </mat-option>
-        </mat-select>
-        <mat-error
-          *ngIf="
-            form.get('stand_size')?.touched &&
-            form?.get('stand_size')?.hasError('required')
-          ">
-          Stand size is required
-        </mat-error>
-      </mat-form-field>
-    </form>
-  </sg-section>
+  <div class="main-content">
+    <app-stand-size-selector
+      [control]="form.controls.stand_size"></app-stand-size-selector>
+  </div>
 </section>
