@@ -57,36 +57,40 @@ export class NewScenarioState {
 
   public priorityObjectivesDetails$ = this.scenarioConfig$.pipe(
     map((config: ScenarioConfig) => config.priority_objectives),
-    filter((ids): ids is number[] => Array.isArray(ids) && ids.length > 0),
+    map((ids) => (Array.isArray(ids) && ids.length > 0 ? ids : [])),
     distinctUntilChanged(
       (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
     ),
     switchMap((ids: number[]) =>
-      this.dataLayersService.getDataLayersByIds(ids).pipe(
-        map((layers) => layers ?? ([] as DataLayer[])),
-        catchError((error) => {
-          console.error('Error fetching data layers:', error);
-          return of<DataLayer[]>([]);
-        })
-      )
+      ids.length === 0
+        ? of<DataLayer[]>([])
+        : this.dataLayersService.getDataLayersByIds(ids).pipe(
+            map((layers) => layers ?? ([] as DataLayer[])),
+            catchError((error) => {
+              console.error('Error fetching data layers:', error);
+              return of<DataLayer[]>([]);
+            })
+          )
     ),
     shareReplay(1)
   );
 
   public coBenefitsDetails$ = this.scenarioConfig$.pipe(
     map((config: ScenarioConfig) => config.cobenefits),
-    filter((ids): ids is number[] => Array.isArray(ids) && ids.length > 0),
+    map((ids) => (Array.isArray(ids) && ids.length > 0 ? ids : [])),
     distinctUntilChanged(
       (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
     ),
     switchMap((ids: number[]) =>
-      this.dataLayersService.getDataLayersByIds(ids).pipe(
-        map((layers) => layers ?? ([] as DataLayer[])),
-        catchError((error) => {
-          console.error('Error fetching data layers:', error);
-          return of<DataLayer[]>([]);
-        })
-      )
+      ids.length === 0
+        ? of<DataLayer[]>([])
+        : this.dataLayersService.getDataLayersByIds(ids).pipe(
+            map((layers) => layers ?? ([] as DataLayer[])),
+            catchError((error) => {
+              console.error('Error fetching data layers:', error);
+              return of<DataLayer[]>([]);
+            })
+          )
     ),
     shareReplay(1)
   );
