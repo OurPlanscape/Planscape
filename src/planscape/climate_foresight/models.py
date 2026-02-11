@@ -27,6 +27,7 @@ class ClimateForesightRunStatus(models.TextChoices):
     DRAFT = "draft", "Draft"
     RUNNING = "running", "Running"
     DONE = "done", "Done"
+    FAILED = "failed", "Failed"
 
 
 class ClimateForesightRun(CreatedAtMixin, models.Model):
