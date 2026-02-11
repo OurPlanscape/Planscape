@@ -1,0 +1,69 @@
+<sg-section
+  class="txgoals"
+  headline="Select Treatment Goal"
+  [required]="true"
+  tooltipContent="Select a Treatment Goal based on your objective for treatment. Each goal includes different Priority Objects, Co-Benefits, and Thresholds aligned with the intent of your objective. ForSys uses these pre-selected parameters to generate project areas.
+
+You can only select one goal per run, but you can create as many scenarios as you like by choosing different goals and parameters each time.
+
+Click on a Treatment Goal option to see full scenario details.">
+  <span
+    class="error-message ng-invalid"
+    *ngIf="control.touched && control.hasError('required')">
+    Please select a treatment goal to continue
+  </span>
+
+  <mat-radio-group
+    name="treatmentGoalSelect"
+    aria-label="Select an option"
+    color="primary"
+    [formControl]="control">
+    <div>
+      <div
+        class="goal-loader"
+        *ngIf="(categorizedStatewideGoals$ | async) === null">
+        <mat-spinner diameter="24"></mat-spinner>
+      </div>
+
+      <ng-container
+        *ngIf="categorizedStatewideGoals$ | async as categorizedScenarioGoals">
+        <!-- Displaying groups -->
+        <div
+          *ngFor="let goalGroup of categorizedScenarioGoals | keyvalue"
+          class="goal-control-container">
+          <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+            <mat-expansion-panel-header class="goal-panel-header">
+              {{ goalGroup.key }}
+            </mat-expansion-panel-header>
+
+            <!-- Displaying categories -->
+            <div
+              class="goal-control-container"
+              *ngFor="
+                let goalCategory of goalGroup.value | keyvalue: reverseAlpha
+              ">
+              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+                <mat-expansion-panel-header class="goal-panel-header">
+                  {{ goalCategory.key }}
+                </mat-expansion-panel-header>
+
+                <!-- Treatment goals -->
+                <div
+                  *ngFor="let goal of goalCategory.value"
+                  class="layer-control-container">
+                  <mat-radio-button [value]="goal.id">
+                    {{ goal.name }}
+                  </mat-radio-button>
+
+                  <sg-popover
+                    *ngIf="goal.description"
+                    [content]="goal.description"></sg-popover>
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </mat-expansion-panel>
+        </div>
+      </ng-container>
+    </div>
+  </mat-radio-group>
+</sg-section>
