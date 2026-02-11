@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { PlanningApproachComponent } from './planning-approach.component';
+import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 describe('PlanningApproachComponent', () => {
   let component: PlanningApproachComponent;
@@ -8,11 +9,15 @@ describe('PlanningApproachComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PlanningApproachComponent]
-    })
-    .compileComponents();
-    
+      imports: [
+        PlanningApproachComponent,
+        NoopAnimationsModule,
+        ReactiveFormsModule,
+      ],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(PlanningApproachComponent);
+    fixture.componentInstance.control = new FormControl<number | null>(null);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
