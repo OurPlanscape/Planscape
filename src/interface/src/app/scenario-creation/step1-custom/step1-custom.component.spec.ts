@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { Step1CustomComponent } from './step1-custom.component';
 import { MockComponents, MockProvider } from 'ng-mocks';
-import { Step1Component } from '@scenario-creation/step1/step1.component';
 import { BehaviorSubject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { NewScenarioState } from '../new-scenario.state';
+import { ProcessOverviewComponent } from '@scenario-creation/process-overview/process-overview.component';
+import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
 
 describe('Step1CustomComponent', () => {
   let component: Step1CustomComponent;
@@ -13,8 +15,10 @@ describe('Step1CustomComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Step1CustomComponent],
-      declarations: [MockComponents(Step1Component)],
+      imports: [Step1CustomComponent, NoopAnimationsModule],
+      declarations: [
+        MockComponents(ProcessOverviewComponent, StandSizeSelectorComponent),
+      ],
       providers: [
         MockProvider(NewScenarioState, {
           scenarioConfig$: new BehaviorSubject({}),

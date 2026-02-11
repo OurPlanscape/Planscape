@@ -28,6 +28,9 @@ interface LayerFavorability {
   favor_high: boolean | null;
 }
 
+const SLOPE_MIN = 0.1; // Low
+const SLOPE_MAX = 1.0; // High
+
 @UntilDestroy()
 @Component({
   selector: 'app-assign-favorability',
@@ -154,6 +157,7 @@ export class AssignFavorabilityComponent
         borderColor: 'rgba(54, 162, 235, 1)',
         borderWidth: 1,
         order: 2,
+        yAxisID: 'y', // Left axis
       },
     ];
 
@@ -174,29 +178,29 @@ export class AssignFavorabilityComponent
       // creates horizontal line, favorability slope, followed by horizontal line
       if (favorHigh) {
         // positive slope favoring high values
-        lineData.push({ x: min, y: 0.1 });
+        lineData.push({ x: min, y: SLOPE_MIN });
         pointRadii.push(0);
 
-        lineData.push({ x: p10, y: 0.1 });
+        lineData.push({ x: p10, y: SLOPE_MIN });
         pointRadii.push(6);
 
-        lineData.push({ x: p90, y: 1.0 });
+        lineData.push({ x: p90, y: SLOPE_MAX });
         pointRadii.push(6);
 
-        lineData.push({ x: max, y: 1.0 });
+        lineData.push({ x: max, y: SLOPE_MAX });
         pointRadii.push(0);
       } else {
         // negative slope favoring low values
-        lineData.push({ x: min, y: 1.0 });
+        lineData.push({ x: min, y: SLOPE_MAX });
         pointRadii.push(0);
 
-        lineData.push({ x: p10, y: 1.0 });
+        lineData.push({ x: p10, y: SLOPE_MAX });
         pointRadii.push(6);
 
-        lineData.push({ x: p90, y: 0.1 });
+        lineData.push({ x: p90, y: SLOPE_MIN });
         pointRadii.push(6);
 
-        lineData.push({ x: max, y: 0.1 });
+        lineData.push({ x: max, y: SLOPE_MIN });
         pointRadii.push(0);
       }
 
@@ -213,6 +217,7 @@ export class AssignFavorabilityComponent
         fill: false,
         tension: 0,
         order: 1,
+        yAxisID: 'y',
       });
     }
 
@@ -225,8 +230,12 @@ export class AssignFavorabilityComponent
   get chartOptions(): ChartConfiguration<'bar'>['options'] {
     const xAxisLabel = this.getUnitsFromLayer();
 
-    const SLOPE_MIN = 0.1;
-    const SLOPE_MAX = 1.0;
+    // left yAxis (must match the axis config below)
+    const LEFT_Y_MIN = 0;
+    const LEFT_Y_MAX = 1.1;
+
+    const toPercent = (val: number) =>
+      Math.round(((val - SLOPE_MIN) / (SLOPE_MAX - SLOPE_MIN)) * 100);
 
     return {
       responsive: true,
@@ -241,10 +250,12 @@ export class AssignFavorabilityComponent
           displayColors: true,
           callbacks: {
             label: (context) => {
-              if (context.datasetIndex === 1) {
-                return `Favorability: ${context.parsed.y.toFixed(2)}`;
+              const isLine = (context.dataset as any)?.type === 'line';
+              if (isLine) {
+                const percentage = toPercent(Number(context.parsed.y));
+                return `Favorability: ${percentage}`;
               }
-              return `Frequency: ${context.parsed.y.toFixed(3)}`;
+              return `Frequency: ${Number(context.parsed.y).toFixed(3)}`;
             },
           },
         },
@@ -275,6 +286,7 @@ export class AssignFavorabilityComponent
             display: false,
           },
         },
+
         y: {
           title: {
             display: true,
@@ -286,20 +298,16 @@ export class AssignFavorabilityComponent
             },
           },
           beginAtZero: true,
-          min: 0,
-          max: 1.1,
+          min: LEFT_Y_MIN,
+          max: LEFT_Y_MAX,
 
           afterBuildTicks: (axis) => {
-            // We need to add the ticks for high and low
             const ticks = axis.ticks.map((t) => t.value);
 
-            if (!ticks.includes(0.1)) {
-              axis.ticks.push({ value: 0.1 });
-            }
-
-            if (!ticks.includes(1.0)) {
-              axis.ticks.push({ value: 1.0 });
-            }
+            if (!ticks.includes(SLOPE_MIN))
+              axis.ticks.push({ value: SLOPE_MIN });
+            if (!ticks.includes(SLOPE_MAX))
+              axis.ticks.push({ value: SLOPE_MAX });
 
             axis.ticks.sort((a, b) => a.value - b.value);
           },
@@ -317,6 +325,34 @@ export class AssignFavorabilityComponent
           grid: {
             display: true,
             color: 'rgba(0,0,0,0.05)',
+          },
+        },
+
+        // RIGHT axis: ONLY show 0 and 100 aligned with low hight at the right
+        yRight: {
+          position: 'right',
+
+          // match left axis domain for alignment
+          min: LEFT_Y_MIN,
+          max: LEFT_Y_MAX,
+
+          grid: {
+            drawOnChartArea: false,
+          },
+
+          afterBuildTicks: (axis) => {
+            // Force only two ticks, at the same values where left axis says Low/High
+            axis.ticks = [{ value: SLOPE_MIN }, { value: SLOPE_MAX }];
+          },
+
+          ticks: {
+            color: '#4A4A4A',
+            font: { size: 14, weight: '600' },
+            callback: (value) => {
+              if (value === SLOPE_MIN) return '0';
+              if (value === SLOPE_MAX) return '100';
+              return '';
+            },
           },
         },
       },

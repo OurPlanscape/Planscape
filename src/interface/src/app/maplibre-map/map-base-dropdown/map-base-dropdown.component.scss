@@ -8,36 +8,12 @@
 .base-map {
   &-icon {
     user-select: none;
-    
+
     height: 38px;
     width: 38px;
     border: 1px solid $color-soft-gray;
     border-radius: 4px;
     cursor: pointer;
-  }
-
-  &-overlay {
-    display: block;
-    width: 300px;
-    min-height: 252px;
-    position: absolute;
-    top: 60px;
-    left: 8px;
-    z-index: 101;
-    margin: 0 8px;
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px;
-      border-bottom: 1px solid $color-soft-gray;
-
-      h4 {
-        @include h5();
-        margin: 0;
-      }
-    }
   }
 
   section {
@@ -70,4 +46,30 @@ mat-card {
 .selected {
   background-color: $color-soft-purple;
   font-weight: 600;
+}
+
+// we have .base-map-overlay so it's safe
+::ng-deep .mat-mdc-menu-panel.base-map-overlay {
+  min-width: 300px;
+  max-width: 300px;
+  min-height: 252px;
+  z-index: 101;
+  margin: 8px 0 0 0;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px;
+    border-bottom: 1px solid $color-soft-gray;
+  }
+
+  h4 {
+    @include h5();
+    margin: 0;
+  }
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
 }

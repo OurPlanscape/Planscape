@@ -57,6 +57,14 @@ class PreferredDisplayType(models.TextChoices):
     BASE_DATALAYERS = "BASE_DATALAYERS", "Base DataLayers"
 
 
+class DatasetQuerySet(models.QuerySet):
+    def by_outline_intersects(self, geometry: GEOSGeometry) -> models.QuerySet:
+        return self.all().filter(datalayers__outline__intersects=geometry)
+
+class DatasetManager(models.Manager):
+    def get_queryset(self):
+        return DatasetQuerySet(self.model, using=self._db).filter(deleted_at=None)
+
 class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
@@ -110,6 +118,8 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         validators=[validate_dataset_modules],
         help_text="List of modules this dataset is associated with.",
     )
+
+    objects: "Manager[Dataset]" = DatasetManager()
 
     def __str__(self) -> str:
         return f"{self.name} [{self.organization}] "

@@ -15,7 +15,7 @@ export class ScenarioSummaryComponent {
 
   @Input() treatmentGoal?: string;
 
-  @Input() priorityObjective?: string;
+  @Input() priorityObjectives?: string;
 
   @Input() standSize: STAND_SIZE | null = null;
 
