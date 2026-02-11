@@ -211,7 +211,15 @@ class ClimateForesightPermission(CheckPermissionMixin):
 
     @staticmethod
     def can_change(user: AbstractUser, run: ClimateForesightRun) -> bool:
-        return False
+        planning_creator = is_creator(user, run.planning_area)
+        run_creator = is_creator(user, run)
+        has_permission = check_for_permission(
+            user.pk,
+            run.planning_area,
+            "change_climate_foresight",
+        )
+
+        return any([planning_creator, run_creator, has_permission])
 
     @staticmethod
     def can_remove(user: AbstractUser, run: ClimateForesightRun) -> bool:

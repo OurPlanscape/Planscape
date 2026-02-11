@@ -2,7 +2,11 @@ from django.db import migrations
 
 from collaboration.models import Role
 
-RUN_PERMISSIONS = ["run_climate_foresight", "remove_climate_foresight"]
+RUN_PERMISSIONS = [
+    "run_climate_foresight",
+    "remove_climate_foresight",
+    "change_climate_foresight",
+]
 VIEW_PERMISSIONS = ["view_climate_foresight"]
 RUN_ROLES = [Role.OWNER, Role.COLLABORATOR]
 VIEW_ROLES = [Role.OWNER, Role.COLLABORATOR, Role.VIEWER]

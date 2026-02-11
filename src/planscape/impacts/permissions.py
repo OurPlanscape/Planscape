@@ -30,6 +30,7 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "run_tx",
     "run_climate_foresight",
     "remove_climate_foresight",
+    "change_climate_foresight",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "change_scenario",
