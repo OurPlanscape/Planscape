@@ -1,5 +1,5 @@
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
@@ -8,6 +8,7 @@ import { baseMapStyles } from '../map-base-layers';
 import { MapConfigState } from '../map-config.state';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BaseMapType } from '@types';
+import { MatMenuModule, MenuPositionX } from '@angular/material/menu';
 
 @Component({
   selector: 'app-map-base-dropdown',
@@ -21,11 +22,13 @@ import { BaseMapType } from '@types';
     ButtonComponent,
     ClickOutsideDirective,
     MatTooltipModule,
+    MatMenuModule,
   ],
   templateUrl: './map-base-dropdown.component.html',
   styleUrl: './map-base-dropdown.component.scss',
 })
 export class MapBaseDropdownComponent {
+  @Input() position: MenuPositionX = 'after';
   displayed = false;
   selectedBaseMap$ = this.mapConfigState.baseMap$;
   baseMaps = Object.keys(baseMapStyles) as BaseMapType[];

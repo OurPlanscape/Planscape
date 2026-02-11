@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ScenarioService } from '@services';
-import { Constraint, ScenarioCreation, ScenarioV3Config } from '@types';
+import { DataLayersService, ScenarioService } from '@services';
+import {
+  Constraint,
+  DataLayer,
+  ScenarioConfig,
+  ScenarioDraftConfiguration,
+  ScenarioV3Config,
+} from '@types';
 import {
   BehaviorSubject,
   catchError,
@@ -48,6 +54,42 @@ export class NewScenarioState {
 
   // flag to track if the base stands are loaded
   private baseStandsReady$ = new BehaviorSubject(false);
+
+  public priorityObjectivesDetails$ = this.scenarioConfig$.pipe(
+    map((config: ScenarioConfig) => config.priority_objectives),
+    filter((ids): ids is number[] => Array.isArray(ids) && ids.length > 0),
+    distinctUntilChanged(
+      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+    ),
+    switchMap((ids: number[]) =>
+      this.dataLayersService.getDataLayersByIds(ids).pipe(
+        map((layers) => layers ?? ([] as DataLayer[])),
+        catchError((error) => {
+          console.error('Error fetching data layers:', error);
+          return of<DataLayer[]>([]);
+        })
+      )
+    ),
+    shareReplay(1)
+  );
+
+  public coBenefitsDetails$ = this.scenarioConfig$.pipe(
+    map((config: ScenarioConfig) => config.cobenefits),
+    filter((ids): ids is number[] => Array.isArray(ids) && ids.length > 0),
+    distinctUntilChanged(
+      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+    ),
+    switchMap((ids: number[]) =>
+      this.dataLayersService.getDataLayersByIds(ids).pipe(
+        map((layers) => layers ?? ([] as DataLayer[])),
+        catchError((error) => {
+          console.error('Error fetching data layers:', error);
+          return of<DataLayer[]>([]);
+        })
+      )
+    ),
+    shareReplay(1)
+  );
 
   // helper to get standSize from `scenarioConfig$`
   private standSize$ = this.scenarioConfig$.pipe(
@@ -152,7 +194,8 @@ export class NewScenarioState {
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
     private snackbar: MatSnackBar,
-    private forsysService: ForsysService
+    private forsysService: ForsysService,
+    private dataLayersService: DataLayersService
   ) {
     this.forsysService.forsysData$.subscribe((forsys) => {
       this.slopeId = forsys.thresholds.slope.id;
@@ -176,7 +219,7 @@ export class NewScenarioState {
     this._excludedAreas$.next(value);
   }
 
-  setScenarioConfig(config: Partial<ScenarioCreation>) {
+  setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {
     this._scenarioConfig$.next(config);
     if (config.excluded_areas) {
       this.setExcludedAreas(config.excluded_areas);

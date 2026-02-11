@@ -27,9 +27,10 @@ import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { nameMustBeNew } from '@validators/unique-scenario';
 import {
+  DataLayer,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioCreation,
+  ScenarioDraftConfiguration,
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
@@ -47,12 +48,10 @@ import { FeaturesModule } from '@features/features.module';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
-
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
 } from '@scenario/scenario.constants';
-
 import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioState } from '@scenario/scenario.state';
@@ -162,6 +161,11 @@ export class ScenarioCreationComponent implements OnInit {
     map((goal) => goal?.name)
   );
 
+  priorityObjectivesNames$ =
+    this.newScenarioState.priorityObjectivesDetails$.pipe(
+      map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
+    );
+
   // Copy of index locally to show the last step as completed
   localIndex = 0;
 
@@ -239,10 +243,10 @@ export class ScenarioCreationComponent implements OnInit {
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
-    return newState as Partial<ScenarioCreation>;
+    return newState as Partial<ScenarioDraftConfiguration>;
   }
 
-  saveStep(data: Partial<ScenarioCreation>): Observable<boolean> {
+  saveStep(data: Partial<ScenarioDraftConfiguration>): Observable<boolean> {
     return this.newScenarioState.isValidToGoNext$.pipe(
       take(1),
       switchMap((valid) => {
