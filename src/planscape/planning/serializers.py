@@ -1310,6 +1310,7 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         exists = Scenario.objects.filter(
             name=name,
             planning_area=planning_area_id,
+            deleted_at=None,
         )
         if self.instance:
             exists = exists.exclude(pk=self.instance.pk)
