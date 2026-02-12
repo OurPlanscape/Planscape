@@ -157,7 +157,7 @@ def aggregate_rasters_simple_average(
 
     if existing_layer:
         log.info(
-            f"DataLayer {existing_layer.name} already processed and created: (id={existing_layer.id})",
+            f"DataLayer {existing_layer.name} already processed and created: (id={existing_layer.id})"
             "Check tasks for race condition as first check did not find an existing layer.",
         )
         return existing_layer
@@ -383,7 +383,9 @@ def rollup_landscape(
     )
 
     for future_layer in future_layers:
-        clipped_name = f"{future_layer.name} (Clipped for PA {run.planning_area.id})"
+        clipped_name = (
+            f"{future_layer.name} (Clipped for PA {run.planning_area.id}/{run_id})"
+        )
 
         existing_clipped = DataLayer.objects.filter(
             name=clipped_name,
@@ -473,6 +475,7 @@ def rollup_landscape(
                         "climate_foresight": {
                             "clipped_from": future_layer.id,
                             "planning_area_id": run.planning_area.id,
+                            "run_id": run_id,
                         }
                     }
                 }
