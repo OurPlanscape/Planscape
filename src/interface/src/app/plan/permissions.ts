@@ -41,3 +41,16 @@ export function canDeleteTreatmentPlan(plan: Plan | PreviewPlan) {
 export function canRunTreatmentAnalysis(plan: Plan | PreviewPlan) {
   return plan.permissions?.includes('run_tx');
 }
+
+export function canRunClimateAnalysis(plan: Plan | PreviewPlan, user: User) {
+  return (
+    plan.user === user.id || plan.permissions?.includes('run_climate_foresight')
+  );
+}
+
+export function canDeleteClimateAnalysis(plan: Plan | PreviewPlan, user: User) {
+  return (
+    plan.user === user.id ||
+    plan.permissions?.includes('remove_climate_foresight')
+  );
+}
