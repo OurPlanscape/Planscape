@@ -78,8 +78,8 @@ deploy-frontend: install-dependencies-frontend compile-angular remove-local-sour
 deploy-storybook: install-dependencies-frontend build-storybook
 	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
 
-cypress-test:
-	cd src/interface && npm run cypress:run
+e2e-test:
+	cd src/interface && npx playwright test
 
 mypy:
 	mypy . --strict --ignore-missing-imports | grep src/ | wc -l

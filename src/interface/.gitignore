@@ -48,4 +48,9 @@ Thumbs.db
 
 # Sentry Config File
 .sentryclirc
+.claude/
 
+# Playwright
+/e2e-results/
+/e2e-report/
+/e2e/.auth/

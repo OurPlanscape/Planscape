@@ -176,8 +176,8 @@
     ]
   },
   "exclude": [
-    "cypress/**/*.ts",
-    "cypress.config.ts"
+    "e2e/**/*.ts",
+    "playwright.config.ts"
   ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
