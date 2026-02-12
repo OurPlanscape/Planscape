@@ -53,6 +53,9 @@ export function scenarioCanHaveTreatmentPlans(
   return false;
 }
 
+// TODO this needs to be refactored.
+// We should be taking all formData to configuration by default, and treat
+// outliers separately, not the other way around.
 export function convertFlatConfigurationToDraftPayload(
   formData: Partial<ScenarioDraftConfiguration>,
   thresholdIds: Map<string, number>
@@ -117,6 +120,11 @@ export function convertFlatConfigurationToDraftPayload(
   // Custom Scenarios - co-benefits
   if (formData.cobenefits) {
     config.cobenefits = formData.cobenefits;
+  }
+
+  if (formData.planning_approach) {
+    // TODO UPDATE THIS
+    payload.planning_approach = formData.planning_approach;
   }
 
   payload.configuration = config;

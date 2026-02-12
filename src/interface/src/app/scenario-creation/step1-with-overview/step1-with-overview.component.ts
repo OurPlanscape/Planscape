@@ -57,6 +57,7 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
 
   getData() {
     const { stand_size, treatment_goal, planning_approach } = this.form.value;
+    console.log(this.form.value);
     return this.isPlanningApproachEnabled
       ? { stand_size, planning_approach }
       : { stand_size, treatment_goal };

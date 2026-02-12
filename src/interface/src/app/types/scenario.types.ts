@@ -123,6 +123,7 @@ export interface ScenarioV3Payload {
   name: string;
   planning_area: number;
   treatment_goal: number;
+  planning_approach: string;
 }
 
 // TODO is this the right type?
