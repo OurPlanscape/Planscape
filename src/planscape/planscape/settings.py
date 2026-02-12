@@ -265,6 +265,7 @@ SUPPORT_EMAIL = config("SUPPORT_EMAIL", default="support@planscape.org")
 SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
+ALLOW_DELETE_USERS = config("ALLOW_DELETE_USERS", default=False, cast=bool)
 ACCOUNT_EMAIL_VERIFICATION = str(
     config("ACCOUNT_EMAIL_VERIFICATION", default="mandatory")
 )

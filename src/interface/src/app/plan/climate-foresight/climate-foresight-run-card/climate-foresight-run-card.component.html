@@ -9,7 +9,8 @@
         mat-icon-button
         class="more-button"
         [matMenuTriggerFor]="menu"
-        (click)="$event.stopPropagation()">
+        (click)="$event.stopPropagation()"
+        *ngIf="canDelete || canCopy">
         <mat-icon>more_vert</mat-icon>
       </button>
     </div>
@@ -37,11 +38,15 @@
 </mat-card>
 
 <mat-menu #menu="matMenu">
-  <button mat-menu-item (click)="onCopy($event)">
+  <button mat-menu-item (click)="onCopy($event)" *ngIf="canDelete">
     <mat-icon>content_copy</mat-icon>
     <span>Copy</span>
   </button>
-  <button class="delete-button" mat-menu-item (click)="onDelete($event)">
+  <button
+    class="delete-button"
+    mat-menu-item
+    (click)="onDelete($event)"
+    *ngIf="canCopy">
     <mat-icon>delete</mat-icon>
     <span>Delete</span>
   </button>

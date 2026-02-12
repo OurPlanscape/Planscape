@@ -589,6 +589,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
                     "name",
                 ],
                 name="unique_scenario",
+                condition=Q(deleted_at=None),
             )
         ]
         ordering = ["planning_area", "-created_at"]

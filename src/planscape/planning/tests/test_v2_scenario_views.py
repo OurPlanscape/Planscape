@@ -13,8 +13,8 @@ from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     Scenario,
-    ScenarioPlanningApproach,
     ScenarioCapability,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioType,
     ScenarioVersion,
@@ -1551,6 +1551,7 @@ class CreateScenarioForDraftsTest(APITestCase):
         payload = {
             "planning_area": self.planning_area2.pk,
             "name": "scenario in some other users area",
+            "type": "PRESET",
         }
         self.client.force_authenticate(self.user)
         response = self.client.post(

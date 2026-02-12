@@ -1,50 +1,45 @@
-import { AfterContentInit, Component, ViewChild } from '@angular/core';
-import { Step1Component } from '@scenario-creation/step1/step1.component';
+import { Component } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {
   OverviewStep,
   ProcessOverviewComponent,
 } from '@scenario-creation/process-overview/process-overview.component';
+import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
+import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goal-selector/treatment-goal-selector.component';
 import { StepDirective } from '@styleguide';
-import { ScenarioCreation } from '@types';
-import { FormGroup } from '@angular/forms';
+import { ScenarioDraftConfiguration } from '@types';
 import { SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
+import { STAND_SIZE } from '@plan/plan-helpers';
 
 @Component({
   selector: 'app-step1-with-overview',
   standalone: true,
-  imports: [Step1Component, ProcessOverviewComponent],
+  imports: [
+    ReactiveFormsModule,
+    ProcessOverviewComponent,
+    StandSizeSelectorComponent,
+    TreatmentGoalSelectorComponent,
+  ],
   templateUrl: './step1-with-overview.component.html',
   styleUrl: './step1-with-overview.component.scss',
-  // required to "import" current step1
   providers: [
     { provide: StepDirective, useExisting: Step1WithOverviewComponent },
   ],
 })
-export class Step1WithOverviewComponent
-  extends StepDirective<ScenarioCreation>
-  implements AfterContentInit
-{
+export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfiguration> {
   steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
 
-  // Find Step1
-  // TODO- we might want to not do this at all when we implement this step
-  // with different order, and remove step1 completely.
-  // For now, to avoid duplication, just using step1.
-  @ViewChild(Step1Component, { static: true }) inner!: Step1Component;
-
-  ngAfterContentInit() {
-    if (!this.inner) {
-      throw new Error(
-        'Step1WithOverviewComponent: inner Step1Component not found'
-      );
-    }
-  }
-
-  get form(): FormGroup {
-    return this.inner!.form;
-  }
+  form = new FormGroup({
+    stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
+    treatment_goal: new FormControl<number | null>(null, Validators.required),
+  });
 
   getData() {
-    return this.inner!.getData();
+    return this.form.value;
   }
 }

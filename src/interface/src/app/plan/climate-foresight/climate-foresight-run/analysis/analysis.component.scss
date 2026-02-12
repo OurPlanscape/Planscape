@@ -187,3 +187,22 @@ sg-section {
   align-items: center;
   gap: 12px;
 }
+
+.metric-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+
+  p {
+    margin: 0;
+  }
+
+  .strategies {
+    margin: 0;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}

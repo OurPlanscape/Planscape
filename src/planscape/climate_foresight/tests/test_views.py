@@ -1,14 +1,14 @@
 from planning.tests.factories import PlanningAreaFactory
+from planscape.tests.factories import UserFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from climate_foresight.models import ClimateForesightRun
 from climate_foresight.tests.factories import (
-    ClimateForesightRunFactory,
     ClimateForesightPillarFactory,
+    ClimateForesightRunFactory,
     GlobalClimateForesightPillarFactory,
 )
-from planscape.tests.factories import UserFactory
 
 
 class ClimateForesightRunViewSetTest(APITestCase):
@@ -144,7 +144,7 @@ class ClimateForesightRunViewSetTest(APITestCase):
 
         response = self.client.post(self.base_url, data, format="json")
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         expected_error = {
             "detail": "Validation error.",
             "errors": {

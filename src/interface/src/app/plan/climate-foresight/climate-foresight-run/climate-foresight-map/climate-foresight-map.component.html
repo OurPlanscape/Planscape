@@ -1,5 +1,8 @@
 <ng-container *ngIf="bounds$ | async as bounds">
-  <app-map-nav-bar *ngIf="mapIsLoaded">
+  <app-map-nav-bar
+    *ngIf="mapIsLoaded"
+    class="climate-nav-bar"
+    menuPosition="before">
     <sg-opacity-slider
       class="navbar-slider"
       [minValue]="0"
@@ -44,7 +47,7 @@
       [layout]="{ visibility: 'none' }">
     </mgl-layer>
 
-    <mgl-control position="top-left">
+    <mgl-control position="top-right">
       <app-map-layer-color-legend></app-map-layer-color-legend>
     </mgl-control>
   </mgl-map>

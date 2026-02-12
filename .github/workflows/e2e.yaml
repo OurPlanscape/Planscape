@@ -1,0 +1,129 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env for feature flags
+        run: |
+          echo 'FEATURE_FLAGS="${{ vars.FEATURE_FLAGS }}"' > .env
+
+      - name: Configure proxy to dev backend
+        run: |
+          cat > src/interface/proxy.conf.json << 'EOF'
+          {
+            "/planscape-backend": {
+              "target": "https://dev.planscape.org",
+              "secure": true,
+              "logLevel": "debug",
+              "changeOrigin": true
+            }
+          }
+          EOF
+
+      - name: Generate environment.dev.ts
+        run: |
+          cat > src/interface/src/environments/environment.dev.ts << EOF
+          export const environment = {
+            production: false,
+            environment: 'ci',
+            backend_endpoint: '/planscape-backend',
+            martin_server: 'https://dev.planscape.org/tiles/',
+            mapbox_key: '${{ secrets.MAPBOX_KEY }}',
+            open_panel_key: '${{ secrets.OPEN_PANEL_KEY }}',
+            open_panel_enabled: false,
+            google_analytics_id: '',
+            debug_layers: false,
+            sentry: {
+              dsn_url: '',
+              enable_extra_error_data: false,
+              enable_httpclient: false,
+              enable_browser_reporting: false,
+              enable_interventions_reporting: false,
+              enable_crash_reporting: false,
+              enable_profiling: false,
+              traces_sample_rate: 0.0,
+              profiling_sample_rate: 0.0,
+              enable_context_lines: false,
+              enable_deprecations_reporting: false,
+            },
+          };
+          EOF
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: src/interface/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: src/interface
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: src/interface
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        working-directory: src/interface
+        run: npx playwright test
+
+      - name: Generate test summary
+        if: ${{ !cancelled() }}
+        working-directory: src/interface
+        run: |
+          node -e "
+          const r = require('./e2e-results.json');
+          const groups = {};
+          for (const fileSuite of r.suites) {
+            const file = fileSuite.file || '';
+            let parts = file.replace(/^(e2e\/)?specs\//, '').split('/');
+            if (parts[0] === 'public') parts = parts.slice(1);
+            const group = parts.length > 1 ? parts[0] : 'other';
+            if (!groups[group]) groups[group] = [];
+            const nested = fileSuite.suites || [fileSuite];
+            for (const suite of nested) {
+              for (const spec of (suite.specs || [])) {
+                const test = spec.tests[0];
+                const ok = spec.ok;
+                const duration = test?.results?.[0]?.duration || 0;
+                groups[group].push({ title: spec.title, ok, duration });
+              }
+            }
+          }
+          let md = '## E2E Test Results\n\n';
+          for (const [group, specs] of Object.entries(groups)) {
+            md += '### ' + group.charAt(0).toUpperCase() + group.slice(1) + '\n\n';
+            md += '| Test | Status | Duration |\n|------|--------|----------|\n';
+            for (const s of specs) {
+              const icon = s.ok ? ':white_check_mark:' : ':x:';
+              const status = s.ok ? 'Passed' : 'Failed';
+              md += '| ' + s.title + ' | ' + icon + ' ' + status + ' | ' + (s.duration / 1000).toFixed(1) + 's |\n';
+            }
+            md += '\n';
+          }
+          const passed = r.stats.expected;
+          const failed = r.stats.unexpected;
+          const skipped = r.stats.skipped;
+          md += '**' + passed + ' passed**';
+          if (failed) md += ', **' + failed + ' failed**';
+          if (skipped) md += ', ' + skipped + ' skipped';
+          md += ' — ' + (r.stats.duration / 1000).toFixed(1) + 's total';
+          process.stdout.write(md);
+          " >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: src/interface/e2e-report/
+          retention-days: 14
