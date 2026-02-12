@@ -1,27 +1,46 @@
-@import "../../../styles/colors";
-@import "../../../styles/mixins";
+@import "colors";
+@import "mixins";
+@import "media";
+
+$breakpoint: 1200px;
+
 
 .item {
-  display: flex;
-  gap: 48px;
   padding: 16px;
   border-radius: 4px;
   border: 1px solid $color-soft-gray;
   margin-bottom: 16px;
   color: $color-md-gray;
+  @media screen and (min-width: $breakpoint) {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    justify-content: space-between;
+  }
 }
 
 .image-container {
   background-color: $color-light-gray;
-
   border-radius: 4px;
   overflow: hidden;
-  width: 270px;
   flex-shrink: 0;
   color: $color-md-gray;
   font-size: 12px;
   font-weight: 500;
   text-align: center;
+  margin: 8px 0 0 40px;
+
+  @media screen and (min-width: $breakpoint) {
+    margin: 0;
+    max-width: 270px;
+  }
+
+}
+
+img {
+  display: block;
+  width: 100%; // fill available container space
+
 }
 
 sg-section {
@@ -34,15 +53,20 @@ sg-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  @media screen and (min-width: $breakpoint) {
+    max-width: 390px;
+  }
 }
 
-.with-margin {
-  margin-left: 42px;
+
+.option-text {
+  font-weight: 500;
 }
 
-.highlight {
+.option-highlight {
   padding: 10px 16px;
   border-radius: 4px;
+  font-weight: 500;
   color: $color-main-blue;
   background-color: $color-soft-light-blue;
 }
@@ -54,6 +78,7 @@ sg-section {
 
 :host {
   ::ng-deep .mdc-form-field {
+    align-items: flex-start;
     width: 100%;
 
     & > label {
@@ -61,6 +86,13 @@ sg-section {
       padding: 8px 0;
       font-weight: bold;
 
+    }
+
+    .mdc-label {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 9px;
     }
 
     .mdc-label:hover {
