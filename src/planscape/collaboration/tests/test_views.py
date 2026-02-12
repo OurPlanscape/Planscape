@@ -186,10 +186,11 @@ class UpdateCollaboratorRoleTest(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(
-            response.content,
-            {"role": ['"NonexistentMadeupRole" is not a valid choice.']},
-        )
+        expected_error = {
+            "detail": "Validation error.",
+            "errors": {"role": ['"NonexistentMadeupRole" is not a valid choice.']},
+        }
+        self.assertEqual(response.json(), expected_error)
 
     def test_update_role_as_collaborator(self):
         self.client.force_authenticate(self.collab_user)
