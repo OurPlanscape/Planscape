@@ -8,15 +8,16 @@ from collaboration.utils import (
 from django.contrib.auth.models import AbstractUser
 from django.shortcuts import get_object_or_404
 from planning.models import Scenario
+from planscape.permissions import PlanscapePermission
 from rest_framework.serializers import ValidationError
 
 from impacts.models import TreatmentPlan, TreatmentPlanNote
-from planscape.permissions import PlanscapePermission
 
 VIEWER_PERMISSIONS = [
     "view_planningarea",
     "view_scenario",
     "view_tx_plan",
+    "view_climate_foresight",
 ]
 COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "add_scenario",
@@ -27,6 +28,9 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "add_tx_prescription",
     "remove_tx_prescription",
     "run_tx",
+    "run_climate_foresight",
+    "remove_climate_foresight",
+    "change_climate_foresight",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "change_scenario",
@@ -115,11 +119,7 @@ class TreatmentPlanViewPermission(PlanscapePermission):
             case "clone":
                 return TreatmentPlanPermission.can_clone(request.user, object)
             case (
-                "retrieve"
-                | "summary"
-                | "download"
-                | "plot"
-                | "stand_treatment_results"
+                "retrieve" | "summary" | "download" | "plot" | "stand_treatment_results"
             ):
                 return TreatmentPlanPermission.can_view(request.user, object)
             case "run":

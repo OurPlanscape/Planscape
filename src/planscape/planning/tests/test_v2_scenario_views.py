@@ -13,8 +13,8 @@ from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     Scenario,
-    ScenarioPlanningApproach,
     ScenarioCapability,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioType,
     ScenarioVersion,
@@ -1211,7 +1211,9 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get("configuration", {}).get("stand_size"), "SMALL")
+        self.assertEqual(
+            response.data.get("configuration", {}).get("stand_size"), "SMALL"
+        )
 
     def test_patch_preset_allows_stand_size_without_treatment_goal(self):
         scenario = ScenarioFactory(
@@ -1227,7 +1229,9 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get("configuration", {}).get("stand_size"), "SMALL")
+        self.assertEqual(
+            response.data.get("configuration", {}).get("stand_size"), "SMALL"
+        )
 
     def test_patch_scenario_approach(self):
         scenario = ScenarioFactory(
@@ -1238,12 +1242,18 @@ class PatchScenarioConfigurationTest(APITestCase):
             treatment_goal=None,
         )
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"stand_size": "SMALL"}, "planning_approach": ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value}
+        payload = {
+            "configuration": {"stand_size": "SMALL"},
+            "planning_approach": ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value,
+        }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get("planning_approach"), ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value)
+        self.assertEqual(
+            response.data.get("planning_approach"),
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value,
+        )
 
     def test_patch_sub_units(self):
         scenario = ScenarioFactory.create(
@@ -1260,7 +1270,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get("configuration", {}).get("sub_units_layer"), sub_units_layer.pk)
+        self.assertEqual(
+            response.data.get("configuration", {}).get("sub_units_layer"),
+            sub_units_layer.pk,
+        )
 
     def test_patch_sub_units_with_optimize_project_areas_approach(self):
         scenario = ScenarioFactory.create(
@@ -1276,7 +1289,14 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {'planning_approach': {'configuration': 'Scenarios with `Optimize Project Areas` Planning Approach cannot have Sub Units Layer set.'}})
+        self.assertEqual(
+            response.data,
+            {
+                "planning_approach": {
+                    "configuration": "Scenarios with `Optimize Project Areas` Planning Approach cannot have Sub Units Layer set."
+                }
+            },
+        )
 
     def test_patch_sub_units_with_raster_datalayer(self):
         scenario = ScenarioFactory.create(
@@ -1517,6 +1537,7 @@ class CreateScenarioForDraftsTest(APITestCase):
         payload = {
             "planning_area": self.planning_area2.pk,
             "name": "scenario in some other users area",
+            "type": "PRESET",
         }
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -1566,9 +1587,7 @@ class RunScenarioEndpointTest(APITestCase):
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ) as validate_mock,  # noqa: F841
-            mock.patch(
-                "planning.views_v2.trigger_scenario_run"
-            ) as trigger_mock,  # noqa
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 
@@ -1588,9 +1607,7 @@ class RunScenarioEndpointTest(APITestCase):
                 "planning.views_v2.validate_scenario_configuration",
                 return_value=["Provide either `max_budget` or `max_area`."],
             ) as validate_mock,  # noqa: F841
-            mock.patch(
-                "planning.views_v2.trigger_scenario_run"
-            ) as trigger_mock,  # noqa
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
         ):
             response = self.client.post(self.url, format="json")
 

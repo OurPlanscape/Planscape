@@ -1,10 +1,8 @@
-from collaboration.utils import check_for_permission, is_creator
+from climate_foresight.models import ClimateForesightRun
 from django.contrib.auth.models import AbstractUser
-from planning.models import (
-    PlanningArea,
-    PlanningAreaNote,
-    Scenario,
-)
+from planning.models import PlanningArea, PlanningAreaNote, Scenario
+
+from collaboration.utils import check_for_permission, is_creator
 
 
 class CheckPermissionMixin:
@@ -53,6 +51,13 @@ class PlanningAreaPermission(CheckPermissionMixin):
             return True
 
         return check_for_permission(user.pk, planning_area, "add_scenario")
+
+    @staticmethod
+    def can_run_climate(user: AbstractUser, planning_area: PlanningArea):
+        if is_creator(user, planning_area):
+            return True
+
+        return check_for_permission(user.pk, planning_area, "run_climate_foresight")
 
 
 class PlanningAreaNotePermission(CheckPermissionMixin):
@@ -182,3 +187,46 @@ class ScenarioPermission(CheckPermissionMixin):
         )
 
         return any([planning_creator, scenario_creator, has_permission])
+
+
+class ClimateForesightPermission(CheckPermissionMixin):
+    @staticmethod
+    def can_view(user: AbstractUser, run: ClimateForesightRun) -> bool:
+        planning_creator = is_creator(user, run.planning_area)
+        run_creator = is_creator(user, run)
+        has_permission = check_for_permission(
+            user.pk,
+            run.planning_area,
+            "view_climate_foresight",
+        )
+
+        return any([planning_creator, run_creator, has_permission])
+
+    @staticmethod
+    def can_add(user: AbstractUser, run: ClimateForesightRun) -> bool:
+        if is_creator(user, run.planning_area):
+            return True
+
+        return check_for_permission(user.pk, run.planning_area, "run_climate_foresight")
+
+    @staticmethod
+    def can_change(user: AbstractUser, run: ClimateForesightRun) -> bool:
+        planning_creator = is_creator(user, run.planning_area)
+        run_creator = is_creator(user, run)
+        has_permission = check_for_permission(
+            user.pk,
+            run.planning_area,
+            "change_climate_foresight",
+        )
+
+        return any([planning_creator, run_creator, has_permission])
+
+    @staticmethod
+    def can_remove(user: AbstractUser, run: ClimateForesightRun) -> bool:
+        planning_creator = is_creator(user, run.planning_area)
+        run_creator = is_creator(user, run)
+        has_permission = check_for_permission(
+            user.pk, run.planning_area, "remove_climate_foresight"
+        )
+
+        return any([planning_creator, run_creator, has_permission])
