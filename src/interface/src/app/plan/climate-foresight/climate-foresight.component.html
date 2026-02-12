@@ -76,6 +76,8 @@
       <button
         sg-button
         variant="primary"
+        [disabled]="!canRun"
+        [matTooltip]="runTooltip"
         (click)="startRun()"
         class="start-analysis-btn">
         <mat-icon>assignment_add</mat-icon>
@@ -102,6 +104,8 @@
         <app-climate-foresight-run-card
           *ngFor="let run of runs"
           [run]="run"
+          [canCopy]="canRun"
+          [canDelete]="canDelete"
           (delete)="deleteRun($event)"
           (copyRun)="copyRun($event)"
           (openRun)="openRun($event)">

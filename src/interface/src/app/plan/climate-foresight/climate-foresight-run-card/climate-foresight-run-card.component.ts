@@ -21,6 +21,8 @@ import { ClimateForesightRun } from '@types';
 })
 export class ClimateForesightRunCardComponent {
   @Input() run!: ClimateForesightRun;
+  @Input() canDelete: boolean = false;
+  @Input() canCopy: boolean = false;
   @Output() delete = new EventEmitter<ClimateForesightRun>();
   @Output() copyRun = new EventEmitter<ClimateForesightRun>();
   @Output() openRun = new EventEmitter<ClimateForesightRun>();

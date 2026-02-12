@@ -35,6 +35,10 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NewAnalysisModalComponent } from '@plan/climate-foresight/new-analysis-modal/new-analysis-modal.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+import {
+  canDeleteClimateAnalysis,
+  canRunClimateAnalysis,
+} from '../permissions';
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
@@ -151,7 +155,7 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
   }
 
   startRun(): void {
-    if (!this.currentPlan) {
+    if (!this.currentPlan || !this.canRun) {
       return;
     }
 
@@ -343,5 +347,28 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
           console.error('Error polling for run status:', err);
         },
       });
+  }
+
+  get canRun(): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !this.currentPlan) {
+      return false;
+    }
+    return canRunClimateAnalysis(this.currentPlan, user);
+  }
+
+  get canDelete(): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !this.currentPlan) {
+      return false;
+    }
+    return canDeleteClimateAnalysis(this.currentPlan, user);
+  }
+
+  get runTooltip(): string {
+    if (!this.canRun) {
+      return `You don't have permission to Start Analysis`;
+    }
+    return 'Start Analysis';
   }
 }
