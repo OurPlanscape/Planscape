@@ -19,6 +19,12 @@ import { PlanningApproachComponent } from '@scenario-creation/planning-approach/
 import { FeatureService } from '@features/feature.service';
 import { NgIf } from '@angular/common';
 
+type Step1WithOverviewForm = FormGroup<{
+  stand_size: FormControl<STAND_SIZE | null>;
+  treatment_goal: FormControl<number | null>;
+  planning_approach: FormControl<string | null>;
+}>;
+
 @Component({
   selector: 'app-step1-with-overview',
   standalone: true,
@@ -37,25 +43,41 @@ import { NgIf } from '@angular/common';
   ],
 })
 export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfiguration> {
+  readonly form: Step1WithOverviewForm = new FormGroup({
+    stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
+    treatment_goal: new FormControl<number | null>(null),
+    planning_approach: new FormControl<string | null>(null),
+  });
+
   constructor(private featureService: FeatureService) {
     super();
+    this.configureConditionalValidators();
   }
   steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
 
-  form = new FormGroup({
-    stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
-    treatment_goal: new FormControl<number | null>(null, Validators.required),
-    planning_approach: new FormControl<number | null>(
-      null,
-      Validators.required
-    ),
-  });
-
   getData() {
-    return this.form.value;
+    const { stand_size, treatment_goal, planning_approach } = this.form.value;
+    return this.isPlanningApproachEnabled
+      ? { stand_size, planning_approach }
+      : { stand_size, treatment_goal };
   }
 
   get isPlanningApproachEnabled() {
     return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  private configureConditionalValidators(): void {
+    const { treatment_goal, planning_approach } = this.form.controls;
+
+    if (this.isPlanningApproachEnabled) {
+      planning_approach.addValidators(Validators.required);
+      treatment_goal.clearValidators();
+    } else {
+      treatment_goal.addValidators(Validators.required);
+      planning_approach.clearValidators();
+    }
+
+    treatment_goal.updateValueAndValidity({ emitEvent: false });
+    planning_approach.updateValueAndValidity({ emitEvent: false });
   }
 }

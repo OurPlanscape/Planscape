@@ -17,6 +17,11 @@ $breakpoint: 1200px;
     gap: 12px;
     justify-content: space-between;
   }
+
+  &.selected {
+    border: 2px solid $color-main-blue;
+    background-color: $color-soft-light-blue;;
+  }
 }
 
 .image-container {
@@ -61,6 +66,7 @@ sg-section {
 
 .option-text {
   font-weight: 500;
+  color: $color-md-gray;
 }
 
 .option-highlight {

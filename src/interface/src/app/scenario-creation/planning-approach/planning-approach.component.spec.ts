@@ -3,6 +3,8 @@ import { PlanningApproachComponent } from '@scenario-creation/planning-approach/
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
+type PlanningApproachValue = PlanningApproachComponent['control']['value'];
+
 describe('PlanningApproachComponent', () => {
   let component: PlanningApproachComponent;
   let fixture: ComponentFixture<PlanningApproachComponent>;
@@ -17,7 +19,8 @@ describe('PlanningApproachComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlanningApproachComponent);
-    fixture.componentInstance.control = new FormControl<number | null>(null);
+    fixture.componentInstance.control =
+      new FormControl<PlanningApproachValue>(null);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
