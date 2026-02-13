@@ -1135,10 +1135,15 @@ class CreateScenariosFromUpload(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            b'{"global":["The uploaded geometry is not within the selected planning area."]}',
-            response.content,
-        )
+        expected_error = {
+            "detail": "Validation error.",
+            "errors": {
+                "global": [
+                    "The uploaded geometry is not within the selected planning area."
+                ]
+            },
+        }
+        self.assertEqual(response.json(), expected_error)
 
     def test_create_with_duplicate_names(self):
         self.client.force_authenticate(self.owner_user)
@@ -1173,10 +1178,11 @@ class CreateScenariosFromUpload(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            b'{"name":["A scenario with this name already exists."]}',
-            response.content,
-        )
+        expected_error = {
+            "detail": "Validation error.",
+            "errors": {"name": ["A scenario with this name already exists."]},
+        }
+        self.assertEqual(response.json(), expected_error)
 
 
 class TreatmentGoalViewSetTest(APITestCase):
