@@ -177,12 +177,7 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
         /{(.*?)}/g,
         (match, key: string) => {
           const trimmedKey = key.trim();
-          // note: we don't have control over external props being lower/uppercase
-          const propValue =
-            feature.properties[trimmedKey] ?? // given, possibly mixed case
-            feature.properties[trimmedKey.toLowerCase()] ?? // all lower
-            feature.properties[trimmedKey.toUpperCase()] ?? // all upper
-            '--';
+          const propValue = feature.properties[trimmedKey] ?? '--';
           return propValue;
         }
       );
