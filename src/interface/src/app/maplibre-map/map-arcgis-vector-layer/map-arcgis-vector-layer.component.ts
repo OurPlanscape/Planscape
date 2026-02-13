@@ -229,11 +229,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
         /{(.*?)}/g,
         (match, key: string) => {
           const trimmedKey = key.trim();
-          // note: we don't have control over external props being lower/uppercase
-          const propValue =
-            feature.properties[trimmedKey.toLowerCase()] ??
-            feature.properties[trimmedKey.toUpperCase()] ??
-            '--';
+          const propValue = feature.properties[trimmedKey] ?? '--';
           return propValue;
         }
       );
