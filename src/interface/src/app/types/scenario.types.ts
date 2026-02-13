@@ -23,6 +23,10 @@ export type GeoPackageStatus =
 
 export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
 
+export type PLANNING_APPROACH =
+  | 'PRIORITIZE_SUB_UNITS'
+  | 'OPTIMIZE_PROJECT_AREAS';
+
 // Backend scenario model returned by /v2/scenarios endpoints.
 export interface Scenario {
   id: number;
@@ -49,6 +53,7 @@ export interface Scenario {
   geopackage_url: string | null;
   capabilities?: Capabilities[];
   type: SCENARIO_TYPE;
+  planning_approach?: PLANNING_APPROACH;
 }
 
 /**
@@ -116,6 +121,7 @@ export interface ScenarioV3Config {
     max_project_count: number;
   };
   type?: SCENARIO_TYPE;
+  planning_approach?: PLANNING_APPROACH;
 }
 
 export interface ScenarioV3Payload {
@@ -123,6 +129,7 @@ export interface ScenarioV3Payload {
   name: string;
   planning_area: number;
   treatment_goal: number;
+  planning_approach: PLANNING_APPROACH;
 }
 
 // TODO is this the right type?

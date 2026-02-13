@@ -5,6 +5,7 @@ import { MockComponents } from 'ng-mocks';
 import { ProcessOverviewComponent } from '@scenario-creation/process-overview/process-overview.component';
 import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
 import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goal-selector/treatment-goal-selector.component';
+import { FeaturesModule } from '@features/features.module';
 
 describe('Step1WithOverviewComponent', () => {
   let component: Step1WithOverviewComponent;
@@ -12,7 +13,7 @@ describe('Step1WithOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Step1WithOverviewComponent],
+      imports: [Step1WithOverviewComponent, FeaturesModule],
       declarations: [
         MockComponents(
           ProcessOverviewComponent,

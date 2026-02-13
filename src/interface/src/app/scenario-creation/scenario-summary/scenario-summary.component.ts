@@ -2,6 +2,7 @@ import { NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from '@plan/plan-helpers';
+import { PLANNING_APPROACH } from '@types';
 
 @Component({
   selector: 'app-scenario-summary',
@@ -11,7 +12,7 @@ import { STAND_OPTIONS, STAND_SIZE } from '@plan/plan-helpers';
   styleUrl: './scenario-summary.component.scss',
 })
 export class ScenarioSummaryComponent {
-  @Input() planningApproach?: string;
+  @Input() planningApproach?: PLANNING_APPROACH;
 
   @Input() treatmentGoal?: string;
 
