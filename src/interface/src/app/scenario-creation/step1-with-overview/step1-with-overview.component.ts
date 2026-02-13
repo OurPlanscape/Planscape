@@ -12,7 +12,7 @@ import {
 import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
 import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goal-selector/treatment-goal-selector.component';
 import { StepDirective } from '@styleguide';
-import { ScenarioDraftConfiguration } from '@types';
+import { PLANNING_APPROACH, ScenarioDraftConfiguration } from '@types';
 import { SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
 import { STAND_SIZE } from '@plan/plan-helpers';
 import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
@@ -22,7 +22,7 @@ import { NgIf } from '@angular/common';
 type Step1WithOverviewForm = FormGroup<{
   stand_size: FormControl<STAND_SIZE | null>;
   treatment_goal: FormControl<number | null>;
-  planning_approach: FormControl<string | null>;
+  planning_approach: FormControl<PLANNING_APPROACH | null>;
 }>;
 
 @Component({
@@ -46,7 +46,7 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
   readonly form: Step1WithOverviewForm = new FormGroup({
     stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
     treatment_goal: new FormControl<number | null>(null),
-    planning_approach: new FormControl<string | null>(null),
+    planning_approach: new FormControl<PLANNING_APPROACH | null>(null),
   });
 
   constructor(private featureService: FeatureService) {
@@ -57,7 +57,6 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
 
   getData() {
     const { stand_size, treatment_goal, planning_approach } = this.form.value;
-    console.log(this.form.value);
     return this.isPlanningApproachEnabled
       ? { stand_size, planning_approach }
       : { stand_size, treatment_goal };
@@ -67,6 +66,9 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
     return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
   }
 
+  /**
+   * This method can be removed completely once the 'PLANNING_APPROACH' feature is fully implemented.
+   */
   private configureConditionalValidators(): void {
     const { treatment_goal, planning_approach } = this.form.controls;
 

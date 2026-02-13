@@ -16,11 +16,13 @@ $breakpoint: 1200px;
     align-items: flex-start;
     gap: 12px;
     justify-content: space-between;
+
   }
 
   &.selected {
-    border: 2px solid $color-main-blue;
-    background-color: $color-soft-light-blue;;
+    border: 1px solid $color-standard-blue;
+    outline: 1px solid $color-standard-blue;
+    background-color: $color-soft-light-blue;
   }
 }
 
@@ -34,10 +36,10 @@ $breakpoint: 1200px;
   font-weight: 500;
   text-align: center;
   margin: 8px 0 0 40px;
-
+  max-width: 270px;
   @media screen and (min-width: $breakpoint) {
     margin: 0;
-    max-width: 270px;
+
   }
 
 }

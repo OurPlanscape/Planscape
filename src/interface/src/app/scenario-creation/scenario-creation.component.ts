@@ -243,6 +243,7 @@ export class ScenarioCreationComponent implements OnInit {
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
+    newState['planning_approach'] = scenario.planning_approach;
     return newState as Partial<ScenarioDraftConfiguration>;
   }
 

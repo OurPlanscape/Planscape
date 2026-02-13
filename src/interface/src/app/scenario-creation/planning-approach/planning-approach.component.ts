@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -6,17 +6,12 @@ import { NgxMaskModule } from 'ngx-mask';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatRadioModule } from '@angular/material/radio';
 import { NgFor, NgIf } from '@angular/common';
+import { NewScenarioState } from '../new-scenario.state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { filter, take } from 'rxjs';
+import { PLANNING_APPROACH } from '@types';
 
-type PlanningApproachOption = {
-  value: string;
-  title: string;
-  description: string;
-  recommendation: string;
-  imageSrc: string;
-  imageAlt: string;
-  imageCaption: string;
-};
-
+@UntilDestroy()
 @Component({
   selector: 'app-planning-approach',
   standalone: true,
@@ -33,10 +28,10 @@ type PlanningApproachOption = {
   templateUrl: './planning-approach.component.html',
   styleUrl: './planning-approach.component.scss',
 })
-export class PlanningApproachComponent {
-  @Input() control!: FormControl<string | null>;
+export class PlanningApproachComponent implements OnInit {
+  @Input() control!: FormControl<PLANNING_APPROACH | null>;
 
-  readonly planningApproachOptions: PlanningApproachOption[] = [
+  readonly planningApproachOptions = [
     {
       value: 'PRIORITIZE_SUB_UNITS',
       title: 'Prioritize Sub-Units',
@@ -60,4 +55,20 @@ export class PlanningApproachComponent {
       imageCaption: 'Ex. shows show optimized project areas.',
     },
   ];
+
+  constructor(private newScenarioState: NewScenarioState) {}
+
+  ngOnInit(): void {
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.planning_approach),
+        take(1)
+      )
+      .subscribe((config) => {
+        if (config.planning_approach) {
+          this.control.setValue(config.planning_approach);
+        }
+      });
+  }
 }

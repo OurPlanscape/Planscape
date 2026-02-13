@@ -1,4 +1,4 @@
-import { ScenarioConfigPayload } from './scenario.types';
+import { PLANNING_APPROACH, ScenarioConfigPayload } from './scenario.types';
 
 // Backend response for available stands in a planning area (used by FE map/steps).
 export interface AvailableStands {
@@ -24,5 +24,5 @@ export interface ScenarioDraftConfiguration extends ScenarioConfigPayload {
   planning_area: number;
   priority_objectives?: number[];
   cobenefits?: number[];
-  planning_approach: string;
+  planning_approach: PLANNING_APPROACH;
 }
