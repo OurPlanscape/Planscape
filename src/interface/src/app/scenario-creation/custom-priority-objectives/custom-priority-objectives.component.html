@@ -25,8 +25,15 @@
         Please select a priority objective to continue
       </span>
       <div>
-        Select 1 or {{ maxLayers }} Priority Objectives to guide where ForSys
-        will focus treatments.
+        <p>
+          Select 1 or {{ maxLayers }} Priority Objectives to guide where ForSys
+          will focus treatments.
+        </p>
+        <p>
+          ForSys scores each stand relative to others for the selected metrics
+          and combines those scores. Metrics with more stands with high relative
+          values will have a stronger influence on the overall result.
+        </p>
       </div>
       <mat-spinner diameter="20" *ngIf="uiLoading"></mat-spinner>
       <div *ngIf="!uiLoading">
