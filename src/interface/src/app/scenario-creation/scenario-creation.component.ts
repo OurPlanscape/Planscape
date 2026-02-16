@@ -57,6 +57,7 @@ import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { MapModuleService } from '@services/map-module.service';
+import { PlanState } from '@plan/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -175,15 +176,21 @@ export class ScenarioCreationComponent implements OnInit {
     private scenarioState: ScenarioState,
     private treatmentGoalsService: TreatmentGoalsService,
     private featureService: FeatureService,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    private planState: PlanState
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
-    // pre load datasets
-    this.mapModuleService.loadMapModule();
   }
 
   ngOnInit(): void {
+    // should we only filter for custom scenarios?
+    this.planState.currentPlan$
+      .pipe(
+        take(1),
+        switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
+      )
+      .subscribe();
     if (this.scenarioId) {
       this.loadExistingScenario();
     }
