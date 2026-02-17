@@ -11,6 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
+from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
@@ -41,6 +42,7 @@ from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
+from datasets.dynamic_models import model_from_fiona
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -1484,20 +1486,20 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_LARGE
 
 
-def get_sub_units_details(scenario: Scenario) -> Optional[dict[str, int]]:
-    datalayer_pk = scenario.configuration.get("sub_units_layer")
-    if not datalayer_pk:
-        return None
-    try:
-        datalayer = DataLayer.objects.get(pk=datalayer_pk, type=DataLayerType.VECTOR)
-    except DataLayer.DoesNotExist:
-        logger.warning(f"DataLayer with pk={datalayer_pk} and type={DataLayerType.VECTOR} not found.")
-        return None
-    
-    
+@cached()
+def get_sub_units_details(scenario: Scenario, datalayer: DataLayer) -> Optional[dict[str, float]]:  
+    geometry = scenario.planning_area.geometry
+    dynamic_model = model_from_fiona(datalayer)
+
+    queryset = dynamic_model.objects.filter(geometry__intersects=geometry)
+
+    areas = []
+    for sub_unit in queryset.all():
+        geo_intersection = geometry.intersection(sub_unit.geometry)
+        geometry.append(geo_intersection.area)
 
     return {
-        "avg": 0,
-        "max": 0,
-        "min": 0,
+        "avg": sum(areas) / len(areas),
+        "max": max(areas),
+        "min": min(areas),
     }
