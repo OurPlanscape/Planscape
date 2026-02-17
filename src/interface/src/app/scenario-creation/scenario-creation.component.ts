@@ -201,13 +201,15 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // should we only filter for custom scenarios?
-    this.planState.currentPlan$
+    this.scenarioState.currentScenario$
       .pipe(
         take(1),
+        filter((s) => isCustomScenario(s.type)),
+        switchMap(() => this.planState.currentPlan$),
         switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
       )
       .subscribe();
+
     if (this.scenarioId) {
       this.loadExistingScenario();
     }

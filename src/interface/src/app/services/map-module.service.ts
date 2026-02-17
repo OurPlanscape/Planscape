@@ -23,8 +23,9 @@ export class MapModuleService {
   ) {}
 
   loadMapModule(geometry?: any) {
+    const filters = geometry ? { geometry } : undefined;
     return this.moduleService
-      .getModule<ApiModule<MapData>>(this.moduleName, { geometry })
+      .getModule<ApiModule<MapData>>(this.moduleName, filters)
       .pipe(tap((data) => this._mapData$.next(data.options)));
   }
 
