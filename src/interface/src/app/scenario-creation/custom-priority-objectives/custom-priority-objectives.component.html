@@ -3,16 +3,13 @@
   class="priority-selection"
   [required]="true"
   tooltipContent="<b>What are Priority Objectives?</b>
-  These are the main outcomes you want ForSys to focus on when identifying areas for treatment — like reducing wildfire risk, protecting species, or preserving carbon.
+  These are the main outcomes you want ForSys to focus on when identifying areas for treatment — like source exposure, wildfire hazard potential, or total live tree carbon.
 
   <b>What happens if you select only one priority objective?</b>
-
-  If you select 1 objective, ForSy
-  s will prioritize areas with the highest value for that single objective.
+If you select 1 objective, ForSys will prioritize areas with the highest value for that single objective.  
 
   <b>What happens if you select two priority objectives?</b>
-
-  If you select 2 objectives, ForSys will run a tradeoff analysis between them, providing three different prioritization scenarios that represent different ways to balance the two objectives.
+If you select 2 objectives, ForSys scores each stand relative to others for the selected metrics and combines those scores. Metrics with more stands with high relative values will have a stronger influence on the overall result.
   ">
   <form [formGroup]="form">
     <div class="padding-section">
