@@ -50,7 +50,7 @@ class BaseModule:
             modules__contains=[self.name],
             preferred_display_type__isnull=False,
             visibility=VisibilityOptions.PUBLIC,
-        ).select_related("organization")
+        ).select_related("organization").distinct()
 
     def _get_main_datasets(self, **kwargs):
         return self.get_datasets(**kwargs).filter(
