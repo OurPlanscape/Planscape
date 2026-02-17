@@ -1482,3 +1482,22 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_MEDIUM
         case _:
             return settings.MIN_AREA_PROJECT_LARGE
+
+
+def get_sub_units_details(scenario: Scenario) -> Optional[dict[str, int]]:
+    datalayer_pk = scenario.configuration.get("sub_units_layer")
+    if not datalayer_pk:
+        return None
+    try:
+        datalayer = DataLayer.objects.get(pk=datalayer_pk, type=DataLayerType.VECTOR)
+    except DataLayer.DoesNotExist:
+        logger.warning(f"DataLayer with pk={datalayer_pk} and type={DataLayerType.VECTOR} not found.")
+        return None
+    
+    
+
+    return {
+        "avg": 0,
+        "max": 0,
+        "min": 0,
+    }
