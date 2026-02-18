@@ -1487,19 +1487,20 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 @cached()
-def get_sub_units_details(scenario: Scenario, datalayer: DataLayer) -> Optional[dict[str, float]]:  
-    geometry = scenario.planning_area.geometry
-    dynamic_model = model_from_fiona(datalayer)
-
-    queryset = dynamic_model.objects.filter(geometry__intersects=geometry)
-
+def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
+    geometry = planning_area.geometry
+    DynamicModel = model_from_fiona(datalayer)
+    
     areas = []
-    for sub_unit in queryset.all():
+    for sub_unit in DynamicModel.objects.all():
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        geometry.append(geo_intersection.area)
+        areas.append(geo_intersection.area)
+    
+    if len(areas) == 0:
+        return None
 
     return {
-        "avg": sum(areas) / len(areas),
-        "max": max(areas),
+        "avg": (sum(areas) / len(areas)) if len(areas) > 0 else 0,
+        "max": max(areas) if len(areas) > 0 else 0,
         "min": min(areas),
     }
