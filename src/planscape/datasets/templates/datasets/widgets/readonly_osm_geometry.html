@@ -1,0 +1,35 @@
+<script>
+  (function () {
+    "use strict";
+    if (window.__planscapeReadonlyGeomPatched || typeof window.MapWidget === "undefined") {
+      return;
+    }
+    window.__planscapeReadonlyGeomPatched = true;
+
+    const originalCreateInteractions = window.MapWidget.prototype.createInteractions;
+    window.MapWidget.prototype.createInteractions = function () {
+      originalCreateInteractions.call(this);
+
+      const input = document.getElementById(this.options.id);
+      const isReadonly = input && input.dataset && input.dataset.readonlyGeom === "1";
+      if (!isReadonly) {
+        return;
+      }
+
+      if (this.interactions.draw) {
+        this.map.removeInteraction(this.interactions.draw);
+        this.interactions.draw.setActive(false);
+      }
+      if (this.interactions.modify) {
+        this.map.removeInteraction(this.interactions.modify);
+        this.interactions.modify.setActive(false);
+      }
+
+      const clearNode = document.getElementById(this.map.getTarget()).nextElementSibling;
+      if (clearNode && clearNode.classList.contains("clear_features")) {
+        clearNode.style.display = "none";
+      }
+    };
+  })();
+</script>
+{% include "gis/openlayers-osm.html" %}
