@@ -6,7 +6,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   catchError,
   finalize,
-  firstValueFrom,
   map,
   Observable,
   of,
@@ -15,17 +14,9 @@ import {
   take,
 } from 'rxjs';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
-import { nameMustBeNew } from '@validators/unique-scenario';
 import {
   DataLayer,
   Scenario,
@@ -52,8 +43,7 @@ import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
 } from '@scenario/scenario.constants';
-import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { SharedModule } from '@shared';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ExcludeAreasSelectorComponent } from '@scenario-creation/exclude-areas-selector/exclude-areas-selector.component';
 import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
@@ -109,12 +99,6 @@ export class ScenarioCreationComponent implements OnInit {
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
-
-  scenarioName = '';
-
-  form = new FormGroup({
-    scenarioName: new FormControl('', [Validators.required]),
-  });
 
   loading$ = this.newScenarioState.loading$;
 
@@ -190,7 +174,6 @@ export class ScenarioCreationComponent implements OnInit {
     private router: Router,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
-    private matSnackBar: MatSnackBar,
     private treatmentGoalsService: TreatmentGoalsService,
     private featureService: FeatureService,
     private mapModuleService: MapModuleService,
@@ -228,12 +211,7 @@ export class ScenarioCreationComponent implements OnInit {
         this.steps = isCustomScenario(scenario.type)
           ? this.customSteps
           : this.scenarioSteps;
-        this.scenarioName = scenario.name;
-        //this loads the list of scenario names and looks for dupes.
-        //we pass an id to avoid matching against this current scenario id name
-        this.refreshScenarioNameValidator(scenario.id);
 
-        this.form.controls.scenarioName.setValue(scenario.name);
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
         this.newScenarioState.setScenarioConfig(currentConfig);
@@ -272,15 +250,6 @@ export class ScenarioCreationComponent implements OnInit {
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
-
-        if (
-          this.scenarioName !== this.form.get('scenarioName')?.value &&
-          this.form.get('scenarioName')?.value !== null
-        ) {
-          this.handleNameChange(
-            this.form.get('scenarioName')?.value ?? this.scenarioName
-          );
-        }
         return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
       catchError(() => of(false))
@@ -326,38 +295,6 @@ export class ScenarioCreationComponent implements OnInit {
       ? this.steps.length
       : this.steps.length - 1;
     this.showRunScenarioConfirmation();
-  }
-
-  async handleNameChange(newName: string) {
-    if (newName !== null) {
-      //this loads the list of scenario names and looks for dupes.
-      // we pass an id here, to ensure that a recently changed scenario name for this scenario
-      // is also not included in the duplicates comparison list
-      const nameValidated = await this.refreshScenarioNameValidator(
-        this.scenarioId
-      );
-      if (nameValidated) {
-        this.scenarioService
-          .editScenarioName(this.scenarioId, newName, this.planId)
-          .subscribe({
-            next: () => {
-              this.breadcrumbService.updateBreadCrumb({
-                label: 'Scenario: ' + newName,
-                backUrl: getPlanPath(this.planId),
-                icon: 'close',
-              });
-              this.scenarioName = newName;
-            },
-            error: (e) => {
-              this.matSnackBar.open(
-                '[Error] Unable to update name due to a backend error.',
-                'Dismiss',
-                SNACK_ERROR_CONFIG
-              );
-            },
-          });
-      }
-    }
   }
 
   showRunScenarioConfirmation() {
@@ -414,48 +351,6 @@ export class ScenarioCreationComponent implements OnInit {
     const newStep = event.selectedStep;
     if (newStep instanceof StepComponent && newStep.stepLogic) {
       newStep.stepLogic.beforeStepLoad();
-    }
-  }
-
-  scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {
-    return (control: AbstractControl) => {
-      const name = control.value;
-
-      if (!name || names.length === 0) {
-        return null;
-      }
-
-      return nameMustBeNew(control, names);
-    };
-  }
-
-  // Adds the name validator and return true or returns false in case there is an error getting scenarios
-  async refreshScenarioNameValidator(currentId?: number): Promise<boolean> {
-    try {
-      const scenarios = await firstValueFrom(
-        this.scenarioService.getScenariosForPlan(this.planId)
-      );
-      //get all scenario names, but omit any related to this scenario id
-      const names = scenarios
-        .filter((s) => {
-          if (currentId) {
-            return s.id !== currentId;
-          } else {
-            return true;
-          }
-        })
-        .map((s) => s.name);
-      const ctrl = this.form.get('scenarioName')!;
-
-      ctrl.setValidators([
-        Validators.required,
-        this.scenarioNameMustBeUnique(names),
-      ]);
-      ctrl.updateValueAndValidity({ emitEvent: false });
-      return true;
-    } catch {
-      this.dialog.open(ScenarioErrorModalComponent);
-      return false;
     }
   }
 
