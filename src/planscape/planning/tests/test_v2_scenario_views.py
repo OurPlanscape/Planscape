@@ -1761,3 +1761,50 @@ class DeleteScenarioTest(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, 403)
+
+
+class SubUnitsDetailsTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.other_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+
+        self.scenario.configuration = {"sub_units_layer": 1}
+        self.scenario.save()
+
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value={"avg": 1, "max": 2, "min": 0},
+    )
+    def test_get_sub_units_details(self, mock):
+        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_sub_units_details__sub_unit_not_selected(self):
+        self.scenario.configuration = {}
+        self.scenario.save()
+
+        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 412)
+
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value=None,
+    )
+    def test_get_sub_units_details__no_result(self, mock):
+        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 404)
+
