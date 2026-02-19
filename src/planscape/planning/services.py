@@ -1502,7 +1502,7 @@ def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> 
         return None
 
     return {
-        "avg": (sum(areas) / len(areas)) if len(areas) > 0 else 0,
-        "max": max(areas) if len(areas) > 0 else 0,
-        "min": min(areas),
+        "avg": truncate_result(sum(areas) / len(areas)),
+        "max": truncate_result(max(areas)),
+        "min": truncate_result(min(areas)),
     }
