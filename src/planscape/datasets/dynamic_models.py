@@ -99,7 +99,7 @@ def model_from_fiona(
     else:
         layer = fiona_info
 
-    srid = srid_from_crs(layer.get("crs"))
+    srid = 4269
     geom_type = (layer.get("schema", {}) or {}).get("geometry") or "Geometry"
     properties = (layer.get("schema", {}) or {}).get("properties") or {}
 
