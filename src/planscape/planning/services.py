@@ -1486,7 +1486,7 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_LARGE
 
 
-@cached()
+@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
 def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
