@@ -1,6 +1,7 @@
 import logging
-import numpy as np
 from typing import Tuple
+
+import numpy as np
 
 
 def s_shaped_membership(
@@ -19,7 +20,7 @@ def s_shaped_membership(
     Args:
         x: Input values
         lower_endpoint: Lower endpoint (values <= lower_endpoint map to 0)
-        upper_endpoint: Upper endpoint (values >= upper_endpoint map to 1)asdf
+        upper_endpoint: Upper endpoint (values >= upper_endpoint map to 1)
 
 
     Returns:
