@@ -1490,11 +1490,13 @@ def get_min_project_area(scenario: Scenario) -> float:
 def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
+
+    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
     
     areas = []
-    for sub_unit in DynamicModel.objects.all():
+    for sub_unit in queryset.all():
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        areas.append(geo_intersection.area)
+        areas.append(get_acreage(geo_intersection))
     
     if len(areas) == 0:
         return None
