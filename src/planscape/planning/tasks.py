@@ -292,7 +292,7 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         "stand_ids": stand_ids,
         "datalayers": run_config["datalayers"],
         "variables": run_config["variables"],
-        "pre_defined_projects": run_config["pre_defined_projects"],
+        "run_with_patchmax": run_config["run_with_patchmax"],
         "projects_data": run_config["projects_data"],
     }
 

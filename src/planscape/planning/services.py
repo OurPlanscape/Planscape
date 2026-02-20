@@ -631,7 +631,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         )
 
     sub_units_stand_lookup_table = {}
-    if sub_units_layer_id:
+    if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
         sub_units_datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
         sub_units_stand_lookup_table = get_sub_units_stands_lookup_table(scenario=scenario, datalayer=sub_units_datalayer)
 
@@ -661,7 +661,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         "stand_size": scenario.get_stand_size(),
         "datalayers": datalayers,
         "variables": variables,
-        "pre_defined_projects": True if sub_units_layer_id else False,
+        "run_with_patchmax": True if scenario.planning_approach in (ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS, None) else False,
         "projects_data": sub_units_stand_lookup_table,
     }
 
