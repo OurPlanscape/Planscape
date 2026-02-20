@@ -7,6 +7,7 @@ from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
 from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.widgets import ReadOnlyOSMGeometryWidget
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -97,6 +98,8 @@ class DataLayerAdminForm(forms.ModelForm):
         widgets = {
             "info": JSONEditorWidget,
             "metadata": JSONEditorWidget,
+            "geometry": ReadOnlyOSMGeometryWidget(),
+            "outline": ReadOnlyOSMGeometryWidget(),
         }
         fields = (
             "organization",
