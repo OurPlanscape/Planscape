@@ -19,7 +19,7 @@ from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
-from django.contrib.gis.db.models.functions import Area, Transform
+from django.contrib.gis.db.models.functions import Area, Transform, Centroid
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
@@ -559,6 +559,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     constraints = cfg.get("constraints") or []
     priority_objectives = cfg.get("priority_objectives") or []
     cobenefits = cfg.get("cobenefits") or []
+    sub_units_layer_id = cfg.get("sub_units_layer")
     custom_datalayer_ids = set([*priority_objectives, *cobenefits])
     custom_thresholds = {}
 
@@ -629,6 +630,11 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             ]
         )
 
+    sub_units_stand_lookup_table = None
+    if sub_units_layer_id:
+        sub_units_datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
+        sub_units_stand_lookup_table = get_sub_units_stands_lookup_table(scenario=scenario, datalayer=sub_units_datalayer)
+
     number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
 
     min_area_project = get_min_project_area(scenario)
@@ -655,6 +661,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         "stand_size": scenario.get_stand_size(),
         "datalayers": datalayers,
         "variables": variables,
+        "pre_defined_projects": True if sub_units_layer_id else False,
+        "projects_data": sub_units_stand_lookup_table,
     }
 
 
@@ -1506,3 +1514,22 @@ def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> 
         "max": truncate_result(max(areas)),
         "min": truncate_result(min(areas)),
     }
+
+
+def get_sub_units_stands_lookup_table(scenario: Scenario, datalayer: DataLayer) -> dict[int, List[int]]:
+    stand_size = scenario.get_stand_size()
+    planning_area = scenario.planning_area
+    geometry = planning_area.geometry
+    stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
+
+    DynamicModel = model_from_fiona(datalayer)
+    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+
+    lookup_table = {}
+    for sub_unit in queryset.all():
+        sub_unit_id = sub_unit.pk
+        geo_intersection = geometry.intersection(sub_unit.geometry)
+        stand_ids = stands.filter(centroid__within=geo_intersection).values_list("id", flat=True)
+        lookup_table.update({sub_unit_id: list(stand_ids)})
+
+    return lookup_table
