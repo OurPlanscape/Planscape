@@ -630,7 +630,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             ]
         )
 
-    sub_units_stand_lookup_table = None
+    sub_units_stand_lookup_table = {}
     if sub_units_layer_id:
         sub_units_datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
         sub_units_stand_lookup_table = get_sub_units_stands_lookup_table(scenario=scenario, datalayer=sub_units_datalayer)
@@ -1530,6 +1530,6 @@ def get_sub_units_stands_lookup_table(scenario: Scenario, datalayer: DataLayer) 
         sub_unit_id = sub_unit.pk
         geo_intersection = geometry.intersection(sub_unit.geometry)
         stand_ids = stands.filter(centroid__within=geo_intersection).values_list("id", flat=True)
-        lookup_table.update({sub_unit_id: list(stand_ids)})
+        lookup_table.update({str(sub_unit_id): list(stand_ids)})
 
     return lookup_table

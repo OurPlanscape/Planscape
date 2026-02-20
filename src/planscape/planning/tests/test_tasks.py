@@ -174,6 +174,9 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(variables["min_area_project"], 494)
         self.assertEqual(variables["max_area_project"], 4000)
 
+        self.assertFalse(self.scenario.forsys_input.get("pre_defined_projects"))
+        self.assertDictEqual(self.scenario.forsys_input.get("projects_data"), {})
+
     def test_async_pre_forsys_process_custom_scenario(self):
         priority = DataLayerFactory.create(type=DataLayerType.RASTER)
         cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
@@ -204,6 +207,21 @@ class AsyncPreForsysProcessTest(TestCase):
             {datalayer["usage_type"] for datalayer in datalayers},
             {"PRIORITY", "SECONDARY_METRIC"},
         )
+
+    @mock.patch("planning.services.get_sub_units_stands_lookup_table", return_value={"1" : [8, 9], "2": [7, 6, 5], "3": [4]})
+    def test_async_pre_forsys_process_sub_units(self, mock):
+        configuration = self.scenario.configuration
+        sub_units_datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        configuration.update({"sub_units_layer": sub_units_datalayer.pk})
+        self.scenario.configuration = configuration
+        self.scenario.save()
+
+        async_pre_forsys_process(self.scenario.pk)
+
+        self.scenario.refresh_from_db()
+        forsys_input = self.scenario.forsys_input
+        self.assertTrue(forsys_input.get("pre_defined_projects"))
+        self.assertDictEqual(self.scenario.forsys_input.get("projects_data"), {"1" : [8, 9], "2": [7, 6, 5], "3": [4]})
 
 
 class PrepareScenariosForForsysTest(TestCase):
