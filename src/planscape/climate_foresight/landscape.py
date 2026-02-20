@@ -119,17 +119,19 @@ def aggregate_rasters_simple_average(
 
                     block_stack = np.array(block_stack, dtype=np.float32)
 
-                    if nodata is not None:
-                        valid_mask = np.all(block_stack != nodata, axis=0)
-                    else:
-                        valid_mask = np.all(~np.isnan(block_stack), axis=0)
+                    if nodata is not None and not np.isnan(nodata):
+                        block_stack = np.where(
+                            block_stack == nodata, np.nan, block_stack
+                        )
+
+                    valid_mask = np.any(~np.isnan(block_stack), axis=0)
 
                     output_block = np.full(
                         block_stack.shape[1:], nodata, dtype=np.float32
                     )
 
                     if np.any(valid_mask):
-                        output_block[valid_mask] = np.mean(
+                        output_block[valid_mask] = np.nanmean(
                             block_stack[:, valid_mask], axis=0
                         )
 

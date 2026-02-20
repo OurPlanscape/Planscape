@@ -50,7 +50,7 @@ class BaseModule:
             modules__contains=[self.name],
             preferred_display_type__isnull=False,
             visibility=VisibilityOptions.PUBLIC,
-        ).select_related("organization")
+        ).select_related("organization").distinct()
 
     def _get_main_datasets(self, **kwargs):
         return self.get_datasets(**kwargs).filter(
@@ -148,7 +148,7 @@ class MapModule(BaseModule):
         return queryset.filter(
             Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
             | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
-        ).select_related("organization")
+        ).select_related("organization").distinct()
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return MapModuleSerializer
@@ -183,7 +183,7 @@ class ClimateForesightModule(BaseModule):
                 Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
                 | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
             )
-        ).select_related("organization")
+        ).select_related("organization").distinct()
 
 
 def get_module(module_name: str) -> BaseModule:
