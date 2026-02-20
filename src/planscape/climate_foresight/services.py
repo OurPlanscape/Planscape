@@ -557,36 +557,33 @@ def normalize_raster_layer(
 
                     if np.any(valid_mask):
                         valid_values = block_data[valid_mask].astype(float)
-
-                        if function == "lsmf":
-                            translated = s_shaped_membership(
-                                valid_values, endpoints[0], endpoints[1]
-                            )
-
-                        elif function == "lzmf":
-                            translated = z_shaped_membership(
-                                valid_values, endpoints[0], endpoints[1]
-                            )
-
-                        elif function == "trap":
-                            if len(endpoints) != 4:
-                                raise ValueError(
-                                    f"Trapezoidal function requires 4 endpoints, got {len(endpoints)}"
+                        match function:
+                            case "lsmf":
+                                translated = s_shaped_membership(
+                                    valid_values, endpoints[0], endpoints[1]
                                 )
-                            translated = trapezoidal_membership(
-                                valid_values,
-                                endpoints[0],
-                                endpoints[1],
-                                endpoints[2],
-                                endpoints[3],
-                            )
+                            case "lzmf":
+                                translated = z_shaped_membership(
+                                    valid_values, endpoints[0], endpoints[1]
+                                )
+                            case "trap":
+                                if len(endpoints) != 4:
+                                    raise ValueError(
+                                        f"Trapezoidal function requires 4 endpoints, got {len(endpoints)}"
+                                    )
+                                translated = trapezoidal_membership(
+                                    valid_values,
+                                    endpoints[0],
+                                    endpoints[1],
+                                    endpoints[2],
+                                    endpoints[3],
+                                )
+                            case _:
+                                raise ValueError(
+                                    f"Unknown function '{function}' for layer {input_layer.id}"
+                                )
 
-                        else:
-                            raise ValueError(
-                                f"Unknown function '{function}' for layer {input_layer.id}"
-                            )
-
-                        output_block[valid_mask] = translated
+                        output_block[valid_mask] = translated * 100
 
                     dst.write(output_block, 1, window=window)
 
@@ -871,16 +868,16 @@ def rollup_pillar(
         )
 
     log.info(f"Found {len(normalized_layers)} normalized layers for rollup")
-
-    if method == "optimized":
-        weights, correlations = calculate_optimized_weights(
-            normalized_layers, planning_area_geometry
-        )
-    elif method == "equal":
-        weights = np.ones(len(normalized_layers)) / len(normalized_layers)
-        correlations = weights.copy()
-    else:
-        raise ValueError(f"Unknown weight method: {method}")
+    match method:
+        case "optimized":
+            weights, correlations = calculate_optimized_weights(
+                normalized_layers, planning_area_geometry
+            )
+        case "equal":
+            weights = np.ones(len(normalized_layers)) / len(normalized_layers)
+            correlations = weights.copy()
+        case _:
+            raise ValueError(f"Unknown weight method: {method}")
 
     with rasterio.Env(**get_gdal_env()):
         # get profile from first layer
@@ -1144,10 +1141,7 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
     """
     from planning.models import GeoPackageStatus
 
-    from climate_foresight.models import (
-        ClimateForesightRun,
-        ClimateForesightRunStatus,
-    )
+    from climate_foresight.models import ClimateForesightRun, ClimateForesightRunStatus
 
     run = (
         ClimateForesightRun.objects.select_related(

@@ -409,6 +409,7 @@ GCS_DEFAULT_CACHE_DIRECTIVES = config(
     f"public, max-age={GCS_DEFAULT_CACHE_MAX_AGE}, immutable",
     cast=str,
 )
+SUB_UNITS_DETAILS_TTL = config("GCS_PUBLIC_URL_TTL", 86400, cast=int) # 1 day
 
 # CELERY
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")

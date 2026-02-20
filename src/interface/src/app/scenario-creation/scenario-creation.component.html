@@ -31,7 +31,6 @@
       (selectedIndexChange)="stepChanged($event)"
       (selectionChange)="handleStepChangeEvent($event)"
       (finished)="onFinish(scenarioType)"
-      [outerForm]="form"
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary

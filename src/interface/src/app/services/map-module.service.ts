@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { ModuleService } from './module.service';
 import { ApiModule, MapData } from '@types';
-import { BehaviorSubject, map, shareReplay } from 'rxjs';
+import { BehaviorSubject, map, shareReplay, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MAP_MODULE_NAME } from './map-module.token';
 
@@ -22,10 +22,11 @@ export class MapModuleService {
     @Inject(MAP_MODULE_NAME) private dynamicModuleName: string
   ) {}
 
-  loadMapModule() {
-    this.moduleService
-      .getModule<ApiModule<MapData>>(this.moduleName)
-      .subscribe((data) => this._mapData$.next(data.options));
+  loadMapModule(geometry?: any) {
+    const filters = geometry ? { geometry } : undefined;
+    return this.moduleService
+      .getModule<ApiModule<MapData>>(this.moduleName, filters)
+      .pipe(tap((data) => this._mapData$.next(data.options)));
   }
 
   get moduleName(): string {

@@ -48,6 +48,14 @@ export default defineConfig({
       name: 'public',
       testDir: './e2e/specs/public',
     },
+    {
+      name: 'cleanup',
+      testMatch: /cleanup\.spec\.ts/,
+      dependencies: ['authenticated'],
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
   ],
 
   webServer: process.env['E2E_BASE_URL']
