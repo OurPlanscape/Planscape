@@ -43,17 +43,19 @@ $material-checkbox-padding: 8px;
   width: 20px;
 }
 
-.group-container {
-    &:after { display: none; }
-}
 
 .group-header {
   @include top-level-label();
+  line-height: 20px;
+  font-weight: 500;
+  height: 30px;
   &:after { display: none; }
 }
 
 .items-container {
-
+  position: relative;
+  display: block;
+  
   &:after {
     content: '';
     position: absolute;
@@ -99,6 +101,7 @@ $material-checkbox-padding: 8px;
   height: 40px;
   display: flex;
   align-items: center;
+  padding-left: 8px;
 }
 
 .select-button {
