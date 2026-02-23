@@ -3,6 +3,7 @@ import {
   Component,
   ContentChild,
   Directive,
+  Input,
   SkipSelf,
 } from '@angular/core';
 import { CdkStep, CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
@@ -33,6 +34,7 @@ export abstract class StepDirective<T> {
 })
 export class StepComponent<T> extends CdkStep implements AfterViewInit {
   @ContentChild(StepDirective) stepLogic?: StepDirective<T>;
+  @Input() preStep = false;
 
   // FIX make the parent stepper dependency explicit on the subclass
   constructor(@SkipSelf() stepper: CdkStepper) {
@@ -40,7 +42,7 @@ export class StepComponent<T> extends CdkStep implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (!this.stepLogic) {
+    if (!this.stepLogic && !this.preStep) {
       throw new Error(
         'StepComponent: No step logic (StepDirective) was projected into this step.'
       );

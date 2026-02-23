@@ -14,8 +14,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { of, throwError } from 'rxjs';
-import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { MockProvider } from 'ng-mocks';
 
 @Component({
   selector: 'app-test-host',
@@ -44,11 +42,6 @@ describe('StepsComponent', () => {
   beforeEach(fakeAsync(() => {
     TestBed.configureTestingModule({
       imports: [TestHostComponent],
-      providers: [
-        MockProvider(DataLayersStateService, {
-          viewedDataLayer$: of(null),
-        }),
-      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestHostComponent);
