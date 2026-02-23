@@ -166,6 +166,8 @@ export class ScenarioCreationComponent implements OnInit {
     }
   }
 
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
   constructor(
     private scenarioService: ScenarioService,
     private newScenarioState: NewScenarioState,
@@ -177,7 +179,8 @@ export class ScenarioCreationComponent implements OnInit {
     private treatmentGoalsService: TreatmentGoalsService,
     private featureService: FeatureService,
     private mapModuleService: MapModuleService,
-    private planState: PlanState
+    private planState: PlanState,
+    private dataLayersStateService: DataLayersStateService
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
@@ -352,6 +355,10 @@ export class ScenarioCreationComponent implements OnInit {
     if (newStep instanceof StepComponent && newStep.stepLogic) {
       newStep.stepLogic.beforeStepLoad();
     }
+  }
+
+  clearViewedDataLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 
   isCustomScenario(type: SCENARIO_TYPE) {

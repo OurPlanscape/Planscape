@@ -24,6 +24,7 @@
       class="new-scenario-ui"
       [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"
       [showStepIndex]="false"
+      [showClearButton]="!!(viewedDataLayer$ | async)"
       linear
       finishLabel="Save & Run Scenario"
       continueLabel="Save & Continue"
@@ -31,6 +32,7 @@
       (selectedIndexChange)="stepChanged($event)"
       (selectionChange)="handleStepChangeEvent($event)"
       (finished)="onFinish(scenarioType)"
+      (clearClick)="clearViewedDataLayer()"
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary
