@@ -14,6 +14,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
+    hasMap: false,
   },
   {
     label: 'Exclude Areas',
@@ -22,6 +23,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Stand-level Constraints',
@@ -31,6 +33,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Treatment Target',
@@ -40,6 +43,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: true,
   },
   {
     label: 'Generate Output',
@@ -48,6 +52,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: true,
   },
 ];
 
@@ -59,6 +64,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
+    hasMap: false,
   },
   {
     label: 'Co-Benefits',
@@ -67,6 +73,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
+    hasMap: false,
   },
   {
     label: 'Exclude Areas',
@@ -75,6 +82,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: false,
   },
   {
     label: 'Stand-level Constraints',
@@ -84,6 +92,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: false,
   },
   {
     label: 'Treatment Target',
@@ -93,6 +102,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: false,
   },
   {
     label: 'Generate Output',
@@ -101,5 +111,6 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: false,
   },
 ];

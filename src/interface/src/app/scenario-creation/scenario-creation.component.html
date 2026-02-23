@@ -47,6 +47,10 @@
         <sg-step class="full-screen-step">
           <app-step1-with-overview></app-step1-with-overview>
         </sg-step>
+        <sg-step class="full-screen-step">
+          <app-treatment-goal-step></app-treatment-goal-step>
+        </sg-step>
+
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>
         </sg-step>
@@ -79,8 +83,6 @@
         </sg-step>
       </ng-container>
     </sg-steps>
-
-    <app-scenario-map
-      *ngIf="stepsComponent.selectedIndex !== 0"></app-scenario-map>
+    <app-scenario-map *ngIf="showMap$ | async"></app-scenario-map>
   </section>
 </ng-container>

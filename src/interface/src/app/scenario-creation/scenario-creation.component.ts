@@ -47,7 +47,6 @@ import { SharedModule } from '@shared';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ExcludeAreasSelectorComponent } from '@scenario-creation/exclude-areas-selector/exclude-areas-selector.component';
 import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
-import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-priority-objectives/custom-priority-objectives.component';
@@ -58,6 +57,8 @@ import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { MapModuleService } from '@services/map-module.service';
 import { PlanState } from '@plan/plan.state';
+import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-step/treatment-goal-step.component';
+import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 
 @UntilDestroy()
 @Component({
@@ -83,13 +84,14 @@ import { PlanState } from '@plan/plan.state';
     ExcludeAreasSelectorComponent,
     StepsNavComponent,
     ScenarioMapComponent,
-    Step1WithOverviewComponent,
     NgClass,
     ScenarioSummaryComponent,
     SharedModule,
     CustomPriorityObjectivesComponent,
     CustomCobenefitsComponent,
     Step1CustomComponent,
+    TreatmentGoalStepComponent,
+    Step1WithOverviewComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -119,7 +121,16 @@ export class ScenarioCreationComponent implements OnInit {
     },
   ];
 
-  steps: { icon: string; description: string; label: string }[] = [];
+  steps: {
+    icon: string;
+    description: string;
+    label: string;
+    hasMap: boolean;
+  }[] = [];
+
+  //TODO fix this part?
+  stepIndex$ = this.newScenarioState.stepIndex$;
+  showMap$ = this.stepIndex$.pipe(map((i) => this.steps[i].hasMap));
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
@@ -269,6 +280,8 @@ export class ScenarioCreationComponent implements OnInit {
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(
         map((result) => {
+          //oh.
+          this.newScenarioState.setLoading(false);
           if (result) {
             return true;
           }
@@ -353,5 +366,19 @@ export class ScenarioCreationComponent implements OnInit {
       this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS') &&
       isCustomScenario(type)
     );
+  }
+
+  // remove after removing flag
+  // TODO might need to release CUSTOM_SCENARIOS first
+  doesFirstStepHaveNav(scenarioType: SCENARIO_TYPE) {
+    if (this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS')) {
+      return true;
+    } else {
+      return this.isCustomScenario(scenarioType);
+    }
+  }
+
+  isPlanningApproachEnabled() {
+    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
   }
 }
