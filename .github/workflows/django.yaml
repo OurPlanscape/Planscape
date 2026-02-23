@@ -1,13 +1,29 @@
 name: Django CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: ["cleanup"]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'src/planscape/**'
+
   lint:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +33,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [detect-changes, lint]
+    if: needs.detect-changes.outputs.backend == 'true'
     strategy:
       max-parallel: 4
       matrix:
@@ -53,7 +70,7 @@ jobs:
         run: sudo apt-get install libcurl4-openssl-dev libssl-dev gcc gdal-bin libgdal-dev r-base-core -y
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install UV
@@ -63,11 +80,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Configure cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: cache
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
 
       - name: Cache is healthy?
         if: steps.cache.outputs.cache-hit == 'true'
@@ -87,12 +104,31 @@ jobs:
           CELERY_BROKER_URL: redis://localhost:6379/0
           CACHEOPS_REDIS: redis://localhost:6379/0
         run: |
-          touch .env
-          echo SECRET_KEY="$SECRET_KEY" >> .env
-          echo AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" >> .env
-          echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" >> .env
-          echo AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION" >> .env
-          echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .env
-          echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .env
+          {
+            echo SECRET_KEY="$SECRET_KEY"
+            echo AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
+            echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+            echo AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION"
+            echo CELERY_BROKER_URL="$CELERY_BROKER_URL"
+            echo CACHEOPS_REDIS="$CACHEOPS_REDIS"
+          } > .env
           cd src/planscape
           uv run python manage.py test . --parallel 4
+
+  backend-gate:
+    name: Backend Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [detect-changes, lint, build]
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.detect-changes.outputs.backend }}" != "true" ]]; then
+            echo "No backend changes — skipped"
+            exit 0
+          fi
+          if [[ "${{ needs.lint.result }}" != "success" || "${{ needs.build.result }}" != "success" ]]; then
+            echo "Backend CI failed"
+            exit 1
+          fi
+          echo "Backend CI passed"
