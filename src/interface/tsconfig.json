@@ -141,6 +141,12 @@
       ],
       "@assets/*": [
         "src/assets/*"
+      ],
+      "@testing": [
+        "src/testing"
+      ],
+      "@testing/*": [
+        "src/testing/*"
       ]
     },
     "outDir": "./dist/out-tsc",

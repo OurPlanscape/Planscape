@@ -5,12 +5,11 @@ import { MockBuilder, MockRender } from 'ng-mocks';
 import { of } from 'rxjs';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapConfigState } from '../map-config.state';
-import { MockMapLibreMap } from 'src/testing/maplibre-gl.mock';
+import { createMapLibreMock } from '@testing/maplibre-gl.mock';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;
   let fixture: any;
-  let mockMap: MockMapLibreMap;
 
   beforeEach(() =>
     MockBuilder(MapDataLayerComponent)
@@ -25,11 +24,7 @@ describe('MapDataLayerComponent', () => {
   );
 
   beforeEach(() => {
-    mockMap = new MockMapLibreMap({
-      container: document.createElement('div'),
-      center: [0, 0],
-      zoom: 1,
-    });
+    const mockMap = createMapLibreMock();
 
     fixture = MockRender(MapDataLayerComponent, {
       mapLibreMap: mockMap as any,

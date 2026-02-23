@@ -7,13 +7,11 @@ import {
   platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 
-// Mock maplibre-gl Map class to avoid WebGL dependency
+// Replace maplibre-gl Map with a stub to prevent WebGL context errors
 // This must be done BEFORE any imports that use maplibre-gl
 import * as maplibreGl from 'maplibre-gl';
-import { MockMapLibreMap } from './testing/maplibre-gl.mock';
-
-// Replace the Map class with our mock
-(maplibreGl as any).Map = MockMapLibreMap;
+import { MapLibreMapStub } from './testing/maplibre-gl.mock';
+(maplibreGl as any).Map = MapLibreMapStub;
 
 // Setup global mocks for ngx-maplibre-gl components (avoids WebGL dependencies)
 import { setupNgxMaplibreGlMocks } from './testing/ngx-maplibre-gl.mock';
