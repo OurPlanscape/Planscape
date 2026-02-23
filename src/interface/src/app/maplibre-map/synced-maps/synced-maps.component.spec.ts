@@ -5,7 +5,7 @@ import { ExploreMapComponent } from '@maplibre-map/explore-map/explore-map.compo
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { of } from 'rxjs';
 import { LngLatBounds } from 'maplibre-gl';
-import { DummyMaplibreMap } from '../maplibre.mock.spec';
+import { createMapLibreMock } from '@testing/maplibre-gl.mock';
 
 describe('SyncedMapsComponent', () => {
   let fixture: ComponentFixture<SyncedMapsComponent>;
@@ -45,7 +45,7 @@ describe('SyncedMapsComponent', () => {
   describe('mapCreated()', () => {
     it('assigns a cleanupFn on first mapCreated', async () => {
       await component.mapCreated({
-        map: new DummyMaplibreMap() as any,
+        map: createMapLibreMock(),
         mapNumber: 1,
       });
       expect(component['cleanupFn']).toBeDefined();
@@ -55,7 +55,7 @@ describe('SyncedMapsComponent', () => {
     it('calls previous cleanupFn when a new map is added', async () => {
       // first create
       await component.mapCreated({
-        map: new DummyMaplibreMap() as any,
+        map: createMapLibreMock(),
         mapNumber: 1,
       });
       // overwrite it with a spy
@@ -64,7 +64,7 @@ describe('SyncedMapsComponent', () => {
 
       // second create should invoke the old cleanupSpy
       await component.mapCreated({
-        map: new DummyMaplibreMap() as any,
+        map: createMapLibreMock(),
         mapNumber: 2,
       });
       expect(cleanupSpy).toHaveBeenCalled();

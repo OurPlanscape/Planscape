@@ -1,46 +1,33 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapDataLayerComponent } from './map-data-layer.component';
-import { Map as MapLibreMap } from 'maplibre-gl';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MockProvider } from 'ng-mocks';
+import { MockBuilder, MockRender } from 'ng-mocks';
 import { of } from 'rxjs';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapConfigState } from '../map-config.state';
+import { createMapLibreMock } from '@testing/maplibre-gl.mock';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;
-  let fixture: ComponentFixture<MapDataLayerComponent>;
-  let mapLibreMap: MapLibreMap;
 
-  beforeEach(async () => {
-    mapLibreMap = new MapLibreMap({
-      container: document.createElement('div'),
-      center: [0, 0],
-      zoom: 1,
+  beforeEach(() =>
+    MockBuilder(MapDataLayerComponent)
+      .keep(HttpClientTestingModule)
+      .keep(MatSnackBarModule)
+      .mock(DataLayersStateService, {
+        dataLayerWithUrl$: of(null),
+      })
+      .mock(MapConfigState, {
+        dataLayersOpacity$: of(0.75),
+      })
+  );
+
+  beforeEach(() => {
+    const mockMap = createMapLibreMock();
+    const fixture = MockRender(MapDataLayerComponent, {
+      mapLibreMap: mockMap as any,
     });
-
-    await TestBed.configureTestingModule({
-      imports: [
-        MapDataLayerComponent,
-        HttpClientTestingModule,
-        MatSnackBarModule,
-      ],
-      providers: [
-        MockProvider(DataLayersStateService, {
-          dataLayerWithUrl$: of(null),
-        }),
-        MockProvider(MapConfigState, {
-          dataLayersOpacity$: of(0.75),
-        }),
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(MapDataLayerComponent);
-    component = fixture.componentInstance;
-    component.mapLibreMap = mapLibreMap; // Assign the mock map
-
-    fixture.detectChanges();
+    component = fixture.point.componentInstance;
   });
 
   it('should create', () => {
