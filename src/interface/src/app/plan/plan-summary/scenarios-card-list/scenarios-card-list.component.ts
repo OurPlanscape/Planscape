@@ -11,7 +11,10 @@ import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '@plan/plan-helpers';
-import { scenarioCanHaveTreatmentPlans, suggestUniqueName } from '@scenario/scenario-helper';
+import {
+  scenarioCanHaveTreatmentPlans,
+  suggestUniqueName,
+} from '@scenario/scenario-helper';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -311,7 +314,7 @@ export class ScenariosCardListComponent {
           existingNames.length > 0
             ? suggestUniqueName(scenario.name, existingNames)
             : '';
-    //     this.isLoadingDialog = false;
+        //     this.isLoadingDialog = false;
         this.dialog.open(ScenarioSetupModalComponent, {
           maxWidth: '560px',
           data: {
@@ -319,11 +322,9 @@ export class ScenariosCardListComponent {
             defaultName: suggestedName,
             fromClone: true,
             scenario: scenario,
-            type: scenario.type
+            type: scenario.type,
           },
         });
       });
   }
-
-
 }

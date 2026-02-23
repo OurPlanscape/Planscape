@@ -22,7 +22,7 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { take } from 'rxjs';
+import { lastValueFrom, map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
@@ -114,8 +114,21 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
-  copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
+  // much of this method is devoted to handling the case when a user wants to
+  // clone an older scenario type, which means we need to convert the configuration
+  //  here to be as similar as possible.
+  async copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
+
+    // TODO: tidy this up
+    if (!oldScenario.configuration) {
+      // we have to load the full confiugration object
+      const fullOldScenario = await lastValueFrom(
+        this.scenarioService.getScenario(oldScenario.id)
+      );
+      oldScenario.configuration = fullOldScenario.configuration;
+    }
+
     if (oldScenario.version === 'V3') {
       const oldConfig: Partial<ScenarioV3Config> =
         oldScenario.configuration as ScenarioV3Config;
@@ -139,20 +152,18 @@ export class ScenarioSetupModalComponent implements OnInit {
       const num = Number(oldScenario.treatment_goal?.id);
       newPayload.treatment_goal = num;
     }
-    console.log('the old scenario is:', oldScenario);
-    console.log('the new scenario is:', newScenario);
-    console.log('the new config payload is:', newPayload);
 
-    // this.scenarioService
-    //   .patchScenarioConfig(newScenario.id!, newPayload)
-    //   .pipe(
-    //     map((result) => {
-    //       this.reloadTo(
-    //         `/plan/${newScenario.planning_area}/scenario/${result.id}`
-    //       );
-    //     })
-    //   )
-    //   .subscribe();
+    // TODO: handle errors more clearly...
+    this.scenarioService
+      .patchScenarioConfig(newScenario.id!, newPayload)
+      .pipe(
+        map((result) => {
+          this.reloadTo(
+            `/plan/${newScenario.planning_area}/scenario/${result.id}`
+          );
+        })
+      )
+      .subscribe();
   }
 
   async reloadTo(url: string | UrlTree) {
@@ -168,7 +179,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
     const planId = this.data.planId;
     const type = this.data.type;
-    console.log('we are creating a scenario with name:', name, 'planid:', planId, 'type:', type);
+
     this.scenarioService.createScenario(name, planId, type).subscribe({
       next: (result) => {
         this.dialogRef.close(result);
@@ -176,7 +187,6 @@ export class ScenarioSetupModalComponent implements OnInit {
 
         //for cloned scenarios, we copy configuration, then redirect
         if (this.data.fromClone && result.id && this.data.scenario) {
-          console.log('here we are copying the configuration...', this.data.scenario);
           this.copyConfiguration(this.data.scenario, result);
         }
         if (result.id && this.data.fromClone === false) {
