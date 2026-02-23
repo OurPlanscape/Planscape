@@ -13,6 +13,4 @@ The name and value of the flag will be shared by frontend and backend.
 
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool
 
-`CUSTOM_SCENARIOS` : Allows custom scenarios
-
 `PLANNING_APPROACH` : Allows planning approach where users can prioritize sub-units during scenario workflow
