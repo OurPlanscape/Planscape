@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'mixins';
 
 $select-width: 50px;
 $colum-gap: 16px;
@@ -9,15 +10,6 @@ $material-checkbox-padding: 8px;
   position: relative;
   display: block;
 
-  &:after {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: $color-soft-gray;
-    top: 0;
-    left: #{$select-width + $colum-gap};
-  }
 
   .view-checkbox {
     padding-left: 0;
@@ -49,6 +41,28 @@ $material-checkbox-padding: 8px;
 
 .spinner-container {
   width: 20px;
+}
+
+.group-container {
+    &:after { display: none; }
+}
+
+.group-header {
+  @include top-level-label();
+  &:after { display: none; }
+}
+
+.items-container {
+
+  &:after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    background-color: $color-soft-gray;
+    top: 0;
+    left: #{$select-width + $colum-gap};
+  }
 }
 
 .list-row,

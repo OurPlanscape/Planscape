@@ -1,37 +1,43 @@
-<div class="list-header">
+<div class="list-header items-container">
   <div class="select-title">Select</div>
   <div>View Layer</div>
 </div>
 
-<div *ngFor="let item of items" class="list-row">
-  <div class="select">
-    <button
-      mat-icon-button
-      class="select-button"
-      [ngClass]="{ selected: isSelected(item) }"
-      (click)="selectItem(item)"
-      type="button">
-      <mat-icon>{{ isSelected(item) ? 'remove' : 'add' }}</mat-icon>
-    </button>
+<div *ngFor="let group of groupedData | keyvalue" class="group-wrapper">
+  <div *ngIf="groupBy && group.key" class="group-header">
+    {{ group.key }}
   </div>
 
-  <div class="right-options">
-    <mat-checkbox
-      class="view-checkbox"
-      [checked]="isViewed(item)"
-      (change)="viewItem(item)"
-      >{{ item.name }}</mat-checkbox
-    >
-    <div class="spinner-container">
-      <!-- placeholder, to reduce UI jumpiness -->
-      <mat-spinner diameter="20" *ngIf="isLoading(item)"> </mat-spinner>
+  <div *ngFor="let item of group.value" class="list-row items-container">
+    <div class="select">
+      <button
+        mat-icon-button
+        class="select-button"
+        [ngClass]="{ selected: isSelected(item) }"
+        (click)="selectItem(item)"
+        type="button">
+        <mat-icon>{{ isSelected(item) ? 'remove' : 'add' }}</mat-icon>
+      </button>
     </div>
-    <div
-      class="color-box"
-      [ngClass]="{ selected: isViewed(item) }"
-      [ngStyle]="{
-        'background-color': getColor(item),
-        'border-color': getOutlineColor(item),
-      }"></div>
+
+    <div class="right-options">
+      <mat-checkbox
+        class="view-checkbox"
+        [checked]="isViewed(item)"
+        (change)="viewItem(item)"
+        >{{ item.name }}</mat-checkbox
+      >
+      <div class="spinner-container">
+        <!-- placeholder, to reduce UI jumpiness -->
+        <mat-spinner diameter="20" *ngIf="isLoading(item)"> </mat-spinner>
+      </div>
+      <div
+        class="color-box"
+        [ngClass]="{ selected: isViewed(item) }"
+        [ngStyle]="{
+          'background-color': getColor(item),
+          'border-color': getOutlineColor(item),
+        }"></div>
+    </div>
   </div>
 </div>

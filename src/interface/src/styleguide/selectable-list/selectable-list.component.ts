@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
+import { KeyValuePipe, NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent } from '..';
 import { MatIconModule } from '@angular/material/icon';
@@ -33,6 +33,7 @@ interface Item {
   standalone: true,
   imports: [
     ButtonComponent,
+    KeyValuePipe,
     MatButtonModule,
     MatCheckboxModule,
     MatIconModule,
@@ -52,6 +53,29 @@ export class SelectableListComponent<T extends Item> {
 
   /** all the items in the list */
   @Input() items: T[] = [];
+
+  // Accept a function that takes an item and returns a string
+  @Input() groupSelector?: (item: T) => string;
+
+  @Input() groupBy?: string;
+
+  get groupedData(): Record<string, T[]> {
+    if (!this.groupBy) return { '': this.items };
+
+    return this.items.reduce(
+      (acc, item) => {
+        const key = this.resolvePath(item, this.groupBy!) || 'Other';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      },
+      {} as Record<string, T[]>
+    );
+  }
+
+  private resolvePath(obj: any, path: string): string {
+    return path.split('.').reduce((prev, curr) => prev?.[curr], obj);
+  }
 
   /** the selected items, optional */
   @Input() selectedItems: T[] = [];
