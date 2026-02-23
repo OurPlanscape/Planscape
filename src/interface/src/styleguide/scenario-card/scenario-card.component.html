@@ -43,6 +43,13 @@
       </button>
       <button
         mat-menu-item
+        *ngIf="userCanEditScenario"
+        (click)="copyScenario.emit()">
+        <mat-icon class="material-symbols-outlined">copy</mat-icon>
+        <span>Copy Scenario</span>
+      </button>
+      <button
+        mat-menu-item
         *ngIf="userCanArchiveScenario"
         (click)="toggleArchiveStatus.emit()">
         <mat-icon *ngIf="!isArchived()" class="material-symbols-outlined"

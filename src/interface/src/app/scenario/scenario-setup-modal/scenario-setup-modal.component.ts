@@ -22,7 +22,7 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { map, take } from 'rxjs';
+import { take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
@@ -139,16 +139,20 @@ export class ScenarioSetupModalComponent implements OnInit {
       const num = Number(oldScenario.treatment_goal?.id);
       newPayload.treatment_goal = num;
     }
-    this.scenarioService
-      .patchScenarioConfig(newScenario.id!, newPayload)
-      .pipe(
-        map((result) => {
-          this.reloadTo(
-            `/plan/${newScenario.planning_area}/scenario/${result.id}`
-          );
-        })
-      )
-      .subscribe();
+    console.log('the old scenario is:', oldScenario);
+    console.log('the new scenario is:', newScenario);
+    console.log('the new config payload is:', newPayload);
+
+    // this.scenarioService
+    //   .patchScenarioConfig(newScenario.id!, newPayload)
+    //   .pipe(
+    //     map((result) => {
+    //       this.reloadTo(
+    //         `/plan/${newScenario.planning_area}/scenario/${result.id}`
+    //       );
+    //     })
+    //   )
+    //   .subscribe();
   }
 
   async reloadTo(url: string | UrlTree) {
@@ -164,6 +168,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
     const planId = this.data.planId;
     const type = this.data.type;
+    console.log('we are creating a scenario with name:', name, 'planid:', planId, 'type:', type);
     this.scenarioService.createScenario(name, planId, type).subscribe({
       next: (result) => {
         this.dialogRef.close(result);
@@ -171,6 +176,7 @@ export class ScenarioSetupModalComponent implements OnInit {
 
         //for cloned scenarios, we copy configuration, then redirect
         if (this.data.fromClone && result.id && this.data.scenario) {
+          console.log('here we are copying the configuration...', this.data.scenario);
           this.copyConfiguration(this.data.scenario, result);
         }
         if (result.id && this.data.fromClone === false) {

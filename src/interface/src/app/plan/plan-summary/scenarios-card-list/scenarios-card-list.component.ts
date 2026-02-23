@@ -11,7 +11,7 @@ import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '@plan/plan-helpers';
-import { scenarioCanHaveTreatmentPlans } from '@scenario/scenario-helper';
+import { scenarioCanHaveTreatmentPlans, suggestUniqueName } from '@scenario/scenario-helper';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -19,7 +19,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { CreateTreatmentDialogComponent } from '@scenario/create-treatment-dialog/create-treatment-dialog.component';
-import { take } from 'rxjs';
+import { catchError, of, take, map } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
 import {
@@ -293,4 +293,37 @@ export class ScenariosCardListComponent {
         });
     }
   }
+
+  handleCopyScenario(scenario: Scenario) {
+    // this.isLoadingDialog = true;
+    // get the set of scenarios in order to collect a list of names
+    this.scenarioService
+      .getScenariosForPlan(scenario.planning_area)
+      .pipe(
+        take(1),
+        map((scenarios) => scenarios.map((s) => s.name)),
+        catchError((error) => {
+          return of([]);
+        })
+      )
+      .subscribe((existingNames: string[]) => {
+        const suggestedName =
+          existingNames.length > 0
+            ? suggestUniqueName(scenario.name, existingNames)
+            : '';
+    //     this.isLoadingDialog = false;
+        this.dialog.open(ScenarioSetupModalComponent, {
+          maxWidth: '560px',
+          data: {
+            planId: scenario.planning_area,
+            defaultName: suggestedName,
+            fromClone: true,
+            scenario: scenario,
+            type: scenario.type
+          },
+        });
+      });
+  }
+
+
 }
