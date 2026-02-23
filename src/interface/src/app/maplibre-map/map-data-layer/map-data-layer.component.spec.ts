@@ -9,7 +9,6 @@ import { createMapLibreMock } from '@testing/maplibre-gl.mock';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;
-  let fixture: any;
 
   beforeEach(() =>
     MockBuilder(MapDataLayerComponent)
@@ -25,8 +24,7 @@ describe('MapDataLayerComponent', () => {
 
   beforeEach(() => {
     const mockMap = createMapLibreMock();
-
-    fixture = MockRender(MapDataLayerComponent, {
+    const fixture = MockRender(MapDataLayerComponent, {
       mapLibreMap: mockMap as any,
     });
     component = fixture.point.componentInstance;

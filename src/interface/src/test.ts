@@ -13,10 +13,6 @@ import * as maplibreGl from 'maplibre-gl';
 import { MapLibreMapStub } from './testing/maplibre-gl.mock';
 (maplibreGl as any).Map = MapLibreMapStub;
 
-// Setup global mocks for ngx-maplibre-gl components (avoids WebGL dependencies)
-import { setupNgxMaplibreGlMocks } from './testing/ngx-maplibre-gl.mock';
-setupNgxMaplibreGlMocks();
-
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
