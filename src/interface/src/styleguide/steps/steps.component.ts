@@ -156,4 +156,17 @@ export class StepsComponent<T> extends CdkStepper {
     return this.selectedIndex === this.steps.length - 1;
   }
 
+  get isOnPreStep(): boolean {
+    const current = this.steps.toArray()[this.selectedIndex];
+    return current instanceof StepComponent && current.preStep;
+  }
+
+  get navSelectedIndex(): number {
+    let preStepsBefore = 0;
+    this.steps.toArray().slice(0, this.selectedIndex).forEach((step) => {
+      if (step instanceof StepComponent && step.preStep) preStepsBefore++;
+    });
+    return this.selectedIndex - preStepsBefore;
+  }
+
 }
