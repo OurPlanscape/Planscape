@@ -47,7 +47,10 @@ describe('ScenarioCreationComponent', () => {
         MockProvider(ScenarioState, {
           currentScenario$: of(MOCK_SCENARIO),
         }),
-        MockProvider(DataLayersStateService, { paths$: of([]), viewedDataLayer$: of(null) }),
+        MockProvider(DataLayersStateService, {
+          paths$: of([]),
+          viewedDataLayer$: of(null),
+        }),
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),
           stepIndex$: of(0),

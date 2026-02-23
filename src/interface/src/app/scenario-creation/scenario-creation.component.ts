@@ -102,10 +102,6 @@ export class ScenarioCreationComponent implements OnInit {
 
   loading$ = this.newScenarioState.loading$;
 
-  stepIndex$ = this.newScenarioState.stepIndex$;
-
-  isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
-
   // last step label on the navigation is different from the overview
   private scenarioSteps = [
     ...SCENARIO_OVERVIEW_STEPS.slice(0, -1),
@@ -150,9 +146,6 @@ export class ScenarioCreationComponent implements OnInit {
     this.newScenarioState.priorityObjectivesDetails$.pipe(
       map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
     );
-
-  // Copy of index locally to show the last step as completed
-  localIndex = 0;
 
   scenarioType$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => scenario.type)
@@ -289,14 +282,9 @@ export class ScenarioCreationComponent implements OnInit {
       );
   }
 
-  async onFinish(type: SCENARIO_TYPE) {
+  async onFinish() {
     this.newScenarioState.setLoading(false);
-
     this.newScenarioState.setDraftFinished(true);
-    // TODO this needs to check type
-    this.localIndex = this.isCustomScenario(type)
-      ? this.steps.length
-      : this.steps.length - 1;
     this.showRunScenarioConfirmation();
   }
 
@@ -346,7 +334,6 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   stepChanged(i: number) {
-    this.localIndex = i;
     this.newScenarioState.setStepIndex(i);
   }
 

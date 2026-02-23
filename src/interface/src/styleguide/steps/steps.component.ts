@@ -163,10 +163,12 @@ export class StepsComponent<T> extends CdkStepper {
 
   get navSelectedIndex(): number {
     let preStepsBefore = 0;
-    this.steps.toArray().slice(0, this.selectedIndex).forEach((step) => {
-      if (step instanceof StepComponent && step.preStep) preStepsBefore++;
-    });
+    this.steps
+      .toArray()
+      .slice(0, this.selectedIndex)
+      .forEach((step) => {
+        if (step instanceof StepComponent && step.preStep) preStepsBefore++;
+      });
     return this.selectedIndex - preStepsBefore;
   }
-
 }

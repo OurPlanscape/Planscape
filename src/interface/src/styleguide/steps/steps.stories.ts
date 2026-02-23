@@ -97,7 +97,10 @@ class MyStep3Component extends StepDirective<Person> {
   template: `
     <div style="padding: 20px;">
       <h3>Welcome!</h3>
-      <p>This is a pre-step — it participates in back/forward navigation but is hidden from the nav bar.</p>
+      <p>
+        This is a pre-step — it participates in back/forward navigation but is
+        hidden from the nav bar.
+      </p>
     </div>
   `,
 })
@@ -208,11 +211,7 @@ export const WithPreStep: Story = {
   render: ({ ...args }) => ({
     props: {
       ...args,
-      navSteps: [
-        { label: 'Name' },
-        { label: 'Age' },
-        { label: 'Email' },
-      ],
+      navSteps: [{ label: 'Name' }, { label: 'Age' }, { label: 'Email' }],
       saveData: (_data: Partial<Person>) => of(true),
     },
     template: `
