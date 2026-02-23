@@ -3,13 +3,10 @@
 <ng-container *ngIf="scenarioType$ | async as scenarioType">
   <sg-steps-nav
     *ngIf="
-      !isCustomScenario(scenarioType) ||
-      (isCustomScenario(scenarioType) && stepsComponent.selectedIndex !== 0)
+      stepsComponent.selectedIndex !== 0 || !isCustomScenario(scenarioType)
     "
     [steps]="steps"
-    [selectedIndex]="
-      isCustomScenario(scenarioType) ? localIndex - 1 : localIndex
-    "
+    [selectedIndex]="stepsComponent.navSelectedIndex"
     [allowNavigation]="true"
     [linear]="true"
     (selectionChange)="
@@ -18,25 +15,28 @@
           ? $event + 1
           : $event)
     "></sg-steps-nav>
-  <section class="container" [ngClass]="{ first: isFirstIndex$ | async }">
+  <section
+    class="container"
+    [ngClass]="{ first: stepsComponent.selectedIndex === 0 }">
     <sg-steps
       #stepsComponent
       class="new-scenario-ui"
-      [ngClass]="{ 'full-screen-steps': isFirstIndex$ | async }"
+      [ngClass]="{ 'full-screen-steps': stepsComponent.selectedIndex === 0 }"
       [showStepIndex]="false"
+      [showClearButton]="!!(viewedDataLayer$ | async)"
       linear
       finishLabel="Save & Run Scenario"
       continueLabel="Save & Continue"
       [save]="saveStep.bind(this)"
       (selectedIndexChange)="stepChanged($event)"
       (selectionChange)="handleStepChangeEvent($event)"
-      (finished)="onFinish(scenarioType)"
-      [outerForm]="form"
+      (finished)="onFinish()"
+      (clearClick)="clearViewedDataLayer()"
       [savingStep]="(loading$ | async) ?? false"
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary
         sharedHeading
-        *ngIf="(isFirstIndex$ | async) === false"
+        *ngIf="stepsComponent.selectedIndex !== 0"
         [standSize]="(standSize$ | async) || null"
         [treatmentGoal]="(treatmentGoalName$ | async) || ''"
         [priorityObjectives]="
@@ -59,7 +59,7 @@
       </ng-container>
 
       <ng-container *ngIf="isCustomScenario(scenarioType)">
-        <sg-step>
+        <sg-step [preStep]="true">
           <app-step1-custom></app-step1-custom>
         </sg-step>
         <sg-step>
@@ -81,6 +81,6 @@
     </sg-steps>
 
     <app-scenario-map
-      *ngIf="(isFirstIndex$ | async) === false"></app-scenario-map>
+      *ngIf="stepsComponent.selectedIndex !== 0"></app-scenario-map>
   </section>
 </ng-container>

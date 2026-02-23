@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
     // load initial forsys data
     this.forsysService.loadForsysData();
     // load map data
-    this.mapModuleService.loadMapModule();
+    this.mapModuleService.loadMapModule().subscribe();
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
     if (environment.open_panel_enabled) {

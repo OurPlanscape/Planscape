@@ -11,6 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
+from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
@@ -41,6 +42,7 @@ from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
+from datasets.dynamic_models import model_from_fiona
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -1482,3 +1484,25 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_MEDIUM
         case _:
             return settings.MIN_AREA_PROJECT_LARGE
+
+
+@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
+def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
+    geometry = planning_area.geometry
+    DynamicModel = model_from_fiona(datalayer)
+
+    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    
+    areas = []
+    for sub_unit in queryset.all():
+        geo_intersection = geometry.intersection(sub_unit.geometry)
+        areas.append(get_acreage(geo_intersection))
+    
+    if len(areas) == 0:
+        return None
+
+    return {
+        "avg": truncate_result(sum(areas) / len(areas)),
+        "max": truncate_result(max(areas)),
+        "min": truncate_result(min(areas)),
+    }

@@ -210,9 +210,6 @@ def run_promote_analysis(
             current_valid = current_data[valid_mask].astype(np.float32)
             future_valid = future_data[valid_mask].astype(np.float32)
 
-            # scale current to 0-100 to match future scale
-            current_valid = current_valid * 100.0
-
             future_min = np.min(future_valid)
             future_max = np.max(future_valid)
 
