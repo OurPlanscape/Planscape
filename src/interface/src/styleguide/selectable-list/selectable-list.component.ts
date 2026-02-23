@@ -54,9 +54,7 @@ export class SelectableListComponent<T extends Item> {
   /** all the items in the list */
   @Input() items: T[] = [];
 
-  // Accept a function that takes an item and returns a string
-  @Input() groupSelector?: (item: T) => string;
-
+  /** path to an item element by which we can group data */
   @Input() groupBy?: string;
 
   get groupedData(): Record<string, T[]> {
