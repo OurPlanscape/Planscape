@@ -26,11 +26,13 @@ import { lastValueFrom, map, take } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-scenario-setup-modal',
   standalone: true,
   imports: [
+    MatProgressSpinnerModule,
     ModalComponent,
     NgIf,
     InputDirective,
@@ -73,6 +75,7 @@ export class ScenarioSetupModalComponent implements OnInit {
   }
 
   thresholdsData: any = null;
+  loading = false;
 
   get editMode(): boolean {
     return this.data.scenario !== undefined && this.data.fromClone !== true;
@@ -97,6 +100,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     // if we are trying to clone a scenario but don't have a name yet...
     // we disable the form
     if (this.data.fromClone && this.data.defaultName === null) {
+      this.loading = true;
       this.scenarioNameForm.get('scenarioName')?.disable();
       this.scenarioNameForm.disable();
     }
@@ -107,6 +111,7 @@ export class ScenarioSetupModalComponent implements OnInit {
   }
 
   setName(name: string): void {
+    this.loading = false;
     this.data.defaultName = name;
     this.scenarioNameForm.get('scenarioName')?.setValue(this.data.defaultName);
     this.scenarioNameForm.get('scenarioName')?.enable();
