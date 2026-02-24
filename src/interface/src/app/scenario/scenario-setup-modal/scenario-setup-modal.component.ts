@@ -132,6 +132,8 @@ export class ScenarioSetupModalComponent implements OnInit {
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
 
+    console.log('the original configuration is this:', oldScenario.configuration);
+
     if (oldScenario.version === 'V3') {
       const oldConfig: Partial<ScenarioV3Config> =
         oldScenario.configuration as ScenarioV3Config;
@@ -155,16 +157,26 @@ export class ScenarioSetupModalComponent implements OnInit {
       const num = Number(oldScenario.treatment_goal?.id);
       newPayload.treatment_goal = num;
     }
-    this.scenarioService
-      .patchScenarioConfig(newScenario.id!, newPayload)
-      .pipe(
-        map((result) => {
-          this.reloadTo(
-            `/plan/${newScenario.planning_area}/scenario/${result.id}`
-          );
-        })
-      )
-      .subscribe();
+
+    console.log('here is the newPayload we would send...', newPayload);
+
+    if (!newPayload.configuration?.priority_objectives?.length) {
+      console.log('we dont have any priority_objectives, so we cant save this configuration', newPayload.configuration);
+      this.reloadTo(
+        `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
+      );
+    } else {
+      this.scenarioService
+        .patchScenarioConfig(newScenario.id!, newPayload)
+        .pipe(
+          map((result) => {
+            this.reloadTo(
+              `/plan/${newScenario.planning_area}/scenario/${result.id}`
+            );
+          })
+        )
+        .subscribe();
+    }
   }
 
   async reloadTo(url: string | UrlTree) {
