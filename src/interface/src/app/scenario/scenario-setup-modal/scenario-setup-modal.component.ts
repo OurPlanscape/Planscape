@@ -101,8 +101,6 @@ export class ScenarioSetupModalComponent implements OnInit {
     // we disable the form
     if (this.data.fromClone && this.data.defaultName === null) {
       this.loading = true;
-      this.scenarioNameForm.get('scenarioName')?.disable();
-      this.scenarioNameForm.disable();
     }
   }
 
