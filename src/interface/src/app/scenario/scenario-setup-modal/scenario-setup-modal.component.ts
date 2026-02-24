@@ -94,10 +94,22 @@ export class ScenarioSetupModalComponent implements OnInit {
         .get('scenarioName')
         ?.setValue(this.data.scenario.name);
     }
+    // if we are trying to clone a scenario but don't have a name yet...
+    // we disable the form
+    if (this.data.fromClone && this.data.defaultName === null) {
+      this.scenarioNameForm.get('scenarioName')?.disable();
+      this.scenarioNameForm.disable();
+    }
   }
 
   cancel(): void {
     this.dialogRef.close(false);
+  }
+
+  setName(name: string): void {
+    this.data.defaultName = name;
+    this.scenarioNameForm.get('scenarioName')?.setValue(this.data.defaultName);
+    this.scenarioNameForm.get('scenarioName')?.enable();
   }
 
   handleSubmit(): void {

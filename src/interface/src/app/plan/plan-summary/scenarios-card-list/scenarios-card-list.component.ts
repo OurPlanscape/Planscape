@@ -298,8 +298,18 @@ export class ScenariosCardListComponent {
   }
 
   handleCopyScenario(scenario: Scenario) {
-    // this.isLoadingDialog = true;
-    // get the set of scenarios in order to collect a list of names
+    //open the dialog first, so we have some UX while we wait
+    const dialogRef = this.dialog.open(ScenarioSetupModalComponent, {
+      maxWidth: '560px',
+      data: {
+        planId: scenario.planning_area,
+        fromClone: true,
+        defaultName: null, // initially blank, which disables the form when fromClone
+        scenario: scenario,
+        type: scenario.type,
+      },
+    });
+    // update with a suggested name once it's available
     this.scenarioService
       .getScenariosForPlan(scenario.planning_area)
       .pipe(
@@ -314,17 +324,9 @@ export class ScenariosCardListComponent {
           existingNames.length > 0
             ? suggestUniqueName(scenario.name, existingNames)
             : '';
-        //     this.isLoadingDialog = false;
-        this.dialog.open(ScenarioSetupModalComponent, {
-          maxWidth: '560px',
-          data: {
-            planId: scenario.planning_area,
-            defaultName: suggestedName,
-            fromClone: true,
-            scenario: scenario,
-            type: scenario.type,
-          },
-        });
+        if (dialogRef.componentInstance) {
+          dialogRef.componentInstance.setName(suggestedName);
+        }
       });
   }
 }
