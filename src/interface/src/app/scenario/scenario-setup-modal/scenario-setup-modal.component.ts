@@ -22,7 +22,7 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { lastValueFrom, map, take } from 'rxjs';
+import { map, take, tap } from 'rxjs';
 import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
@@ -131,20 +131,8 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
-  // much of this method is devoted to handling the case when a user wants to
-  // clone an older scenario type, which means we need to convert the configuration
-  //  here to be as similar as possible.
-  async copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
+  copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
-
-    // TODO: tidy this up
-    if (!oldScenario.configuration) {
-      // we have to load the full confiugration object
-      const fullOldScenario = await lastValueFrom(
-        this.scenarioService.getScenario(oldScenario.id)
-      );
-      oldScenario.configuration = fullOldScenario.configuration;
-    }
 
     if (oldScenario.version === 'V3') {
       const oldConfig: Partial<ScenarioV3Config> =
@@ -169,8 +157,6 @@ export class ScenarioSetupModalComponent implements OnInit {
       const num = Number(oldScenario.treatment_goal?.id);
       newPayload.treatment_goal = num;
     }
-
-    // TODO: handle errors more clearly...
     this.scenarioService
       .patchScenarioConfig(newScenario.id!, newPayload)
       .pipe(
@@ -196,18 +182,32 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
     const planId = this.data.planId;
     const type = this.data.type;
-
     this.scenarioService.createScenario(name, planId, type).subscribe({
-      next: (result) => {
-        this.dialogRef.close(result);
+      next: (newScenario) => {
+        this.dialogRef.close(newScenario);
         this.submitting = false;
 
         //for cloned scenarios, we copy configuration, then redirect
-        if (this.data.fromClone && result.id && this.data.scenario) {
-          this.copyConfiguration(this.data.scenario, result);
+        if (this.data.fromClone && newScenario.id && this.data.scenario) {
+          const oldScenario = this.data.scenario;
+
+          // the original scenario record may not have a configuration!
+          if (oldScenario.configuration) {
+            this.copyConfiguration(oldScenario, newScenario);
+          } else {
+            this.scenarioService
+              .getScenario(oldScenario.id)
+              .pipe(
+                take(1),
+                tap((fullScenario) =>
+                  this.copyConfiguration(fullScenario, newScenario)
+                )
+              )
+              .subscribe();
+          }
         }
-        if (result.id && this.data.fromClone === false) {
-          this.router.navigate(['plan', planId, 'scenario', result.id]);
+        if (newScenario.id && this.data.fromClone === false) {
+          this.router.navigate(['plan', planId, 'scenario', newScenario.id]);
         }
       },
       error: (e) => {
