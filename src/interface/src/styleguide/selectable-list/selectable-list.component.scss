@@ -49,13 +49,16 @@ $material-checkbox-padding: 8px;
   line-height: 20px;
   font-weight: 500;
   height: 30px;
-  &:after { display: none; }
+
+  &:after {
+    display: none;
+  }
 }
 
 .items-container {
   position: relative;
   display: block;
-  
+
   &:after {
     content: '';
     position: absolute;
@@ -79,7 +82,8 @@ $material-checkbox-padding: 8px;
 }
 
 .list-header {
-  margin-bottom: 15px;
+  margin-bottom: 0;
+  padding-bottom: 16px;
   gap: #{$colum-gap * 2};
   align-items: center;
   color: $color-md-gray;
@@ -88,7 +92,13 @@ $material-checkbox-padding: 8px;
   font-weight: 600;
   line-height: 16px;
   text-transform: capitalize;
+
+  &.grouped-header {
+    margin-bottom: 16px;
+    padding-bottom: 4px;
+  }
 }
+
 
 .select-title,
 .select {
