@@ -22,6 +22,9 @@ interface Item {
  * }
  * ```
  *
+ * We can also specify an optional `groupBy` key, which points to an attribute in each `Item`
+ * which can be used to organize results. For example, `dataset.name` to organize layers.
+ *
  * To provide where the component should look for the legend color, use `colorPath`
  * and provide a string with the path (example `nested.styles.color` or even `nested[0].styles.color`)
  *
@@ -54,15 +57,19 @@ export class SelectableListComponent<T extends Item> {
   /** all the items in the list */
   @Input() items: T[] = [];
 
-  /** path to an item element by which we can group data */
+  /** path to an attribute on an item that can be
+   *  used to group data, for instance 'dataset.name' */
   @Input() groupBy?: string;
 
+  /** the set of data to iterate through in the template.
+   * If there's no groupBy input, then we just consider it all one group */
   get groupedData(): Record<string, T[]> {
     if (!this.groupBy) return { '': this.items };
 
+    // group items by the relevant groupby attribute, if exists
     return this.items.reduce(
       (acc, item) => {
-        const key = this.resolvePath(item, this.groupBy!) || 'Other';
+        const key = this.resolvePath(item, this.groupBy!) || '';
         if (!acc[key]) acc[key] = [];
         acc[key].push(item);
         return acc;
