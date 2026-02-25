@@ -14,7 +14,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
-    hasMap: true,
+    hasMap: false,
   },
   {
     label: 'Exclude Areas',

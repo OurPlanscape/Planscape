@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { StepDirective } from '@styleguide';
 import { ScenarioDraftConfiguration } from '@types';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goal-selector/treatment-goal-selector.component';
 
 @Component({
@@ -16,7 +16,7 @@ import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goa
 })
 export class TreatmentGoalStepComponent extends StepDirective<ScenarioDraftConfiguration> {
   form = new FormGroup({
-    treatment_goal: new FormControl<number | null>(null),
+    treatment_goal: new FormControl<number | null>(null, Validators.required),
   });
 
   getData() {

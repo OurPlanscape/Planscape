@@ -262,9 +262,10 @@ export class NewScenarioState {
   }
 
   private getScenarioStep(step: number) {
+    const index = Math.max(0, step - 1);
     return this._scenarioConfig$.value.type &&
       isCustomScenario(this._scenarioConfig$.value.type)
-      ? CUSTOM_SCENARIO_OVERVIEW_STEPS[step - 1 > -1 ? step - 1 : 0] // watch out - custom scenario has an extra step
-      : SCENARIO_OVERVIEW_STEPS[step];
+      ? CUSTOM_SCENARIO_OVERVIEW_STEPS[index]
+      : SCENARIO_OVERVIEW_STEPS[index];
   }
 }
