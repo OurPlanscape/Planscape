@@ -10,17 +10,14 @@ import {
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StepDirective } from '../../../styleguide/steps/step.component';
 import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
-import { Observable, of } from 'rxjs';
+import { Observable, of, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
-import { ScenarioDraftConfiguration } from '@app/types';
+import { BaseLayer, ScenarioDraftConfiguration } from '@app/types';
+import { NewScenarioState } from '../new-scenario.state';
+import { DataLayersService } from '@app/services';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 
-// TODO: move this to a central place
-interface SubUnitOption {
-  id: number;
-  name: string;
-}
 
 @Component({
   selector: 'app-sub-unit-selector',
@@ -42,32 +39,46 @@ interface SubUnitOption {
 })
 export class SubUnitSelectorComponent extends  StepDirective<ScenarioDraftConfiguration>
  {
-  constructor(private baseLayersStateService: BaseLayersStateService) {
-    baseLayersStateService.enableBaseLayerHover(false);
+  constructor(
+    private dataLayersService: DataLayersService,
+    private newScenarioState: NewScenarioState,
+    private dataLayerStateService: DataLayersStateService,
+  ) {
     super();
   }
 
   form = new FormGroup({
-    subunit: new FormControl<number | undefined>(undefined, [
+    sub_units_layer: new FormControl<number | undefined>(undefined, [
       Validators.required,
     ]),
   });
 
-  //TODO...these are placeholders
-  subUnitOptions$: Observable<SubUnitOption[]> = of([
-    { id: 0, name: 'test-Subwatersheds (HUC-12)' },
-    { id: 1, name: 'test-PODs' },
-    { id: 2, name: 'test-Subfiresheds' },
-  ]);
+  //TODO...remove placeholder
+  subUnitLayerOptions$: Observable<BaseLayer[]> = this.dataLayersService.listBaseLayersByDataSet(1057,'');
 
-  loadingItems$ = this.baseLayersStateService.loadingLayers$;
+  loadingItems$ = of(false);
+  selectedSubUnit : number | null = null;
 
   getData() {
     return this.form.value;
   }
 
+  onSubunitSelect(e:any ) {
+    this.dataLayerStateService.selectDataLayer(e);
+  }
+
   override beforeStepLoad(): void {
-    //
+    //get the current config...
+    
+    this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
+  
+  if (config.sub_units_layer) {
+        this.selectedSubUnit = config.sub_units_layer;
+      }
+    });
+    //set current form value
+    this.form.controls['sub_units_layer'].setValue( this.selectedSubUnit);
+    // this.dataLayersStateService.selectDataLayer();
   }
 
   override beforeStepExit(): void {}
