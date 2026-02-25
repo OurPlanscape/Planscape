@@ -14,7 +14,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
-    hasMap: false,
+    hasMap: true,
   },
   {
     label: 'Exclude Areas',
@@ -64,7 +64,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true, // REMOVE - use hasMap instead??
-    hasMap: false,
+    hasMap: true,
   },
   {
     label: 'Co-Benefits',

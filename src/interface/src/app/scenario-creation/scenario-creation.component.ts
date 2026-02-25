@@ -1,4 +1,10 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+} from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
@@ -95,6 +101,7 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScenarioCreationComponent implements OnInit {
   config: Partial<ScenarioV3Config> = {};
@@ -126,11 +133,16 @@ export class ScenarioCreationComponent implements OnInit {
     description: string;
     label: string;
     hasMap: boolean;
+    preStep?: boolean;
   }[] = [];
 
-  //TODO fix this part?
+  readonly saveStepFn = this.saveStep.bind(this);
+
   stepIndex$ = this.newScenarioState.stepIndex$;
-  showMap$ = this.stepIndex$.pipe(map((i) => this.steps[i].hasMap));
+  isOnPreStep$ = this.stepIndex$.pipe(map((i) => i === 0));
+  showMap$ = this.stepIndex$.pipe(
+    map((i) => (i > 0 ? this.steps[i - 1]?.hasMap : false) ?? false)
+  );
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
@@ -184,7 +196,8 @@ export class ScenarioCreationComponent implements OnInit {
     private featureService: FeatureService,
     private mapModuleService: MapModuleService,
     private planState: PlanState,
-    private dataLayersStateService: DataLayersStateService
+    private dataLayersStateService: DataLayersStateService,
+    private cdr: ChangeDetectorRef
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
@@ -224,6 +237,7 @@ export class ScenarioCreationComponent implements OnInit {
         this.newScenarioState.setScenarioConfig(currentConfig);
         // Setting the initial state for the configuration
         this.config = currentConfig;
+        this.cdr.markForCheck();
       });
   }
 
