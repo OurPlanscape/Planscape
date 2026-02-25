@@ -1,3 +1,14 @@
+@import 'colors';
+@import 'mixins';
+
+.help-text {
+  margin-top: 4px;
+}
+
+.error {
+  color: $color-error;
+}
+
 ::ng-deep .sub-unit-selector .mat-expansion-panel-body {
   display: flex;
   flex-direction: column;

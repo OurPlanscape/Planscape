@@ -9,12 +9,12 @@ import {
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { StepDirective } from '../../../styleguide/steps/step.component';
-import { ScenarioCreation } from '@types';
 import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { Observable, of } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
+import { ScenarioDraftConfiguration } from '@app/types';
 
 // TODO: move this to a central place
 interface SubUnitOption {
@@ -40,7 +40,8 @@ interface SubUnitOption {
     { provide: StepDirective, useExisting: SubUnitSelectorComponent },
   ],
 })
-export class SubUnitSelectorComponent extends StepDirective<ScenarioCreation> {
+export class SubUnitSelectorComponent extends  StepDirective<ScenarioDraftConfiguration>
+ {
   constructor(private baseLayersStateService: BaseLayersStateService) {
     baseLayersStateService.enableBaseLayerHover(false);
     super();

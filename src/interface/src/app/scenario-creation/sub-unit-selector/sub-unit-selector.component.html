@@ -3,7 +3,15 @@
   class="sub-units-selector"
   [required]="true">
   <form [formGroup]="form">
-    <ng-container *ngIf="subUnitOptions$ | async as subUnitOptions">
+    <div
+        class="help-text error"
+        *ngIf="
+          form.get('subunit')?.touched &&
+          form.get('subunit')?.hasError('required')
+        ">
+        This field is required
+      </div>
+        <ng-container *ngIf="subUnitOptions$ | async as subUnitOptions">
       <mat-radio-group
         name="subUnitSelect"
         aria-label="Select an option"
