@@ -1,14 +1,20 @@
 from typing import Any, Union
-from collaboration.models import UserObjectRole, Permissions, Role
-from planning.models import PlanningArea, PlanningAreaNote, Scenario
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import AbstractUser
 
-TCreatable = Union[PlanningArea, PlanningAreaNote, Scenario]
+from climate_foresight.models import ClimateForesightRun
+from django.contrib.auth.models import AbstractUser
+from django.contrib.contenttypes.models import ContentType
+from planning.models import PlanningArea, PlanningAreaNote, Scenario
+
+from collaboration.models import Permissions, Role, UserObjectRole
+
+TCreatable = Union[PlanningArea, PlanningAreaNote, Scenario, ClimateForesightRun]
 
 
 def is_creator(user: AbstractUser, instance: TCreatable) -> bool:
-    return instance.user == user
+    if hasattr(instance, "user"):
+        return instance.user == user
+
+    return instance.created_by == user
 
 
 def check_for_owner_permission(user_id: int, model: Any, permission_name: str) -> bool:

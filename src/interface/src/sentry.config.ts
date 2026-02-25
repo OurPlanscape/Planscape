@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/browser';
-import { environment } from './environments/environment';
+import { environment } from '@env/environment';
 
 interface SentryConfig {
   dsn?: string;

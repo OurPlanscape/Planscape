@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DrawService } from '../draw.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapBoundaryLayerComponent } from './map-boundary-layer.component';
-import { FeatureService } from '../../features/feature.service';
+import { FeatureService } from '@features/feature.service';
 import { MockProvider } from 'ng-mocks';
 
 describe('MapBoundaryLayerComponent', () => {

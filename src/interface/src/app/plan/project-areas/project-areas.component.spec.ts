@@ -8,7 +8,7 @@ import { ProjectAreasComponent } from './project-areas.component';
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 
 @Component({
   template: '<app-project-areas [areas]="areas"></app-project-areas>',

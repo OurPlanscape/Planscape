@@ -6,8 +6,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FileSaverService, ScenarioService } from '@services';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
-import { FeaturesModule } from '../../features/features.module';
-import { ProjectAreasComponent } from 'src/app/plan/project-areas/project-areas.component';
+import { FeaturesModule } from '@features/features.module';
+import { ProjectAreasComponent } from '@plan/project-areas/project-areas.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CurrencyPipe } from '@angular/common';
 

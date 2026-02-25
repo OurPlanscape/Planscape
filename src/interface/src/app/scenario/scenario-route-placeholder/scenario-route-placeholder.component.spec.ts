@@ -8,17 +8,17 @@ import { MockComponents, MockProvider } from 'ng-mocks';
 import { CurrencyPipe } from '@angular/common';
 
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder';
-import { ResourceUnavailableComponent } from 'src/app/shared/resource-unavailable/resource-unavailable.component';
-import { ScenarioCreationComponent } from '../../scenario-creation/scenario-creation.component';
-import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
-import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
+import { ResourceUnavailableComponent } from '@shared/resource-unavailable/resource-unavailable.component';
+import { ScenarioCreationComponent } from '@scenario-creation/scenario-creation.component';
+import { UploadedScenarioViewComponent } from '@scenario/uploaded-scenario-view/uploaded-scenario-view.component';
+import { ViewScenarioComponent } from '@scenario/view-scenario/view-scenario.component';
 
-import { NewScenarioState } from '../../scenario-creation/new-scenario.state';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { ScenarioState } from '../scenario.state';
 import { AuthService } from '@services';
 import { Resource, Scenario } from '@types';
 import { ScenarioComponent } from '../scenario.component';
-import { FeatureService } from '../../features/feature.service';
+import { FeatureService } from '@features/feature.service';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('ScenarioRoutePlaceholderComponent', () => {

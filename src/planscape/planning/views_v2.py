@@ -13,6 +13,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from datasets.models import DataLayer
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
@@ -59,6 +60,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     get_available_stands,
+    get_sub_units_details,
     toggle_scenario_status,
     trigger_scenario_run,
     validate_scenario_configuration,
@@ -336,7 +338,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
     @extend_schema(description="Update Scenario's configuration.")
-    @action(methods=["patch"], detail=True, url_path="configuration")
+    @action(methods=["patch"], detail=True, url_path="configuration", serializer_class=UpsertConfigurationV2Serializer)
     def patch_configuration(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = UpsertConfigurationV2Serializer(
@@ -370,6 +372,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 cobenefits=configuration_data.get("cobenefits") or [],
                 seed=configuration_data.get("seed"),
                 planning_approach=configuration_data.get("planning_approach"),
+                sub_units_layer=configuration_data.get("sub_units_layer"),
             )
             updated_config = dict(existing)
             for key in configuration_data.keys():
@@ -399,6 +402,21 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         serializer = ScenarioV3Serializer(instance=scenario)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(description="Sub-Units areas details.")
+    @action(methods=["GET"], detail=True, url_path="sub_units_details")
+    def get_sub_units_details(self, request, pk=None):
+        scenario = self.get_object()
+        datalayer_pk = scenario.configuration.get("sub_units_layer")
+        if not datalayer_pk:
+            return Response({"errors": "Sub-Unit layer not selected."}, status=status.HTTP_412_PRECONDITION_FAILED)
+
+        datalayer = DataLayer.objects.get(pk=datalayer_pk)
+        details = get_sub_units_details(scenario.planning_area, datalayer)
+        if not details:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(details, status=status.HTTP_200_OK)
 
 
 # TODO: migrate this to an action inside the planning area viewset

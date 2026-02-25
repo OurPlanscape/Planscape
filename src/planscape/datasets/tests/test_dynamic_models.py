@@ -173,7 +173,7 @@ class ModelFromFionalTests(SimpleTestCase):
 
         geom = Model._meta.get_field("geometry")
         self.assertIsInstance(geom, gism.PointField)
-        self.assertEqual(geom.srid, 3857)  # from layer_a
+        self.assertEqual(geom.srid, 4269)  # SRID always 4269 as imported
 
         title = Model._meta.get_field("title")
         self.assertIsInstance(title, djm.CharField)

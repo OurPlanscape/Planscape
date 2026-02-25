@@ -10,9 +10,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, of, Subject } from 'rxjs';
-import { LegacyMaterialModule } from '../../../material/legacy-material.module';
+import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { SavedScenariosComponent } from './saved-scenarios.component';
-import { POLLING_INTERVAL } from '../../plan-helpers';
+import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { By } from '@angular/platform-browser';
 import { SectionLoaderComponent, TypeSafeMatCellDef } from '@shared';
 import { CurrencyPipe } from '@angular/common';
@@ -20,13 +20,13 @@ import { MatDialogModule } from '@angular/material/dialog';
 
 import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
-import { FeaturesModule } from '../../../features/features.module';
+import { FeaturesModule } from '@features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 import { ButtonComponent } from '@styleguide';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-card-list.component';
+import { ScenariosCardListComponent } from '@plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { RouterTestingModule } from '@angular/router/testing';
-import { PlanState } from '../../plan.state';
+import { PlanState } from '@plan/plan.state';
 import { MatCardModule } from '@angular/material/card';
 
 // Helper to build a minimal ScenarioRow

@@ -265,6 +265,7 @@ SUPPORT_EMAIL = config("SUPPORT_EMAIL", default="support@planscape.org")
 SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
+ALLOW_DELETE_USERS = config("ALLOW_DELETE_USERS", default=False, cast=bool)
 ACCOUNT_EMAIL_VERIFICATION = str(
     config("ACCOUNT_EMAIL_VERIFICATION", default="mandatory")
 )
@@ -387,8 +388,6 @@ FORSYS_SAMPLE_FRACTION = config("FORSYS_SAMPLE_FRAC", 0.1, cast=float)
 # FORSYS API
 FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8001/")
 FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600, cast=int)  # 10m
-FORSYS_VIA_API = config("FORSYS_VIA_API", False, cast=bool)
-
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output")
@@ -410,6 +409,7 @@ GCS_DEFAULT_CACHE_DIRECTIVES = config(
     f"public, max-age={GCS_DEFAULT_CACHE_MAX_AGE}, immutable",
     cast=str,
 )
+SUB_UNITS_DETAILS_TTL = config("GCS_PUBLIC_URL_TTL", 86400, cast=int) # 1 day
 
 # CELERY
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")

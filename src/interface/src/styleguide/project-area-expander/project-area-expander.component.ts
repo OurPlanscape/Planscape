@@ -14,15 +14,15 @@ import {
   MatExpansionPanel,
   MatExpansionPanelHeader,
 } from '@angular/material/expansion';
-import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
-import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
+import { TreatmentTypeIconComponent } from '@styleguide/treatment-type-icon/treatment-type-icon.component';
+import { SequenceIconComponent } from '@styleguide/sequence-icon/sequence-icon.component';
 import { TreatmentProjectArea } from '@types';
 import {
   PRESCRIPTIONS,
   PrescriptionSingleAction,
   PrescriptionSequenceAction,
   SequenceAttributes,
-} from 'src/app/treatments/prescriptions';
+} from '@treatments/prescriptions';
 /**
  * Project Area Expander component
  * A component to be used in the Project Area panel to show project area details

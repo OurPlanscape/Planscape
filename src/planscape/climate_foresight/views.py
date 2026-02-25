@@ -28,6 +28,7 @@ from climate_foresight.orchestration import (
     check_run_completion,
     start_climate_foresight_analysis,
 )
+from climate_foresight.permissions import ClimateForesightViewPermission
 from climate_foresight.serializers import (
     ClimateForesightPillarSerializer,
     ClimateForesightRunListSerializer,
@@ -42,7 +43,7 @@ log = logging.getLogger(__name__)
 class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     """ViewSet for ClimateForesightRun CRUD operations."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [ClimateForesightViewPermission]
     filterset_class = ClimateForesightRunFilterSet
 
     def get_queryset(self):

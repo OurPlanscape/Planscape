@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { MapConfigState } from '../map-config.state';
 import { MapNavbarComponent } from './map-nav-bar.component';
 import { MockProvider } from 'ng-mocks';
 

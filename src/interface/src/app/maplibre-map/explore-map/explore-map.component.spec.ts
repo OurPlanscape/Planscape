@@ -7,10 +7,10 @@ import { MapConfigState, MapInteractionMode } from '../map-config.state';
 import { AuthService, DataLayersService } from '@services';
 import { DrawService } from '../draw.service';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
-import { PlanState } from '../../plan/plan.state';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { PlanState } from '@plan/plan.state';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapModuleService } from '@services/map-module.service';
-import { FeaturesModule } from '../../features/features.module';
+import { FeaturesModule } from '@features/features.module';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
 describe('ExploreMapComponent', () => {

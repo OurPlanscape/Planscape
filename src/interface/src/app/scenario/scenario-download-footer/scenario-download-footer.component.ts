@@ -5,14 +5,14 @@ import { ButtonComponent } from '@styleguide';
 import { ScenarioService } from '@services';
 import { FileSaverService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { getSafeFileName } from '../../shared/files';
+import { getSafeFileName } from '@shared/files';
 import { SNACK_ERROR_CONFIG } from '@shared';
-import { ScenarioState } from 'src/app/scenario/scenario.state';
-import { FeaturesModule } from 'src/app/features/features.module';
-import { ScenarioConfigOverlayComponent } from 'src/app/scenario/scenario-config-overlay/scenario-config-overlay.component';
-import { ScenarioV3ConfigOverlayComponent } from 'src/app/scenario/scenario-v3-config-overlay/scenario-v3-config-overlay.component';
+import { ScenarioState } from '../scenario.state';
+import { FeaturesModule } from '@features/features.module';
+import { ScenarioConfigOverlayComponent } from '@scenario/scenario-config-overlay/scenario-config-overlay.component';
+import { ScenarioV3ConfigOverlayComponent } from '@scenario/scenario-v3-config-overlay/scenario-v3-config-overlay.component';
 import { MatMenuModule } from '@angular/material/menu';
-import { GeopackageFailureModalComponent } from 'src/app/scenario/geopackage-failure-modal/geopackage-failure-modal.component';
+import { GeopackageFailureModalComponent } from '@scenario/geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({

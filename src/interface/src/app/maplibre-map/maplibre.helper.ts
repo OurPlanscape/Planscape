@@ -8,7 +8,7 @@ import {
   isMapboxURL,
   transformMapboxUrl,
 } from 'maplibregl-mapbox-request-transformer';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 import { Feature, Geometry, MultiPolygon, Polygon } from 'geojson';
 import bbox from '@turf/bbox';
 import { Extent } from '@types';

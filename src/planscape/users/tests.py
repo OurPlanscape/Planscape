@@ -352,6 +352,76 @@ class LoginTest(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
 
+class DestroyUserTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.url = reverse("users:e2e-destroy")
+
+    @override_settings(ALLOW_DELETE_USERS=False)
+    def test_returns_404_when_disabled(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 404)
+
+    @override_settings(ALLOW_DELETE_USERS=True)
+    def test_returns_401_when_unauthenticated(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 401)
+
+    @override_settings(ALLOW_DELETE_USERS=True)
+    def test_deletes_user_when_enabled(self):
+        user_pk = self.user.pk
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(pk=user_pk).exists())
+
+
+class LoginWithoutEmailVerificationTest(TestCase):
+    def setUp(self):
+        self.email = "unverified@test.com"
+        self.password = "ComplexPassword123"
+
+    @override_settings(
+        ACCOUNT_EMAIL_VERIFICATION="mandatory",
+        ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN=0,
+    )
+    def test_unverified_user_cannot_login_when_verification_mandatory(self):
+        self.client.post(
+            reverse("rest_register"),
+            {
+                "email": self.email,
+                "password1": self.password,
+                "password2": self.password,
+                "first_name": "Test",
+                "last_name": "User",
+            },
+        )
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": self.email, "password": self.password},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
+    def test_unverified_user_can_login_when_verification_none(self):
+        self.client.post(
+            reverse("rest_register"),
+            {
+                "email": self.email,
+                "password1": self.password,
+                "password2": self.password,
+                "first_name": "Test",
+                "last_name": "User",
+            },
+        )
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": self.email, "password": self.password},
+        )
+        self.assertEqual(response.status_code, 200)
+
+
 class ValidateMartinRequestTestCase(APITestCase):
     def setUp(self):
         Permissions.objects.get_or_create(role=Role.OWNER, permission="view_scenario")

@@ -1,8 +1,9 @@
 <mat-expansion-panel
   togglePosition="before"
+  [ngClass]="{ 'no-header': !headline }"
   [expanded]="!isCollapsible || defaultExpanded"
   [disabled]="!isCollapsible">
-  <mat-expansion-panel-header class="panel-header">
+  <mat-expansion-panel-header class="panel-header" *ngIf="headline">
     <div class="title-txt">
       {{ headline }}<span class="required" *ngIf="required"> *</span>
     </div>

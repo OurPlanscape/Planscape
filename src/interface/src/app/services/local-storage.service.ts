@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
-import { RedirectData } from '@services/redirect.service';
+import { RedirectData } from './redirect.service';
 import { BaseLayer, DataLayer, Extent } from '@types';
-import { BaseMapType } from '../types/maplibre.map.types';
+import { BaseMapType } from '@types';
 
 export abstract class BaseLocalStorageService<T> {
   protected constructor(private key: string) {}

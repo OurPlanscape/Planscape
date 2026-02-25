@@ -1,8 +1,6 @@
+from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planscape.permissions import PlanscapePermission
-from collaboration.permissions import (
-    PlanningAreaPermission,
-    ScenarioPermission,
-)
+
 from planning.models import PlanningArea
 
 

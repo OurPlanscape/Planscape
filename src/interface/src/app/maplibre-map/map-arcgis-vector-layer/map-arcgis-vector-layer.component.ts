@@ -18,7 +18,7 @@ import {
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 import { take } from 'rxjs';
-import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-map-arcgis-vector-layer',
@@ -229,11 +229,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
         /{(.*?)}/g,
         (match, key: string) => {
           const trimmedKey = key.trim();
-          // note: we don't have control over external props being lower/uppercase
-          const propValue =
-            feature.properties[trimmedKey.toLowerCase()] ??
-            feature.properties[trimmedKey.toUpperCase()] ??
-            '--';
+          const propValue = feature.properties[trimmedKey] ?? '--';
           return propValue;
         }
       );

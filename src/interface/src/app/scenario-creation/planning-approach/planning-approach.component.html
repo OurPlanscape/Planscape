@@ -1,0 +1,35 @@
+<sg-section headline="Choose your planning approach">
+  <div
+    class="error-message ng-invalid"
+    *ngIf="control.touched && control.hasError('required')">
+    Selection is required
+  </div>
+
+  <mat-radio-group
+    name="planningApproachSelect"
+    aria-label="Select planning approach"
+    color="primary"
+    [formControl]="control">
+    <div
+      *ngFor="let item of planningApproachOptions"
+      class="item"
+      [class.selected]="control.value === item.value">
+      <div class="option">
+        <mat-radio-button [value]="item.value">
+          {{ item.title }}
+          <div class="option-text">
+            {{ item.description }}
+          </div>
+          <div class="option-highlight">
+            {{ item.recommendation }}
+          </div>
+        </mat-radio-button>
+      </div>
+
+      <div class="image-container">
+        <img [src]="item.imageSrc" [alt]="item.imageAlt" />
+        <div>{{ item.imageCaption }}</div>
+      </div>
+    </div>
+  </mat-radio-group>
+</sg-section>

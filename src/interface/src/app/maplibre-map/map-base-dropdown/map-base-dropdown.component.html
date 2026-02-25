@@ -6,14 +6,15 @@
   class="base-map-icon"
   draggable="false"
   *ngIf="selectedBaseMap$ | async as selectedBaseMap"
-  [src]="'assets/png/baseMaps/' + selectedBaseMap + '.png'" />
+  [src]="'assets/png/baseMaps/' + selectedBaseMap + '.png'"
+  [matMenuTriggerFor]="roleMenu" />
 
 <!-- Base Map Overlay -->
-<mat-card
+<mat-menu
+  #roleMenu="matMenu"
   class="base-map-overlay"
-  *ngIf="displayed"
-  appClickOutside
-  (clickOutside)="closeOverlay()">
+  [xPosition]="position"
+  class="base-map-overlay">
   <header>
     <h4>Base Map</h4>
     <button
@@ -41,4 +42,4 @@
       </span>
     </p>
   </section>
-</mat-card>
+</mat-menu>

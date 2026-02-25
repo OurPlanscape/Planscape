@@ -1,4 +1,4 @@
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 
 export const MARTIN_SOURCES = {
   projectAreaAggregate: {

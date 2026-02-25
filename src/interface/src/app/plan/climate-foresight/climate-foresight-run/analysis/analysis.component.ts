@@ -23,11 +23,11 @@ import {
   GeoPackageDownloadStatus,
   StyleJson,
 } from '@types';
-import { generateColorFunction as generateColorFunctionFromStyle } from '../../../../data-layers/utilities';
-import { MapConfigState } from '../../../../maplibre-map/map-config.state';
-import { PlanState } from '../../../plan.state';
+import { generateColorFunction as generateColorFunctionFromStyle } from '@data-layers/utilities';
+import { MapConfigState } from '@maplibre-map/map-config.state';
+import { PlanState } from '@plan/plan.state';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { PlanningAreaLayerComponent } from '../../../../maplibre-map/planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
   RequestTransformFunction,
@@ -36,26 +36,26 @@ import {
 import {
   addRequestHeaders,
   getBoundsFromGeometry,
-} from '../../../../maplibre-map/maplibre.helper';
+} from '@maplibre-map/maplibre.helper';
 import { AuthService, ClimateForesightService } from '@services';
-import { DataLayersService } from '../../../../services/data-layers.service';
-import { environment } from '../../../../../environments/environment';
+import { DataLayersService } from '@services/data-layers.service';
+import { environment } from '@env/environment';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
-import { MapConfigService } from '../../../../maplibre-map/map-config.service';
+import { MapConfigService } from '@maplibre-map/map-config.service';
 import {
   LegendEntry,
   MpatLegendComponent,
-} from './mpat-legend/mpat-legend.component';
+} from '@plan/climate-foresight/climate-foresight-run/analysis/mpat-legend/mpat-legend.component';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
-} from '../../../../shared/constants';
-import { SharedModule } from '../../../../shared/shared.module';
+} from '@shared/constants';
+import { SharedModule } from '@shared/shared.module';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
-import { PopoverComponent } from 'src/styleguide/popover/popover.component';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 type ColorFunction = (pixel: TypedArray, rgba: Uint8ClampedArray) => void;
 
@@ -236,7 +236,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         type: 'mpat',
         group: 'primary',
         tooltip:
-          '<p>A categorical assessment that assigns each raster cell to one of four climatic response strategies—Monitor, Protect, Adapt, or Transform (MPAT)—based on the combination of <ul><li>1) the favorability of  current condition and </li><li>2) associated pillar’s vulnerability to future climate conditions.</li></ul>Strategies are further defined as strong or weak depending on the quantitative support for a given climate response strategy.</p><p>It helps prioritize areas for different levels of intervention, from passive (Strong Monitors) to transformative (Strong Transforms) management, ensuring landscapes are managed sustainably in response to future climate conditions.</p>',
+          '<p>A categorical assessment that assigns each raster cell to one of four climatic response strategies—Monitor, Protect, Adapt, or Transform (MPAT)—based on the combination of <ul><li>1) the favorability of  current condition and </li><li>2) associated pillar’s vulnerability to future climate conditions.</li></ul>Strategies are further defined as strong or weak depending on the quantitative support for a given climate response strategy.</p><p>This process provides a climate-informed methodology to help prioritize areas for different levels of intervention, from passive (Strong Monitors) to transformative (Strong Transforms) management, ensuring landscapes are managed sustainably in response to future climate conditions.</p>',
       };
 
       this.adaptProtectLayer = {
@@ -260,7 +260,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         group: 'primary',
         scale: [0, 100],
         tooltip:
-          '<p>A scaled metric (0-100) that reflects a continuum of climate resilience strategies from the MPAT classification. Areas categorized as Monitor are closest to 0, indicating favorable current and future conditions. Adapt and Protect  are intermediate with equivalent weighting, representing balanced management strategies. Transform is nearest to 100, highlighting areas where significant change is likely and intervention is warranted.</p>',
+          '<p>A scaled metric (0-100) that reflects a continuum of climate resilience strategies from the MPAT classification.</p><p>Areas categorized as:<ul><li>Monitor are closest to 0, indicating favorable current and future conditions.</li><li>Adapt and Protect are intermediate with equivalent weighting, representing balanced management strategies.</li><li>Transform is nearest to 100, highlighting areas where significant change is likely.</li></ul></p>',
       };
     }
   }

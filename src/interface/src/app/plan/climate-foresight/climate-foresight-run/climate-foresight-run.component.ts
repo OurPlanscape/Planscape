@@ -13,15 +13,14 @@ import {
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormGroup } from '@angular/forms';
 import { CdkStepperModule } from '@angular/cdk/stepper';
-
 import {
   StepComponent,
   StepConfig,
   StepsComponent,
   StepsNavComponent,
 } from '@styleguide';
-import { SharedModule } from '../../../shared/shared.module';
-import { PlanState } from '../../plan.state';
+import { SharedModule } from '@shared/shared.module';
+import { PlanState } from '@plan/plan.state';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import {
   ClimateForesightRun,
@@ -30,22 +29,22 @@ import {
   Pillar,
   Plan,
 } from '@types';
-import { DataLayerSelectionComponent } from './data-layer-selection/data-layer-selection.component';
-import { AssignFavorabilityComponent } from './assign-favorability/assign-favorability.component';
+import { DataLayerSelectionComponent } from '@plan/climate-foresight/climate-foresight-run/data-layer-selection/data-layer-selection.component';
+import { AssignFavorabilityComponent } from '@plan/climate-foresight/climate-foresight-run/assign-favorability/assign-favorability.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AssignPillarsComponent } from './assign-pillars/assign-pillars.component';
+import { AssignPillarsComponent } from '@plan/climate-foresight/climate-foresight-run/assign-pillars/assign-pillars.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialogComponent } from 'src/app/standalone/confirmation-dialog/confirmation-dialog.component';
-import { SuccessDialogComponent } from 'src/styleguide/dialogs/success-dialog/success-dialog.component';
-import { FeatureService } from 'src/app/features/feature.service';
+import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
+import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 import { MAX_CLIMATE_DATALAYERS, SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { MapModuleService } from '@services/map-module.service';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
-import { MAX_SELECTED_DATALAYERS } from 'src/app/data-layers/data-layers/max-selected-datalayers.token';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { USE_GEOMETRY } from 'src/app/data-layers/data-layers/geometry-datalayers.token';
+import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import * as Sentry from '@sentry/browser';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -148,7 +147,6 @@ export class ClimateForesightRunComponent implements OnInit {
     private climateForesightService: ClimateForesightService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private featureService: FeatureService,
     private mapModuleService: MapModuleService
   ) {}
 
@@ -163,7 +161,7 @@ export class ClimateForesightRunComponent implements OnInit {
     this.planState.currentPlan$
       .pipe(untilDestroyed(this))
       .subscribe((plan: Plan) => {
-        this.mapModuleService.loadMapModule();
+        this.mapModuleService.loadMapModule(plan.geometry).subscribe();
         this.currentPlan = plan;
       });
   }
@@ -192,7 +190,7 @@ export class ClimateForesightRunComponent implements OnInit {
           this.loadRunState(run);
         },
         error: (error) => {
-          console.error('Error loading run:', error);
+          Sentry.captureException(error);
           this.snackBar.open(
             'Failed to load run',
             'Close',
@@ -310,27 +308,15 @@ export class ClimateForesightRunComponent implements OnInit {
             observer.complete();
           },
           error: (error) => {
-            if (
-              this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-            ) {
-              console.error('Error saving data layers:', error);
-              this.snackBar.open(
-                'Failed to save data layers: ' +
-                  (error?.error.errors?.detail ||
-                    error?.message ||
-                    'Unknown error'),
-                'Close',
-                SNACK_BOTTOM_NOTICE_CONFIG
-              );
-            } else {
-              console.error('Error saving data layers:', error);
-              this.snackBar.open(
-                'Failed to save data layers: ' +
-                  (error?.error?.detail || error?.message || 'Unknown error'),
-                'Close',
-                SNACK_BOTTOM_NOTICE_CONFIG
-              );
-            }
+            Sentry.captureException(error);
+            this.snackBar.open(
+              'Failed to save data layers: ' +
+                (error?.error.errors?.detail ||
+                  error?.message ||
+                  'Unknown error'),
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
 
             this.savingStep = false;
             observer.next(false);
@@ -393,27 +379,16 @@ export class ClimateForesightRunComponent implements OnInit {
             observer.complete();
           },
           error: (error) => {
-            console.error('Error saving favorability:', error);
+            Sentry.captureException(error);
+            this.snackBar.open(
+              'Failed to save favorability: ' +
+                (error?.error?.errors.detail ||
+                  error?.message ||
+                  'Unknown error'),
+              'Close',
+              SNACK_BOTTOM_NOTICE_CONFIG
+            );
 
-            if (
-              this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-            ) {
-              this.snackBar.open(
-                'Failed to save favorability: ' +
-                  (error?.error?.errors.detail ||
-                    error?.message ||
-                    'Unknown error'),
-                'Close',
-                SNACK_BOTTOM_NOTICE_CONFIG
-              );
-            } else {
-              this.snackBar.open(
-                'Failed to save favorability: ' +
-                  (error?.error?.detail || error?.message || 'Unknown error'),
-                'Close',
-                SNACK_BOTTOM_NOTICE_CONFIG
-              );
-            }
             this.savingStep = false;
             observer.next(false);
             observer.complete();
@@ -473,25 +448,14 @@ export class ClimateForesightRunComponent implements OnInit {
           }
         },
         error: (error) => {
-          if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-          ) {
-            this.snackBar.open(
-              'Failed to save pillars: ' +
-                (error?.error?.errors.detail ||
-                  error?.message ||
-                  'Unknown error'),
-              'Close',
-              SNACK_BOTTOM_NOTICE_CONFIG
-            );
-          } else {
-            this.snackBar.open(
-              'Failed to save pillars: ' +
-                (error?.error?.detail || error?.message || 'Unknown error'),
-              'Close',
-              SNACK_BOTTOM_NOTICE_CONFIG
-            );
-          }
+          this.snackBar.open(
+            'Failed to save pillars: ' +
+              (error?.error?.errors.detail ||
+                error?.message ||
+                'Unknown error'),
+            'Close',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
           this.savingStep = false;
         },
       });
@@ -523,27 +487,16 @@ export class ClimateForesightRunComponent implements OnInit {
           );
         },
         error: (error) => {
-          console.error('Error triggering analysis:', error);
+          Sentry.captureException(error);
+          this.snackBar.open(
+            'Failed to trigger analysis: ' +
+              (error?.error?.errors.detail ||
+                error?.message ||
+                'Unknown error'),
+            'Close',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
 
-          if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-          ) {
-            this.snackBar.open(
-              'Failed to trigger analysis: ' +
-                (error?.error?.errors.detail ||
-                  error?.message ||
-                  'Unknown error'),
-              'Close',
-              SNACK_BOTTOM_NOTICE_CONFIG
-            );
-          } else {
-            this.snackBar.open(
-              'Failed to trigger analysis: ' +
-                (error?.error?.detail || error?.message || 'Unknown error'),
-              'Close',
-              SNACK_BOTTOM_NOTICE_CONFIG
-            );
-          }
           this.savingStep = false;
         },
       });
@@ -597,7 +550,7 @@ export class ClimateForesightRunComponent implements OnInit {
           }
         },
         error: (err) => {
-          console.error('Error polling for run status:', err);
+          Sentry.captureException(err);
         },
       });
   }

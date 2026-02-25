@@ -14,7 +14,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { isValidTotalArea } from '../../plan/plan-helpers';
+import { isValidTotalArea } from '@plan/plan-helpers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { firstValueFrom } from 'rxjs';
@@ -22,7 +22,7 @@ import { AnalyticsService } from '@services/analytics.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { NgIf } from '@angular/common';
-import type { DrawService } from '../../maplibre-map/draw.service';
+import type { DrawService } from '@maplibre-map/draw.service';
 
 @Component({
   selector: 'app-create-plan-dialog-component',

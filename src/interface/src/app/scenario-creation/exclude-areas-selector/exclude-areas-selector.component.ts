@@ -3,13 +3,13 @@ import { SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { StepDirective } from '../../../styleguide/steps/step.component';
-import { BaseLayer, ScenarioCreation } from '@types';
+import { StepDirective } from '@styleguide/steps/step.component';
+import { BaseLayer, ScenarioDraftConfiguration } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { ForsysService } from '@services/forsys.service';
 import { filter, map, switchMap, take } from 'rxjs';
-import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { SelectableListComponent } from '@styleguide/selectable-list/selectable-list.component';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-exclude-areas-selector',
@@ -29,7 +29,7 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   styleUrl: './exclude-areas-selector.component.scss',
 })
 export class ExcludeAreasSelectorComponent
-  extends StepDirective<ScenarioCreation>
+  extends StepDirective<ScenarioDraftConfiguration>
   implements OnInit
 {
   constructor(

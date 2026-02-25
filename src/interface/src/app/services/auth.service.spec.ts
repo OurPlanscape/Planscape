@@ -9,7 +9,7 @@ import { User } from '@types';
 import { AuthGuard, AuthService } from './auth.service';
 import { RedirectService } from './redirect.service';
 import { MockProvider } from 'ng-mocks';
-import { environment } from 'src/environments/environment';
+import { environment } from '@env/environment';
 import { RouterTestingModule } from '@angular/router/testing';
 
 // Define a dummy component for the route

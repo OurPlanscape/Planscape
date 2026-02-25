@@ -7,7 +7,6 @@ import { SubUnitSelectorComponent } from './sub-unit-selector/sub-unit-selector.
 import {
   catchError,
   finalize,
-  firstValueFrom,
   map,
   Observable,
   of,
@@ -15,60 +14,51 @@ import {
   switchMap,
   take,
 } from 'rxjs';
-import { DataLayersStateService } from '../data-layers/data-layers.state.service';
-import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
-import { nameMustBeNew } from '../validators/unique-scenario';
 import {
+  DataLayer,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioCreation,
+  ScenarioDraftConfiguration,
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
 import { MatDialog } from '@angular/material/dialog';
-import { StandLevelConstraintsComponent } from './step3/stand-level-constraints.component';
+import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import {
   convertFlatConfigurationToDraftPayload,
   isCustomScenario,
-} from '../scenario/scenario-helper';
-import { ScenarioErrorModalComponent } from '../scenario/scenario-error-modal/scenario-error-modal.component';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+} from '@scenario/scenario-helper';
+import { ScenarioErrorModalComponent } from '@scenario/scenario-error-modal/scenario-error-modal.component';
+import { NewScenarioState } from './new-scenario.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { getPlanPath } from '../plan/plan-helpers';
-import { FeaturesModule } from '../features/features.module';
-import { TreatmentTargetComponent } from 'src/app/scenario-creation/treatment-target/treatment-target.component';
+import { getPlanPath } from '@plan/plan-helpers';
+import { FeaturesModule } from '@features/features.module';
+import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
-import { ConfirmationDialogComponent } from '../standalone/confirmation-dialog/confirmation-dialog.component';
-
+import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
-} from '../scenario/scenario.constants';
-
-import { SharedModule, SNACK_ERROR_CONFIG } from '@shared';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ScenarioState } from '../scenario/scenario.state';
-import { ExcludeAreasSelectorComponent } from './exclude-areas-selector/exclude-areas-selector.component';
-import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
-import { Step1WithOverviewComponent } from './step1-with-overview/step1-with-overview.component';
-import { ScenarioSummaryComponent } from './scenario-summary/scenario-summary.component';
-import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
-import { CustomPriorityObjectivesComponent } from './custom-priority-objectives/custom-priority-objectives.component';
-import { FeatureService } from '../features/feature.service';
-import { Step1CustomComponent } from './step1-custom/step1-custom.component';
-import { CustomCobenefitsComponent } from './custom-cobenefits/custom-cobenefits.component';
+} from '@scenario/scenario.constants';
+import { SharedModule } from '@shared';
+import { ScenarioState } from '@scenario/scenario.state';
+import { ExcludeAreasSelectorComponent } from '@scenario-creation/exclude-areas-selector/exclude-areas-selector.component';
+import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
+import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
+import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/scenario-summary.component';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
+import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-priority-objectives/custom-priority-objectives.component';
+import { FeatureService } from '@features/feature.service';
+import { Step1CustomComponent } from '@scenario-creation/step1-custom/step1-custom.component';
+import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
-import { USE_GEOMETRY } from '../data-layers/data-layers/geometry-datalayers.token';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { MapModuleService } from '@services/map-module.service';
+import { PlanState } from '@plan/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -111,19 +101,8 @@ export class ScenarioCreationComponent implements OnInit {
 
   planId = this.route.parent?.snapshot.data['planId'];
   scenarioId = this.route.snapshot.data['scenarioId'];
-  // TODO: we can remove this status check when the DRAFTS FF is removed
-  scenarioStatus = 'NOT_STARTED';
-  scenarioName = '';
-
-  form = new FormGroup({
-    scenarioName: new FormControl('', [Validators.required]),
-  });
 
   loading$ = this.newScenarioState.loading$;
-
-  stepIndex$ = this.newScenarioState.stepIndex$;
-
-  isFirstIndex$ = this.stepIndex$.pipe(map((i) => i === 0));
 
   // last step label on the navigation is different from the overview
   private scenarioSteps = [
@@ -165,8 +144,10 @@ export class ScenarioCreationComponent implements OnInit {
     map((goal) => goal?.name)
   );
 
-  // Copy of index locally to show the last step as completed
-  localIndex = 0;
+  priorityObjectivesNames$ =
+    this.newScenarioState.priorityObjectivesDetails$.pipe(
+      map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
+    );
 
   scenarioType$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => scenario.type)
@@ -180,6 +161,8 @@ export class ScenarioCreationComponent implements OnInit {
     }
   }
 
+  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
   constructor(
     private scenarioService: ScenarioService,
     private newScenarioState: NewScenarioState,
@@ -188,18 +171,26 @@ export class ScenarioCreationComponent implements OnInit {
     private router: Router,
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
-    private matSnackBar: MatSnackBar,
     private treatmentGoalsService: TreatmentGoalsService,
     private featureService: FeatureService,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    private planState: PlanState,
+    private dataLayersStateService: DataLayersStateService
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
-    // pre load datasets
-    this.mapModuleService.loadMapModule();
   }
 
   ngOnInit(): void {
+    this.scenarioState.currentScenario$
+      .pipe(
+        take(1),
+        filter((s) => isCustomScenario(s.type)),
+        switchMap(() => this.planState.currentPlan$),
+        switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
+      )
+      .subscribe();
+
     if (this.scenarioId) {
       this.loadExistingScenario();
     }
@@ -218,18 +209,12 @@ export class ScenarioCreationComponent implements OnInit {
         this.steps = isCustomScenario(scenario.type)
           ? this.customSteps
           : this.scenarioSteps;
-        this.scenarioName = scenario.name;
-        //this loads the list of scenario names and looks for dupes.
-        //we pass an id to avoid matching against this current scenario id name
-        this.refreshScenarioNameValidator(scenario.id);
 
-        this.form.controls.scenarioName.setValue(scenario.name);
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
         this.newScenarioState.setScenarioConfig(currentConfig);
         // Setting the initial state for the configuration
         this.config = currentConfig;
-        this.scenarioStatus = scenario.scenario_result?.status ?? 'NOT STARTED';
       });
   }
 
@@ -243,10 +228,11 @@ export class ScenarioCreationComponent implements OnInit {
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
-    return newState as Partial<ScenarioCreation>;
+    newState['planning_approach'] = scenario.planning_approach;
+    return newState as Partial<ScenarioDraftConfiguration>;
   }
 
-  saveStep(data: Partial<ScenarioCreation>): Observable<boolean> {
+  saveStep(data: Partial<ScenarioDraftConfiguration>): Observable<boolean> {
     return this.newScenarioState.isValidToGoNext$.pipe(
       take(1),
       switchMap((valid) => {
@@ -262,20 +248,7 @@ export class ScenarioCreationComponent implements OnInit {
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
-
-        if (this.scenarioStatus === 'DRAFT') {
-          if (
-            this.scenarioName !== this.form.get('scenarioName')?.value &&
-            this.form.get('scenarioName')?.value !== null
-          ) {
-            this.handleNameChange(
-              this.form.get('scenarioName')?.value ?? this.scenarioName
-            );
-          }
-          return this.savePatch(data).pipe(catchError(() => of(false)));
-        }
-
-        return of(true);
+        return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
       catchError(() => of(false))
     );
@@ -311,47 +284,10 @@ export class ScenarioCreationComponent implements OnInit {
       );
   }
 
-  async onFinish(type: SCENARIO_TYPE) {
+  async onFinish() {
     this.newScenarioState.setLoading(false);
-
     this.newScenarioState.setDraftFinished(true);
-    // TODO this needs to check type
-    this.localIndex = this.isCustomScenario(type)
-      ? this.steps.length
-      : this.steps.length - 1;
     this.showRunScenarioConfirmation();
-  }
-
-  async handleNameChange(newName: string) {
-    if (newName !== null) {
-      //this loads the list of scenario names and looks for dupes.
-      // we pass an id here, to ensure that a recently changed scenario name for this scenario
-      // is also not included in the duplicates comparison list
-      const nameValidated = await this.refreshScenarioNameValidator(
-        this.scenarioId
-      );
-      if (nameValidated) {
-        this.scenarioService
-          .editScenarioName(this.scenarioId, newName, this.planId)
-          .subscribe({
-            next: () => {
-              this.breadcrumbService.updateBreadCrumb({
-                label: 'Scenario: ' + newName,
-                backUrl: getPlanPath(this.planId),
-                icon: 'close',
-              });
-              this.scenarioName = newName;
-            },
-            error: (e) => {
-              this.matSnackBar.open(
-                '[Error] Unable to update name due to a backend error.',
-                'Dismiss',
-                SNACK_ERROR_CONFIG
-              );
-            },
-          });
-      }
-    }
   }
 
   showRunScenarioConfirmation() {
@@ -400,7 +336,6 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   stepChanged(i: number) {
-    this.localIndex = i;
     this.newScenarioState.setStepIndex(i);
   }
 
@@ -411,46 +346,8 @@ export class ScenarioCreationComponent implements OnInit {
     }
   }
 
-  scenarioNameMustBeUnique(names: string[] = []): ValidatorFn {
-    return (control: AbstractControl) => {
-      const name = control.value;
-
-      if (!name || names.length === 0) {
-        return null;
-      }
-
-      return nameMustBeNew(control, names);
-    };
-  }
-
-  // Adds the name validator and return true or returns false in case there is an error getting scenarios
-  async refreshScenarioNameValidator(currentId?: number): Promise<boolean> {
-    try {
-      const scenarios = await firstValueFrom(
-        this.scenarioService.getScenariosForPlan(this.planId)
-      );
-      //get all scenario names, but omit any related to this scenario id
-      const names = scenarios
-        .filter((s) => {
-          if (currentId) {
-            return s.id !== currentId;
-          } else {
-            return true;
-          }
-        })
-        .map((s) => s.name);
-      const ctrl = this.form.get('scenarioName')!;
-
-      ctrl.setValidators([
-        Validators.required,
-        this.scenarioNameMustBeUnique(names),
-      ]);
-      ctrl.updateValueAndValidity({ emitEvent: false });
-      return true;
-    } catch {
-      this.dialog.open(ScenarioErrorModalComponent);
-      return false;
-    }
+  clearViewedDataLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 
   isCustomScenario(type: SCENARIO_TYPE) {

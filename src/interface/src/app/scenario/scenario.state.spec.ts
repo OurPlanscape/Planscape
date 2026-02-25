@@ -20,7 +20,6 @@ describe('ScenarioState', () => {
       min_distance_from_road: 10,
       stand_size: 'MEDIUM',
       excluded_areas: [],
-      project_areas: [],
       scenario_priorities: [],
       scenario_output_fields: [],
       question_id: 42,

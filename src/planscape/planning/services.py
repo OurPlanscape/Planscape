@@ -11,6 +11,7 @@ from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
+from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from core.gcs import upload_file_via_cli
@@ -41,6 +42,7 @@ from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
+from datasets.dynamic_models import model_from_fiona
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     GeoPackageStatus,
@@ -242,6 +244,7 @@ def create_config(
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
     planning_approach: Optional[ScenarioPlanningApproach] = None,
+    sub_units_layer: Optional[int] = None,
 ) -> Dict[str, Any]:
     config: Dict[str, Any] = {}
 
@@ -257,6 +260,8 @@ def create_config(
         config["seed"] = seed
     if planning_approach is not None:
         config["planning_approach"] = planning_approach
+    if sub_units_layer is not None:
+        config["sub_units_layer"] = sub_units_layer
 
     return config
 
@@ -883,7 +888,7 @@ def sanitize_shp_field_name(name: str) -> str:
 def _get_datalayers_id_lookup_table(scenario):
     # Lookup table to rename datalayer fields to their names
     # e.g. datalayer_1 -> datalaye_Elevation
-    datalayers = scenario.treatment_goal.get_raster_datalayers()  # type: ignore
+    datalayers = scenario.get_raster_datalayers()  # type: ignore
     dl_lookup = dict()
     for dl in datalayers:
         safe_name = sanitize_shp_field_name(dl.name)
@@ -1479,3 +1484,25 @@ def get_min_project_area(scenario: Scenario) -> float:
             return settings.MIN_AREA_PROJECT_MEDIUM
         case _:
             return settings.MIN_AREA_PROJECT_LARGE
+
+
+@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
+def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
+    geometry = planning_area.geometry
+    DynamicModel = model_from_fiona(datalayer)
+
+    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    
+    areas = []
+    for sub_unit in queryset.all():
+        geo_intersection = geometry.intersection(sub_unit.geometry)
+        areas.append(get_acreage(geo_intersection))
+    
+    if len(areas) == 0:
+        return None
+
+    return {
+        "avg": truncate_result(sum(areas) / len(areas)),
+        "max": truncate_result(max(areas)),
+        "min": truncate_result(min(areas)),
+    }

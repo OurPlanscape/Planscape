@@ -32,8 +32,7 @@ import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { FeatureService } from 'src/app/features/feature.service';
-import { PopoverComponent } from 'src/styleguide/popover/popover.component';
+import { PopoverComponent } from '@styleguide/popover/popover.component';
 
 export interface DialogData {
   planning_area_name: string;
@@ -85,8 +84,7 @@ export class UploadProjectAreasModalComponent {
 
   constructor(
     private fb: FormBuilder,
-    private planService: PlanService,
-    private featureService: FeatureService
+    private planService: PlanService
   ) {
     this.uploadProjectsForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
@@ -192,12 +190,7 @@ export class UploadProjectAreasModalComponent {
           },
           error: (err: any) => {
             this.uploadingData = false;
-            let errorsObject = err.error;
-            if (
-              this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-            ) {
-              errorsObject = err.error.errors;
-            }
+            const errorsObject = err.error.errors;
 
             if (!!errorsObject.global) {
               this.uploadFormError = err.error.global.join(' ');

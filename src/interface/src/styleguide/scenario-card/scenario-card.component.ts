@@ -20,8 +20,8 @@ import { ScenarioResultStatus } from '@types';
 import {
   StatusChipComponent,
   StatusChipStatus,
-} from '../status-chip/status-chip.component';
-import { ButtonComponent } from '../button/button.component';
+} from '@styleguide/status-chip/status-chip.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
 
@@ -81,7 +81,6 @@ export class ScenarioCardComponent {
   > = {
     FAILURE: { status: 'failed', label: 'Failed' },
     LOADING: { status: 'running', label: 'Running' },
-    NOT_STARTED: { status: 'running', label: 'Running' },
     PANIC: { status: 'failed', label: 'Failed' },
     PENDING: { status: 'running', label: 'Running' },
     RUNNING: { status: 'running', label: 'Running' },
@@ -96,7 +95,7 @@ export class ScenarioCardComponent {
   }
 
   isRunning(): boolean {
-    const runningValues = ['LOADING', 'NOT_STARTED', 'PENDING', 'RUNNING'];
+    const runningValues = ['LOADING', 'PENDING', 'RUNNING'];
     return runningValues.includes(this.resultStatus);
   }
 

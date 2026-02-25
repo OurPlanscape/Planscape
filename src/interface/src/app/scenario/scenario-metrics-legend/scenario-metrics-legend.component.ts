@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { getGroupedAttainment } from 'src/app/chart-helper';
+import { getGroupedAttainment } from '@app/chart-helper';
 import { ScenarioResult, UsageType } from '@types';
 import {
   MatCheckboxModule,

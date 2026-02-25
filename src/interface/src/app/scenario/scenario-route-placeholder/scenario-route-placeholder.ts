@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ScenarioState } from 'src/app/scenario/scenario.state';
+import { ScenarioState } from '../scenario.state';
 import {
   catchError,
   combineLatest,
@@ -13,17 +13,17 @@ import {
 } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { ResourceUnavailableComponent } from '../../shared/resource-unavailable/resource-unavailable.component';
-import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
-import { ViewScenarioComponent } from '../view-scenario/view-scenario.component';
-import { ScenarioCreationComponent } from '../../scenario-creation/scenario-creation.component';
+import { ResourceUnavailableComponent } from '@shared/resource-unavailable/resource-unavailable.component';
+import { UploadedScenarioViewComponent } from '@scenario/uploaded-scenario-view/uploaded-scenario-view.component';
+import { ViewScenarioComponent } from '@scenario/view-scenario/view-scenario.component';
+import { ScenarioCreationComponent } from '@scenario-creation/scenario-creation.component';
 import { Router } from '@angular/router';
 import { AuthService } from '@services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
-import { NewScenarioState } from '../../scenario-creation/new-scenario.state';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialogComponent } from '../../standalone/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
 import { ScenarioComponent } from '../scenario.component';

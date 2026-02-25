@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Inject,
   inject,
   Input,
   OnChanges,
@@ -11,16 +12,16 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { BaseLayer } from '@types';
+import { BaseLayer, MapDataDataSet } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BASE_LAYERS_DEFAULT, SNACK_ERROR_CONFIG } from '@shared';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersService } from '@services';
-import { MapDataDataSet } from '../../types/module.types';
 import { catchError, map, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MAP_MODULE_NAME } from '@services/map-module.token';
 
 @Component({
   selector: 'app-base-layers-list',
@@ -64,7 +65,10 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
 
   loaded = false;
 
-  constructor(private matSnackBar: MatSnackBar) {}
+  constructor(
+    private matSnackBar: MatSnackBar,
+    @Inject(MAP_MODULE_NAME) private mapModuleName: string
+  ) {}
 
   ngAfterViewInit(): void {
     if (this.expanded) {
@@ -118,17 +122,19 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
 
   private listBaseLayersByDataSet() {
     this.loaded = false;
-    return this.dataLayersService.listBaseLayersByDataSet(this.dataSet.id).pipe(
-      tap((_) => (this.loaded = true)),
-      catchError((e) => {
-        this.matSnackBar.open(
-          `Error: Could not load layers for ${this.dataSet.name}`,
-          'Dismiss',
-          SNACK_ERROR_CONFIG
-        );
-        return [];
-      })
-    );
+    return this.dataLayersService
+      .listBaseLayersByDataSet(this.dataSet.id, this.mapModuleName)
+      .pipe(
+        tap((_) => (this.loaded = true)),
+        catchError((e) => {
+          this.matSnackBar.open(
+            `Error: Could not load layers for ${this.dataSet.name}`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+          return [];
+        })
+      );
   }
 
   get noBaseLayers() {

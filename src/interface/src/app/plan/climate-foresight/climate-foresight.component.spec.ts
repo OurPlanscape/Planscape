@@ -3,7 +3,7 @@ import { ClimateForesightComponent } from './climate-foresight.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { AuthService, WINDOW } from '@services';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of, Subject } from 'rxjs';
 import { Plan } from '@types';
@@ -83,7 +83,10 @@ describe('ClimateForesightComponent', () => {
       planningAreaGeometry$: of(mockPlan.geometry),
     });
 
-    mockAuthService = jasmine.createSpyObj('AuthService', ['getAuthCookie']);
+    mockAuthService = jasmine.createSpyObj('AuthService', [
+      'getAuthCookie',
+      'currentUser',
+    ]);
     mockAuthService.getAuthCookie.and.returnValue('test-auth-cookie');
 
     mockMapConfigState = jasmine.createSpyObj('MapConfigState', [], {
@@ -465,11 +468,18 @@ describe('ClimateForesightComponent', () => {
 
   it('should call startRun when button is clicked', () => {
     spyOn(component, 'startRun');
+
+    spyOnProperty(component, 'canRun', 'get').and.returnValue(true);
+
     fixture.detectChanges();
 
-    const button = fixture.nativeElement.querySelector('.start-analysis-btn');
-    button?.click();
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.start-analysis-btn'
+    );
 
+    expect(button.disabled).toBeFalse();
+
+    button.click();
     expect(component.startRun).toHaveBeenCalled();
   });
 

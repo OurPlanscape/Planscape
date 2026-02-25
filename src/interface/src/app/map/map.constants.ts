@@ -1,4 +1,4 @@
-import { Extent } from '../types';
+import { Extent } from '@types';
 
 export const MAP_WEST_CONUS_BOUNDS: Extent = [
   -126.0, // West Lng

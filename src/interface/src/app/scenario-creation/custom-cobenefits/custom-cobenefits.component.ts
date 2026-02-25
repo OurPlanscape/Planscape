@@ -2,15 +2,15 @@ import { Component } from '@angular/core';
 import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
-import { ChipSelectorComponent } from '../../../styleguide/chip-selector/chip-selector.component';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { DataLayer, ScenarioCreation } from '@types';
+
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { DataLayersService } from '@services';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { catchError, finalize, map, of, switchMap, take } from 'rxjs';
+import { finalize, take } from 'rxjs';
 
 const MAX_SELECTABLE_LAYERS = 10;
 
@@ -33,7 +33,7 @@ const MAX_SELECTABLE_LAYERS = 10;
     { provide: StepDirective, useExisting: CustomCobenefitsComponent },
   ],
 })
-export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
+export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfiguration> {
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>([]),
   });
@@ -48,7 +48,6 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private dataLayersService: DataLayersService,
     private newScenarioState: NewScenarioState
   ) {
     super();
@@ -66,32 +65,14 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
 
   mapConfigToUI(): void {
     this.uiLoading = true;
-    this.newScenarioState.scenarioConfig$
+    this.newScenarioState.coBenefitsDetails$
       .pipe(
-        untilDestroyed(this),
         take(1),
-        switchMap((config) => {
-          if (config.cobenefits) {
-            const ids = config.cobenefits;
-            return this.dataLayersService.getDataLayersByIds(ids).pipe(
-              map((layers: DataLayer[]) => layers),
-              catchError((error) => {
-                throw error;
-              })
-            );
-          }
-          return of([]);
-        }),
         finalize(() => (this.uiLoading = false))
       )
-      .subscribe({
-        next: (layers) => {
-          this.form.get('dataLayers')?.setValue(layers);
-          this.dataLayersStateService.updateSelectedLayers(layers);
-        },
-        error: (error) => {
-          console.error('Error fetching datalayers ', error);
-        },
+      .subscribe((layers) => {
+        this.form.get('dataLayers')?.setValue(layers);
+        this.dataLayersStateService.updateSelectedLayers(layers);
       });
   }
 
@@ -107,6 +88,16 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioCreation> {
   override beforeStepLoad() {
     this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+    // ensure that priority_objective layers are unselectable
+    this.dataLayersStateService.clearUnselectableLayers();
+    this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
+      if (config.priority_objectives) {
+        this.dataLayersStateService.setUnselectableLayers(
+          config.priority_objectives,
+          'PRIORITY_OBJECTIVE'
+        );
+      }
+    });
     this.mapConfigToUI();
   }
 

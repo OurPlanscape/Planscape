@@ -8,8 +8,8 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { PlanState } from '../../plan/plan.state';
-import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { PlanState } from '@plan/plan.state';
+import { MARTIN_SOURCES } from '@treatments/map.sources';
 
 describe('PlanningAreaLayerComponent', () => {
   let component: PlanningAreaLayerComponent;

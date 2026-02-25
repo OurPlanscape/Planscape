@@ -4,13 +4,13 @@ import {
   NoopAnimationsModule,
 } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
-import { TreatmentTargetComponent } from 'src/app/scenario-creation/treatment-target/treatment-target.component';
+import { TreatmentTargetComponent } from './treatment-target.component';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MockProvider } from 'ng-mocks';
-import { NewScenarioState } from 'src/app/scenario-creation/new-scenario.state';
+import { NewScenarioState } from '../new-scenario.state';
 import { BehaviorSubject, of } from 'rxjs';
 import { AvailableStands } from '@types';
-import { STAND_SIZE } from 'src/app/plan/plan-helpers';
+import { STAND_SIZE } from '@plan/plan-helpers';
 
 describe('TreatmentTargetComponent', () => {
   let component: TreatmentTargetComponent;

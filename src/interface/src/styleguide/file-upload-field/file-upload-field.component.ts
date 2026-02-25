@@ -8,7 +8,7 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export type UploadStatus = 'default' | 'running' | 'uploaded' | 'failed';

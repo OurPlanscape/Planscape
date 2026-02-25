@@ -1,50 +1,86 @@
-import { AfterContentInit, Component, ViewChild } from '@angular/core';
-import { Step1Component } from '../step1/step1.component';
+import { Component } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {
   OverviewStep,
   ProcessOverviewComponent,
-} from '../process-overview/process-overview.component';
+} from '@scenario-creation/process-overview/process-overview.component';
+import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
+import { TreatmentGoalSelectorComponent } from '@scenario-creation/treatment-goal-selector/treatment-goal-selector.component';
 import { StepDirective } from '@styleguide';
-import { ScenarioCreation } from '@types';
-import { FormGroup } from '@angular/forms';
-import { SCENARIO_OVERVIEW_STEPS } from '../../scenario/scenario.constants';
+import { PLANNING_APPROACH, ScenarioDraftConfiguration } from '@types';
+import { SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
+import { STAND_SIZE } from '@plan/plan-helpers';
+import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
+import { FeatureService } from '@features/feature.service';
+import { NgIf } from '@angular/common';
+
+type Step1WithOverviewForm = FormGroup<{
+  stand_size: FormControl<STAND_SIZE | null>;
+  treatment_goal: FormControl<number | null>;
+  planning_approach: FormControl<PLANNING_APPROACH | null>;
+}>;
 
 @Component({
   selector: 'app-step1-with-overview',
   standalone: true,
-  imports: [Step1Component, ProcessOverviewComponent],
+  imports: [
+    ReactiveFormsModule,
+    ProcessOverviewComponent,
+    StandSizeSelectorComponent,
+    TreatmentGoalSelectorComponent,
+    PlanningApproachComponent,
+    NgIf,
+  ],
   templateUrl: './step1-with-overview.component.html',
   styleUrl: './step1-with-overview.component.scss',
-  // required to "import" current step1
   providers: [
     { provide: StepDirective, useExisting: Step1WithOverviewComponent },
   ],
 })
-export class Step1WithOverviewComponent
-  extends StepDirective<ScenarioCreation>
-  implements AfterContentInit
-{
+export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfiguration> {
+  readonly form: Step1WithOverviewForm = new FormGroup({
+    stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
+    treatment_goal: new FormControl<number | null>(null),
+    planning_approach: new FormControl<PLANNING_APPROACH | null>(null),
+  });
+
+  constructor(private featureService: FeatureService) {
+    super();
+    this.configureConditionalValidators();
+  }
   steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
 
-  // Find Step1
-  // TODO- we might want to not do this at all when we implement this step
-  // with different order, and remove step1 completely.
-  // For now, to avoid duplication, just using step1.
-  @ViewChild(Step1Component, { static: true }) inner!: Step1Component;
-
-  ngAfterContentInit() {
-    if (!this.inner) {
-      throw new Error(
-        'Step1WithOverviewComponent: inner Step1Component not found'
-      );
-    }
-  }
-
-  get form(): FormGroup {
-    return this.inner!.form;
-  }
-
   getData() {
-    return this.inner!.getData();
+    const { stand_size, treatment_goal, planning_approach } = this.form.value;
+    return this.isPlanningApproachEnabled
+      ? { stand_size, planning_approach }
+      : { stand_size, treatment_goal };
+  }
+
+  get isPlanningApproachEnabled() {
+    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  /**
+   * This method can be removed completely once the 'PLANNING_APPROACH' feature is fully implemented.
+   */
+  private configureConditionalValidators(): void {
+    const { treatment_goal, planning_approach } = this.form.controls;
+
+    if (this.isPlanningApproachEnabled) {
+      planning_approach.addValidators(Validators.required);
+      treatment_goal.clearValidators();
+    } else {
+      treatment_goal.addValidators(Validators.required);
+      planning_approach.clearValidators();
+    }
+
+    treatment_goal.updateValueAndValidity({ emitEvent: false });
+    planning_approach.updateValueAndValidity({ emitEvent: false });
   }
 }

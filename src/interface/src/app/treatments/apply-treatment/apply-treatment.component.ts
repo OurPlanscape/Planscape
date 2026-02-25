@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { BannerComponent, ModalComponent } from '@styleguide';
 import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
-import { KeyPipe } from '../../standalone/key.pipe';
+import { KeyPipe } from '@standalone/key.pipe';
 import { MatRadioModule } from '@angular/material/radio';
 import {
   FormControl,
@@ -11,14 +11,13 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { combineLatest, map, take } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
@@ -89,8 +88,7 @@ export class ApplyTreatmentComponent {
     public selectedStandsState: SelectedStandsState,
     public treatmentsState: TreatmentsState,
     public treatedStandsState: TreatedStandsState,
-    public snackBar: MatSnackBar,
-    private featureService: FeatureService
+    public snackBar: MatSnackBar
   ) {}
 
   readonly prescriptions = PRESCRIPTIONS;
@@ -141,11 +139,7 @@ export class ApplyTreatmentComponent {
     this.selectedStandsState.clearStands();
     this.treatmentsState.removeTreatments(stands).subscribe({
       error: (err) => {
-        if (this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')) {
-          this.snackBar.open(err.errors.message, 'Dismiss', SNACK_ERROR_CONFIG);
-        } else {
-          this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
-        }
+        this.snackBar.open(err.errors.message, 'Dismiss', SNACK_ERROR_CONFIG);
       },
     });
     this.treatmentsState.setShowApplyTreatmentsDialog(false);

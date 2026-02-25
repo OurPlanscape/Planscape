@@ -1,3 +1,10 @@
 data/
 .venv/
 .ruff_cache
+.git/
+src/interface/node_modules/
+src/interface/.angular/
+src/interface/dist/
+__pycache__/
+*.pyc
+.claude/

@@ -3,7 +3,7 @@ import {
   Constraint,
   Scenario,
   SCENARIO_TYPE,
-  ScenarioCreation,
+  ScenarioDraftConfiguration,
   ScenarioGoal,
   ScenarioV3Config,
   ScenarioV3Payload,
@@ -53,8 +53,11 @@ export function scenarioCanHaveTreatmentPlans(
   return false;
 }
 
+// TODO this needs to be refactored.
+// We should be taking all formData to configuration by default, and treat
+// outliers separately, not the other way around.
 export function convertFlatConfigurationToDraftPayload(
-  formData: Partial<ScenarioCreation>,
+  formData: Partial<ScenarioDraftConfiguration>,
   thresholdIds: Map<string, number>
 ): Partial<ScenarioV3Payload> {
   const payload: Partial<ScenarioV3Payload> = {};
@@ -117,6 +120,11 @@ export function convertFlatConfigurationToDraftPayload(
   // Custom Scenarios - co-benefits
   if (formData.cobenefits) {
     config.cobenefits = formData.cobenefits;
+  }
+
+  if (formData.planning_approach) {
+    // TODO UPDATE THIS
+    payload.planning_approach = formData.planning_approach;
   }
 
   payload.configuration = config;

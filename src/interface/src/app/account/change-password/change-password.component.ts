@@ -5,10 +5,9 @@ import { map, take } from 'rxjs';
 import {
   passwordMustBeNewValidator,
   passwordsMustMatchValidator,
-} from '../../validators/passwords';
+} from '@validators/passwords';
 import { FormMessageType } from '@types';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MIN_PASSWORD_LENGTH } from '@shared';
 
 type State = 'view' | 'editing' | 'saving';
@@ -46,8 +45,7 @@ export class ChangePasswordComponent {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
-    private featureService: FeatureService
+    private authService: AuthService
   ) {
     this.form = this.createForm();
   }
@@ -95,28 +93,16 @@ export class ChangePasswordComponent {
           this.state = 'view';
         },
         (err: any) => {
-          if (
-            this.featureService.isFeatureEnabled('CUSTOM_EXCEPTION_HANDLER')
-          ) {
-            if (err.error.errors.old_password) {
-              current?.setErrors({ invalid: true });
-            }
-            if (err.error.errors.new_password2) {
-              newPassword?.setErrors({ invalid: true });
-              passwordConfirm?.setErrors({ invalid: true });
-            }
-            // set the text in the error UI to the actual BE error text
-            this.error = Object.values(err.error.errors);
-          } else {
-            if (err.error.old_password) {
-              current?.setErrors({ invalid: true });
-            }
-            if (err.error.new_password2) {
-              newPassword?.setErrors({ invalid: true });
-              passwordConfirm?.setErrors({ invalid: true });
-            }
-            this.error = Object.values(err.error);
+          if (err.error.errors.old_password) {
+            current?.setErrors({ invalid: true });
           }
+          if (err.error.errors.new_password2) {
+            newPassword?.setErrors({ invalid: true });
+            passwordConfirm?.setErrors({ invalid: true });
+          }
+          // set the text in the error UI to the actual BE error text
+          this.error = Object.values(err.error.errors);
+
           this.state = 'editing';
         }
       );

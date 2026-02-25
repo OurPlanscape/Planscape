@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MOCK_PLAN } from '@services/mocks';
 import { MatDialogModule } from '@angular/material/dialog';
-import { CreatePlanDialogComponent } from 'src/app/explore/create-plan-dialog/create-plan-dialog.component';
+import { CreatePlanDialogComponent } from '@explore/create-plan-dialog/create-plan-dialog.component';
 
 describe('PlanningAreaMenuComponent', () => {
   let component: PlanningAreaMenuComponent;

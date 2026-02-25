@@ -1,4 +1,4 @@
-import { DataLayer } from '../../types/data-sets';
+import { DataLayer } from '@types';
 import { buildPathTree, TreeNode } from './tree-node';
 
 describe('buildPathTree', () => {

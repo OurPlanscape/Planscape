@@ -21,7 +21,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { TreatmentsState } from '../treatments.state';
 import deepEqual from 'fast-deep-equal';
 import { TreatmentPlan } from '@types';
-import { getBasicChartOptions, updateYAxisRange } from '../../chart-helper';
+import { getBasicChartOptions, updateYAxisRange } from '@app/chart-helper';
 
 export interface ImpactsResultData {
   year: number;

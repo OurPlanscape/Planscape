@@ -1,0 +1,87 @@
+<script>
+  (function () {
+    "use strict";
+
+    function patchMapWidget() {
+      const MapWidgetCtor =
+        (typeof window.MapWidget !== "undefined" && window.MapWidget) ||
+        (typeof MapWidget !== "undefined" && MapWidget);
+
+      if (!MapWidgetCtor) {
+        return false;
+      }
+
+      if (MapWidgetCtor.prototype.__planscapeReadonlyGeomPatched) {
+        return true;
+      }
+
+      MapWidgetCtor.prototype.__planscapeReadonlyGeomPatched = true;
+
+      const originalCreateInteractions =
+        MapWidgetCtor.prototype.createInteractions;
+
+      MapWidgetCtor.prototype.createInteractions = function () {
+        originalCreateInteractions.call(this);
+
+        const map = this.map;
+
+        if (map && !map.__planscapeReadonlyMapPatched) {
+          map.__planscapeReadonlyMapPatched = true;
+
+          const originalAddInteraction = map.addInteraction.bind(map);
+
+          map.addInteraction = function (interaction) {
+            if (
+              interaction instanceof ol.interaction.Draw ||
+              interaction instanceof ol.interaction.Modify
+            ) {
+              interaction.setActive(false);
+              return;
+            }
+
+            return originalAddInteraction(interaction);
+          };
+        }
+
+        if (this.interactions.draw) {
+          this.map.removeInteraction(this.interactions.draw);
+          this.interactions.draw = null;
+        }
+
+        if (this.interactions.modify) {
+          this.map.removeInteraction(this.interactions.modify);
+          this.interactions.modify = null;
+        }
+
+        const clearNode =
+          document.getElementById(this.map.getTarget()).nextElementSibling;
+
+        if (clearNode && clearNode.classList.contains("clear_features")) {
+          clearNode.style.display = "none";
+        }
+      };
+
+      return true;
+    }
+
+    if (!patchMapWidget()) {
+      if (window.__planscapeReadonlyRetryRunning) {
+        return;
+      }
+
+      window.__planscapeReadonlyRetryRunning = true;
+
+      let attempts = 0;
+      const timer = window.setInterval(function () {
+        attempts += 1;
+
+        if (patchMapWidget() || attempts >= 50) {
+          window.clearInterval(timer);
+          window.__planscapeReadonlyRetryRunning = false;
+        }
+      }, 25);
+    }
+  })();
+</script>
+
+{% include "gis/openlayers-osm.html" %}

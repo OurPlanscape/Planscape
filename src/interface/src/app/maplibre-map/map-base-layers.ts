@@ -1,5 +1,5 @@
 import { MapOptions } from 'maplibre-gl';
-import { BaseMapType } from '../types/maplibre.map.types';
+import { BaseMapType } from '@types';
 
 export const baseMapStyles: Record<BaseMapType, MapOptions['style']> = {
   road: 'mapbox://styles/mapbox/light-v10',

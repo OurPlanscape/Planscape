@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { BaseLayersListComponent } from '../base-layers-list/base-layers-list.component';
+import { BaseLayersListComponent } from '@base-layers/base-layers-list/base-layers-list.component';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { BaseLayer } from '@types';

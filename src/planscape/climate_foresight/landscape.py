@@ -119,17 +119,19 @@ def aggregate_rasters_simple_average(
 
                     block_stack = np.array(block_stack, dtype=np.float32)
 
-                    if nodata is not None:
-                        valid_mask = np.all(block_stack != nodata, axis=0)
-                    else:
-                        valid_mask = np.all(~np.isnan(block_stack), axis=0)
+                    if nodata is not None and not np.isnan(nodata):
+                        block_stack = np.where(
+                            block_stack == nodata, np.nan, block_stack
+                        )
+
+                    valid_mask = np.any(~np.isnan(block_stack), axis=0)
 
                     output_block = np.full(
                         block_stack.shape[1:], nodata, dtype=np.float32
                     )
 
                     if np.any(valid_mask):
-                        output_block[valid_mask] = np.mean(
+                        output_block[valid_mask] = np.nanmean(
                             block_stack[:, valid_mask], axis=0
                         )
 
@@ -157,7 +159,7 @@ def aggregate_rasters_simple_average(
 
     if existing_layer:
         log.info(
-            f"DataLayer {existing_layer.name} already processed and created: (id={existing_layer.id})",
+            f"DataLayer {existing_layer.name} already processed and created: (id={existing_layer.id})"
             "Check tasks for race condition as first check did not find an existing layer.",
         )
         return existing_layer
@@ -383,7 +385,9 @@ def rollup_landscape(
     )
 
     for future_layer in future_layers:
-        clipped_name = f"{future_layer.name} (Clipped for PA {run.planning_area.id})"
+        clipped_name = (
+            f"{future_layer.name} (Clipped for PA {run.planning_area.id}/{run_id})"
+        )
 
         existing_clipped = DataLayer.objects.filter(
             name=clipped_name,
@@ -473,6 +477,7 @@ def rollup_landscape(
                         "climate_foresight": {
                             "clipped_from": future_layer.id,
                             "planning_area_id": run.planning_area.id,
+                            "run_id": run_id,
                         }
                     }
                 }

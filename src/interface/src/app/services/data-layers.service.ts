@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 import { HttpClient } from '@angular/common/http';
 import {
   BaseLayer,
@@ -87,12 +87,12 @@ export class DataLayersService {
       .pipe(map((response) => response.results));
   }
 
-  listBaseLayersByDataSet(dataSetId: number) {
+  listBaseLayersByDataSet(dataSetId: number, module: string) {
     return this.http.get<BaseLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
       {
         withCredentials: true,
-        params: { type: 'VECTOR' },
+        params: { type: 'VECTOR', module: module },
       }
     );
   }

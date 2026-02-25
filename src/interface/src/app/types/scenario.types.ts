@@ -1,4 +1,4 @@
-import { STAND_SIZE } from '../plan/plan-helpers';
+import { STAND_SIZE } from '@plan/plan-helpers';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
@@ -6,7 +6,6 @@ export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM';
 
 export type ScenarioResultStatus =
   | 'LOADING' // when loading results
-  | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
   | 'PENDING' // Scenario created, in queue
   | 'RUNNING' // Scenario created, being processed
   | 'SUCCESS' // Run completed successfully
@@ -24,8 +23,13 @@ export type GeoPackageStatus =
 
 export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
 
+export type PLANNING_APPROACH =
+  | 'PRIORITIZE_SUB_UNITS'
+  | 'OPTIMIZE_PROJECT_AREAS';
+
+// Backend scenario model returned by /v2/scenarios endpoints.
 export interface Scenario {
-  id?: number; // undefined when we are creating a new scenario
+  id: number;
   name: string;
   notes?: string;
   creator?: string;
@@ -33,7 +37,7 @@ export interface Scenario {
   configuration: ScenarioConfig;
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;
-  user?: number;
+  user: number;
   max_treatment_area?: number;
   created_at?: string;
   max_budget?: number;
@@ -49,6 +53,7 @@ export interface Scenario {
   geopackage_url: string | null;
   capabilities?: Capabilities[];
   type: SCENARIO_TYPE;
+  planning_approach?: PLANNING_APPROACH;
 }
 
 /**
@@ -60,6 +65,7 @@ export interface Scenario {
  * Similarly, `question_id` only exists on the backend payload, while on the FE side
  * this is part of `treatment_goal`.
  */
+// Legacy backend config (V1/V2) stored on Scenario.configuration (flat fields).
 export interface ScenarioConfig {
   estimated_cost?: number;
   max_budget?: number;
@@ -67,8 +73,6 @@ export interface ScenarioConfig {
   max_project_count?: number;
   max_slope?: number;
   min_distance_from_road?: number;
-  // TODO is this even being used??
-  project_areas?: ProjectArea[];
   excluded_areas?: number[];
   stand_size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   scenario_priorities?: string[];
@@ -79,6 +83,7 @@ export interface ScenarioConfig {
   cobenefits?: number[];
 }
 
+// Backend scenario run result object.
 export interface ScenarioResult {
   status: ScenarioResultStatus;
   completed_at: string;
@@ -89,16 +94,7 @@ export interface ScenarioResult {
   };
 }
 
-export interface ScenarioCreation extends ScenarioConfigPayload {
-  treatment_goal: number;
-  excluded_areas: number[];
-  name: string;
-  planning_area: number;
-  priority_objectives?: number[];
-  cobenefits?: number[];
-  subunit?: number;
-}
-
+// Base draft/wizard shape (legacy flat config fields) used by FE draft types.
 export interface ScenarioConfigPayload {
   estimated_cost: number;
   excluded_areas: number[];
@@ -110,6 +106,7 @@ export interface ScenarioConfigPayload {
   max_project_count?: number;
 }
 
+// Backend V3 config shape stored on Scenario.configuration for V3 scenarios.
 export interface ScenarioV3Config {
   excluded_areas: number[];
   stand_size: STAND_SIZE;
@@ -124,6 +121,7 @@ export interface ScenarioV3Config {
     max_project_count: number;
   };
   type?: SCENARIO_TYPE;
+  planning_approach?: PLANNING_APPROACH;
 }
 
 export interface ScenarioV3Payload {
@@ -131,33 +129,22 @@ export interface ScenarioV3Payload {
   name: string;
   planning_area: number;
   treatment_goal: number;
+  planning_approach: PLANNING_APPROACH;
 }
 
-export interface ScenarioCreationPayload {
-  configuration: ScenarioConfigPayload;
-  name: string;
-  planning_area: number;
-  treatment_goal: number;
-}
 // TODO is this the right type?
+// Backend/analytics GeoJSON feature collection shape for scenario outputs.
 export interface FeatureCollection extends GeoJSON.FeatureCollection {
   properties: any;
 }
 
-export interface ProjectArea {
-  id: string;
-  projectId?: string;
-  projectArea: GeoJSON.GeoJSON;
-  owner?: string;
-  estimatedAreaTreated?: number;
-  actualAcresTreated?: number;
-}
-
+// Backend usage type entry for scenario outputs.
 export interface UsageType {
   usage_type: string;
   datalayer: string;
 }
 
+// Backend scenario goal metadata.
 export interface ScenarioGoal {
   id: number;
   name: string;
@@ -169,6 +156,7 @@ export interface ScenarioGoal {
   group_text: string;
 }
 
+// Backend constraint definition (thresholds for stands).
 export interface Constraint {
   datalayer: number;
   operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';

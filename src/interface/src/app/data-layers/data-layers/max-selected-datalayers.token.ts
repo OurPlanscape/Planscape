@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { DEFAULT_MAX_SELECTED_LAYERS } from '../../shared/constants';
+import { DEFAULT_MAX_SELECTED_LAYERS } from '@shared/constants';
 
 /**
  * Token that is used to set the max selected layers

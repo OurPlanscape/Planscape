@@ -30,6 +30,31 @@
         ],
         "no-alert": "error",
         "no-debugger": "error",
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "../../../*",
+                  "../../../**",
+                  "../../../../*",
+                  "../../../../**"
+                ],
+                "message": "Use path aliases (e.g. @app, @services, @shared, @styleguide) instead of long relative imports."
+              },
+              {
+                "group": [
+                  "src/*",
+                  "src/**",
+                  "/src/*",
+                  "/src/**"
+                ],
+                "message": "Do not import from src/... directly. Use path aliases (e.g. @app, @services, @shared, @styleguide, @env)."
+              }
+            ]
+          }
+        ],
         "@angular-eslint/directive-selector": [
           "error",
           {

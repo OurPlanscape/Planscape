@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 /**
  * Simple popover that opens when you click on the icon

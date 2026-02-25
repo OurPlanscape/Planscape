@@ -7,34 +7,38 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
-import { ClimateForesightRunCardComponent } from './climate-foresight-run-card/climate-foresight-run-card.component';
+import { ClimateForesightRunCardComponent } from '@plan/climate-foresight/climate-foresight-run-card/climate-foresight-run-card.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
-import { SharedModule } from '../../shared/shared.module';
+import { SharedModule } from '@shared/shared.module';
 import { Plan, ClimateForesightRun } from '@types';
 import { take, map, switchMap, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { ClimateForesightService } from '@services/climate-foresight.service';
-import { DeleteRunModalComponent } from './delete-run-modal/delete-run-modal.component';
+import { DeleteRunModalComponent } from '@plan/climate-foresight/delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { ButtonComponent, SectionComponent } from '@styleguide';
-import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
   RequestTransformFunction,
   ResourceType,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '@maplibre-map/map-config.state';
 import {
   addRequestHeaders,
   getBoundsFromGeometry,
-} from '../../maplibre-map/maplibre.helper';
-import { FrontendConstants } from '../../map/map.constants';
+} from '@maplibre-map/maplibre.helper';
+import { FrontendConstants } from '@map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { NewAnalysisModalComponent } from './new-analysis-modal/new-analysis-modal.component';
+import { NewAnalysisModalComponent } from '@plan/climate-foresight/new-analysis-modal/new-analysis-modal.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+import {
+  canDeleteClimateAnalysis,
+  canRunClimateAnalysis,
+} from '../permissions';
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
@@ -151,7 +155,7 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
   }
 
   startRun(): void {
-    if (!this.currentPlan) {
+    if (!this.currentPlan || !this.canRun) {
       return;
     }
 
@@ -343,5 +347,28 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
           console.error('Error polling for run status:', err);
         },
       });
+  }
+
+  get canRun(): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !this.currentPlan) {
+      return false;
+    }
+    return canRunClimateAnalysis(this.currentPlan, user);
+  }
+
+  get canDelete(): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !this.currentPlan) {
+      return false;
+    }
+    return canDeleteClimateAnalysis(this.currentPlan, user);
+  }
+
+  get runTooltip(): string {
+    if (!this.canRun) {
+      return `You don't have permission to Start Analysis`;
+    }
+    return 'Start Analysis';
   }
 }

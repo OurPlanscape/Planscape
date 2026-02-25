@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { PrescriptionSingleAction } from '../../app/treatments/prescriptions';
+import { PrescriptionSingleAction } from '@treatments/prescriptions';
 
 @Component({
   selector: 'sg-treatment-type-icon',

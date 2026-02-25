@@ -8,8 +8,9 @@ import { DataLayersStateService } from '../data-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
+import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { unselectableReason } from '@app/shared';
 
 @Component({
   selector: 'app-data-set',
@@ -55,6 +56,26 @@ export class DataSetComponent {
         layers.length === this.dataLayersStateService.getMaxSelectedLayers()
     )
   );
+
+  isUnselectable(layer: DataLayer) {
+    return this.dataLayersStateService.isLayerUnselectable(layer);
+  }
+
+  getTooltipText(
+    layer: DataLayer,
+    isSelectionCompleted: boolean | null
+  ): string {
+    if (!this.isDatalayerSelected(layer)) {
+      const uLayer = this.dataLayersStateService.getUnselectableLayer(layer);
+      if (uLayer) {
+        return unselectableReason[uLayer.reason];
+      }
+      if (isSelectionCompleted) {
+        return 'You have selected the maximum number of layers';
+      }
+    }
+    return '';
+  }
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 

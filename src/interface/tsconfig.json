@@ -4,6 +4,108 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
+      "@app": [
+        "src/app"
+      ],
+      "@app/*": [
+        "src/app/*"
+      ],
+      "@account": [
+        "src/app/account"
+      ],
+      "@account/*": [
+        "src/app/account/*"
+      ],
+      "@base-layers": [
+        "src/app/base-layers"
+      ],
+      "@base-layers/*": [
+        "src/app/base-layers/*"
+      ],
+      "@data-layers": [
+        "src/app/data-layers"
+      ],
+      "@data-layers/*": [
+        "src/app/data-layers/*"
+      ],
+      "@explore": [
+        "src/app/explore"
+      ],
+      "@explore/*": [
+        "src/app/explore/*"
+      ],
+      "@features": [
+        "src/app/features"
+      ],
+      "@features/*": [
+        "src/app/features/*"
+      ],
+      "@home": [
+        "src/app/home"
+      ],
+      "@home/*": [
+        "src/app/home/*"
+      ],
+      "@map": [
+        "src/app/map"
+      ],
+      "@map/*": [
+        "src/app/map/*"
+      ],
+      "@maplibre-map": [
+        "src/app/maplibre-map"
+      ],
+      "@maplibre-map/*": [
+        "src/app/maplibre-map/*"
+      ],
+      "@material": [
+        "src/app/material"
+      ],
+      "@material/*": [
+        "src/app/material/*"
+      ],
+      "@plan": [
+        "src/app/plan"
+      ],
+      "@plan/*": [
+        "src/app/plan/*"
+      ],
+      "@resolvers": [
+        "src/app/resolvers"
+      ],
+      "@resolvers/*": [
+        "src/app/resolvers/*"
+      ],
+      "@scenario": [
+        "src/app/scenario"
+      ],
+      "@scenario/*": [
+        "src/app/scenario/*"
+      ],
+      "@scenario-creation": [
+        "src/app/scenario-creation"
+      ],
+      "@scenario-creation/*": [
+        "src/app/scenario-creation/*"
+      ],
+      "@standalone": [
+        "src/app/standalone"
+      ],
+      "@standalone/*": [
+        "src/app/standalone/*"
+      ],
+      "@treatments": [
+        "src/app/treatments"
+      ],
+      "@treatments/*": [
+        "src/app/treatments/*"
+      ],
+      "@validators": [
+        "src/app/validators"
+      ],
+      "@validators/*": [
+        "src/app/validators/*"
+      ],
       "@services": [
         "src/app/services"
       ],
@@ -11,13 +113,40 @@
         "src/app/services/*"
       ],
       "@styleguide": [
-        "src/styleguide/"
+        "src/styleguide"
+      ],
+      "@styleguide/*": [
+        "src/styleguide/*"
       ],
       "@shared": [
-        "src/app/shared/"
+        "src/app/shared"
+      ],
+      "@shared/*": [
+        "src/app/shared/*"
       ],
       "@types": [
-        "src/app/types/"
+        "src/app/types"
+      ],
+      "@types/*": [
+        "src/app/types/*"
+      ],
+      "@env": [
+        "src/environments"
+      ],
+      "@env/*": [
+        "src/environments/*"
+      ],
+      "@assets": [
+        "src/assets"
+      ],
+      "@assets/*": [
+        "src/assets/*"
+      ],
+      "@testing": [
+        "src/testing"
+      ],
+      "@testing/*": [
+        "src/testing/*"
       ]
     },
     "outDir": "./dist/out-tsc",
@@ -53,8 +182,8 @@
     ]
   },
   "exclude": [
-    "cypress/**/*.ts",
-    "cypress.config.ts"
+    "e2e/**/*.ts",
+    "playwright.config.ts"
   ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
