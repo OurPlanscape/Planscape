@@ -1,3 +1,13 @@
+export interface ScenarioStepConfig {
+  label: string;
+  description: string;
+  icon: string;
+  includeConstraints: boolean;
+  includeExcludedAreas: boolean;
+  refreshAvailableStands: boolean;
+  hasMap: boolean;
+}
+
 export const exitModalData = (scenarioName: string) => ({
   title: `Exit '${scenarioName}'?`,
   body: `Are you sure you want to exit “${scenarioName}”? Saved steps will be kept in draft form; any steps you haven’t saved will be lost.`,
@@ -5,7 +15,7 @@ export const exitModalData = (scenarioName: string) => ({
   secondaryCta: 'Exit Workflow',
 });
 
-export const SCENARIO_OVERVIEW_STEPS = [
+export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   {
     label: 'Treatment Goal',
     description:
@@ -56,7 +66,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
   },
 ];
 
-export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
+export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   {
     label: 'Priority Objectives',
     description: 'Choose your key objectives that ForSys will prioritize.',

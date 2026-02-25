@@ -23,7 +23,7 @@ describe('CustomCobenefitsComponent', () => {
           scenarioConfig$: of({}),
           excludedStands$: of([]),
           doesNotMeetConstraintsStands$: of([]),
-          stepIndex$: of(0),
+          currentStep$: of(null),
         }),
         MockProvider(DataLayersStateService, {
           viewedDataLayer$: of(null),

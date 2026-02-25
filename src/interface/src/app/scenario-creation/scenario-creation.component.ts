@@ -48,6 +48,7 @@ import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/con
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
+  ScenarioStepConfig,
 } from '@scenario/scenario.constants';
 import { SharedModule } from '@shared';
 import { ScenarioState } from '@scenario/scenario.state';
@@ -128,20 +129,15 @@ export class ScenarioCreationComponent implements OnInit {
     },
   ];
 
-  steps: {
-    icon: string;
-    description: string;
-    label: string;
-    hasMap: boolean;
-    preStep?: boolean;
-  }[] = [];
+  steps: ScenarioStepConfig[] = [];
 
   readonly saveStepFn = this.saveStep.bind(this);
 
-  stepIndex$ = this.newScenarioState.stepIndex$;
-  isOnPreStep$ = this.stepIndex$.pipe(map((i) => i === 0));
-  showMap$ = this.stepIndex$.pipe(
-    map((i) => (i > 0 ? this.steps[i - 1]?.hasMap : false) ?? false)
+  isOnPreStep$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => s === null)
+  );
+  showMap$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => s?.hasMap ?? false)
   );
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
@@ -293,19 +289,12 @@ export class ScenarioCreationComponent implements OnInit {
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(
-        map((result) => {
-          //oh.
-          this.newScenarioState.setLoading(false);
-          if (result) {
-            return true;
-          }
-          return false;
-        }),
+        map((result) => !!result),
         catchError((e) => {
           console.error('Patch error:', e);
-          this.newScenarioState.setLoading(false);
           return of(false);
-        })
+        }),
+        finalize(() => this.newScenarioState.setLoading(false))
       );
   }
 
@@ -360,8 +349,9 @@ export class ScenarioCreationComponent implements OnInit {
       });
   }
 
-  stepChanged(i: number) {
-    this.newScenarioState.setStepIndex(i);
+  stepChanged(cdkIndex: number) {
+    const config = cdkIndex === 0 ? null : (this.steps[cdkIndex - 1] ?? null);
+    this.newScenarioState.setCurrentStep(config);
   }
 
   handleStepChangeEvent(event: StepperSelectionEvent) {

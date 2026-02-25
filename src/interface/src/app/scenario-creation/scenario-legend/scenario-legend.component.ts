@@ -24,23 +24,23 @@ import { AsyncPipe, DecimalPipe, NgIf, PercentPipe } from '@angular/common';
 export class ScenarioLegendComponent {
   summary$ = this.newScenarioState.availableStands$.pipe(map((s) => s.summary));
 
-  stepIndex$ = this.newScenarioState.stepIndex$;
-
   showExcludedStands$ = combineLatest([
-    this.stepIndex$,
+    this.newScenarioState.currentStep$,
     this.newScenarioState.hasExcludedStands$,
   ]).pipe(
     map(([step, hasExcluded]) => {
-      return hasExcluded && step === 1;
+      return (
+        hasExcluded && !!step?.includeExcludedAreas && !step?.includeConstraints
+      );
     })
   );
 
   showConstrainedStands$ = combineLatest([
-    this.stepIndex$,
+    this.newScenarioState.currentStep$,
     this.newScenarioState.hasConstrainedStands$,
   ]).pipe(
     map(([step, hasExcluded]) => {
-      return hasExcluded && step > 1;
+      return hasExcluded && !!step?.includeConstraints;
     })
   );
 
@@ -48,7 +48,9 @@ export class ScenarioLegendComponent {
     map((s) => s.summary.treatable_area / s.summary.available_area)
   );
 
-  showAvailablePercent$ = this.stepIndex$.pipe(map((s) => s > 1));
+  showAvailablePercent$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => !!s?.includeExcludedAreas)
+  );
 
   constructor(private newScenarioState: NewScenarioState) {}
 }

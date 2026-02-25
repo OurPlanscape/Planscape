@@ -57,7 +57,6 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   );
 
   opacity$ = this.mapConfigState.opacity$;
-  step$ = this.newScenarioState.stepIndex$;
 
   // local copies to reset feature state
   private excludedStands: number[] = [];
@@ -69,15 +68,13 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private mapConfigState: MapConfigState
   ) {
-    // remove constrainedStands in not included on the step.
-    this.step$
+    // clear constrained stands when navigating to a step that doesn't include constraints (or pre-step).
+    this.newScenarioState.currentStep$
       .pipe(
         untilDestroyed(this),
-        filter(
-          (step) => !this.newScenarioState.includeConstraintsInCurrentStep(step)
-        )
+        filter((step) => step === null || !step.includeConstraints)
       )
-      .subscribe((step) => {
+      .subscribe(() => {
         this.constrainedStands.forEach((id) =>
           this.removeFeatureState(id, this.constrainedKey)
         );
@@ -97,14 +94,12 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   }
 
   filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
-    this.newScenarioState.stepIndex$,
+    this.newScenarioState.currentStep$,
     this.newScenarioState.excludedStands$,
   ]).pipe(
     map(([step, excluded]): FilterSpecification | undefined =>
       // if we are showing both excluded and constraints, filter out the excluded stands on the map.
-      this.newScenarioState.includeExcludedAreasInCurrentStep(step) &&
-      this.newScenarioState.includeConstraintsInCurrentStep(step) &&
-      excluded.length
+      step?.includeExcludedAreas && step?.includeConstraints && excluded.length
         ? ['!', ['in', ['get', 'id'], ['literal', excluded]]]
         : undefined
     )

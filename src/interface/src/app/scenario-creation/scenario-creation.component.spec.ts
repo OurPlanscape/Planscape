@@ -53,7 +53,7 @@ describe('ScenarioCreationComponent', () => {
         }),
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),
-          stepIndex$: of(0),
+          currentStep$: of(null),
           scenarioConfig$: of({}),
           priorityObjectivesDetails$: of([]),
         }),
