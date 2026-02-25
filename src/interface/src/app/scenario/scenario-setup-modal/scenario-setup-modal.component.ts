@@ -129,8 +129,33 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
+  isConfigurationValid(scenario:Scenario, payload: Partial<ScenarioV3Payload>) {
+    // check scenario type, then required fields for each.
+    console.log('scenario is this:', scenario);
+    console.log('scenario type is this:', scenario.type);
+    console.log('scenario usage type is this:', scenario.usage_types);
+
+    console.log('and here is teh configuration:', scenario.configuration);
+    console.log('and here is teh payload:', payload);
+
+    // so for PRESET:
+    // treatment_goal is required, but cobenefits and priority_objectives are forbidden
+    if (scenario.type === 'PRESET') {
+      return (scenario.treatment_goal && !scenario.configuration.priority_objectives && !scenario.configuration.cobenefits)
+    }
+    // for CUSTOM:
+    // priority_objectives is required, but treatment_goal is forbidden
+    if (scenario.type === 'CUSTOM') {
+      return (scenario.configuration.priority_objectives?.length && !scenario.treatment_goal)
+    }
+    return true;
+  }
+
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
+    console.log('the original scenario type is this:', oldScenario.type);
+    console.log('the original scenario is this:', oldScenario);
+    console.log('the new scenario is this:', newScenario);
 
     console.log('the original configuration is this:', oldScenario.configuration);
 
@@ -160,8 +185,8 @@ export class ScenarioSetupModalComponent implements OnInit {
 
     console.log('here is the newPayload we would send...', newPayload);
 
-    if (!newPayload.configuration?.priority_objectives?.length) {
-      console.log('we dont have any priority_objectives, so we cant save this configuration', newPayload.configuration);
+    if (!this.isConfigurationValid(newScenario, newPayload)) {
+      console.log('Scenario is not valid for type', newScenario.type, ' ', newScenario.configuration);
       this.reloadTo(
         `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
       );
