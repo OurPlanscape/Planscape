@@ -63,7 +63,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     icon: '/assets/svg/icons/overview/priority.svg',
     includeConstraints: false,
     includeExcludedAreas: false,
-    refreshAvailableStands: true,
+    refreshAvailableStands: true, // REMOVE - use hasMap instead??
     hasMap: false,
   },
   {
@@ -73,7 +73,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
-    hasMap: false,
+    hasMap: true,
   },
   {
     label: 'Exclude Areas',
@@ -82,7 +82,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
-    hasMap: false,
+    hasMap: true,
   },
   {
     label: 'Stand-level Constraints',
@@ -92,7 +92,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
-    hasMap: false,
+    hasMap: true,
   },
   {
     label: 'Treatment Target',
@@ -102,7 +102,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
-    hasMap: false,
+    hasMap: true,
   },
   {
     label: 'Generate Output',
@@ -111,6 +111,6 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
-    hasMap: false,
+    hasMap: true,
   },
 ];
