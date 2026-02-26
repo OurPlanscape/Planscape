@@ -4,29 +4,34 @@
   [required]="true">
   <form [formGroup]="form">
     <div
-        class="help-text error"
-        *ngIf="
-          form.get('sub_units_layer')?.touched &&
-          form.get('sub_units_layer')?.hasError('required')
-        ">
-        This field is required
-      </div>
-        <ng-container *ngIf="subUnitLayerOptions$ | async as subUnitOptions">
+      class="help-text error"
+      *ngIf="
+        form.get('sub_units_layer')?.touched &&
+        form.get('sub_units_layer')?.hasError('required')
+      ">
+      This field is required
+    </div>
+    <ng-container *ngIf="subUnitLayerOptions$ | async as subUnitOptions">
       <mat-radio-group
         name="subUnitSelect"
         aria-label="Select an option"
         color="primary"
+        class="data-layer-input"
         (change)="onSubunitSelect($event)"
         [formControlName]="'sub_units_layer'">
         <div>
-          <div class="subunit-loader" *ngIf="(loadingItems$ | async) === null">
-            <mat-spinner diameter="24"></mat-spinner>
-          </div>
           <div
             *ngFor="let subunit of subUnitOptions"
             class="layer-control-container">
             <mat-radio-button [value]="subunit">
               {{ subunit.name }}
+              <mat-spinner
+                class="side-spinner"
+                diameter="20"
+                *ngIf="
+                  (loadingLayers$ | async)?.includes('source_' + subunit.id)
+                ">
+              </mat-spinner>
             </mat-radio-button>
           </div>
         </div>

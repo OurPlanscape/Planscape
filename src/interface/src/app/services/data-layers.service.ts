@@ -18,12 +18,13 @@ import { Geometry } from 'geojson';
 export class DataLayersService {
   constructor(private http: HttpClient) {}
 
-  listDataSets(limit: number, offset?: number) {
+  // TODO: maybe we need an endpoint to instead find a specific dataset by name?
+  listDataSets(limit?: number, offset?: number) {
     return this.http.get<Pagination<DataSet>>(
       environment.backend_endpoint + '/v2/datasets/',
       {
         withCredentials: true,
-        params: { limit: limit, ...(offset ? { offset } : {}) },
+        params: { ...(limit ? { limit } : {}), ...(offset ? { offset } : {}) },
       }
     );
   }

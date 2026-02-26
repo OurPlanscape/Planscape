@@ -7,17 +7,14 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { StepDirective } from '../../../styleguide/steps/step.component';
-import { SelectableListComponent } from '../../../styleguide/selectable-list/selectable-list.component';
-import { Observable, of, take } from 'rxjs';
+import { StepDirective } from '@styleguide';
+import { filter, map, Observable, switchMap, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
-import { BaseLayer, ScenarioDraftConfiguration } from '@app/types';
+import { BaseLayer, DataSet, ScenarioDraftConfiguration } from '@app/types';
 import { NewScenarioState } from '../new-scenario.state';
 import { DataLayersService } from '@app/services';
-import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-
+import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-sub-unit-selector',
@@ -26,23 +23,20 @@ import { DataLayersStateService } from '@app/data-layers/data-layers.state.servi
   standalone: true,
   imports: [
     CommonModule,
-    MatCheckboxModule,
     MatProgressSpinnerModule,
     MatRadioModule,
     ReactiveFormsModule,
     SectionComponent,
-    SelectableListComponent,
   ],
   providers: [
     { provide: StepDirective, useExisting: SubUnitSelectorComponent },
   ],
 })
-export class SubUnitSelectorComponent extends  StepDirective<ScenarioDraftConfiguration>
- {
+export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfiguration> {
   constructor(
     private dataLayersService: DataLayersService,
     private newScenarioState: NewScenarioState,
-    private dataLayerStateService: DataLayersStateService,
+    private baseLayersStateService: BaseLayersStateService
   ) {
     super();
   }
@@ -53,33 +47,41 @@ export class SubUnitSelectorComponent extends  StepDirective<ScenarioDraftConfig
     ]),
   });
 
-  //TODO...remove placeholder
-  subUnitLayerOptions$: Observable<BaseLayer[]> = this.dataLayersService.listBaseLayersByDataSet(1057,'');
+  subUnitLayerOptions$: Observable<BaseLayer[]> = this.dataLayersService
+    .listDataSets()
+    .pipe(
+      map((datasets) =>
+        datasets.results.find((ds) => ds.name === 'Boundaries')
+      ),
+      filter(
+        (matchingDataSet): matchingDataSet is DataSet => !!matchingDataSet
+      ),
+      switchMap((matchingDataSet) =>
+        this.dataLayersService.listBaseLayersByDataSet(matchingDataSet?.id, '')
+      )
+    );
 
-  loadingItems$ = of(false);
-  selectedSubUnit : number | null = null;
+  loadingLayers$ = this.baseLayersStateService.loadingLayers$;
+  selectedSubUnit: number | null = null;
 
   getData() {
     return this.form.value;
   }
 
-  onSubunitSelect(e:any ) {
-    this.dataLayerStateService.selectDataLayer(e);
+  onSubunitSelect(e: any) {
+    this.baseLayersStateService.updateBaseLayers(e.value, false);
   }
 
   override beforeStepLoad(): void {
-    //get the current config...
-    
     this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
-  
-  if (config.sub_units_layer) {
+      if (config.sub_units_layer) {
         this.selectedSubUnit = config.sub_units_layer;
       }
     });
-    //set current form value
-    this.form.controls['sub_units_layer'].setValue( this.selectedSubUnit);
-    // this.dataLayersStateService.selectDataLayer();
+    this.form.controls['sub_units_layer'].setValue(this.selectedSubUnit);
   }
 
-  override beforeStepExit(): void {}
+  override beforeStepExit(): void {
+    this.baseLayersStateService.clearBaseLayer();
+  }
 }
