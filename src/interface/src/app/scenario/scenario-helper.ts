@@ -56,7 +56,7 @@ export function scenarioCanHaveTreatmentPlans(
 // TODO this needs to be refactored.
 // We should be taking all formData to configuration by default, and treat
 // outliers separately, not the other way around.
-export function convertFlatConfigurationToDraftPayload(
+export function convertOldConfigurationToPayload(
   formData: Partial<ScenarioDraftConfiguration>,
   thresholdIds: Map<string, number>
 ): Partial<ScenarioV3Payload> {
@@ -163,4 +163,28 @@ export function isScenarioPending(scenario: Scenario) {
 
 export function isCustomScenario(type: SCENARIO_TYPE) {
   return type === 'CUSTOM';
+}
+
+export function isPayloadValidForScenarioType(scenario: Scenario, payload: Partial<ScenarioV3Payload>) {
+  const { type } = scenario;
+  const { treatment_goal, configuration } = payload;
+
+  console.log('what is the type?', scenario.type);
+
+  if (type === 'PRESET') {
+    // Required: treatment_goal,priority_objectives
+    // Forbidden: , cobenefits
+    return !!treatment_goal && 
+           !!configuration?.priority_objectives?.length && 
+           !configuration?.cobenefits?.length;
+  }
+
+  if (type === 'CUSTOM') {
+    // Required: priority_objectives
+    // Forbidden: treatment_goal
+    return !!configuration?.priority_objectives?.length && 
+           !treatment_goal;
+  }
+
+  return true;
 }

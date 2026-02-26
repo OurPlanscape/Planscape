@@ -22,15 +22,17 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { map, take } from 'rxjs';
-import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
+import { map, take, tap } from 'rxjs';
+import { convertOldConfigurationToPayload, isPayloadValidForScenarioType } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-scenario-setup-modal',
   standalone: true,
   imports: [
+    MatProgressSpinnerModule,
     ModalComponent,
     NgIf,
     InputDirective,
@@ -73,6 +75,7 @@ export class ScenarioSetupModalComponent implements OnInit {
   }
 
   thresholdsData: any = null;
+  loading = false;
 
   get editMode(): boolean {
     return this.data.scenario !== undefined && this.data.fromClone !== true;
@@ -94,10 +97,22 @@ export class ScenarioSetupModalComponent implements OnInit {
         .get('scenarioName')
         ?.setValue(this.data.scenario.name);
     }
+    // if we are trying to clone a scenario but don't have a name yet...
+    // we disable the form
+    if (this.data.fromClone && this.data.defaultName === null) {
+      this.loading = true;
+    }
   }
 
   cancel(): void {
     this.dialogRef.close(false);
+  }
+
+  setName(name: string): void {
+    this.loading = false;
+    this.data.defaultName = name;
+    this.scenarioNameForm.get('scenarioName')?.setValue(this.data.defaultName);
+    this.scenarioNameForm.get('scenarioName')?.enable();
   }
 
   handleSubmit(): void {
@@ -116,10 +131,17 @@ export class ScenarioSetupModalComponent implements OnInit {
 
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
+    console.log('the original scenario type is this:', oldScenario.type);
+    console.log('the original scenario is this:', oldScenario);
+    console.log('the new scenario is this:', newScenario);
+
+    console.log('the original configuration is this:', oldScenario.configuration);
+
     if (oldScenario.version === 'V3') {
       const oldConfig: Partial<ScenarioV3Config> =
         oldScenario.configuration as ScenarioV3Config;
-      newPayload = {
+      newScenario.configuration = oldScenario.configuration;
+        newPayload = {
         configuration: oldConfig,
       };
     } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
@@ -130,7 +152,7 @@ export class ScenarioSetupModalComponent implements OnInit {
         'distance_to_roads',
         this.thresholdsData.distance_from_roads?.id
       );
-      newPayload = convertFlatConfigurationToDraftPayload(
+      newPayload = convertOldConfigurationToPayload(
         oldConfig,
         thresholdsIdMap
       );
@@ -139,16 +161,24 @@ export class ScenarioSetupModalComponent implements OnInit {
       const num = Number(oldScenario.treatment_goal?.id);
       newPayload.treatment_goal = num;
     }
-    this.scenarioService
-      .patchScenarioConfig(newScenario.id!, newPayload)
-      .pipe(
-        map((result) => {
-          this.reloadTo(
-            `/plan/${newScenario.planning_area}/scenario/${result.id}`
-          );
-        })
-      )
-      .subscribe();
+
+    if (!isPayloadValidForScenarioType(newScenario, newPayload)) {
+      // maybe incomplete, so don't attempt to patch
+      this.reloadTo(
+        `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
+      );
+    } else {
+      this.scenarioService
+        .patchScenarioConfig(newScenario.id!, newPayload)
+        .pipe(
+          map((result) => {
+            this.reloadTo(
+              `/plan/${newScenario.planning_area}/scenario/${result.id}`
+            );
+          })
+        )
+        .subscribe();
+    }
   }
 
   async reloadTo(url: string | UrlTree) {
@@ -165,16 +195,31 @@ export class ScenarioSetupModalComponent implements OnInit {
     const planId = this.data.planId;
     const type = this.data.type;
     this.scenarioService.createScenario(name, planId, type).subscribe({
-      next: (result) => {
-        this.dialogRef.close(result);
+      next: (newScenario) => {
+        this.dialogRef.close(newScenario);
         this.submitting = false;
 
         //for cloned scenarios, we copy configuration, then redirect
-        if (this.data.fromClone && result.id && this.data.scenario) {
-          this.copyConfiguration(this.data.scenario, result);
+        if (this.data.fromClone && newScenario.id && this.data.scenario) {
+          const oldScenario = this.data.scenario;
+
+          // the original scenario record may not have a configuration!
+          if (oldScenario.configuration) {
+            this.copyConfiguration(oldScenario, newScenario);
+          } else {
+            this.scenarioService
+              .getScenario(oldScenario.id)
+              .pipe(
+                take(1),
+                tap((fullScenario) =>
+                  this.copyConfiguration(fullScenario, newScenario)
+                )
+              )
+              .subscribe();
+          }
         }
-        if (result.id && this.data.fromClone === false) {
-          this.router.navigate(['plan', planId, 'scenario', result.id]);
+        if (newScenario.id && this.data.fromClone === false) {
+          this.router.navigate(['plan', planId, 'scenario', newScenario.id]);
         }
       },
       error: (e) => {

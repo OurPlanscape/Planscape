@@ -1,9 +1,10 @@
 import {
-  convertFlatConfigurationToDraftPayload,
+  convertOldConfigurationToPayload,
   getGroupedGoals,
+  isPayloadValidForScenarioType,
   suggestUniqueName,
 } from './scenario-helper';
-import { ScenarioDraftConfiguration, ScenarioGoal } from '@types';
+import { Scenario, ScenarioDraftConfiguration, ScenarioGoal, ScenarioV3Payload } from '@types';
 
 describe('getGroupedGoals', () => {
   const makeGoal = (overrides: Partial<ScenarioGoal> = {}): ScenarioGoal => ({
@@ -119,7 +120,7 @@ describe('getGroupedGoals', () => {
   });
 });
 
-describe('convertFlatConfigurationToDraftPayload', () => {
+describe('convertOldConfigurationToPayload', () => {
   const mockThresholdIds = new Map<string, number>([
     ['distance_to_roads', 100],
     ['slope', 200],
@@ -129,7 +130,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
       stand_size: 'LARGE',
       treatment_goal: 1,
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToPayload(
       formData,
       mockThresholdIds
     );
@@ -143,7 +144,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     const formData: Partial<ScenarioDraftConfiguration> = {
       excluded_areas: [555, 444, 333],
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToPayload(
       formData,
       mockThresholdIds
     );
@@ -156,7 +157,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     const formData: Partial<ScenarioDraftConfiguration> = {
       excluded_areas: [],
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToPayload(
       formData,
       mockThresholdIds
     );
@@ -170,7 +171,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
       min_distance_from_road: 100,
       max_slope: 99,
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToPayload(
       formData,
       mockThresholdIds
     );
@@ -192,7 +193,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
       max_project_count: 10,
       estimated_cost: 2470,
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToPayload(
       formData,
       mockThresholdIds
     );
@@ -294,5 +295,56 @@ describe('suggestUniqueName', () => {
 
     const nameResult = suggestUniqueName(origName, existingNames);
     expect(nameResult).toEqual("Copy of 'some name' 10");
+  });
+});
+
+describe('isPayloadValidForScenarioType', () => {
+  const baseScenario : Scenario = {
+      id: 100,
+      name: 'some preset',
+      planning_area: 1,
+      status: 'ACTIVE',
+      type: 'PRESET',
+      user: 1,
+      geopackage_status: 'PENDING',
+      geopackage_url: 'xxx',
+      configuration: {
+      }
+    }
+    const baseV3Payload : ScenarioV3Payload = {
+      configuration: {
+        priority_objectives: [1234]
+      },
+      treatment_goal: 1,
+      planning_approach: 'OPTIMIZE_PROJECT_AREAS',
+      name: 'what',
+      planning_area: 1,
+    }
+
+  it('should be false for a PRESET scenario with priority_objectives', () => {
+    const presetScenario : Scenario = {
+      ...baseScenario,
+      type: 'PRESET'
+    }
+    const presetPayload : ScenarioV3Payload = {
+      ...baseV3Payload
+    }
+
+    const result = isPayloadValidForScenarioType(presetScenario, presetPayload);
+    expect(result).toEqual(false);
+  });
+
+  it('should be true for a PRESET scenario without priority_objectives', () => {
+    const presetScenario : Scenario = {
+      ...baseScenario,
+      type: 'PRESET'
+    }
+    const presetPayload : ScenarioV3Payload = {
+      ...baseV3Payload,
+      configuration: {
+      }
+    }
+    const result = isPayloadValidForScenarioType(presetScenario, presetPayload);
+    expect(result).toEqual(true);
   });
 });

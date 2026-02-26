@@ -28,7 +28,7 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import {
-  convertFlatConfigurationToDraftPayload,
+  convertOldConfigurationToPayload,
   isCustomScenario,
 } from '@scenario/scenario-helper';
 import { ScenarioErrorModalComponent } from '@scenario/scenario-error-modal/scenario-error-modal.component';
@@ -260,7 +260,7 @@ export class ScenarioCreationComponent implements OnInit {
       'distance_to_roads',
       this.newScenarioState.getDistanceToRoadsId()
     );
-    const payload = convertFlatConfigurationToDraftPayload(
+    const payload = convertOldConfigurationToPayload(
       data,
       thresholdsIdMap
     );
