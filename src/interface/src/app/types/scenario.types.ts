@@ -115,6 +115,7 @@ export interface ScenarioV3Config {
   cobenefits?: number[]; // TODO: ensure this matches up with backend field
   constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
   treatment_goal: number;
+  sub_units_layer: number;
   targets: {
     estimated_cost: number;
     max_area: number;

@@ -1,0 +1,40 @@
+@import 'colors';
+@import 'mixins';
+
+.help-text {
+  margin-top: 4px;
+}
+
+.error {
+  color: $color-error;
+}
+
+
+.data-layer-input {
+  width: 100%;
+
+  ::ng-deep .mdc-form-field {
+    width: 100%;
+  }
+
+  ::ng-deep .mdc-label {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.side-spinner {
+  flex-shrink: 0;
+}
+
+::ng-deep .sub-unit-selector .mat-expansion-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .list-header {
+    font-size: 14px;
+  }
+}
