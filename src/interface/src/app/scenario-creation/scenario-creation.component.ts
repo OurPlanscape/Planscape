@@ -51,7 +51,6 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
 import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-priority-objectives/custom-priority-objectives.component';
-import { FeatureService } from '@features/feature.service';
 import { Step1CustomComponent } from '@scenario-creation/step1-custom/step1-custom.component';
 import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
@@ -170,7 +169,6 @@ export class ScenarioCreationComponent implements OnInit {
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private treatmentGoalsService: TreatmentGoalsService,
-    private featureService: FeatureService,
     private mapModuleService: MapModuleService,
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService
@@ -349,9 +347,6 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   isCustomScenario(type: SCENARIO_TYPE) {
-    return (
-      this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS') &&
-      isCustomScenario(type)
-    );
+    return isCustomScenario(type);
   }
 }

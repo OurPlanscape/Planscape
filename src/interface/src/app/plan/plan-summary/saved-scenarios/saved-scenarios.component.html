@@ -32,62 +32,46 @@
       (click)="openUploadDialog()">
       Upload Scenario
     </button>
-    <ng-container *appFeatureFlag="'CUSTOM_SCENARIOS'; hide: true">
-      <button
-        sg-button
-        [matTooltip]="scenarioDisabledTooltipReason"
-        [matTooltipDisabled]="isValidPlanningArea"
-        *ngIf="canAddScenarioForPlan"
-        [disabled]="!isValidPlanningArea || planningAreaIsLarge"
-        (click)="openScenarioSetupDialog('PRESET')"
-        data-id="new-scenario"
-        icon="add"
-        variant="primary">
-        New Scenario
-      </button>
-    </ng-container>
-    <ng-container *appFeatureFlag="'CUSTOM_SCENARIOS'">
-      <button
-        sg-button
-        [matTooltip]="scenarioDisabledTooltipReason"
-        [matTooltipDisabled]="isValidPlanningArea"
-        *ngIf="canAddScenarioForPlan"
-        [disabled]="!isValidPlanningArea || planningAreaIsLarge"
-        data-id="new-scenario"
-        icon="add"
-        variant="primary"
-        [matMenuTriggerFor]="menu">
-        New Scenario
+    <button
+      sg-button
+      [matTooltip]="scenarioDisabledTooltipReason"
+      [matTooltipDisabled]="isValidPlanningArea"
+      *ngIf="canAddScenarioForPlan"
+      [disabled]="!isValidPlanningArea || planningAreaIsLarge"
+      data-id="new-scenario"
+      icon="add"
+      variant="primary"
+      [matMenuTriggerFor]="menu">
+      New Scenario
 
-        <mat-icon class="material-symbols-outlined new-scenario-down"
-          >arrow_drop_up
-        </mat-icon>
+      <mat-icon class="material-symbols-outlined new-scenario-down"
+        >arrow_drop_up
+      </mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" class="scenario-options-menu">
+      <button
+        mat-menu-item
+        (click)="openScenarioSetupDialog('PRESET')"
+        class="scenario-option">
+        <mat-icon class="material-symbols-outlined">contract</mat-icon>
+        Choose Treatment Goal
+        <span>
+          Start from a template with preset objectives, co-benefits, and
+          constraints
+        </span>
       </button>
-      <mat-menu #menu="matMenu" class="scenario-options-menu">
-        <button
-          mat-menu-item
-          (click)="openScenarioSetupDialog('PRESET')"
-          class="scenario-option">
-          <mat-icon class="material-symbols-outlined">contract</mat-icon>
-          Choose Treatment Goal
-          <span>
-            Start from a template with preset objectives, co-benefits, and
-            constraints
-          </span>
-        </button>
-        <button
-          mat-menu-item
-          (click)="openScenarioSetupDialog('CUSTOM')"
-          class="scenario-option">
-          <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
-          Create Custom Scenario
-          <span>
-            Build from scratch: choose all objectives, co-benefits, and
-            constraints.
-          </span>
-        </button>
-      </mat-menu>
-    </ng-container>
+      <button
+        mat-menu-item
+        (click)="openScenarioSetupDialog('CUSTOM')"
+        class="scenario-option">
+        <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
+        Create Custom Scenario
+        <span>
+          Build from scratch: choose all objectives, co-benefits, and
+          constraints.
+        </span>
+      </button>
+    </mat-menu>
   </div>
 
   <app-section-loader
