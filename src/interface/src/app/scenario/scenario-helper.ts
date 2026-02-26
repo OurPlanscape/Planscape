@@ -164,3 +164,45 @@ export function isScenarioPending(scenario: Scenario) {
 export function isCustomScenario(type: SCENARIO_TYPE) {
   return type === 'CUSTOM';
 }
+
+ export function isPayloadValidForScenario(scenario:Scenario, payload: Partial<ScenarioV3Payload>) {
+    // for PRESET:
+    // treatment_goal is required, but cobenefits and priority_objectives are forbidden
+    if (scenario.type === 'PRESET') {
+      return (scenario.treatment_goal && !payload.configuration?.priority_objectives && !payload.configuration?.cobenefits)
+    }
+    // for CUSTOM:
+    // priority_objectives is required, but treatment_goal is forbidden
+    if (scenario.type === 'CUSTOM') {
+      return (payload.configuration?.priority_objectives?.length && !scenario.treatment_goal)
+    }
+    return true;
+  }
+
+ export function copyConfigurationToPayload(oldScenario: Scenario, newScenario: Scenario) {
+    let newPayload: Partial<ScenarioV3Payload> = {};
+    if (oldScenario.version === 'V3') {
+      const oldConfig: Partial<ScenarioV3Config> =
+        oldScenario.configuration as ScenarioV3Config;
+      newPayload = {
+        configuration: oldConfig,
+      };
+    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
+      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
+      const thresholdsIdMap = new Map<string, number>();
+      thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
+      thresholdsIdMap.set(
+        'distance_to_roads',
+        this.thresholdsData.distance_from_roads?.id
+      );
+      newPayload = convertFlatConfigurationToDraftPayload(
+        oldConfig,
+        thresholdsIdMap
+      );
+    }
+    if (Number(oldScenario.treatment_goal?.id)) {
+      const num = Number(oldScenario.treatment_goal?.id);
+      newPayload.treatment_goal = num;
+    }
+    return newPayload;
+  }

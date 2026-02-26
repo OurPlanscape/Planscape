@@ -22,8 +22,8 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { map, take, tap } from 'rxjs';
-import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
+import { map, of, switchMap, take, tap, throwError } from 'rxjs';
+import { convertFlatConfigurationToDraftPayload, copyConfigurationToPayload, isPayloadValidForScenario } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -129,85 +129,32 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
-  isConfigurationValid(scenario:Scenario, payload: Partial<ScenarioV3Payload>) {
-    // check scenario type, then required fields for each.
-    console.log('scenario is this:', scenario);
-    console.log('scenario type is this:', scenario.type);
-    console.log('scenario usage type is this:', scenario.usage_types);
-
-    console.log('and here is teh configuration:', scenario.configuration);
-    console.log('and here is teh payload:', payload);
-
-    // so for PRESET:
-    // treatment_goal is required, but cobenefits and priority_objectives are forbidden
-    if (scenario.type === 'PRESET') {
-      return (scenario.treatment_goal && !scenario.configuration.priority_objectives && !scenario.configuration.cobenefits)
-    }
-    // for CUSTOM:
-    // priority_objectives is required, but treatment_goal is forbidden
-    if (scenario.type === 'CUSTOM') {
-      return (scenario.configuration.priority_objectives?.length && !scenario.treatment_goal)
-    }
-    return true;
-  }
-
-  copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
-    let newPayload: Partial<ScenarioV3Payload> = {};
-    console.log('the original scenario type is this:', oldScenario.type);
-    console.log('the original scenario is this:', oldScenario);
-    console.log('the new scenario is this:', newScenario);
-
-    console.log('the original configuration is this:', oldScenario.configuration);
-
-    if (oldScenario.version === 'V3') {
-      const oldConfig: Partial<ScenarioV3Config> =
-        oldScenario.configuration as ScenarioV3Config;
-      newPayload = {
-        configuration: oldConfig,
-      };
-    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
-      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
-      const thresholdsIdMap = new Map<string, number>();
-      thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
-      thresholdsIdMap.set(
-        'distance_to_roads',
-        this.thresholdsData.distance_from_roads?.id
-      );
-      newPayload = convertFlatConfigurationToDraftPayload(
-        oldConfig,
-        thresholdsIdMap
-      );
-    }
-    if (Number(oldScenario.treatment_goal?.id)) {
-      const num = Number(oldScenario.treatment_goal?.id);
-      newPayload.treatment_goal = num;
-    }
-
-    console.log('here is the newPayload we would send...', newPayload);
-
-    if (!this.isConfigurationValid(newScenario, newPayload)) {
-      console.log('Scenario is not valid for type', newScenario.type, ' ', newScenario.configuration);
-      this.reloadTo(
-        `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
-      );
-    } else {
-      this.scenarioService
-        .patchScenarioConfig(newScenario.id!, newPayload)
-        .pipe(
-          map((result) => {
-            this.reloadTo(
-              `/plan/${newScenario.planning_area}/scenario/${result.id}`
-            );
-          })
-        )
-        .subscribe();
-    }
-  }
-
   async reloadTo(url: string | UrlTree) {
     // Force reload a url route
     await this.router.navigateByUrl('/', { skipLocationChange: true });
     await this.router.navigateByUrl(url);
+  }
+
+  private patchClonedConfiguration(oldScenario: Scenario, newScenario: Scenario) {
+    const scenarioSource$ = oldScenario.configuration
+      ? of(oldScenario)
+      : this.scenarioService.getScenario(oldScenario.id).pipe(take(1));
+
+    scenarioSource$.pipe(
+      map(fullScenario => copyConfigurationToPayload(fullScenario, newScenario)),
+      switchMap(newPayload => {
+        if (isPayloadValidForScenario(newScenario, newPayload)) {
+          // If invalid, return an error observable to jump to the 'error' block
+          return throwError(() => new Error('Invalid payload detected'));
+        }
+
+        // If valid, proceed to the patch call
+        return this.scenarioService.patchScenarioConfig(newScenario.id!, newPayload);
+      })
+    ).subscribe({
+      next: (response) => console.log('Successfully patched!', response),
+      error: (err) => console.error('Process stopped:', err.message)
+    });
   }
 
   private createScenario(name: string) {
@@ -225,21 +172,7 @@ export class ScenarioSetupModalComponent implements OnInit {
         //for cloned scenarios, we copy configuration, then redirect
         if (this.data.fromClone && newScenario.id && this.data.scenario) {
           const oldScenario = this.data.scenario;
-
-          // the original scenario record may not have a configuration!
-          if (oldScenario.configuration) {
-            this.copyConfiguration(oldScenario, newScenario);
-          } else {
-            this.scenarioService
-              .getScenario(oldScenario.id)
-              .pipe(
-                take(1),
-                tap((fullScenario) =>
-                  this.copyConfiguration(fullScenario, newScenario)
-                )
-              )
-              .subscribe();
-          }
+          this.patchClonedConfiguration(oldScenario, newScenario);
         }
         if (newScenario.id && this.data.fromClone === false) {
           this.router.navigate(['plan', planId, 'scenario', newScenario.id]);
