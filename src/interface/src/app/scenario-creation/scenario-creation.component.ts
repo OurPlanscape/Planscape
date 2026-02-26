@@ -36,6 +36,7 @@ import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-l
 import {
   convertFlatConfigurationToDraftPayload,
   isCustomScenario,
+  isPlanningApproachSubUnits,
 } from '@scenario/scenario-helper';
 import { ScenarioErrorModalComponent } from '@scenario/scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from './new-scenario.state';
@@ -49,6 +50,7 @@ import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
   ScenarioStepConfig,
+  SUB_UNITS_STEP,
 } from '@scenario/scenario.constants';
 import { SharedModule } from '@shared';
 import { ScenarioState } from '@scenario/scenario.state';
@@ -224,15 +226,13 @@ export class ScenarioCreationComponent implements OnInit {
           backUrl: getPlanPath(this.planId),
           icon: 'close',
         });
-        this.steps = isCustomScenario(scenario.type)
-          ? this.customSteps
-          : this.scenarioSteps;
-
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
         this.newScenarioState.setScenarioConfig(currentConfig);
-        // Setting the initial state for the configuration
+        // Setting the initial state for the configuration (must be before subUnitsPrioritized check)
         this.config = currentConfig;
+
+        this.rebuildNavSteps();
         this.cdr.markForCheck();
       });
   }
@@ -267,13 +267,15 @@ export class ScenarioCreationComponent implements OnInit {
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
+        this.rebuildNavSteps();
+        this.cdr.markForCheck();
         return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
       catchError(() => of(false))
     );
   }
 
-  savePatch(data: Partial<ScenarioV3Payload>): Observable<boolean> {
+  private savePatch(data: Partial<ScenarioV3Payload>): Observable<boolean> {
     this.newScenarioState.setLoading(true);
     const thresholdsIdMap = new Map<string, number>();
     thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());
@@ -372,17 +374,24 @@ export class ScenarioCreationComponent implements OnInit {
     );
   }
 
-  // remove after removing flag
-  // TODO might need to release CUSTOM_SCENARIOS first
-  doesFirstStepHaveNav(scenarioType: SCENARIO_TYPE) {
-    if (this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS')) {
-      return true;
-    } else {
-      return this.isCustomScenario(scenarioType);
-    }
-  }
-
   isPlanningApproachEnabled() {
     return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  private rebuildNavSteps() {
+    const baseSteps = isCustomScenario(this.config.type!)
+      ? this.customSteps
+      : this.scenarioSteps;
+    this.steps = this.subUnitsPrioritized
+      ? [SUB_UNITS_STEP, ...baseSteps]
+      : baseSteps;
+  }
+
+  get subUnitsPrioritized() {
+    return (
+      this.isPlanningApproachEnabled() &&
+      this.config.planning_approach &&
+      isPlanningApproachSubUnits(this.config.planning_approach)
+    );
   }
 }

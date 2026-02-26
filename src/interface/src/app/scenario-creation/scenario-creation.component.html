@@ -9,9 +9,10 @@
     [linear]="true"
     (selectionChange)="
       stepsComponent &&
-        (stepsComponent.selectedIndex = isCustomScenario(scenarioType)
-          ? $event + 1
-          : $event)
+        (stepsComponent.selectedIndex =
+          isCustomScenario(scenarioType) || subUnitsPrioritized
+            ? $event + 1
+            : $event)
     "></sg-steps-nav>
   <section class="container">
     <sg-steps
@@ -47,6 +48,9 @@
         <sg-step [preStep]="true">
           <app-step1-with-overview></app-step1-with-overview>
         </sg-step>
+        <cdk-step *ngIf="subUnitsPrioritized">
+          <div>Sub units goes here.</div>
+        </cdk-step>
         <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
         </sg-step>
@@ -66,6 +70,9 @@
         <sg-step [preStep]="true">
           <app-step1-custom></app-step1-custom>
         </sg-step>
+        <cdk-step *ngIf="subUnitsPrioritized">
+          <div>Sub units goes here.</div>
+        </cdk-step>
         <sg-step>
           <app-custom-priority-objectives></app-custom-priority-objectives>
         </sg-step>

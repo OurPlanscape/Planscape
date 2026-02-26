@@ -8,6 +8,16 @@ export interface ScenarioStepConfig {
   hasMap: boolean;
 }
 
+export const SUB_UNITS_STEP: ScenarioStepConfig = {
+  label: 'Select Sub-Units',
+  description: '',
+  icon: '',
+  includeConstraints: false,
+  includeExcludedAreas: false,
+  refreshAvailableStands: true,
+  hasMap: true,
+};
+
 export const exitModalData = (scenarioName: string) => ({
   title: `Exit '${scenarioName}'?`,
   body: `Are you sure you want to exit “${scenarioName}”? Saved steps will be kept in draft form; any steps you haven’t saved will be lost.`,

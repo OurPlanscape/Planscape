@@ -1,6 +1,7 @@
 import { isNumber } from '@turf/helpers';
 import {
   Constraint,
+  PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
   ScenarioDraftConfiguration,
@@ -163,4 +164,8 @@ export function isScenarioPending(scenario: Scenario) {
 
 export function isCustomScenario(type: SCENARIO_TYPE) {
   return type === 'CUSTOM';
+}
+
+export function isPlanningApproachSubUnits(type: PLANNING_APPROACH) {
+  return type === 'PRIORITIZE_SUB_UNITS';
 }
