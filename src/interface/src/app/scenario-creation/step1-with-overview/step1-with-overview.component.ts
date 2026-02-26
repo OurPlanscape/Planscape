@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -12,7 +12,10 @@ import {
 import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
 import { StepDirective } from '@styleguide';
 import { PLANNING_APPROACH, ScenarioDraftConfiguration } from '@types';
-import { SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
+import {
+  CUSTOM_SCENARIO_OVERVIEW_STEPS,
+  SCENARIO_OVERVIEW_STEPS,
+} from '@scenario/scenario.constants';
 import { STAND_SIZE } from '@plan/plan-helpers';
 import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
 import { FeatureService } from '@features/feature.service';
@@ -45,11 +48,18 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
     planning_approach: new FormControl<PLANNING_APPROACH | null>(null),
   });
 
+  @Input() isCustomScenario = false;
+
+  get steps(): OverviewStep[] {
+    return this.isCustomScenario
+      ? CUSTOM_SCENARIO_OVERVIEW_STEPS
+      : SCENARIO_OVERVIEW_STEPS;
+  }
+
   constructor(private featureService: FeatureService) {
     super();
     this.configureConditionalValidators();
   }
-  steps: OverviewStep[] = SCENARIO_OVERVIEW_STEPS;
 
   getData() {
     const { stand_size, planning_approach } = this.form.value;

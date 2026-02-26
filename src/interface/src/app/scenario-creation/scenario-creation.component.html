@@ -44,7 +44,7 @@
         "></app-scenario-summary>
 
       <!-- Preset Scenarios steps-->
-      <ng-container *ngIf="!isCustomScenario(scenarioType)">
+      <ng-container *ngIf="!isCustomScenario(scenarioType); else customSteps">
         <sg-step [preStep]="true">
           <app-step1-with-overview></app-step1-with-overview>
         </sg-step>
@@ -54,7 +54,6 @@
         <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
         </sg-step>
-
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>
         </sg-step>
@@ -66,9 +65,10 @@
         </sg-step>
       </ng-container>
       <!-- Custom Scenarios steps-->
-      <ng-container *ngIf="isCustomScenario(scenarioType)">
+      <ng-template #customSteps>
         <sg-step [preStep]="true">
-          <app-step1-custom></app-step1-custom>
+          <app-step1-with-overview
+            [isCustomScenario]="true"></app-step1-with-overview>
         </sg-step>
         <cdk-step *ngIf="subUnitsPrioritized">
           <div>Sub units goes here.</div>
@@ -88,7 +88,7 @@
         <sg-step>
           <app-treatment-target></app-treatment-target>
         </sg-step>
-      </ng-container>
+      </ng-template>
     </sg-steps>
     <app-scenario-map *ngIf="showMap$ | async"></app-scenario-map>
   </section>

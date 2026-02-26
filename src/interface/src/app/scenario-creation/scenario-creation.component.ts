@@ -60,7 +60,6 @@ import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/sc
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-priority-objectives/custom-priority-objectives.component';
 import { FeatureService } from '@features/feature.service';
-import { Step1CustomComponent } from '@scenario-creation/step1-custom/step1-custom.component';
 import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
@@ -98,7 +97,6 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
     SharedModule,
     CustomPriorityObjectivesComponent,
     CustomCobenefitsComponent,
-    Step1CustomComponent,
     TreatmentGoalStepComponent,
     Step1WithOverviewComponent,
   ],
