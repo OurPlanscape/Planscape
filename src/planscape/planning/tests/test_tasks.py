@@ -9,6 +9,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from planning.models import (
     GeoPackageStatus,
+    ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioType,
@@ -145,6 +146,7 @@ class AsyncPreForsysProcessTest(TestCase):
             treatment_goal=self.treatment_goal,
             configuration=configuration,
             type=ScenarioType.PRESET,
+            planning_approach=ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
         )
 
     def test_async_pre_forsys_process(self):
@@ -173,6 +175,9 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(variables["number_of_projects"], 10)
         self.assertEqual(variables["min_area_project"], 494)
         self.assertEqual(variables["max_area_project"], 4000)
+
+        self.assertTrue(self.scenario.forsys_input.get("run_with_patchmax"))
+        self.assertDictEqual(self.scenario.forsys_input.get("projects_data"), {})
 
     def test_async_pre_forsys_process_custom_scenario(self):
         priority = DataLayerFactory.create(type=DataLayerType.RASTER)
@@ -204,6 +209,22 @@ class AsyncPreForsysProcessTest(TestCase):
             {datalayer["usage_type"] for datalayer in datalayers},
             {"PRIORITY", "SECONDARY_METRIC"},
         )
+
+    @mock.patch("planning.services.get_sub_units_stands_lookup_table", return_value={"1" : [8, 9], "2": [7, 6, 5], "3": [4]})
+    def test_async_pre_forsys_process_sub_units(self, mock):
+        configuration = self.scenario.configuration
+        sub_units_datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        configuration.update({"sub_units_layer": sub_units_datalayer.pk})
+        self.scenario.configuration = configuration
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.save()
+
+        async_pre_forsys_process(self.scenario.pk)
+
+        self.scenario.refresh_from_db()
+        forsys_input = self.scenario.forsys_input
+        self.assertFalse(forsys_input.get("run_with_patchmax"))
+        self.assertDictEqual(self.scenario.forsys_input.get("projects_data"), {"1" : [8, 9], "2": [7, 6, 5], "3": [4]})
 
 
 class PrepareScenariosForForsysTest(TestCase):
