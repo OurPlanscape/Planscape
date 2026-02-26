@@ -23,7 +23,7 @@ import {
   ScenarioV3Payload,
 } from '@types';
 import { map, take, tap } from 'rxjs';
-import { convertFlatConfigurationToDraftPayload } from '../scenario-helper';
+import { convertOldConfigurationToPayload, isPayloadValidForScenarioType } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -129,28 +129,6 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
-  isConfigurationValid(scenario:Scenario, payload: Partial<ScenarioV3Payload>) {
-    // check scenario type, then required fields for each.
-    console.log('scenario is this:', scenario);
-    console.log('scenario type is this:', scenario.type);
-    console.log('scenario usage type is this:', scenario.usage_types);
-
-    console.log('and here is teh configuration:', scenario.configuration);
-    console.log('and here is teh payload:', payload);
-
-    // so for PRESET:
-    // treatment_goal is required, but cobenefits and priority_objectives are forbidden
-    if (scenario.type === 'PRESET') {
-      return (scenario.treatment_goal && !scenario.configuration.priority_objectives && !scenario.configuration.cobenefits)
-    }
-    // for CUSTOM:
-    // priority_objectives is required, but treatment_goal is forbidden
-    if (scenario.type === 'CUSTOM') {
-      return (scenario.configuration.priority_objectives?.length && !scenario.treatment_goal)
-    }
-    return true;
-  }
-
   copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
     console.log('the original scenario type is this:', oldScenario.type);
@@ -162,7 +140,8 @@ export class ScenarioSetupModalComponent implements OnInit {
     if (oldScenario.version === 'V3') {
       const oldConfig: Partial<ScenarioV3Config> =
         oldScenario.configuration as ScenarioV3Config;
-      newPayload = {
+      newScenario.configuration = oldScenario.configuration;
+        newPayload = {
         configuration: oldConfig,
       };
     } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
@@ -173,7 +152,7 @@ export class ScenarioSetupModalComponent implements OnInit {
         'distance_to_roads',
         this.thresholdsData.distance_from_roads?.id
       );
-      newPayload = convertFlatConfigurationToDraftPayload(
+      newPayload = convertOldConfigurationToPayload(
         oldConfig,
         thresholdsIdMap
       );
@@ -183,10 +162,8 @@ export class ScenarioSetupModalComponent implements OnInit {
       newPayload.treatment_goal = num;
     }
 
-    console.log('here is the newPayload we would send...', newPayload);
-
-    if (!this.isConfigurationValid(newScenario, newPayload)) {
-      console.log('Scenario is not valid for type', newScenario.type, ' ', newScenario.configuration);
+    if (!isPayloadValidForScenarioType(newScenario, newPayload)) {
+      // maybe incomplete, so don't attempt to patch
       this.reloadTo(
         `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
       );
