@@ -187,7 +187,7 @@ static/
 compiled-static/
 
 .planconfig
-
+planscape.sock
 # local Sentry config file
 .sentryclirc
 .ruff_cache
