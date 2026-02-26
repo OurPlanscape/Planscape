@@ -8,6 +8,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NewScenarioState } from '../new-scenario.state';
 import { ProcessOverviewComponent } from '@scenario-creation/process-overview/process-overview.component';
 import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-selector/stand-size-selector.component';
+import { FeatureService } from '@features/feature.service';
 
 describe('Step1CustomComponent', () => {
   let component: Step1CustomComponent;
@@ -20,6 +21,7 @@ describe('Step1CustomComponent', () => {
         MockComponents(ProcessOverviewComponent, StandSizeSelectorComponent),
       ],
       providers: [
+        MockProvider(FeatureService),
         MockProvider(NewScenarioState, {
           scenarioConfig$: new BehaviorSubject({}),
         }),

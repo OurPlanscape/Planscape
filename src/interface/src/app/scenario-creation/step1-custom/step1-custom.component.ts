@@ -13,7 +13,10 @@ import { StandSizeSelectorComponent } from '@scenario-creation/stand-size-select
 import { StepDirective } from '@styleguide';
 import { CUSTOM_SCENARIO_OVERVIEW_STEPS } from '@scenario/scenario.constants';
 import { STAND_SIZE } from '@plan/plan-helpers';
-import { ScenarioDraftConfiguration } from '@types';
+import { PLANNING_APPROACH, ScenarioDraftConfiguration } from '@types';
+import { FeatureService } from '@features/feature.service';
+import { NgIf } from '@angular/common';
+import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
 
 @Component({
   selector: 'app-step1-custom',
@@ -22,6 +25,8 @@ import { ScenarioDraftConfiguration } from '@types';
     ReactiveFormsModule,
     ProcessOverviewComponent,
     StandSizeSelectorComponent,
+    NgIf,
+    PlanningApproachComponent,
   ],
   templateUrl: './step1-custom.component.html',
   styleUrl: './step1-custom.component.scss',
@@ -30,11 +35,33 @@ import { ScenarioDraftConfiguration } from '@types';
 export class Step1CustomComponent extends StepDirective<ScenarioDraftConfiguration> {
   steps: OverviewStep[] = CUSTOM_SCENARIO_OVERVIEW_STEPS;
 
+  constructor(private featureService: FeatureService) {
+    super();
+    this.configureConditionalValidators();
+  }
+
   form = new FormGroup({
     stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
+    planning_approach: new FormControl<PLANNING_APPROACH | null>(null),
   });
 
   getData() {
     return this.form.value;
+  }
+  get isPlanningApproachEnabled() {
+    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  /**
+   * This method can be removed completely once the 'PLANNING_APPROACH' feature is fully implemented.
+   */
+  private configureConditionalValidators(): void {
+    const { planning_approach } = this.form.controls;
+    if (this.isPlanningApproachEnabled) {
+      planning_approach.addValidators(Validators.required);
+    } else {
+      planning_approach.clearValidators();
+    }
+    planning_approach.updateValueAndValidity({ emitEvent: false });
   }
 }
