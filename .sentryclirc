@@ -1,0 +1,4 @@
+[defaults]
+url = https://sentry.sig-gis.com/
+org = sig
+project = planscape-fe
