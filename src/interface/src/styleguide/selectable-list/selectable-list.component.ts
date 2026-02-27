@@ -73,7 +73,7 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
   groupedData: Record<string, T[]> = {};
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['items']) {
+    if (changes['items'] || changes['groupBy']) {
       this.recalculateGroups();
     }
   }
