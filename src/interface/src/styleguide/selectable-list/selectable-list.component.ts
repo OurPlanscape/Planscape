@@ -1,10 +1,17 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+} from '@angular/core';
 import { KeyValuePipe, NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent } from '..';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SimpleChanges } from '@angular/core';
 
 interface Item {
   id: number;
@@ -49,7 +56,7 @@ interface Item {
   templateUrl: './selectable-list.component.html',
   styleUrl: './selectable-list.component.scss',
 })
-export class SelectableListComponent<T extends Item> {
+export class SelectableListComponent<T extends Item> implements OnChanges {
   /** @ignore - default legend color */
   defaultColor = 'transparent';
   defaultOutlineColor = 'transparent';
@@ -63,11 +70,22 @@ export class SelectableListComponent<T extends Item> {
 
   /** the set of data to iterate through in the template.
    * If there's no groupBy input, then we just consider it all one group */
-  get groupedData(): Record<string, T[]> {
-    if (!this.groupBy) return { '': this.items };
+  groupedData: Record<string, T[]> = {};
 
-    // group items by the relevant groupby attribute, if exists
-    return this.items.reduce(
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['items'] || changes['groupBy']) {
+      this.recalculateGroups();
+    }
+  }
+
+  private recalculateGroups() {
+    const data = this.items || [];
+    if (!this.groupBy) {
+      this.groupedData = { '': data };
+      return;
+    }
+
+    this.groupedData = data.reduce(
       (acc, item) => {
         const key = this.resolvePath(item, this.groupBy!) || '';
         if (!acc[key]) acc[key] = [];
@@ -79,9 +97,9 @@ export class SelectableListComponent<T extends Item> {
   }
 
   private resolvePath(obj: any, path: string): string {
-    return path.split('.').reduce((prev, curr) => prev?.[curr], obj);
+    if (!obj || !path) return '';
+    return path.split('.').reduce((prev, curr) => prev?.[curr], obj) || '';
   }
-
   /** the selected items, optional */
   @Input() selectedItems: T[] = [];
 
