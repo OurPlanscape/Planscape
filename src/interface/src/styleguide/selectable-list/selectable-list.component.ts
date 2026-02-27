@@ -5,6 +5,7 @@ import { ButtonComponent } from '..';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SimpleChanges } from '@angular/core';
 
 interface Item {
   id: number;
@@ -63,25 +64,33 @@ export class SelectableListComponent<T extends Item> {
 
   /** the set of data to iterate through in the template.
    * If there's no groupBy input, then we just consider it all one group */
-  get groupedData(): Record<string, T[]> {
-    if (!this.groupBy) return { '': this.items };
+  groupedData: Record<string, T[]> = {};
 
-    // group items by the relevant groupby attribute, if exists
-    return this.items.reduce(
-      (acc, item) => {
-        const key = this.resolvePath(item, this.groupBy!) || '';
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(item);
-        return acc;
-      },
-      {} as Record<string, T[]>
-    );
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['items'] || changes['groupBy']) {
+      this.recalculateGroups();
+    }
+  }
+
+  private recalculateGroups() {
+    const data = this.items || [];
+    if (!this.groupBy) {
+      this.groupedData = { '': data };
+      return;
+    }
+
+    this.groupedData = data.reduce((acc, item) => {
+      const key = this.resolvePath(item, this.groupBy!) || '';
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    }, {} as Record<string, T[]>);
   }
 
   private resolvePath(obj: any, path: string): string {
-    return path.split('.').reduce((prev, curr) => prev?.[curr], obj);
+    if (!obj || !path) return '';
+    return path.split('.').reduce((prev, curr) => prev?.[curr], obj) || '';
   }
-
   /** the selected items, optional */
   @Input() selectedItems: T[] = [];
 
