@@ -111,3 +111,49 @@ export const WithLoadingItems: Story = {
     loadingItems: [`source_${items[1].id}`],
   },
 };
+
+interface GroupedItemsInterface {
+  id: number;
+  name: string;
+  dataset?: { name: string };
+  nested: {
+    properties: {
+      color: string;
+    };
+  }[];
+}
+
+const groupedItems: GroupedItemsInterface[] = [
+  {
+    id: 1,
+    name: 'First Item',
+    nested: [{ properties: { color: '#123d81' } }],
+    dataset: { name: 'First set' },
+  },
+  {
+    id: 2,
+    dataset: { name: 'First set' },
+    name: 'Second Item',
+    nested: [{ properties: { color: '#1b86e4' } }],
+  },
+  {
+    id: 3,
+    dataset: { name: 'Second set' },
+    name: 'Third item',
+    nested: [{ properties: { color: '#4854c0' } }],
+  },
+  {
+    id: 4,
+    dataset: { name: 'Third set' },
+    name: 'Fourth Item',
+    nested: [{ properties: { color: '#7946e6' } }],
+  },
+];
+
+export const WithGroupedItems: Story = {
+  args: {
+    items: groupedItems,
+    groupBy: 'dataset.name',
+    colorPath: 'nested[0].properties.color',
+  },
+};
