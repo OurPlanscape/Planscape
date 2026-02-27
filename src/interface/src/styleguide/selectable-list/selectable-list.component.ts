@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+} from '@angular/core';
 import { KeyValuePipe, NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent } from '..';
@@ -50,7 +56,7 @@ interface Item {
   templateUrl: './selectable-list.component.html',
   styleUrl: './selectable-list.component.scss',
 })
-export class SelectableListComponent<T extends Item> {
+export class SelectableListComponent<T extends Item> implements OnChanges {
   /** @ignore - default legend color */
   defaultColor = 'transparent';
   defaultOutlineColor = 'transparent';
@@ -67,7 +73,7 @@ export class SelectableListComponent<T extends Item> {
   groupedData: Record<string, T[]> = {};
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['items'] || changes['groupBy']) {
+    if (changes['items']) {
       this.recalculateGroups();
     }
   }
@@ -79,12 +85,15 @@ export class SelectableListComponent<T extends Item> {
       return;
     }
 
-    this.groupedData = data.reduce((acc, item) => {
-      const key = this.resolvePath(item, this.groupBy!) || '';
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(item);
-      return acc;
-    }, {} as Record<string, T[]>);
+    this.groupedData = data.reduce(
+      (acc, item) => {
+        const key = this.resolvePath(item, this.groupBy!) || '';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      },
+      {} as Record<string, T[]>
+    );
   }
 
   private resolvePath(obj: any, path: string): string {
