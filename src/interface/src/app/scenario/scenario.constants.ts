@@ -1,11 +1,11 @@
 export interface ScenarioStepConfig {
-  label: string;
-  description: string;
-  icon: string;
-  includeConstraints: boolean;
-  includeExcludedAreas: boolean;
-  refreshAvailableStands: boolean;
-  hasMap: boolean;
+  label: string; // label for this step
+  description: string; // description for this step
+  icon: string; // icon for this step
+  includeConstraints: boolean; // if this step should include Constraints when fetching available stands
+  includeExcludedAreas: boolean; // if this step should include ExcludedAreas when fetching available stands
+  refreshAvailableStands: boolean; // if this step needs to refresh available stands
+  hasMap: boolean; // if this step shows the map
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
@@ -20,7 +20,7 @@ export const SUB_UNITS_STEP: ScenarioStepConfig = {
 
 export const exitModalData = (scenarioName: string) => ({
   title: `Exit '${scenarioName}'?`,
-  body: `Are you sure you want to exit “${scenarioName}”? Saved steps will be kept in draft form; any steps you haven’t saved will be lost.`,
+  body: `Are you sure you want to exit "${scenarioName}"? Saved steps will be kept in draft form; any steps you haven't saved will be lost.`,
   primaryCta: 'Stay',
   secondaryCta: 'Exit Workflow',
 });
@@ -33,7 +33,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     icon: '/assets/svg/icons/overview/treatment-goal.svg',
     includeConstraints: false,
     includeExcludedAreas: false,
-    refreshAvailableStands: true,
+    refreshAvailableStands: false,
     hasMap: false,
   },
   {
@@ -83,7 +83,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     icon: '/assets/svg/icons/overview/priority.svg',
     includeConstraints: false,
     includeExcludedAreas: false,
-    refreshAvailableStands: true, // REMOVE - use hasMap instead??
+    refreshAvailableStands: true,
     hasMap: true,
   },
   {
