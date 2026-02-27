@@ -17,14 +17,19 @@
         associated with a favorable condition (click, High Values), or if lower
         values are considered more favorable (click, Low Values). For example,
         if my objective is to support large tree carbon, I would click “High
-        “Values”, whereby areas with high large tree carbon would receive scores
+        Values”, whereby areas with high large tree carbon would receive scores
         near 100, and areas with very little carbon would receive scores near 0.
       </p>
       <!-- Data layers list Header-->
       <div class="data-layers-header" *ngIf="selectedDataLayers.length > 0">
         <span class="header title">Data layers</span>
-        <span class="header value-title">Low Values</span>
-        <span class="header value-title">High Values</span>
+        <span class="value-subtitle">
+          <span class="header">Favorable</span>
+          <div class="header-col">
+            <span class="header">Low Values</span>
+            <span class="header">High Values</span>
+          </div>
+        </span>
       </div>
       <!-- Data layers list -->
       <div class="data-layers-list">

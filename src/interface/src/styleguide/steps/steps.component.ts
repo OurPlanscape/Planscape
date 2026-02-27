@@ -17,7 +17,6 @@ import { Directionality } from '@angular/cdk/bidi';
 import { ButtonComponent } from '@styleguide/button/button.component';
 import { StepComponent } from './step.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 
 /**
  * Steps component implementing [CDKStepper](https://v16.material.angular.dev/cdk/stepper/overview).
@@ -55,6 +54,7 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() showActions = true;
 
   @Input() showStepIndex = true;
+  @Input() showClearButton = false;
 
   // save callback
   @Input() save?: (data: Partial<T>) => Observable<boolean>;
@@ -62,20 +62,14 @@ export class StepsComponent<T> extends CdkStepper {
   @Input() outerForm?: FormGroup;
   // event that emits after saving the last step
   @Output() finished = new EventEmitter();
+  @Output() clearClick = new EventEmitter<void>();
 
   @Input() savingStep = false;
   @Input() disabled = false;
 
   @ContentChildren(StepComponent) stepsComponents!: QueryList<StepComponent<T>>;
 
-  viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
-
-  constructor(
-    dir: Directionality,
-    cdr: ChangeDetectorRef,
-    el: ElementRef,
-    private dataLayersStateService: DataLayersStateService
-  ) {
+  constructor(dir: Directionality, cdr: ChangeDetectorRef, el: ElementRef) {
     super(dir, cdr, el);
   }
 
@@ -162,7 +156,19 @@ export class StepsComponent<T> extends CdkStepper {
     return this.selectedIndex === this.steps.length - 1;
   }
 
-  clearViewedDataLayer() {
-    this.dataLayersStateService.clearViewedDataLayer();
+  get isOnPreStep(): boolean {
+    const current = this.steps.toArray()[this.selectedIndex];
+    return current instanceof StepComponent && current.preStep;
+  }
+
+  get navSelectedIndex(): number {
+    let preStepsBefore = 0;
+    this.steps
+      .toArray()
+      .slice(0, this.selectedIndex)
+      .forEach((step) => {
+        if (step instanceof StepComponent && step.preStep) preStepsBefore++;
+      });
+    return this.selectedIndex - preStepsBefore;
   }
 }

@@ -7,6 +7,7 @@ import {
 
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { StepsComponent } from './steps.component';
+import { StepsNavComponent } from './steps-nav.component';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
@@ -91,6 +92,20 @@ class MyStep3Component extends StepDirective<Person> {
   }
 }
 
+@Component({
+  selector: 'sg-pre-step-demo',
+  template: `
+    <div style="padding: 20px;">
+      <h3>Welcome!</h3>
+      <p>
+        This is a pre-step — it participates in back/forward navigation but is
+        hidden from the nav bar.
+      </p>
+    </div>
+  `,
+})
+class PreStepDemoComponent {}
+
 const meta: Meta<StepsComponent<Person>> = {
   title: 'Components/Steps',
   component: StepsComponent,
@@ -99,12 +114,18 @@ const meta: Meta<StepsComponent<Person>> = {
       providers: [provideAnimations()],
     }),
     moduleMetadata({
-      declarations: [MyStep1Component, MyStep2Component, MyStep3Component],
+      declarations: [
+        MyStep1Component,
+        MyStep2Component,
+        MyStep3Component,
+        PreStepDemoComponent,
+      ],
       imports: [
         CommonModule,
         CdkStepperModule,
         ReactiveFormsModule,
         StepComponent,
+        StepsNavComponent,
       ],
     }),
   ],
@@ -180,6 +201,41 @@ export const WithSharedHeading: Story = {
     <sg-step><sg-step-demo-3></sg-step-demo-3></sg-step>
     <sg-step><sg-step-demo-2></sg-step-demo-2></sg-step>
     <cdk-step>Bye</cdk-step>
+  </sg-steps>
+</section>`,
+  }),
+};
+
+export const WithPreStep: Story = {
+  args: {},
+  render: ({ ...args }) => ({
+    props: {
+      ...args,
+      navSteps: [{ label: 'Name' }, { label: 'Age' }, { label: 'Email' }],
+      saveData: (_data: Partial<Person>) => of(true),
+    },
+    template: `
+<sg-steps-nav
+  *ngIf="!stepsRef.isOnPreStep"
+  [steps]="navSteps"
+  [selectedIndex]="stepsRef.navSelectedIndex"
+  [linear]="true">
+</sg-steps-nav>
+
+<section style="height: 220px; background: #d0d0d0">
+  <sg-steps #stepsRef linear [save]="saveData">
+    <sg-step [preStep]="true">
+      <sg-pre-step-demo></sg-pre-step-demo>
+    </sg-step>
+    <sg-step>
+      <sg-step-demo-1></sg-step-demo-1>
+    </sg-step>
+    <sg-step>
+      <sg-step-demo-2></sg-step-demo-2>
+    </sg-step>
+    <sg-step>
+      <sg-step-demo-3></sg-step-demo-3>
+    </sg-step>
   </sg-steps>
 </section>`,
   }),

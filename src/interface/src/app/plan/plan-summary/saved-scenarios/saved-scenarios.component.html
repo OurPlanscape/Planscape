@@ -56,11 +56,12 @@
         data-id="new-scenario"
         icon="add"
         variant="primary"
-        [matMenuTriggerFor]="menu">
+        [matMenuTriggerFor]="menu"
+        #trigger="matMenuTrigger">
         New Scenario
 
         <mat-icon class="material-symbols-outlined new-scenario-down"
-          >arrow_drop_up
+          >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
         </mat-icon>
       </button>
       <mat-menu #menu="matMenu" class="scenario-options-menu">
