@@ -1,4 +1,10 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+} from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
@@ -30,6 +36,7 @@ import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-l
 import {
   convertFlatConfigurationToDraftPayload,
   isCustomScenario,
+  isPlanningApproachSubUnits,
 } from '@scenario/scenario-helper';
 import { ScenarioErrorModalComponent } from '@scenario/scenario-error-modal/scenario-error-modal.component';
 import { NewScenarioState } from './new-scenario.state';
@@ -42,22 +49,24 @@ import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/con
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
+  ScenarioStepConfig,
+  SUB_UNITS_STEP,
 } from '@scenario/scenario.constants';
 import { SharedModule } from '@shared';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ExcludeAreasSelectorComponent } from '@scenario-creation/exclude-areas-selector/exclude-areas-selector.component';
 import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
-import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-priority-objectives/custom-priority-objectives.component';
 import { FeatureService } from '@features/feature.service';
-import { Step1CustomComponent } from '@scenario-creation/step1-custom/step1-custom.component';
 import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { MapModuleService } from '@services/map-module.service';
 import { PlanState } from '@plan/plan.state';
+import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-step/treatment-goal-step.component';
+import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 
 @UntilDestroy()
 @Component({
@@ -83,16 +92,17 @@ import { PlanState } from '@plan/plan.state';
     ExcludeAreasSelectorComponent,
     StepsNavComponent,
     ScenarioMapComponent,
-    Step1WithOverviewComponent,
     NgClass,
     ScenarioSummaryComponent,
     SharedModule,
     CustomPriorityObjectivesComponent,
     CustomCobenefitsComponent,
-    Step1CustomComponent,
+    TreatmentGoalStepComponent,
+    Step1WithOverviewComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScenarioCreationComponent implements OnInit {
   config: Partial<ScenarioV3Config> = {};
@@ -119,7 +129,16 @@ export class ScenarioCreationComponent implements OnInit {
     },
   ];
 
-  steps: { icon: string; description: string; label: string }[] = [];
+  steps: ScenarioStepConfig[] = [];
+
+  readonly saveStepFn = this.saveStep.bind(this);
+
+  isOnPreStep$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => s === null)
+  );
+  showMap$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => s?.hasMap ?? false)
+  );
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
@@ -173,7 +192,8 @@ export class ScenarioCreationComponent implements OnInit {
     private featureService: FeatureService,
     private mapModuleService: MapModuleService,
     private planState: PlanState,
-    private dataLayersStateService: DataLayersStateService
+    private dataLayersStateService: DataLayersStateService,
+    private cdr: ChangeDetectorRef
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
@@ -204,15 +224,14 @@ export class ScenarioCreationComponent implements OnInit {
           backUrl: getPlanPath(this.planId),
           icon: 'close',
         });
-        this.steps = isCustomScenario(scenario.type)
-          ? this.customSteps
-          : this.scenarioSteps;
-
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
         this.newScenarioState.setScenarioConfig(currentConfig);
-        // Setting the initial state for the configuration
+        // Setting the initial state for the configuration (must be before subUnitsPrioritized check)
         this.config = currentConfig;
+
+        this.rebuildNavSteps();
+        this.cdr.markForCheck();
       });
   }
 
@@ -246,13 +265,15 @@ export class ScenarioCreationComponent implements OnInit {
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
+        this.rebuildNavSteps();
+        this.cdr.markForCheck();
         return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
       catchError(() => of(false))
     );
   }
 
-  savePatch(data: Partial<ScenarioV3Payload>): Observable<boolean> {
+  private savePatch(data: Partial<ScenarioV3Payload>): Observable<boolean> {
     this.newScenarioState.setLoading(true);
     const thresholdsIdMap = new Map<string, number>();
     thresholdsIdMap.set('slope', this.newScenarioState.getSlopeId());
@@ -268,17 +289,12 @@ export class ScenarioCreationComponent implements OnInit {
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(
-        map((result) => {
-          if (result) {
-            return true;
-          }
-          return false;
-        }),
+        map((result) => !!result),
         catchError((e) => {
           console.error('Patch error:', e);
-          this.newScenarioState.setLoading(false);
           return of(false);
-        })
+        }),
+        finalize(() => this.newScenarioState.setLoading(false))
       );
   }
 
@@ -333,8 +349,9 @@ export class ScenarioCreationComponent implements OnInit {
       });
   }
 
-  stepChanged(i: number) {
-    this.newScenarioState.setStepIndex(i);
+  stepChanged(cdkIndex: number) {
+    const config = cdkIndex === 0 ? null : (this.steps[cdkIndex - 1] ?? null);
+    this.newScenarioState.setCurrentStep(config);
   }
 
   handleStepChangeEvent(event: StepperSelectionEvent) {
@@ -352,6 +369,27 @@ export class ScenarioCreationComponent implements OnInit {
     return (
       this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS') &&
       isCustomScenario(type)
+    );
+  }
+
+  isPlanningApproachEnabled() {
+    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  private rebuildNavSteps() {
+    const baseSteps = isCustomScenario(this.config.type!)
+      ? this.customSteps
+      : this.scenarioSteps;
+    this.steps = this.subUnitsPrioritized
+      ? [SUB_UNITS_STEP, ...baseSteps]
+      : baseSteps;
+  }
+
+  get subUnitsPrioritized() {
+    return (
+      this.isPlanningApproachEnabled() &&
+      this.config.planning_approach &&
+      isPlanningApproachSubUnits(this.config.planning_approach)
     );
   }
 }

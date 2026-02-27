@@ -28,11 +28,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
-import { isCustomScenario } from '@scenario/scenario-helper';
-import {
-  CUSTOM_SCENARIO_OVERVIEW_STEPS,
-  SCENARIO_OVERVIEW_STEPS,
-} from '@scenario/scenario.constants';
+import { ScenarioStepConfig } from '@scenario/scenario.constants';
 
 @Injectable()
 export class NewScenarioState {
@@ -49,8 +45,8 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
-  private _stepIndex$ = new BehaviorSubject(0);
-  public stepIndex$ = this._stepIndex$.asObservable();
+  private _currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
+  public currentStep$ = this._currentStep$.asObservable();
 
   // flag to track if the base stands are loaded
   private baseStandsReady$ = new BehaviorSubject(false);
@@ -114,16 +110,14 @@ export class NewScenarioState {
 
   public availableStands$ = combineLatest([
     this._baseStandsLoaded$,
-    this.stepIndex$,
+    this._currentStep$,
     this.standSize$,
     this.excludedAreas$,
     this.constraints$,
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
-    filter(([standsLoaded, stepIndex]) =>
-      this.refreshAvailableStandsOnStep(stepIndex)
-    ),
+    filter(([_, step]) => step?.refreshAvailableStands ?? false),
     tap(() => {
       this.setLoading(false);
     }),
@@ -133,10 +127,8 @@ export class NewScenarioState {
         .getExcludedStands(
           this.planId,
           standSize,
-          this.includeExcludedAreasInCurrentStep(step)
-            ? excludedAreas
-            : undefined,
-          this.includeConstraintsInCurrentStep(step) ? constraints : undefined
+          step?.includeExcludedAreas ? excludedAreas : undefined,
+          step?.includeConstraints ? constraints : undefined
         )
         .pipe(
           tap(() => this.setLoading(false)),
@@ -154,9 +146,9 @@ export class NewScenarioState {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  isValidToGoNext$: Observable<boolean> = this.stepIndex$.pipe(
-    switchMap((index) =>
-      index <= 0
+  isValidToGoNext$: Observable<boolean> = this._currentStep$.pipe(
+    switchMap((step) =>
+      step === null
         ? of(true)
         : this.availableStands$.pipe(
             map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
@@ -234,8 +226,8 @@ export class NewScenarioState {
     this._constraints$.next(constraints);
   }
 
-  setStepIndex(i: number) {
-    this._stepIndex$.next(i);
+  setCurrentStep(config: ScenarioStepConfig | null) {
+    this._currentStep$.next(config);
   }
 
   setBaseStandsLoaded(loaded: boolean) {
@@ -248,23 +240,5 @@ export class NewScenarioState {
 
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
-  }
-
-  includeExcludedAreasInCurrentStep(step: number) {
-    return this.getScenarioStep(step).includeExcludedAreas;
-  }
-  includeConstraintsInCurrentStep(step: number) {
-    return this.getScenarioStep(step).includeConstraints;
-  }
-
-  refreshAvailableStandsOnStep(step: number) {
-    return this.getScenarioStep(step).refreshAvailableStands;
-  }
-
-  private getScenarioStep(step: number) {
-    return this._scenarioConfig$.value.type &&
-      isCustomScenario(this._scenarioConfig$.value.type)
-      ? CUSTOM_SCENARIO_OVERVIEW_STEPS[step - 1 > -1 ? step - 1 : 0] // watch out - custom scenario has an extra step
-      : SCENARIO_OVERVIEW_STEPS[step];
   }
 }

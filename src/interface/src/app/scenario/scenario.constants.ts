@@ -1,11 +1,31 @@
+export interface ScenarioStepConfig {
+  label: string; // label for this step
+  description: string; // description for this step
+  icon: string; // icon for this step
+  includeConstraints: boolean; // if this step should include Constraints when fetching available stands
+  includeExcludedAreas: boolean; // if this step should include ExcludedAreas when fetching available stands
+  refreshAvailableStands: boolean; // if this step needs to refresh available stands
+  hasMap: boolean; // if this step shows the map
+}
+
+export const SUB_UNITS_STEP: ScenarioStepConfig = {
+  label: 'Select Sub-Units',
+  description: '',
+  icon: '',
+  includeConstraints: false,
+  includeExcludedAreas: false,
+  refreshAvailableStands: true,
+  hasMap: true,
+};
+
 export const exitModalData = (scenarioName: string) => ({
   title: `Exit '${scenarioName}'?`,
-  body: `Are you sure you want to exit “${scenarioName}”? Saved steps will be kept in draft form; any steps you haven’t saved will be lost.`,
+  body: `Are you sure you want to exit "${scenarioName}"? Saved steps will be kept in draft form; any steps you haven't saved will be lost.`,
   primaryCta: 'Stay',
   secondaryCta: 'Exit Workflow',
 });
 
-export const SCENARIO_OVERVIEW_STEPS = [
+export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   {
     label: 'Treatment Goal',
     description:
@@ -13,7 +33,8 @@ export const SCENARIO_OVERVIEW_STEPS = [
     icon: '/assets/svg/icons/overview/treatment-goal.svg',
     includeConstraints: false,
     includeExcludedAreas: false,
-    refreshAvailableStands: true,
+    refreshAvailableStands: false,
+    hasMap: false,
   },
   {
     label: 'Exclude Areas',
@@ -22,6 +43,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Stand-level Constraints',
@@ -31,6 +53,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Treatment Target',
@@ -40,6 +63,7 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: true,
   },
   {
     label: 'Generate Output',
@@ -48,10 +72,11 @@ export const SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: true,
   },
 ];
 
-export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
+export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   {
     label: 'Priority Objectives',
     description: 'Choose your key objectives that ForSys will prioritize.',
@@ -59,6 +84,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Co-Benefits',
@@ -67,6 +93,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Exclude Areas',
@@ -75,6 +102,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: false,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Stand-level Constraints',
@@ -84,6 +112,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    hasMap: true,
   },
   {
     label: 'Treatment Target',
@@ -93,6 +122,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: true,
   },
   {
     label: 'Generate Output',
@@ -101,5 +131,6 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    hasMap: true,
   },
 ];

@@ -90,6 +90,10 @@ sg-steps.new-scenario-ui {
     max-width: 100%;
     box-shadow: none;
 
+
+  }
+
+  &.pre-step {
     ::ng-deep .step {
       padding: 0;
       overflow: hidden;
