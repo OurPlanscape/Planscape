@@ -165,29 +165,37 @@ export function isCustomScenario(type: SCENARIO_TYPE) {
   return type === 'CUSTOM';
 }
 
-function stripEmptyConfigurations(config: Partial<ScenarioV3Config>): Partial<ScenarioV3Config> {
-  const cleaned = Object.entries(config).reduce((acc, [key, value]) => {
-    if (Array.isArray(value)) {
-      if (value.length > 0) acc[key] = value;
-    } 
-    else if (value !== null && typeof value === 'object') {
-      if (Object.keys(value).length > 0) acc[key] = value;
-    }
-    else if (value) {
-      acc[key] = value;
-    }
-    return acc;
-  }, {} as Record<string, any>);
+function stripEmptyConfigurations(
+  config: Partial<ScenarioV3Config>
+): Partial<ScenarioV3Config> {
+  const cleaned = Object.entries(config).reduce(
+    (acc, [key, value]) => {
+      if (Array.isArray(value)) {
+        if (value.length > 0) acc[key] = value;
+      } else if (value !== null && typeof value === 'object') {
+        if (Object.keys(value).length > 0) acc[key] = value;
+      } else if (value) {
+        acc[key] = value;
+      }
+      return acc;
+    },
+    {} as Record<string, any>
+  );
 
   return cleaned as Partial<ScenarioV3Config>;
 }
 
 // if the configs are incomplete, then we just set configuration to stand_size and nothing else
-export function sanitizePayloadForScenarioType(scenario: Scenario, payload: Partial<ScenarioV3Payload>) : Partial<ScenarioV3Payload> {
+export function sanitizePayloadForScenarioType(
+  scenario: Scenario,
+  payload: Partial<ScenarioV3Payload>
+): Partial<ScenarioV3Payload> {
   const { type } = scenario;
-  payload.configuration = stripEmptyConfigurations(payload.configuration ?? {});  
-  if ((type === 'PRESET' && !payload.configuration?.priority_objectives ) || (type === 'CUSTOM' && !payload.configuration?.treatment_goal))
-    {
+  payload.configuration = stripEmptyConfigurations(payload.configuration ?? {});
+  if (
+    (type === 'PRESET' && !payload.configuration?.priority_objectives) ||
+    (type === 'CUSTOM' && !payload.configuration?.priority_objectives)
+  ) {
     const { stand_size } = payload.configuration;
     payload.configuration = stand_size ? { stand_size } : {};
   }

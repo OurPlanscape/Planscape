@@ -25,7 +25,7 @@ import {
 import { map, take, tap } from 'rxjs';
 import {
   convertOldConfigurationToV3Payload,
-  sanitizePayloadForScenarioType
+  sanitizePayloadForScenarioType,
 } from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
@@ -135,7 +135,7 @@ export class ScenarioSetupModalComponent implements OnInit {
   patchConfigFromClone(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
     if (oldScenario.version === 'V3') {
-      newScenario.configuration = oldScenario.configuration as ScenarioV3Config;;
+      newScenario.configuration = oldScenario.configuration as ScenarioV3Config;
       newPayload = {
         configuration: newScenario.configuration,
       };
@@ -156,9 +156,17 @@ export class ScenarioSetupModalComponent implements OnInit {
       const num = Number(oldScenario.treatment_goal?.id);
       newPayload.treatment_goal = num;
     }
+
+    // Here, we are handling the situation where configuration might not be complete, but
+    //  the returned value from the backend actually will contain empty values, although these actually can't be sent
+    //  as a valid PATCH payload for certain scenario types.
+    //
     newPayload = sanitizePayloadForScenarioType(newScenario, newPayload);
-    if (!newPayload.configuration || Object.keys(newPayload.configuration).length !== 0) {
-      // theres nothing to patch, so we just go to new scenario
+    if (
+      !newPayload.configuration ||
+      Object.keys(newPayload.configuration).length !== 0
+    ) {
+      // after sanitization, theres nothing to patch, so we just redirect to the new, somewhat empty scenario
       this.reloadTo(
         `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
       );

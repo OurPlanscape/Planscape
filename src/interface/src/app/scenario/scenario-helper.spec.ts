@@ -4,7 +4,12 @@ import {
   sanitizePayloadForScenarioType,
   suggestUniqueName,
 } from './scenario-helper';
-import { Scenario, ScenarioDraftConfiguration, ScenarioGoal, ScenarioV3Payload } from '@types';
+import {
+  Scenario,
+  ScenarioDraftConfiguration,
+  ScenarioGoal,
+  ScenarioV3Payload,
+} from '@types';
 
 describe('getGroupedGoals', () => {
   const makeGoal = (overrides: Partial<ScenarioGoal> = {}): ScenarioGoal => ({
@@ -299,52 +304,89 @@ describe('suggestUniqueName', () => {
 });
 
 describe('sanitizePayloadForScenarioType', () => {
-  const baseScenario : Scenario = {
-      id: 100,
-      name: 'some preset',
-      planning_area: 1,
-      status: 'ACTIVE',
-      type: 'PRESET',
-      user: 1,
-      geopackage_status: 'PENDING',
-      geopackage_url: 'xxx',
-      configuration: {
-      }
-    }
-    const baseV3Payload : ScenarioV3Payload = {
-      configuration: {
-        priority_objectives: [1234]
-      },
-      treatment_goal: 1,
-      planning_approach: 'OPTIMIZE_PROJECT_AREAS',
-      name: 'what',
-      planning_area: 1,
-    }
+  const baseScenario: Scenario = {
+    id: 100,
+    name: 'some preset',
+    planning_area: 1,
+    status: 'ACTIVE',
+    type: 'PRESET',
+    user: 1,
+    geopackage_status: 'PENDING',
+    geopackage_url: 'xxx',
+    configuration: {},
+  };
+  const baseV3Payload: ScenarioV3Payload = {
+    configuration: {
+      priority_objectives: [1234],
+      stand_size: 'MEDIUM',
+    },
+    treatment_goal: 1,
+    planning_approach: 'OPTIMIZE_PROJECT_AREAS',
+    name: 'what',
+    planning_area: 1,
+  };
 
-  it('should be false for a PRESET scenario with priority_objectives', () => {
-    const presetScenario : Scenario = {
+  it('shouldnt change payload for a CUSTOM scenario with priority_objectives', () => {
+    const presetScenario: Scenario = {
       ...baseScenario,
-      type: 'PRESET'
-    }
-    const presetPayload : ScenarioV3Payload = {
-      ...baseV3Payload
-    }
+      type: 'CUSTOM',
+    };
+    const presetPayload: ScenarioV3Payload = {
+      ...baseV3Payload,
+    };
 
-    const result = sanitizePayloadForScenarioType(presetScenario, presetPayload);
-    expect(result).toEqual(false);
+    const result = sanitizePayloadForScenarioType(
+      presetScenario,
+      presetPayload
+    );
+    expect(result).toEqual(presetPayload);
   });
 
-  it('should be true for a PRESET scenario without priority_objectives', () => {
-    const presetScenario : Scenario = {
+  it('should sanitize payload to just stand_size for CUSTOM scenario without priority_objectives', () => {
+    const presetScenario: Scenario = {
       ...baseScenario,
-      type: 'PRESET'
-    }
-    const presetPayload : ScenarioV3Payload = {
+      type: 'CUSTOM',
+    };
+    const presetPayload: ScenarioV3Payload = {
       ...baseV3Payload,
-      configuration: {
-      }
-    }
-    const result = sanitizePayloadForScenarioType(presetScenario, presetPayload);
-    expect(result).toEqual(true);
+      configuration: { priority_objectives: [], stand_size: 'MEDIUM' },
+    };
+    const result = sanitizePayloadForScenarioType(
+      presetScenario,
+      presetPayload
+    );
+    expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
+  });
+
+  it('should return unchanged payload for a PRESET scenario with treatment_goal', () => {
+    const presetScenario: Scenario = {
+      ...baseScenario,
+      type: 'PRESET',
+    };
+    const presetPayload: ScenarioV3Payload = {
+      ...baseV3Payload,
+      configuration: { priority_objectives: [], stand_size: 'MEDIUM' },
+    };
+    const result = sanitizePayloadForScenarioType(
+      presetScenario,
+      presetPayload
+    );
+    expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
+    expect(result.name).toEqual('what');
+  });
+
+  it('should strip payload for a PRESET scenario without treatment_goal', () => {
+    const presetScenario: Scenario = {
+      ...baseScenario,
+      type: 'PRESET',
+    };
+    const presetPayload: Partial<ScenarioV3Payload> = {
+      configuration: { stand_size: 'MEDIUM' },
+    };
+    const result = sanitizePayloadForScenarioType(
+      presetScenario,
+      presetPayload
+    );
+    expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
   });
 });

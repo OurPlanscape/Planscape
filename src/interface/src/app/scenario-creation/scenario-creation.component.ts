@@ -260,10 +260,7 @@ export class ScenarioCreationComponent implements OnInit {
       'distance_to_roads',
       this.newScenarioState.getDistanceToRoadsId()
     );
-    const payload = convertOldConfigurationToV3Payload(
-      data,
-      thresholdsIdMap
-    );
+    const payload = convertOldConfigurationToV3Payload(data, thresholdsIdMap);
 
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
