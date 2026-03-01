@@ -56,7 +56,7 @@ export function scenarioCanHaveTreatmentPlans(
 // TODO this needs to be refactored.
 // We should be taking all formData to configuration by default, and treat
 // outliers separately, not the other way around.
-export function convertOldConfigurationToPayload(
+export function convertOldConfigurationToV3Payload(
   formData: Partial<ScenarioDraftConfiguration>,
   thresholdIds: Map<string, number>
 ): Partial<ScenarioV3Payload> {
@@ -165,26 +165,31 @@ export function isCustomScenario(type: SCENARIO_TYPE) {
   return type === 'CUSTOM';
 }
 
-export function isPayloadValidForScenarioType(scenario: Scenario, payload: Partial<ScenarioV3Payload>) {
+function stripEmptyConfigurations(config: Partial<ScenarioV3Config>): Partial<ScenarioV3Config> {
+  const cleaned = Object.entries(config).reduce((acc, [key, value]) => {
+    if (Array.isArray(value)) {
+      if (value.length > 0) acc[key] = value;
+    } 
+    else if (value !== null && typeof value === 'object') {
+      if (Object.keys(value).length > 0) acc[key] = value;
+    }
+    else if (value) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as Record<string, any>);
+
+  return cleaned as Partial<ScenarioV3Config>;
+}
+
+// if the configs are incomplete, then we just set configuration to stand_size and nothing else
+export function sanitizePayloadForScenarioType(scenario: Scenario, payload: Partial<ScenarioV3Payload>) : Partial<ScenarioV3Payload> {
   const { type } = scenario;
-  const { treatment_goal, configuration } = payload;
-
-  console.log('what is the type?', scenario.type);
-
-  if (type === 'PRESET') {
-    // Required: treatment_goal,priority_objectives
-    // Forbidden: , cobenefits
-    return !!treatment_goal && 
-           !!configuration?.priority_objectives?.length && 
-           !configuration?.cobenefits?.length;
+  payload.configuration = stripEmptyConfigurations(payload.configuration ?? {});  
+  if ((type === 'PRESET' && !payload.configuration?.priority_objectives ) || (type === 'CUSTOM' && !payload.configuration?.treatment_goal))
+    {
+    const { stand_size } = payload.configuration;
+    payload.configuration = stand_size ? { stand_size } : {};
   }
-
-  if (type === 'CUSTOM') {
-    // Required: priority_objectives
-    // Forbidden: treatment_goal
-    return !!configuration?.priority_objectives?.length && 
-           !treatment_goal;
-  }
-
-  return true;
+  return payload;
 }

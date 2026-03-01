@@ -23,7 +23,10 @@ import {
   ScenarioV3Payload,
 } from '@types';
 import { map, take, tap } from 'rxjs';
-import { convertOldConfigurationToPayload, isPayloadValidForScenarioType } from '../scenario-helper';
+import {
+  convertOldConfigurationToV3Payload,
+  sanitizePayloadForScenarioType
+} from '../scenario-helper';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -129,20 +132,12 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
-  copyConfiguration(oldScenario: Scenario, newScenario: Scenario) {
+  patchConfigFromClone(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
-    console.log('the original scenario type is this:', oldScenario.type);
-    console.log('the original scenario is this:', oldScenario);
-    console.log('the new scenario is this:', newScenario);
-
-    console.log('the original configuration is this:', oldScenario.configuration);
-
     if (oldScenario.version === 'V3') {
-      const oldConfig: Partial<ScenarioV3Config> =
-        oldScenario.configuration as ScenarioV3Config;
-      newScenario.configuration = oldScenario.configuration;
-        newPayload = {
-        configuration: oldConfig,
+      newScenario.configuration = oldScenario.configuration as ScenarioV3Config;;
+      newPayload = {
+        configuration: newScenario.configuration,
       };
     } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
       const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
@@ -152,7 +147,7 @@ export class ScenarioSetupModalComponent implements OnInit {
         'distance_to_roads',
         this.thresholdsData.distance_from_roads?.id
       );
-      newPayload = convertOldConfigurationToPayload(
+      newPayload = convertOldConfigurationToV3Payload(
         oldConfig,
         thresholdsIdMap
       );
@@ -161,9 +156,9 @@ export class ScenarioSetupModalComponent implements OnInit {
       const num = Number(oldScenario.treatment_goal?.id);
       newPayload.treatment_goal = num;
     }
-
-    if (!isPayloadValidForScenarioType(newScenario, newPayload)) {
-      // maybe incomplete, so don't attempt to patch
+    newPayload = sanitizePayloadForScenarioType(newScenario, newPayload);
+    if (!newPayload.configuration || Object.keys(newPayload.configuration).length !== 0) {
+      // theres nothing to patch, so we just go to new scenario
       this.reloadTo(
         `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
       );
@@ -205,14 +200,14 @@ export class ScenarioSetupModalComponent implements OnInit {
 
           // the original scenario record may not have a configuration!
           if (oldScenario.configuration) {
-            this.copyConfiguration(oldScenario, newScenario);
+            this.patchConfigFromClone(oldScenario, newScenario);
           } else {
             this.scenarioService
               .getScenario(oldScenario.id)
               .pipe(
                 take(1),
                 tap((fullScenario) =>
-                  this.copyConfiguration(fullScenario, newScenario)
+                  this.patchConfigFromClone(fullScenario, newScenario)
                 )
               )
               .subscribe();

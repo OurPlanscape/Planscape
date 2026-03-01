@@ -1,7 +1,7 @@
 import {
-  convertOldConfigurationToPayload,
+  convertOldConfigurationToV3Payload,
   getGroupedGoals,
-  isPayloadValidForScenarioType,
+  sanitizePayloadForScenarioType,
   suggestUniqueName,
 } from './scenario-helper';
 import { Scenario, ScenarioDraftConfiguration, ScenarioGoal, ScenarioV3Payload } from '@types';
@@ -120,7 +120,7 @@ describe('getGroupedGoals', () => {
   });
 });
 
-describe('convertOldConfigurationToPayload', () => {
+describe('convertOldConfigurationToV3Payload', () => {
   const mockThresholdIds = new Map<string, number>([
     ['distance_to_roads', 100],
     ['slope', 200],
@@ -130,7 +130,7 @@ describe('convertOldConfigurationToPayload', () => {
       stand_size: 'LARGE',
       treatment_goal: 1,
     };
-    const payloadResult = convertOldConfigurationToPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -144,7 +144,7 @@ describe('convertOldConfigurationToPayload', () => {
     const formData: Partial<ScenarioDraftConfiguration> = {
       excluded_areas: [555, 444, 333],
     };
-    const payloadResult = convertOldConfigurationToPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -157,7 +157,7 @@ describe('convertOldConfigurationToPayload', () => {
     const formData: Partial<ScenarioDraftConfiguration> = {
       excluded_areas: [],
     };
-    const payloadResult = convertOldConfigurationToPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -171,7 +171,7 @@ describe('convertOldConfigurationToPayload', () => {
       min_distance_from_road: 100,
       max_slope: 99,
     };
-    const payloadResult = convertOldConfigurationToPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -193,7 +193,7 @@ describe('convertOldConfigurationToPayload', () => {
       max_project_count: 10,
       estimated_cost: 2470,
     };
-    const payloadResult = convertOldConfigurationToPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -298,7 +298,7 @@ describe('suggestUniqueName', () => {
   });
 });
 
-describe('isPayloadValidForScenarioType', () => {
+describe('sanitizePayloadForScenarioType', () => {
   const baseScenario : Scenario = {
       id: 100,
       name: 'some preset',
@@ -330,7 +330,7 @@ describe('isPayloadValidForScenarioType', () => {
       ...baseV3Payload
     }
 
-    const result = isPayloadValidForScenarioType(presetScenario, presetPayload);
+    const result = sanitizePayloadForScenarioType(presetScenario, presetPayload);
     expect(result).toEqual(false);
   });
 
@@ -344,7 +344,7 @@ describe('isPayloadValidForScenarioType', () => {
       configuration: {
       }
     }
-    const result = isPayloadValidForScenarioType(presetScenario, presetPayload);
+    const result = sanitizePayloadForScenarioType(presetScenario, presetPayload);
     expect(result).toEqual(true);
   });
 });
