@@ -168,21 +168,17 @@ export function isCustomScenario(type: SCENARIO_TYPE) {
 function stripEmptyConfigurations(
   config: Partial<ScenarioV3Config>
 ): Partial<ScenarioV3Config> {
-  const cleaned = Object.entries(config).reduce(
-    (acc, [key, value]) => {
-      if (Array.isArray(value)) {
-        if (value.length > 0) acc[key] = value;
-      } else if (value !== null && typeof value === 'object') {
-        if (Object.keys(value).length > 0) acc[key] = value;
-      } else if (value) {
-        acc[key] = value;
-      }
-      return acc;
-    },
-    {} as Record<string, any>
-  );
-
-  return cleaned as Partial<ScenarioV3Config>;
+  return Object.entries(config).reduce((acc, [key, value]) => {
+    // If it's an array, only keep it if it has items
+    if (Array.isArray(value)) {
+      if (value.length > 0) acc[key] = value;
+    } else if (value !== null && typeof value === 'object') {
+      if (Object.keys(value).length > 0) acc[key] = value;
+    } else if (value !== undefined && value !== null) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as any);
 }
 
 // if the configs are incomplete, then we just set configuration to stand_size and nothing else
@@ -191,13 +187,24 @@ export function sanitizePayloadForScenarioType(
   payload: Partial<ScenarioV3Payload>
 ): Partial<ScenarioV3Payload> {
   const { type } = scenario;
-  payload.configuration = stripEmptyConfigurations(payload.configuration ?? {});
+  const currentConfig = payload.configuration ?? {};
+  const hasObjectives =
+    Array.isArray(currentConfig.priority_objectives) &&
+    currentConfig.priority_objectives.length > 0;
+  const hasGoal =
+    payload.treatment_goal !== undefined && payload.treatment_goal !== null;
+  let finalConfig = stripEmptyConfigurations(currentConfig);
+  // If we're missing the core requirement for the type, reset to just stand_size
   if (
-    (type === 'PRESET' && !payload.configuration?.priority_objectives) ||
-    (type === 'CUSTOM' && !payload.configuration?.priority_objectives)
+    (type === 'PRESET' && !hasGoal) ||
+    (type === 'CUSTOM' && !hasObjectives)
   ) {
-    const { stand_size } = payload.configuration;
-    payload.configuration = stand_size ? { stand_size } : {};
+    finalConfig = currentConfig.stand_size
+      ? { stand_size: currentConfig.stand_size }
+      : {};
   }
-  return payload;
+  return {
+    ...payload,
+    configuration: finalConfig,
+  };
 }

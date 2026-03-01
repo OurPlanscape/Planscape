@@ -306,7 +306,7 @@ describe('suggestUniqueName', () => {
 describe('sanitizePayloadForScenarioType', () => {
   const baseScenario: Scenario = {
     id: 100,
-    name: 'some preset',
+    name: 'some scenario',
     planning_area: 1,
     status: 'ACTIVE',
     type: 'PRESET',
@@ -315,78 +315,82 @@ describe('sanitizePayloadForScenarioType', () => {
     geopackage_url: 'xxx',
     configuration: {},
   };
+
   const baseV3Payload: ScenarioV3Payload = {
     configuration: {
       priority_objectives: [1234],
       stand_size: 'MEDIUM',
+      excluded_areas: [2984],
+      cobenefits: [],
     },
     treatment_goal: 1,
     planning_approach: 'OPTIMIZE_PROJECT_AREAS',
-    name: 'what',
+    name: 'test payload',
     planning_area: 1,
   };
 
-  it('shouldnt change payload for a CUSTOM scenario with priority_objectives', () => {
-    const presetScenario: Scenario = {
-      ...baseScenario,
-      type: 'CUSTOM',
-    };
-    const presetPayload: ScenarioV3Payload = {
-      ...baseV3Payload,
-    };
-
+  it('should strip empty arrays but keep valid data for a CUSTOM scenario with priority_objectives', () => {
+    const customScenario: Scenario = { ...baseScenario, type: 'CUSTOM' };
     const result = sanitizePayloadForScenarioType(
-      presetScenario,
-      presetPayload
+      customScenario,
+      baseV3Payload
     );
-    expect(result).toEqual(presetPayload);
+    // Should keep priority_objectives and excluded_areas
+    // Should strip included_areas (because it was [])
+    expect(result.configuration).toEqual({
+      priority_objectives: [1234],
+      stand_size: 'MEDIUM',
+      excluded_areas: [2984],
+    });
+    expect(result.configuration?.cobenefits).toBeUndefined();
   });
 
-  it('should sanitize payload to just stand_size for CUSTOM scenario without priority_objectives', () => {
-    const presetScenario: Scenario = {
-      ...baseScenario,
-      type: 'CUSTOM',
-    };
-    const presetPayload: ScenarioV3Payload = {
+  it('should strip configuration to ONLY stand_size for CUSTOM scenario if priority_objectives is empty', () => {
+    const customScenario: Scenario = { ...baseScenario, type: 'CUSTOM' };
+    const payload: ScenarioV3Payload = {
       ...baseV3Payload,
-      configuration: { priority_objectives: [], stand_size: 'MEDIUM' },
+      configuration: {
+        priority_objectives: [],
+        stand_size: 'MEDIUM',
+        excluded_areas: [1, 2, 3], // This should be lost because objectives are missing
+      },
     };
-    const result = sanitizePayloadForScenarioType(
-      presetScenario,
-      presetPayload
-    );
+    const result = sanitizePayloadForScenarioType(customScenario, payload);
+    // Because it's CUSTOM and objectives are empty, we expect a stripped config
     expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
+    expect(result.configuration?.excluded_areas).toBeUndefined();
   });
 
-  it('should return unchanged payload for a PRESET scenario with treatment_goal', () => {
-    const presetScenario: Scenario = {
-      ...baseScenario,
-      type: 'PRESET',
-    };
-    const presetPayload: ScenarioV3Payload = {
+  it('should keep cleaned configuration for a PRESET scenario if treatment_goal is present', () => {
+    const presetScenario: Scenario = { ...baseScenario, type: 'PRESET' };
+    const payload: ScenarioV3Payload = {
       ...baseV3Payload,
-      configuration: { priority_objectives: [], stand_size: 'MEDIUM' },
+      treatment_goal: 1,
+      configuration: {
+        priority_objectives: [],
+        stand_size: 'MEDIUM',
+        excluded_areas: [555],
+      },
     };
-    const result = sanitizePayloadForScenarioType(
-      presetScenario,
-      presetPayload
-    );
-    expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
-    expect(result.name).toEqual('what');
+    const result = sanitizePayloadForScenarioType(presetScenario, payload);
+    // Goal is present, so we just remove empty arrays
+    expect(result.configuration).toEqual({
+      stand_size: 'MEDIUM',
+      excluded_areas: [555],
+    });
+    expect(result.configuration?.priority_objectives).toBeUndefined();
   });
 
-  it('should strip payload for a PRESET scenario without treatment_goal', () => {
-    const presetScenario: Scenario = {
-      ...baseScenario,
-      type: 'PRESET',
+  it('should strip configuration for a PRESET scenario if treatment_goal is missing/null', () => {
+    const presetScenario: Scenario = { ...baseScenario, type: 'PRESET' };
+    const payload: Partial<ScenarioV3Payload> = {
+      treatment_goal: undefined, // Missing!
+      configuration: {
+        stand_size: 'MEDIUM',
+        excluded_areas: [999],
+      },
     };
-    const presetPayload: Partial<ScenarioV3Payload> = {
-      configuration: { stand_size: 'MEDIUM' },
-    };
-    const result = sanitizePayloadForScenarioType(
-      presetScenario,
-      presetPayload
-    );
+    const result = sanitizePayloadForScenarioType(presetScenario, payload);
     expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
   });
 });

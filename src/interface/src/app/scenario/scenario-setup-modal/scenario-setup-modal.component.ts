@@ -134,11 +134,11 @@ export class ScenarioSetupModalComponent implements OnInit {
 
   patchConfigFromClone(oldScenario: Scenario, newScenario: Scenario) {
     let newPayload: Partial<ScenarioV3Payload> = {};
+
     if (oldScenario.version === 'V3') {
-      newScenario.configuration = oldScenario.configuration as ScenarioV3Config;
-      newPayload = {
-        configuration: newScenario.configuration,
-      };
+      newPayload.configuration = structuredClone(
+        oldScenario.configuration
+      ) as ScenarioV3Config;
     } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
       const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
       const thresholdsIdMap = new Map<string, number>();
@@ -164,7 +164,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     newPayload = sanitizePayloadForScenarioType(newScenario, newPayload);
     if (
       !newPayload.configuration ||
-      Object.keys(newPayload.configuration).length !== 0
+      Object.keys(newPayload.configuration).length === 0
     ) {
       // after sanitization, theres nothing to patch, so we just redirect to the new, somewhat empty scenario
       this.reloadTo(
