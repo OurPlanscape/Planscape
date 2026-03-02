@@ -193,6 +193,23 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
         self.assertEqual(style.pk, data.get("results")[0].get("styles")[0].get("id"))
 
+    def test_styles_shape_is_array_for_id_in_filter(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset,
+            type=DataLayerType.VECTOR,
+        )
+        filter = {
+            "id__in": str(datalayer.pk),
+        }
+        url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, data.get("count"))
+        self.assertIsInstance(data.get("results")[0].get("styles"), list)
+
     def test_find_anything(self):
         self.client.force_authenticate(user=self.admin)
         DataLayerFactory.create(

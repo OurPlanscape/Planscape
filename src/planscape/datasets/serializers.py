@@ -125,9 +125,9 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
                 nodata = instance.info.get("nodata") if instance.info else None
                 if nodata:
                     stats["nodata"] = nodata
-                return get_default_raster_style(**stats)
+                return [get_default_raster_style(**stats)]
             case _:
-                return get_default_vector_style()
+                return [get_default_vector_style()]
 
     class Meta:
         model = DataLayer
