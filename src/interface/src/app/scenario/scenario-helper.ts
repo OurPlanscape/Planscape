@@ -211,5 +211,5 @@ export function sanitizePayloadForScenarioType(
   return {
     ...payload,
     configuration: finalConfig,
-  }
-};
+  };
+}
