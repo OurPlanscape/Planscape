@@ -8,6 +8,8 @@
     [sliderValue]="(opacity$ | async) ?? 0.5"
     (valueChange)="handleOpacityChange($event)"
     [tooltip]="(opacityTooltip$ | async) || ''"></sg-opacity-slider>
+
+  <app-base-layer-toggle></app-base-layer-toggle>
 </app-map-nav-bar>
 
 <mgl-map

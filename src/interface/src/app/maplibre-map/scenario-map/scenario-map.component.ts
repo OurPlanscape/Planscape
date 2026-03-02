@@ -30,6 +30,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
 import { Scenario } from '@types';
+import { BaseLayerToggleComponent } from '@maplibre-map/base-layer-toggle/base-layer-toggle.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -52,6 +53,7 @@ import { Scenario } from '@types';
     ScenarioStandsComponent,
     MatProgressSpinnerModule,
     MapBaseLayersComponent,
+    BaseLayerToggleComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
