@@ -22,7 +22,7 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { map, take, tap } from 'rxjs';
+import { EMPTY, map, Observable, of, switchMap, take, tap } from 'rxjs';
 import {
   convertOldConfigurationToV3Payload,
   sanitizePayloadForScenarioType,
@@ -132,56 +132,71 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
-  patchConfigFromClone(oldScenario: Scenario, newScenario: Scenario) {
-    let newPayload: Partial<ScenarioV3Payload> = {};
+  private handleClone(
+    oldScenario: Scenario,
+    newScenario: Scenario
+  ): Observable<void> {
+    const source$ = oldScenario.configuration
+      ? of(oldScenario)
+      : this.scenarioService.getScenario(oldScenario.id).pipe(take(1));
 
-    if (oldScenario.version === 'V3') {
-      newPayload.configuration = structuredClone(
-        oldScenario.configuration
-      ) as ScenarioV3Config;
-    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
-      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
-      const thresholdsIdMap = new Map<string, number>();
-      thresholdsIdMap.set('slope', this.thresholdsData.slope?.id);
-      thresholdsIdMap.set(
-        'distance_to_roads',
-        this.thresholdsData.distance_from_roads?.id
-      );
-      newPayload = convertOldConfigurationToV3Payload(
-        oldConfig,
-        thresholdsIdMap
-      );
-    }
-    if (Number(oldScenario.treatment_goal?.id)) {
-      const num = Number(oldScenario.treatment_goal?.id);
-      newPayload.treatment_goal = num;
-    }
+    return source$.pipe(
+      switchMap((fullOldScenario) =>
+        this.applyClonedConfig(fullOldScenario, newScenario)
+      )
+    );
+  }
 
-    // Here, we are handling the situation where configuration might not be complete, but
-    //  the returned value from the backend actually will contain empty values, although these actually can't be sent
-    //  as a valid PATCH payload for certain scenario types.
-    //
-    newPayload = sanitizePayloadForScenarioType(newScenario, newPayload);
+  private applyClonedConfig(
+    oldScenario: Scenario,
+    newScenario: Scenario
+  ): Observable<void> {
+    let newPayload = this.buildClonedPayload(oldScenario, newScenario);
+    const redirectUrl = `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`;
+
     if (
       !newPayload.configuration ||
       Object.keys(newPayload.configuration).length === 0
     ) {
-      // after sanitization, theres nothing to patch, so we just redirect to the new, somewhat empty scenario
-      this.reloadTo(
-        `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`
-      );
-    } else {
-      this.scenarioService
-        .patchScenarioConfig(newScenario.id!, newPayload)
-        .pipe(
-          map((result) => {
-            this.reloadTo(
-              `/plan/${newScenario.planning_area}/scenario/${result.id}`
-            );
-          })
-        )
-        .subscribe();
+      this.reloadTo(redirectUrl);
+      return EMPTY;
     }
+
+    return this.scenarioService
+      .patchScenarioConfig(newScenario.id!, newPayload)
+      .pipe(
+        tap((result) =>
+          this.reloadTo(`/plan/${result.planning_area}/scenario/${result.id}`)
+        ),
+        map(() => void 0)
+      );
+  }
+
+  private buildClonedPayload(
+    oldScenario: Scenario,
+    newScenario: Scenario
+  ): Partial<ScenarioV3Payload> {
+    let payload: Partial<ScenarioV3Payload> = {};
+
+    if (oldScenario.version === 'V3') {
+      payload.configuration = structuredClone(
+        oldScenario.configuration
+      ) as ScenarioV3Config;
+    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
+      const thresholdsIdMap = new Map([
+        ['slope', this.thresholdsData.slope?.id],
+        ['distance_to_roads', this.thresholdsData.distance_from_roads?.id],
+      ]);
+      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
+
+      payload = convertOldConfigurationToV3Payload(oldConfig, thresholdsIdMap);
+    }
+
+    if (Number(oldScenario.treatment_goal?.id)) {
+      payload.treatment_goal = Number(oldScenario.treatment_goal?.id);
+    }
+
+    return sanitizePayloadForScenarioType(newScenario, payload);
   }
 
   async reloadTo(url: string | UrlTree) {
@@ -195,54 +210,43 @@ export class ScenarioSetupModalComponent implements OnInit {
       this.dialogRef.close();
       return;
     }
-    const planId = this.data.planId;
-    const type = this.data.type;
-    this.scenarioService.createScenario(name, planId, type).subscribe({
-      next: (newScenario) => {
-        this.dialogRef.close(newScenario);
-        this.submitting = false;
 
-        //for cloned scenarios, we copy configuration, then redirect
-        if (this.data.fromClone && newScenario.id && this.data.scenario) {
-          const oldScenario = this.data.scenario;
+    const { planId, type, fromClone, scenario } = this.data;
 
-          // the original scenario record may not have a configuration!
-          if (oldScenario.configuration) {
-            this.patchConfigFromClone(oldScenario, newScenario);
-          } else {
-            this.scenarioService
-              .getScenario(oldScenario.id)
-              .pipe(
-                take(1),
-                tap((fullScenario) =>
-                  this.patchConfigFromClone(fullScenario, newScenario)
-                )
-              )
-              .subscribe();
+    this.scenarioService
+      .createScenario(name, planId, type)
+      .pipe(
+        tap((newScenario) => {
+          this.dialogRef.close(newScenario);
+          this.submitting = false;
+        }),
+        switchMap((newScenario) => {
+          if (fromClone && newScenario.id && scenario) {
+            return this.handleClone(scenario, newScenario);
           }
-        }
-        if (newScenario.id && this.data.fromClone === false) {
-          this.router.navigate(['plan', planId, 'scenario', newScenario.id]);
-        }
-      },
-      error: (e) => {
-        this.submitting = false;
-        if (
-          e.error.errors?.global &&
-          e.error.errors?.global.some((msg: string) =>
+          if (!fromClone && newScenario.id) {
+            this.router.navigate(['plan', planId, 'scenario', newScenario.id]);
+          }
+          return EMPTY;
+        })
+      )
+      .subscribe({
+        error: (e) => {
+          this.submitting = false;
+          const isNameConflict = e.error.errors?.global?.some((msg: string) =>
             msg.includes(
               'The fields planning_area, name must make a unique set.'
             )
-          )
-        ) {
-          this.errorMessage =
-            'This name is already used by another scenario in this planning area.';
-        } else {
-          this.showGenericErrorSnackbar();
-          this.dialogRef.close(false);
-        }
-      },
-    });
+          );
+          if (isNameConflict) {
+            this.errorMessage =
+              'This name is already used by another scenario in this planning area.';
+          } else {
+            this.showGenericErrorSnackbar();
+            this.dialogRef.close(false);
+          }
+        },
+      });
   }
 
   private showGenericErrorSnackbar() {
