@@ -186,6 +186,19 @@ class ClimateForesightModule(BaseModule):
         ).select_related("organization").distinct()
 
 
+class PrioritizeSubUnitsModule(BaseModule):
+    name = "prioritize_sub_units"
+
+    def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
+        return False
+
+    def _can_run_scenario(self, runnable: Scenario) -> bool:
+        return True
+
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return BaseModuleSerializer
+
+
 def get_module(module_name: str) -> BaseModule:
     return MODULE_HANDLERS[module_name]
 
@@ -213,4 +226,5 @@ MODULE_HANDLERS = {
     "impacts": ImpactsModule(),
     "map": MapModule(),
     "climate_foresight": ClimateForesightModule(),
+    "prioritize_sub_units": PrioritizeSubUnitsModule(),
 }
