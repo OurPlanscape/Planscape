@@ -8,6 +8,7 @@
         colorPath="styles[0].data.fill-color"
         outlineColorPath="styles[0].data.fill-outline-color"
         [items]="(excludableAreas$ | async) ?? []"
+        groupBy="dataset.name"
         (selectedItemsChanged)="handleSelectedItemsChange($event)"
         (viewedItemsChanged)="handleViewedItemsChange($event)"
         [selectedItems]="selectedAreas"

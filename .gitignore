@@ -187,9 +187,7 @@ static/
 compiled-static/
 
 .planconfig
-
-# local Sentry config file
-.sentryclirc
+planscape.sock
 .ruff_cache
 
 # R files used to convert to Python

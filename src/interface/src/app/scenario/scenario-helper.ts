@@ -1,6 +1,7 @@
 import { isNumber } from '@turf/helpers';
 import {
   Constraint,
+  PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
   ScenarioDraftConfiguration,
@@ -165,6 +166,10 @@ export function isCustomScenario(type: SCENARIO_TYPE) {
   return type === 'CUSTOM';
 }
 
+export function isPlanningApproachSubUnits(type: PLANNING_APPROACH) {
+  return type === 'PRIORITIZE_SUB_UNITS';
+}
+
 function stripEmptyConfigurations(
   config: Partial<ScenarioV3Config>
 ): Partial<ScenarioV3Config> {
@@ -181,7 +186,7 @@ function stripEmptyConfigurations(
   }, {} as any);
 }
 
-// if the configs are incomplete, then we just set configuration to stand_size and nothing else
+// if the configs are incomplete, we do some sanitization here to avoid violating BE constraints
 export function sanitizePayloadForScenarioType(
   scenario: Scenario,
   payload: Partial<ScenarioV3Payload>
@@ -194,7 +199,7 @@ export function sanitizePayloadForScenarioType(
   const hasGoal =
     payload.treatment_goal !== undefined && payload.treatment_goal !== null;
   let finalConfig = stripEmptyConfigurations(currentConfig);
-  // If we're missing the core requirement for the type, reset to just stand_size
+  // If we're missing the core requirements for the type, just include stand_size if exists
   if (
     (type === 'PRESET' && !hasGoal) ||
     (type === 'CUSTOM' && !hasObjectives)
@@ -206,5 +211,5 @@ export function sanitizePayloadForScenarioType(
   return {
     ...payload,
     configuration: finalConfig,
-  };
-}
+  }
+};

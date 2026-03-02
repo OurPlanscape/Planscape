@@ -51,7 +51,7 @@ $left-panel-width: 398px;
 .data-layers-header {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: end;
   margin-bottom: 16px;
 
   .header {
@@ -64,9 +64,15 @@ $left-panel-width: 398px;
     width: $datalayer-name-width;
   }
 
-  .value-title {
-    width: $datalayer-value-width;
+  .value-subtitle {
+    width: calc($datalayer-value-width + $datalayer-value-width);
     text-align: center;
+
+    .header-col {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
   }
 }
 

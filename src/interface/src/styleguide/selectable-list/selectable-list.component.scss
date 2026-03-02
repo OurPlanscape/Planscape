@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'mixins';
 
 $select-width: 50px;
 $colum-gap: 16px;
@@ -9,15 +10,6 @@ $material-checkbox-padding: 8px;
   position: relative;
   display: block;
 
-  &:after {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: $color-soft-gray;
-    top: 0;
-    left: #{$select-width + $colum-gap};
-  }
 
   .view-checkbox {
     padding-left: 0;
@@ -51,6 +43,33 @@ $material-checkbox-padding: 8px;
   width: 20px;
 }
 
+
+.group-header {
+  @include top-level-label();
+  line-height: 20px;
+  font-weight: 500;
+  height: 30px;
+
+  &:after {
+    display: none;
+  }
+}
+
+.items-container {
+  position: relative;
+  display: block;
+
+  &:after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    background-color: $color-soft-gray;
+    top: 0;
+    left: #{$select-width + $colum-gap};
+  }
+}
+
 .list-row,
 .list-header {
   display: flex;
@@ -63,7 +82,8 @@ $material-checkbox-padding: 8px;
 }
 
 .list-header {
-  margin-bottom: 15px;
+  margin-bottom: 0;
+  padding-bottom: 16px;
   gap: #{$colum-gap * 2};
   align-items: center;
   color: $color-md-gray;
@@ -72,7 +92,13 @@ $material-checkbox-padding: 8px;
   font-weight: 600;
   line-height: 16px;
   text-transform: capitalize;
+
+  &.grouped-header {
+    margin-bottom: 16px;
+    padding-bottom: 4px;
+  }
 }
+
 
 .select-title,
 .select {
@@ -85,6 +111,7 @@ $material-checkbox-padding: 8px;
   height: 40px;
   display: flex;
   align-items: center;
+  padding-left: 8px;
 }
 
 .select-button {

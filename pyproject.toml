@@ -63,6 +63,9 @@ dependencies = [
     "pip>=25.3",
     "opentelemetry-instrumentation-celery>=0.60b1",
     "opentelemetry-instrumentation-django>=0.60b1",
+    "opentelemetry-api>=1.39.1",
+    "opentelemetry-sdk>=1.39.1",
+    "opentelemetry-instrumentation>=0.60b1",
 ]
 
 [tool.isort]
