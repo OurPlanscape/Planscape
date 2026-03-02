@@ -2,32 +2,32 @@
 <!--New scenario ui flow-->
 <ng-container *ngIf="scenarioType$ | async as scenarioType">
   <sg-steps-nav
-    *ngIf="
-      stepsComponent.selectedIndex !== 0 || !isCustomScenario(scenarioType)
-    "
+    *ngIf="(isOnPreStep$ | async) === false"
     [steps]="steps"
     [selectedIndex]="stepsComponent.navSelectedIndex"
     [allowNavigation]="true"
     [linear]="true"
     (selectionChange)="
       stepsComponent &&
-        (stepsComponent.selectedIndex = isCustomScenario(scenarioType)
-          ? $event + 1
-          : $event)
+        (stepsComponent.selectedIndex =
+          isCustomScenario(scenarioType) || subUnitsPrioritized
+            ? $event + 1
+            : $event)
     "></sg-steps-nav>
-  <section
-    class="container"
-    [ngClass]="{ first: stepsComponent.selectedIndex === 0 }">
+  <section class="container">
     <sg-steps
       #stepsComponent
       class="new-scenario-ui"
-      [ngClass]="{ 'full-screen-steps': stepsComponent.selectedIndex === 0 }"
+      [ngClass]="{
+        'full-screen-steps': (showMap$ | async) === false,
+        'pre-step': (isOnPreStep$ | async),
+      }"
       [showStepIndex]="false"
       [showClearButton]="!!(viewedDataLayer$ | async)"
       linear
       finishLabel="Save & Run Scenario"
       continueLabel="Save & Continue"
-      [save]="saveStep.bind(this)"
+      [save]="saveStepFn"
       (selectedIndexChange)="stepChanged($event)"
       (selectionChange)="handleStepChangeEvent($event)"
       (finished)="onFinish()"
@@ -36,16 +36,23 @@
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary
         sharedHeading
-        *ngIf="stepsComponent.selectedIndex !== 0"
+        *ngIf="showMap$ | async"
         [standSize]="(standSize$ | async) || null"
         [treatmentGoal]="(treatmentGoalName$ | async) || ''"
         [priorityObjectives]="
           (priorityObjectivesNames$ | async) || ''
         "></app-scenario-summary>
 
-      <ng-container *ngIf="!isCustomScenario(scenarioType)">
-        <sg-step class="full-screen-step">
+      <!-- Preset Scenarios steps-->
+      <ng-container *ngIf="!isCustomScenario(scenarioType); else customSteps">
+        <sg-step [preStep]="true">
           <app-step1-with-overview></app-step1-with-overview>
+        </sg-step>
+        <cdk-step *ngIf="subUnitsPrioritized">
+          <div>Sub units goes here.</div>
+        </cdk-step>
+        <sg-step>
+          <app-treatment-goal-step></app-treatment-goal-step>
         </sg-step>
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>
@@ -57,11 +64,15 @@
           <app-treatment-target></app-treatment-target>
         </sg-step>
       </ng-container>
-
-      <ng-container *ngIf="isCustomScenario(scenarioType)">
+      <!-- Custom Scenarios steps-->
+      <ng-template #customSteps>
         <sg-step [preStep]="true">
-          <app-step1-custom></app-step1-custom>
+          <app-step1-with-overview
+            [isCustomScenario]="true"></app-step1-with-overview>
         </sg-step>
+        <cdk-step *ngIf="subUnitsPrioritized">
+          <div>Sub units goes here.</div>
+        </cdk-step>
         <sg-step>
           <app-custom-priority-objectives></app-custom-priority-objectives>
         </sg-step>
@@ -77,10 +88,8 @@
         <sg-step>
           <app-treatment-target></app-treatment-target>
         </sg-step>
-      </ng-container>
+      </ng-template>
     </sg-steps>
-
-    <app-scenario-map
-      *ngIf="stepsComponent.selectedIndex !== 0"></app-scenario-map>
+    <app-scenario-map *ngIf="showMap$ | async"></app-scenario-map>
   </section>
 </ng-container>

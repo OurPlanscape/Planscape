@@ -97,12 +97,9 @@ export class ScenarioMapComponent {
 
   showOpacitySlider$ = combineLatest([
     this.isScenarioSuccessful$,
-    this.newScenarioState.stepIndex$,
+    this.newScenarioState.currentStep$,
   ]).pipe(
-    map(
-      ([isScenarioSuccessful, stepIndex]) =>
-        isScenarioSuccessful || stepIndex > 0
-    )
+    map(([isScenarioSuccessful, step]) => isScenarioSuccessful || step !== null)
   );
 
   /**
