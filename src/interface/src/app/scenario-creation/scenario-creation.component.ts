@@ -366,10 +366,7 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   isCustomScenario(type: SCENARIO_TYPE) {
-    return (
-      this.featureService.isFeatureEnabled('CUSTOM_SCENARIOS') &&
-      isCustomScenario(type)
-    );
+    return isCustomScenario(type);
   }
 
   isPlanningApproachEnabled() {
