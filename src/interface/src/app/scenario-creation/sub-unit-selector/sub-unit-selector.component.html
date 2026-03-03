@@ -17,13 +17,14 @@
         aria-label="Select an option"
         color="primary"
         class="data-layer-input"
-        (change)="onSubunitSelect($event)"
         [formControlName]="'sub_units_layer'">
         <div>
           <div
             *ngFor="let subunit of subUnitOptions"
             class="layer-control-container">
-            <mat-radio-button [value]="subunit">
+            <mat-radio-button
+              [value]="subunit.id"
+              (change)="onSubunitSelect(subunit)">
               {{ subunit.name }}
               <mat-spinner
                 class="side-spinner"

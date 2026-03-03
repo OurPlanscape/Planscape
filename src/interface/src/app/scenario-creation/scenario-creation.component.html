@@ -48,9 +48,9 @@
         <sg-step [preStep]="true">
           <app-step1-with-overview></app-step1-with-overview>
         </sg-step>
-        <cdk-step *ngIf="subUnitsPrioritized">
+        <sg-step *ngIf="subUnitsPrioritized">
           <app-sub-unit-selector></app-sub-unit-selector>
-        </cdk-step>
+        </sg-step>
         <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
         </sg-step>
@@ -70,9 +70,9 @@
           <app-step1-with-overview
             [isCustomScenario]="true"></app-step1-with-overview>
         </sg-step>
-        <cdk-step *ngIf="subUnitsPrioritized">
-          <div>Sub units goes here.</div>
-        </cdk-step>
+        <sg-step *ngIf="subUnitsPrioritized">
+          <app-sub-unit-selector></app-sub-unit-selector>
+        </sg-step>
         <sg-step>
           <app-custom-priority-objectives></app-custom-priority-objectives>
         </sg-step>

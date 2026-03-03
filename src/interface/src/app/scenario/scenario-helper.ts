@@ -127,6 +127,9 @@ export function convertFlatConfigurationToDraftPayload(
     // TODO UPDATE THIS
     payload.planning_approach = formData.planning_approach;
   }
+  if (formData.sub_units_layer) {
+    config.sub_units_layer = formData.sub_units_layer;
+  }
 
   payload.configuration = config;
   return payload;
