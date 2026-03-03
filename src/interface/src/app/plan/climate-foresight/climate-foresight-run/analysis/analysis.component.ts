@@ -12,22 +12,14 @@ import {
   transformMapboxUrl,
 } from 'maplibregl-mapbox-request-transformer';
 
-import {
-  ButtonComponent,
-  OpacitySliderComponent,
-  SectionComponent,
-} from '@styleguide';
+import { ButtonComponent, SectionComponent } from '@styleguide';
 import {
   ClimateForesightRun,
   DataLayer,
   GeoPackageDownloadStatus,
-  StyleJson,
 } from '@types';
-import { generateColorFunction as generateColorFunctionFromStyle } from '@data-layers/utilities';
 import { MapConfigState } from '@maplibre-map/map-config.state';
 import { PlanState } from '@plan/plan.state';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
   RequestTransformFunction,
@@ -38,15 +30,8 @@ import {
   getBoundsFromGeometry,
 } from '@maplibre-map/maplibre.helper';
 import { AuthService, ClimateForesightService } from '@services';
-import { DataLayersService } from '@services/data-layers.service';
 import { environment } from '@env/environment';
-import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
-import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
 import { MapConfigService } from '@maplibre-map/map-config.service';
-import {
-  LegendEntry,
-  MpatLegendComponent,
-} from '@plan/climate-foresight/climate-foresight-run/analysis/mpat-legend/mpat-legend.component';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
@@ -56,8 +41,9 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
-
-type ColorFunction = (pixel: TypedArray, rgba: Uint8ClampedArray) => void;
+import { ClimateForesightMapComponent } from '../climate-foresight-map/climate-foresight-map.component';
+import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 
 export interface OutputLayer {
   id: string;
@@ -78,19 +64,24 @@ export interface OutputLayer {
     CommonModule,
     SharedModule,
     ButtonComponent,
-    OpacitySliderComponent,
     MatIconModule,
     MatButtonModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MapComponent,
-    PlanningAreaLayerComponent,
-    MpatLegendComponent,
     SectionComponent,
     MatMenuModule,
     PopoverComponent,
+    ClimateForesightMapComponent,
   ],
-  providers: [MapConfigService],
+  providers: [
+    // 1. Create a single instance of the subclass
+    { provide: MapConfigState, useClass: MultiMapConfigState },
+
+    // 2. Alias its own type to that same instance
+    { provide: MultiMapConfigState, useExisting: MapConfigState },
+    MapConfigService,
+    DataLayersStateService,
+  ],
   templateUrl: './analysis.component.html',
   styleUrls: ['./analysis.component.scss'],
 })
@@ -118,6 +109,8 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   maxZoom = 22;
   minZoom = 4;
 
+  viewedLayer$ = this.dataLayersState.viewedDataLayer$;
+
   constructor(
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute,
@@ -126,7 +119,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     private planState: PlanState,
     private authService: AuthService,
     private climateForesightService: ClimateForesightService,
-    private dataLayersService: DataLayersService,
+    private dataLayersState: DataLayersStateService,
     private mapConfigService: MapConfigService,
     private snackBar: MatSnackBar
   ) {
@@ -266,9 +259,9 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   }
 
   selectLayer(layer: OutputLayer): void {
-    this.selectedLayerId = layer.id;
-    this.selectedLayer = layer;
-    this.loadLayerPreview(layer);
+    if (layer.datalayer) {
+      this.dataLayersState.selectDataLayer(layer.datalayer);
+    }
   }
 
   onLayerChange(layerId: string): void {
@@ -282,164 +275,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     const layer = allLayers.find((l) => l.id === layerId);
     if (layer) {
       this.selectLayer(layer);
-    }
-  }
-
-  private loadLayerPreview(layer: OutputLayer): void {
-    if (!layer.datalayerId) {
-      this.removeRasterLayer();
-      return;
-    }
-
-    this.dataLayersService.getPublicUrl(layer.datalayerId).subscribe({
-      next: (url: string) => {
-        const cogUrl = `cog://${url}`;
-        const colorFn = this.generateColorFunction(layer);
-        setColorFunction(url, colorFn);
-        this.addRasterLayer(cogUrl);
-      },
-      error: (err: any) => {
-        console.error('Failed to load layer preview:', err);
-        this.snackBar.open(
-          'Failed to load layer',
-          'Dismiss',
-          SNACK_ERROR_CONFIG
-        );
-      },
-    });
-  }
-
-  private generateColorFunction(layer: OutputLayer): ColorFunction {
-    const styleData = layer.datalayer?.styles?.[0]?.data;
-    if (styleData?.entries && styleData?.map_type) {
-      return generateColorFunctionFromStyle(styleData as StyleJson);
-    }
-
-    // in case datalayer styles are missing generate some defaults
-    if (layer.type === 'mpat') {
-      const mpatColors: Record<number, [number, number, number]> = {
-        10: [198, 219, 239],
-        11: [33, 113, 181],
-        20: [199, 233, 192],
-        21: [35, 139, 69],
-        30: [253, 208, 162],
-        31: [217, 72, 1],
-        40: [212, 185, 218],
-        41: [122, 1, 119],
-      };
-
-      return (pixel: TypedArray, rgba: Uint8ClampedArray) => {
-        const value = Math.round(pixel[0]);
-        const color = mpatColors[value];
-        if (color) {
-          rgba[0] = color[0];
-          rgba[1] = color[1];
-          rgba[2] = color[2];
-          rgba[3] = 255;
-        } else {
-          rgba[0] = 0;
-          rgba[1] = 0;
-          rgba[2] = 0;
-          rgba[3] = 0;
-        }
-      };
-    } else {
-      const [scaleMin, scaleMax] = layer.scale || [0, 100];
-
-      const colorStops: [number, [number, number, number]][] = [
-        [0, [26, 152, 80]],
-        [0.25, [145, 207, 96]],
-        [0.5, [254, 224, 139]],
-        [0.75, [252, 141, 89]],
-        [1, [215, 48, 39]],
-      ];
-
-      return (pixel: TypedArray, rgba: Uint8ClampedArray) => {
-        const rawValue = pixel[0];
-
-        const normalizedValue = (rawValue - scaleMin) / (scaleMax - scaleMin);
-
-        if (normalizedValue <= 0) {
-          rgba[0] = colorStops[0][1][0];
-          rgba[1] = colorStops[0][1][1];
-          rgba[2] = colorStops[0][1][2];
-          rgba[3] = 255;
-          return;
-        }
-        if (normalizedValue >= 1) {
-          const last = colorStops[colorStops.length - 1][1];
-          rgba[0] = last[0];
-          rgba[1] = last[1];
-          rgba[2] = last[2];
-          rgba[3] = 255;
-          return;
-        }
-
-        let lower = colorStops[0];
-        let upper = colorStops[1];
-        for (let i = 1; i < colorStops.length; i++) {
-          if (normalizedValue <= colorStops[i][0]) {
-            lower = colorStops[i - 1];
-            upper = colorStops[i];
-            break;
-          }
-        }
-
-        const t = (normalizedValue - lower[0]) / (upper[0] - lower[0]);
-        rgba[0] = Math.round(lower[1][0] + t * (upper[1][0] - lower[1][0]));
-        rgba[1] = Math.round(lower[1][1] + t * (upper[1][1] - lower[1][1]));
-        rgba[2] = Math.round(lower[1][2] + t * (upper[1][2] - lower[1][2]));
-        rgba[3] = 255;
-      };
-    }
-  }
-
-  private addRasterLayer(cogUrl: string): void {
-    if (!this.mapLibreMap) return;
-
-    this.removeRasterLayer();
-
-    this.mapLibreMap.addSource('output-raster', {
-      type: 'raster',
-      url: cogUrl,
-      tileSize: 256,
-      minzoom: 4,
-      maxzoom: 22,
-    });
-
-    const layers = this.mapLibreMap.getStyle().layers;
-    let firstSymbolId: string | undefined;
-    if (layers) {
-      for (const layer of layers) {
-        if (layer.type === 'symbol') {
-          firstSymbolId = layer.id;
-          break;
-        }
-      }
-    }
-
-    this.mapLibreMap.addLayer(
-      {
-        id: 'output-layer',
-        type: 'raster',
-        source: 'output-raster',
-        paint: {
-          'raster-opacity': this.opacity / 100,
-          'raster-resampling': 'nearest',
-        },
-      },
-      firstSymbolId
-    );
-  }
-
-  private removeRasterLayer(): void {
-    if (!this.mapLibreMap) return;
-
-    if (this.mapLibreMap.getLayer('output-layer')) {
-      this.mapLibreMap.removeLayer('output-layer');
-    }
-    if (this.mapLibreMap.getSource('output-raster')) {
-      this.mapLibreMap.removeSource('output-raster');
     }
   }
 
@@ -461,17 +296,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       this.authService.getAuthCookie()
     );
   };
-
-  onOpacityChange(value: number): void {
-    this.opacity = value;
-    if (this.mapLibreMap?.getLayer('output-layer')) {
-      this.mapLibreMap.setPaintProperty(
-        'output-layer',
-        'raster-opacity',
-        value / 100
-      );
-    }
-  }
 
   goBack(): void {
     this.router.navigate(['/plan', this.planId, 'climate-foresight']);
@@ -597,71 +421,5 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       default:
         return 'Download GeoPackage';
     }
-  }
-
-  get isMpatSelected(): boolean {
-    return this.selectedLayer?.type === 'mpat';
-  }
-
-  /**
-   * Get the map_type from the selected layer's style (VALUES, RAMP, INTERVALS).
-   */
-  get selectedLayerStyleType(): string | null {
-    return this.selectedLayer?.datalayer?.styles?.[0]?.data?.map_type || null;
-  }
-
-  /**
-   * Check if the selected layer uses a gradient (RAMP) style.
-   */
-  get isGradientStyle(): boolean {
-    return this.selectedLayerStyleType === 'RAMP';
-  }
-
-  /**
-   * Check if the selected layer has actual style data (not using fallback).
-   */
-  get hasStyleData(): boolean {
-    const styleData = this.selectedLayer?.datalayer?.styles?.[0]?.data;
-    return !!(styleData?.entries && styleData.entries.length > 0);
-  }
-
-  /**
-   * Get legend entries for the currently selected layer from its style data.
-   */
-  get selectedLayerLegendEntries(): LegendEntry[] {
-    const styleData = this.selectedLayer?.datalayer?.styles?.[0]?.data;
-    if (!styleData?.entries || styleData.entries.length === 0) {
-      return [
-        { value: 100, label: '100', color: '' },
-        { value: 50, label: '50', color: '' },
-        { value: 0, label: '0', color: '' },
-      ];
-    }
-
-    return [...styleData.entries]
-      .sort((a, b) => b.value - a.value)
-      .map((entry) => ({
-        value: entry.value,
-        label: entry.label || String(entry.value),
-        color: entry.color,
-      }));
-  }
-
-  /**
-   * Build a CSS linear-gradient string from RAMP style entries (vertical, high to low).
-   * Returns the gradient for use in [style.background].
-   */
-  get gradientStyleVertical(): string {
-    const styleData = this.selectedLayer?.datalayer?.styles?.[0]?.data;
-    if (!styleData?.entries || styleData.entries.length === 0) {
-      return 'linear-gradient(to bottom, #1a9850, #fee08b, #d73027)';
-    }
-
-    const sortedEntries = [...styleData.entries].sort(
-      (a, b) => a.value - b.value
-    );
-
-    const colors = sortedEntries.map((e) => e.color).join(', ');
-    return `linear-gradient(to top, ${colors})`;
   }
 }

@@ -1,208 +1,74 @@
 @import 'variables';
 @import 'colors';
+@import 'mixins';
 
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
-}
-
-sg-section {
-  ::ng-deep {
-    .title-txt {
-      font-weight: 600;
-      text-transform: initial;
-    }
-
-    .mat-expansion-panel {
-      border: none !important;
-
-      &.mat-expanded > .mat-expansion-panel-header {
-        background-color: $color-soft-purple;
-      }
-    }
-
-    .mat-expansion-panel-header {
-      border: 1px solid $color-soft-gray;
-    }
-
-    .mat-expansion-panel-body {
-      padding: 0;
-    }
-  }
-}
-
-.analysis-container {
-  display: flex;
-  flex-direction: column;
   height: 100%;
-  width: 100%;
-  background-color: $color-lighter-gray;
+
+  ::ng-deep sg-section .mat-expansion-panel-body {
+    padding: 0 10px 16px 16px;
+  }
 }
 
-.content {
+.analysis-row {
   display: flex;
+  flex-direction: row;
   flex: 1;
-  overflow: hidden;
+  gap: 0;
+  height: calc(100% - $navbar-height);
 }
 
-.sidebar {
-  width: 360px;
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-
-  .layer-item {
-    display: flex;
-    align-items: center;
-    padding: 16px 20px;
-    cursor: pointer;
-    border-bottom: 1px solid $color-soft-gray;
-    transition: background-color 0.2s;
-    gap: 12px;
-
-    &.grouped {
-      background-color: $color-soft-purple-light;
-    }
-
-    &:hover {
-      background-color: $color-lighter-gray;
-    }
-
-    &.selected {
-      background-color: $color-soft-purple-light;
-    }
-
-    .radio-icon {
-      color: $color-standard-blue;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-
-    .layer-name {
-      font-size: 14px;
-      color: $color-dark-gray;
-      flex: 1;
-    }
-  }
-}
-
-.map-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  overflow: hidden;
-
-  .map-container {
-    flex: 1;
-    position: relative;
-
-    mgl-map {
-      width: 100%;
-      height: 100%;
-    }
-  }
-}
-
-// Map overlay controls (top left)
-.map-overlay {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.opacity-slider {
-  width: 180px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.legend-container {
-  background: rgba(0, 0, 0, 0.75);
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  padding: 12px;
-  max-width: 200px;
-  color: $color-white;
-}
-
-.ramp-legend {
-  .legend-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: $color-white;
-    margin-bottom: 8px;
-  }
-
-  .ramp-content {
-    display: flex;
-    gap: 8px;
-  }
-
-  .gradient-bar-vertical {
-    width: 16px;
-    min-height: 80px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  .gradient-labels-vertical {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    font-size: 12px;
-    color: $color-white;
-
-    .gradient-label {
-      line-height: 1.2;
-    }
-  }
-}
-
-.loading-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-
-  p {
-    margin: 0;
-    font-size: 16px;
-    color: $color-md-gray;
-  }
-}
-
-.download-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.metric-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.layers-column {
+  background-color: $color-soft-purple;
+  box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+  z-index: 1;
+  width: $climate-analysis-left-panel-width;
   padding: 16px;
+  overflow-y: auto;
+}
 
-  p {
-    margin: 0;
+.map-column {
+  flex: 1;
+}
+
+.layer-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    cursor: pointer;
   }
 
-  .strategies {
-    margin: 0;
-    padding: 0 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  .radio-icon {
+    color: $color-dark-gray;
   }
+
+  .layer-name {
+    color: $color-dark-gray;
+    @include small-paragraph();
+  }
+}
+
+.tooltip {
+  margin-left: auto;
+}
+
+.selected {
+  .radio-icon {
+    color: $color-standard-blue;
+  }
+  .layer-name {
+    @include xs-label();
+    font-weight: 600;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
 }
