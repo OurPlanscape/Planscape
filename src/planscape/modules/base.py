@@ -15,6 +15,7 @@ from modules.serializers import (
     BaseModuleSerializer,
     ForsysModuleSerializer,
     MapModuleSerializer,
+    PrioritizeSubUnitsModuleSerializer,
 )
 
 RunnableItem = Union[PlanningArea, Scenario]
@@ -196,7 +197,15 @@ class PrioritizeSubUnitsModule(BaseModule):
         return True
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
-        return BaseModuleSerializer
+        return PrioritizeSubUnitsModuleSerializer
+    
+    def _get_options(self, **kwargs):
+        options = super()._get_options(**kwargs)
+        sub_units_layers = DataLayer.objects.all().by_meta_module(self.name)
+        return {
+            **options,
+            "sub_units": list(sub_units_layers)
+        }
 
 
 def get_module(module_name: str) -> BaseModule:

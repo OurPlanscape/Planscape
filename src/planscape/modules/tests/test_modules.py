@@ -2,7 +2,7 @@ import json
 
 from typing import Any, Dict
 
-from datasets.models import PreferredDisplayType
+from datasets.models import PreferredDisplayType, VisibilityOptions
 from datasets.tests.factories import DatasetFactory, DataLayerFactory
 from django.test import TestCase
 from django.contrib.gis.geos import GEOSGeometry
@@ -124,3 +124,45 @@ class MapModuleTest(TestCase):
 
         self.assertGreaterEqual(len(main), 0)
         self.assertGreaterEqual(len(base), 0)
+
+
+
+class PrioritizeSubUnitsModuleTest(TestCase):
+    def test_returns_options_correctly(self):
+        base_dataset = DatasetFactory.create(
+            name="base1", 
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS, 
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["prioritize_sub_units"],
+        )
+        DatasetFactory.create(
+            name="main1", 
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS, 
+            visibility=VisibilityOptions.PUBLIC, 
+            modules=["prioritize_sub_units"],
+        )
+        DataLayerFactory.create(dataset=base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
+
+        module = get_module("prioritize_sub_units")
+        configuration: Dict[str, Any] = module.get_configuration()
+        self.assertIn("name", configuration)
+        self.assertIn("options", configuration)
+
+        options: Dict[str, Any] = configuration["options"]
+
+        self.assertIn("datasets", options)
+        self.assertIn("sub_units", options)
+
+        datasets: Dict[str, Any] = options["datasets"]
+        sub_units = options["sub_units"]
+
+        self.assertIn("main_datasets", datasets)
+        self.assertIn("base_datasets", datasets)
+        
+
+        main = datasets["main_datasets"]
+        base = datasets["base_datasets"]
+
+        self.assertEqual(len(main), 1)
+        self.assertEqual(len(base), 1)
+        self.assertEqual(len(sub_units), 1)
