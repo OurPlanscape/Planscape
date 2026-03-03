@@ -61,6 +61,10 @@ class MapOptionsSerializer(BaseModuleOptionsSerializer):
     pass
 
 
+class PrioritizeSubUnitsOptionsSerializer(BaseModuleOptionsSerializer):
+    sub_units_layers = serializers.ListField(child=BrowseDataLayerSerializer())
+
+
 class InputModuleSerializer(serializers.Serializer):
     geometry = GeometryTypeField(
         geometry_type="MultiPolygon",
@@ -80,3 +84,7 @@ class ForsysModuleSerializer(BaseModuleSerializer):
 
 class MapModuleSerializer(BaseModuleSerializer):
     options = MapOptionsSerializer()
+
+
+class PrioritizeSubUnitsModuleSerializer(BaseModuleSerializer):
+    options = PrioritizeSubUnitsOptionsSerializer()
