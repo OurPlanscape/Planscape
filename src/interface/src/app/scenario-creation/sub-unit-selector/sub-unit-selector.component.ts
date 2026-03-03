@@ -8,13 +8,18 @@ import {
   Validators,
 } from '@angular/forms';
 import { StepDirective } from '@styleguide';
-import { filter, map, Observable, switchMap, take } from 'rxjs';
+import { map, Observable, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
-import { BaseLayer, DataSet, ScenarioDraftConfiguration } from '@app/types';
+import {
+  ApiModule,
+  BaseLayer,
+  ScenarioDraftConfiguration,
+  SubUnits,
+} from '@app/types';
 import { NewScenarioState } from '../new-scenario.state';
-import { DataLayersService } from '@app/services';
 import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { ModuleService } from '@app/services/module.service';
 
 @Component({
   selector: 'app-sub-unit-selector',
@@ -34,9 +39,9 @@ import { BaseLayersStateService } from '@app/base-layers/base-layers.state.servi
 })
 export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfiguration> {
   constructor(
-    private dataLayersService: DataLayersService,
     private newScenarioState: NewScenarioState,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private moduleService: ModuleService
   ) {
     super();
   }
@@ -47,18 +52,12 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
     ]),
   });
 
-  subUnitLayerOptions$: Observable<BaseLayer[]> = this.dataLayersService
-    .listDataSets()
+  subUnitLayerOptions$: Observable<BaseLayer[]> = this.moduleService
+    .getModule<ApiModule<SubUnits>>('prioritize_sub_units')
     .pipe(
-      map((datasets) =>
-        datasets.results.find((ds) => ds.name === 'Boundaries')
-      ),
-      filter(
-        (matchingDataSet): matchingDataSet is DataSet => !!matchingDataSet
-      ),
-      switchMap((matchingDataSet) =>
-        this.dataLayersService.listBaseLayersByDataSet(matchingDataSet?.id, '')
-      )
+      map((results) => {
+        return results.options.sub_units;
+      })
     );
 
   loadingLayers$ = this.baseLayersStateService.loadingLayers$;
