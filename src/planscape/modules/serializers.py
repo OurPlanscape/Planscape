@@ -62,7 +62,7 @@ class MapOptionsSerializer(BaseModuleOptionsSerializer):
 
 
 class PrioritizeSubUnitsOptionsSerializer(BaseModuleOptionsSerializer):
-    sub_units_layers = serializers.ListField(child=BrowseDataLayerSerializer())
+    sub_units = serializers.ListField(child=BrowseDataLayerSerializer())
 
 
 class InputModuleSerializer(serializers.Serializer):
