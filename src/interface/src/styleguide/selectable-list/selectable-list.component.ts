@@ -1,10 +1,17 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+} from '@angular/core';
+import { KeyValuePipe, NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent } from '..';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SimpleChanges } from '@angular/core';
 
 interface Item {
   id: number;
@@ -22,6 +29,9 @@ interface Item {
  * }
  * ```
  *
+ * We can also specify an optional `groupBy` key, which points to an attribute in each `Item`
+ * which can be used to organize results. For example, `dataset.name` to organize layers.
+ *
  * To provide where the component should look for the legend color, use `colorPath`
  * and provide a string with the path (example `nested.styles.color` or even `nested[0].styles.color`)
  *
@@ -33,6 +43,7 @@ interface Item {
   standalone: true,
   imports: [
     ButtonComponent,
+    KeyValuePipe,
     MatButtonModule,
     MatCheckboxModule,
     MatIconModule,
@@ -45,7 +56,7 @@ interface Item {
   templateUrl: './selectable-list.component.html',
   styleUrl: './selectable-list.component.scss',
 })
-export class SelectableListComponent<T extends Item> {
+export class SelectableListComponent<T extends Item> implements OnChanges {
   /** @ignore - default legend color */
   defaultColor = 'transparent';
   defaultOutlineColor = 'transparent';
@@ -53,6 +64,42 @@ export class SelectableListComponent<T extends Item> {
   /** all the items in the list */
   @Input() items: T[] = [];
 
+  /** path to an attribute on an item that can be
+   *  used to group data, for instance 'dataset.name' */
+  @Input() groupBy?: string;
+
+  /** the set of data to iterate through in the template.
+   * If there's no groupBy input, then we just consider it all one group */
+  groupedData: Record<string, T[]> = {};
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['items'] || changes['groupBy']) {
+      this.recalculateGroups();
+    }
+  }
+
+  private recalculateGroups() {
+    const data = this.items || [];
+    if (!this.groupBy) {
+      this.groupedData = { '': data };
+      return;
+    }
+
+    this.groupedData = data.reduce(
+      (acc, item) => {
+        const key = this.resolvePath(item, this.groupBy!) || '';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      },
+      {} as Record<string, T[]>
+    );
+  }
+
+  private resolvePath(obj: any, path: string): string {
+    if (!obj || !path) return '';
+    return path.split('.').reduce((prev, curr) => prev?.[curr], obj) || '';
+  }
   /** the selected items, optional */
   @Input() selectedItems: T[] = [];
 

@@ -7,7 +7,6 @@ from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
 from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
-from datasets.widgets import ReadOnlyOSMGeometryWidget
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -84,10 +83,6 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["info"].disabled = True
         self.fields["category"].required = False
         self.fields["metadata"].required = False
-        self.fields["geometry"].required = False
-        self.fields["geometry"].disabled = True
-        self.fields["outline"].required = False
-        self.fields["outline"].disabled = True
 
     def save(self, commit=True):
         invalidate_model(DataLayer)
@@ -98,8 +93,6 @@ class DataLayerAdminForm(forms.ModelForm):
         widgets = {
             "info": JSONEditorWidget,
             "metadata": JSONEditorWidget,
-            "geometry": ReadOnlyOSMGeometryWidget(),
-            "outline": ReadOnlyOSMGeometryWidget(),
         }
         fields = (
             "organization",
@@ -109,8 +102,6 @@ class DataLayerAdminForm(forms.ModelForm):
             "table",
             "info",
             "metadata",
-            "geometry",
-            "outline",
         )
 
 

@@ -1435,7 +1435,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
-        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "CLIMATE_FORESIGHT"})
+        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"})
 
     def test_capabilities_present_in_detail_inside_california(self):
         self.scenario2.capabilities = compute_scenario_capabilities(self.scenario2)
@@ -1449,7 +1449,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
         self.assertSetEqual(
-            set(caps), {"MAP", "FORSYS", "IMPACTS", "CLIMATE_FORESIGHT"}
+            set(caps), {"MAP", "FORSYS", "IMPACTS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"}
         )
 
     def test_capabilities_present_in_detail_outside_future_climate(self):
@@ -1463,7 +1463,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
-        self.assertSetEqual(set(caps), {"MAP", "FORSYS"})
+        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "PRIORITIZE_SUB_UNITS"})
 
 
 class CreateScenarioForDraftsTest(APITestCase):
