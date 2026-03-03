@@ -49,13 +49,10 @@
           <app-step1-with-overview></app-step1-with-overview>
         </sg-step>
         <cdk-step *ngIf="subUnitsPrioritized">
-          <div>Sub units goes here.</div>
+          <app-sub-unit-selector></app-sub-unit-selector>
         </cdk-step>
         <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
-        </sg-step>
-        <sg-step>
-          <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>
