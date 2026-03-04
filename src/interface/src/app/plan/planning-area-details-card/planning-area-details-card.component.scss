@@ -1,10 +1,10 @@
 @import 'mixins';
 @import 'colors';
 
-.card {
+:host{
     border-radius: 8px;
-    border: 1px solid var(--Neutral-Soft-gray, #E1E1E1);
-    background: var(--Neutral-White, #FFF);
+    border: 1px solid $color-soft-gray;
+    background-color: $color-white;
     padding: 16px;
     display: flex;
     flex-direction: column;

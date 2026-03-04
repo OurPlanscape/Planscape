@@ -1,26 +1,24 @@
-<div class="card" *ngIf="plan">
-  <div class="heading">
-    <div class="title">Planning Area Overview</div>
-    <div class="name">{{ plan.name }}</div>
+<div class="heading">
+  <div class="title">Planning Area Overview</div>
+  <div class="name">{{ plan?.name }}</div>
+</div>
+<div class="details">
+  <div class="detail-line">
+    <div class="detail-icon">
+      <mat-icon class="material-symbols-outlined">person_outline</mat-icon>
+    </div>
+    Creator: {{ plan?.creator }}
   </div>
-  <div class="details">
-    <div class="detail-line">
-      <div class="detail-icon">
-        <mat-icon class="material-symbols-outlined">person_outline</mat-icon>
-      </div>
-      Creator: {{ plan.creator }}
+  <div class="detail-line">
+    <div class="detail-icon">
+      <mat-icon class="material-symbols-outlined">crop_landscape</mat-icon>
     </div>
-    <div class="detail-line">
-      <div class="detail-icon">
-        <mat-icon class="material-symbols-outlined">crop_landscape</mat-icon>
-      </div>
-      Acres: {{ plan.area_acres | number: '1.0-0' }}
+    Acres: {{ plan?.area_acres | number: '1.0-0' }}
+  </div>
+  <div class="detail-line">
+    <div class="detail-icon">
+      <mat-icon class="material-symbols-outlined">calendar_month</mat-icon>
     </div>
-    <div class="detail-line">
-      <div class="detail-icon">
-        <mat-icon class="material-symbols-outlined">calendar_month</mat-icon>
-      </div>
-      Created Date: {{ plan.created_at | date: 'mediumDate' }}
-    </div>
+    Created Date: {{ plan?.created_at | date: 'mediumDate' }}
   </div>
 </div>
