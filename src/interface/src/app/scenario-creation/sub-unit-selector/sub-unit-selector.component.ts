@@ -62,8 +62,6 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
 
   loadingLayers$ = this.baseLayersStateService.loadingLayers$;
 
-  selectedSubUnit: number | null = null;
-
   getData() {
     return this.form.value;
   }
@@ -76,10 +74,9 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
     // set the form selection to whatever is in the saved config
     this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
       if (config.sub_units_layer) {
-        this.selectedSubUnit = config.sub_units_layer;
+        this.form.controls['sub_units_layer'].setValue(config.sub_units_layer);
       }
     });
-    this.form.controls['sub_units_layer'].setValue(this.selectedSubUnit);
   }
 
   override beforeStepExit(): void {
