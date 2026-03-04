@@ -25,6 +25,7 @@
   (toggleArchiveStatus)="toggleScenarioStatus(s)"
   (deleteScenario)="showDeleteScenarioDialog(s)"
   (editScenario)="editScenario(s)"
+  (copyScenario)="handleCopyScenario(s)"
   matTooltip="Only the creator can edit this draft"
   [matTooltipDisabled]="!displayDraftCreatorTooltip(s)"
   [disabled]="displayDraftCreatorTooltip(s)">

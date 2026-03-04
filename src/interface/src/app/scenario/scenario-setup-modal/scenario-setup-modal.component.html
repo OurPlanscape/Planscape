@@ -5,7 +5,8 @@
   secondaryButtonText="Cancel"
   [primaryButtonDisabled]="
     scenarioNameForm.get('scenarioName')?.hasError('required') === true ||
-    submitting
+    submitting ||
+    loading
   "
   [hasPrimarySpinner]="true"
   [isInSpinState]="submitting"
@@ -15,7 +16,7 @@
   <div modalBodyContent>
     <form [formGroup]="scenarioNameForm" (ngSubmit)="submitIfValid($event)">
       <sg-input-field
-        [disabled]="false"
+        [disabled]="loading"
         showSupportMessage="on-error"
         label="Scenario Name"
         [error]="this.errorMessage !== ''"
@@ -27,6 +28,7 @@
           name="scenarioName"
           cdkFocusInitial
           formControlName="scenarioName" />
+        <mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
       </sg-input-field>
       <div
         *ngIf="

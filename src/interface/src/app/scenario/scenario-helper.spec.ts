@@ -1,9 +1,15 @@
 import {
-  convertFlatConfigurationToDraftPayload,
+  convertOldConfigurationToV3Payload,
   getGroupedGoals,
+  sanitizePayloadForScenarioType,
   suggestUniqueName,
 } from './scenario-helper';
-import { ScenarioDraftConfiguration, ScenarioGoal } from '@types';
+import {
+  Scenario,
+  ScenarioDraftConfiguration,
+  ScenarioGoal,
+  ScenarioV3Payload,
+} from '@types';
 
 describe('getGroupedGoals', () => {
   const makeGoal = (overrides: Partial<ScenarioGoal> = {}): ScenarioGoal => ({
@@ -119,7 +125,7 @@ describe('getGroupedGoals', () => {
   });
 });
 
-describe('convertFlatConfigurationToDraftPayload', () => {
+describe('convertOldConfigurationToV3Payload', () => {
   const mockThresholdIds = new Map<string, number>([
     ['distance_to_roads', 100],
     ['slope', 200],
@@ -129,7 +135,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
       stand_size: 'LARGE',
       treatment_goal: 1,
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -143,7 +149,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     const formData: Partial<ScenarioDraftConfiguration> = {
       excluded_areas: [555, 444, 333],
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -156,7 +162,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
     const formData: Partial<ScenarioDraftConfiguration> = {
       excluded_areas: [],
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -170,7 +176,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
       min_distance_from_road: 100,
       max_slope: 99,
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -192,7 +198,7 @@ describe('convertFlatConfigurationToDraftPayload', () => {
       max_project_count: 10,
       estimated_cost: 2470,
     };
-    const payloadResult = convertFlatConfigurationToDraftPayload(
+    const payloadResult = convertOldConfigurationToV3Payload(
       formData,
       mockThresholdIds
     );
@@ -294,5 +300,97 @@ describe('suggestUniqueName', () => {
 
     const nameResult = suggestUniqueName(origName, existingNames);
     expect(nameResult).toEqual("Copy of 'some name' 10");
+  });
+});
+
+describe('sanitizePayloadForScenarioType', () => {
+  const baseScenario: Scenario = {
+    id: 100,
+    name: 'some scenario',
+    planning_area: 1,
+    status: 'ACTIVE',
+    type: 'PRESET',
+    user: 1,
+    geopackage_status: 'PENDING',
+    geopackage_url: 'xxx',
+    configuration: {},
+  };
+
+  const baseV3Payload: ScenarioV3Payload = {
+    configuration: {
+      priority_objectives: [1234],
+      stand_size: 'MEDIUM',
+      excluded_areas: [2984],
+      cobenefits: [],
+    },
+    treatment_goal: 1,
+    planning_approach: 'OPTIMIZE_PROJECT_AREAS',
+    name: 'test payload',
+    planning_area: 1,
+  };
+
+  it('should strip empty arrays but keep valid data for a CUSTOM scenario with priority_objectives', () => {
+    const customScenario: Scenario = { ...baseScenario, type: 'CUSTOM' };
+    const result = sanitizePayloadForScenarioType(
+      customScenario,
+      baseV3Payload
+    );
+    // Should keep priority_objectives and excluded_areas
+    // Should strip included_areas (because it was [])
+    expect(result.configuration).toEqual({
+      priority_objectives: [1234],
+      stand_size: 'MEDIUM',
+      excluded_areas: [2984],
+    });
+    expect(result.configuration?.cobenefits).toBeUndefined();
+  });
+
+  it('should strip configuration to ONLY stand_size for CUSTOM scenario if priority_objectives is empty', () => {
+    const customScenario: Scenario = { ...baseScenario, type: 'CUSTOM' };
+    const payload: ScenarioV3Payload = {
+      ...baseV3Payload,
+      configuration: {
+        priority_objectives: [],
+        stand_size: 'MEDIUM',
+        excluded_areas: [1, 2, 3], // This should be lost because objectives are missing
+      },
+    };
+    const result = sanitizePayloadForScenarioType(customScenario, payload);
+    // Because it's CUSTOM and objectives are empty, we expect a stripped config
+    expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
+    expect(result.configuration?.excluded_areas).toBeUndefined();
+  });
+
+  it('should keep cleaned configuration for a PRESET scenario if treatment_goal is present', () => {
+    const presetScenario: Scenario = { ...baseScenario, type: 'PRESET' };
+    const payload: ScenarioV3Payload = {
+      ...baseV3Payload,
+      treatment_goal: 1,
+      configuration: {
+        priority_objectives: [],
+        stand_size: 'MEDIUM',
+        excluded_areas: [555],
+      },
+    };
+    const result = sanitizePayloadForScenarioType(presetScenario, payload);
+    // Goal is present, so we just remove empty arrays
+    expect(result.configuration).toEqual({
+      stand_size: 'MEDIUM',
+      excluded_areas: [555],
+    });
+    expect(result.configuration?.priority_objectives).toBeUndefined();
+  });
+
+  it('should strip configuration for a PRESET scenario if treatment_goal is missing/null', () => {
+    const presetScenario: Scenario = { ...baseScenario, type: 'PRESET' };
+    const payload: Partial<ScenarioV3Payload> = {
+      treatment_goal: undefined, // Missing!
+      configuration: {
+        stand_size: 'MEDIUM',
+        excluded_areas: [999],
+      },
+    };
+    const result = sanitizePayloadForScenarioType(presetScenario, payload);
+    expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
   });
 });

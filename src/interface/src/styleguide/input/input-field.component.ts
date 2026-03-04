@@ -8,7 +8,7 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { InputDirective } from './input.directive';
-
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export type ShowSupportMessage = 'always' | 'on-error' | false;
 
 /**
@@ -23,7 +23,12 @@ export type ShowSupportMessage = 'always' | 'on-error' | false;
 @Component({
   selector: 'sg-input-field',
   standalone: true,
-  imports: [MatIconModule, CommonModule, InputDirective],
+  imports: [
+    MatIconModule,
+    MatProgressSpinnerModule,
+    CommonModule,
+    InputDirective,
+  ],
   templateUrl: './input-field.component.html',
   styleUrl: './input-field.component.scss',
 })
