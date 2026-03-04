@@ -54,7 +54,8 @@ build-storybook:
 remove-local-sourcemaps:
 	@echo "Removing Sourcemaps from build" ; \
 	rm -rf ./src/interface/dist/out/**.map ; \
-	rm -rf ./src/interface/dist/interface/**.map
+	rm -rf ./src/interface/dist/interface/**.map ; \
+	rm -f ${PUBLIC_WWW_DIR}*.map
 
 # This command uploads sourcemaps to Sentry and injects a sourceId reference.
 # if we have a tagged release, we associate it with the sourcemaps,
