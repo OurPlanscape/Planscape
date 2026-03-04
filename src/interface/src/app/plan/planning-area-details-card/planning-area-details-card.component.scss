@@ -6,12 +6,10 @@
     border: 1px solid var(--Neutral-Soft-gray, #E1E1E1);
     background: var(--Neutral-White, #FFF);
     padding: 16px;
-
-    /* shadow-lg */
-    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
     display: flex;
     flex-direction: column;
     gap: 16px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
 }
 
 .heading {
