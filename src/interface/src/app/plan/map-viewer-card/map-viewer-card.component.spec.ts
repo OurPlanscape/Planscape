@@ -8,10 +8,9 @@ describe('MapViewerCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapViewerCardComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapViewerCardComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapViewerCardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
