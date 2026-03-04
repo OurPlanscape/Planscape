@@ -3,11 +3,12 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { DataLayersService } from '@services';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
+import { ToggleComponent } from '@styleguide';
 
 @Component({
   selector: 'app-base-layer-toggle',
   standalone: true,
-  imports: [MatSlideToggleModule, FormsModule],
+  imports: [MatSlideToggleModule, FormsModule, ToggleComponent],
   templateUrl: './base-layer-toggle.component.html',
   styleUrl: './base-layer-toggle.component.scss',
 })

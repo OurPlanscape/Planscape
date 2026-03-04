@@ -33,6 +33,7 @@ export * from '@styleguide/steps/step.component';
 export * from '@styleguide/steps/steps-nav.component';
 export * from '@styleguide/steps/steps-actions.component';
 export * from '@styleguide/tile-button/tile-button.component';
+export * from '@styleguide/toggle/toggle.component';
 export * from '@styleguide/treatment-card/treatment-card.component';
 export * from '@styleguide/treatment-prescription/treatment-prescription.component';
 export * from '@styleguide/treatment-type-icon/treatment-type-icon.component';

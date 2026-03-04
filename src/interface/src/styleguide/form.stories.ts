@@ -16,6 +16,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ToggleComponent } from '@styleguide/toggle/toggle.component';
 
 @Component({
   selector: 'sg-demo-form',
@@ -32,6 +34,8 @@ import { provideAnimations } from '@angular/platform-browser/animations';
     MatCheckboxModule,
     MatRadioModule,
     MatSelectModule,
+    MatSlideToggleModule,
+    ToggleComponent,
   ],
   styles: `
     form {
@@ -45,6 +49,27 @@ import { provideAnimations } from '@angular/platform-browser/animations';
       flex-direction: column;
       align-items: flex-start;
       min-width: 200px;
+    }
+    .toggle-stories {
+      padding: 32px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      text-align: left;
+    }
+    .toggle-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .toggle-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 88px);
+      row-gap: 28px;
+      align-items: center;
+      padding: 24px 32px;
+      border-radius: 8px;
+      width: fit-content;
     }
   `,
   templateUrl: './form.stories.html',
