@@ -1,0 +1,20 @@
+
+<mgl-map
+  [id]="'map_preview'"
+  [boxZoom]="false"
+  [dragRotate]="false"
+  [interactive]="true"
+  [pitchWithRotate]="false"
+  [fitBoundsOptions]=""
+  [attributionControl]="false"
+  [style]="'https://demotiles.maplibre.org/style.json'"
+      [zoom]="[1]"
+      [center]="[0, 0]"
+      >
+  <app-planning-area-layer
+    *ngIf="mapLibreMap && (planId$ | async)"></app-planning-area-layer>
+
+</mgl-map>
+<div class="overlay-navigation"><div class="label">Hello</div>
+<mat-icon>chevron_right</mat-icon>
+</div>
