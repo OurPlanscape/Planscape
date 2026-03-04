@@ -15,6 +15,7 @@ from modules.serializers import (
     BaseModuleSerializer,
     ForsysModuleSerializer,
     MapModuleSerializer,
+    PrioritizeSubUnitsModuleSerializer,
 )
 
 RunnableItem = Union[PlanningArea, Scenario]
@@ -186,6 +187,27 @@ class ClimateForesightModule(BaseModule):
         ).select_related("organization").distinct()
 
 
+class PrioritizeSubUnitsModule(BaseModule):
+    name = "prioritize_sub_units"
+
+    def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
+        return False
+
+    def _can_run_scenario(self, runnable: Scenario) -> bool:
+        return True
+
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return PrioritizeSubUnitsModuleSerializer
+    
+    def _get_options(self, **kwargs):
+        options = super()._get_options(**kwargs)
+        sub_units_layers = DataLayer.objects.all().by_meta_module(self.name)
+        return {
+            **options,
+            "sub_units": list(sub_units_layers)
+        }
+
+
 def get_module(module_name: str) -> BaseModule:
     return MODULE_HANDLERS[module_name]
 
@@ -213,4 +235,5 @@ MODULE_HANDLERS = {
     "impacts": ImpactsModule(),
     "map": MapModule(),
     "climate_foresight": ClimateForesightModule(),
+    "prioritize_sub_units": PrioritizeSubUnitsModule(),
 }

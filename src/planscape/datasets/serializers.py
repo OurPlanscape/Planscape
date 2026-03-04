@@ -105,6 +105,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         read_only=True,
     )
     styles = serializers.SerializerMethodField()
+    path = serializers.SerializerMethodField()
     original_name = serializers.CharField(read_only=True)
 
     def _default_raster_style(self, instance):
@@ -125,9 +126,14 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
                 nodata = instance.info.get("nodata") if instance.info else None
                 if nodata:
                     stats["nodata"] = nodata
-                return get_default_raster_style(**stats)
+                return [get_default_raster_style(**stats)]
             case _:
-                return get_default_vector_style()
+                return [get_default_vector_style()]
+
+    def get_path(self, instance) -> Collection[str]:
+        if instance.category:
+            return instance.category._get_full_path(instance.category.pk)
+        return []
 
     class Meta:
         model = DataLayer
@@ -145,6 +151,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "geometry_type",
             "status",
             "styles",
+            "path",
             "url",
             "storage_type",
             "public_url",

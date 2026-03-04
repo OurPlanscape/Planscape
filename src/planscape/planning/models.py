@@ -37,6 +37,7 @@ class ScenarioCapability(models.TextChoices):
     IMPACTS = ("IMPACTS", "Impacts")
     MAP = ("MAP", "Map")
     CLIMATE_FORESIGHT = ("CLIMATE_FORESIGHT", "Climate Foresight")
+    PRIORITIZE_SUB_UNITS = ("PRIORITIZE_SUB_UNITS", "Prioritize Sub-Units")
 
 
 class PlanningAreaManager(AliveObjectsManager):
