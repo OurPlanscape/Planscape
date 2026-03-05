@@ -1,0 +1,19 @@
+<sg-expanded-panel (clickedClose)="close()" height="narrow">
+  <div panelTitle>
+Hello I am a title   
+  </div>
+  <ng-template #noStand>
+    <div panelTitle #noStand>Stand Level Data</div>
+  </ng-template>
+  <div panelContent>
+    <sg-notes-sidebar
+        [showHeader]="false"
+        [notes]="notes"
+        [notesState]="notesSidebarState"
+        (createNote)="addNote($event)"
+        (deleteNote)="handleNoteDelete($event)"
+        [canAddNotes]="canAddScenario(plan)"
+        noNotesTitleText="No Notes For This Planning Area Yet"
+        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
+  </div>
+</sg-expanded-panel>
