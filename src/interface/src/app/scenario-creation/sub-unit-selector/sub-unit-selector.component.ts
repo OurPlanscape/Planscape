@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { StepDirective } from '@styleguide';
-import { map, Observable, take } from 'rxjs';
+import { combineLatest, map, Observable, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import {
@@ -52,7 +52,7 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
     ]),
   });
 
-  subUnitLayerOptions$: Observable<BaseLayer[]> = this.moduleService
+  subUnitLayers$: Observable<BaseLayer[]> = this.moduleService
     .getModule<ApiModule<SubUnits>>('prioritize_sub_units')
     .pipe(
       map((results) => {
@@ -71,10 +71,19 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
   }
 
   override beforeStepLoad(): void {
-    // set the form selection to whatever is in the saved config
-    this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
+    combineLatest({
+      config: this.newScenarioState.scenarioConfig$.pipe(take(1)),
+      layers: this.subUnitLayers$.pipe(take(1)),
+    }).subscribe(({ config, layers }) => {
       if (config.sub_units_layer) {
         this.form.controls['sub_units_layer'].setValue(config.sub_units_layer);
+        // grab full layer object for the selected layer from the collection of known subunit layers
+        const matchedLayer = layers.find(
+          (layer) => layer.id === config.sub_units_layer
+        );
+        if (matchedLayer) {
+          this.baseLayersStateService.updateBaseLayers(matchedLayer, false);
+        }
       }
     });
   }
