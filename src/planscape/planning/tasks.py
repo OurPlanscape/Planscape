@@ -287,12 +287,20 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         planning_area, scenario.get_stand_size(), excluded_datalayers
     )
     run_config = build_run_configuration(scenario)
-
+    
     forsys_input = {
         "stand_ids": stand_ids,
         "datalayers": run_config["datalayers"],
         "variables": run_config["variables"],
     }
+
+    if feature_enabled("PLANNING_APPROACH"):
+        forsys_input.update(
+            {
+                "run_with_patchmax": run_config["run_with_patchmax"],
+                "projects_data": run_config["projects_data"],
+            }
+        )
 
     with transaction.atomic():
         scenario = Scenario.objects.select_for_update().get(id=scenario_id)

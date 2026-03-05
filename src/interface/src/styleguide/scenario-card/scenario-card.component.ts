@@ -70,6 +70,7 @@ export class ScenarioCardComponent {
   @Output() toggleArchiveStatus = new EventEmitter();
   @Output() deleteScenario = new EventEmitter();
   @Output() editScenario = new EventEmitter();
+  @Output() copyScenario = new EventEmitter();
   @Output() clicked = new EventEmitter();
 
   readonly chipsStatus: Record<

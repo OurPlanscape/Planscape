@@ -57,7 +57,7 @@ export function scenarioCanHaveTreatmentPlans(
 // TODO this needs to be refactored.
 // We should be taking all formData to configuration by default, and treat
 // outliers separately, not the other way around.
-export function convertFlatConfigurationToDraftPayload(
+export function convertOldConfigurationToV3Payload(
   formData: Partial<ScenarioDraftConfiguration>,
   thresholdIds: Map<string, number>
 ): Partial<ScenarioV3Payload> {
@@ -171,4 +171,48 @@ export function isCustomScenario(type: SCENARIO_TYPE) {
 
 export function isPlanningApproachSubUnits(type: PLANNING_APPROACH) {
   return type === 'PRIORITIZE_SUB_UNITS';
+}
+
+function stripEmptyConfigurations(
+  config: Partial<ScenarioV3Config>
+): Partial<ScenarioV3Config> {
+  return Object.entries(config).reduce((acc, [key, value]) => {
+    // If it's an array, only keep it if it has items
+    if (Array.isArray(value)) {
+      if (value.length > 0) acc[key] = value;
+    } else if (value !== null && typeof value === 'object') {
+      if (Object.keys(value).length > 0) acc[key] = value;
+    } else if (value !== undefined && value !== null) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as any);
+}
+
+// if the configs are incomplete, we do some sanitization here to avoid violating BE constraints
+export function sanitizePayloadForScenarioType(
+  scenario: Scenario,
+  payload: Partial<ScenarioV3Payload>
+): Partial<ScenarioV3Payload> {
+  const { type } = scenario;
+  const currentConfig = payload.configuration ?? {};
+  const hasObjectives =
+    Array.isArray(currentConfig.priority_objectives) &&
+    currentConfig.priority_objectives.length > 0;
+  const hasGoal =
+    payload.treatment_goal !== undefined && payload.treatment_goal !== null;
+  let finalConfig = stripEmptyConfigurations(currentConfig);
+  // If we're missing the core requirements for the type, just include stand_size if exists
+  if (
+    (type === 'PRESET' && !hasGoal) ||
+    (type === 'CUSTOM' && !hasObjectives)
+  ) {
+    finalConfig = currentConfig.stand_size
+      ? { stand_size: currentConfig.stand_size }
+      : {};
+  }
+  return {
+    ...payload,
+    configuration: finalConfig,
+  };
 }
