@@ -11,6 +11,7 @@ import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
 import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, mergeMap, of, switchMap } from 'rxjs';
+import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
 import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapProjectAreasComponent } from '@maplibre-map/map-project-areas/map-project-areas.component';
@@ -30,7 +31,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
 import { Scenario } from '@types';
-import { BaseLayerToggleComponent } from '@maplibre-map/base-layer-toggle/base-layer-toggle.component';
+import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-toggle.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -53,7 +54,7 @@ import { BaseLayerToggleComponent } from '@maplibre-map/base-layer-toggle/base-l
     ScenarioStandsComponent,
     MatProgressSpinnerModule,
     MapBaseLayersComponent,
-    BaseLayerToggleComponent,
+    SubUnitToggleComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -102,6 +103,20 @@ export class ScenarioMapComponent {
     this.newScenarioState.currentStep$,
   ]).pipe(
     map(([isScenarioSuccessful, step]) => isScenarioSuccessful || step !== null)
+  );
+
+  showSubUnitToggle$ = combineLatest([
+    this.newScenarioState.currentStep$,
+    this.newScenarioState.scenarioConfig$,
+    this.newScenarioState.selectedSubUnitLayer$,
+  ]).pipe(
+    map(
+      ([step, config, layer]) =>
+        step?.showSubUnitToggle !== false &&
+        !!config.planning_approach &&
+        isPlanningApproachSubUnits(config.planning_approach) &&
+        !!layer
+    )
   );
 
   /**

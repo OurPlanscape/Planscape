@@ -9,7 +9,7 @@
     (valueChange)="handleOpacityChange($event)"
     [tooltip]="(opacityTooltip$ | async) || ''"></sg-opacity-slider>
 
-  <app-base-layer-toggle></app-base-layer-toggle>
+  <app-sub-unit-toggle *ngIf="showSubUnitToggle$ | async"></app-sub-unit-toggle>
 </app-map-nav-bar>
 
 <mgl-map

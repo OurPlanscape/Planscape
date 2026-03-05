@@ -6,6 +6,7 @@ export interface ScenarioStepConfig {
   includeExcludedAreas: boolean; // if this step should include ExcludedAreas when fetching available stands
   refreshAvailableStands: boolean; // if this step needs to refresh available stands
   hasMap: boolean; // if this step shows the map
+  showSubUnitToggle?: boolean; // defaults to true; set false to hide the sub-unit toggle
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
@@ -16,6 +17,7 @@ export const SUB_UNITS_STEP: ScenarioStepConfig = {
   includeExcludedAreas: false,
   refreshAvailableStands: true,
   hasMap: true,
+  showSubUnitToggle: false,
 };
 
 export const exitModalData = (scenarioName: string) => ({
