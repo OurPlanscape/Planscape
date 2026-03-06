@@ -1,0 +1,86 @@
+@import "colors";
+
+$color-on-disabled: rgba($color-brand-green, 0.5);
+
+:host {
+  display: inline-flex;
+}
+
+.sg-toggle {
+  --toggle-track-width: 42px;
+  --toggle-track-height: 24px;
+  --toggle-handle-size: 20px;
+  --toggle-handle-margin: 2px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+
+  &--disabled {
+    cursor: not-allowed;
+  }
+
+  &--small {
+    --toggle-track-width: 28px;
+    --toggle-track-height: 16px;
+    --toggle-handle-size: 12px;
+    --toggle-handle-margin: 2px;
+  }
+}
+
+.sg-toggle__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.sg-toggle__track {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--toggle-track-width);
+  height: var(--toggle-track-height);
+  border-radius: calc(var(--toggle-track-height) * 0.5);
+  background-color: $color-soft-gray;
+  box-sizing: border-box;
+  transition: background-color 90ms ease;
+
+  .sg-toggle__input:checked + & {
+    background-color: $color-brand-teal;
+  }
+
+  .sg-toggle__input:disabled + & {
+    background-color: $color-soft-gray;
+  }
+
+  .sg-toggle__input:disabled:checked + & {
+    background-color: $color-on-disabled;
+  }
+
+  .sg-toggle__input:focus-visible + & {
+    outline: 2px solid $color-brand-teal;
+    outline-offset: 2px;
+  }
+}
+
+.sg-toggle__handle {
+  position: absolute;
+  top: var(--toggle-handle-margin);
+  left: var(--toggle-handle-margin);
+  width: var(--toggle-handle-size);
+  height: var(--toggle-handle-size);
+  border-radius: 50%;
+  background-color: #fff;
+  transition: left 90ms ease;
+
+  .sg-toggle__input:checked + .sg-toggle__track & {
+    left: calc(var(--toggle-track-width) - var(--toggle-handle-size) - var(--toggle-handle-margin));
+  }
+
+  .sg-toggle__input:disabled:not(:checked) + .sg-toggle__track & {
+    background-color: $color-text-gray;
+  }
+}

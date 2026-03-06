@@ -1,0 +1,5 @@
+@if (layer$ | async; as layer) {
+  <sg-toggle [(ngModel)]="showBaseLayer" (change)="toggleBaseLayer(layer)">
+    {{ layer.name }}
+  </sg-toggle>
+}

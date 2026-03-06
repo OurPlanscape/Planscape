@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
-import { SectionComponent } from '@styleguide';
+import { SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
-  FormControl,
   Validators,
 } from '@angular/forms';
-import { StepDirective } from '@styleguide';
 import { combineLatest, map, Observable, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
@@ -68,6 +67,7 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
 
   onSubunitSelect(selectedLayer: BaseLayer) {
     this.baseLayersStateService.updateBaseLayers(selectedLayer, false);
+    this.newScenarioState.setSelectedSubUnitLayer(selectedLayer);
   }
 
   override beforeStepLoad(): void {
@@ -83,6 +83,7 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
         );
         if (matchedLayer) {
           this.baseLayersStateService.updateBaseLayers(matchedLayer, false);
+          this.newScenarioState.setSelectedSubUnitLayer(matchedLayer);
         }
       }
     });
