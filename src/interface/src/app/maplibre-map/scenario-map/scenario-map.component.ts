@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   ControlComponent,
   LayerComponent,
@@ -33,6 +34,7 @@ import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-l
 import { Scenario } from '@types';
 import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-toggle.component';
 
+@UntilDestroy()
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
@@ -116,7 +118,8 @@ export class ScenarioMapComponent {
         !!config.planning_approach &&
         isPlanningApproachSubUnits(config.planning_approach) &&
         !!layer
-    )
+    ),
+    untilDestroyed(this)
   );
 
   /**
