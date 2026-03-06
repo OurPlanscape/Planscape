@@ -1,9 +1,9 @@
 import {
   Component,
-  Input,
-  Output,
   EventEmitter,
   forwardRef,
+  Input,
+  Output,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -40,7 +40,7 @@ export class ToggleComponent implements ControlValueAccessor {
   }
 
   writeValue(value: boolean): void {
-    this.checked = !!value;
+    this.checked = value;
   }
 
   registerOnChange(fn: (value: boolean) => void): void {

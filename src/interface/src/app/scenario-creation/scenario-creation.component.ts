@@ -25,6 +25,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  BaseLayer,
   DataLayer,
   Scenario,
   SCENARIO_TYPE,
@@ -64,6 +65,7 @@ import { FeatureService } from '@features/feature.service';
 import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import { BASE_LAYER_STYLE } from '@maplibre-map/map-base-layers/map-base-layers-style.token';
 import { MapModuleService } from '@services/map-module.service';
 import { PlanState } from '@plan/plan.state';
 import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-step/treatment-goal-step.component';
@@ -75,6 +77,17 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
   providers: [
     { provide: MAP_MODULE_NAME, useValue: 'forsys' },
     { provide: USE_GEOMETRY, useValue: true },
+    {
+      provide: BASE_LAYER_STYLE,
+      useFactory: (state: NewScenarioState) => ({
+        fillColor: '#356A72',
+        lineColor: '#356A72',
+        insertBeforeLayer: 'scenario-stands-fill',
+        appliesTo: (layer: BaseLayer) =>
+          layer.id === state.selectedSubUnitLayerId,
+      }),
+      deps: [NewScenarioState],
+    },
     BaseLayersStateService,
     DataLayersStateService,
     MapModuleService,

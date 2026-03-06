@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { SubUnitToggleComponent } from './sub-unit-toggle.component';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 describe('SubUnitToggleComponent', () => {
   let component: SubUnitToggleComponent;
@@ -8,9 +11,18 @@ describe('SubUnitToggleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SubUnitToggleComponent]
-    })
-    .compileComponents();
+      imports: [SubUnitToggleComponent],
+      providers: [
+        {
+          provide: NewScenarioState,
+          useValue: { selectedSubUnitLayer$: of(null) },
+        },
+        {
+          provide: BaseLayersStateService,
+          useValue: { updateBaseLayers: () => {}, clearBaseLayer: () => {} },
+        },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SubUnitToggleComponent);
     component = fixture.componentInstance;

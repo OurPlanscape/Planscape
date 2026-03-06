@@ -238,6 +238,10 @@ export class NewScenarioState {
     this._selectedSubUnitLayer$.next(layer);
   }
 
+  get selectedSubUnitLayerId(): number | null {
+    return this._selectedSubUnitLayer$.value?.id ?? null;
+  }
+
   setBaseStandsLoaded(loaded: boolean) {
     this.baseStandsReady$.next(loaded);
   }
