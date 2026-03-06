@@ -6,9 +6,9 @@
   [pitchWithRotate]="false"
   [fitBoundsOptions]=""
   [attributionControl]="false"
-  [style]="
-  ">
-  <app-planning-area-layer></app-planning-area-layer>
+  [style]="'https://demotiles.maplibre.org/style.json'">
+  <app-planning-area-layer
+    *ngIf="mapLibreMap && (planId$ | async)"></app-planning-area-layer>
 </mgl-map>
 <div class="overlay-navigation">
   <div class="label">Map Viewer</div>
