@@ -52,6 +52,7 @@ import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
   ScenarioStepConfig,
+  SUB_UNIT_LAYER_COLOR,
   SUB_UNITS_STEP,
 } from '@scenario/scenario.constants';
 import { SharedModule } from '@shared';
@@ -80,8 +81,8 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
     {
       provide: BASE_LAYER_STYLE,
       useFactory: (state: NewScenarioState) => ({
-        fillColor: '#356A72',
-        lineColor: '#356A72',
+        fillColor: SUB_UNIT_LAYER_COLOR,
+        lineColor: SUB_UNIT_LAYER_COLOR,
         insertBeforeLayer: 'scenario-stands-fill',
         appliesTo: (layer: BaseLayer) =>
           layer.id === state.selectedSubUnitLayerId,

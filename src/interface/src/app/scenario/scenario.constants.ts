@@ -1,3 +1,5 @@
+export const SUB_UNIT_LAYER_COLOR = '#356A72'; // $color-brand-teal
+
 export interface ScenarioStepConfig {
   label: string; // label for this step
   description: string; // description for this step
