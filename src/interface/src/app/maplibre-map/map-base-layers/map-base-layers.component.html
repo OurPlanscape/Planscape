@@ -3,7 +3,7 @@
     <app-map-arcgis-vector-layer
       *ngIf="mapLibreMap"
       [layer]="layer"
-      [before]="before"
+      [before]="layerInsertPosition"
       [mapLibreMap]="mapLibreMap"
       (updateTooltipData)="
         setTooltipData($event)
@@ -22,7 +22,7 @@
       (layerMouseOut)="hoverOutLayer()"
       type="fill"
       [paint]="fillLayerPaint(layer)"
-      [before]="before"></mgl-layer>
+      [before]="layerInsertPosition"></mgl-layer>
     <mgl-layer
       [id]="'layer_outline_' + layer.id"
       [source]="'source_' + layer.id"

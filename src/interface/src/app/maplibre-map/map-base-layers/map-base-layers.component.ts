@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Inject,
   Input,
   NgZone,
   OnDestroy,
   OnInit,
+  Optional,
 } from '@angular/core';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
@@ -22,6 +24,10 @@ import { MapBaseLayerTooltipComponent } from '@maplibre-map/map-base-layer-toolt
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { MapArcgisVectorLayerComponent } from '@maplibre-map/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
+import {
+  BASE_LAYER_STYLE,
+  BaseLayerStyleOverride,
+} from './map-base-layers-style.token';
 import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 
 @Component({
@@ -43,6 +49,22 @@ import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 export class MapBaseLayersComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() before = '';
+
+  /**
+   * Resolves the MapLibre `before` layer ID used when adding base layers to the map.
+   *
+   * Prefers `insertBeforeLayer` from the injected style override (e.g. 'scenario-stands-fill'),
+   * falling back to the `before` @Input, then to '' (add on top).
+   *
+   * The existence check is intentional: on initial map load the target layer may not
+   * exist yet (template order handles z-index in that case), but when the user
+   * dynamically enables a layer on a later step, the target layer is already present
+   * and the insert-below behaviour kicks in correctly.
+   */
+  get layerInsertPosition(): string {
+    const preferred = this.styleOverride?.insertBeforeLayer ?? this.before;
+    return preferred && this.mapLibreMap?.getLayer(preferred) ? preferred : '';
+  }
 
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
@@ -72,7 +94,10 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private changeDetectorRef: ChangeDetectorRef,
-    private zone: NgZone
+    private zone: NgZone,
+    @Optional()
+    @Inject(BASE_LAYER_STYLE)
+    private styleOverride: BaseLayerStyleOverride | null
   ) {}
 
   ngOnInit(): void {
@@ -107,14 +132,23 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
   }
 
   lineLayerPaint(layer: BaseLayer) {
-    return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
+    const override = this.styleOverrideFor(layer);
+    return defaultBaseLayerLine(
+      override?.lineColor ?? layer.styles[0].data['fill-outline-color']
+    );
   }
 
   fillLayerPaint(layer: BaseLayer) {
+    const override = this.styleOverrideFor(layer);
     return defaultBaseLayerFill(
-      layer.styles[0].data['fill-color'],
-      layer.styles[0].data['fill-opacity']
+      override?.fillColor ?? layer.styles[0].data['fill-color'],
+      override?.fillOpacity ?? layer.styles[0].data['fill-opacity']
     );
+  }
+
+  private styleOverrideFor(layer: BaseLayer): BaseLayerStyleOverride | null {
+    const o = this.styleOverride;
+    return o && (!o.appliesTo || o.appliesTo(layer)) ? o : null;
   }
 
   hoverOnLayer(event: MapMouseEvent, layer: BaseLayer, layerType: string) {

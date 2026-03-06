@@ -69,6 +69,15 @@ export class DataLayersService {
     );
   }
 
+  getDataLayerById(id: number) {
+    return this.http.get<DataLayer>(
+      environment.backend_endpoint + '/v2/datalayers/' + id + '/',
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   getDataLayersByIds(layer_ids: number[]) {
     // just return empty if there are no layer ids
     if (!layer_ids || layer_ids.length === 0) {
