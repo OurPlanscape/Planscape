@@ -25,6 +25,7 @@ from stands.tests.factories import StandFactory, StandMetricFactory
 from planning.models import (
     PlanningArea,
     PlanningAreaMapStatus,
+    ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioStatus,
     ScenarioType,
@@ -958,6 +959,32 @@ class ValidateScenarioConfigurationTest(TestCase):
         ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertEqual(errors, [])
+
+    
+    def test_missing_treatment_goal(self):
+        self.scenario.treatment_goal = None
+        self.scenario.type = ScenarioType.PRESET
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Scenario has no Treatment Goal assigned.", errors)
+    
+    def test_missing_priority_objectives(self):
+        self.scenario.configuration = {
+            "priority_objectives": []
+        }
+        self.scenario.type = ScenarioType.CUSTOM
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Configuration field `priority_objectives` is required for Custom Scenarios.", errors)
+
+    def test_missing_sub_units_layer(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "sub_units_layer": None
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Configuration field `sub_units_layer` is required for this Scenario.", errors)
 
 
 class CreateScenarioGuardTest(TestCase):
