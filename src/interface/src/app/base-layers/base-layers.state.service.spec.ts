@@ -102,6 +102,79 @@ describe('BaseLayersStateService', () => {
     });
   });
 
+  describe('addBaseLayer', () => {
+    it('should add a layer without removing existing ones', (done) => {
+      const layer1 = makeLayer(1, 'catA');
+      const layer2 = makeLayer(2, 'catB');
+      service.setBaseLayers([layer1]);
+
+      service.addBaseLayer(layer2);
+
+      service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([layer1, layer2]);
+        done();
+      });
+    });
+
+    it('should not add a duplicate layer', (done) => {
+      const layer = makeLayer(1, 'catA');
+      service.setBaseLayers([layer]);
+
+      service.addBaseLayer(layer);
+
+      service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([layer]);
+        done();
+      });
+    });
+
+    it('should set loading source id for the added layer', () => {
+      const layer = makeLayer(1, 'catA');
+      spyOn<any>(service, 'addLoadingSourceId');
+
+      service.addBaseLayer(layer);
+
+      expect(service['addLoadingSourceId']).toHaveBeenCalledWith('source_1');
+    });
+  });
+
+  describe('removeBaseLayer', () => {
+    it('should remove only the specified layer, leaving others intact', (done) => {
+      const layer1 = makeLayer(1, 'catA');
+      const layer2 = makeLayer(2, 'catA');
+      service.setBaseLayers([layer1, layer2]);
+
+      service.removeBaseLayer(layer1);
+
+      service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([layer2]);
+        done();
+      });
+    });
+
+    it('should return null when removing the last layer', (done) => {
+      const layer = makeLayer(1, 'catA');
+      service.setBaseLayers([layer]);
+
+      service.removeBaseLayer(layer);
+
+      service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toBeNull();
+        done();
+      });
+    });
+
+    it('should clear its loading source id', () => {
+      const layer = makeLayer(1, 'catA');
+      service.setBaseLayers([layer]);
+      spyOn<any>(service, 'removeLoadingSourceId');
+
+      service.removeBaseLayer(layer);
+
+      expect(service['removeLoadingSourceId']).toHaveBeenCalledWith('source_1');
+    });
+  });
+
   it('should update selectedBaseLayers$ using new updateFlatMultiBaseLayers', (done) => {
     const layer1: BaseLayer = makeLayer(1, 'catA');
     const layer2: BaseLayer = makeLayer(2, 'catB');

@@ -25,9 +25,9 @@ export class SubUnitToggleComponent {
 
   toggleBaseLayer(layer: BaseLayer) {
     if (this.showBaseLayer) {
-      this.baseLayersStateService.updateBaseLayers(layer, false);
+      this.baseLayersStateService.addBaseLayer(layer);
     } else {
-      this.baseLayersStateService.clearBaseLayer();
+      this.baseLayersStateService.removeBaseLayer(layer);
     }
   }
 }

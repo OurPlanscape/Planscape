@@ -19,7 +19,11 @@ describe('SubUnitToggleComponent', () => {
         },
         {
           provide: BaseLayersStateService,
-          useValue: { updateBaseLayers: () => {}, clearBaseLayer: () => {} },
+          useValue: {
+            addBaseLayer: () => {},
+            clearBaseLayer: () => {},
+            removeBaseLayer: () => {},
+          },
         },
       ],
     }).compileComponents();
