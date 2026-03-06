@@ -3,6 +3,12 @@ $breakpoint_xl: 1366px;
 $breakpoint_lg: 840px;
 $breakpoint_md: 768px;
 
+$breakpoint-tablet-min: 768px;
+$breakpoint-tablet-max: 1023px;
+$breakpoint-laptop-min: 1024px;
+$breakpoint-laptop-max: 1439px;
+$breakpoint-desktop-min: 1440px;
+
 @mixin on-extra-extra-large() {
   @media screen and (min-width: $breakpoint_xxl) {
     @content;
@@ -33,3 +39,20 @@ $breakpoint_md: 768px;
   }
 }
 
+@mixin desktop {
+  @media (min-width: #{$breakpoint-desktop-min}) {
+    @content;
+  }
+}
+
+@mixin laptop {
+  @media (min-width: #{$breakpoint-laptop-min}) and (max-width: #{$breakpoint-laptop-max}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: #{$breakpoint-tablet-min}) and (max-width: #{$breakpoint-tablet-max}) {
+    @content;
+  }
+}
