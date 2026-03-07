@@ -39,6 +39,10 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
     this.initEnabledTools();
   }
 
+  isPlanningOverviewEnabled() : boolean {
+    return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
+  }
+
   /**
    * We will add tools based on the logic related to each tool
    */

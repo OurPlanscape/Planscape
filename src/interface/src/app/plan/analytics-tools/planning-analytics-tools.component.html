@@ -1,5 +1,7 @@
-<div class="analytics-tools-container" *ngIf="hasEnabledTools">
+<div class="analytics-tools-container" [class.in-overview]="isPlanningOverviewEnabled" *ngIf="hasEnabledTools">
   <h3 class="section-title">Planning Area Analytics Tools</h3>
+  <div class="details" *ngIf="isPlanningOverviewEnabled">Our planning area tools are available to provide detailed analyses tailored to your planning
+        area.</div>
   <div class="tools-grid">
     <ng-container *ngFor="let tool of analyticsTools">
       <sg-tile-button

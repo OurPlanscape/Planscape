@@ -1,6 +1,16 @@
 @import 'colors';
 @import 'mixins';
 
+.in-overview {
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
+}
+
 .analytics-tools-container {
   background-color: white;
   border-top: 1px solid $color-soft-gray;
@@ -11,6 +21,11 @@
   @include h4();
   color: $color-text-dark;
   margin: 0 0 16px 0;
+}
+
+.details {
+    @include small-paragraph();
+    color: $color-dark-gray;
 }
 
 .tools-grid {

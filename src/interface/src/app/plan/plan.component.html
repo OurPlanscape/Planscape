@@ -1,17 +1,17 @@
+
+
+@if (!isPlanningOverviewEnabled) {
 <app-nav-bar area="SCENARIOS">
   <app-planning-area-titlebar-menu *ngIf="currentPlan$ | async; let currentPlan"
     [plan]="currentPlan"></app-planning-area-titlebar-menu>
 </app-nav-bar>
-
-@if (!isPlanningOverviewEnabled) {
-
 <div class="root-container overview">
   <app-resource-unavailable
     *ngIf="planNotFound"
     resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
     <div class="plan-summary-panel">
-      <sg-notes-panel
+      <sg-notes-sidebar
         [showHeader]="true"
         [notes]="sidebarNotes"
         [notesState]="notesSidebarState"
@@ -19,7 +19,7 @@
         (deleteNote)="handleNoteDelete($event)"
         [canAddNotes]="canAddScenario(plan)"
         noNotesTitleText="No Notes For This Planning Area Yet"
-        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-panel>
+        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
       <app-planning-analytics-tools
         [planningAreaCapabilities]="
           plan.capabilities
@@ -33,20 +33,23 @@
   </ng-container>
 </div>
 } @else {
-<div class="root-container overview">
+
+  <app-nav-bar area="SCENARIOS"></app-nav-bar>
+<div>
   <app-resource-unavailable *ngIf="planNotFound" resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
-    
+    <div class="plan-overview-container">
     <div class="plan-overview-panel">
-
+      <div class="placeholder-card">Info Card Goes Here</div>
+      <div class="placeholder-card">Map Viewer Goes Here</div>
       <app-planning-analytics-tools [planningAreaCapabilities]="
           plan.capabilities
         "></app-planning-analytics-tools>
+      <div class="placeholder-card notes-placeholder">Notes Card Goes Here</div>
     </div>
-
-    <mat-divider [vertical]="true"></mat-divider>
     <div class="plan-content with-overview">
       <app-saved-scenarios></app-saved-scenarios>
+    </div>
     </div>
   </ng-container>
 </div>

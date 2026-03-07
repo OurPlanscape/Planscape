@@ -52,7 +52,7 @@ $breakpoint-desktop-min: 1440px;
 }
 
 @mixin tablet {
-  @media (min-width: #{$breakpoint-tablet-min}) and (max-width: #{$breakpoint-tablet-max}) {
+  @media (max-width: #{$breakpoint-tablet-max}) {
     @content;
   }
 }

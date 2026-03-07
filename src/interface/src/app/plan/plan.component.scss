@@ -8,7 +8,7 @@
   height: calc(100% - $navbar-height);
   width: 100%;
 
-  &.overview {
+  &.overview:not(.overview-enabled) {
     @include on-small() {
       height: initial;
       flex-direction: column-reverse;
@@ -117,9 +117,11 @@
   .plan-content-panel {
     width: 100%;
   }
+
   .plan-content {
     display: block;
   }
+
   .root-container {
     height: initial;
   }
@@ -137,18 +139,49 @@
 
 /* --- Planning Area Overview-specific styles --- */
 
+.plan-overview-container {
+  display: flex;
+  flex-direction: row;
+  height: calc(100% - $navbar-height);
+  width: 100%;
+  background-color: $color-light-gray;
+
+
+  @include tablet() {
+    height: initial;
+    flex-direction: column;
+  }
+}
+
 .plan-overview-panel {
   padding: 16px;
-    background-color: white;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  width: 300px;
+  width: 624px;
   height: 100%;
+  gap: 16px;
 
+
+  @include tablet() {
+    width: 100%;
+    height: fit-content;
+  }
 }
 
-// less than 11...??
-@media screen {
-  
+/* TODO - remove this when PLANNING_AREA_OVERVIEW items are in place*/
+.placeholder-card {
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
+  height: 200px;
+  @include h4();
+  &.notes-placeholder {
+    height: 40px;
+    padding: 16px;
+  }
 }
