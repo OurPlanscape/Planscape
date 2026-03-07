@@ -57,8 +57,6 @@ export class MapViewerCardComponent {
             number,
             number,
           ];
-          console.log('we have bounds?', bounds);
-
           if (this.mapLibreMap) {
             this.mapLibreMap.fitBounds(bounds, {
               padding: 80,
