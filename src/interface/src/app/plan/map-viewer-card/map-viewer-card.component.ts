@@ -2,14 +2,16 @@ import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapComponent, LayerComponent } from '@maplibre/ngx-maplibre-gl';
-import { Map, Map as MapLibreMap } from 'maplibre-gl';
-import { DEFAULT_BASE_MAP, Plan } from '@app/types';
+import { Map, Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
+import { DEFAULT_BASE_MAP, Extent, Plan } from '@app/types';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { PlanState } from '../plan.state';
 import bbox from '@turf/bbox';
 import { filter, tap } from 'rxjs';
+import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
+import { AuthService } from '@app/services';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -28,13 +30,19 @@ import { filter, tap } from 'rxjs';
 })
 export class MapViewerCardComponent {
   mapLibreMap!: MapLibreMap;
-  baseMapUrl$ = this.mapConfigState.baseMapUrl$;
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
   currentPlan$ = this.planState.currentPlan$;
+
+  boundsOptions = {
+    padding: 80,
+    duration: 0,
+  };
 
   constructor(
     private mapConfigState: MapConfigState,
     private mapConfigService: MapConfigService,
-    private planState: PlanState
+    private planState: PlanState,
+    private authService: AuthService
   ) {
     this.mapConfigService.initialize();
     this.mapConfigState.setShowMapControls(false);
@@ -51,20 +59,15 @@ export class MapViewerCardComponent {
       .pipe(
         filter((plan) => !!plan && !!plan.geometry),
         tap((plan: Plan) => {
-          const bounds = bbox(plan.geometry) as [
-            number,
-            number,
-            number,
-            number,
-          ];
+          const bounds = bbox(plan.geometry) as Extent;
           if (this.mapLibreMap) {
-            this.mapLibreMap.fitBounds(bounds, {
-              padding: 80,
-              duration: 0,
-            });
+            this.mapLibreMap.fitBounds(bounds, this.boundsOptions);
           }
         })
       )
       .subscribe();
   }
+
+  transformRequest: RequestTransformFunction = (url, resourceType) =>
+    addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 }
