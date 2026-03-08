@@ -1,18 +1,22 @@
-<sg-expanded-panel (clickedClose)="close()" height="narrow">
-  <div panelTitle>Notes <span *ngIf="notes.length > 0">({{ notes.length }})</span>
+<sg-expanded-panel
+  (clickedClose)="close()"
+  height="narrow"
+  class="expanded-panel">
+  <div panelTitle>
+    Notes <span *ngIf="notes.length > 0">({{ notes.length }})</span>
   </div>
   <ng-template #noStand>
     <div panelTitle #noStand>Stand Level Data</div>
   </ng-template>
-  <div panelContent>
+  <div panelContent class="notes-panel">
     <sg-notes-sidebar
-        [showHeader]="false"
-        [notes]="notes"
-        [notesState]="notesSidebarState"
-        (createNote)="addNote($event)"
-        (deleteNote)="handleNoteDelete($event)"
-        [canAddNotes]="hasPermission(plan)"
-        noNotesTitleText="No Notes For This Planning Area Yet"
-        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
+      [showHeader]="false"
+      [notes]="notes"
+      [notesState]="notesSidebarState"
+      (createNote)="addNote($event)"
+      (deleteNote)="handleNoteDelete($event)"
+      [canAddNotes]="true"
+      noNotesTitleText="No Notes For This Planning Area Yet"
+      noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
   </div>
 </sg-expanded-panel>

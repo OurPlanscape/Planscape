@@ -1,7 +1,9 @@
-<h3 class="section-title">Notes ({{ notes.length }})</h3>
-<button
-  sg-button
-  variant="icon-only"
-  icon="open_in_full"
-  [outlined]="true"
-  (click)="openNotesPanel()"></button>
+<ng-container *ngIf="notes$ | async as notes">
+  <h3 class="section-title">Notes ({{ notes.length }})</h3>
+  <button
+    sg-button
+    variant="icon-only"
+    icon="open_in_full"
+    [outlined]="true"
+    (click)="openNotesPanel()"></button>
+</ng-container>
