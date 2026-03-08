@@ -21,6 +21,13 @@ export interface MapData {
     base_datasets: MapDataDataSet[];
   };
 }
+export interface SubUnits {
+  datasets: {
+    main_datasets: MapDataDataSet[];
+    base_datasets: MapDataDataSet[];
+  };
+  sub_units: BaseLayer[];
+}
 
 export interface MapDataDataSet extends BaseDataSet {
   preferred_display_type: 'MAIN_DATALAYERS' | 'BASE_DATALAYERS';

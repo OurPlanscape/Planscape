@@ -84,8 +84,7 @@ export class ExcludeAreasSelectorComponent
   }
 
   handleViewedItemsChange(viewedItems: BaseLayer[]) {
-    this.viewingAreas = [...viewedItems];
-    this.baseLayersStateService.updateFlatMultiBaseLayers(this.viewingAreas);
+    this.replaceViewingLayers([...viewedItems]);
   }
 
   getData() {
@@ -94,8 +93,20 @@ export class ExcludeAreasSelectorComponent
 
   clearViewedLayers() {
     this.baseLayersStateService.enableBaseLayerHover(false);
-    this.baseLayersStateService.setBaseLayers([]);
-    this.viewingAreas = [];
+    this.replaceViewingLayers([]);
+  }
+
+  private replaceViewingLayers(next: BaseLayer[]) {
+    const currentViewingIds = new Set(this.viewingAreas.map((l) => l.id));
+    this.viewingAreas = next;
+    this.baseLayersStateService.selectedBaseLayers$
+      .pipe(take(1))
+      .subscribe((layers) => {
+        const persistent = (layers ?? []).filter(
+          (l) => !currentViewingIds.has(l.id)
+        );
+        this.baseLayersStateService.setBaseLayers([...persistent, ...next]);
+      });
   }
 
   override beforeStepExit(): void {

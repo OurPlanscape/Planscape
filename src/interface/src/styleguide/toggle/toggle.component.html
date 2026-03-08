@@ -1,0 +1,15 @@
+<label
+  class="sg-toggle"
+  [class.sg-toggle--small]="size === 'small'"
+  [class.sg-toggle--disabled]="disabled">
+  <input
+    class="sg-toggle__input"
+    type="checkbox"
+    [checked]="checked"
+    [disabled]="disabled"
+    (change)="onInputChange($event)" />
+  <span class="sg-toggle__track">
+    <span class="sg-toggle__handle"></span>
+  </span>
+  <ng-content></ng-content>
+</label>

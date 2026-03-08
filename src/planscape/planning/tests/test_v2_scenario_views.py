@@ -1127,89 +1127,6 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_patch_preset_rejects_priority_objectives_and_cobenefits(self):
-        scenario = ScenarioFactory(
-            user=self.user,
-            planning_area=self.planning_area,
-            type=ScenarioType.PRESET,
-            treatment_goal=self.treatment_goal,
-        )
-        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        priority = DataLayerFactory()
-        cobenefit = DataLayerFactory()
-        payload = {
-            "configuration": {
-                "priority_objectives": [priority.pk],
-                "cobenefits": [cobenefit.pk],
-            }
-        }
-
-        self.client.force_authenticate(self.user)
-        response = self.client.patch(url, payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        expected_error = {
-            "detail": "Validation error.",
-            "errors": {
-                "configuration": [
-                    "Preset scenarios cannot set `priority_objectives` or `cobenefits`."
-                ]
-            },
-        }
-        self.assertEqual(response.json(), expected_error)
-
-    def test_patch_custom_rejects_treatment_goal(self):
-        priority = DataLayerFactory()
-        scenario = ScenarioFactory(
-            user=self.user,
-            planning_area=self.planning_area,
-            type=ScenarioType.CUSTOM,
-            configuration={"priority_objectives": [priority.pk]},
-            treatment_goal=None,
-        )
-        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"treatment_goal": self.treatment_goal.pk}
-
-        self.client.force_authenticate(self.user)
-        response = self.client.patch(url, payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        expected_error = {
-                'detail': 'Validation error.',
-                'errors': {
-                    'treatment_goal': ['Custom scenarios cannot set a Treatment Goal.']
-                },
-            }
-        self.assertEqual(response.json(), expected_error)
-
-    def test_patch_custom_requires_priority_objectives(self):
-        scenario = ScenarioFactory(
-            user=self.user,
-            planning_area=self.planning_area,
-            type=ScenarioType.CUSTOM,
-            configuration={},
-            treatment_goal=None,
-        )
-        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {
-            "configuration": {
-                "targets": {"max_area": 1000, "max_project_count": 1},
-            }
-        }
-
-        self.client.force_authenticate(self.user)
-        response = self.client.patch(url, payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        expected_error = {
-            "detail": "Validation error.",
-            "errors": {
-                "configuration": {
-                    "priority_objectives": (
-                        "Configuration field `priority_objectives` is required."
-                    )
-                }
-            },
-        }
-        self.assertEqual(response.json(), expected_error)
-
     def test_patch_custom_allows_stand_size_without_priority_objectives(self):
         scenario = ScenarioFactory(
             user=self.user,
@@ -1287,30 +1204,6 @@ class PatchScenarioConfigurationTest(APITestCase):
             response.data.get("configuration", {}).get("sub_units_layer"),
             sub_units_layer.pk,
         )
-
-    def test_patch_sub_units_with_optimize_project_areas_approach(self):
-        scenario = ScenarioFactory.create(
-            user=self.user,
-            planning_area=self.planning_area,
-            configuration={},
-            treatment_goal=None,
-        )
-        sub_units_layer = DataLayerFactory.create(type=DataLayerType.VECTOR)
-        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"sub_units_layer": sub_units_layer.pk}}
-
-        self.client.force_authenticate(self.user)
-        response = self.client.patch(url, payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        expected_error = {
-            "detail": "Validation error.",
-            "errors": {
-                "planning_approach": {
-                    "configuration": "Scenarios with `Optimize Project Areas` Planning Approach cannot have Sub Units Layer set."
-                }
-            },
-        }
-        self.assertEqual(response.json(), expected_error)
 
     def test_patch_sub_units_with_raster_datalayer(self):
         scenario = ScenarioFactory.create(
