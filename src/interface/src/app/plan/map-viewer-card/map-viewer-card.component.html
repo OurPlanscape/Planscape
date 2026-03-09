@@ -1,0 +1,19 @@
+<mgl-map
+  [id]="'map_viewer_card'"
+  [fitBoundsOptions]="boundsOptions"
+  [attributionControl]="false"
+  [transformRequest]="transformRequest"
+  [interactive]="false"
+  [style]="(baseLayerUrl$ | async) || ''"
+  (mapLoad)="onMapLoad($event)">
+  <mgl-layer
+    type="background"
+    id="middle-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+  <app-planning-area-layer before="middle-layer"></app-planning-area-layer>
+</mgl-map>
+<div class="overlay-navigation">
+  <div class="label">Map Viewer</div>
+  <mat-icon>chevron_right</mat-icon>
+</div>
