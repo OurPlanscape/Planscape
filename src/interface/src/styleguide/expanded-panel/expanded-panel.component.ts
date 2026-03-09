@@ -32,11 +32,17 @@ import { ButtonComponent } from '@styleguide/button/button.component';
 export class ExpandedPanelComponent {
   @Output() clickedClose = new EventEmitter<any>();
   @Input() height: 'full' | 'narrow' = 'full';
+  @Input() width: 'full' | 'small' = 'full'
 
-  constructor() {}
+  constructor() { }
 
   handleCloseButton() {
     this.clickedClose.emit();
+  }
+
+  @HostBinding('class.small')
+  get isSmall() {
+    return this.width === 'small';
   }
 
   @HostBinding('class.narrow')

@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 
-export type NotesSidebarState = 'SAVING' | 'READY';
+export type NotesSidebarState = 'SAVING' | 'READY' | 'INITIAL';
 
 @Component({
   standalone: true,
@@ -37,7 +37,7 @@ export class NotesSidebarComponent implements OnChanges {
   constructor() {}
 
   @Input() showHeader = false;
-  @Input() notesState: NotesSidebarState = 'READY';
+  @Input() notesState: NotesSidebarState = 'INITIAL';
   @Input() notes: Note[] = [];
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =

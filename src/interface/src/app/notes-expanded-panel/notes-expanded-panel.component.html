@@ -1,6 +1,7 @@
 <sg-expanded-panel
   (clickedClose)="close()"
   height="narrow"
+  width="small"
   class="expanded-panel">
   <div panelTitle>
     Notes <span *ngIf="notes.length > 0">({{ notes.length }})</span>
@@ -10,6 +11,7 @@
   </ng-template>
   <div panelContent class="notes-panel">
     <sg-notes-sidebar
+      cdkFocusInitial
       [showHeader]="false"
       [notes]="notes"
       [notesState]="notesSidebarState"
