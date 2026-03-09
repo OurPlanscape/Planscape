@@ -35,7 +35,7 @@ BEGIN
     (query_params->>'number_of_features')::int;
 
   IF p_max_number_of_features IS NULL THEN
-    IF p_planning_approach = "PRIORITIZE_SUB_UNITS" THEN
+    IF p_planning_approach = 'PRIORITIZE_SUB_UNITS' THEN
       SELECT INTO
         p_max_number_of_features 10;
     ELSE  
@@ -49,7 +49,7 @@ BEGIN
       pa.id as "id",
       pa.scenario_id::int as "scenario_id",
       pa.name,
-      COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank' as "rank",
+      (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int as "rank",
       ST_Transform(pa.geometry, 3857) as "geom"
     FROM planning_projectarea pa
     WHERE 
@@ -67,7 +67,7 @@ BEGIN
         ST_TileEnvelope(z, x, y),
         4096, 64, true) AS "geom"
     FROM base
-    WHERE geom IS NOT NULL and rank <= max_number_of_features
+    WHERE geom IS NOT NULL AND rank <= p_max_number_of_features
   ), mvtpoint AS (
     SELECT
       id,
@@ -80,7 +80,7 @@ BEGIN
         4096, 64, true) AS "geom"
     FROM base
     WHERE 
-      ST_PointOnSurface(base.geom) && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)) and rank <= max_number_of_features
+      ST_PointOnSurface(base.geom) && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)) and rank <= p_max_number_of_features
   ) 
   SELECT INTO p_mvt (
     (SELECT ST_AsMVT(mvtpoly.*, 'project_areas_by_scenario') FROM mvtpoly WHERE geom IS NOT NULL) ||
