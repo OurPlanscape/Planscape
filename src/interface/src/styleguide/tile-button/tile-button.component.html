@@ -1,14 +1,15 @@
 <button
   class="tile-button"
   [class.disabled]="disabled"
-  [ngClass]="{ md: size === 'md' }"
+  [ngClass]="{ md: size === 'md', lg: size === 'lg'}"
   [disabled]="disabled"
   [style.background-image]="'url(' + backgroundImage + ')'"
+  [style.background-color]="backgroundColor || ''"
   (click)="handleClick($event)">
   <div class="tile-overlay"></div>
   <div class="tile-content">
     <div class="text-container">
-      <div class="tile-title">{{ title }}</div>
+      <div class="tile-title" [ngClass]="{lg: size === 'lg'}">{{ title }}</div>
       <div class="tile-subtitle" *ngIf="subtitle">{{ subtitle }}</div>
     </div>
   </div>
