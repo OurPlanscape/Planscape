@@ -1,5 +1,7 @@
 <ng-container *ngIf="notes$ | async as notes">
-  <h3 class="section-title">Notes<span *ngIf="notes.length > 0"> ({{ notes.length }})</span></h3>
+  <h3 class="section-title">
+    Notes<span *ngIf="notes.length > 0"> ({{ notes.length }})</span>
+  </h3>
   <button
     sg-button
     variant="icon-only"
