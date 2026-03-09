@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 
-export type notesPanelState = 'SAVING' | 'READY' | 'INITIAL';
+export type notesPanelState = 'LOADING' | 'READY' | 'INITIAL';
 
 @Component({
   standalone: true,
@@ -49,9 +49,9 @@ export class notesPanelComponent implements OnChanges {
   newNoteText = '';
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['notes']) {
-      this.notesState = 'READY';
-    }
+    // if (changes['notes']) {
+    //   this.notesState = 'READY';
+    // }
   }
 
   requestToDelete(note: Note) {
@@ -75,7 +75,7 @@ export class notesPanelComponent implements OnChanges {
   }
 
   @HostBinding('class.saving') get isSaving() {
-    return this.notesState === 'SAVING';
+    return this.notesState === 'LOADING';
   }
 
   @HostBinding('class.ready') get isReady() {

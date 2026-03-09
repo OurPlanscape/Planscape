@@ -6,15 +6,12 @@
   <div panelTitle>
     Notes <span *ngIf="notes.length > 0">({{ notes.length }})</span>
   </div>
-  <ng-template #noStand>
-    <div panelTitle #noStand>Stand Level Data</div>
-  </ng-template>
   <div panelContent class="notes-panel">
     <sg-notes-panel
       cdkFocusInitial
       [showHeader]="false"
       [notes]="notes"
-      [notesState]="notesPanelState"
+      [notesState]="(loadingState$ | async) ?? 'READY'"
       (createNote)="addNote($event)"
       (deleteNote)="handleNoteDelete($event)"
       [canAddNotes]="true"

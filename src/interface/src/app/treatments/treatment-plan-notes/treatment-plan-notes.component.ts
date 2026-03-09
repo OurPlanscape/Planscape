@@ -47,7 +47,7 @@ export class TreatmentPlanNotesComponent implements OnInit {
 
   //notes handling functions
   addNote(comment: string) {
-    this.notesPanelState = 'SAVING';
+    this.notesPanelState = 'LOADING';
     this.notesService
       .addNote(this.treatmentsState.getTreatmentPlanId(), comment)
       .subscribe({

@@ -77,7 +77,7 @@ export class PlanComponent implements OnInit {
 
   //notes handling functions
   addNote(comment: string) {
-    this.notesPanelState = 'SAVING';
+    this.notesPanelState = 'LOADING';
     if (this.planId) {
       this.notesService.addNote(this.planId, comment).subscribe({
         next: () => {

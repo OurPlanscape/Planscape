@@ -1,5 +1,16 @@
 <div class="notes-header" *ngIf="showHeader">Notes</div>
-<div *ngIf="!hasNotes()" class="no-notes-view">
+
+<div *ngIf="notesState === 'LOADING'" class="no-notes-view">
+  <div class="no-notes-blurb">
+    <mat-spinner
+      class="spinner-class"
+      diameter="20"
+      matSuffix
+      *ngIf="notesState === 'LOADING'"></mat-spinner>
+    </div>
+</div>
+
+<div *ngIf="!hasNotes() && notesState === 'READY'" class="no-notes-view">
   <div class="no-notes-blurb">
     <mat-icon class="add-notes-icon material-symbols-outlined"
       >add_notes
@@ -10,7 +21,7 @@
     </div>
   </div>
 </div>
-<div class="notes" *ngIf="hasNotes()">
+<div class="notes" *ngIf="hasNotes() && notesState === 'READY'">
   <div *ngFor="let note of notes" class="note-enclosed">
     <div class="note-left">
       <div class="note-head">
@@ -48,7 +59,7 @@
       class="add-note-textarea"
       (keydown.enter)="addNote($event)"
       [(ngModel)]="newNoteText"
-      [disabled]="notesState === 'SAVING'"
+      [disabled]="notesState === 'LOADING'"
       matInput
       placeholder="Add a note">
     </textarea>
@@ -56,7 +67,7 @@
       class="spinner-class"
       diameter="20"
       matSuffix
-      *ngIf="notesState === 'SAVING'"></mat-spinner>
+      *ngIf="notesState === 'LOADING'"></mat-spinner>
     <svg
       *ngIf="notesState === 'READY'"
       xmlns="http://www.w3.org/2000/svg"
