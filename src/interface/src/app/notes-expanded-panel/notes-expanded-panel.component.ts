@@ -19,9 +19,9 @@ import { Plan } from '@app/types';
 import {
   ExpandedPanelComponent,
   ModalComponent,
-  NotesSidebarState,
+  notesPanelState,
 } from '@styleguide';
-import { NotesSidebarComponent } from '@styleguide';
+import { notesPanelComponent } from '@styleguide';
 import { take } from 'rxjs';
 
 @Component({
@@ -31,14 +31,14 @@ import { take } from 'rxjs';
     ExpandedPanelComponent,
     ModalComponent,
     NgIf,
-    NotesSidebarComponent,
+    notesPanelComponent,
   ],
   templateUrl: './notes-expanded-panel.component.html',
   styleUrl: './notes-expanded-panel.component.scss',
 })
 export class NotesExpandedPanelComponent {
   notes: Note[] = [];
-  notesSidebarState: NotesSidebarState = 'READY';
+  notesPanelState: notesPanelState = 'READY';
   plan!: Plan;
 
   constructor(
@@ -65,7 +65,7 @@ export class NotesExpandedPanelComponent {
 
   //notes handling functions
   addNote(comment: string) {
-    this.notesSidebarState = 'SAVING';
+    this.notesPanelState = 'SAVING';
     this.notesService.addNote(this.plan.id, comment).subscribe({
       next: () => {
         this.loadNotes();
@@ -78,7 +78,7 @@ export class NotesExpandedPanelComponent {
         );
       },
       complete: () => {
-        this.notesSidebarState = 'READY';
+        this.notesPanelState = 'READY';
       },
     });
   }

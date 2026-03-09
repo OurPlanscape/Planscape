@@ -10,15 +10,15 @@
     <div panelTitle #noStand>Stand Level Data</div>
   </ng-template>
   <div panelContent class="notes-panel">
-    <sg-notes-sidebar
+    <sg-notes-panel
       cdkFocusInitial
       [showHeader]="false"
       [notes]="notes"
-      [notesState]="notesSidebarState"
+      [notesState]="notesPanelState"
       (createNote)="addNote($event)"
       (deleteNote)="handleNoteDelete($event)"
       [canAddNotes]="true"
       noNotesTitleText="No Notes For This Planning Area Yet"
-      noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
+      noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-panel>
   </div>
 </sg-expanded-panel>

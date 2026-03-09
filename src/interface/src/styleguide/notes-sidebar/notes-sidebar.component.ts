@@ -16,11 +16,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 
-export type NotesSidebarState = 'SAVING' | 'READY' | 'INITIAL';
+export type notesPanelState = 'SAVING' | 'READY' | 'INITIAL';
 
 @Component({
   standalone: true,
-  selector: 'sg-notes-sidebar',
+  selector: 'sg-notes-panel',
   templateUrl: './notes-sidebar.component.html',
   styleUrls: ['./notes-sidebar.component.scss'],
   imports: [
@@ -33,11 +33,11 @@ export type NotesSidebarState = 'SAVING' | 'READY' | 'INITIAL';
     MatInputModule,
   ],
 })
-export class NotesSidebarComponent implements OnChanges {
+export class notesPanelComponent implements OnChanges {
   constructor() {}
 
   @Input() showHeader = false;
-  @Input() notesState: NotesSidebarState = 'INITIAL';
+  @Input() notesState: notesPanelState = 'INITIAL';
   @Input() notes: Note[] = [];
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =

@@ -4,16 +4,16 @@ import {
   moduleMetadata,
   StoryObj,
 } from '@storybook/angular';
-import { NotesSidebarComponent } from './notes-sidebar.component';
+import { notesPanelComponent } from './notes-sidebar.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClientModule } from '@angular/common/http'; // Add this import
 
-const meta: Meta<NotesSidebarComponent> = {
+const meta: Meta<notesPanelComponent> = {
   title: 'Components/Notes Sidebar',
-  component: NotesSidebarComponent,
+  component: notesPanelComponent,
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
@@ -21,7 +21,7 @@ const meta: Meta<NotesSidebarComponent> = {
         HttpClientModule,
         BrowserAnimationsModule,
         MatProgressSpinnerModule,
-        NotesSidebarComponent,
+        notesPanelComponent,
         MatSnackBarModule,
       ],
       providers: [],
@@ -29,8 +29,8 @@ const meta: Meta<NotesSidebarComponent> = {
   ],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div style='width:400px;height:700px;border:1px black solid;'><sg-notes-sidebar ${argsToTemplate(args)}>
-            </sg-notes-sidebar></div>`,
+    template: `<div style='width:400px;height:700px;border:1px black solid;'><sg-notes-panel ${argsToTemplate(args)}>
+            </sg-notes-panel></div>`,
   }),
 };
 
@@ -77,7 +77,7 @@ const exampleNotes = [
   },
 ];
 
-type Story = StoryObj<NotesSidebarComponent>;
+type Story = StoryObj<notesPanelComponent>;
 
 export const Default: Story = {
   args: {

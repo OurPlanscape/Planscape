@@ -9,15 +9,15 @@
     resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
     <div class="plan-summary-panel">
-      <sg-notes-sidebar
+      <sg-notes-panel
         [showHeader]="true"
-        [notes]="sidebarNotes"
-        [notesState]="notesSidebarState"
+        [notes]="panelNotes"
+        [notesState]="notesPanelState"
         (createNote)="addNote($event)"
         (deleteNote)="handleNoteDelete($event)"
         [canAddNotes]="canAddScenario(plan)"
         noNotesTitleText="No Notes For This Planning Area Yet"
-        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
+        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-panel>
       <app-notes-expansion-card></app-notes-expansion-card>
       <app-planning-analytics-tools
         [planningAreaCapabilities]="

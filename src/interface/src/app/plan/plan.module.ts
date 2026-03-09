@@ -19,7 +19,7 @@ import { PlanRoutingModule } from './plan-routing.module';
 import {
   BannerComponent,
   ButtonComponent,
-  NotesSidebarComponent,
+  notesPanelComponent,
   OpacitySliderComponent,
   ScenarioCardComponent,
   SectionComponent,
@@ -72,7 +72,7 @@ import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expans
     ScenarioCardComponent,
     ScenariosCardListComponent,
     TreatmentCardComponent,
-    NotesSidebarComponent,
+    notesPanelComponent,
     OpacitySliderComponent,
     MatTabsModule,
     DataLayersComponent,
