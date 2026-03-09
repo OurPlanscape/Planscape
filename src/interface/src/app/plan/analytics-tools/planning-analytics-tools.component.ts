@@ -10,7 +10,7 @@ interface AnalyticTool {
   id: string;
   backgroundImage: string;
   backgroundColor?: string;
-  localClass?: string,
+  localClass?: string;
   title: string;
   subtitle: string;
   featureFlag: string;
@@ -41,7 +41,7 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
     this.initEnabledTools();
   }
 
-  isPlanningOverviewEnabled() : boolean {
+  isPlanningOverviewEnabled(): boolean {
     return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
   }
 
@@ -54,26 +54,27 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
       this.featureService.isFeatureEnabled('CLIMATE_FORESIGHT') &&
       this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')
     ) {
-      this.analyticsTools.push({
-        id: 'climate-foresight',
-        backgroundImage: '/assets/svg/climate-foresight.svg',
-        backgroundColor: '#dfede6',
-        title: 'Climate Foresight',
-        localClass: 'climate-foresight',
-        subtitle: 'Integrate climate data...',
-        featureFlag: 'CLIMATE_FORESIGHT',
-        enabled: true,
-      },
-      {
-        id: 'coming-soon',
-        backgroundImage: '/assets/svg/lock.svg',
-        title: 'Coming Soon',
-        localClass: 'coming-soon',
-        subtitle: '',
-        featureFlag: '',
-        enabled: true,
-      }
-    );
+      this.analyticsTools.push(
+        {
+          id: 'climate-foresight',
+          backgroundImage: '/assets/svg/climate-foresight.svg',
+          backgroundColor: '#dfede6',
+          title: 'Climate Foresight',
+          localClass: 'climate-foresight',
+          subtitle: 'Integrate climate data...',
+          featureFlag: 'CLIMATE_FORESIGHT',
+          enabled: true,
+        },
+        {
+          id: 'coming-soon',
+          backgroundImage: '/assets/svg/lock.svg',
+          title: 'Coming Soon',
+          localClass: 'coming-soon',
+          subtitle: '',
+          featureFlag: '',
+          enabled: true,
+        }
+      );
     }
 
     this.hasEnabledTools = this.analyticsTools.some((tool) => tool.enabled);

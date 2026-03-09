@@ -14,7 +14,7 @@ export class TileButtonComponent {
   @Input() title: string = '';
   @Input() subtitle: string = '';
   @Input() disabled: boolean = false;
-  @Input() size: 'md'| 'lg' = 'md';
+  @Input() size: 'md' | 'lg' = 'md';
   @Output() tileClick = new EventEmitter<void>();
 
   handleClick(event: Event): void {

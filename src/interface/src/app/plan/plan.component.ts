@@ -73,7 +73,7 @@ export class PlanComponent implements OnInit {
     this.pollForChanges();
   }
 
-  isPlanningOverviewEnabled() : boolean {
+  isPlanningOverviewEnabled(): boolean {
     return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
   }
 
