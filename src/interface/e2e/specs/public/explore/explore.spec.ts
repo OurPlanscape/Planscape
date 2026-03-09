@@ -28,7 +28,9 @@ test('basemap switcher changes the rendered map', async ({ page }) => {
   const screenshotBefore = await canvas.screenshot();
 
   // dispatchEvent avoids the matTooltip CDK overlay that intercepts click() in headless CI
-  const trigger = page.locator('app-map-base-dropdown img.base-map-icon').first();
+  const trigger = page
+    .locator('app-map-base-dropdown img.base-map-icon')
+    .first();
   await expect(trigger).toBeVisible();
   await trigger.dispatchEvent('click');
 
@@ -39,12 +41,14 @@ test('basemap switcher changes the rendered map', async ({ page }) => {
   expect(screenshotBefore.equals(screenshotAfter)).toBe(false);
 });
 
-test('map count switcher toggles between 1, 2, and 4 maps', async ({ page }) => {
+test('map count switcher toggles between 1, 2, and 4 maps', async ({
+  page,
+}) => {
   await page.goto('/explore');
 
   const mapControl = page.locator('app-multi-map-control');
   const buttons = mapControl.locator('button');
-  const maps = page.locator('app-explore-map');
+  const maps = page.locator('app-synced-map');
 
   // Default: 1 map
   await expect(buttons.nth(0)).toHaveClass(/active/);

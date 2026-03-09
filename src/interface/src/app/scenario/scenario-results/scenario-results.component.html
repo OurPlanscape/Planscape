@@ -1,10 +1,6 @@
 <sg-section
   [isCollapsible]="hasAnalytics()"
-  headline="Project Areas"
-  tooltipContent="Project areas are treatment locations created to maximize your treatment goals given restrictions on where you cannot treat and limits to total area that can be treated.
-  You can have up to 10 project areas per scenario.
-  Planscape will rank those project areas according to the best opportunity to achieve your treatment goals.
-  Each project area will show the number of acres in that area, the percent of planning acreage that project defines, the estimated cost of that project, and the ranking of that project area effectiveness relative to other projects, based on the treatment goals.">
+  [headline]="isPlanningApproachSubUnits ? 'Sub Units' : 'Project Areas'">
   <app-project-areas [areas]="areas"></app-project-areas>
 </sg-section>
 

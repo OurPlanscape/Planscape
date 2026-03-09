@@ -9,6 +9,9 @@
         <app-scenario-results
           *ngIf="scenarioHasResults(scenario)"
           [scenarioVersion]="scenario.version || ''"
+          [planningApproach]="
+            scenario.planning_approach || 'OPTIMIZE_PROJECT_AREAS'
+          "
           [results]="scenario.scenario_result || null"
           [scenarioName]="scenario.name"
           [usageTypes]="scenario.usage_types || null"

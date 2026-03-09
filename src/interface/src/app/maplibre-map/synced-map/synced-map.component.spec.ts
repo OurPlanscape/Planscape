@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExploreMapComponent } from './explore-map.component';
+import { SyncedMapComponent } from './synced-map.component';
 import { MockProvider, MockProviders } from 'ng-mocks';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { MapConfigState, MapInteractionMode } from '../map-config.state';
@@ -13,13 +13,13 @@ import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
-describe('ExploreMapComponent', () => {
-  let component: ExploreMapComponent;
-  let fixture: ComponentFixture<ExploreMapComponent>;
+describe('SyncedMapComponent', () => {
+  let component: SyncedMapComponent;
+  let fixture: ComponentFixture<SyncedMapComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExploreMapComponent, FeaturesModule],
+      imports: [SyncedMapComponent, FeaturesModule],
       providers: [
         MockProvider(DataLayersService),
         MockProviders(MultiMapConfigState, AuthService, DrawService),
@@ -50,7 +50,7 @@ describe('ExploreMapComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ExploreMapComponent);
+    fixture = TestBed.createComponent(SyncedMapComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

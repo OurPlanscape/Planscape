@@ -2,6 +2,7 @@
 @import 'colors';
 @import 'mixins';
 
+$side-panel-width: 501px;
 $default-padding: 16px;
 
 :host {
@@ -27,7 +28,7 @@ $default-padding: 16px;
   background-color: $color-soft-purple;
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
   z-index: 1;
-  width: $climate-analysis-left-panel-width;
+  width: $side-panel-width;
   padding: $default-padding;
   overflow-y: auto;
 }
@@ -81,26 +82,5 @@ mgl-map {
 }
 
 app-map-nav-bar {
-  left: calc(
-    $climate-analysis-left-panel-width + $default-padding + $default-padding
-  );
-}
-
-.tooltip {
-  margin-left: auto;
-}
-
-.selected {
-  .radio-icon {
-    color: $color-standard-blue;
-  }
-  .layer-name {
-    @include xs-label();
-    font-weight: 600;
-  }
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
+  left: calc($side-panel-width + $default-padding + $default-padding);
 }

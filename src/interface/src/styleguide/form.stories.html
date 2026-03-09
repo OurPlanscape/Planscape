@@ -58,6 +58,31 @@
         <mat-option value="4">Option 4</mat-option>
       </mat-select>
     </mat-form-field>
+
+    <h4>Toggle</h4>
+    <sg-toggle>Show only my scenarios</sg-toggle>
   </section>
 </form>
+
 <button sg-button (click)="disableFields()">Disable</button>
+
+<div class="toggle-stories">
+  <section class="toggle-section">
+    <h4>Toggles</h4>
+    <div class="toggle-grid">
+      <sg-toggle></sg-toggle>
+      <sg-toggle [checked]="true"></sg-toggle>
+      <sg-toggle [disabled]="true"></sg-toggle>
+      <sg-toggle [disabled]="true" [checked]="true"></sg-toggle>
+      <sg-toggle size="small"></sg-toggle>
+      <sg-toggle size="small" [checked]="true"></sg-toggle>
+      <sg-toggle size="small" [disabled]="true"></sg-toggle>
+      <sg-toggle size="small" [disabled]="true" [checked]="true"></sg-toggle>
+    </div>
+  </section>
+
+  <section class="toggle-section">
+    <h4>Labeled-toggle</h4>
+    <sg-toggle>Insert text</sg-toggle>
+  </section>
+</div>

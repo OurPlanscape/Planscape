@@ -9,6 +9,7 @@ import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { StepComponent, StepsComponent, StepsNavComponent } from '@styleguide';
 import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { SubUnitSelectorComponent } from './sub-unit-selector/sub-unit-selector.component';
 import {
   catchError,
   finalize,
@@ -24,6 +25,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  BaseLayer,
   DataLayer,
   Scenario,
   SCENARIO_TYPE,
@@ -50,6 +52,7 @@ import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
   ScenarioStepConfig,
+  SUB_UNIT_LAYER_COLOR,
   SUB_UNITS_STEP,
 } from '@scenario/scenario.constants';
 import { SharedModule } from '@shared';
@@ -63,6 +66,7 @@ import { FeatureService } from '@features/feature.service';
 import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import { BASE_LAYER_STYLE } from '@maplibre-map/map-base-layers/map-base-layers-style.token';
 import { MapModuleService } from '@services/map-module.service';
 import { PlanState } from '@plan/plan.state';
 import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-step/treatment-goal-step.component';
@@ -74,6 +78,17 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
   providers: [
     { provide: MAP_MODULE_NAME, useValue: 'forsys' },
     { provide: USE_GEOMETRY, useValue: true },
+    {
+      provide: BASE_LAYER_STYLE,
+      useFactory: (state: NewScenarioState) => ({
+        fillColor: SUB_UNIT_LAYER_COLOR,
+        lineColor: SUB_UNIT_LAYER_COLOR,
+        insertBeforeLayer: 'scenario-stands-fill',
+        appliesTo: (layer: BaseLayer) =>
+          layer.id === state.selectedSubUnitLayerId,
+      }),
+      deps: [NewScenarioState],
+    },
     BaseLayersStateService,
     DataLayersStateService,
     MapModuleService,
@@ -92,6 +107,8 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
     ExcludeAreasSelectorComponent,
     StepsNavComponent,
     ScenarioMapComponent,
+    Step1WithOverviewComponent,
+    SubUnitSelectorComponent,
     NgClass,
     ScenarioSummaryComponent,
     SharedModule,

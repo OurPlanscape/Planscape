@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { ScenarioResult, UsageType } from '@types';
+import { PLANNING_APPROACH, ScenarioResult, UsageType } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '@shared/files';
 import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
@@ -14,6 +14,7 @@ import {
 import { ScenarioMetricsLegendComponent } from '@scenario/scenario-metrics-legend/scenario-metrics-legend.component';
 import { hasAnalytics, parseResultsToProjectAreas } from '@plan/plan-helpers';
 import { getGroupedAttainment } from '@app/chart-helper';
+import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
 
 @Component({
   standalone: true,
@@ -33,6 +34,7 @@ import { getGroupedAttainment } from '@app/chart-helper';
 export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioId!: number;
   @Input() scenarioVersion!: string;
+  @Input() planningApproach!: PLANNING_APPROACH;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
   @Input() usageTypes: UsageType[] | null = [];
@@ -94,5 +96,9 @@ export class ScenarioResultsComponent implements OnChanges {
       analytics = hasAnalytics(this.results);
     }
     return analytics;
+  }
+
+  get isPlanningApproachSubUnits() {
+    return isPlanningApproachSubUnits(this.planningApproach);
   }
 }
