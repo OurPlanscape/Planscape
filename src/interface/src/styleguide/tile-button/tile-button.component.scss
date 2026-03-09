@@ -3,8 +3,6 @@
 
 $tile-size-md: 176px;
 $tile-height-lg: 180px;
-$tile-width-lg: 252px;
-
 
 .tile-button {
   border-radius: 4px;
@@ -31,7 +29,7 @@ $tile-width-lg: 252px;
   &.lg {
     min-height: $tile-height-lg;
     max-height: 100%;
-    min-width: $tile-width-lg;
+    min-width: 120px;
     max-width: 100%
   }
 
