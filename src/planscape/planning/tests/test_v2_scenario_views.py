@@ -766,6 +766,104 @@ class ScenarioDetailTest(APITestCase):
             data["scenario_result"]["result"]["features"][0]["properties"].keys(),
         )
 
+    def test_detail_scenario_scenario_result_prioritize_sub_units(self):
+        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data["scenario_result"]["result"]["features"]), 10)
+        self.assertEqual(len(scenario_result.result["features"]), 20)
+
+    def test_detail_scenario_scenario_result_prioritize_sub_units__query_params(self):
+        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ) + "?number_of_features=13",
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data["scenario_result"]["result"]["features"]), 13)
+        self.assertEqual(len(scenario_result.result["features"]), 20)
+
+    def test_detail_scenario_scenario_result_prioritize_sub_units__query_params_all(self):
+        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.save()
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ) + "?number_of_features=all",
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data["scenario_result"]["result"]["features"]), 20)
+        self.assertEqual(len(scenario_result.result["features"]), 20)
+    
+    def test_detail_scenario_scenario_result__query_params(self):
+        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ) + "?number_of_features=13",
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data["scenario_result"]["result"]["features"]), 13)
+        self.assertEqual(len(scenario_result.result["features"]), 20)
+
+    def test_detail_scenario_scenario_result__query_params_all(self):
+        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ) + "?number_of_features=all",
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data["scenario_result"]["result"]["features"]), 20)
+        self.assertEqual(len(scenario_result.result["features"]), 20)
+
     def test_retrieve_scenario_versions_v2_and_v3(self):
         self.client.force_authenticate(self.owner_user)
 
