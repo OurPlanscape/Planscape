@@ -3,9 +3,7 @@ import {
   EventEmitter,
   HostBinding,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 import { Note } from '@services';
 import { MatMenuModule } from '@angular/material/menu';
@@ -16,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 
-export type notesPanelState = 'LOADING' | 'READY' | 'INITIAL';
+export type notesPanelState = 'SAVING' | 'READY' | 'INITIAL';
 
 @Component({
   standalone: true,
@@ -33,7 +31,7 @@ export type notesPanelState = 'LOADING' | 'READY' | 'INITIAL';
     MatInputModule,
   ],
 })
-export class notesPanelComponent implements OnChanges {
+export class notesPanelComponent {
   constructor() {}
 
   @Input() showHeader = false;
@@ -47,12 +45,6 @@ export class notesPanelComponent implements OnChanges {
   @Output() deleteNote = new EventEmitter<Note>();
 
   newNoteText = '';
-
-  ngOnChanges(changes: SimpleChanges) {
-    // if (changes['notes']) {
-    //   this.notesState = 'READY';
-    // }
-  }
 
   requestToDelete(note: Note) {
     this.deleteNote.emit(note);
@@ -75,7 +67,7 @@ export class notesPanelComponent implements OnChanges {
   }
 
   @HostBinding('class.saving') get isSaving() {
-    return this.notesState === 'LOADING';
+    return this.notesState === 'SAVING';
   }
 
   @HostBinding('class.ready') get isReady() {

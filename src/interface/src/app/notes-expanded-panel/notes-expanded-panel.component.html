@@ -11,7 +11,7 @@
       cdkFocusInitial
       [showHeader]="false"
       [notes]="notes"
-      [notesState]="(loadingState$ | async) ?? 'READY'"
+      [notesState]="notesPanelState"
       (createNote)="addNote($event)"
       (deleteNote)="handleNoteDelete($event)"
       [canAddNotes]="true"

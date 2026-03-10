@@ -50,13 +50,13 @@
     </div>
   </div>
 </div>
-<div class="add-note-box" *ngIf="canAddNotes">
+<div class="add-note-box" *ngIf="canAddNotes && notesState !== 'INITIAL'">
   <mat-form-field appearance="outline" class="add-note-field">
     <textarea
       class="add-note-textarea"
       (keydown.enter)="addNote($event)"
       [(ngModel)]="newNoteText"
-      [disabled]="notesState === 'LOADING'"
+      [disabled]="notesState === 'SAVING'"
       matInput
       placeholder="Add a note">
     </textarea>
@@ -64,7 +64,7 @@
       class="spinner-class"
       diameter="20"
       matSuffix
-      *ngIf="notesState === 'LOADING'"></mat-spinner>
+      *ngIf="notesState === 'SAVING'"></mat-spinner>
     <svg
       *ngIf="notesState === 'READY'"
       xmlns="http://www.w3.org/2000/svg"

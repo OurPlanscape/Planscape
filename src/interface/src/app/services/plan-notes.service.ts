@@ -13,8 +13,6 @@ export interface Note {
   can_delete?: boolean;
 }
 
-export type LoadingState = 'INITIAL' | 'LOADING' | 'READY';
-
 @Injectable({
   providedIn: 'root',
 })
@@ -22,15 +20,9 @@ export class PlanNotesService {
   private _notes$: BehaviorSubject<Note[]> = new BehaviorSubject<Note[]>([]);
   public notes$: Observable<Note[]> = this._notes$.asObservable();
 
-  private _loadingState$: BehaviorSubject<LoadingState> =
-    new BehaviorSubject<LoadingState>('INITIAL');
-  public loadingState$: Observable<LoadingState> =
-    this._loadingState$.asObservable();
-
   constructor(private http: HttpClient) {}
 
   getNotes(planningAreaId: number): Observable<Note[]> {
-    this._loadingState$.next('LOADING');
     return this.http
       .get<Note[]>(
         environment.backend_endpoint.concat(
@@ -43,7 +35,6 @@ export class PlanNotesService {
       .pipe(
         shareReplay(1),
         tap((notes: Note[]) => {
-          this._loadingState$.next('READY');
           this._notes$.next(notes);
         })
       );

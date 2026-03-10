@@ -39,8 +39,7 @@ import { take } from 'rxjs';
 })
 export class NotesExpandedPanelComponent {
   notes: Note[] = [];
-  notesPanelState: notesPanelState = 'READY';
-  loadingState$ = this.notesService.loadingState$;
+  notesPanelState: notesPanelState = 'INITIAL';
   plan!: Plan;
 
   constructor(
@@ -67,7 +66,7 @@ export class NotesExpandedPanelComponent {
 
   //notes handling functions
   addNote(comment: string) {
-    this.notesPanelState = 'LOADING';
+    this.notesPanelState = 'SAVING';
     this.notesService.addNote(this.plan.id, comment).subscribe({
       next: () => {
         this.loadNotes();
@@ -117,11 +116,11 @@ export class NotesExpandedPanelComponent {
       });
   }
 
-  // TODO - handle unsub, set this to observable
   loadNotes() {
     if (this.plan.id) {
       this.notesService.getNotes(this.plan.id).subscribe((notes: Note[]) => {
         this.notes = notes;
+        this.notesPanelState = 'READY';
       });
     }
   }
