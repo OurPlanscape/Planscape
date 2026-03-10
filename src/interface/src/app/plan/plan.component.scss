@@ -67,6 +67,16 @@
   padding-left: 8px;
   max-height: calc(100vh - 100px);
   max-width: 800px;
+
+  @include laptop() {
+    width: 576px;
+    max-width: 800px;
+  }
+
+  @include tablet() {
+    max-width: 100%;
+    padding: 16px;
+  }
 }
 
 .plan-map-container {
@@ -147,9 +157,9 @@
   flex-direction: row;
   width: 100%;
   background-color: $color-light-gray;
-  height: calc(100vh - 104px);
-  max-height: calc(100vh - 104px);
+  height: fit-content;
   justify-content: center;
+  max-height: fit-content;
 
   @include tablet() {
     height: initial;
@@ -163,15 +173,24 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  width: 560px;
   height: 100%;
+  width: 592px;
   min-width: 500px;
-  max-width: 560px;
+  max-width: 592px;
   gap: 16px;
 
+  @include laptop() {
+    width: 384px;
+    min-width: 384px;
+    max-width: 384px;
+  }
+
   @include tablet() {
-    width: 100%;
     height: fit-content;
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    padding-bottom: 0;
   }
 }
 
@@ -186,6 +205,7 @@
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
   height: 200px;
   @include h4();
+
   &.notes-placeholder {
     height: 40px;
     padding: 16px;
