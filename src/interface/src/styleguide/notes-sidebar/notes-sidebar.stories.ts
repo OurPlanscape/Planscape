@@ -4,16 +4,16 @@ import {
   moduleMetadata,
   StoryObj,
 } from '@storybook/angular';
-import { notesPanelComponent } from './notes-sidebar.component';
+import { NotesPanelComponent } from './notes-sidebar.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClientModule } from '@angular/common/http'; // Add this import
 
-const meta: Meta<notesPanelComponent> = {
+const meta: Meta<NotesPanelComponent> = {
   title: 'Components/Notes Sidebar',
-  component: notesPanelComponent,
+  component: NotesPanelComponent,
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
@@ -21,7 +21,7 @@ const meta: Meta<notesPanelComponent> = {
         HttpClientModule,
         BrowserAnimationsModule,
         MatProgressSpinnerModule,
-        notesPanelComponent,
+        NotesPanelComponent,
         MatSnackBarModule,
       ],
       providers: [],
@@ -77,7 +77,7 @@ const exampleNotes = [
   },
 ];
 
-type Story = StoryObj<notesPanelComponent>;
+type Story = StoryObj<NotesPanelComponent>;
 
 export const Default: Story = {
   args: {

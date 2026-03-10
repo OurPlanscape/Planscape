@@ -19,9 +19,9 @@ import { Plan } from '@app/types';
 import {
   ExpandedPanelComponent,
   ModalComponent,
-  notesPanelState,
+  NotesPanelState,
 } from '@styleguide';
-import { notesPanelComponent } from '@styleguide';
+import { NotesPanelComponent } from '@styleguide';
 import { take } from 'rxjs';
 
 @Component({
@@ -32,14 +32,14 @@ import { take } from 'rxjs';
     ExpandedPanelComponent,
     ModalComponent,
     NgIf,
-    notesPanelComponent,
+    NotesPanelComponent,
   ],
   templateUrl: './notes-expanded-panel.component.html',
   styleUrl: './notes-expanded-panel.component.scss',
 })
 export class NotesExpandedPanelComponent {
   notes: Note[] = [];
-  notesPanelState: notesPanelState = 'INITIAL';
+  notesPanelState: NotesPanelState = 'INITIAL';
   plan!: Plan;
 
   constructor(

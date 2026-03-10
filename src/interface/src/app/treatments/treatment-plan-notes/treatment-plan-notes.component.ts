@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
-import { notesPanelComponent, notesPanelState } from '@styleguide';
+import { NotesPanelComponent, NotesPanelState } from '@styleguide';
 import {
   NOTE_DELETE_DIALOG,
   SNACK_ERROR_CONFIG,
@@ -19,7 +19,7 @@ import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.c
 @Component({
   selector: 'app-treatment-plan-notes',
   standalone: true,
-  imports: [AsyncPipe, MatTabsModule, notesPanelComponent],
+  imports: [AsyncPipe, MatTabsModule, NotesPanelComponent],
   providers: [TreatmentPlanNotesService],
   templateUrl: './treatment-plan-notes.component.html',
   styleUrl: './treatment-plan-notes.component.scss',
@@ -35,7 +35,7 @@ export class TreatmentPlanNotesComponent implements OnInit {
   // notes data
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   notes$ = new BehaviorSubject<Note[]>([]);
-  notesPanelState: notesPanelState = 'READY';
+  notesPanelState: NotesPanelState = 'READY';
 
   ngOnInit(): void {
     this.treatmentPlan$

@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 
-export type notesPanelState = 'SAVING' | 'READY' | 'INITIAL';
+export type NotesPanelState = 'SAVING' | 'READY' | 'INITIAL';
 
 @Component({
   standalone: true,
@@ -31,11 +31,11 @@ export type notesPanelState = 'SAVING' | 'READY' | 'INITIAL';
     MatInputModule,
   ],
 })
-export class notesPanelComponent {
+export class NotesPanelComponent {
   constructor() {}
 
   @Input() showHeader = false;
-  @Input() notesState: notesPanelState = 'INITIAL';
+  @Input() notesState: NotesPanelState = 'INITIAL';
   @Input() notes: Note[] = [];
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =
