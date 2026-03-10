@@ -1,27 +1,22 @@
-import { Component } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToggleComponent } from '@styleguide';
-import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { BaseLayer } from '@types';
 
 @Component({
   selector: 'app-sub-unit-toggle',
   standalone: true,
-  imports: [AsyncPipe, FormsModule, ToggleComponent],
+  imports: [FormsModule, ToggleComponent],
   templateUrl: './sub-unit-toggle.component.html',
   styleUrl: './sub-unit-toggle.component.scss',
 })
 export class SubUnitToggleComponent {
+  @Input({ required: true }) layer!: BaseLayer;
+
   showBaseLayer = false;
 
-  layer$ = this.newScenarioState.selectedSubUnitLayer$;
-
-  constructor(
-    private newScenarioState: NewScenarioState,
-    private baseLayersStateService: BaseLayersStateService
-  ) {}
+  constructor(private baseLayersStateService: BaseLayersStateService) {}
 
   toggleBaseLayer(layer: BaseLayer) {
     if (this.showBaseLayer) {

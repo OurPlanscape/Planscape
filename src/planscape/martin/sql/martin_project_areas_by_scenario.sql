@@ -4,6 +4,8 @@ DECLARE
   p_mvt bytea;
   p_scenario_id integer;
   p_scenario_result_status varchar;
+  p_planning_approach varchar;
+  p_max_number_of_features integer;
 BEGIN
 
   SELECT INTO 
@@ -23,12 +25,31 @@ BEGIN
     RAISE EXCEPTION 'Scenario result status must be SUCCESS';
   END IF;
 
+  SELECT INTO
+    p_planning_approach
+    planning_approach FROM planning_scenario sc
+    WHERE sc.id = p_scenario_id;
+
+  SELECT INTO
+    p_max_number_of_features
+    (query_params->>'number_of_features')::int;
+
+  IF p_max_number_of_features IS NULL THEN
+    IF p_planning_approach = 'PRIORITIZE_SUB_UNITS' THEN
+      SELECT INTO
+        p_max_number_of_features 10;
+    ELSE  
+      SELECT INTO
+        p_max_number_of_features 9999;
+    END IF;
+  END IF;
+
   WITH base AS (
     SELECT
       pa.id as "id",
       pa.scenario_id::int as "scenario_id",
       pa.name,
-      COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank' as "rank",
+      (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int as "rank",
       ST_Transform(pa.geometry, 3857) as "geom"
     FROM planning_projectarea pa
     WHERE 
@@ -46,7 +67,7 @@ BEGIN
         ST_TileEnvelope(z, x, y),
         4096, 64, true) AS "geom"
     FROM base
-    WHERE geom IS NOT NULL
+    WHERE geom IS NOT NULL AND rank <= p_max_number_of_features
   ), mvtpoint AS (
     SELECT
       id,
@@ -59,7 +80,7 @@ BEGIN
         4096, 64, true) AS "geom"
     FROM base
     WHERE 
-      ST_PointOnSurface(base.geom) && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096))
+      ST_PointOnSurface(base.geom) && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)) and rank <= p_max_number_of_features
   ) 
   SELECT INTO p_mvt (
     (SELECT ST_AsMVT(mvtpoly.*, 'project_areas_by_scenario') FROM mvtpoly WHERE geom IS NOT NULL) ||

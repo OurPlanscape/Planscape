@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, Inject, OnDestroy } from '@angular/core';
 import { NgClass, NgIf } from '@angular/common';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import {
@@ -6,15 +6,16 @@ import {
   getExtentFromLngLatBounds,
   syncMaps,
 } from '../maplibre.helper';
-import { ExploreMapComponent } from '@maplibre-map/explore-map/explore-map.component';
+import { SyncedMapComponent } from '@maplibre-map/synced-map/synced-map.component';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
 
 @UntilDestroy()
 @Component({
   selector: 'app-synced-maps',
   standalone: true,
-  imports: [ExploreMapComponent, NgIf, NgClass],
+  imports: [SyncedMapComponent, NgIf, NgClass],
   templateUrl: './synced-maps.component.html',
   styleUrl: './synced-maps.component.scss',
 })
@@ -29,8 +30,15 @@ export class SyncedMapsComponent implements OnDestroy {
     this.saveState();
   }
 
-  constructor(private multiMapConfigState: MultiMapConfigState) {
-    this.multiMapConfigState.loadStateFromLocalStorage();
+  constructor(
+    private multiMapConfigState: MultiMapConfigState,
+    @Inject(MULTIMAP_STORAGE)
+    private readonly multiDataLayerView: boolean
+  ) {
+    // This logic only applies when multiDataLayerView is enabled
+    if (this.multiDataLayerView) {
+      this.multiMapConfigState.loadStateFromLocalStorage();
+    }
 
     this.multiMapConfigState.layoutMode$
       .pipe(untilDestroyed(this))
@@ -58,8 +66,10 @@ export class SyncedMapsComponent implements OnDestroy {
     }
     const bounds = map1.getBounds();
 
-    this.multiMapConfigState.saveStateToLocalStorage(
-      getExtentFromLngLatBounds(bounds)
-    );
+    if (this.multiDataLayerView) {
+      this.multiMapConfigState.saveStateToLocalStorage(
+        getExtentFromLngLatBounds(bounds)
+      );
+    }
   }
 }

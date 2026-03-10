@@ -721,30 +721,27 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         if max_project_count is None:
             errors.append("Configuration field `max_project_count` is required.")
 
-    # STOP HERE if any required fields are missing
-    if errors:
-        return errors
+        else:
+            # Expensive validations below
+            try:
+                available_stand_ids = get_available_stand_ids(
+                    planning_area=scenario.planning_area,
+                    stand_size=stand_size,
+                    excludes=excluded_areas,
+                )
+                available_count = len(available_stand_ids)
+            except Exception as exc:
+                errors.append(f"Failed to compute available stands: {exc}")
+                return errors
 
-    # Expensive validations below
-    try:
-        available_stand_ids = get_available_stand_ids(
-            planning_area=scenario.planning_area,
-            stand_size=stand_size,
-            excludes=excluded_areas,
-        )
-        available_count = len(available_stand_ids)
-    except Exception as exc:
-        errors.append(f"Failed to compute available stands: {exc}")
-        return errors
+            if available_count == 0:
+                errors.append("No stands are available with the current configuration.")
+                return errors
 
-    if available_count == 0:
-        errors.append("No stands are available with the current configuration.")
-        return errors
-
-    if max_project_count > available_count:
-        errors.append(
-            f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
-        )
+            if max_project_count > available_count:
+                errors.append(
+                    f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
+                )
 
     return errors
 
@@ -1511,16 +1508,23 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
+def get_sub_units_details(scenario: Scenario, datalayer: DataLayer) -> Optional[dict[str, float]]:
+    stand_size = scenario.get_stand_size()
+    planning_area = scenario.planning_area
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
+    stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
+    stand_area = get_min_project_area(scenario=scenario)
 
     queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
     
     areas = []
     for sub_unit in queryset.all():
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        areas.append(get_acreage(geo_intersection))
+        sub_unit_stands_count = stands.filter(centroid__within=geo_intersection).count()
+        if sub_unit_stands_count > 0:
+            acreage = sub_unit_stands_count * stand_area
+            areas.append(acreage)
     
     if len(areas) == 0:
         return None
