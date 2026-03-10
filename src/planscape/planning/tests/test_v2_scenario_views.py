@@ -1319,6 +1319,94 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_patch_sub_units_fixed_target(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_fixed_target": True, "sub_units_target_value": 1234.5}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(
+            response.data.get("configuration", {}).get("sub_units_target_value"),
+            1234.5,
+        )
+        self.assertTrue(response.data.get("configuration", {}).get("sub_units_fixed_target"))
+
+    def test_patch_sub_units_relative_target(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_fixed_target": False, "sub_units_target_value": 91.5}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(
+            response.data.get("configuration", {}).get("sub_units_target_value"),
+            91.5,
+        )
+        self.assertFalse(response.data.get("configuration", {}).get("sub_units_fixed_target"))
+
+    def test_patch_sub_units_target_value_lower_than_zero(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_fixed_target": True, "sub_units_target_value": -1}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_sub_units_target_value_bigger_than_100_percent(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_fixed_target": False, "sub_units_target_value": 101}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+    def test_patch_sub_units_target_value_null_with_fixed_target(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"sub_units_fixed_target": True}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):

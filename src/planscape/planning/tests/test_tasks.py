@@ -243,7 +243,13 @@ class AsyncPreForsysProcessTest(TestCase):
     def test_async_pre_forsys_process_sub_units(self, mock):
         configuration = self.scenario.configuration
         sub_units_datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
-        configuration.update({"sub_units_layer": sub_units_datalayer.pk})
+        configuration.update(
+            {
+                "sub_units_layer": sub_units_datalayer.pk,
+                "sub_units_fixed_target": False,
+                "sub_units_target_value": 99,
+            }
+        )
         self.scenario.configuration = configuration
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.save()
@@ -254,6 +260,8 @@ class AsyncPreForsysProcessTest(TestCase):
         forsys_input = self.scenario.forsys_input
         self.assertFalse(forsys_input.get("run_with_patchmax"))
         self.assertDictEqual(self.scenario.forsys_input.get("projects_data"), {"1" : [8, 9], "2": [7, 6, 5], "3": [4]})
+        self.assertFalse(forsys_input["variables"]["sub_units_fixed_target"])
+        self.assertEqual(forsys_input["variables"]["sub_units_target_value"], 0.99)        
 
 
 class PrepareScenariosForForsysTest(TestCase):
