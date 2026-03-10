@@ -1508,16 +1508,23 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
+def get_sub_units_details(scenario: Scenario, datalayer: DataLayer) -> Optional[dict[str, float]]:
+    stand_size = scenario.get_stand_size()
+    planning_area = scenario.planning_area
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
+    stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
+    stand_area = get_min_project_area(scenario=scenario)
 
     queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
     
     areas = []
     for sub_unit in queryset.all():
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        areas.append(get_acreage(geo_intersection))
+        sub_unit_stands_count = stands.filter(centroid__within=geo_intersection).count()
+        if sub_unit_stands_count > 0:
+            acreage = sub_unit_stands_count * stand_area
+            areas.append(acreage)
     
     if len(areas) == 0:
         return None
