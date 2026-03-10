@@ -64,6 +64,13 @@
   gap: 8px;
 }
 
+.loading-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .add-notes-icon {
   width: 30px;
   height: 30px;

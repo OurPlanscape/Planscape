@@ -27,7 +27,13 @@ import { take } from 'rxjs';
 @Component({
   selector: 'app-notes-expanded-panel',
   standalone: true,
-  imports: [AsyncPipe, ExpandedPanelComponent, ModalComponent, NgIf, notesPanelComponent],
+  imports: [
+    AsyncPipe,
+    ExpandedPanelComponent,
+    ModalComponent,
+    NgIf,
+    notesPanelComponent,
+  ],
   templateUrl: './notes-expanded-panel.component.html',
   styleUrl: './notes-expanded-panel.component.scss',
 })

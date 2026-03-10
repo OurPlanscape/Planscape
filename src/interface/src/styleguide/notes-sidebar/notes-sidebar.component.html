@@ -1,12 +1,9 @@
 <div class="notes-header" *ngIf="showHeader">Notes</div>
 
 <div *ngIf="notesState === 'INITIAL'" class="no-notes-view">
-  <div class="no-notes-blurb">
-    <mat-spinner
-      class="spinner-class"
-      diameter="20"
-      matSuffix></mat-spinner>
-    </div>
+  <div class="loading-view">
+    <mat-spinner class="spinner-class" diameter="20" matSuffix></mat-spinner>
+  </div>
 </div>
 
 <div *ngIf="!hasNotes() && notesState === 'READY'" class="no-notes-view">

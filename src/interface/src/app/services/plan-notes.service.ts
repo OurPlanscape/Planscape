@@ -19,13 +19,13 @@ export type LoadingState = 'INITIAL' | 'LOADING' | 'READY';
   providedIn: 'root',
 })
 export class PlanNotesService {
-  private _notes$: BehaviorSubject<Note[]> = new BehaviorSubject<Note[]>(
-    []
-  );
+  private _notes$: BehaviorSubject<Note[]> = new BehaviorSubject<Note[]>([]);
   public notes$: Observable<Note[]> = this._notes$.asObservable();
 
-  private _loadingState$ : BehaviorSubject<LoadingState> = new BehaviorSubject<LoadingState>('INITIAL');
-  public loadingState$: Observable<LoadingState> = this._loadingState$.asObservable();
+  private _loadingState$: BehaviorSubject<LoadingState> =
+    new BehaviorSubject<LoadingState>('INITIAL');
+  public loadingState$: Observable<LoadingState> =
+    this._loadingState$.asObservable();
 
   constructor(private http: HttpClient) {}
 
