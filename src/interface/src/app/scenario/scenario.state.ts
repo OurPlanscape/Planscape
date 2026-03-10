@@ -1,6 +1,13 @@
 import { inject, Injectable } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ScenarioService } from '@services';
-import { AvailableStands, LoadedResult, Resource, Scenario } from '@types';
+import {
+  AvailableStands,
+  LoadedResult,
+  Resource,
+  Scenario,
+  ScenarioV3Config,
+} from '@types';
 import {
   BehaviorSubject,
   catchError,
@@ -69,6 +76,19 @@ export class ScenarioState {
     filter((d): d is LoadedResult<Scenario> => !d.isLoading && !!d.data),
     map((d) => d.data)
   );
+
+  private _currentSubUnitsLayerId = toSignal(
+    this.currentScenario$.pipe(
+      map(
+        (scenario) =>
+          (scenario?.configuration as ScenarioV3Config)?.sub_units_layer ?? null
+      )
+    ),
+    { initialValue: null }
+  );
+  get currentSubUnitsLayerId(): number | null {
+    return this._currentSubUnitsLayerId();
+  }
 
   /**
    * Observable that maps only to loading status.
