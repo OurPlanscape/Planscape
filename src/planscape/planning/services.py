@@ -54,6 +54,7 @@ from planning.models import (
     ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioResultStatus,
+    ScenarioType,
     ScenarioStatus,
     TreatmentGoal,
     TreatmentGoalUsageType,
@@ -686,49 +687,61 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     excluded_areas: List[DataLayer] = []
     if excluded_areas_ids:
         excluded_areas = list(DataLayer.objects.filter(pk__in=excluded_areas_ids))
-    max_area = targets.get("max_area")
-    max_project_count = targets.get("max_project_count")
 
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
 
-    if max_area is None:
-        errors.append("Configuration target `max_area` (number of acres) is required.")
+    # Scenario checks by its `type`
+    if scenario.type == ScenarioType.PRESET:
+        if not scenario.treatment_goal:
+            errors.append("Scenario has no Treatment Goal assigned.")
 
-    if max_area is not None:
-        min_area_project = get_min_project_area(scenario)
-        if max_area < min_area_project:
-            errors.append(
-                f"Target `max_area` must be at least {min_area_project} acres for stand size `{stand_size}`."
-            )
+    else: # Scenario.type == ScenarioType.CUSTOM
+        if not cfg.get("priority_objectives"):
+            errors.append("Configuration field `priority_objectives` is required for Custom Scenarios.")
 
-    if max_project_count is None:
-        errors.append("Configuration field `max_project_count` is required.")
 
-    # STOP HERE if any required fields are missing
-    if errors:
-        return errors
+    # Scenario checks by its `planning_apporach`
+    if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+        if not cfg.get("sub_units_layer"):
+            errors.append("Configuration field `sub_units_layer` is required for this Scenario.")
+    
+    else: # scenario.planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
+        max_area = targets.get("max_area")
+        max_project_count = targets.get("max_project_count")
+        if max_area is None:
+            errors.append("Configuration target `max_area` (number of acres) is required.")
+        if max_area is not None:
+            min_area_project = get_min_project_area(scenario)
+            if max_area < min_area_project:
+                errors.append(
+                    f"Target `max_area` must be at least {min_area_project} acres for stand size `{stand_size}`."
+                )
 
-    # Expensive validations below
-    try:
-        available_stand_ids = get_available_stand_ids(
-            planning_area=scenario.planning_area,
-            stand_size=stand_size,
-            excludes=excluded_areas,
-        )
-        available_count = len(available_stand_ids)
-    except Exception as exc:
-        errors.append(f"Failed to compute available stands: {exc}")
-        return errors
+        if max_project_count is None:
+            errors.append("Configuration field `max_project_count` is required.")
 
-    if available_count == 0:
-        errors.append("No stands are available with the current configuration.")
-        return errors
+        else:
+            # Expensive validations below
+            try:
+                available_stand_ids = get_available_stand_ids(
+                    planning_area=scenario.planning_area,
+                    stand_size=stand_size,
+                    excludes=excluded_areas,
+                )
+                available_count = len(available_stand_ids)
+            except Exception as exc:
+                errors.append(f"Failed to compute available stands: {exc}")
+                return errors
 
-    if max_project_count > available_count:
-        errors.append(
-            f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
-        )
+            if available_count == 0:
+                errors.append("No stands are available with the current configuration.")
+                return errors
+
+            if max_project_count > available_count:
+                errors.append(
+                    f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
+                )
 
     return errors
 

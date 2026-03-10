@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  Inject,
   Input,
   OnDestroy,
   OnInit,
@@ -44,10 +45,11 @@ import { PlanState } from '@plan/plan.state';
 import { DataLayer } from '@types';
 import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '@map/map.constants';
+import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
 
 @UntilDestroy()
 @Component({
-  selector: 'app-explore-map',
+  selector: 'app-synced-map',
   standalone: true,
   imports: [
     NgClass,
@@ -66,10 +68,10 @@ import { FrontendConstants } from '@map/map.constants';
     PlanningAreaLayerComponent,
   ],
   providers: [DataLayersStateService],
-  templateUrl: './explore-map.component.html',
-  styleUrl: './explore-map.component.scss',
+  templateUrl: './synced-map.component.html',
+  styleUrl: './synced-map.component.scss',
 })
-export class ExploreMapComponent implements OnInit, OnDestroy {
+export class SyncedMapComponent implements OnInit, OnDestroy {
   /**
    * Maplibre defaults
    */
@@ -143,7 +145,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     private drawService: DrawService,
     private dataLayersStateService: DataLayersStateService,
     private registry: DataLayersRegistryService,
-    private planState: PlanState
+    private planState: PlanState,
+    @Inject(MULTIMAP_STORAGE)
+    private readonly multiDataLayerView: boolean
   ) {
     this.mapConfigState.mapInteractionMode$
       .pipe(untilDestroyed(this))
@@ -169,11 +173,14 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.registry.set(this.mapNumber, this.dataLayersStateService);
     // Loading layer from the storage if exists
-    const multimapStorage = this.multimapStorage.getItem();
-    const selectedLayer = multimapStorage?.dataLayers?.[this.mapNumber] || null;
-    if (selectedLayer) {
-      this.dataLayersStateService.selectDataLayer(selectedLayer);
-      this.dataLayersStateService.goToSelectedLayer(selectedLayer);
+    if (this.multiDataLayerView) {
+      const multimapStorage = this.multimapStorage.getItem();
+      const selectedLayer =
+        multimapStorage?.dataLayers?.[this.mapNumber] || null;
+      if (selectedLayer) {
+        this.dataLayersStateService.selectDataLayer(selectedLayer);
+        this.dataLayersStateService.goToSelectedLayer(selectedLayer);
+      }
     }
   }
 

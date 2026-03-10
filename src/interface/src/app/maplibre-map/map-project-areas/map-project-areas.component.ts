@@ -189,7 +189,7 @@ export class MapProjectAreasComponent implements OnInit {
     // If there is no project area count we should not fill
     if (this.projectAreasCount) {
       for (let i = 1; i <= this.projectAreasCount; i++) {
-        matchExpression.push(i.toString(), getColorForProjectPosition(i));
+        matchExpression.push(i, getColorForProjectPosition(i));
       }
     }
     matchExpression.push(defaultColor);

@@ -33,73 +33,35 @@
         <ng-container *ngIf="loading">
           <mat-spinner diameter="24"></mat-spinner>
         </ng-container>
-        <ng-container *ngIf="!loading && (viewedLayer$ | async) as viewedLayer">
-          <!-- MPAT Matrix -->
-          <div
-            class="layer-item"
-            *ngIf="mpatMatrixLayer"
-            [class.selected]="viewedLayer.id === mpatMatrixLayer.datalayerId"
-            (click)="selectLayer(mpatMatrixLayer)">
-            <mat-icon class="radio-icon">
-              {{
-                viewedLayer.id === mpatMatrixLayer.datalayerId
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ mpatMatrixLayer.name }}</span>
-            <sg-popover
-              class="tooltip"
-              *ngIf="mpatMatrixLayer.tooltip"
-              [content]="mpatMatrixLayer.tooltip"></sg-popover>
-          </div>
-
-          <!-- Adapt-Protect Score -->
-          <div
-            class="layer-item"
-            *ngIf="adaptProtectLayer"
-            [class.selected]="viewedLayer.id === adaptProtectLayer.datalayerId"
-            (click)="selectLayer(adaptProtectLayer)">
-            <mat-icon class="radio-icon">
-              {{
-                viewedLayer.id === adaptProtectLayer.datalayerId
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ adaptProtectLayer.name }}</span>
-            <sg-popover
-              class="tooltip"
-              *ngIf="adaptProtectLayer.tooltip"
-              [content]="adaptProtectLayer.tooltip"></sg-popover>
-          </div>
-
-          <!-- Integrated Condition Score -->
-          <div
-            class="layer-item"
-            *ngIf="integratedConditionLayer"
-            [class.selected]="
-              viewedLayer.id === integratedConditionLayer.datalayerId
-            "
-            (click)="selectLayer(integratedConditionLayer)">
-            <mat-icon class="radio-icon">
-              {{
-                viewedLayer.id === integratedConditionLayer.datalayerId
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ integratedConditionLayer.name }}</span>
-            <sg-popover
-              class="tooltip"
-              *ngIf="integratedConditionLayer.tooltip"
-              [content]="integratedConditionLayer.tooltip"></sg-popover>
-          </div>
+        <ng-container *ngIf="!loading">
+          <ng-container *ngFor="let mapId of mapsArray$ | async">
+            <app-dynamic-output-layers
+              [mapId]="mapId"
+              [layers]="layers"
+              *ngIf="
+                (selectedMapId$ | async) === mapId
+              "></app-dynamic-output-layers>
+          </ng-container>
         </ng-container>
       </section>
     </sg-section>
   </div>
   <div class="map-column">
-    <app-climate-foresight-map></app-climate-foresight-map>
+    <app-map-nav-bar
+      *ngIf="!loading"
+      class="climate-nav-bar"
+      menuPosition="before"
+      style="top: 105px">
+      <app-multi-map-control></app-multi-map-control>
+      <sg-opacity-slider
+        class="navbar-slider"
+        [minValue]="0"
+        [maxValue]="1"
+        [step]="0.01"
+        tooltip="Planning Area Opacity"
+        [sliderValue]="(opacity$ | async) ?? 0.5"
+        (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
+    </app-map-nav-bar>
+    <app-synced-maps></app-synced-maps>
   </div>
 </div>

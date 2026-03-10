@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SyncedMapsComponent } from './synced-maps.component';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
-import { ExploreMapComponent } from '@maplibre-map/explore-map/explore-map.component';
+import { SyncedMapComponent } from '@maplibre-map/synced-map/synced-map.component';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { of } from 'rxjs';
 import { LngLatBounds } from 'maplibre-gl';
@@ -23,7 +23,7 @@ describe('SyncedMapsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SyncedMapsComponent],
       providers: [MockProvider(MultiMapConfigState, state)],
-      declarations: [MockDeclaration(ExploreMapComponent)],
+      declarations: [MockDeclaration(SyncedMapComponent)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SyncedMapsComponent);

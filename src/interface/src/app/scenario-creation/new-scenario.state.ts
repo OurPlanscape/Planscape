@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DataLayersService, ScenarioService } from '@services';
 import {
+  BaseLayer,
   Constraint,
   DataLayer,
   ScenarioConfig,
@@ -47,6 +48,9 @@ export class NewScenarioState {
 
   private _currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
   public currentStep$ = this._currentStep$.asObservable();
+
+  private _selectedSubUnitLayer$ = new BehaviorSubject<BaseLayer | null>(null);
+  public selectedSubUnitLayer$ = this._selectedSubUnitLayer$.asObservable();
 
   // flag to track if the base stands are loaded
   private baseStandsReady$ = new BehaviorSubject(false);
@@ -228,6 +232,14 @@ export class NewScenarioState {
 
   setCurrentStep(config: ScenarioStepConfig | null) {
     this._currentStep$.next(config);
+  }
+
+  setSelectedSubUnitLayer(layer: BaseLayer | null) {
+    this._selectedSubUnitLayer$.next(layer);
+  }
+
+  get selectedSubUnitLayerId(): number | null {
+    return this._selectedSubUnitLayer$.value?.id ?? null;
   }
 
   setBaseStandsLoaded(loaded: boolean) {

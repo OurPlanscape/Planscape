@@ -66,6 +66,21 @@ export class BaseLayersStateService {
     this._selectedBaseLayers$.next(null);
   }
 
+  addBaseLayer(layer: BaseLayer) {
+    const current = this._selectedBaseLayers$.value ?? [];
+    if (current.some((l) => l.id === layer.id)) return;
+    this.addLoadingSourceId('source_' + layer.id);
+    this._selectedBaseLayers$.next([...current, layer]);
+  }
+
+  removeBaseLayer(layer: BaseLayer) {
+    const updated = (this._selectedBaseLayers$.value ?? []).filter(
+      (l) => l.id !== layer.id
+    );
+    this.removeLoadingSourceId('source_' + layer.id);
+    this._selectedBaseLayers$.next(updated.length ? updated : null);
+  }
+
   enableBaseLayerHover(value: boolean) {
     this._enableBaseLayerHover$.next(value);
   }

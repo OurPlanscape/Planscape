@@ -1,0 +1,86 @@
+@import 'variables';
+@import 'colors';
+@import 'mixins';
+
+$side-panel-width: 501px;
+$default-padding: 16px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  ::ng-deep sg-section .mat-expansion-panel-body {
+    padding: 0 10px $default-padding $default-padding;
+  }
+}
+
+.analysis-row {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  gap: 0;
+  height: calc(100% - $navbar-height);
+}
+
+.layers-column {
+  background-color: $color-soft-purple;
+  box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+  z-index: 1;
+  width: $side-panel-width;
+  padding: $default-padding;
+  overflow-y: auto;
+}
+
+.map-column {
+  flex: 1;
+}
+
+.layer-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  .radio-icon {
+    color: $color-dark-gray;
+  }
+
+  .layer-name {
+    color: $color-dark-gray;
+    @include small-paragraph();
+  }
+}
+
+.tooltip {
+  margin-left: auto;
+}
+
+.selected {
+  .radio-icon {
+    color: $color-standard-blue;
+  }
+  .layer-name {
+    @include xs-label();
+    font-weight: 600;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+}
+
+mgl-map {
+  width: 100%;
+  height: 100%;
+}
+
+app-map-nav-bar {
+  left: calc($side-panel-width + $default-padding + $default-padding);
+}
