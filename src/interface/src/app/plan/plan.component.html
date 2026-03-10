@@ -40,7 +40,8 @@
     <ng-container *ngIf="currentPlan$ | async as plan">
       <div class="plan-overview-container">
         <div class="plan-overview-panel">
-          <app-planning-area-details-card [plan]="currentPlan$ | async"></app-planning-area-details-card>
+          <app-planning-area-details-card
+            [plan]="currentPlan$ | async"></app-planning-area-details-card>
           <app-map-viewer-card></app-map-viewer-card>
           <app-planning-analytics-tools
             [planningAreaCapabilities]="

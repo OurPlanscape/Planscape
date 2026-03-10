@@ -84,7 +84,7 @@ import { PlanningAreaDetailsCardComponent } from './planning-area-details-card/p
     MatProgressSpinnerModule,
     MatCardModule,
     MapViewerCardComponent,
-    PlanningAreaDetailsCardComponent
+    PlanningAreaDetailsCardComponent,
   ],
 })
 export class PlanModule {}
