@@ -1,0 +1,49 @@
+@import 'mixins';
+@import 'colors';
+
+:host{
+    border-radius: 8px;
+    border: 1px solid $color-soft-gray;
+    background-color: $color-white;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
+}
+
+.heading {
+    display: flex;
+    flex-direction: column;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.title {
+    @include h4();
+    height: 32px;
+    line-height: 32px;
+}
+
+.name {
+    @include h5();
+    height: 32px;
+    line-height: 32px;
+}
+
+.detail-line {
+    @include xs-label();
+    color: $color-dark-gray;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+}
+
+.detail-icon {
+    color: $color-standard-blue;
+}
