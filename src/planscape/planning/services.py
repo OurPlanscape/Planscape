@@ -246,6 +246,8 @@ def create_config(
     seed: Optional[int] = None,
     planning_approach: Optional[ScenarioPlanningApproach] = None,
     sub_units_layer: Optional[int] = None,
+    sub_units_fixed_target: Optional[bool] = None,
+    sub_units_target_value: Optional[float] = None,
 ) -> Dict[str, Any]:
     config: Dict[str, Any] = {}
 
@@ -263,6 +265,10 @@ def create_config(
         config["planning_approach"] = planning_approach
     if sub_units_layer is not None:
         config["sub_units_layer"] = sub_units_layer
+    
+    if sub_units_fixed_target is not None and sub_units_target_value:
+        config["sub_units_fixed_target"] = sub_units_fixed_target
+        config["sub_units_target_value"] = sub_units_target_value
 
     return config
 
@@ -646,6 +652,10 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
     sample_fraction = settings.FORSYS_SAMPLE_FRACTION
     seed = cfg.get("seed")
+    sub_units_fixed_target = cfg.get("sub_units_fixed_target")
+    sub_units_target_value = cfg.get("sub_units_target_value")
+    if sub_units_fixed_target is False:
+        sub_units_target_value = sub_units_target_value / 100
 
     variables = {
         "min_area_project": min_area_project,
@@ -656,6 +666,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         "exclusion_limit": exclusion_limit,
         "sample_fraction": sample_fraction,
         "seed": seed,
+        "sub_units_fixed_target": sub_units_fixed_target,
+        "sub_units_target_value": sub_units_target_value,
     }
 
     return {
@@ -705,6 +717,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
         if not cfg.get("sub_units_layer"):
             errors.append("Configuration field `sub_units_layer` is required for this Scenario.")
+
+        if cfg.get("sub_units_fixed_target") is None or cfg.get("sub_units_target_value") is None:
+            errors.append("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Configurations for this Scenario.")
     
     else: # scenario.planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
         max_area = targets.get("max_area")
