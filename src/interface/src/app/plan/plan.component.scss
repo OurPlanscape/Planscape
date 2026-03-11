@@ -155,11 +155,11 @@
 .plan-overview-container {
   display: flex;
   flex-direction: row;
-  width: 100%;
   background-color: $color-light-gray;
-  height: fit-content;
   justify-content: center;
-  max-height: fit-content;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 
   @include tablet() {
     height: initial;
