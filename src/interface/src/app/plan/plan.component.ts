@@ -74,11 +74,10 @@ export class PlanComponent implements OnInit {
   }
 
   get isPlanningOverviewEnabled(): boolean {
-    console.log('are we still getting?');
     return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
   }
 
-  @HostBinding('class.plan-overview') 
+  @HostBinding('class.plan-overview')
   get planOverviewEnabled() {
     return this.isPlanningOverviewEnabled;
   }
