@@ -8,10 +8,11 @@ import { STAND_OPTIONS } from '@plan/plan-helpers';
 import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { DataLayer, ScenarioV3Config } from '@types';
+import { DataLayer, PLANNING_APPROACH_LABELS, ScenarioV3Config } from '@types';
 import { isCustomScenario } from '../scenario-helper';
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -32,6 +33,7 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   private scenarioState: ScenarioState = inject(ScenarioState);
   private forsysService: ForsysService = inject(ForsysService);
   private dataLayersService: DataLayersService = inject(DataLayersService);
+  private featureService: FeatureService = inject(FeatureService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -42,6 +44,7 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
   distanceToRoadsId: number | null = null;
 
   readonly standSizeOptions = STAND_OPTIONS;
+  readonly planningApproachLabels = PLANNING_APPROACH_LABELS;
 
   forsysData$ = this.forsysService.forsysData$
     .pipe(untilDestroyed(this))
@@ -105,5 +108,13 @@ export class ScenarioV3ConfigOverlayComponent implements OnDestroy {
 
   ngOnDestroy() {
     this.close();
+  }
+
+  get isPlanningApproachEnabled() {
+    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  get planningApproach() {
+    return this.configuration?.planning_approach;
   }
 }
