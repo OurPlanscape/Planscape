@@ -1,0 +1,17 @@
+<mat-card class="content">
+  <div class="card-header">
+    <mat-icon class="icon">{{ icon }}</mat-icon>
+    <div class="text-area">
+      <h3 class="title">{{ title }}</h3>
+      <div class="description">{{ description }}</div>
+    </div>
+  </div>
+  <a
+    sg-button
+    variant="primary"
+    [icon]="buttonIcon"
+    [outlined]="true"
+    (click)="handleClick($event)">
+    {{ buttonText }}
+  </a>
+</mat-card>

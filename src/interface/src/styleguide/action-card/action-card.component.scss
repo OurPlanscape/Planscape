@@ -1,0 +1,44 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+    width: 100%;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+}
+
+
+.card-header {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.text-area {
+    display: flex;
+    flex-direction: column;
+    max-width: 380px;
+    gap: 8px;
+    justify-content: left;
+    align-items: flex-start;
+    height: 100%;
+}
+
+.icon {
+    color: $color-standard-blue;
+}
+
+.title {
+    @include small-input-label();
+}
+
+.description {
+    @include small-paragraph();
+    color: $color-md-gray;
+}

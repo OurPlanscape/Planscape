@@ -8,10 +8,9 @@ describe('ScenariosEmptyListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ScenariosEmptyListComponent]
-    })
-    .compileComponents();
-    
+      imports: [ScenariosEmptyListComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ScenariosEmptyListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
