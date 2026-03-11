@@ -1,6 +1,7 @@
 name: Node.js CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -8,7 +9,25 @@ on:
 
 jobs:
 
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      styleguide: ${{ steps.filter.outputs.styleguide }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/interface/**'
+            styleguide:
+              - 'src/interface/src/styleguide/**'
+
   lint-frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -19,9 +38,9 @@ jobs:
         node-version: [ 18.x ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -30,7 +49,8 @@ jobs:
       - run: npm run lint
 
   build:
-
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -42,9 +62,9 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -53,6 +73,8 @@ jobs:
       - run: npm run test:prod
 
   storybook:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.styleguide == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -63,12 +85,47 @@ jobs:
         node-version: [ 18.x ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: src/interface/package-lock.json
       - run: npm ci
       - run: npm run build-storybook
+
+  frontend-gate:
+    name: Frontend Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [detect-changes, lint-frontend, build, storybook]
+    steps:
+      - name: Check results
+        run: |
+          frontend="${{ needs.detect-changes.outputs.frontend }}"
+          styleguide="${{ needs.detect-changes.outputs.styleguide }}"
+
+          if [[ "$frontend" != "true" ]]; then
+            echo "No frontend changes — skipped"
+            exit 0
+          fi
+
+          failed=false
+          if [[ "${{ needs.lint-frontend.result }}" != "success" ]]; then
+            echo "Lint failed"
+            failed=true
+          fi
+          if [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "Build failed"
+            failed=true
+          fi
+          if [[ "$styleguide" == "true" && "${{ needs.storybook.result }}" != "success" ]]; then
+            echo "Storybook failed"
+            failed=true
+          fi
+
+          if [[ "$failed" == "true" ]]; then
+            exit 1
+          fi
+          echo "Frontend CI passed"
