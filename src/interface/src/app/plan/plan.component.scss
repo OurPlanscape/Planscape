@@ -2,7 +2,7 @@
 @import 'mixins';
 @import 'media';
 
-:host {
+:host.plan-overview {
   height: 100%;
   background-color: $color-light-gray;
   display: block;
@@ -69,6 +69,12 @@
 .plan-content.with-overview {
   height: 100%;
   flex-direction: column;
+}
+
+
+.plan-content.plan-overview {
+  height: 100%;
+  flex-direction: column;
   padding: 16px;
   padding-left: 8px;
   max-width: 800px;
@@ -85,6 +91,7 @@
     padding: 16px;
   }
 }
+
 
 .plan-map-container {
   height: 100%;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostBinding, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, interval, switchMap, take } from 'rxjs';
 import { Plan } from '@types';
@@ -73,8 +73,14 @@ export class PlanComponent implements OnInit {
     this.pollForChanges();
   }
 
-  isPlanningOverviewEnabled(): boolean {
+  get isPlanningOverviewEnabled(): boolean {
+    console.log('are we still getting?');
     return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
+  }
+
+  @HostBinding('class.plan-overview') 
+  get planOverviewEnabled() {
+    return this.isPlanningOverviewEnabled;
   }
 
   backToOverview() {
