@@ -37,7 +37,7 @@ import { MapConfigService } from '@maplibre-map/map-config.service';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
-
+import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list/scenarios-empty-list.component';
 /** Components used in the plan flow. */
 @NgModule({
   declarations: [AreaNotesComponent, PlanComponent, SavedScenariosComponent],
@@ -81,6 +81,7 @@ import { MatCardModule } from '@angular/material/card';
     BannerComponent,
     MatProgressSpinnerModule,
     MatCardModule,
+    ScenariosEmptyListComponent,
   ],
 })
 export class PlanModule {}
