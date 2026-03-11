@@ -19,8 +19,8 @@ export type NotesPanelState = 'SAVING' | 'READY' | 'INITIAL';
 @Component({
   standalone: true,
   selector: 'sg-notes-panel',
-  templateUrl: './notes-sidebar.component.html',
-  styleUrls: ['./notes-sidebar.component.scss'],
+  templateUrl: './notes-panel.component.html',
+  styleUrls: ['./notes-panel.component.scss'],
   imports: [
     MatMenuModule,
     CommonModule,
@@ -35,7 +35,7 @@ export class NotesPanelComponent {
   constructor() {}
 
   @Input() showHeader = false;
-  @Input() notesState: NotesPanelState = 'INITIAL';
+  @Input() notesState: NotesPanelState = 'READY';
   @Input() notes: Note[] = [];
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =

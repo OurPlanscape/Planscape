@@ -16,7 +16,7 @@ export * from '@styleguide/modal-confirmation-dialog/modal-confirmation-dialog.c
 export * from '@styleguide/modal-info-box/modal-info.component';
 export * from '@styleguide/modal/modal.component';
 export * from '@styleguide/no-results/no-results.component';
-export * from '@styleguide/notes-sidebar/notes-sidebar.component';
+export * from '@styleguide/notes-panel/notes-panel.component';
 export * from '@styleguide/opacity-slider/opacity-slider.component';
 export * from '@styleguide/overlay-loader/overlay-loader.component';
 export * from '@styleguide/paginator/paginator.component';
