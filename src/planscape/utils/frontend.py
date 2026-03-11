@@ -18,8 +18,8 @@ def get_base_url(env):
             return "https://app.planscape.org"
         case "staging":
             return "https://staging.planscape.org"
-        case "demo":
-            return "https://demo.planscape.org"
+        case "catalog":
+            return "https://catalog.planscape.org"
         case _:
             return "https://dev.planscape.org"
 
