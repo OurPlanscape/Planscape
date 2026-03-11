@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { delay, map, startWith, take } from 'rxjs';
+import { delay, map, startWith, switchMap, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -34,13 +34,13 @@ import { SyncedMapsComponent } from '@app/maplibre-map/synced-maps/synced-maps.c
 import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MultiMapControlComponent } from '@app/maplibre-map/multi-map-control/multi-map-control.component';
 import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
-import { DynamicOutputLayersComponent } from '../dynamic-output-layers/dynamic-output-layers.component';
-import { OutputLayersComponent } from '../output-layers/output-layers.component';
+import { DynamicClimateLayersComponent } from '../dynamic-climate-layers/dynamic-climate-layers.component';
+import { ClimateLayersComponent } from '../climate-layers/climate-layers.component';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
 import { DrawService } from '@app/maplibre-map/draw.service';
 import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
 
-export interface OutputLayer {
+export interface ResultsLayer {
   id: string;
   name: string;
   datalayerId: number | null;
@@ -70,8 +70,8 @@ export interface OutputLayer {
     MapNavbarComponent,
     OpacitySliderComponent,
     MultiMapControlComponent,
-    DynamicOutputLayersComponent,
-    OutputLayersComponent,
+    DynamicClimateLayersComponent,
+    ClimateLayersComponent,
   ],
   providers: [
     // 1. Create a single instance of the subclass
@@ -97,9 +97,9 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   downloadUrl: string | null = null;
   private downloadPollingInterval: ReturnType<typeof setInterval> | null = null;
 
-  mpatMatrixLayer: OutputLayer | null = null;
-  adaptProtectLayer: OutputLayer | null = null;
-  integratedConditionLayer: OutputLayer | null = null;
+  mpatMatrixLayer: ResultsLayer | null = null;
+  adaptProtectLayer: ResultsLayer | null = null;
+  integratedConditionLayer: ResultsLayer | null = null;
 
   mapsArray$ = this.dataLayersRegistryService.size$.pipe(
     startWith(0),
@@ -111,7 +111,8 @@ export class AnalysisComponent implements OnInit, OnDestroy {
 
   selectedMapId$ = this.multimapStateService.selectedMapId$;
 
-  layers: OutputLayer[] = [];
+  layers: ResultsLayer[] = [];
+  inputLayers: ResultsLayer[] = [];
 
   viewedLayer$ = this.dataLayersState.viewedDataLayer$;
 
@@ -156,14 +157,35 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     if (!this.runId) return;
 
     this.loading = true;
+
     this.climateForesightService
       .getRun(this.runId)
-      .pipe(untilDestroyed(this))
+      .pipe(
+        switchMap((run) => {
+          const input_ids: number[] = run.input_datalayers.map(
+            (l) => l.datalayer
+          );
+          return this.climateForesightService.getDataLayers().pipe(
+            map((datalayers) => ({
+              run,
+              // Returning the input layers
+              input_layers: datalayers.filter((d) => input_ids.includes(d.id)),
+            }))
+          );
+        })
+      )
       .subscribe({
-        next: (run) => {
+        next: ({ run, input_layers }) => {
           this.run = run;
-          this.buildOutputLayers();
-
+          this.inputLayers = input_layers.map((layer) => ({
+            datalayer: layer,
+            id: String(layer.id),
+            name: layer.name,
+            datalayerId: layer.id,
+            type: layer.type,
+            group: 'primary',
+          })) as ResultsLayer[];
+          this.buildClimateLayers();
           this.breadcrumbService.breadcrumb$
             .pipe(take(1))
             .subscribe((breadcrumb) => {
@@ -193,7 +215,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       });
   }
 
-  private buildOutputLayers(): void {
+  private buildClimateLayers(): void {
     if (!this.run) return;
 
     if (this.run.promote) {
@@ -242,7 +264,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectLayer(layer: OutputLayer): void {
+  selectLayer(layer: ResultsLayer): void {
     if (layer.datalayer) {
       this.dataLayersState.selectDataLayer(layer.datalayer);
     }

@@ -27,7 +27,6 @@
     <sg-section
       headline="Analysis outputs"
       class="priority-selection"
-      [required]="true"
       tooltipContent="<p>Climate Foresight integrates current conditions (0-100 scale metrics) with a future vulnerability analysis (Povak and Manley 2024 climate analog approach) to predict resource condition trajectories under climate change.</p><p>The model provides quantitative support for four common restoration strategies:</p><ol class='strategies'><li><b>Monitor:</b> Conditions are favorable now and in the future.</li><li><b>Protect:</b> Conditions are currently favorable but decline with climate change.</li><li><b>Adapt:</b> Conditions are currently unfavorable, but climate is not a future impediment.</li><li><b>Transform:</b> Conditions are currently and remain unfavorable due to climate change.</li></ol>">
       <section class="datalayers-section" [class.loading]="loading">
         <ng-container *ngIf="loading">
@@ -35,12 +34,34 @@
         </ng-container>
         <ng-container *ngIf="!loading">
           <ng-container *ngFor="let mapId of mapsArray$ | async">
-            <app-dynamic-output-layers
+            <app-dynamic-climate-layers
               [mapId]="mapId"
               [layers]="layers"
               *ngIf="
                 (selectedMapId$ | async) === mapId
-              "></app-dynamic-output-layers>
+              "></app-dynamic-climate-layers>
+          </ng-container>
+        </ng-container>
+      </section>
+    </sg-section>
+
+    <!-- Datalayers inputs -->
+    <sg-section
+      headline="Analysis inputs"
+      class="input-selection"
+      tooltipContent="Climate Foresight inputs">
+      <section class="datalayers-section" [class.loading]="loading">
+        <ng-container *ngIf="loading">
+          <mat-spinner diameter="24"></mat-spinner>
+        </ng-container>
+        <ng-container *ngIf="!loading">
+          <ng-container *ngFor="let mapId of mapsArray$ | async">
+            <app-dynamic-climate-layers
+              [mapId]="mapId"
+              [layers]="inputLayers"
+              *ngIf="
+                (selectedMapId$ | async) === mapId
+              "></app-dynamic-climate-layers>
           </ng-container>
         </ng-container>
       </section>
