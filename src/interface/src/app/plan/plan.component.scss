@@ -2,6 +2,12 @@
 @import 'mixins';
 @import 'media';
 
+:host {
+  height: 100%;
+  background-color: $color-light-gray;
+  display: block;
+}
+
 .root-container {
   display: flex;
   flex-direction: row;
@@ -65,8 +71,9 @@
   flex-direction: column;
   padding: 16px;
   padding-left: 8px;
-  max-height: calc(100vh - 100px);
   max-width: 800px;
+  max-height: 933px;
+  box-sizing: border-box;
 
   @include laptop() {
     width: 576px;
