@@ -21,7 +21,7 @@ import { catchError, map, of, switchMap } from 'rxjs';
 import { SelectedStandsState } from '@treatments/treatment-map/selected-stands.state';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { FeaturesModule } from '@features/features.module';
 import { SharedModule } from '@shared';
 import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
@@ -30,14 +30,12 @@ import { MatMenuModule } from '@angular/material/menu';
 import { TreatmentNavbarMenuComponent } from '@treatments/treatment-navbar-menu/treatment-navbar-menu.component';
 import { ApplyTreatmentComponent } from '@treatments/apply-treatment/apply-treatment.component';
 import { TreatmentLegendComponent } from '@treatments/treatment-legend/treatment-legend.component';
-import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '@treatments/review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { TreatmentToPDFService } from '../treatment-to-pdf.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { canRunTreatmentAnalysis } from '@plan/permissions';
-import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
 import { PlanState } from '@plan/plan.state';
@@ -52,11 +50,9 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     TreatmentMapComponent,
     AsyncPipe,
     NgIf,
-    NgFor,
     FeaturesModule,
     SharedModule,
     ButtonComponent,
-    MatLegacySlideToggleModule,
     MatIconModule,
     MatMenuModule,
     TreatmentNavbarMenuComponent,
@@ -65,7 +61,6 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     RouterLink,
     MatProgressSpinnerModule,
     OverlayLoaderComponent,
-    ControlComponent,
     MatTooltipModule,
   ],
   providers: [

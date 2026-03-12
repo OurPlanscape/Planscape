@@ -22,7 +22,7 @@ import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { FeaturesModule } from '@features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, ToggleComponent } from '@styleguide';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ScenariosCardListComponent } from '@plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -80,6 +80,7 @@ describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
         NoopAnimationsModule,
         FeaturesModule,
         ButtonComponent,
+        ToggleComponent,
         MatTabsModule,
         MatCardModule,
         RouterTestingModule,
