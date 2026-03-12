@@ -42,10 +42,7 @@ taggit:
 	git push origin --tags; \
 	echo "Completed taggit"
 
-install-node:
-	sudo n $(shell cat src/interface/.node-version)
-
-install-dependencies-frontend: install-node
+install-dependencies-frontend:
 	cd src/interface && npm install
 
 compile-angular:
