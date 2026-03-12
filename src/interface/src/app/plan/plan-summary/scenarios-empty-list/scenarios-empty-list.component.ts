@@ -15,15 +15,13 @@ import { UploadProjectAreasModalComponent } from '@app/plan/upload-project-areas
 export class ScenariosEmptyListComponent {
   @Input() plan!: Plan | null;
 
-  constructor(private dialog: MatDialog) {
-  }
+  constructor(private dialog: MatDialog) {}
 
   public openProjectAreasUploadDialog() {
-    return this.dialog.open(UploadProjectAreasModalComponent,{});
+    return this.dialog.open(UploadProjectAreasModalComponent, {});
   }
 
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
-    console.log('clicking for type:', type);
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
