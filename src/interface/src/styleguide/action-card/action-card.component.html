@@ -1,6 +1,12 @@
 <mat-card class="content">
   <div class="card-header">
-    <mat-icon class="icon">{{ icon }}</mat-icon>
+    <div
+      *ngIf="svgIcon"
+      [style.mask-image]="'url(' + svgIcon + ')'"
+      class="svg-icon icon"></div>
+    <mat-icon *ngIf="!svgIcon && icon" class="material-symbols-outlined icon">{{
+      icon
+    }}</mat-icon>
     <div class="text-area">
       <h3 class="title">{{ title }}</h3>
       <div class="description">{{ description }}</div>
