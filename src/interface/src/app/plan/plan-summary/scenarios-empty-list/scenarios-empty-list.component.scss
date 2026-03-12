@@ -33,3 +33,29 @@ h4 {
     @include regular-paragraph();
     color: $color-dark-gray;
 }
+
+.awaiting-block {
+  display: flex;
+  width: 50%;
+  min-width: 300px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.search-icon {
+  height: 36px;
+  width: 36px;
+  font-size: 36px;
+  color: $color-md-gray;
+}
+
+.title {
+  @include h4();
+}
+
+.awaiting-blurb {
+  @include small-paragraph();
+  color: $color-md-gray;
+}

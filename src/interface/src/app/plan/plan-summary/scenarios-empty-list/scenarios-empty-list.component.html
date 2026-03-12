@@ -1,34 +1,50 @@
-<div class="heading">
-  <h4>How would you like to start?</h4>
-  <div class="subtitle">
-    Select an option below to start planning and access more analytic tools.
+@if (hasPermissions) {
+  <div class="heading">
+    <h4>How would you like to start?</h4>
+    <div class="subtitle">
+      Select an option below to start planning and access more analytic tools.
+    </div>
   </div>
-</div>
 
-<div class="option-set">
-  <h5>Use Forsys to generate scenarios</h5>
-  <sg-action-card
-    title="Choose Treatment Goal"
-    description="Start from a template with preset objectives, co-benefits, and constraints"
-    icon="target"
-    buttonText="New Scenario"
-    buttonIcon="add"
-    (buttonClick)="openScenarioSetupDialog('CUSTOM')"></sg-action-card>
-  <sg-action-card
-    title="Create Custom Scenario"
-    description="Build from scratch: choose all objectives, co-benefits, and constraints."
-    icon="subtitles"
-    buttonText="New Scenario"
-    buttonIcon="add"
-    (buttonClick)="openScenarioSetupDialog('CUSTOM')"></sg-action-card>
-</div>
-<div class="option-set">
-  <h5>Use Your Existing Project Areas</h5>
-  <sg-action-card
-    title="Upload Project Areas"
-    description="Import your project areas to the planning area dashboard to run targeted scenarios on your existing boundaries."
-    icon="upload"
-    buttonIcon="upload"
-    buttonText="Upload"
-    (buttonClick)="openProjectAreasUploadDialog()"></sg-action-card>
-</div>
+  <div class="option-set">
+    <h5>Use Forsys to generate scenarios</h5>
+    <sg-action-card
+      title="Choose Treatment Goal"
+      description="Start from a template with preset objectives, co-benefits, and constraints"
+      icon="target"
+      buttonText="New Scenario"
+      buttonIcon="add"
+      (buttonClick)="openScenarioSetupDialog('CUSTOM')"></sg-action-card>
+    <sg-action-card
+      title="Create Custom Scenario"
+      description="Build from scratch: choose all objectives, co-benefits, and constraints."
+      icon="subtitles"
+      buttonText="New Scenario"
+      buttonIcon="add"
+      (buttonClick)="openScenarioSetupDialog('CUSTOM')"></sg-action-card>
+  </div>
+  <div class="option-set">
+    <h5>Use Your Existing Project Areas</h5>
+    <sg-action-card
+      title="Upload Project Areas"
+      description="Import your project areas to the planning area dashboard to run targeted scenarios on your existing boundaries."
+      icon="upload"
+      buttonIcon="upload"
+      buttonText="Upload"
+      (buttonClick)="openProjectAreasUploadDialog()"></sg-action-card>
+  </div>
+} @else {
+  <div class="awaiting-block">
+    <div class="icon-row">
+      <mat-icon class="material-symbols-outlined search-icon">
+        document_search
+      </mat-icon>
+    </div>
+    <div class="title">Awaiting project areas and scenarios</div>
+    <div class="awaiting-blurb">
+      Once an Editor or Owner uploads a project area and runs a scenario, it
+      will be available to view. To create scenarios or upload project areas,
+      please contact the planning area owner to request Editor permissions.
+    </div>
+  </div>
+}

@@ -4,26 +4,26 @@ import { Plan, SCENARIO_TYPE } from '@app/types';
 import { ActionCardComponent } from '@styleguide';
 import { MatDialog } from '@angular/material/dialog';
 import { UploadProjectAreasModalComponent } from '@app/plan/upload-project-areas-modal/upload-project-areas-modal.component';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-scenarios-empty-list',
   standalone: true,
-  imports: [ActionCardComponent],
+  imports: [ActionCardComponent, MatIconModule],
   templateUrl: './scenarios-empty-list.component.html',
   styleUrl: './scenarios-empty-list.component.scss',
 })
 export class ScenariosEmptyListComponent {
   @Input() plan!: Plan | null;
+  @Input() hasPermissions: boolean = false;
 
-  constructor(private dialog: MatDialog) {
-  }
+  constructor(private dialog: MatDialog) {}
 
   public openProjectAreasUploadDialog() {
-    return this.dialog.open(UploadProjectAreasModalComponent,{});
+    return this.dialog.open(UploadProjectAreasModalComponent, {});
   }
 
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
-    console.log('clicking for type:', type);
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
