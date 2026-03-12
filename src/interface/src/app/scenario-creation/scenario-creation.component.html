@@ -86,7 +86,12 @@
           <app-stand-level-constraints></app-stand-level-constraints>
         </sg-step>
         <sg-step>
-          <app-treatment-target></app-treatment-target>
+          <app-treatment-target
+            *ngIf="!subUnitsPrioritized"></app-treatment-target>
+          <app-planning-approach-treatment-target
+            *ngIf="
+              subUnitsPrioritized
+            "></app-planning-approach-treatment-target>
         </sg-step>
       </ng-template>
     </sg-steps>
