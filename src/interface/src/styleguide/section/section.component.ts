@@ -4,6 +4,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 /**
  * SectionComponent displays a panel with a title and optional tooltip.
@@ -20,6 +21,7 @@ import { PopoverComponent } from '@styleguide/popover/popover.component';
     MatExpansionModule,
     PopoverComponent,
     NgClass,
+    ButtonComponent,
   ],
   templateUrl: './section.component.html',
   styleUrl: './section.component.scss',
@@ -27,6 +29,7 @@ import { PopoverComponent } from '@styleguide/popover/popover.component';
 export class SectionComponent {
   @Input() headline = '';
   @Input() tooltipContent = '';
+  @Input() tooltipLink = '';
   @Input() required = false;
 
   @Input() isCollapsible = false;
@@ -36,5 +39,11 @@ export class SectionComponent {
 
   stopPropagation(e: Event) {
     e.stopPropagation();
+  }
+
+  navigateToLink() {
+    if (this.tooltipLink) {
+      window.open(this.tooltipLink, '_blank');
+    }
   }
 }
