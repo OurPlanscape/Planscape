@@ -12,13 +12,15 @@
     description="Start from a template with preset objectives, co-benefits, and constraints"
     icon="target"
     buttonText="New Scenario"
-    buttonIcon="add"></sg-action-card>
+    buttonIcon="add"
+    (buttonClick)="openScenarioSetupDialog('CUSTOM')"></sg-action-card>
   <sg-action-card
     title="Create Custom Scenario"
     description="Build from scratch: choose all objectives, co-benefits, and constraints."
     icon="subtitles"
     buttonText="New Scenario"
-    buttonIcon="add"></sg-action-card>
+    buttonIcon="add"
+    (buttonClick)="openScenarioSetupDialog('CUSTOM')"></sg-action-card>
 </div>
 <div class="option-set">
   <h5>Use Your Existing Project Areas</h5>
@@ -27,5 +29,6 @@
     description="Import your project areas to the planning area dashboard to run targeted scenarios on your existing boundaries."
     icon="upload"
     buttonIcon="upload"
-    buttonText="Upload"></sg-action-card>
+    buttonText="Upload"
+    (buttonClick)="openProjectAreasUploadDialog()"></sg-action-card>
 </div>
