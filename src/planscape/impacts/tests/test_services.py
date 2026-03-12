@@ -1,12 +1,13 @@
 import json
 import random
+import shutil
 from pathlib import Path
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -256,15 +257,18 @@ class SummaryTest(TestCase):
         )[0]
         precription_2 = list(
             filter(
-                lambda x: x["action"]
-                == TreatmentPrescriptionAction.HEAVY_THINNING_BIOMASS,
+                lambda x: (
+                    x["action"] == TreatmentPrescriptionAction.HEAVY_THINNING_BIOMASS
+                ),
                 summary["prescriptions"],
             )
         )[0]
         precription_3 = list(
             filter(
-                lambda x: x["action"]
-                == TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE,
+                lambda x: (
+                    x["action"]
+                    == TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE
+                ),
                 summary["prescriptions"],
             )
         )[0]
@@ -791,6 +795,10 @@ class FetchTreatmentPlanDataTest(TestCase):
         self.assertIn(stand2.pk, stand_ids)
 
 
+@override_settings(
+    OUTPUT_DIR="/tmp/planscape-test-output",
+    TEMP_GEOPACKAGE_FOLDER="/tmp/planscape-test-output/geopackages",
+)
 class ExportShapefileTest(TestCase):
     def test_export_creates_file(self):
         treatment_plan = TreatmentPlanFactory.create()
@@ -814,3 +822,6 @@ class ExportShapefileTest(TestCase):
         shapefile = export_geopackage(treatment_plan)
         path = Path(shapefile)
         self.assertTrue(path.exists())
+
+    def tearDown(self):
+        shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
