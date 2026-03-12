@@ -892,6 +892,13 @@ def map_property(key_value_pair):
     return (key, type)
 
 
+def map_property_for_numeric_export(key_value_pair):
+    key, value = key_value_pair
+    if value is None:
+        return (key, "float")
+    return map_property(key_value_pair)
+
+
 def get_schema(
     geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]],
 ) -> Dict[str, Any]:
@@ -1021,7 +1028,16 @@ def export_scenario_stand_outputs_to_geopackage(
                     case _:
                         try:
                             f = float(value)
-                            f = truncate_result(f, quantize=".001")
+                            if math.isfinite(f):
+                                f = truncate_result(f, quantize=".001")
+                            else:
+                                logger.warning(
+                                    "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
+                                    value,
+                                    key,
+                                    scenario.pk,
+                                )
+                                f = None
                         except ValueError:
                             logger.warning(
                                 "Value %s for key %s in scenario %s is not a float.",
@@ -1056,7 +1072,7 @@ def export_scenario_stand_outputs_to_geopackage(
             )
 
     properties = features[0].get("properties", {})
-    field_type_pairs = list(map(map_property, properties.items()))
+    field_type_pairs = list(map(map_property_for_numeric_export, properties.items()))
     schema = {
         "geometry": "MultiPolygon",
         "properties": field_type_pairs,
@@ -1115,7 +1131,16 @@ def export_scenario_inputs_to_geopackage(
                     case _:
                         try:
                             f = float(value)
-                            f = truncate_result(f, quantize=".001")
+                            if math.isfinite(f):
+                                f = truncate_result(f, quantize=".001")
+                            else:
+                                logger.warning(
+                                    "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
+                                    value,
+                                    key,
+                                    scenario.pk,
+                                )
+                                f = None
                         except ValueError:
                             logger.warning(
                                 "Value %s for key %s in scenario %s is not a float.",
@@ -1134,7 +1159,7 @@ def export_scenario_inputs_to_geopackage(
     stand_id = next(iter(scenario_inputs))
     feature = scenario_inputs[stand_id].copy()
     feature.pop("WKT", None)  # Remove WKT if present
-    field_type_pairs = list(map(map_property, feature.items()))
+    field_type_pairs = list(map(map_property_for_numeric_export, feature.items()))
     schema = {
         "geometry": "MultiPolygon",
         "properties": field_type_pairs,
