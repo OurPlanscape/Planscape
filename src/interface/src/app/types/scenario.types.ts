@@ -27,6 +27,11 @@ export type PLANNING_APPROACH =
   | 'PRIORITIZE_SUB_UNITS'
   | 'OPTIMIZE_PROJECT_AREAS';
 
+export const PLANNING_APPROACH_LABELS: Record<PLANNING_APPROACH, string> = {
+  PRIORITIZE_SUB_UNITS: 'Prioritize Sub-Units',
+  OPTIMIZE_PROJECT_AREAS: 'Optimize Project Areas',
+};
+
 // Backend scenario model returned by /v2/scenarios endpoints.
 export interface Scenario {
   id: number;
