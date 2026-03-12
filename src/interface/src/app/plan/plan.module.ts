@@ -41,7 +41,12 @@ import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/p
 
 /** Components used in the plan flow. */
 @NgModule({
-  declarations: [AreaNotesComponent, PlanComponent, PlanScenariosListComponent, SavedScenariosComponent],
+  declarations: [
+    AreaNotesComponent,
+    PlanComponent,
+    PlanScenariosListComponent,
+    SavedScenariosComponent,
+  ],
   providers: [
     WINDOW_PROVIDERS,
     MapConfigState,
