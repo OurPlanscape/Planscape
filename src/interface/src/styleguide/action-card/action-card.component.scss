@@ -44,10 +44,12 @@
 
 .icon {
   color: $color-standard-blue;
+  min-width: 24px;
 }
 
 .title {
   @include small-input-label();
+  margin: 0;
 }
 
 .description {
