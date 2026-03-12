@@ -56,6 +56,10 @@ export class PlanningApproachComponent implements OnInit {
     },
   ];
 
+  selectApproach(value: string): void {
+    this.control.setValue(value as PLANNING_APPROACH);
+  }
+
   constructor(private newScenarioState: NewScenarioState) {}
 
   ngOnInit(): void {
