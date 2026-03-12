@@ -13,7 +13,8 @@
     <div
       *ngFor="let item of planningApproachOptions"
       class="item"
-      [class.selected]="control.value === item.value">
+      [class.selected]="control.value === item.value"
+      (click)="selectApproach(item.value)">
       <div class="option">
         <mat-radio-button [value]="item.value">
           {{ item.title }}
