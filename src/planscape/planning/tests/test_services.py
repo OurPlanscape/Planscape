@@ -272,6 +272,10 @@ class TestFlattenGeojsonSanitization(TestCase):
         self.assertTrue(all(" " not in k for k in props.keys()))
 
 
+@override_settings(
+    OUTPUT_DIR="/tmp/planscape-test-output",
+    TEMP_GEOPACKAGE_FOLDER="/tmp/planscape-test-output/geopackages",
+)
 class ExportToShapefileTest(TestCase):
     def test_export_raises_value_error_failure(self):
         unit_poly = GEOSGeometry(
@@ -358,6 +362,10 @@ class ExportToShapefileTest(TestCase):
             shutil.rmtree(str(output))
 
 
+@override_settings(
+    OUTPUT_DIR="/tmp/planscape-test-output",
+    TEMP_GEOPACKAGE_FOLDER="/tmp/planscape-test-output/geopackages",
+)
 class TestExportToGeopackage(TestCase):
     def setUp(self):
         self.user = UserFactory.create()
@@ -496,19 +504,27 @@ class TestExportToGeopackage(TestCase):
         ]
 
         preset_scenario_forsys_folder = self.preset_scenario.get_forsys_folder()
-        self.preset_scenario_outputs_file = preset_scenario_forsys_folder / f"stnd_{self.preset_scenario.uuid}.csv"
+        self.preset_scenario_outputs_file = (
+            preset_scenario_forsys_folder / f"stnd_{self.preset_scenario.uuid}.csv"
+        )
         with open(self.preset_scenario_outputs_file, "w") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
         custom_scenario_forsys_folder = self.custom_scenario.get_forsys_folder()
-        self.custom_scenario_outputs_file = custom_scenario_forsys_folder / f"stnd_{self.custom_scenario.uuid}.csv"
+        self.custom_scenario_outputs_file = (
+            custom_scenario_forsys_folder / f"stnd_{self.custom_scenario.uuid}.csv"
+        )
         with open(self.custom_scenario_outputs_file, "w") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
-        self.preset_scenario_output_path = Path("preset_scenario_test_planning_area.gpkg")
-        self.custom_scenario_output_path = Path("custom_scenario_test_planning_area.gpkg")
+        self.preset_scenario_output_path = Path(
+            "preset_scenario_test_planning_area.gpkg"
+        )
+        self.custom_scenario_output_path = Path(
+            "custom_scenario_test_planning_area.gpkg"
+        )
 
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage_preset_scenario(self, upload_mock):
@@ -529,7 +545,9 @@ class TestExportToGeopackage(TestCase):
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage_already_existing_preset_scenario(self, upload_mock):
         invalidate_all()
-        self.preset_scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg.zip"
+        self.preset_scenario.geopackage_url = (
+            "gs://test-bucket/test-folder/test.gpkg.zip"
+        )
         self.preset_scenario.save(update_fields=["geopackage_url"])
 
         output = export_to_geopackage(self.preset_scenario)
@@ -540,7 +558,9 @@ class TestExportToGeopackage(TestCase):
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage_already_existing_custom_scenario(self, upload_mock):
         invalidate_all()
-        self.custom_scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg.zip"
+        self.custom_scenario.geopackage_url = (
+            "gs://test-bucket/test-folder/test.gpkg.zip"
+        )
         self.custom_scenario.save(update_fields=["geopackage_url"])
 
         output = export_to_geopackage(self.custom_scenario)
@@ -549,7 +569,9 @@ class TestExportToGeopackage(TestCase):
         self.assertFalse(upload_mock.called)
 
     def test_export_planning_area_to_geopackage_preset_scenario(self):
-        export_planning_area_to_geopackage(self.planning, self.preset_scenario_output_path)
+        export_planning_area_to_geopackage(
+            self.planning, self.preset_scenario_output_path
+        )
         layers = fiona.listlayers(self.preset_scenario_output_path)
         self.assertIn("planning_area", layers)
         with fiona.open(self.preset_scenario_output_path, layer="planning_area") as src:
@@ -561,7 +583,9 @@ class TestExportToGeopackage(TestCase):
             self.assertEqual(feature["properties"]["name"], self.planning.name)
 
     def test_export_planning_area_to_geopackage_custom_scenario(self):
-        export_planning_area_to_geopackage(self.planning, self.custom_scenario_output_path)
+        export_planning_area_to_geopackage(
+            self.planning, self.custom_scenario_output_path
+        )
         layers = fiona.listlayers(self.custom_scenario_output_path)
         self.assertIn("planning_area", layers)
         with fiona.open(self.custom_scenario_output_path, layer="planning_area") as src:
@@ -572,7 +596,9 @@ class TestExportToGeopackage(TestCase):
             feature = next(iter(src))
             self.assertEqual(feature["properties"]["name"], self.planning.name)
 
-    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_preset_scenario(self):
+    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_preset_scenario(
+        self,
+    ):
         self.datalayers[0].name = "Expected Annual Total Volume Killed"
         self.datalayers[0].save(update_fields=["name"])
         stand_inputs = export_scenario_inputs_to_geopackage(
@@ -586,7 +612,9 @@ class TestExportToGeopackage(TestCase):
         self.assertIn("datalayer_expected-annual-total-volume-killed", field_names)
         self.assertTrue(all(" " not in n for n in field_names))
 
-    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_custom_scenario(self):
+    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_custom_scenario(
+        self,
+    ):
         self.datalayers[0].name = "Expected Annual Total Volume Killed"
         self.datalayers[0].save(update_fields=["name"])
         stand_inputs = export_scenario_inputs_to_geopackage(
@@ -605,7 +633,9 @@ class TestExportToGeopackage(TestCase):
         self.datalayers[5].save(update_fields=["name"])
         self.datalayers[6].name = "Some PCP Layer"
         self.datalayers[6].save(update_fields=["name"])
-        export_scenario_inputs_to_geopackage(self.preset_scenario, self.preset_scenario_output_path)
+        export_scenario_inputs_to_geopackage(
+            self.preset_scenario, self.preset_scenario_output_path
+        )
         with fiona.open(self.preset_scenario_output_path, layer="stand_inputs") as src:
             field_names = list(src.schema["properties"].keys())
         self.assertIn("datalayer_some-spm-layer_spm", field_names)
@@ -617,16 +647,93 @@ class TestExportToGeopackage(TestCase):
         self.datalayers[5].save(update_fields=["name"])
         self.datalayers[6].name = "Some PCP Layer"
         self.datalayers[6].save(update_fields=["name"])
-        export_scenario_inputs_to_geopackage(self.custom_scenario, self.custom_scenario_output_path)
+        export_scenario_inputs_to_geopackage(
+            self.custom_scenario, self.custom_scenario_output_path
+        )
         with fiona.open(self.custom_scenario_output_path, layer="stand_inputs") as src:
             field_names = list(src.schema["properties"].keys())
         self.assertIn("datalayer_some-spm-layer_spm", field_names)
         self.assertIn("datalayer_some-pcp-layer_pcp", field_names)
         self.assertTrue(all(" " not in n for n in field_names))
 
+    def test_export_inputs_to_geopackage_handles_negative_infinity(self):
+        rows = [
+            [
+                "WKT",
+                "stand_id",
+                "area_acres",
+                f"datalayer_{self.datalayers[0].pk}",
+                "priority",
+            ],
+            [
+                "POLYGON ((-2226358.53928425 1950498.20568641,-2225919.84794646 1949738.37000051,-2225042.46527088 1949738.37000052,-2224603.77393309 1950498.20568641,-2225042.46527088 1951258.0413723,-2225919.84794646 1951258.0413723,-2226358.53928425 1950498.20568641))",
+                self.stand.pk,
+                "-inf",
+                73,
+                0,
+            ],
+        ]
+        with open(self.preset_scenario_inputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(rows)
+        scenario_inputs = export_scenario_inputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+        )
+        self.assertIn(self.stand.pk, scenario_inputs)
+        props = scenario_inputs[self.stand.pk]
+        self.assertIsNone(props["area_acres"])
+        with fiona.open(self.preset_scenario_output_path, layer="stand_inputs") as src:
+            self.assertEqual(1, len(src))
+
+    def test_export_stand_outputs_to_geopackage_handles_negative_infinity(self):
+        rows = [
+            [
+                "stand_id",
+                "proj_id",
+                "DoTreat",
+                "selected",
+                "ETrt_YR",
+                "area_acres",
+                f"datalayer_{self.datalayers[0].pk}",
+                "weightedPriority",
+                "Pr_1_priority",
+            ],
+            [
+                self.stand.pk,
+                1,
+                1,
+                1,
+                1,
+                "-inf",
+                0.136334928019663,
+                16.6071320953935,
+                1,
+            ],
+        ]
+        with open(self.preset_scenario_outputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(rows)
+
+        stand_inputs = export_scenario_inputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+        )
+        export_scenario_stand_outputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+            stand_inputs,
+        )
+
+        with fiona.open(self.preset_scenario_output_path, layer="stand_outputs") as src:
+            self.assertEqual(1, len(src))
+            feature = next(iter(src))
+            self.assertIsNone(feature["properties"]["area_acres"])
+
     def tearDown(self) -> None:
         self.preset_scenario_output_path.unlink(missing_ok=True)
         self.custom_scenario_output_path.unlink(missing_ok=True)
+        shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
 
 
 class TestPlanningAreaCovers(TestCase):
@@ -892,13 +999,7 @@ class ValidateScenarioConfigurationTest(TestCase):
         )
         self.sub_units_datalayer = DataLayerFactory.create(
             type=DataLayerType.VECTOR,
-            metadata={
-            "modules": {
-                "prioritize_sub_units": {
-                "enabled": True
-                }
-            }
-        }
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
         )
 
     def test_missing_stand_size(self):
@@ -970,39 +1071,43 @@ class ValidateScenarioConfigurationTest(TestCase):
         ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertEqual(errors, [])
-    
+
     def test_missing_treatment_goal(self):
         self.scenario.treatment_goal = None
         self.scenario.type = ScenarioType.PRESET
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Scenario has no Treatment Goal assigned.", errors)
-    
+
     def test_missing_priority_objectives(self):
-        self.scenario.configuration = {
-            "priority_objectives": []
-        }
+        self.scenario.configuration = {"priority_objectives": []}
         self.scenario.type = ScenarioType.CUSTOM
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("Configuration field `priority_objectives` is required for Custom Scenarios.", errors)
+        self.assertIn(
+            "Configuration field `priority_objectives` is required for Custom Scenarios.",
+            errors,
+        )
 
     def test_missing_sub_units_layer(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
-            "sub_units_layer": None
+            "sub_units_layer": None,
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("Configuration field `sub_units_layer` is required for this Scenario.", errors)
+        self.assertIn(
+            "Configuration field `sub_units_layer` is required for this Scenario.",
+            errors,
+        )
 
     def test_invalid_sub_units_layer_id(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         datalayer = DataLayerFactory.create()
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
-            "sub_units_layer": datalayer.pk
+            "sub_units_layer": datalayer.pk,
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
@@ -1012,11 +1117,14 @@ class ValidateScenarioConfigurationTest(TestCase):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
-            "sub_units_layer": self.sub_units_datalayer.pk
+            "sub_units_layer": self.sub_units_datalayer.pk,
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.", errors)
+        self.assertIn(
+            "It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.",
+            errors,
+        )
 
     def test_missing_sub_units_target_value(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1025,22 +1133,22 @@ class ValidateScenarioConfigurationTest(TestCase):
             "sub_units_layer": self.sub_units_datalayer.pk,
             "targets": {
                 "sub_units_fixed_target": False,
-                "sub_units_target_value": None
-            }
+                "sub_units_target_value": None,
+            },
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.", errors)
+        self.assertIn(
+            "It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.",
+            errors,
+        )
 
     def test_sub_units_target_value_expected_percentage(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "sub_units_layer": self.sub_units_datalayer.pk,
-            "targets": {
-                "sub_units_fixed_target": False,
-                "sub_units_target_value": 50
-            }
+            "targets": {"sub_units_fixed_target": False, "sub_units_target_value": 50},
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
@@ -1051,77 +1159,80 @@ class ValidateScenarioConfigurationTest(TestCase):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "sub_units_layer": self.sub_units_datalayer.pk,
-            "targets": {
-                "sub_units_fixed_target": False,
-                "sub_units_target_value": 0
-            }
+            "targets": {"sub_units_fixed_target": False, "sub_units_target_value": 0},
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.", errors)
+        self.assertIn(
+            "Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.",
+            errors,
+        )
 
     def test_sub_units_target_value_bigger_than_100_percent(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "sub_units_layer": self.sub_units_datalayer.pk,
-            "targets": {
-                "sub_units_fixed_target": False,
-                "sub_units_target_value": 101
-            }
+            "targets": {"sub_units_fixed_target": False, "sub_units_target_value": 101},
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.", errors)
+        self.assertIn(
+            "Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.",
+            errors,
+        )
 
-    @mock.patch("planning.services.get_sub_units_details", return_value={"avg": 1000, "max": 1500, "min": 500})
+    @mock.patch(
+        "planning.services.get_sub_units_details",
+        return_value={"avg": 1000, "max": 1500, "min": 500},
+    )
     def test_sub_units_target_value_expected_acreage(self, mock_sub_units_details):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "sub_units_layer": self.sub_units_datalayer.pk,
-            "targets": {
-                "sub_units_fixed_target": True,
-                "sub_units_target_value": 1000
-            }
+            "targets": {"sub_units_fixed_target": True, "sub_units_target_value": 1000},
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertEqual(errors, [])
         mock_sub_units_details.assert_called_once()
 
-    @mock.patch("planning.services.get_sub_units_details", return_value={"avg": 1000, "max": 1500, "min": 500})
+    @mock.patch(
+        "planning.services.get_sub_units_details",
+        return_value={"avg": 1000, "max": 1500, "min": 500},
+    )
     def test_sub_units_target_value_smaller_than_1_stand(self, mock_sub_units_details):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "sub_units_layer": self.sub_units_datalayer.pk,
-            "targets": {
-                "sub_units_fixed_target": True,
-                "sub_units_target_value": 400
-            }
+            "targets": {"sub_units_fixed_target": True, "sub_units_target_value": 400},
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("`sub_units_target_value` cannot be smaller than 1 Stand.", errors)
+        self.assertIn(
+            "`sub_units_target_value` cannot be smaller than 1 Stand.", errors
+        )
         mock_sub_units_details.assert_called_once()
 
-    @mock.patch("planning.services.get_sub_units_details", return_value={"avg": 1000, "max": 1500, "min": 500})
-    def test_sub_units_target_value_bigger_than_largest_sub_unit(self, mock_sub_units_details):
+    @mock.patch(
+        "planning.services.get_sub_units_details",
+        return_value={"avg": 1000, "max": 1500, "min": 500},
+    )
+    def test_sub_units_target_value_bigger_than_largest_sub_unit(
+        self, mock_sub_units_details
+    ):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "sub_units_layer": self.sub_units_datalayer.pk,
-            "targets": {
-                "sub_units_fixed_target": True,
-                "sub_units_target_value": 1600
-            }
+            "targets": {"sub_units_fixed_target": True, "sub_units_target_value": 1600},
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("`sub_units_target_value` cannot be larger than 1500.", errors)
         mock_sub_units_details.assert_called_once()
-
 
 
 class CreateScenarioGuardTest(TestCase):
@@ -1334,10 +1445,21 @@ class TriggerScenarioRunGuardTest(TestCase):
 class TriggerScenarioTest(TestCase):
     def setUp(self):
         geometry = {
-            "type": "MultiPolygon", 
-            "coordinates": [ [ [ [ -121.366892199, 36.329257174 ], [ -121.361359175, 36.329425383 ], [ -121.364386679, 36.324967718 ], [ -121.366892199, 36.329257174 ] ] ] ] 
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [-121.366892199, 36.329257174],
+                        [-121.361359175, 36.329425383],
+                        [-121.364386679, 36.324967718],
+                        [-121.366892199, 36.329257174],
+                    ]
+                ]
+            ],
         }
-        self.planning_area = PlanningAreaFactory(geometry=GEOSGeometry(json.dumps(geometry)))
+        self.planning_area = PlanningAreaFactory(
+            geometry=GEOSGeometry(json.dumps(geometry))
+        )
         self.scenario = ScenarioFactory(planning_area=self.planning_area)
 
     def test_compute_scenario_capability_before_run(self):
@@ -1346,14 +1468,8 @@ class TriggerScenarioTest(TestCase):
         self.scenario.refresh_from_db()
 
         self.assertEqual(
-            self.scenario.capabilities, 
-            [
-                "FORSYS",
-                "IMPACTS",
-                "MAP",
-                "CLIMATE_FORESIGHT",
-                "PRIORITIZE_SUB_UNITS"
-            ]
+            self.scenario.capabilities,
+            ["FORSYS", "IMPACTS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"],
         )
 
     def test_compute_scenario_capability_before_run__prioritize_sub_units(self):
@@ -1364,18 +1480,12 @@ class TriggerScenarioTest(TestCase):
         self.scenario.refresh_from_db()
 
         self.assertEqual(
-            self.scenario.capabilities, 
-            [
-                "FORSYS",
-                "MAP",
-                "CLIMATE_FORESIGHT",
-                "PRIORITIZE_SUB_UNITS"
-            ]
+            self.scenario.capabilities,
+            ["FORSYS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"],
         )
 
 
 class SubUnitsDetailsTest(TestCase):
-
     def setUp(self):
         self.scenario = ScenarioFactory()
         self.datalayer = DataLayerFactory()
@@ -1384,20 +1494,27 @@ class SubUnitsDetailsTest(TestCase):
     @mock.patch("planning.services.get_sub_units_areas", return_value=None)
     def test_no_areas(self, mock_get_units_area):
 
-        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        details = get_sub_units_details(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer
+        )
 
         self.assertIsNone(details)
-        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        mock_get_units_area.assert_called_once_with(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer
+        )
 
-    
     @mock.patch(
-        "planning.services.get_sub_units_areas", 
-        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+        "planning.services.get_sub_units_areas",
+        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
     )
     def test_no_targets_defined(self, mock_get_units_area):
-        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        details = get_sub_units_details(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer
+        )
 
-        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        mock_get_units_area.assert_called_once_with(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer
+        )
         self.assertIsNotNone(details)
 
         self.assertEqual(details.get("avg"), 550)
@@ -1407,31 +1524,39 @@ class SubUnitsDetailsTest(TestCase):
         self.assertIsNone(details.get("targeted_area"))
 
     @mock.patch(
-        "planning.services.get_sub_units_areas", 
-        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+        "planning.services.get_sub_units_areas",
+        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
     )
     def test_percentage_target_defined(self, mock_get_units_area):
-        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer, False, 80)
+        details = get_sub_units_details(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer, False, 80
+        )
 
-        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        mock_get_units_area.assert_called_once_with(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer
+        )
         self.assertIsNotNone(details)
 
         self.assertEqual(details.get("avg"), 550)
         self.assertEqual(details.get("max"), 1000)
         self.assertEqual(details.get("min"), 100)
         self.assertEqual(details.get("sum"), 5500)
-        
+
         # 5500 * 80% (sum * (target_value / 100))
         self.assertEqual(details.get("targeted_area"), 4400)
 
     @mock.patch(
-        "planning.services.get_sub_units_areas", 
-        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+        "planning.services.get_sub_units_areas",
+        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
     )
     def test_acreage_target_defined(self, mock_get_units_area):
-        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer, True, 550)
+        details = get_sub_units_details(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer, True, 550
+        )
 
-        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        mock_get_units_area.assert_called_once_with(
+            self.scenario, self.scenario.get_stand_size(), self.datalayer
+        )
         self.assertIsNotNone(details)
 
         self.assertEqual(details.get("avg"), 550)
