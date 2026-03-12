@@ -37,6 +37,7 @@
             <app-dynamic-climate-layers
               [mapId]="mapId"
               [layers]="layers"
+              [selectedLayer]="layers[0]"
               *ngIf="
                 (selectedMapId$ | async) === mapId
               "></app-dynamic-climate-layers>

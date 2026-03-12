@@ -24,6 +24,7 @@ import { ResultsLayer } from '../analysis/analysis.component';
 export class DynamicClimateLayersComponent implements OnInit, OnDestroy {
   @Input({ required: true }) mapId!: number;
   @Input({ required: true }) layers!: ResultsLayer[];
+  @Input() selectedLayer?: ResultsLayer;
 
   @ViewChild('outlet', { read: ViewContainerRef, static: true })
   outlet!: ViewContainerRef;
@@ -48,6 +49,8 @@ export class DynamicClimateLayersComponent implements OnInit, OnDestroy {
     });
 
     this.componentRef.setInput('layers', this.layers);
+    // Setting the selected layer
+    this.componentRef.setInput('selectedLayer', this.selectedLayer);
   }
 
   ngOnDestroy(): void {
