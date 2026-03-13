@@ -1,4 +1,5 @@
 import logging
+import smtplib
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -12,12 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 @app.task(
-    autoretry_for=(Exception,),
+    bind=True,
+    autoretry_for=(Exception, smtplib.SMTPDataError),
     retry_backoff=True,
     retry_jitter=True,
     retry_kwargs={"max_retries": 3},
 )
 def send_invitation(
+    self,
     user_object_role_id: int,
     collaborator_exists: bool,
     message: str,
@@ -62,5 +65,15 @@ def send_invitation(
         logger.info("Email sent inviting user to planning area %s", planning_area.pk)
     except UserObjectRole.DoesNotExist:
         logger.exception("Can't find UserObjectRole with id %s", user_object_role_id)
+    except smtplib.SMTPDataError:
+        if self.request.retries >= self.max_retries:
+            logger.exception("Failed to send email. SMTP server side error.")
+        else:
+            logger.warning("Failed to send email. SMTP server side error. Retrying.")
+        raise
     except Exception:
-        logger.exception("Something unexpected happened. Take a look!")
+        if self.request.retries >= self.max_retries:
+            logger.exception("Something unexpected happened. Take a look!")
+        else:
+            logger.warning("Something unexpected happened. Retrying.")
+        raise

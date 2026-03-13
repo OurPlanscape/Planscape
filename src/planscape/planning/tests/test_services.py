@@ -1192,3 +1192,46 @@ class TriggerScenarioRunGuardTest(TestCase):
             trigger_scenario_run(scenario, self.user)
 
         self.assertIn("oversize", str(ctx.exception).lower())
+
+
+class TriggerScenarioTest(TestCase):
+    def setUp(self):
+        geometry = {
+            "type": "MultiPolygon", 
+            "coordinates": [ [ [ [ -121.366892199, 36.329257174 ], [ -121.361359175, 36.329425383 ], [ -121.364386679, 36.324967718 ], [ -121.366892199, 36.329257174 ] ] ] ] 
+        }
+        self.planning_area = PlanningAreaFactory(geometry=GEOSGeometry(json.dumps(geometry)))
+        self.scenario = ScenarioFactory(planning_area=self.planning_area)
+
+    def test_compute_scenario_capability_before_run(self):
+        trigger_scenario_run(self.scenario, self.scenario.user)
+
+        self.scenario.refresh_from_db()
+
+        self.assertEqual(
+            self.scenario.capabilities, 
+            [
+                "FORSYS",
+                "IMPACTS",
+                "MAP",
+                "CLIMATE_FORESIGHT",
+                "PRIORITIZE_SUB_UNITS"
+            ]
+        )
+
+    def test_compute_scenario_capability_before_run__prioritize_sub_units(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.save()
+        trigger_scenario_run(self.scenario, self.scenario.user)
+
+        self.scenario.refresh_from_db()
+
+        self.assertEqual(
+            self.scenario.capabilities, 
+            [
+                "FORSYS",
+                "MAP",
+                "CLIMATE_FORESIGHT",
+                "PRIORITIZE_SUB_UNITS"
+            ]
+        )
