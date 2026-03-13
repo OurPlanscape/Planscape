@@ -14,7 +14,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
-import { distinctUntilChanged, filter, map, switchMap, take } from 'rxjs';
+import { distinctUntilChanged, filter, map, switchMap, take, tap } from 'rxjs';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { STAND_SIZES } from '@plan/plan-helpers';
@@ -54,14 +54,15 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
 
   subUnitDetails$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.sub_units_layer),
-    filter((sub_units_layer) => !!sub_units_layer),
+    filter((sub_units_layer): sub_units_layer is number => !!sub_units_layer),
     distinctUntilChanged(),
-    switchMap((config) =>
-      this.scenarioService.getSubUnitsDetails(
-        this.scenarioId,
-        config.sub_units_layer
-      )
-    )
+    switchMap((sub_units_layer) =>
+      this.scenarioService.getSubUnitsDetails(this.scenarioId, sub_units_layer)
+    ),
+    // keep local copy for validations
+    tap((subUnitDetails) => {
+      this.subUnitDetails = subUnitDetails;
+    })
   );
 
   constructor(
@@ -73,13 +74,6 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
   }
 
   override beforeStepLoad(): void {
-    this.scenarioService
-      .getSubUnitsDetails(this.scenarioId)
-      .pipe(take(1))
-      .subscribe((details) => {
-        this.subUnitDetails = details;
-      });
-
     this.form = new FormGroup(
       {
         estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
@@ -145,7 +139,6 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
       if (sub_units_fixed_target?.value === true) {
         if (
           this.subUnitDetails?.min &&
-          sub_units_target_value?.value &&
           sub_units_target_value?.value < this.subUnitDetails.min
         ) {
           return { invalidAcres: true };

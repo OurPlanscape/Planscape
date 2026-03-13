@@ -72,7 +72,8 @@ Treatment cost per acre does not affect how project areas are created but is inc
         <p
           *ngIf="
             form.get('sub_units_target_value')?.touched &&
-            form.hasError('invalidAcres')
+            form.hasError('invalidAcres') &&
+            !form.get('sub_units_target_value')?.hasError('required')
           ">
           Cannot be less than the number of acres of your smallest sub-unit
         </p>
