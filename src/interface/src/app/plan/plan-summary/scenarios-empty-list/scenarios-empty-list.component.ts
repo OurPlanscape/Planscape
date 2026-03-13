@@ -5,6 +5,7 @@ import { ActionCardComponent } from '@styleguide';
 import { MatDialog } from '@angular/material/dialog';
 import { UploadProjectAreasModalComponent } from '@app/plan/upload-project-areas-modal/upload-project-areas-modal.component';
 import { MatIconModule } from '@angular/material/icon';
+import { canAddScenario } from '@app/plan/permissions';
 
 @Component({
   selector: 'app-scenarios-empty-list',
@@ -15,9 +16,12 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class ScenariosEmptyListComponent {
   @Input() plan!: Plan | null;
-  @Input() hasPermissions: boolean = false;
 
   constructor(private dialog: MatDialog) {}
+
+  get canAddScenarios() {
+    return this.plan && canAddScenario(this.plan);
+  }
 
   public openProjectAreasUploadDialog() {
     return this.dialog.open(UploadProjectAreasModalComponent, {});
