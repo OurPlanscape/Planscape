@@ -11,7 +11,6 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
-import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { By } from '@angular/platform-browser';
 import { SectionLoaderComponent, TypeSafeMatCellDef } from '@shared';
@@ -28,6 +27,7 @@ import { ScenariosCardListComponent } from '@plan/plan-summary/scenarios-card-li
 import { RouterTestingModule } from '@angular/router/testing';
 import { PlanState } from '@plan/plan.state';
 import { MatCardModule } from '@angular/material/card';
+import { PlanScenariosListComponent } from './plan-scenarios-list.component';
 
 // Helper to build a minimal ScenarioRow
 function makeScenario(id: number) {
@@ -44,9 +44,9 @@ function makeScenario(id: number) {
 }
 
 //Flaky test- disabling
-describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
-  let component: SavedScenariosComponent;
-  let fixture: ComponentFixture<SavedScenariosComponent>;
+describe('PlanScenariosListComponent (updated polling/manual preemption)', () => {
+  let component: PlanScenariosListComponent;
+  let fixture: ComponentFixture<PlanScenariosListComponent>;
   let scenarioSvcSpy: jasmine.SpyObj<ScenarioService>;
   const mockPlan$ = new BehaviorSubject({
     ...MOCK_PLAN,
@@ -85,7 +85,7 @@ describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
         RouterTestingModule,
       ],
       declarations: [
-        SavedScenariosComponent,
+        PlanScenariosListComponent,
         TypeSafeMatCellDef,
         MockComponent(SectionLoaderComponent),
         MockComponent(ScenariosCardListComponent),
@@ -101,7 +101,7 @@ describe('SavedScenariosComponent (updated polling/manual preemption)', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SavedScenariosComponent);
+    fixture = TestBed.createComponent(PlanScenariosListComponent);
     component = fixture.componentInstance;
   });
 

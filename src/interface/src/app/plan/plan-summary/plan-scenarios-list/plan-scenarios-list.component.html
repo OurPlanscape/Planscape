@@ -1,17 +1,14 @@
 <div class="saved-scenarios-wrapper">
   <div class="scenarios-header">
-    <div class="scenario-sort-picker">
-      <mat-select
-        class="sort-select"
-        [(ngModel)]="sortSelection"
-        (selectionChange)="handleSortChange()">
-        <mat-option value="-created_at">
-          Created date (Newest first)
-        </mat-option>
-        <mat-option value="created_at">
-          Created date (Oldest first)
-        </mat-option>
-      </mat-select>
+    <div class="sort-header" (click)="handleSortChange()">
+      <mat-icon class="material-symbols-outlined">
+        {{
+          sortSelection === '-created_at'
+            ? 'arrow_downward_alt'
+            : 'arrow_upward_alt'
+        }}
+      </mat-icon>
+      <span>Date Created</span>
     </div>
     <div class="button-section">
       <button

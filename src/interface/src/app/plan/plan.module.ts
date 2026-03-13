@@ -37,16 +37,10 @@ import { MapConfigService } from '@maplibre-map/map-config.service';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
-import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/plan-scenarios-list.component';
 
 /** Components used in the plan flow. */
 @NgModule({
-  declarations: [
-    AreaNotesComponent,
-    PlanComponent,
-    PlanScenariosListComponent,
-    SavedScenariosComponent,
-  ],
+  declarations: [AreaNotesComponent, PlanComponent, SavedScenariosComponent],
   providers: [
     WINDOW_PROVIDERS,
     MapConfigState,
