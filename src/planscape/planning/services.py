@@ -769,6 +769,10 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     scenario.capabilities = capabilities
     scenario.save(update_fields=["capabilities"])
 
+    if hasattr(scenario, "results"):
+        scenario.results.status = ScenarioResultStatus.PENDING
+        scenario.results.save()
+
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
     track_openpanel(

@@ -389,9 +389,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
-        if hasattr(scenario, "results"):
-            scenario.results.status = ScenarioResultStatus.PENDING
-            scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
