@@ -52,6 +52,8 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
   subUnitDetails: SubUnitsDetail | null = null;
   scenarioId = this.route.snapshot.data['scenarioId'];
 
+  subUnitDetails$ = this.scenarioService.getSubUnitsDetails(this.scenarioId);
+
   constructor(
     private newScenarioState: NewScenarioState,
     private scenarioService: ScenarioService,
