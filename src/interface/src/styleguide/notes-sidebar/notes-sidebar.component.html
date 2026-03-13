@@ -1,5 +1,5 @@
 <div class="notes-header" *ngIf="showHeader">Notes</div>
-<div *ngIf="!hasNotes()" class="no-notes-view">
+<div *ngIf="!hasNotes() && isReady" class="no-notes-view">
   <div class="no-notes-blurb">
     <mat-icon class="add-notes-icon material-symbols-outlined"
       >add_notes

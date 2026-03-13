@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostBinding, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, interval, switchMap, take } from 'rxjs';
 import { Plan } from '@types';
@@ -22,6 +22,7 @@ import {
 } from './plan-helpers';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
+import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -44,7 +45,8 @@ export class PlanComponent implements OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState
+    private planState: PlanState,
+    private featureService: FeatureService
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
@@ -69,6 +71,15 @@ export class PlanComponent implements OnInit {
   ngOnInit() {
     this.loadNotes();
     this.pollForChanges();
+  }
+
+  get isPlanningOverviewEnabled(): boolean {
+    return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
+  }
+
+  @HostBinding('class.plan-overview')
+  get planOverviewEnabled() {
+    return this.isPlanningOverviewEnabled;
   }
 
   backToOverview() {
