@@ -636,7 +636,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         sub_units_datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
         sub_units_stand_lookup_table = get_sub_units_stands_lookup_table(scenario=scenario, datalayer=sub_units_datalayer)
 
-    number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
+    targets = cfg.get("targets", {})
+    number_of_projects = targets.get("max_project_count", 1)
 
     min_area_project = get_min_project_area(scenario)
     max_area_project = get_max_area_project(scenario=scenario)
@@ -646,8 +647,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
     sample_fraction = settings.FORSYS_SAMPLE_FRACTION
     seed = cfg.get("seed")
-    sub_units_fixed_target = cfg.get("sub_units_fixed_target")
-    sub_units_target_value = cfg.get("sub_units_target_value")
+    sub_units_fixed_target = targets.get("sub_units_fixed_target")
+    sub_units_target_value = targets.get("sub_units_target_value")
     if sub_units_fixed_target is False:
         sub_units_target_value = sub_units_target_value / 100
 
