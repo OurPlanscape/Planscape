@@ -769,6 +769,10 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         raise ValueError(
             f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
         )
+    
+    capabilities = compute_scenario_capabilities(scenario)
+    scenario.capabilities = capabilities
+    scenario.save(update_fields=["capabilities"])
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
