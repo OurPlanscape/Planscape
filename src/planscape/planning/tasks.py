@@ -289,10 +289,6 @@ def async_pre_forsys_process(scenario_id: int) -> None:
     run_config = build_run_configuration(scenario)
 
     variables = run_config["variables"]
-
-    if not feature_enabled("PLANNING_APPROACH"):
-        variables.pop("sub_units_fixed_target", None)
-        variables.pop("sub_units_target_value", None)
     
     forsys_input = {
         "stand_ids": stand_ids,

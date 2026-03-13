@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { ResultsLayer } from '../analysis/analysis.component';
 import { MatIconModule } from '@angular/material/icon';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
@@ -13,17 +13,10 @@ import { map } from 'rxjs';
   templateUrl: './climate-layers.component.html',
   styleUrl: './climate-layers.component.scss',
 })
-export class ClimateLayersComponent implements OnInit {
+export class ClimateLayersComponent {
   @Input({ required: true }) layers!: ResultsLayer[];
-  @Input() selectedLayer?: ResultsLayer;
 
   private dataLayersState = inject(DataLayersStateService);
-
-  ngOnInit(): void {
-    if (this.selectedLayer?.datalayer) {
-      this.dataLayersState.selectDataLayer(this.selectedLayer.datalayer);
-    }
-  }
 
   viewedLayerId$ = this.dataLayersState.viewedDataLayer$.pipe(
     map((layer) => layer?.id)

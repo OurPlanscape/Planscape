@@ -909,22 +909,40 @@ def rollup_pillar(
                             )
                             block_stack.append(block_data)
 
+                    # this is an array of blocks, read from the datalayers
                     block_stack = np.array(block_stack, dtype=np.float32)
 
-                    output_block = np.zeros(block_stack.shape[1:], dtype=np.float32)
+                    # if we have nodata values, convert them to nan to make it easier to do math
+                    if nodata is not None and not np.isnan(nodata):
+                        block_stack = np.where(
+                            block_stack == nodata, np.nan, block_stack
+                        )
 
-                    if nodata is not None:
-                        valid_mask = np.all(block_stack != nodata, axis=0)
-                    else:
-                        valid_mask = np.all(~np.isnan(block_stack), axis=0)
+                    # valid mask now only needs to accout for nan
+                    # valid mask is all the pixels that have ANY value, except
+                    # NaN, across all blocks.
+                    # if you have 3 blocks, each with 10 pixels, only the pixels
+                    # that are NaN in all 3 blocks will be excluded
+                    valid_mask = np.any(~np.isnan(block_stack), axis=0)
+
+                    # calculates the output block - fills with nodata.
+                    output_block = np.full(
+                        block_stack.shape[1:], nodata, dtype=np.float32
+                    )
 
                     if np.any(valid_mask):
-                        for i, weight in enumerate(weights):
-                            output_block[valid_mask] += (
-                                block_stack[i, valid_mask] * weight
-                            )
-
-                    output_block[~valid_mask] = nodata
+                        weights_arr = np.array(weights, dtype=np.float32)[
+                            :, np.newaxis, np.newaxis
+                        ]
+                        nan_mask = np.isnan(block_stack)
+                        effective_weights = np.where(nan_mask, 0.0, weights_arr)
+                        weight_sums = effective_weights.sum(axis=0)
+                        data_filled = np.where(nan_mask, 0.0, block_stack)
+                        weighted_sum = (data_filled * effective_weights).sum(axis=0)
+                        safe_sums = np.where(weight_sums > 0, weight_sums, 1.0)
+                        output_block[valid_mask] = (weighted_sum / safe_sums)[
+                            valid_mask
+                        ]
 
                     dst.write(output_block, 1, window=window)
 

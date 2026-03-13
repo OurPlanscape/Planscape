@@ -1329,15 +1329,19 @@ class PatchScenarioConfigurationTest(APITestCase):
         )
 
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"sub_units_fixed_target": True, "sub_units_target_value": 1234.5}}
+        payload = {
+            "configuration": {
+                "targets" :{"sub_units_fixed_target": True, "sub_units_target_value": 1234.5}
+            }
+        }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(
-            response.data.get("configuration", {}).get("sub_units_target_value"),
+            response.data.get("configuration", {}).get("targets", {}).get("sub_units_target_value"),
             1234.5,
         )
-        self.assertTrue(response.data.get("configuration", {}).get("sub_units_fixed_target"))
+        self.assertTrue(response.data.get("configuration", {}).get("targets", {}).get("sub_units_fixed_target"))
 
     def test_patch_sub_units_relative_target(self):
         scenario = ScenarioFactory.create(
@@ -1349,15 +1353,19 @@ class PatchScenarioConfigurationTest(APITestCase):
         )
 
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"sub_units_fixed_target": False, "sub_units_target_value": 91.5}}
+        payload = {
+            "configuration": {
+                "targets": {"sub_units_fixed_target": False, "sub_units_target_value": 91.5}
+            }
+        }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(
-            response.data.get("configuration", {}).get("sub_units_target_value"),
+            response.data.get("configuration", {}).get("targets", {}).get("sub_units_target_value"),
             91.5,
         )
-        self.assertFalse(response.data.get("configuration", {}).get("sub_units_fixed_target"))
+        self.assertFalse(response.data.get("configuration", {}).get("targets", {}).get("sub_units_fixed_target"))
 
     def test_patch_sub_units_target_value_lower_than_zero(self):
         scenario = ScenarioFactory.create(
@@ -1369,7 +1377,11 @@ class PatchScenarioConfigurationTest(APITestCase):
         )
 
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"sub_units_fixed_target": True, "sub_units_target_value": -1}}
+        payload = {
+            "configuration": {
+                "targets": {"sub_units_fixed_target": True, "sub_units_target_value": -1}
+            }
+        }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
@@ -1385,7 +1397,11 @@ class PatchScenarioConfigurationTest(APITestCase):
         )
 
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"sub_units_fixed_target": False, "sub_units_target_value": 101}}
+        payload = {
+            "configuration": {
+                "targets" : {"sub_units_fixed_target": False, "sub_units_target_value": 101}
+            }
+        }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
@@ -1402,7 +1418,11 @@ class PatchScenarioConfigurationTest(APITestCase):
         )
 
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {"configuration": {"sub_units_fixed_target": True}}
+        payload = {
+            "configuration": {
+                "targets": {"sub_units_fixed_target": True}
+            }
+        }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
@@ -1886,4 +1906,41 @@ class SubUnitsDetailsTest(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
+
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value={"avg": 1, "max": 2, "min": 0},
+    )
+    def test_get_sub_units_details__query_param_overrides_scenario_config(self, mock_service):
+        override_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
+        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url, {"sub_units_layer": override_layer.pk})
+
+        self.assertEqual(response.status_code, 200)
+        called_datalayer = mock_service.call_args[0][1]
+        self.assertEqual(called_datalayer.pk, override_layer.pk)
+
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value={"avg": 1, "max": 2, "min": 0},
+    )
+    def test_get_sub_units_details__query_param_works_without_scenario_config(self, mock_service):
+        self.scenario.configuration = {}
+        self.scenario.save()
+
+        override_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
+        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url, {"sub_units_layer": override_layer.pk})
+
+        self.assertEqual(response.status_code, 200)
+        called_datalayer = mock_service.call_args[0][1]
+        self.assertEqual(called_datalayer.pk, override_layer.pk)
 

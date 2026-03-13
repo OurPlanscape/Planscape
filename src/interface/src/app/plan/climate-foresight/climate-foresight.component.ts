@@ -371,4 +371,11 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
     }
     return 'Start Analysis';
   }
+
+  navigateToClimateDoc() {
+    window.open(
+      'https://support.planscape.org/support/solutions/articles/32000036473-what-is-climate-foresight-',
+      '_blank'
+    );
+  }
 }

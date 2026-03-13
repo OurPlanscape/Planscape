@@ -246,8 +246,10 @@ class AsyncPreForsysProcessTest(TestCase):
         configuration.update(
             {
                 "sub_units_layer": sub_units_datalayer.pk,
-                "sub_units_fixed_target": False,
-                "sub_units_target_value": 99,
+                "targets" :{
+                    "sub_units_fixed_target": False,
+                    "sub_units_target_value": 99,
+                }
             }
         )
         self.scenario.configuration = configuration

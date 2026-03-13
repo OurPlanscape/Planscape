@@ -15,7 +15,9 @@ Treatment cost per acre does not affect how project areas are created but is inc
     You can also update Treatment Costs, which will be included in scenario
     reporting to ensure accurate financial results.
   </p>
-  <div class="sub-unit-details" *ngIf="subUnitDetails">
+  <div
+    class="sub-unit-details"
+    *ngIf="subUnitDetails$ | async as subUnitDetails">
     <h5>Sub-Unit Details</h5>
     <dl class="list">
       <dt>Average Sub-Unit Acreage:</dt>
@@ -70,9 +72,10 @@ Treatment cost per acre does not affect how project areas are created but is inc
         <p
           *ngIf="
             form.get('sub_units_target_value')?.touched &&
-            form.hasError('invalidAcres')
+            form.hasError('invalidAcres') &&
+            !form.get('sub_units_target_value')?.hasError('required')
           ">
-          Cannot be less than 0
+          Cannot be less than the number of acres of your smallest sub-unit
         </p>
         <p
           *ngIf="
