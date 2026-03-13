@@ -1887,3 +1887,40 @@ class SubUnitsDetailsTest(APITestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value={"avg": 1, "max": 2, "min": 0},
+    )
+    def test_get_sub_units_details__query_param_overrides_scenario_config(self, mock_service):
+        override_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
+        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url, {"sub_units_layer": override_layer.pk})
+
+        self.assertEqual(response.status_code, 200)
+        called_datalayer = mock_service.call_args[0][1]
+        self.assertEqual(called_datalayer.pk, override_layer.pk)
+
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value={"avg": 1, "max": 2, "min": 0},
+    )
+    def test_get_sub_units_details__query_param_works_without_scenario_config(self, mock_service):
+        self.scenario.configuration = {}
+        self.scenario.save()
+
+        override_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
+        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url, {"sub_units_layer": override_layer.pk})
+
+        self.assertEqual(response.status_code, 200)
+        called_datalayer = mock_service.call_args[0][1]
+        self.assertEqual(called_datalayer.pk, override_layer.pk)
+
