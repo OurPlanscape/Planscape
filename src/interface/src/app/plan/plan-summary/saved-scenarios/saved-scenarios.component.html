@@ -97,14 +97,11 @@
       (selectedTabChange)="tabChange($event)">
       <mat-tab label="Active">
         <div class="scenario-list-controls">
-          <mat-slide-toggle
-            [hideIcon]="true"
-            color="primary"
-            class="slide-toggle-my-scenarios"
+          <sg-toggle
             [(ngModel)]="showOnlyMyScenarios"
-            (change)="fetchScenarios()">
-            Show only my scenarios
-          </mat-slide-toggle>
+            (change)="fetchScenarios()"
+            >Show only my scenarios
+          </sg-toggle>
           <div class="scenario-sort-picker">
             Sort by:
             <mat-select
@@ -136,14 +133,11 @@
       </mat-tab>
       <mat-tab label="Archived">
         <div class="scenario-list-controls">
-          <mat-slide-toggle
-            [hideIcon]="true"
-            color="primary"
-            class="slide-toggle-my-scenarios"
+          <sg-toggle
             [(ngModel)]="showOnlyMyScenarios"
-            (change)="fetchScenarios()">
-            Show only my scenarios
-          </mat-slide-toggle>
+            (change)="fetchScenarios()"
+            >Show only my scenarios
+          </sg-toggle>
           <div class="scenario-sort-picker">
             Sort by:
             <mat-select

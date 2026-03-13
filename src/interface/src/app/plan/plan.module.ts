@@ -23,6 +23,7 @@ import {
   OpacitySliderComponent,
   ScenarioCardComponent,
   SectionComponent,
+  ToggleComponent,
   TreatmentCardComponent,
 } from '@styleguide';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -81,6 +82,7 @@ import { MatCardModule } from '@angular/material/card';
     BannerComponent,
     MatProgressSpinnerModule,
     MatCardModule,
+    ToggleComponent,
   ],
 })
 export class PlanModule {}

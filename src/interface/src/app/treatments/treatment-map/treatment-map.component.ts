@@ -1,15 +1,9 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import {
   ControlComponent,
-  DraggableDirective,
-  FeatureComponent,
-  GeoJSONSourceComponent,
   LayerComponent,
   MapComponent,
-  PopupComponent,
-  RasterSourceComponent,
-  VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   LngLat,
@@ -32,10 +26,8 @@ import { combineLatest, map, Observable, Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { canEditTreatmentPlan } from '@plan/permissions';
-import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from '@features/features.module';
-import { MapBaseDropdownComponent } from '@maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapProjectAreasComponent } from '@maplibre-map/map-project-areas/map-project-areas.component';
@@ -48,7 +40,6 @@ import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-lay
 import { MapZoomControlComponent } from '@maplibre-map/map-zoom-control/map-zoom-control.component';
 import { RxSelectionToggleComponent } from '@maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { FrontendConstants } from '@map/map.constants';
@@ -58,14 +49,8 @@ import { FrontendConstants } from '@map/map.constants';
   selector: 'app-treatment-map',
   standalone: true,
   imports: [
-    NgForOf,
     MapComponent,
-    VectorSourceComponent,
-    RasterSourceComponent,
     LayerComponent,
-    FeatureComponent,
-    DraggableDirective,
-    GeoJSONSourceComponent,
     MapActionButtonComponent,
     MapStandsComponent,
     MapRectangleComponent,
@@ -74,22 +59,17 @@ import { FrontendConstants } from '@map/map.constants';
     NgIf,
     AsyncPipe,
     MatIconModule,
-    PopupComponent,
     MapDataLayerComponent,
     MapTooltipComponent,
     PlanningAreaLayerComponent,
     ControlComponent,
-    MatLegacySlideToggleModule,
     OpacitySliderComponent,
     FeaturesModule,
-    MapBaseDropdownComponent,
     MapZoomControlComponent,
     MapNavbarComponent,
-    PercentPipe,
     DataLayerNameComponent,
     RxSelectionToggleComponent,
     MatTooltipModule,
-    BaseLayersComponent,
     MapBaseLayersComponent,
   ],
   templateUrl: './treatment-map.component.html',

@@ -1,13 +1,5 @@
 import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
-import {
-  AsyncPipe,
-  DatePipe,
-  DecimalPipe,
-  NgClass,
-  NgFor,
-  NgIf,
-  NgStyle,
-} from '@angular/common';
+import { AsyncPipe, DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,17 +12,12 @@ import { DirectImpactsMapComponent } from '@treatments/direct-impacts-map/direct
 
 import {
   ButtonComponent,
-  FilterDropdownComponent,
-  ModalComponent,
   OverlayLoaderComponent,
   PanelComponent,
   StatusChipComponent,
-  TreatmentTypeIconComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
-import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '@treatments/treatment-legend/treatment-legend.component';
 import { MetricFiltersComponent } from '@treatments/metric-filters/metric-filters.component';
 import { ImpactsMetric } from '../metrics';
@@ -51,7 +38,6 @@ import { FileSaverService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from '@plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { MetricSelectorComponent } from '@treatments/metric-selector/metric-selector.component';
 import { TreatmentFilterComponent } from '@treatments/treatment-filter/treatment-filter.component';
 import { TreatmentSummaryButtonComponent } from '@treatments/treatment-summary-button/treatment-summary-button.component';
 import { ScenarioState } from '@scenario/scenario.state';
@@ -71,27 +57,17 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     MatSelectModule,
     NgIf,
     NgFor,
-    MatSlideToggleModule,
     ButtonComponent,
     DatePipe,
-    NgClass,
     FormsModule,
-    TreatmentMapComponent,
     TreatmentLegendComponent,
     MetricFiltersComponent,
     MetricFiltersComponent,
-    NgStyle,
     StandDataChartComponent,
-    TreatmentTypeIconComponent,
     ChangeOverTimeChartComponent,
-    ExpandedStandDataChartComponent,
-    ExpandedChangeOverTimeChartComponent,
-    ModalComponent,
     OverlayLoaderComponent,
     StatusChipComponent,
     DecimalPipe,
-    MetricSelectorComponent,
-    FilterDropdownComponent,
     TreatmentFilterComponent,
     TreatmentSummaryButtonComponent,
   ],
