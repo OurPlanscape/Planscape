@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -389,9 +389,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
-        if hasattr(scenario, "results"):
-            scenario.results.status = ScenarioResultStatus.PENDING
-            scenario.results.save()
 
         errors = validate_scenario_configuration(scenario)
         if errors:
@@ -403,16 +400,27 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer = ScenarioV3Serializer(instance=scenario)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
-    @extend_schema(description="Sub-Units areas details.")
+    @extend_schema(
+        description="Sub-Units areas details.",
+        parameters=[
+            OpenApiParameter(
+                name="sub_units_layer",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Override the scenario's sub_units_layer with this DataLayer ID.",
+            )
+        ],
+    )
     @action(methods=["GET"], detail=True, url_path="sub_units_details")
     def get_sub_units_details(self, request, pk=None):
         scenario = self.get_object()
-        datalayer_pk = scenario.configuration.get("sub_units_layer")
+        datalayer_pk = request.query_params.get("sub_units_layer") or scenario.configuration.get("sub_units_layer")
         if not datalayer_pk:
             return Response({"errors": "Sub-Unit layer not selected."}, status=status.HTTP_412_PRECONDITION_FAILED)
 
         datalayer = DataLayer.objects.get(pk=datalayer_pk)
-        details = get_sub_units_details(scenario.planning_area, datalayer)
+        details = get_sub_units_details(scenario, datalayer)
         if not details:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

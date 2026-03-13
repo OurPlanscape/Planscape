@@ -63,10 +63,10 @@ describe('ScenarioState', () => {
 
   it('should emit loading and then data when getScenario succeeds', (done) => {
     scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
-    scenarioState.setScenarioId(1);
 
     const emissions: any[] = [];
 
+    // Subscribe before setScenarioId so we catch all emissions
     scenarioState.currentScenarioResource$.subscribe((value) => {
       emissions.push(value);
 
@@ -78,12 +78,13 @@ describe('ScenarioState', () => {
         done();
       }
     });
+
+    scenarioState.setScenarioId(1);
   });
 
   it('should emit loading and then error when getScenario fails', (done) => {
     const mockError = new Error('API Error');
     scenarioServiceSpy.getScenario.and.returnValue(throwError(() => mockError));
-    scenarioState.setScenarioId(1);
 
     const emissions: any[] = [];
 
@@ -98,6 +99,8 @@ describe('ScenarioState', () => {
         done();
       }
     });
+
+    scenarioState.setScenarioId(1);
   });
 
   it('should emit scenario data in currentScenario$', (done) => {
@@ -112,10 +115,10 @@ describe('ScenarioState', () => {
 
   it('should emit true then false in isScenarioLoading$', (done) => {
     scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
-    scenarioState.setScenarioId(1);
 
     const loadingStates: boolean[] = [];
 
+    // Subscribe before setScenarioId so we catch all emissions
     scenarioState.isScenarioLoading$.subscribe((loading) => {
       loadingStates.push(loading);
       if (loadingStates.length === 2) {
@@ -123,6 +126,8 @@ describe('ScenarioState', () => {
         done();
       }
     });
+
+    scenarioState.setScenarioId(1);
   });
 
   it('should allow reloading the scenario manually', (done) => {
@@ -144,5 +149,38 @@ describe('ScenarioState', () => {
     setTimeout(() => {
       scenarioState.reloadScenario();
     }, 0);
+  });
+
+  describe('currentSubUnitsLayerId', () => {
+    it('should return null when no scenario is loaded', () => {
+      expect(scenarioState.currentSubUnitsLayerId).toBeNull();
+    });
+
+    it('should return the sub_units_layer id from the loaded scenario', (done) => {
+      const scenarioWithSubUnits: Scenario = {
+        ...mockScenario,
+        configuration: {
+          ...mockScenario.configuration,
+          sub_units_layer: 42,
+        } as any,
+      };
+      scenarioServiceSpy.getScenario.and.returnValue(of(scenarioWithSubUnits));
+      scenarioState.setScenarioId(1);
+
+      scenarioState.currentScenario$.subscribe(() => {
+        expect(scenarioState.currentSubUnitsLayerId).toBe(42);
+        done();
+      });
+    });
+
+    it('should return null when scenario has no sub_units_layer', (done) => {
+      scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+      scenarioState.setScenarioId(1);
+
+      scenarioState.currentScenario$.subscribe(() => {
+        expect(scenarioState.currentSubUnitsLayerId).toBeNull();
+        done();
+      });
+    });
   });
 });

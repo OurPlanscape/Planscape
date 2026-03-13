@@ -7,6 +7,7 @@ import {
   Scenario,
   SCENARIO_TYPE,
   ScenarioV3Payload,
+  SubUnitsDetail,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -165,5 +166,16 @@ export class ScenarioService {
         withCredentials: true,
       }
     );
+  }
+
+  getSubUnitsDetails(scenarioId: number, sub_units_layer?: number) {
+    const base =
+      environment.backend_endpoint +
+      `/v2/scenarios/${scenarioId}/sub_units_details/`;
+    const params =
+      sub_units_layer != null ? `?sub_units_layer=${sub_units_layer}` : '';
+    return this.http.get<SubUnitsDetail>(base + params, {
+      withCredentials: true,
+    });
   }
 }

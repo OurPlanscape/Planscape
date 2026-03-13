@@ -21,6 +21,9 @@
     "postinstall": "patch-package"
   },
   "private": true,
+  "engines": {
+    "node": "22.15.0"
+  },
   "dependencies": {
     "@angular/animations": "^17.3.1",
     "@angular/cdk": "^16.2.14",

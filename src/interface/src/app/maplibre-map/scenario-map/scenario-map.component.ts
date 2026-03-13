@@ -7,6 +7,7 @@ import {
   MapComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { AuthService } from '@services';
+import { ModuleService } from '@app/services/module.service';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
@@ -31,7 +32,7 @@ import { ScenarioStandsComponent } from '@maplibre-map/scenario-stands/scenario-
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
-import { Scenario } from '@types';
+import { ApiModule, Scenario, SubUnits } from '@types';
 import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-toggle.component';
 
 @UntilDestroy()
@@ -68,7 +69,8 @@ export class ScenarioMapComponent {
     private planState: PlanState,
     private scenarioState: ScenarioState,
     private mapConfigService: MapConfigService,
-    private newScenarioState: NewScenarioState
+    private newScenarioState: NewScenarioState,
+    private moduleService: ModuleService
   ) {
     this.mapConfigService.initialize();
   }
@@ -107,7 +109,7 @@ export class ScenarioMapComponent {
     map(([isScenarioSuccessful, step]) => isScenarioSuccessful || step !== null)
   );
 
-  showSubUnitToggle$ = combineLatest([
+  private showSubUnitToggleOnDrafts$ = combineLatest([
     this.newScenarioState.currentStep$,
     this.newScenarioState.scenarioConfig$,
     this.newScenarioState.selectedSubUnitLayer$,
@@ -118,7 +120,51 @@ export class ScenarioMapComponent {
         !!config.planning_approach &&
         isPlanningApproachSubUnits(config.planning_approach) &&
         !!layer
-    ),
+    )
+  );
+
+  private showSubUnitToggleOnResults$ = combineLatest([
+    this.isScenarioSuccessful$,
+    this.scenarioState.currentScenario$,
+  ]).pipe(
+    map(
+      ([isScenarioSuccessful, scenario]) =>
+        isScenarioSuccessful &&
+        !!scenario.planning_approach &&
+        isPlanningApproachSubUnits(scenario.planning_approach)
+    )
+  );
+
+  private showSubUnitToggle$ = combineLatest([
+    this.showSubUnitToggleOnDrafts$,
+    this.showSubUnitToggleOnResults$,
+  ]).pipe(map(([onDrafts, onResults]) => onDrafts || onResults));
+
+  private subUnitLayer$ = this.newScenarioState.selectedSubUnitLayer$.pipe(
+    switchMap((draftLayer) => {
+      if (draftLayer) {
+        return of(draftLayer);
+      }
+      const layerId = this.scenarioState.currentSubUnitsLayerId;
+      if (!layerId) {
+        return of(null);
+      }
+      return this.moduleService
+        .getModule<ApiModule<SubUnits>>('prioritize_sub_units')
+        .pipe(
+          map(
+            (result) =>
+              result.options.sub_units.find((l) => l.id === layerId) ?? null
+          )
+        );
+    })
+  );
+
+  subUnitToggleLayer$ = combineLatest([
+    this.showSubUnitToggle$,
+    this.subUnitLayer$,
+  ]).pipe(
+    map(([show, layer]) => (show && layer ? layer : null)),
     untilDestroyed(this)
   );
 

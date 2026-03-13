@@ -85,3 +85,11 @@ export const TooltipWithIconVariant: Story = {
     tooltipIcon: 'help',
   },
 };
+
+export const TooltipWithLink: Story = {
+  args: {
+    headline: 'Project Areas',
+    tooltipIcon: 'help',
+    tooltipLink: 'https://www.google.com',
+  },
+};

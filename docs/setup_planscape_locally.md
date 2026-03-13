@@ -296,22 +296,32 @@ uv sync --dev
 
 ## Install Frontend Libraries and Services
 
-npm is a tool to manage javascript libraries (including more Angular code).
+### Node.js
 
+The required Node.js version is pinned in `src/interface/.node-version`. Use a version manager so it is applied automatically:
+
+- **nodenv** (recommended on macOS):
+  ```bash
+  brew install nodenv
+  nodenv install 20.19.0
+  ```
+
+- **nvm** (alternative):
+  ```bash
+  nvm install   # reads .node-version automatically
+  ```
+
+After installing, verify:
 ```bash
-brew install npm
+cd src/interface
+node -v   # should print v20.19.0
 ```
 
-Note that if you are asked for PATH_TO_ENV, typically that's your home directory path,
-e.g. /home/$USER.
-
-Finally, download the necessary Angular libraries (which includes ng). You may be required to install Node JS.
-Depending on your operating system you can find the exact steps
-[here](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+### Frontend dependencies
 
 ```bash
-cd ../interface
-npm install -g @angular/cli
+cd src/interface
+npm install
 ```
 
 ## Linting & Formatting (Python)
@@ -498,18 +508,11 @@ Starting development server at http://127.0.0.1:8000/
 Quit the server with CONTROL-C.
 ```
 
-In another shell, start the Angular frontend from the ```src/interface``` directory:
+In another shell, start the Angular frontend from the `src/interface` directory:
 
 ```bash
 npm install
-ng serve --open
-```
-
-Note that npm install may reveal some package vulnerabilities. It is recommended
-that you fix at least those packages that won't break:
-
-```bash
-npm audit fix
+npm start
 ```
 
 The output should look something like

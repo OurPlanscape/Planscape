@@ -1,0 +1,18 @@
+<div
+  *ngFor="let layer of layers"
+  class="layer-item"
+  [class.selected]="(viewedLayerId$ | async) === layer.datalayerId"
+  (click)="selectLayer(layer)">
+  <mat-icon class="radio-icon">
+    {{
+      (viewedLayerId$ | async) === layer.datalayerId
+        ? 'radio_button_checked'
+        : 'radio_button_unchecked'
+    }}
+  </mat-icon>
+  <span class="layer-name">{{ layer.name }}</span>
+  <sg-popover
+    class="tooltip"
+    *ngIf="layer.tooltip"
+    [content]="layer.tooltip"></sg-popover>
+</div>

@@ -636,7 +636,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         sub_units_datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
         sub_units_stand_lookup_table = get_sub_units_stands_lookup_table(scenario=scenario, datalayer=sub_units_datalayer)
 
-    number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
+    targets = cfg.get("targets", {})
+    number_of_projects = targets.get("max_project_count", 1)
 
     min_area_project = get_min_project_area(scenario)
     max_area_project = get_max_area_project(scenario=scenario)
@@ -646,6 +647,10 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
     sample_fraction = settings.FORSYS_SAMPLE_FRACTION
     seed = cfg.get("seed")
+    sub_units_fixed_target = targets.get("sub_units_fixed_target")
+    sub_units_target_value = targets.get("sub_units_target_value")
+    if sub_units_fixed_target is False:
+        sub_units_target_value = sub_units_target_value / 100
 
     variables = {
         "min_area_project": min_area_project,
@@ -656,6 +661,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         "exclusion_limit": exclusion_limit,
         "sample_fraction": sample_fraction,
         "seed": seed,
+        "sub_units_fixed_target": sub_units_fixed_target,
+        "sub_units_target_value": sub_units_target_value,
     }
 
     return {
@@ -705,6 +712,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
         if not cfg.get("sub_units_layer"):
             errors.append("Configuration field `sub_units_layer` is required for this Scenario.")
+
+        if cfg.get("sub_units_fixed_target") is None or cfg.get("sub_units_target_value") is None:
+            errors.append("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Configurations for this Scenario.")
     
     else: # scenario.planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
         max_area = targets.get("max_area")
@@ -721,30 +731,27 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         if max_project_count is None:
             errors.append("Configuration field `max_project_count` is required.")
 
-    # STOP HERE if any required fields are missing
-    if errors:
-        return errors
+        else:
+            # Expensive validations below
+            try:
+                available_stand_ids = get_available_stand_ids(
+                    planning_area=scenario.planning_area,
+                    stand_size=stand_size,
+                    excludes=excluded_areas,
+                )
+                available_count = len(available_stand_ids)
+            except Exception as exc:
+                errors.append(f"Failed to compute available stands: {exc}")
+                return errors
 
-    # Expensive validations below
-    try:
-        available_stand_ids = get_available_stand_ids(
-            planning_area=scenario.planning_area,
-            stand_size=stand_size,
-            excludes=excluded_areas,
-        )
-        available_count = len(available_stand_ids)
-    except Exception as exc:
-        errors.append(f"Failed to compute available stands: {exc}")
-        return errors
+            if available_count == 0:
+                errors.append("No stands are available with the current configuration.")
+                return errors
 
-    if available_count == 0:
-        errors.append("No stands are available with the current configuration.")
-        return errors
-
-    if max_project_count > available_count:
-        errors.append(
-            f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
-        )
+            if max_project_count > available_count:
+                errors.append(
+                    f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
+                )
 
     return errors
 
@@ -757,6 +764,14 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         raise ValueError(
             f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
         )
+    
+    capabilities = compute_scenario_capabilities(scenario)
+    scenario.capabilities = capabilities
+    scenario.save(update_fields=["capabilities"])
+
+    if hasattr(scenario, "results"):
+        scenario.results.status = ScenarioResultStatus.PENDING
+        scenario.results.save()
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
@@ -1511,16 +1526,23 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_sub_units_details(planning_area: PlanningArea, datalayer: DataLayer) -> Optional[dict[str, float]]:  
+def get_sub_units_details(scenario: Scenario, datalayer: DataLayer) -> Optional[dict[str, float]]:
+    stand_size = scenario.get_stand_size()
+    planning_area = scenario.planning_area
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
+    stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
+    stand_area = get_min_project_area(scenario=scenario)
 
     queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
     
     areas = []
     for sub_unit in queryset.all():
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        areas.append(get_acreage(geo_intersection))
+        sub_unit_stands_count = stands.filter(centroid__within=geo_intersection).count()
+        if sub_unit_stands_count > 0:
+            acreage = sub_unit_stands_count * stand_area
+            areas.append(acreage)
     
     if len(areas) == 0:
         return None

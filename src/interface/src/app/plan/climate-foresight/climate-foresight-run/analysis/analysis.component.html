@@ -27,79 +27,62 @@
     <sg-section
       headline="Analysis outputs"
       class="priority-selection"
-      [required]="true"
       tooltipContent="<p>Climate Foresight integrates current conditions (0-100 scale metrics) with a future vulnerability analysis (Povak and Manley 2024 climate analog approach) to predict resource condition trajectories under climate change.</p><p>The model provides quantitative support for four common restoration strategies:</p><ol class='strategies'><li><b>Monitor:</b> Conditions are favorable now and in the future.</li><li><b>Protect:</b> Conditions are currently favorable but decline with climate change.</li><li><b>Adapt:</b> Conditions are currently unfavorable, but climate is not a future impediment.</li><li><b>Transform:</b> Conditions are currently and remain unfavorable due to climate change.</li></ol>">
       <section class="datalayers-section" [class.loading]="loading">
         <ng-container *ngIf="loading">
           <mat-spinner diameter="24"></mat-spinner>
         </ng-container>
-        <ng-container *ngIf="!loading && (viewedLayer$ | async) as viewedLayer">
-          <!-- MPAT Matrix -->
-          <div
-            class="layer-item"
-            *ngIf="mpatMatrixLayer"
-            [class.selected]="viewedLayer.id === mpatMatrixLayer.datalayerId"
-            (click)="selectLayer(mpatMatrixLayer)">
-            <mat-icon class="radio-icon">
-              {{
-                viewedLayer.id === mpatMatrixLayer.datalayerId
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ mpatMatrixLayer.name }}</span>
-            <sg-popover
-              class="tooltip"
-              *ngIf="mpatMatrixLayer.tooltip"
-              [content]="mpatMatrixLayer.tooltip"></sg-popover>
-          </div>
+        <ng-container *ngIf="!loading">
+          <ng-container *ngFor="let mapId of mapsArray$ | async">
+            <app-dynamic-climate-layers
+              [mapId]="mapId"
+              [layers]="layers"
+              *ngIf="
+                (selectedMapId$ | async) === mapId
+              "></app-dynamic-climate-layers>
+          </ng-container>
+        </ng-container>
+      </section>
+    </sg-section>
 
-          <!-- Adapt-Protect Score -->
-          <div
-            class="layer-item"
-            *ngIf="adaptProtectLayer"
-            [class.selected]="viewedLayer.id === adaptProtectLayer.datalayerId"
-            (click)="selectLayer(adaptProtectLayer)">
-            <mat-icon class="radio-icon">
-              {{
-                viewedLayer.id === adaptProtectLayer.datalayerId
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ adaptProtectLayer.name }}</span>
-            <sg-popover
-              class="tooltip"
-              *ngIf="adaptProtectLayer.tooltip"
-              [content]="adaptProtectLayer.tooltip"></sg-popover>
-          </div>
-
-          <!-- Integrated Condition Score -->
-          <div
-            class="layer-item"
-            *ngIf="integratedConditionLayer"
-            [class.selected]="
-              viewedLayer.id === integratedConditionLayer.datalayerId
-            "
-            (click)="selectLayer(integratedConditionLayer)">
-            <mat-icon class="radio-icon">
-              {{
-                viewedLayer.id === integratedConditionLayer.datalayerId
-                  ? 'radio_button_checked'
-                  : 'radio_button_unchecked'
-              }}
-            </mat-icon>
-            <span class="layer-name">{{ integratedConditionLayer.name }}</span>
-            <sg-popover
-              class="tooltip"
-              *ngIf="integratedConditionLayer.tooltip"
-              [content]="integratedConditionLayer.tooltip"></sg-popover>
-          </div>
+    <!-- Datalayers inputs -->
+    <sg-section
+      headline="Analysis inputs"
+      class="input-selection"
+      tooltipContent="Climate Foresight inputs">
+      <section class="datalayers-section" [class.loading]="loading">
+        <ng-container *ngIf="loading">
+          <mat-spinner diameter="24"></mat-spinner>
+        </ng-container>
+        <ng-container *ngIf="!loading">
+          <ng-container *ngFor="let mapId of mapsArray$ | async">
+            <app-dynamic-climate-layers
+              [mapId]="mapId"
+              [layers]="inputLayers"
+              *ngIf="
+                (selectedMapId$ | async) === mapId
+              "></app-dynamic-climate-layers>
+          </ng-container>
         </ng-container>
       </section>
     </sg-section>
   </div>
   <div class="map-column">
-    <app-climate-foresight-map></app-climate-foresight-map>
+    <app-map-nav-bar
+      *ngIf="!loading"
+      class="climate-nav-bar"
+      menuPosition="before"
+      style="top: 105px">
+      <app-multi-map-control></app-multi-map-control>
+      <sg-opacity-slider
+        class="navbar-slider"
+        [minValue]="0"
+        [maxValue]="1"
+        [step]="0.01"
+        tooltip="Planning Area Opacity"
+        [sliderValue]="(opacity$ | async) ?? 0.5"
+        (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
+    </app-map-nav-bar>
+    <app-synced-maps></app-synced-maps>
   </div>
 </div>

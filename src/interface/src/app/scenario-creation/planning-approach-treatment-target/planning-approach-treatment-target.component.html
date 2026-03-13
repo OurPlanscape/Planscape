@@ -1,0 +1,150 @@
+<sg-section
+  class="treatment-step"
+  headline="Apply Treatment Target"
+  tooltipContent="<b>What are treatment targets?</b>
+Treatment targets define how much area you want to treat and how ForSys should group those treatments into realistic project areas. These targets help ensure scenarios reflect feasible treatment workloads.
+
+<b>How do treatment targets influence results?</b>
+ForSys uses your targets to create project areas that align with your desired number and size of treatment units, helping you evaluate achievable treatment goals within your planning area.
+
+<b>How is Treatment Cost per Acre used?</b>
+Treatment cost per acre does not affect how project areas are created but is included in scenario reporting to estimate total treatment costs and support budgeting decisions."
+  [required]="true">
+  <p class="section-label">
+    Select the Treatment Targets that ForSys will use when generating scenarios.
+    You can also update Treatment Costs, which will be included in scenario
+    reporting to ensure accurate financial results.
+  </p>
+  <div
+    class="sub-unit-details"
+    *ngIf="subUnitDetails$ | async as subUnitDetails">
+    <h5>Sub-Unit Details</h5>
+    <dl class="list">
+      <dt>Average Sub-Unit Acreage:</dt>
+      <dd>{{ (subUnitDetails.avg | number: '1.0-2') || '--' }} acres</dd>
+      <dt>Smallest Sub-Unit Acreage:</dt>
+      <dd>{{ (subUnitDetails.min | number: '1.0-2') || '--' }} acres</dd>
+      <dt>Largest Sub-Unit Acreage:</dt>
+      <dd>{{ (subUnitDetails.max | number: '1.0-2') || '--' }} acres</dd>
+    </dl>
+  </div>
+  <form *ngIf="form" [formGroup]="form!" class="form-box">
+    <div class="area-selector-row">
+      <p class="label">
+        How much area within each sub-unit do you want to treat?
+        <span class="required">*</span>
+      </p>
+      <div class="selector">
+        <mat-form-field
+          class="unit-input"
+          appearance="outline"
+          floatLabel="always">
+          <input
+            id="sub_units_target_value"
+            formControlName="sub_units_target_value"
+            matInput
+            type="text"
+            mask="separator"
+            [placeholder]="
+              form.get('sub_units_fixed_target')?.value === false
+                ? 'Enter Percentage'
+                : 'Enter Acres'
+            "
+            thousandSeparator="," />
+          <span matSuffix class="suffix">{{ getUnit() }}</span>
+        </mat-form-field>
+        <div class="unit-selector">
+          <div
+            class="unit"
+            [class.active]="form.get('sub_units_fixed_target')?.value === false"
+            (click)="setUnitValue(false)">
+            Percentage %
+          </div>
+          <div
+            class="unit"
+            [class.active]="form.get('sub_units_fixed_target')?.value === true"
+            (click)="setUnitValue(true)">
+            Number #
+          </div>
+        </div>
+      </div>
+      <div class="errors">
+        <p
+          *ngIf="
+            form.get('sub_units_target_value')?.touched &&
+            form.hasError('invalidAcres') &&
+            !form.get('sub_units_target_value')?.hasError('required')
+          ">
+          Cannot be less than the number of acres of your smallest sub-unit
+        </p>
+        <p
+          *ngIf="
+            form.get('sub_units_target_value')?.touched &&
+            form.hasError('exceedMaxArea')
+          ">
+          Cannot exceed the number of acres in your largest sub-unit
+        </p>
+        <p
+          *ngIf="
+            form.get('sub_units_target_value')?.touched &&
+            form.hasError('invalidPercentage')
+          ">
+          Please enter a percentage between 0 and 100
+        </p>
+        <p
+          *ngIf="
+            form.get('sub_units_target_value')?.touched &&
+            form.get('sub_units_target_value')?.hasError('required')
+          ">
+          {{
+            form.get('sub_units_fixed_target')?.value === false
+              ? 'Percentage required'
+              : 'Acres required'
+          }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Help text % of available acreage treated -->
+    <div class="total-areas-targeted">
+      Total Acres Targeted:
+      <span class="calculated-total">{{
+        getTotalTreated() ? (getTotalTreated() | number: '1.0-2') : ' -- '
+      }}</span>
+    </div>
+    <mat-divider class="form-divider"></mat-divider>
+
+    <!-- Treatment Cost Per Acre -->
+    <div class="step-row">
+      <label for="estimated_cost" class="input-label">
+        Treatment Cost Per Acre <span class="required">*</span></label
+      >
+      <mat-form-field
+        class="input-field"
+        appearance="outline"
+        floatLabel="always">
+        <input
+          id="estimatedCost"
+          class="right-align treatment-cost"
+          formControlName="estimated_cost"
+          matInput
+          type="text"
+          mask="separator"
+          placeholder="Enter Value"
+          thousandSeparator="," />
+        <span matSuffix class="suffix">/Acre</span>
+      </mat-form-field>
+      <div class="help-placeholder">
+        <div
+          class="help-text error"
+          *ngIf="
+            form.touched &&
+            form.invalid &&
+            form.get('estimated_cost')?.hasError('required')
+          ">
+          Field is required
+        </div>
+      </div>
+    </div>
+  </form>
+</sg-section>

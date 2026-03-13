@@ -4,6 +4,7 @@ import { ScenarioMapComponent } from './scenario-map.component';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
 import { MapConfigState } from '../map-config.state';
 import { AuthService, ScenarioService } from '@services';
+import { ModuleService } from '@app/services/module.service';
 import { ActivatedRoute } from '@angular/router';
 import { PlanState } from '@plan/plan.state';
 import { Observable, of } from 'rxjs';
@@ -37,11 +38,17 @@ describe('ScenarioMapComponent', () => {
               },
             } as Scenario),
         }),
+        MockProvider(NewScenarioState, {
+          currentStep$: of(null),
+          scenarioConfig$: of({}),
+          selectedSubUnitLayer$: of(null),
+          loading$: of(false),
+        }),
         MockProviders(
           MapConfigState,
           AuthService,
           MapConfigService,
-          NewScenarioState
+          ModuleService
         ),
       ],
       declarations: [

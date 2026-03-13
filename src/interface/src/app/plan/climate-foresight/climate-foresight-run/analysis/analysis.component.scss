@@ -2,6 +2,8 @@
 @import 'colors';
 @import 'mixins';
 
+$default-padding: 16px;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -9,7 +11,7 @@
   height: 100%;
 
   ::ng-deep sg-section .mat-expansion-panel-body {
-    padding: 0 10px 16px 16px;
+    padding: 0 10px $default-padding $default-padding;
   }
 }
 
@@ -26,7 +28,7 @@
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
   z-index: 1;
   width: $climate-analysis-left-panel-width;
-  padding: 16px;
+  padding: $default-padding;
   overflow-y: auto;
 }
 
@@ -71,4 +73,38 @@
 .loading {
   display: flex;
   justify-content: center;
+}
+
+mgl-map {
+  width: 100%;
+  height: 100%;
+}
+
+app-map-nav-bar {
+  left: calc(
+    $climate-analysis-left-panel-width + $default-padding + $default-padding
+  );
+}
+
+.tooltip {
+  margin-left: auto;
+}
+
+.selected {
+  .radio-icon {
+    color: $color-standard-blue;
+  }
+  .layer-name {
+    @include xs-label();
+    font-weight: 600;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+}
+
+.input-selection {
+  margin-top: 16px;
 }

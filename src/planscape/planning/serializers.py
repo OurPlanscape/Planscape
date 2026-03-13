@@ -303,6 +303,21 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
         if not result:
             return None
         features = result.get("features")
+
+        request = self.context.get("request")
+        number_of_features = request.query_params.get("number_of_features") if request else None
+        scenario = instance.scenario
+        if number_of_features is not None:
+            try:
+                number_of_features = int(number_of_features)
+                features = features[:number_of_features]
+            except ValueError:
+                if number_of_features.lower() != "all" and \
+                    scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+                    features = features[:settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS]
+        elif scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+            features = features[:settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS]
+        
         for feature in features:
             feature["properties"].pop("text_geometry", None)
         result["features"] = features
@@ -518,6 +533,33 @@ class TargetsSerializer(serializers.Serializer):
         min_value=1,
         default=settings.DEFAULT_ESTIMATED_COST,
     )
+
+    sub_units_fixed_target = serializers.BooleanField(
+        allow_null=True,
+        required=False,
+        help_text="Flag to determine the Sub-Units Prioritization target (false = percentage | true = fixed value)",
+    )
+    sub_units_target_value = serializers.FloatField(
+        allow_null=True,
+        required=False,
+        help_text="Absolute value or relative percent of project area sum",
+    )
+
+    def validate(self, attrs):
+        sub_units_fixed_target = attrs.get("sub_units_fixed_target")
+        sub_units_target_value = attrs.get("sub_units_target_value")
+
+        if sub_units_fixed_target is not None:
+            if sub_units_target_value is None:
+                raise serializers.ValidationError("`sub_units_target_value` cannot be null.")
+
+            if sub_units_target_value <= 0:
+                raise serializers.ValidationError("`sub_units_target_value` cannot be zero or lower.")
+            
+            if sub_units_fixed_target is False and sub_units_target_value > 100:
+                raise serializers.ValidationError("`sub_units_target_value` cannot be bigger than 100 percent.")
+
+        return super().validate(attrs)
 
 
 class ConfigurationV3Serializer(serializers.Serializer):

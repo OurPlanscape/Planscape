@@ -42,6 +42,7 @@ export class MultiMapConfigState extends MapConfigState {
    * The number of visible maps
    */
   saveStateToLocalStorage(extent: Extent) {
+    // NOTE: This logic is only relevant when MULTIMAP_STORAGE is enabled.
     this.baseLayersStateService.selectedBaseLayers$
       .pipe(take(1))
       .subscribe((baseLayers) => {
@@ -58,6 +59,7 @@ export class MultiMapConfigState extends MapConfigState {
   }
 
   loadStateFromLocalStorage() {
+    // NOTE: This logic is only relevant when MULTIMAP_STORAGE is enabled.
     const options = this.multiMapsStorageService.getItem();
     if (options?.layoutMode) {
       this._layoutMode$.next(options.layoutMode);

@@ -1,36 +1,23 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, take } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
+import { delay, map, startWith, switchMap, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
-  isMapboxURL,
-  transformMapboxUrl,
-} from 'maplibregl-mapbox-request-transformer';
-
-import { ButtonComponent, SectionComponent } from '@styleguide';
+  ButtonComponent,
+  OpacitySliderComponent,
+  SectionComponent,
+} from '@styleguide';
 import {
   ClimateForesightRun,
   DataLayer,
   GeoPackageDownloadStatus,
 } from '@types';
 import { MapConfigState } from '@maplibre-map/map-config.state';
-import { PlanState } from '@plan/plan.state';
-import {
-  Map as MapLibreMap,
-  RequestTransformFunction,
-  ResourceType,
-} from 'maplibre-gl';
-import {
-  addRequestHeaders,
-  getBoundsFromGeometry,
-} from '@maplibre-map/maplibre.helper';
-import { AuthService, ClimateForesightService } from '@services';
-import { environment } from '@env/environment';
+import { ClimateForesightService } from '@services';
 import { MapConfigService } from '@maplibre-map/map-config.service';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
@@ -41,11 +28,19 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
-import { ClimateForesightMapComponent } from '../climate-foresight-map/climate-foresight-map.component';
 import { MultiMapConfigState } from '@app/maplibre-map/multi-map-config.state';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { SyncedMapsComponent } from '@app/maplibre-map/synced-maps/synced-maps.component';
+import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
+import { MultiMapControlComponent } from '@app/maplibre-map/multi-map-control/multi-map-control.component';
+import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
+import { DynamicClimateLayersComponent } from '../dynamic-climate-layers/dynamic-climate-layers.component';
+import { ClimateLayersComponent } from '../climate-layers/climate-layers.component';
+import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
+import { DrawService } from '@app/maplibre-map/draw.service';
+import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
 
-export interface OutputLayer {
+export interface ResultsLayer {
   id: string;
   name: string;
   datalayerId: number | null;
@@ -71,7 +66,12 @@ export interface OutputLayer {
     SectionComponent,
     MatMenuModule,
     PopoverComponent,
-    ClimateForesightMapComponent,
+    SyncedMapsComponent,
+    MapNavbarComponent,
+    OpacitySliderComponent,
+    MultiMapControlComponent,
+    DynamicClimateLayersComponent,
+    ClimateLayersComponent,
   ],
   providers: [
     // 1. Create a single instance of the subclass
@@ -80,7 +80,9 @@ export interface OutputLayer {
     // 2. Alias its own type to that same instance
     { provide: MultiMapConfigState, useExisting: MapConfigState },
     MapConfigService,
-    DataLayersStateService,
+    DrawService,
+    { provide: MULTIMAP_STORAGE, useValue: false },
+    BaseLayersStateService,
   ],
   templateUrl: './analysis.component.html',
   styleUrls: ['./analysis.component.scss'],
@@ -95,70 +97,47 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   downloadUrl: string | null = null;
   private downloadPollingInterval: ReturnType<typeof setInterval> | null = null;
 
-  mpatMatrixLayer: OutputLayer | null = null;
-  adaptProtectLayer: OutputLayer | null = null;
-  integratedConditionLayer: OutputLayer | null = null;
+  mpatMatrixLayer: ResultsLayer | null = null;
+  adaptProtectLayer: ResultsLayer | null = null;
+  integratedConditionLayer: ResultsLayer | null = null;
 
-  selectedLayerId: string | null = null;
-  selectedLayer: OutputLayer | null = null;
-  opacity = 70;
+  mapsArray$ = this.dataLayersRegistryService.size$.pipe(
+    startWith(0),
+    delay(0),
+    map((layoutMode) =>
+      Array.from({ length: layoutMode }, (_, mapNumber) => mapNumber + 1)
+    )
+  );
 
-  mapLibreMap: MapLibreMap | null = null;
-  bounds$: Observable<[number, number, number, number] | null>;
-  baseLayerUrl$;
-  maxZoom = 22;
-  minZoom = 4;
+  selectedMapId$ = this.multimapStateService.selectedMapId$;
+
+  layers: ResultsLayer[] = [];
+  inputLayers: ResultsLayer[] = [];
 
   viewedLayer$ = this.dataLayersState.viewedDataLayer$;
+
+  opacity$ = this.multimapStateService.dataLayersOpacity$;
 
   constructor(
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute,
-    private router: Router,
-    private mapConfigState: MapConfigState,
-    private planState: PlanState,
-    private authService: AuthService,
     private climateForesightService: ClimateForesightService,
     private dataLayersState: DataLayersStateService,
     private mapConfigService: MapConfigService,
-    private snackBar: MatSnackBar
+    private multimapStateService: MultiMapConfigState,
+    private snackBar: MatSnackBar,
+    private dataLayersRegistryService: DataLayersRegistryService
   ) {
     this.mapConfigService.initialize();
-
-    this.bounds$ = this.planState.planningAreaGeometry$.pipe(
-      map((geometry) => {
-        if (!geometry) {
-          return null;
-        }
-        const bounds = getBoundsFromGeometry(geometry);
-        if (bounds?.every((coord) => isFinite(coord))) {
-          return bounds as [number, number, number, number];
-        }
-        return null;
-      }),
-      filter(
-        (bounds): bounds is [number, number, number, number] => bounds !== null
-      )
-    );
-
-    this.baseLayerUrl$ = this.mapConfigState.baseMapUrl$.pipe(
-      map((url) => {
-        if (isMapboxURL(url as string)) {
-          return transformMapboxUrl(
-            url as string,
-            'Style' as ResourceType,
-            environment.mapbox_key
-          ).url;
-        }
-        return url;
-      })
-    );
+    this.multimapStateService.setSelectedMap(1);
   }
 
   ngOnInit(): void {
     this.route.params.pipe(untilDestroyed(this)).subscribe((params) => {
       this.runId = +params['runId'];
       this.planId = +params['planId'];
+      this.multimapStateService.setLayoutMode(1);
+      this.multimapStateService.setAllowClickOnMap(true);
       this.loadRun();
     });
   }
@@ -178,14 +157,35 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     if (!this.runId) return;
 
     this.loading = true;
+
     this.climateForesightService
       .getRun(this.runId)
-      .pipe(untilDestroyed(this))
+      .pipe(
+        switchMap((run) => {
+          const input_ids: number[] = run.input_datalayers.map(
+            (l) => l.datalayer
+          );
+          return this.climateForesightService.getDataLayers().pipe(
+            map((datalayers) => ({
+              run,
+              // Returning the input layers
+              input_layers: datalayers.filter((d) => input_ids.includes(d.id)),
+            }))
+          );
+        })
+      )
       .subscribe({
-        next: (run) => {
+        next: ({ run, input_layers }) => {
           this.run = run;
-          this.buildOutputLayers();
-
+          this.inputLayers = input_layers.map((layer) => ({
+            datalayer: layer,
+            id: String(layer.id),
+            name: layer.name,
+            datalayerId: layer.id,
+            type: layer.type,
+            group: 'primary',
+          })) as ResultsLayer[];
+          this.buildClimateLayers();
           this.breadcrumbService.breadcrumb$
             .pipe(take(1))
             .subscribe((breadcrumb) => {
@@ -215,7 +215,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       });
   }
 
-  private buildOutputLayers(): void {
+  private buildClimateLayers(): void {
     if (!this.run) return;
 
     if (this.run.promote) {
@@ -255,50 +255,19 @@ export class AnalysisComponent implements OnInit, OnDestroy {
         tooltip:
           '<p>A scaled metric (0-100) that reflects a continuum of climate resilience strategies from the MPAT classification.</p><p>Areas categorized as:<ul><li>Monitor are closest to 0, indicating favorable current and future conditions.</li><li>Adapt and Protect are intermediate with equivalent weighting, representing balanced management strategies.</li><li>Transform is nearest to 100, highlighting areas where significant change is likely.</li></ul></p>',
       };
+
+      this.layers = [
+        this.mpatMatrixLayer,
+        this.adaptProtectLayer,
+        this.integratedConditionLayer,
+      ];
     }
   }
 
-  selectLayer(layer: OutputLayer): void {
+  selectLayer(layer: ResultsLayer): void {
     if (layer.datalayer) {
       this.dataLayersState.selectDataLayer(layer.datalayer);
     }
-  }
-
-  onLayerChange(layerId: string): void {
-    const primaryLayers = [
-      this.mpatMatrixLayer,
-      this.adaptProtectLayer,
-      this.integratedConditionLayer,
-    ].filter((l): l is OutputLayer => l !== null);
-
-    const allLayers = [...primaryLayers];
-    const layer = allLayers.find((l) => l.id === layerId);
-    if (layer) {
-      this.selectLayer(layer);
-    }
-  }
-
-  mapLoaded(map: MapLibreMap): void {
-    this.mapLibreMap = map;
-
-    if (this.selectedLayer) {
-      this.selectLayer(this.selectedLayer);
-    }
-  }
-
-  transformRequest: RequestTransformFunction = (
-    url: string,
-    resourceType?: ResourceType
-  ) => {
-    return addRequestHeaders(
-      url,
-      resourceType,
-      this.authService.getAuthCookie()
-    );
-  };
-
-  goBack(): void {
-    this.router.navigate(['/plan', this.planId, 'climate-foresight']);
   }
 
   downloadGeopackage(): void {
@@ -421,5 +390,9 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       default:
         return 'Download GeoPackage';
     }
+  }
+
+  handleOpacityChange(newOpacity: number) {
+    this.multimapStateService.updateDataLayersOpacity(newOpacity);
   }
 }
