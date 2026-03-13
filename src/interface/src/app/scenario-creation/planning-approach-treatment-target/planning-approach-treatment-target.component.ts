@@ -14,7 +14,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
-import { filter, take } from 'rxjs';
+import { distinctUntilChanged, filter, map, switchMap, take } from 'rxjs';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { STAND_SIZES } from '@plan/plan-helpers';
@@ -52,7 +52,17 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
   subUnitDetails: SubUnitsDetail | null = null;
   scenarioId = this.route.snapshot.data['scenarioId'];
 
-  subUnitDetails$ = this.scenarioService.getSubUnitsDetails(this.scenarioId);
+  subUnitDetails$ = this.newScenarioState.scenarioConfig$.pipe(
+    map((config) => config.sub_units_layer),
+    filter((sub_units_layer) => !!sub_units_layer),
+    distinctUntilChanged(),
+    switchMap((config) =>
+      this.scenarioService.getSubUnitsDetails(
+        this.scenarioId,
+        config.sub_units_layer
+      )
+    )
+  );
 
   constructor(
     private newScenarioState: NewScenarioState,
@@ -133,7 +143,11 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
 
       // If sub_units_fixed_target is TRUE we should validate number of acres
       if (sub_units_fixed_target?.value === true) {
-        if (sub_units_target_value?.value < 0) {
+        if (
+          this.subUnitDetails?.min &&
+          sub_units_target_value?.value &&
+          sub_units_target_value?.value < this.subUnitDetails.min
+        ) {
           return { invalidAcres: true };
         }
         if (

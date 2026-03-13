@@ -168,10 +168,10 @@ export class ScenarioService {
     );
   }
 
-  getSubUnitsDetails(scenarioId: number) {
+  getSubUnitsDetails(scenarioId: number, sub_units_layer: number) {
     const url =
       environment.backend_endpoint +
-      `/v2/scenarios/${scenarioId}/sub_units_details`;
+      `/v2/scenarios/${scenarioId}/sub_units_details/?sub_units_layer=${sub_units_layer}`;
     return this.http.get<SubUnitsDetail>(url, {
       withCredentials: true,
     });
