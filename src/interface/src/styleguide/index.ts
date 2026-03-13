@@ -1,3 +1,4 @@
+export * from '@styleguide/action-card/action-card.component';
 export * from '@styleguide/banner/banner.component';
 export * from '@styleguide/button/button.component';
 export * from '@styleguide/chart/chart.component';
