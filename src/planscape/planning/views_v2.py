@@ -373,8 +373,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 seed=configuration_data.get("seed"),
                 planning_approach=configuration_data.get("planning_approach"),
                 sub_units_layer=configuration_data.get("sub_units_layer"),
-                sub_units_fixed_target=configuration_data.get("sub_units_fixed_target"),
-                sub_units_target_value=configuration_data.get("sub_units_target_value"),
             )
             updated_config = dict(existing)
             for key in configuration_data.keys():
