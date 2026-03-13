@@ -246,8 +246,6 @@ def create_config(
     seed: Optional[int] = None,
     planning_approach: Optional[ScenarioPlanningApproach] = None,
     sub_units_layer: Optional[int] = None,
-    sub_units_fixed_target: Optional[bool] = None,
-    sub_units_target_value: Optional[float] = None,
 ) -> Dict[str, Any]:
     config: Dict[str, Any] = {}
 
@@ -265,10 +263,6 @@ def create_config(
         config["planning_approach"] = planning_approach
     if sub_units_layer is not None:
         config["sub_units_layer"] = sub_units_layer
-    
-    if sub_units_fixed_target is not None and sub_units_target_value:
-        config["sub_units_fixed_target"] = sub_units_fixed_target
-        config["sub_units_target_value"] = sub_units_target_value
 
     return config
 
