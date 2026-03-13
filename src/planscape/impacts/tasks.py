@@ -1,4 +1,5 @@
 import logging
+import smtplib
 from typing import Optional, Tuple
 from urllib.parse import urljoin
 
@@ -237,8 +238,14 @@ def async_calculate_persist_impacts_treatment_plan(
     log.info(f"Calculation of impacts for {treatment_plan} triggered.")
 
 
-@app.task()
-def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
+@app.task(
+    bind=True, 
+    autoretry_for=(Exception, smtplib.SMTPDataError),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={"max_retries": 3},
+)
+def async_send_email_process_finished(self, treatment_plan_pk, *args, **kwargs):
     try:
         treatment_plan = TreatmentPlan.objects.select_related(
             "created_by", "scenario"
@@ -282,12 +289,29 @@ def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
             treatment_plan_pk,
         )
         return
+    except smtplib.SMTPDataError:
+        if self.request.retries >= self.max_retries:
+            log.exception("Failed to send email. SMTP server side error.")
+        else:
+            log.warning("Failed to send email. SMTP server side error. Retrying.")
+        raise
     except Exception as e:
-        log.exception(
-            "Something unexpected happened while sending the email to inform that a Treatment Plan process was finished.",
-            extra={
-                "exception": e,
-                "treatment_plan": treatment_plan.pk,
-                "user": user.pk,
-            },
-        )
+        if self.request.retries >= self.max_retries:
+            log.exception(
+                "Something unexpected happened while sending the email to inform that a Treatment Plan process was finished.",
+                extra={
+                    "exception": e,
+                    "treatment_plan": treatment_plan.pk,
+                    "user": user.pk,
+                },
+            )
+        else:
+            log.warning(
+                "Something unexpected happened while sending the email to inform that a Treatment Plan process was finished. Retrying.",
+                extra={
+                    "exception": e,
+                    "treatment_plan": treatment_plan.pk,
+                    "user": user.pk,
+                },
+            )
+        raise
