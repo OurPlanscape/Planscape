@@ -271,6 +271,10 @@ class TestFlattenGeojsonSanitization(TestCase):
         self.assertTrue(all(" " not in k for k in props.keys()))
 
 
+@override_settings(
+    OUTPUT_DIR="/tmp/planscape-test-output",
+    TEMP_GEOPACKAGE_FOLDER="/tmp/planscape-test-output/geopackages",
+)
 class ExportToShapefileTest(TestCase):
     def test_export_raises_value_error_failure(self):
         unit_poly = GEOSGeometry(
@@ -357,6 +361,10 @@ class ExportToShapefileTest(TestCase):
             shutil.rmtree(str(output))
 
 
+@override_settings(
+    OUTPUT_DIR="/tmp/planscape-test-output",
+    TEMP_GEOPACKAGE_FOLDER="/tmp/planscape-test-output/geopackages",
+)
 class TestExportToGeopackage(TestCase):
     def setUp(self):
         self.user = UserFactory.create()
@@ -495,19 +503,27 @@ class TestExportToGeopackage(TestCase):
         ]
 
         preset_scenario_forsys_folder = self.preset_scenario.get_forsys_folder()
-        self.preset_scenario_outputs_file = preset_scenario_forsys_folder / f"stnd_{self.preset_scenario.uuid}.csv"
+        self.preset_scenario_outputs_file = (
+            preset_scenario_forsys_folder / f"stnd_{self.preset_scenario.uuid}.csv"
+        )
         with open(self.preset_scenario_outputs_file, "w") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
         custom_scenario_forsys_folder = self.custom_scenario.get_forsys_folder()
-        self.custom_scenario_outputs_file = custom_scenario_forsys_folder / f"stnd_{self.custom_scenario.uuid}.csv"
+        self.custom_scenario_outputs_file = (
+            custom_scenario_forsys_folder / f"stnd_{self.custom_scenario.uuid}.csv"
+        )
         with open(self.custom_scenario_outputs_file, "w") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(stnd_data_rows)
 
-        self.preset_scenario_output_path = Path("preset_scenario_test_planning_area.gpkg")
-        self.custom_scenario_output_path = Path("custom_scenario_test_planning_area.gpkg")
+        self.preset_scenario_output_path = Path(
+            "preset_scenario_test_planning_area.gpkg"
+        )
+        self.custom_scenario_output_path = Path(
+            "custom_scenario_test_planning_area.gpkg"
+        )
 
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage_preset_scenario(self, upload_mock):
@@ -528,7 +544,9 @@ class TestExportToGeopackage(TestCase):
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage_already_existing_preset_scenario(self, upload_mock):
         invalidate_all()
-        self.preset_scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg.zip"
+        self.preset_scenario.geopackage_url = (
+            "gs://test-bucket/test-folder/test.gpkg.zip"
+        )
         self.preset_scenario.save(update_fields=["geopackage_url"])
 
         output = export_to_geopackage(self.preset_scenario)
@@ -539,7 +557,9 @@ class TestExportToGeopackage(TestCase):
     @mock.patch("planning.services.upload_file_via_cli", autospec=True)
     def test_export_geopackage_already_existing_custom_scenario(self, upload_mock):
         invalidate_all()
-        self.custom_scenario.geopackage_url = "gs://test-bucket/test-folder/test.gpkg.zip"
+        self.custom_scenario.geopackage_url = (
+            "gs://test-bucket/test-folder/test.gpkg.zip"
+        )
         self.custom_scenario.save(update_fields=["geopackage_url"])
 
         output = export_to_geopackage(self.custom_scenario)
@@ -548,7 +568,9 @@ class TestExportToGeopackage(TestCase):
         self.assertFalse(upload_mock.called)
 
     def test_export_planning_area_to_geopackage_preset_scenario(self):
-        export_planning_area_to_geopackage(self.planning, self.preset_scenario_output_path)
+        export_planning_area_to_geopackage(
+            self.planning, self.preset_scenario_output_path
+        )
         layers = fiona.listlayers(self.preset_scenario_output_path)
         self.assertIn("planning_area", layers)
         with fiona.open(self.preset_scenario_output_path, layer="planning_area") as src:
@@ -560,7 +582,9 @@ class TestExportToGeopackage(TestCase):
             self.assertEqual(feature["properties"]["name"], self.planning.name)
 
     def test_export_planning_area_to_geopackage_custom_scenario(self):
-        export_planning_area_to_geopackage(self.planning, self.custom_scenario_output_path)
+        export_planning_area_to_geopackage(
+            self.planning, self.custom_scenario_output_path
+        )
         layers = fiona.listlayers(self.custom_scenario_output_path)
         self.assertIn("planning_area", layers)
         with fiona.open(self.custom_scenario_output_path, layer="planning_area") as src:
@@ -571,7 +595,9 @@ class TestExportToGeopackage(TestCase):
             feature = next(iter(src))
             self.assertEqual(feature["properties"]["name"], self.planning.name)
 
-    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_preset_scenario(self):
+    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_preset_scenario(
+        self,
+    ):
         self.datalayers[0].name = "Expected Annual Total Volume Killed"
         self.datalayers[0].save(update_fields=["name"])
         stand_inputs = export_scenario_inputs_to_geopackage(
@@ -585,7 +611,9 @@ class TestExportToGeopackage(TestCase):
         self.assertIn("datalayer_expected-annual-total-volume-killed", field_names)
         self.assertTrue(all(" " not in n for n in field_names))
 
-    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_custom_scenario(self):
+    def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_custom_scenario(
+        self,
+    ):
         self.datalayers[0].name = "Expected Annual Total Volume Killed"
         self.datalayers[0].save(update_fields=["name"])
         stand_inputs = export_scenario_inputs_to_geopackage(
@@ -604,7 +632,9 @@ class TestExportToGeopackage(TestCase):
         self.datalayers[5].save(update_fields=["name"])
         self.datalayers[6].name = "Some PCP Layer"
         self.datalayers[6].save(update_fields=["name"])
-        export_scenario_inputs_to_geopackage(self.preset_scenario, self.preset_scenario_output_path)
+        export_scenario_inputs_to_geopackage(
+            self.preset_scenario, self.preset_scenario_output_path
+        )
         with fiona.open(self.preset_scenario_output_path, layer="stand_inputs") as src:
             field_names = list(src.schema["properties"].keys())
         self.assertIn("datalayer_some-spm-layer_spm", field_names)
@@ -616,16 +646,93 @@ class TestExportToGeopackage(TestCase):
         self.datalayers[5].save(update_fields=["name"])
         self.datalayers[6].name = "Some PCP Layer"
         self.datalayers[6].save(update_fields=["name"])
-        export_scenario_inputs_to_geopackage(self.custom_scenario, self.custom_scenario_output_path)
+        export_scenario_inputs_to_geopackage(
+            self.custom_scenario, self.custom_scenario_output_path
+        )
         with fiona.open(self.custom_scenario_output_path, layer="stand_inputs") as src:
             field_names = list(src.schema["properties"].keys())
         self.assertIn("datalayer_some-spm-layer_spm", field_names)
         self.assertIn("datalayer_some-pcp-layer_pcp", field_names)
         self.assertTrue(all(" " not in n for n in field_names))
 
+    def test_export_inputs_to_geopackage_handles_negative_infinity(self):
+        rows = [
+            [
+                "WKT",
+                "stand_id",
+                "area_acres",
+                f"datalayer_{self.datalayers[0].pk}",
+                "priority",
+            ],
+            [
+                "POLYGON ((-2226358.53928425 1950498.20568641,-2225919.84794646 1949738.37000051,-2225042.46527088 1949738.37000052,-2224603.77393309 1950498.20568641,-2225042.46527088 1951258.0413723,-2225919.84794646 1951258.0413723,-2226358.53928425 1950498.20568641))",
+                self.stand.pk,
+                "-inf",
+                73,
+                0,
+            ],
+        ]
+        with open(self.preset_scenario_inputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(rows)
+        scenario_inputs = export_scenario_inputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+        )
+        self.assertIn(self.stand.pk, scenario_inputs)
+        props = scenario_inputs[self.stand.pk]
+        self.assertIsNone(props["area_acres"])
+        with fiona.open(self.preset_scenario_output_path, layer="stand_inputs") as src:
+            self.assertEqual(1, len(src))
+
+    def test_export_stand_outputs_to_geopackage_handles_negative_infinity(self):
+        rows = [
+            [
+                "stand_id",
+                "proj_id",
+                "DoTreat",
+                "selected",
+                "ETrt_YR",
+                "area_acres",
+                f"datalayer_{self.datalayers[0].pk}",
+                "weightedPriority",
+                "Pr_1_priority",
+            ],
+            [
+                self.stand.pk,
+                1,
+                1,
+                1,
+                1,
+                "-inf",
+                0.136334928019663,
+                16.6071320953935,
+                1,
+            ],
+        ]
+        with open(self.preset_scenario_outputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(rows)
+
+        stand_inputs = export_scenario_inputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+        )
+        export_scenario_stand_outputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+            stand_inputs,
+        )
+
+        with fiona.open(self.preset_scenario_output_path, layer="stand_outputs") as src:
+            self.assertEqual(1, len(src))
+            feature = next(iter(src))
+            self.assertIsNone(feature["properties"]["area_acres"])
+
     def tearDown(self) -> None:
         self.preset_scenario_output_path.unlink(missing_ok=True)
         self.custom_scenario_output_path.unlink(missing_ok=True)
+        shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
 
 
 class TestPlanningAreaCovers(TestCase):
@@ -960,31 +1067,32 @@ class ValidateScenarioConfigurationTest(TestCase):
             errors = validate_scenario_configuration(self.scenario)
             self.assertEqual(errors, [])
 
-    
     def test_missing_treatment_goal(self):
         self.scenario.treatment_goal = None
         self.scenario.type = ScenarioType.PRESET
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Scenario has no Treatment Goal assigned.", errors)
-    
+
     def test_missing_priority_objectives(self):
-        self.scenario.configuration = {
-            "priority_objectives": []
-        }
+        self.scenario.configuration = {"priority_objectives": []}
         self.scenario.type = ScenarioType.CUSTOM
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("Configuration field `priority_objectives` is required for Custom Scenarios.", errors)
+        self.assertIn(
+            "Configuration field `priority_objectives` is required for Custom Scenarios.",
+            errors,
+        )
 
     def test_missing_sub_units_layer(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
-        self.scenario.configuration = {
-            "sub_units_layer": None
-        }
+        self.scenario.configuration = {"sub_units_layer": None}
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn("Configuration field `sub_units_layer` is required for this Scenario.", errors)
+        self.assertIn(
+            "Configuration field `sub_units_layer` is required for this Scenario.",
+            errors,
+        )
 
 
 class CreateScenarioGuardTest(TestCase):
