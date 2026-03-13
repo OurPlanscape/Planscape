@@ -32,10 +32,3 @@ $breakpoint_md: 768px;
     @content;
   }
 }
-
-@mixin on-large-to-extralarge() {
-  @media screen and (min-width: $breakpoint_lg) and (max-width: ($breakpoint_xl - 1px)) {
-    @content;
-  }
-}
-

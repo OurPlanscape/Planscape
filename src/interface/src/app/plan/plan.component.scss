@@ -80,7 +80,7 @@
   max-height: calc(100vh - ($navbar-height + $toolbar-height));
   box-sizing: border-box;
 
-  @include on-large-to-extralarge() {
+  @include on-large() {
     width: $plan-right-md-max;
     max-width: $plan-right-lg-max;
   }
@@ -176,7 +176,7 @@
   max-width: $plan-left-lg-max;
   gap: 16px;
 
-  @include on-large-to-extralarge() {
+  @include on-large() {
     max-width: $plan-left-md-max;
   }
 
