@@ -168,11 +168,13 @@ export class ScenarioService {
     );
   }
 
-  getSubUnitsDetails(scenarioId: number) {
-    const url =
+  getSubUnitsDetails(scenarioId: number, sub_units_layer?: number) {
+    const base =
       environment.backend_endpoint +
-      `/v2/scenarios/${scenarioId}/sub_units_details`;
-    return this.http.get<SubUnitsDetail>(url, {
+      `/v2/scenarios/${scenarioId}/sub_units_details/`;
+    const params =
+      sub_units_layer != null ? `?sub_units_layer=${sub_units_layer}` : '';
+    return this.http.get<SubUnitsDetail>(base + params, {
       withCredentials: true,
     });
   }
