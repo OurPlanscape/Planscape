@@ -1,0 +1,15 @@
+.expanded-panel {
+    overflow-y: hidden;
+}
+
+.notes-panel {
+    overflow-y: hidden;
+    max-height: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+::ng-deep sg-expanded-panel.expanded-panel .modal-body {
+    height: calc(100% - 60px);
+}
