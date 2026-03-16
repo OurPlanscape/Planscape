@@ -108,15 +108,15 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
             .get('estimated_cost')
             ?.setValue(config.targets.estimated_cost);
         }
-        if (config.sub_units_fixed_target) {
+        if (config.targets?.sub_units_fixed_target) {
           this.form
             .get('sub_units_fixed_target')
-            ?.setValue(config.sub_units_fixed_target);
+            ?.setValue(config.targets.sub_units_fixed_target);
         }
-        if (config.sub_units_target_value) {
+        if (config.targets?.sub_units_target_value) {
           this.form
             .get('sub_units_target_value')
-            ?.setValue(config.sub_units_target_value);
+            ?.setValue(config.targets.sub_units_target_value);
         }
       });
   }
