@@ -38,6 +38,8 @@ import { MapConfigService } from '@maplibre-map/map-config.service';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
+import { MapViewerCardComponent } from './map-viewer-card/map-viewer-card.component';
+import { PlanningAreaDetailsCardComponent } from './planning-area-details-card/planning-area-details-card.component';
 import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expansion-card.component';
 
 /** Components used in the plan flow. */
@@ -83,6 +85,8 @@ import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expans
     BannerComponent,
     MatProgressSpinnerModule,
     MatCardModule,
+    MapViewerCardComponent,
+    PlanningAreaDetailsCardComponent,
     NotesExpansionCardComponent,
     ToggleComponent,
   ],

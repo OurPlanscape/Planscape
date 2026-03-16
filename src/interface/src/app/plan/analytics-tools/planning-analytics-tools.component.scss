@@ -1,6 +1,17 @@
 @import 'colors';
 @import 'mixins';
 
+.in-overview {
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
+  gap: 24px;
+}
+
 .analytics-tools-container {
   background-color: white;
   border-top: 1px solid $color-soft-gray;
@@ -13,10 +24,28 @@
   margin: 0 0 16px 0;
 }
 
+.details {
+    @include small-paragraph();
+    color: $color-dark-gray;
+}
+
 .tools-grid {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
+  max-width: 550px;
+}
+
+::ng-deep .in-overview sg-tile-button  {
+  flex: 1;
+}
+
+::ng-deep sg-tile-button.climate-foresight .tile-button {
+  background-size: contain;
+}
+
+::ng-deep sg-tile-button.coming-soon .tile-button {
+  background-size: 80px;
 }

@@ -13,7 +13,9 @@
   </mgl-layer>
   <app-planning-area-layer before="middle-layer"></app-planning-area-layer>
 </mgl-map>
-<div class="overlay-navigation">
-  <div class="label">Map Viewer</div>
-  <mat-icon>chevron_right</mat-icon>
+<div *ngIf="currentPlan$ | async as plan" class="overlay-navigation">
+  <a class="label" [routerLink]="['/explore', plan?.id]">Map Viewer</a>
+  <a class="label" [routerLink]="['/explore', plan?.id]"
+    ><mat-icon>chevron_right</mat-icon></a
+  >
 </div>

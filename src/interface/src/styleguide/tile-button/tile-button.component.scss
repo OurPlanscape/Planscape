@@ -2,6 +2,7 @@
 @import 'mixins';
 
 $tile-size-md: 176px;
+$tile-height-lg: 180px;
 
 .tile-button {
   border-radius: 4px;
@@ -24,6 +25,14 @@ $tile-size-md: 176px;
     min-width: $tile-size-md;
     max-width: $tile-size-md;
   }
+
+  &.lg {
+    min-height: $tile-height-lg;
+    max-height: 100%;
+    min-width: 120px;
+    max-width: 100%
+  }
+
 
   &:hover:not(:disabled) {
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
@@ -80,10 +89,20 @@ $tile-size-md: 176px;
 
   .tile-title {
     @include standard-label();
+
+    &.lg {
+    @include xs-label();
+      font-weight: 700;
+      line-height: 22px;
+    }
   }
 
   .tile-subtitle {
     @include xs-label();
     font-weight: 500;
+    &.lg {
+      font-weight: 400;
+      line-height: 22px;
+    }
   }
 }
