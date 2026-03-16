@@ -23,6 +23,7 @@ import {
   OpacitySliderComponent,
   ScenarioCardComponent,
   SectionComponent,
+  ToggleComponent,
   TreatmentCardComponent,
 } from '@styleguide';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -83,6 +84,7 @@ import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expans
     MatProgressSpinnerModule,
     MatCardModule,
     NotesExpansionCardComponent,
+    ToggleComponent,
   ],
 })
 export class PlanModule {}
