@@ -190,24 +190,6 @@
 }
 
 /* TODO - remove this when PLANNING_AREA_OVERVIEW items are in place*/
-.placeholder-card {
-  border-radius: 8px;
-  border: 1px solid $color-soft-gray;
-  background-color: $color-white;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
-  height: 200px;
-  @include h4();
-
-  &.notes-placeholder {
-    height: 40px;
-    padding: 16px;
-  }
-}
-
-/* TODO - remove this when PLANNING_AREA_OVERVIEW items are in place*/
 .placeholder-scenarios {
   border-radius: 8px;
   border: 1px solid $color-soft-gray;
