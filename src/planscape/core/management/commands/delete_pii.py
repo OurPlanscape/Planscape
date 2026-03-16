@@ -1,5 +1,6 @@
 from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
 from collaboration.models import UserObjectRole
+from django.conf import settings
 from datasets.models import Category, DataLayer, Dataset, Style
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -127,6 +128,15 @@ class Command(BaseCommand):
                 )
 
     def handle(self, **options):
+        if settings.ENV == "production":
+            raise SystemExit(
+                "\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                "!! DANGER: This command cannot run in production.     !!\n"
+                "!! It permanently deletes all user PII from the DB.  !!\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+            )
+
         dry_run = options["dry_run"]
 
         admin = self._get_or_create_admin()
