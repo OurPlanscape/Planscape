@@ -75,14 +75,8 @@ Treatment cost per acre does not affect how project areas are created but is inc
             form.hasError('invalidAcres') &&
             !form.get('sub_units_target_value')?.hasError('required')
           ">
-          Cannot be less than the number of acres of your stand size
-        </p>
-        <p
-          *ngIf="
-            form.get('sub_units_target_value')?.touched &&
-            form.hasError('exceedMaxArea')
-          ">
-          Cannot exceed the number of acres in your largest sub-unit
+          Target acres must be between {{ minAcreage | number: '1.0-2' }} and
+          {{ subUnitDetails?.max | number: '1.0-2' }}
         </p>
         <p
           *ngIf="

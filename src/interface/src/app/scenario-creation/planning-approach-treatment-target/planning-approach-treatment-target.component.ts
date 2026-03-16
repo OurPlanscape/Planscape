@@ -145,7 +145,7 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
           this.subUnitDetails?.max &&
           sub_units_target_value?.value > this.subUnitDetails?.max
         ) {
-          return { exceedMaxArea: true };
+          return { invalidAcres: true };
         }
       }
       // If sub_units_fixed_target is FALSE we should validate percentage
