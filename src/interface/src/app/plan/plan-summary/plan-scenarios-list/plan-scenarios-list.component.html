@@ -1,78 +1,55 @@
-<div class="saved-scenarios-wrapper">
-  <div class="scenarios-header">
-    <div class="sort-header" (click)="handleSortChange()">
-      <mat-icon class="material-symbols-outlined">
-        {{
-          sortSelection === '-created_at'
-            ? 'arrow_downward_alt'
-            : 'arrow_upward_alt'
-        }}
-      </mat-icon>
-      <span>Date Created</span>
-    </div>
-    <div class="button-section">
-      <button
-        sg-button
-        icon="drive_folder_upload"
-        [outlined]="true"
-        *ngIf="canAddScenarioForPlan"
-        (click)="openUploadDialog()">
-        Upload Scenario
-      </button>
-
-      <button
-        sg-button
-        [matTooltip]="scenarioDisabledTooltipReason"
-        [matTooltipDisabled]="isValidPlanningArea"
-        *ngIf="canAddScenarioForPlan"
-        [disabled]="!isValidPlanningArea || planningAreaIsLarge"
-        data-id="new-scenario"
-        icon="add"
-        variant="primary"
-        [matMenuTriggerFor]="menu"
-        #trigger="matMenuTrigger">
-        New Scenario
-
-        <mat-icon class="material-symbols-outlined new-scenario-down"
-          >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
-        </mat-icon>
-      </button>
-      <mat-menu #menu="matMenu" class="scenario-options-menu">
-        <button
-          mat-menu-item
-          (click)="openScenarioSetupDialog('PRESET')"
-          class="scenario-option">
-          <mat-icon class="material-symbols-outlined">contract</mat-icon>
-          Choose Treatment Goal
-          <span>
-            Start from a template with preset objectives, co-benefits, and
-            constraints
-          </span>
-        </button>
-        <button
-          mat-menu-item
-          (click)="openScenarioSetupDialog('CUSTOM')"
-          class="scenario-option">
-          <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
-          Create Custom Scenario
-          <span>
-            Build from scratch: choose all objectives, co-benefits, and
-            constraints.
-          </span>
-        </button>
-      </mat-menu>
-    </div>
+<div class="scenarios-header">
+  <div class="sort-header" (click)="handleSortChange()">
+    <mat-icon class="material-symbols-outlined">
+      {{
+      sortSelection === '-created_at'
+      ? 'arrow_downward_alt'
+      : 'arrow_upward_alt'
+      }}
+    </mat-icon>
+    <span>Date Created</span>
   </div>
+  <div class="button-section">
+    <button sg-button icon="drive_folder_upload" [outlined]="true" *ngIf="canAddScenarioForPlan"
+      (click)="openUploadDialog()">
+      Upload Scenario
+    </button>
 
-  <app-section-loader
-    *ngIf="planningAreaIsReady && !planningAreaIsLarge"
-    [isLoading]="loading"
-    [hasData]="totalScenarios > 0"
-    [ngClass]="{
+    <button sg-button [matTooltip]="scenarioDisabledTooltipReason" [matTooltipDisabled]="isValidPlanningArea"
+      *ngIf="canAddScenarioForPlan" [disabled]="!isValidPlanningArea || planningAreaIsLarge" data-id="new-scenario"
+      icon="add" variant="primary" [matMenuTriggerFor]="menu" #trigger="matMenuTrigger">
+      New Scenario
+
+      <mat-icon class="material-symbols-outlined new-scenario-down">{{ trigger.menuOpen ? 'arrow_drop_up' :
+        'arrow_drop_down' }}
+      </mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" class="scenario-options-menu">
+      <button mat-menu-item (click)="openScenarioSetupDialog('PRESET')" class="scenario-option">
+        <mat-icon class="material-symbols-outlined">contract</mat-icon>
+        Choose Treatment Goal
+        <span>
+          Start from a template with preset objectives, co-benefits, and
+          constraints
+        </span>
+      </button>
+      <button mat-menu-item (click)="openScenarioSetupDialog('CUSTOM')" class="scenario-option">
+        <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
+        Create Custom Scenario
+        <span>
+          Build from scratch: choose all objectives, co-benefits, and
+          constraints.
+        </span>
+      </button>
+    </mat-menu>
+  </div>
+</div>
+<div class="saved-scenarios-wrapper">
+
+  <app-section-loader *ngIf="planningAreaIsReady && !planningAreaIsLarge" [isLoading]="loading"
+    [hasData]="totalScenarios > 0" [ngClass]="{
       'margin-top': totalScenarios === 0,
-    }"
-    emptyStateTitle="No scenarios yet"
-    [emptyStateContent]="
+    }" emptyStateTitle="No scenarios yet" [emptyStateContent]="
       canAddScenarioForPlan
         ? isValidPlanningArea
           ? 'Click “New scenario” to start creating your scenarios.'
@@ -80,12 +57,8 @@
         : ''
     ">
     <ng-container *ngIf="activeScenarios.length > 0">
-      <app-scenarios-card-list
-        [scenarios]="activeScenarios"
-        [plan]="plan"
-        (viewScenario)="navigateToScenario($event)"
-        (triggerEdit)="fetchScenarios()"
-        (triggerRefresh)="
+      <app-scenarios-card-list [scenarios]="activeScenarios" [plan]="plan" (viewScenario)="navigateToScenario($event)"
+        (triggerEdit)="fetchScenarios()" (triggerRefresh)="
           removeScenarioFromList($event, 'activeScenarios')
         "></app-scenarios-card-list>
     </ng-container>
@@ -101,9 +74,7 @@
     </p>
   </div>
 
-  <div
-    *ngIf="!planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed"
-    class="pending-message">
+  <div *ngIf="!planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed" class="pending-message">
     <mat-spinner diameter="32" class="spinner"></mat-spinner>
     <h4>Your Planning Area is being prepared for Scenario Planning</h4>
     <p>
@@ -112,22 +83,14 @@
     </p>
   </div>
 
-  <sg-banner
-    [dismissible]="false"
-    type="error"
-    *ngIf="!planningAreaIsReady && planningAreaFailed"
-    class="banner">
+  <sg-banner [dismissible]="false" type="error" *ngIf="!planningAreaIsReady && planningAreaFailed" class="banner">
     <div>
       <div>
         There was an error preparing your Planning Area for Scenario Planning.
       </div>
       <div>
         Please
-        <a
-          href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw"
-          target="_blank"
-          >contact support</a
-        >
+        <a href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw" target="_blank">contact support</a>
         or try creating a new Planning Area.
       </div>
     </div>

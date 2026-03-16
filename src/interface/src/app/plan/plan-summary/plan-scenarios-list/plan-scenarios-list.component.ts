@@ -116,7 +116,6 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   private fetchScenarios$() {
-    this.loading = true;
     return this.scenarioService
       .getScenariosForPlan(this.planId!, this.sortSelection)
       .pipe(
