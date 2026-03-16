@@ -30,7 +30,7 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import get_acreage, planning_area_covers, union_geojson
+from planning.services import get_acreage, get_min_project_area, planning_area_covers, union_geojson
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
@@ -558,6 +558,12 @@ class TargetsSerializer(serializers.Serializer):
             
             if sub_units_fixed_target is False and sub_units_target_value > 100:
                 raise serializers.ValidationError("`sub_units_target_value` cannot be bigger than 100 percent.")
+            
+            if sub_units_fixed_target is True:
+                instance = self.parent.parent.instance
+                stand_area = get_min_project_area(scenario=instance) if instance else settings.MIN_AREA_PROJECT_LARGE
+                if sub_units_target_value < stand_area:
+                    raise serializers.ValidationError("`sub_units_target_value` cannot be smaller than 1 Stand.")
 
         return super().validate(attrs)
 
