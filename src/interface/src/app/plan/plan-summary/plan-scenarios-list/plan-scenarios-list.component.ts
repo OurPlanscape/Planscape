@@ -104,6 +104,7 @@ export class PlanScenariosListComponent implements OnInit {
   handleSortChange() {
     this.sortSelection =
       this.sortSelection === '-created_at' ? 'created_at' : '-created_at';
+    this.loading = true;
     this.fetchScenarios();
   }
 
