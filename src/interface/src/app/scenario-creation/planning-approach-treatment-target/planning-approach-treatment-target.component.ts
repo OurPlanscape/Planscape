@@ -136,11 +136,9 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
       const sub_units_target_value = form.get('sub_units_target_value');
 
       // If sub_units_fixed_target is TRUE we should validate number of acres
+      // min number of acres is the stand size.
       if (sub_units_fixed_target?.value === true) {
-        if (
-          this.subUnitDetails?.min &&
-          sub_units_target_value?.value < this.subUnitDetails.min
-        ) {
+        if (sub_units_target_value?.value < this.minAcreage) {
           return { invalidAcres: true };
         }
         if (
