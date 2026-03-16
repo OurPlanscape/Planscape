@@ -1,5 +1,6 @@
 import logging
 
+from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
@@ -25,6 +26,7 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
@@ -389,6 +391,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
+
+        # TODO: remove once planning_approach feature flag is on for all users
+        if not feature_enabled("PLANNING_APPROACH") and not scenario.planning_approach:
+            scenario.planning_approach = ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
+            scenario.save(update_fields=["planning_approach"])
 
         errors = validate_scenario_configuration(scenario)
         if errors:

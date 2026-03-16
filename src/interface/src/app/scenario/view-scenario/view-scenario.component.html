@@ -34,7 +34,7 @@
       <app-base-layers class="white-background"></app-base-layers>
     </mat-tab>
     <mat-tab
-      *ngIf="scenarioHasResults(scenario)"
+      *ngIf="showTreatmentTab$ | async"
       [disabled]="!scenarioCanHaveTreatmentPlans(scenario)">
       <ng-template mat-tab-label>
         <span
