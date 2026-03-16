@@ -9,7 +9,10 @@ import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
 import { DataLayer, PLANNING_APPROACH_LABELS, ScenarioV3Config } from '@types';
-import { isCustomScenario } from '../scenario-helper';
+import {
+  isCustomScenario,
+  isPlanningApproachSubUnits,
+} from '../scenario-helper';
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureService } from '@features/feature.service';
@@ -114,7 +117,10 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
   }
 
-  get planningApproach() {
-    return this.configuration?.planning_approach;
+  get scenarioHasPlanningApproachSubUnits() {
+    return (
+      this.configuration?.planning_approach &&
+      isPlanningApproachSubUnits(this.configuration?.planning_approach)
+    );
   }
 }

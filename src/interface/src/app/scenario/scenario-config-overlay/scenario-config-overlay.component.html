@@ -59,11 +59,18 @@
       </dd>
       <dd *ngIf="configuration?.constraints?.length === 0">--</dd>
       <dt>Treatment Target:</dt>
-      <dd *ngIf="configuration">
+      <dd *ngIf="configuration && scenarioHasPlanningApproachSubUnits">
         {{ configuration.targets.max_project_count | number: '1.0-2' }} project
         areas of {{ configuration.targets.max_area | number: '1.0-2' }} acres
         &#64; ${{ configuration.targets.estimated_cost | number: '1.0-2' }} /
         acre
+      </dd>
+      <dd *ngIf="configuration && !scenarioHasPlanningApproachSubUnits">
+        {{ configuration.targets.sub_units_target_value | number: '1.0-2' }}
+
+        {{ configuration.targets.sub_units_fixed_target ? 'acres' : '%' }}
+        &#64; ${{ configuration.targets.estimated_cost | number: '1.0-2' }}
+        / acre
       </dd>
     </dl>
   </div>
