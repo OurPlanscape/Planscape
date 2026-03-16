@@ -86,16 +86,19 @@ export function convertOldConfigurationToV3Payload(
   if (formData.max_project_count !== undefined) {
     targets.max_project_count = formData.max_project_count;
   }
+
+  // Sub-Units targes
+  if (formData.sub_units_fixed_target !== undefined) {
+    targets.sub_units_fixed_target = formData.sub_units_fixed_target;
+  }
+  if (formData.sub_units_target_value !== undefined) {
+    targets.sub_units_target_value = formData.sub_units_target_value;
+  }
+
   if (Object.keys(targets).length > 0) {
     config.targets = targets;
   }
-  // Sub-Units config
-  if (formData.sub_units_fixed_target !== undefined) {
-    config.sub_units_fixed_target = formData.sub_units_fixed_target;
-  }
-  if (formData.sub_units_target_value !== undefined) {
-    config.sub_units_target_value = formData.sub_units_target_value;
-  }
+
   // Constraints
   const constraints: Constraint[] = [];
 

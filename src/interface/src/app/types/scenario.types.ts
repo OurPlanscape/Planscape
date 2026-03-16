@@ -123,11 +123,11 @@ export interface ScenarioV3Config {
   sub_units_layer?: number;
   targets: {
     estimated_cost: number;
-    max_area: number;
-    max_project_count: number;
+    max_area?: number;
+    max_project_count?: number;
+    sub_units_fixed_target?: boolean;
+    sub_units_target_value?: number;
   };
-  sub_units_fixed_target: boolean;
-  sub_units_target_value: number;
   type?: SCENARIO_TYPE;
   planning_approach?: PLANNING_APPROACH;
 }
