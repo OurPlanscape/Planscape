@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { OutputLayersComponent } from './output-layers.component';
+import { ClimateLayersComponent } from './climate-layers.component';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 
-describe('OutputLayersComponent', () => {
-  let component: OutputLayersComponent;
-  let fixture: ComponentFixture<OutputLayersComponent>;
+describe('ClimateLayersComponent', () => {
+  let component: ClimateLayersComponent;
+  let fixture: ComponentFixture<ClimateLayersComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [OutputLayersComponent],
+      imports: [ClimateLayersComponent],
       providers: [
         MockProvider(DataLayersStateService, {
           viewedDataLayer$: new BehaviorSubject(null),
@@ -19,7 +19,7 @@ describe('OutputLayersComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(OutputLayersComponent);
+    fixture = TestBed.createComponent(ClimateLayersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

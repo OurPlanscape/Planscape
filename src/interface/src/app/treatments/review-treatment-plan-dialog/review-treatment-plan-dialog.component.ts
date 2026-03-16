@@ -4,10 +4,10 @@ import {
   ErrorDialogComponent,
   ModalComponent,
   PendingDialogComponent,
+  ToggleComponent,
 } from '@styleguide';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { TreatmentsState } from '../treatments.state';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -19,11 +19,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
   standalone: true,
   imports: [
     ModalComponent,
-    MatSlideToggleModule,
     NgForOf,
     AsyncPipe,
     NgIf,
     RouterLink,
+    ToggleComponent,
   ],
   templateUrl: './review-treatment-plan-dialog.component.html',
   styleUrl: './review-treatment-plan-dialog.component.scss',

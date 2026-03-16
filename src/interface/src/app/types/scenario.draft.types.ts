@@ -26,4 +26,12 @@ export interface ScenarioDraftConfiguration extends ScenarioConfigPayload {
   cobenefits?: number[];
   planning_approach: PLANNING_APPROACH;
   sub_units_layer?: number;
+  sub_units_fixed_target?: boolean;
+  sub_units_target_value?: number;
+}
+
+export interface SubUnitsDetail {
+  avg: number;
+  max: number;
+  min: number;
 }

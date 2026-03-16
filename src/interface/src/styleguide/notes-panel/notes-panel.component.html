@@ -10,6 +10,7 @@
     </div>
   </div>
 </div>
+
 <div class="notes" *ngIf="hasNotes()">
   <div *ngFor="let note of notes" class="note-enclosed">
     <div class="note-left">
@@ -42,7 +43,7 @@
     </div>
   </div>
 </div>
-<div class="add-note-box" *ngIf="canAddNotes">
+<div class="add-note-box" *ngIf="canAddNotes && notesState !== 'INITIAL'">
   <mat-form-field appearance="outline" class="add-note-field">
     <textarea
       class="add-note-textarea"

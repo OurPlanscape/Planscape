@@ -7,7 +7,6 @@ import { MapConfigState } from '@maplibre-map/map-config.state';
 
 import { ButtonComponent, ExpandedPanelComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MetricFiltersComponent } from '@treatments/metric-filters/metric-filters.component';
 import { ImpactsMetric } from '../metrics';
@@ -29,7 +28,6 @@ import { TreatmentFilterComponent } from '@treatments/treatment-filter/treatment
     MatSelectModule,
     NgIf,
     NgFor,
-    MatSlideToggleModule,
     ButtonComponent,
     FormsModule,
     MetricFiltersComponent,

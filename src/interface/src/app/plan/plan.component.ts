@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, interval, switchMap, take } from 'rxjs';
 import { Plan } from '@types';
 import { Note, PlanningAreaNotesService } from '@services';
-import { NotesSidebarState } from '@styleguide';
+import { NotesPanelState } from '@styleguide';
 import {
   NOTE_DELETE_DIALOG,
   SNACK_ERROR_CONFIG,
@@ -34,8 +34,8 @@ import { FeatureService } from '@app/features/feature.service';
 export class PlanComponent implements OnInit {
   planId = this.route.snapshot.paramMap.get('planId');
   planNotFound: boolean = !this.planId;
-  sidebarNotes: Note[] = [];
-  notesSidebarState: NotesSidebarState = 'READY';
+  panelNotes: Note[] = [];
+  notesPanelState: NotesPanelState = 'READY';
   currentPlan$ = this.planState.currentPlan$;
 
   constructor(
@@ -88,7 +88,7 @@ export class PlanComponent implements OnInit {
 
   //notes handling functions
   addNote(comment: string) {
-    this.notesSidebarState = 'SAVING';
+    this.notesPanelState = 'SAVING';
     if (this.planId) {
       this.notesService.addNote(this.planId, comment).subscribe({
         next: () => {
@@ -102,7 +102,7 @@ export class PlanComponent implements OnInit {
           );
         },
         complete: () => {
-          this.notesSidebarState = 'READY';
+          this.notesPanelState = 'READY';
         },
       });
     }
@@ -141,7 +141,7 @@ export class PlanComponent implements OnInit {
   loadNotes() {
     if (this.planId) {
       this.notesService.getNotes(this.planId).subscribe((notes: Note[]) => {
-        this.sidebarNotes = notes;
+        this.panelNotes = notes;
       });
     }
   }

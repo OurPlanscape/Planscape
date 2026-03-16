@@ -5,9 +5,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { STAND_OPTIONS } from '@plan/plan-helpers';
-import { catchError, combineLatest, map } from 'rxjs';
+import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
+import { DataLayer, PLANNING_APPROACH_LABELS, ScenarioV3Config } from '@types';
+import { isCustomScenario } from '../scenario-helper';
+import { DataLayersService } from '@services';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -19,6 +24,7 @@ import { ForsysService } from '@services/forsys.service';
     MatIconModule,
     ButtonComponent,
     DecimalPipe,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './scenario-config-overlay.component.html',
   styleUrl: './scenario-config-overlay.component.scss',
@@ -26,12 +32,26 @@ import { ForsysService } from '@services/forsys.service';
 export class ScenarioConfigOverlayComponent implements OnDestroy {
   private scenarioState: ScenarioState = inject(ScenarioState);
   private forsysService: ForsysService = inject(ForsysService);
+  private dataLayersService: DataLayersService = inject(DataLayersService);
+  private featureService: FeatureService = inject(FeatureService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
   excludedAreas$ = this.forsysService.excludedAreas$;
 
+  configuration: ScenarioV3Config | null = null;
+  slopeId: number | null = null;
+  distanceToRoadsId: number | null = null;
+
   readonly standSizeOptions = STAND_OPTIONS;
+  readonly planningApproachLabels = PLANNING_APPROACH_LABELS;
+
+  forsysData$ = this.forsysService.forsysData$
+    .pipe(untilDestroyed(this))
+    .subscribe((forsys) => {
+      this.slopeId = forsys.thresholds.slope.id;
+      this.distanceToRoadsId = forsys.thresholds.distance_from_roads.id;
+    });
 
   selectedExcludedAreas$ = combineLatest([
     this.currentScenario$,
@@ -39,7 +59,11 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   ]).pipe(
     untilDestroyed(this),
     map(([scenario, excludedAreas]) => {
-      const ids = scenario.configuration?.excluded_areas ?? [];
+      //TODO: when we have a ScenarioBase type and a way to query just config
+      // we should replace this cast
+      this.configuration = scenario.configuration as ScenarioV3Config;
+
+      const ids = this.configuration.excluded_areas ?? [];
       const labels = ids
         .map((id) => excludedAreas.find((a) => a.id === id)?.name)
         .filter((v): v is string => !!v);
@@ -54,11 +78,43 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     map((s) => s.treatment_goal?.name || '')
   );
 
+  isCustomScenario$ = this.currentScenario$.pipe(
+    map((scenario) => isCustomScenario(scenario.type))
+  );
+
+  priorityObjectives$ = this.currentScenario$.pipe(
+    switchMap((s) =>
+      this.dataLayersService.getDataLayersByIds(
+        s.configuration?.priority_objectives ?? []
+      )
+    ),
+    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    shareReplay(1)
+  );
+
+  cobenefits$ = this.currentScenario$.pipe(
+    switchMap((s) =>
+      this.dataLayersService.getDataLayersByIds(
+        s.configuration?.cobenefits ?? []
+      )
+    ),
+    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    shareReplay(1)
+  );
+
   close() {
     this.scenarioState.setDisplayOverlay(false);
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.close();
+  }
+
+  get isPlanningApproachEnabled() {
+    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  get planningApproach() {
+    return this.configuration?.planning_approach;
   }
 }

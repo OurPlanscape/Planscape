@@ -447,6 +447,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         blank=True,
         help_text="Scenario's Planning Approach.",
+        default=ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
     )
 
     notes = models.TextField(null=True, help_text="Scenario notes.")

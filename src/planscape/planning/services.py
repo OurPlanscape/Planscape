@@ -636,7 +636,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         sub_units_datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
         sub_units_stand_lookup_table = get_sub_units_stands_lookup_table(scenario=scenario, datalayer=sub_units_datalayer)
 
-    number_of_projects = cfg.get("targets", {}).get("max_project_count", 1)
+    targets = cfg.get("targets", {})
+    number_of_projects = targets.get("max_project_count", 1)
 
     min_area_project = get_min_project_area(scenario)
     max_area_project = get_max_area_project(scenario=scenario)
@@ -646,6 +647,10 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     exclusion_limit = settings.FORSYS_EXCLUSION_LIMIT
     sample_fraction = settings.FORSYS_SAMPLE_FRACTION
     seed = cfg.get("seed")
+    sub_units_fixed_target = targets.get("sub_units_fixed_target")
+    sub_units_target_value = targets.get("sub_units_target_value")
+    if sub_units_fixed_target is False:
+        sub_units_target_value = sub_units_target_value / 100
 
     variables = {
         "min_area_project": min_area_project,
@@ -656,6 +661,8 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         "exclusion_limit": exclusion_limit,
         "sample_fraction": sample_fraction,
         "seed": seed,
+        "sub_units_fixed_target": sub_units_fixed_target,
+        "sub_units_target_value": sub_units_target_value,
     }
 
     return {
@@ -705,6 +712,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
         if not cfg.get("sub_units_layer"):
             errors.append("Configuration field `sub_units_layer` is required for this Scenario.")
+
+        if cfg.get("sub_units_fixed_target") is None or cfg.get("sub_units_target_value") is None:
+            errors.append("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Configurations for this Scenario.")
     
     else: # scenario.planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
         max_area = targets.get("max_area")
@@ -754,6 +764,14 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         raise ValueError(
             f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
         )
+    
+    capabilities = compute_scenario_capabilities(scenario)
+    scenario.capabilities = capabilities
+    scenario.save(update_fields=["capabilities"])
+
+    if hasattr(scenario, "results"):
+        scenario.results.status = ScenarioResultStatus.PENDING
+        scenario.results.save()
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal

@@ -12,23 +12,23 @@ import {
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { NgIf } from '@angular/common';
 import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
-import { OutputLayersComponent } from '../output-layers/output-layers.component';
-import { OutputLayer } from '../analysis/analysis.component';
+import { ClimateLayersComponent } from '../climate-layers/climate-layers.component';
+import { ResultsLayer } from '../analysis/analysis.component';
 
 @Component({
-  selector: 'app-dynamic-output-layers',
+  selector: 'app-dynamic-climate-layers',
   standalone: true,
   imports: [NgIf],
   template: ` <ng-template #outlet></ng-template>`,
 })
-export class DynamicOutputLayersComponent implements OnInit, OnDestroy {
+export class DynamicClimateLayersComponent implements OnInit, OnDestroy {
   @Input({ required: true }) mapId!: number;
-  @Input({ required: true }) layers!: OutputLayer[];
+  @Input({ required: true }) layers!: ResultsLayer[];
 
   @ViewChild('outlet', { read: ViewContainerRef, static: true })
   outlet!: ViewContainerRef;
 
-  private componentRef?: ComponentRef<OutputLayersComponent>;
+  private componentRef?: ComponentRef<ClimateLayersComponent>;
 
   private readonly registry = inject(DataLayersRegistryService);
   private readonly parentInjector = inject(Injector);
@@ -43,7 +43,7 @@ export class DynamicOutputLayersComponent implements OnInit, OnDestroy {
       parent: this.parentInjector,
     });
 
-    this.componentRef = this.outlet.createComponent(OutputLayersComponent, {
+    this.componentRef = this.outlet.createComponent(ClimateLayersComponent, {
       injector: customInjector,
     });
 

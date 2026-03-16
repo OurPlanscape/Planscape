@@ -1,0 +1,21 @@
+<sg-expanded-panel
+  (clickedClose)="close()"
+  height="narrow"
+  width="small"
+  class="expanded-panel">
+  <div panelTitle>
+    Notes <span *ngIf="notes.length > 0">({{ notes.length }})</span>
+  </div>
+  <div panelContent class="notes-panel">
+    <sg-notes-panel
+      cdkFocusInitial
+      [showHeader]="false"
+      [notes]="notes"
+      [notesState]="notesPanelState"
+      (createNote)="addNote($event)"
+      (deleteNote)="handleNoteDelete($event)"
+      [canAddNotes]="true"
+      noNotesTitleText="No Notes For This Planning Area Yet"
+      noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-panel>
+  </div>
+</sg-expanded-panel>
