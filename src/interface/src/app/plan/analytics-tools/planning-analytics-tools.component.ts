@@ -65,7 +65,10 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
         enabled: true,
       });
     }
-    if (this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW')) {
+    if (
+      this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW') &&
+      this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')
+    ) {
       this.analyticsTools.push({
         id: 'coming-soon',
         backgroundImage: '/assets/svg/lock.svg',

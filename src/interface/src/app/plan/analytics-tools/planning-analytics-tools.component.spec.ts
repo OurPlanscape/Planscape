@@ -199,7 +199,7 @@ describe('PlanningAnalyticsToolsComponent', () => {
     const enabledTools = component.analyticsTools.filter(
       (tool) => tool.enabled
     );
-    expect(enabledTools.length).toBe(2);
+    expect(enabledTools.length).toBe(1);
     expect(enabledTools[0].id).toBe('climate-foresight');
   });
 
