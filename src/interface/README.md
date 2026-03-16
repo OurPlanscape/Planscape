@@ -1,27 +1,68 @@
 # Interface
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.3.
+Angular frontend for [Planscape](https://www.planscape.org/).
+
+## Requirements
+
+- **Node.js 20.19.0** — managed via [nodenv](https://github.com/nodenv/nodenv) or [nvm](https://github.com/nvm-sh/nvm).
+  The required version is pinned in `.node-version`. Your version manager should pick it up automatically when you `cd` into this directory.
+- **npm** — bundled with Node.js
+
+## Setup
+
+```bash
+# From src/interface/
+npm install
+```
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+```bash
+npm start          # ng serve — app available at http://localhost:4200/
+```
 
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+The app reloads automatically on source file changes.
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```bash
+npm run build       # development build
+npm run build:prod  # production build (output in dist/)
+```
 
-## Running unit tests
+## Tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```bash
+npm test            # unit tests via Karma
+npm run test:prod   # headless unit tests with coverage
+npm run e2e         # Playwright end-to-end tests
+npm run e2e:ui      # Playwright UI mode
+npm run e2e:headed  # Playwright headed mode
+```
 
-## Running end-to-end tests
+## Linting & formatting
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+```bash
+npm run lint        # ESLint
+npm run lint:fix    # ESLint with auto-fix
+npm run format:styles  # Prettier for SCSS files
+```
+
+## Code scaffolding
+
+```bash
+npx ng generate component component-name
+# Also: directive | pipe | service | class | guard | interface | enum | module
+```
+
+## Storybook
+
+```bash
+npm run storybook         # dev server
+npm run build-storybook   # static build
+```
 
 ## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+- [Angular CLI docs](https://angular.io/cli)
+- See `docs/setup_planscape_locally.md` for full local environment setup.

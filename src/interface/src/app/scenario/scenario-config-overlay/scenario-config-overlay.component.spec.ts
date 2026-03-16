@@ -1,12 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ScenarioConfigOverlayComponent } from './scenario-config-overlay.component';
 import { MockProvider } from 'ng-mocks';
-import { ScenarioService } from '@services';
-import { ScenarioState } from '../scenario.state';
-import { BehaviorSubject, of } from 'rxjs';
-import { MOCK_SCENARIO } from '@services/mocks';
-import { ForsysService } from '@services/forsys.service';
+import { FeatureService } from '@features/feature.service';
 
 describe('ScenarioConfigOverlayComponent', () => {
   let component: ScenarioConfigOverlayComponent;
@@ -14,15 +10,8 @@ describe('ScenarioConfigOverlayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ScenarioConfigOverlayComponent],
-      providers: [
-        MockProvider(ScenarioService),
-        MockProvider(ForsysService, { excludedAreas$: of([]) }),
-        MockProvider(ScenarioState, {
-          displayConfigOverlay$: new BehaviorSubject(false),
-          currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
-        }),
-      ],
+      imports: [HttpClientTestingModule, ScenarioConfigOverlayComponent],
+      providers: [MockProvider(FeatureService)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioConfigOverlayComponent);

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ExpandedPanelComponent, ModalComponent } from '@styleguide';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { ExpandedPanelComponent } from '@styleguide';
 import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data-chart.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -11,15 +10,7 @@ import { standIsForested } from '../stands';
 @Component({
   selector: 'app-expanded-stand-data-chart',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    MatSlideToggleModule,
-    ModalComponent,
-    NgForOf,
-    NgIf,
-    StandDataChartComponent,
-    ExpandedPanelComponent,
-  ],
+  imports: [AsyncPipe, NgIf, StandDataChartComponent, ExpandedPanelComponent],
   templateUrl: './expanded-stand-data-chart.component.html',
   styleUrl: './expanded-stand-data-chart.component.scss',
 })

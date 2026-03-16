@@ -1,32 +1,60 @@
-<app-nav-bar area="SCENARIOS">
-  <app-planning-area-titlebar-menu
-    *ngIf="currentPlan$ | async; let currentPlan"
-    [plan]="currentPlan"></app-planning-area-titlebar-menu>
-</app-nav-bar>
-<div class="root-container overview">
-  <app-resource-unavailable
-    *ngIf="planNotFound"
-    resource="plan"></app-resource-unavailable>
-  <ng-container *ngIf="currentPlan$ | async as plan">
-    <div class="plan-summary-panel">
-      <sg-notes-sidebar
-        [showHeader]="true"
-        [notes]="sidebarNotes"
-        [notesState]="notesSidebarState"
-        (createNote)="addNote($event)"
-        (deleteNote)="handleNoteDelete($event)"
-        [canAddNotes]="canAddScenario(plan)"
-        noNotesTitleText="No Notes For This Planning Area Yet"
-        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
-      <app-planning-analytics-tools
-        [planningAreaCapabilities]="
-          plan.capabilities
-        "></app-planning-analytics-tools>
-    </div>
+@if (!isPlanningOverviewEnabled) {
+  <app-nav-bar area="SCENARIOS">
+    <app-planning-area-titlebar-menu
+      *ngIf="currentPlan$ | async; let currentPlan"
+      [plan]="currentPlan"></app-planning-area-titlebar-menu>
+  </app-nav-bar>
+  <div class="root-container overview">
+    <app-resource-unavailable
+      *ngIf="planNotFound"
+      resource="plan"></app-resource-unavailable>
+    <ng-container *ngIf="currentPlan$ | async as plan">
+      <div class="plan-summary-panel">
+        <sg-notes-panel
+          [showHeader]="true"
+          [notes]="panelNotes"
+          [notesState]="notesPanelState"
+          (createNote)="addNote($event)"
+          (deleteNote)="handleNoteDelete($event)"
+          [canAddNotes]="canAddScenario(plan)"
+          noNotesTitleText="No Notes For This Planning Area Yet"
+          noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-panel>
+        <app-planning-analytics-tools
+          [planningAreaCapabilities]="
+            plan.capabilities
+          "></app-planning-analytics-tools>
+      </div>
 
-    <mat-divider [vertical]="true"></mat-divider>
-    <div class="plan-content with-overview">
-      <app-saved-scenarios></app-saved-scenarios>
-    </div>
-  </ng-container>
-</div>
+      <mat-divider [vertical]="true"></mat-divider>
+      <div class="plan-content with-overview">
+        <app-saved-scenarios></app-saved-scenarios>
+      </div>
+    </ng-container>
+  </div>
+} @else {
+  <app-nav-bar area="SCENARIOS"></app-nav-bar>
+  <div>
+    <app-resource-unavailable
+      *ngIf="planNotFound"
+      resource="plan"></app-resource-unavailable>
+    <ng-container *ngIf="currentPlan$ | async as plan">
+      <div class="plan-overview-container">
+        <div class="plan-overview-panel">
+          <app-planning-area-details-card
+            [plan]="currentPlan$ | async"></app-planning-area-details-card>
+          <app-map-viewer-card></app-map-viewer-card>
+          <app-planning-analytics-tools
+            [planningAreaCapabilities]="
+              plan.capabilities
+            "></app-planning-analytics-tools>
+          <app-notes-expansion-card></app-notes-expansion-card>
+        </div>
+        <div class="plan-content plan-overview">
+          <div class="placeholder-scenarios">
+            <app-saved-scenarios></app-saved-scenarios>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+}

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TileButtonComponent } from '@styleguide';
 import { FeatureService } from '@features/feature.service';
@@ -9,6 +9,8 @@ import { Capabilities } from '@types';
 interface AnalyticTool {
   id: string;
   backgroundImage: string;
+  backgroundColor?: string;
+  localClass?: string;
   title: string;
   subtitle: string;
   featureFlag: string;
@@ -18,7 +20,7 @@ interface AnalyticTool {
 @Component({
   selector: 'app-planning-analytics-tools',
   standalone: true,
-  imports: [CommonModule, TileButtonComponent],
+  imports: [CommonModule, TileButtonComponent, NgClass],
   templateUrl: './planning-analytics-tools.component.html',
   styleUrls: ['./planning-analytics-tools.component.scss'],
 })
@@ -39,6 +41,10 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
     this.initEnabledTools();
   }
 
+  get isPlanningOverviewEnabled(): boolean {
+    return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
+  }
+
   /**
    * We will add tools based on the logic related to each tool
    */
@@ -51,9 +57,25 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
       this.analyticsTools.push({
         id: 'climate-foresight',
         backgroundImage: '/assets/svg/climate-foresight.svg',
+        backgroundColor: '#dfede6',
         title: 'Climate Foresight',
+        localClass: 'climate-foresight',
         subtitle: 'Integrate climate data...',
         featureFlag: 'CLIMATE_FORESIGHT',
+        enabled: true,
+      });
+    }
+    if (
+      this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW') &&
+      this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')
+    ) {
+      this.analyticsTools.push({
+        id: 'coming-soon',
+        backgroundImage: '/assets/svg/lock.svg',
+        title: 'Coming Soon',
+        localClass: 'coming-soon',
+        subtitle: '',
+        featureFlag: 'PLANNING_AREA_OVERVIEW',
         enabled: true,
       });
     }

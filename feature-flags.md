@@ -14,3 +14,5 @@ The name and value of the flag will be shared by frontend and backend.
 `CLIMATE_FORESIGHT`: Enables Climate Foresight analytics tool
 
 `PLANNING_APPROACH` : Allows planning approach where users can prioritize sub-units during scenario workflow
+
+`PLANNING_AREA_OVERVIEW` : Some frontend changes for Planning Area Overview Epic

@@ -92,7 +92,7 @@ describe('PlanningAnalyticsToolsComponent', () => {
   it('should initialize analytics tools with correct properties', () => {
     mockFeatureService.isFeatureEnabled.and.returnValue(true);
     fixture.detectChanges();
-    expect(component.analyticsTools.length).toBe(1);
+    expect(component.analyticsTools.length).toBe(2);
     expect(component.analyticsTools[0].id).toBe('climate-foresight');
     expect(component.analyticsTools[0].title).toBe('Climate Foresight');
     expect(component.analyticsTools[0].subtitle).toBe(
@@ -122,7 +122,7 @@ describe('PlanningAnalyticsToolsComponent', () => {
     mockFeatureService.isFeatureEnabled.and.returnValue(true);
     fixture.detectChanges();
     const tools = fixture.nativeElement.querySelectorAll('sg-tile-button');
-    expect(tools.length).toBe(1);
+    expect(tools.length).toBe(2);
   });
 
   it('should display tool properties correctly', () => {

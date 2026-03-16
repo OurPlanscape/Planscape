@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MockDeclarations, MockProviders } from 'ng-mocks';
+import { MockComponent, MockDeclarations, MockProviders } from 'ng-mocks';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.component';
@@ -34,6 +35,7 @@ describe('TreatmentProjectAreaComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         TreatmentProjectAreaComponent,
+        MockComponent(BaseLayersComponent),
         RouterTestingModule,
         HttpClientTestingModule,
         BrowserAnimationsModule,

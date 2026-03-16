@@ -19,10 +19,11 @@ import { PlanRoutingModule } from './plan-routing.module';
 import {
   BannerComponent,
   ButtonComponent,
-  NotesSidebarComponent,
+  NotesPanelComponent,
   OpacitySliderComponent,
   ScenarioCardComponent,
   SectionComponent,
+  ToggleComponent,
   TreatmentCardComponent,
 } from '@styleguide';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -37,6 +38,10 @@ import { MapConfigService } from '@maplibre-map/map-config.service';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
+import { MapViewerCardComponent } from './map-viewer-card/map-viewer-card.component';
+import { PlanningAreaDetailsCardComponent } from './planning-area-details-card/planning-area-details-card.component';
+import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expansion-card.component';
+
 /** Components used in the plan flow. */
 @NgModule({
   declarations: [AreaNotesComponent, PlanComponent, SavedScenariosComponent],
@@ -70,7 +75,7 @@ import { MatCardModule } from '@angular/material/card';
     ScenarioCardComponent,
     ScenariosCardListComponent,
     TreatmentCardComponent,
-    NotesSidebarComponent,
+    NotesPanelComponent,
     OpacitySliderComponent,
     MatTabsModule,
     DataLayersComponent,
@@ -80,6 +85,10 @@ import { MatCardModule } from '@angular/material/card';
     BannerComponent,
     MatProgressSpinnerModule,
     MatCardModule,
+    MapViewerCardComponent,
+    PlanningAreaDetailsCardComponent,
+    NotesExpansionCardComponent,
+    ToggleComponent,
   ],
 })
 export class PlanModule {}

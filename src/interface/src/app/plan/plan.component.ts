@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostBinding, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, interval, switchMap, take } from 'rxjs';
 import { Plan } from '@types';
 import { Note, PlanningAreaNotesService } from '@services';
-import { NotesSidebarState } from '@styleguide';
+import { NotesPanelState } from '@styleguide';
 import {
   NOTE_DELETE_DIALOG,
   SNACK_ERROR_CONFIG,
@@ -22,6 +22,7 @@ import {
 } from './plan-helpers';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
+import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -33,8 +34,8 @@ import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/succe
 export class PlanComponent implements OnInit {
   planId = this.route.snapshot.paramMap.get('planId');
   planNotFound: boolean = !this.planId;
-  sidebarNotes: Note[] = [];
-  notesSidebarState: NotesSidebarState = 'READY';
+  panelNotes: Note[] = [];
+  notesPanelState: NotesPanelState = 'READY';
   currentPlan$ = this.planState.currentPlan$;
 
   constructor(
@@ -44,7 +45,8 @@ export class PlanComponent implements OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState
+    private planState: PlanState,
+    private featureService: FeatureService
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
@@ -71,13 +73,22 @@ export class PlanComponent implements OnInit {
     this.pollForChanges();
   }
 
+  get isPlanningOverviewEnabled(): boolean {
+    return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
+  }
+
+  @HostBinding('class.plan-overview')
+  get planOverviewEnabled() {
+    return this.isPlanningOverviewEnabled;
+  }
+
   backToOverview() {
     this.router.navigate(['plan', this.planId]);
   }
 
   //notes handling functions
   addNote(comment: string) {
-    this.notesSidebarState = 'SAVING';
+    this.notesPanelState = 'SAVING';
     if (this.planId) {
       this.notesService.addNote(this.planId, comment).subscribe({
         next: () => {
@@ -91,7 +102,7 @@ export class PlanComponent implements OnInit {
           );
         },
         complete: () => {
-          this.notesSidebarState = 'READY';
+          this.notesPanelState = 'READY';
         },
       });
     }
@@ -130,7 +141,7 @@ export class PlanComponent implements OnInit {
   loadNotes() {
     if (this.planId) {
       this.notesService.getNotes(this.planId).subscribe((notes: Note[]) => {
-        this.sidebarNotes = notes;
+        this.panelNotes = notes;
       });
     }
   }

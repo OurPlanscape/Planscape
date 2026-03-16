@@ -8,6 +8,7 @@ from planning.models import (
     PlanningArea,
     Scenario,
     ScenarioCapability,
+    ScenarioPlanningApproach,
     TreatmentGoalUsageType,
 )
 
@@ -122,8 +123,11 @@ class ImpactsModule(BaseModule):
         return True
 
     def _can_run_scenario(self, runnable: Scenario) -> bool:
-        scenario_geometry = runnable.planning_area.geometry
-        return self.california.contains(scenario_geometry)
+        scenario_geometry = runnable.planning_area.geometry      
+        return (
+            self.california.contains(scenario_geometry) 
+            and runnable.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        )
 
     def get_datasets(self, **kwargs):
         return Dataset.objects.none()
