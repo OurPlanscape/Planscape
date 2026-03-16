@@ -712,9 +712,24 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
         if not cfg.get("sub_units_layer"):
             errors.append("Configuration field `sub_units_layer` is required for this Scenario.")
+        
+        sub_units_fixed_target = targets.get("sub_units_fixed_target")
+        sub_units_target_value = targets.get("sub_units_target_value")
 
-        if targets.get("sub_units_fixed_target") is None or targets.get("sub_units_target_value") is None:
-            errors.append("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Configurations for this Scenario.")
+        if sub_units_fixed_target is None or sub_units_target_value is None:
+            errors.append("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.")
+
+        elif sub_units_fixed_target is False and (sub_units_target_value <= 0 or sub_units_target_value > 100):
+            errors.append("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.")
+
+        else:
+            sub_units_layer = DataLayer.objects.get(pk=cfg.get("sub_units_layer"))
+            min_area = get_min_project_area(scenario=scenario)
+            max_area = get_sub_units_details(scenario=scenario, stand_size=scenario.get_stand_size(), datalayer=sub_units_layer)
+            if sub_units_target_value < min_area:
+                errors.append("`sub_units_target_value` cannot be smaller than 1 Stand.")
+            elif sub_units_target_value > max_area:
+                errors.append(f"`sub_units_target_value` cannot be larger than {max_area}.")
     
     else: # scenario.planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
         max_area = targets.get("max_area")
@@ -1526,8 +1541,7 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_sub_units_details(scenario: Scenario, datalayer: DataLayer) -> Optional[dict[str, float]]:
-    stand_size = scenario.get_stand_size()
+def get_sub_units_details(scenario: Scenario, stand_size: StandSizeChoices, datalayer: DataLayer) -> Optional[dict[str, float]]:
     planning_area = scenario.planning_area
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
