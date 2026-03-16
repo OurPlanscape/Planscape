@@ -8,70 +8,22 @@
   padding: 20px;
 }
 
-.mat-card {
-  border-radius: 16px;
-  min-height: 180px;
+// .mat-card {
+//   border-radius: 16px;
+//   min-height: 180px;
 
-  .mat-card-title {
-    margin: 0;
-  }
-}
+//   .mat-card-title {
+//     margin: 0;
+//   }
+// }
 
-.mat-card-actions {
-  gap: 12px;
-  margin-right: 8px;
-}
+// .mat-card-actions {
+//   gap: 12px;
+//   margin-right: 8px;
+// }
 
 .margin-top {
   margin-top: 30px;
-}
-
-.empty-state {
-  @include standard-label();
-  color: $color-dark-gray;
-  padding: 40px 20px;
-  margin: 20px;
-  text-align: center;
-}
-
-// new
-
-.plan-name {
-  line-height: 32px;
-  margin-bottom: 8px;
-}
-
-.overview {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  mat-icon {
-    color: $color-standard-blue;
-  }
-
-  .overview-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-    color: $color-dark-gray;
-
-    &::after {
-      content: '';
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      margin-left: 8px;
-      background: $color-text-gray;
-      display: block;
-    }
-
-    strong {
-      font-weight: 600;
-    }
-  }
 }
 
 .scenarios-header {
@@ -105,10 +57,6 @@
   display: flex;
   flex-direction: row;
   gap: 8px;
-}
-
-.view-map {
-  padding-left: 4px;
 }
 
 app-section-loader {
