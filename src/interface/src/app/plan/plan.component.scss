@@ -69,6 +69,7 @@
 .plan-content.with-overview {
   height: 100%;
   flex-direction: column;
+  overflow: auto;
 }
 
 .plan-content.plan-overview {

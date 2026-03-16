@@ -15,5 +15,7 @@
 </mgl-map>
 <div *ngIf="currentPlan$ | async as plan" class="overlay-navigation">
   <a class="label" [routerLink]="['/explore', plan?.id]">Map Viewer</a>
-  <a class="label" [routerLink]="['/explore', plan?.id]"><mat-icon>chevron_right</mat-icon></a>
+  <a class="label" [routerLink]="['/explore', plan?.id]"
+    ><mat-icon>chevron_right</mat-icon></a
+  >
 </div>

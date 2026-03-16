@@ -24,7 +24,7 @@ import { RouterModule } from '@angular/router';
     MatIconModule,
     NgIf,
     PlanningAreaLayerComponent,
-    RouterModule
+    RouterModule,
   ],
   providers: [MapConfigState],
   templateUrl: './map-viewer-card.component.html',

@@ -54,27 +54,27 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
       this.featureService.isFeatureEnabled('CLIMATE_FORESIGHT') &&
       this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')
     ) {
-      this.analyticsTools.push(
-        {
-          id: 'climate-foresight',
-          backgroundImage: '/assets/svg/climate-foresight.svg',
-          backgroundColor: '#dfede6',
-          title: 'Climate Foresight',
-          localClass: 'climate-foresight',
-          subtitle: 'Integrate climate data...',
-          featureFlag: 'CLIMATE_FORESIGHT',
-          enabled: true,
-        },
-        {
-          id: 'coming-soon',
-          backgroundImage: '/assets/svg/lock.svg',
-          title: 'Coming Soon',
-          localClass: 'coming-soon',
-          subtitle: '',
-          featureFlag: '',
-          enabled: true,
-        }
-      );
+      this.analyticsTools.push({
+        id: 'climate-foresight',
+        backgroundImage: '/assets/svg/climate-foresight.svg',
+        backgroundColor: '#dfede6',
+        title: 'Climate Foresight',
+        localClass: 'climate-foresight',
+        subtitle: 'Integrate climate data...',
+        featureFlag: 'CLIMATE_FORESIGHT',
+        enabled: true,
+      });
+    }
+    if (this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW')) {
+      this.analyticsTools.push({
+        id: 'coming-soon',
+        backgroundImage: '/assets/svg/lock.svg',
+        title: 'Coming Soon',
+        localClass: 'coming-soon',
+        subtitle: '',
+        featureFlag: 'PLANNING_AREA_OVERVIEW',
+        enabled: true,
+      });
     }
 
     this.hasEnabledTools = this.analyticsTools.some((tool) => tool.enabled);
