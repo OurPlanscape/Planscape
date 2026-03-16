@@ -72,13 +72,12 @@
 }
 
 .plan-content.plan-overview {
-  height: 100%;
   flex-direction: column;
   padding: 16px;
   padding-left: 8px;
   max-width: $plan-right-lg-max;
-  max-height: calc(100vh - ($navbar-height + $toolbar-height));
   box-sizing: border-box;
+  flex: 1;
 
   @include on-large() {
     width: $plan-right-md-max;
@@ -157,7 +156,7 @@
   background-color: $color-light-gray;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  height: calc(100vh - ($navbar-height + $toolbar-height));
   box-sizing: border-box;
 
   @include on-small() {
@@ -172,9 +171,9 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: 100%;
   max-width: $plan-left-lg-max;
   gap: 16px;
+  flex:1;
 
   @include on-large() {
     max-width: $plan-left-md-max;

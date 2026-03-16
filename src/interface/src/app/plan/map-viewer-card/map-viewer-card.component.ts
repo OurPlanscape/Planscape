@@ -12,6 +12,7 @@ import bbox from '@turf/bbox';
 import { filter, tap } from 'rxjs';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@app/services';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -23,6 +24,7 @@ import { AuthService } from '@app/services';
     MatIconModule,
     NgIf,
     PlanningAreaLayerComponent,
+    RouterModule
   ],
   providers: [MapConfigState],
   templateUrl: './map-viewer-card.component.html',
