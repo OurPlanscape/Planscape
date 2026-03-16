@@ -9,11 +9,12 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./tile-button.component.scss'],
 })
 export class TileButtonComponent {
-  @Input() backgroundImage: string = '';
+  @Input() backgroundImage: string | null = null;
+  @Input() backgroundColor: string = '';
   @Input() title: string = '';
   @Input() subtitle: string = '';
   @Input() disabled: boolean = false;
-  @Input() size: 'md' = 'md';
+  @Input() size: 'md' | 'lg' = 'md';
   @Output() tileClick = new EventEmitter<void>();
 
   handleClick(event: Event): void {

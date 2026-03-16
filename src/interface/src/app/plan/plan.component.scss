@@ -2,13 +2,19 @@
 @import 'mixins';
 @import 'media';
 
+:host.plan-overview {
+  height: 100%;
+  background-color: $color-light-gray;
+  display: block;
+}
+
 .root-container {
   display: flex;
   flex-direction: row;
   height: calc(100% - $navbar-height);
   width: 100%;
 
-  &.overview {
+  &.overview:not(.overview-enabled) {
     @include on-small() {
       height: initial;
       flex-direction: column-reverse;
@@ -32,7 +38,7 @@
     height: 100%;
   }
 
-  sg-notes-sidebar {
+  sg-notes-panel {
     flex: 1;
     min-height: 0;
     overflow: hidden;
@@ -66,20 +72,30 @@
   overflow: auto;
 }
 
+.plan-content.plan-overview {
+  flex-direction: column;
+  padding: 16px;
+  padding-left: 8px;
+  max-width: $plan-right-lg-max;
+  box-sizing: border-box;
+  flex: 1;
+
+  @include on-large() {
+    width: $plan-right-md-max;
+    max-width: $plan-right-lg-max;
+  }
+
+  @include on-small() {
+    max-width: 100%;
+    padding: 16px;
+  }
+}
+
 .plan-map-container {
   height: 100%;
   flex: 1;
   z-index: 1;
   position: relative;
-}
-
-.plan-content-panel {
-  height: 100%;
-  width: 50%;
-  min-width: 450px;
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
 }
 
 .scenario-details {
@@ -114,12 +130,10 @@
     }
   }
 
-  .plan-content-panel {
-    width: 100%;
-  }
   .plan-content {
     display: block;
   }
+
   .root-container {
     height: initial;
   }
@@ -133,4 +147,58 @@
   ::ng-deep .mat-tab-label {
     min-width: auto;
   }
+}
+
+/* --- Planning Area Overview-specific styles --- */
+
+.plan-overview-container {
+  display: flex;
+  flex-direction: row;
+  background-color: $color-light-gray;
+  justify-content: center;
+  width: 100%;
+  height: calc(100vh - ($navbar-height + $toolbar-height));
+  box-sizing: border-box;
+
+  @include on-small() {
+    height: initial;
+    flex-direction: column;
+  }
+}
+
+.plan-overview-panel {
+  padding: 16px;
+  padding-right: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-width: $plan-left-lg-max;
+  gap: 16px;
+  flex:1;
+
+  @include on-large() {
+    max-width: $plan-left-md-max;
+  }
+
+  @include on-small() {
+    height: fit-content;
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    padding-bottom: 0;
+  }
+}
+
+/* TODO - remove this when PLANNING_AREA_OVERVIEW items are in place*/
+.placeholder-scenarios {
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+  height: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
 }

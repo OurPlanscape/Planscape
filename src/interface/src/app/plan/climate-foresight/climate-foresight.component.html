@@ -14,11 +14,11 @@
           Developed by:
           <img src="assets/svg/icons/usfs.svg" alt="USFS" /> USFS
         </span>
-        <button mat-icon-button class="info-button">
-          <mat-icon
-            matTooltip="This tool projects landscape conditions under mid-21st century climate to help determine where management actions can mitigate risks, enhance future resilience, and achieve or hold favorable conditions over time. The tool offers actionable guidance for land management toward future sustainability, supporting scenario planning through the PROMOTE model for climate-informed decision making.">
-            help_outline
-          </mat-icon>
+        <button
+          mat-icon-button
+          class="info-button"
+          (click)="navigateToClimateDoc()">
+          <mat-icon> help_outline </mat-icon>
         </button>
       </div>
       <!-- Description -->

@@ -24,13 +24,9 @@
       You are about to create a treatment plan for the following project
       area(s):
     </p>
-    <mat-slide-toggle
-      class="no-treatments-toggle"
-      [hideIcon]="true"
-      color="primary"
-      (change)="toggleShowTreatments()"
+    <sg-toggle (change)="toggleShowTreatments()" class="no-treatments-toggle"
       >Show only areas with no treatments
-    </mat-slide-toggle>
+    </sg-toggle>
 
     <table>
       <tr>

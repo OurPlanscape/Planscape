@@ -3,9 +3,7 @@ import {
   EventEmitter,
   HostBinding,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 import { Note } from '@services';
 import { MatMenuModule } from '@angular/material/menu';
@@ -16,13 +14,13 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 
-export type NotesSidebarState = 'SAVING' | 'READY';
+export type NotesPanelState = 'SAVING' | 'READY' | 'INITIAL';
 
 @Component({
   standalone: true,
-  selector: 'sg-notes-sidebar',
-  templateUrl: './notes-sidebar.component.html',
-  styleUrls: ['./notes-sidebar.component.scss'],
+  selector: 'sg-notes-panel',
+  templateUrl: './notes-panel.component.html',
+  styleUrls: ['./notes-panel.component.scss'],
   imports: [
     MatMenuModule,
     CommonModule,
@@ -33,11 +31,11 @@ export type NotesSidebarState = 'SAVING' | 'READY';
     MatInputModule,
   ],
 })
-export class NotesSidebarComponent implements OnChanges {
+export class NotesPanelComponent {
   constructor() {}
 
   @Input() showHeader = false;
-  @Input() notesState: NotesSidebarState = 'READY';
+  @Input() notesState: NotesPanelState = 'READY';
   @Input() notes: Note[] = [];
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =
@@ -47,12 +45,6 @@ export class NotesSidebarComponent implements OnChanges {
   @Output() deleteNote = new EventEmitter<Note>();
 
   newNoteText = '';
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['notes']) {
-      this.notesState = 'READY';
-    }
-  }
 
   requestToDelete(note: Note) {
     this.deleteNote.emit(note);

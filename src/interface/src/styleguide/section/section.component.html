@@ -13,6 +13,14 @@
       [content]="tooltipContent"
       [icon]="tooltipIcon"
       size="lg"></sg-popover>
+    <button
+      *ngIf="tooltipLink"
+      sg-button
+      variant="icon-only"
+      [icon]="tooltipIcon"
+      [outlined]="true"
+      class="popover-right"
+      (click)="navigateToLink()"></button>
   </mat-expansion-panel-header>
   <ng-content></ng-content>
 </mat-expansion-panel>

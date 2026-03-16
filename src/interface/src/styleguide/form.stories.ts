@@ -16,7 +16,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ToggleComponent } from '@styleguide/toggle/toggle.component';
 
 @Component({
@@ -34,7 +33,6 @@ import { ToggleComponent } from '@styleguide/toggle/toggle.component';
     MatCheckboxModule,
     MatRadioModule,
     MatSelectModule,
-    MatSlideToggleModule,
     ToggleComponent,
   ],
   styles: `
