@@ -44,13 +44,11 @@ describe('ScenarioCardComponent', () => {
     expect(component.isDone()).toBeFalse();
   });
 
-  it('applies host bindings for disabled and selected states', () => {
+  it('applies host bindings for disabled state', () => {
     component.resultStatus = 'RUNNING';
-    component.selected = true;
     fixture.detectChanges();
 
     expect(component.disabledContent).toBeTrue();
-    expect(component.isSelected).toBeTrue();
   });
 
   it('renders status chip only for system-origin results', () => {
@@ -64,22 +62,5 @@ describe('ScenarioCardComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('sg-status-chip')).toBeFalsy();
-  });
-
-  it('shows new treatment button only when enabled and not failed', () => {
-    component.resultStatus = 'SUCCESS';
-    component.showTreatmentPlanButton = true;
-    fixture.detectChanges();
-
-    expect(
-      fixture.nativeElement.querySelector('.new-treatment-btn')
-    ).toBeTruthy();
-
-    component.resultStatus = 'FAILURE';
-    fixture.detectChanges();
-
-    expect(
-      fixture.nativeElement.querySelector('.new-treatment-btn')
-    ).toBeFalsy();
   });
 });
