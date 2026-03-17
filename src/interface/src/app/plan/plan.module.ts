@@ -96,7 +96,7 @@ import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list
     PlanningAreaDetailsCardComponent,
     NotesExpansionCardComponent,
     ToggleComponent,
-    ScenariosEmptyListComponent
+    ScenariosEmptyListComponent,
   ],
 })
 export class PlanModule {}

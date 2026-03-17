@@ -28,7 +28,8 @@ export class ScenariosEmptyListComponent {
       data: {
         planId: this.plan?.id,
         planning_area_name: this.plan?.name,
-      }});
+      },
+    });
   }
 
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
