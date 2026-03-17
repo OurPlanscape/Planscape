@@ -1938,7 +1938,7 @@ class SubUnitsDetailsTest(APITestCase):
         response = self.client.get(url, {"sub_units_layer": override_layer.pk})
 
         self.assertEqual(response.status_code, 200)
-        called_datalayer = mock_service.call_args[0][1]
+        called_datalayer = mock_service.call_args[0][2]
         self.assertEqual(called_datalayer.pk, override_layer.pk)
 
     @mock.patch(
@@ -1958,6 +1958,6 @@ class SubUnitsDetailsTest(APITestCase):
         response = self.client.get(url, {"sub_units_layer": override_layer.pk})
 
         self.assertEqual(response.status_code, 200)
-        called_datalayer = mock_service.call_args[0][1]
+        called_datalayer = mock_service.call_args[0][2]
         self.assertEqual(called_datalayer.pk, override_layer.pk)
 
