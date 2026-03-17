@@ -1,9 +1,11 @@
-from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
-from collaboration.models import UserObjectRole
 from django.conf import settings
-from datasets.models import Category, DataLayer, Dataset, Style
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+from django.db import connection
+
+from climate_foresight.models import ClimateForesightPillar, ClimateForesightRun
+from collaboration.models import UserObjectRole
+from datasets.models import Category, DataLayer, Dataset, Style
 from impacts.models import (
     ProjectAreaTreatmentResult,
     TreatmentPlan,
@@ -51,81 +53,111 @@ class Command(BaseCommand):
             },
         )
         if created:
-            self.stdout.write(
-                self.style.WARNING(f"Created admin user ({ADMIN_EMAIL}).")
-            )
+            self.stdout.write(self.style.WARNING(f"Created admin user ({ADMIN_EMAIL})."))
         else:
             self.stdout.write(f"Found existing admin user ({ADMIN_EMAIL}).")
         return admin
 
+    def _count(self, table, where="", params=None):
+        sql = f"SELECT COUNT(*) FROM {table}"
+        if where:
+            sql += f" WHERE {where}"
+        with connection.cursor() as cursor:
+            cursor.execute(sql, params or [])
+            row = cursor.fetchone()
+            return row[0] if row else 0
+
+    def _update(self, table, set_clause, where="", params=None):
+        sql = f"UPDATE {table} SET {set_clause}"
+        if where:
+            sql += f" WHERE {where}"
+        with connection.cursor() as cursor:
+            cursor.execute(sql, params or [])
+            return cursor.rowcount
+
+    def _delete(self, table, where="", params=None):
+        sql = f"DELETE FROM {table}"
+        if where:
+            sql += f" WHERE {where}"
+        with connection.cursor() as cursor:
+            cursor.execute(sql, params or [])
+            return cursor.rowcount
+
     def _reassign_created_by(self, admin, dry_run):
         """
         Reassign created_by (and updated_by) on all models that carry those fields
-        to the admin user. This ensures Organization integrity is preserved and that
-        RESTRICT constraints do not block non-admin user deletion.
+        to the admin user. This ensures Organization/datasets integrity is preserved
+        and that RESTRICT constraints do not block non-admin user deletion.
         """
         reassignments = [
-            ("Organization.created_by", Organization.objects.exclude(created_by=admin)),
-            ("Dataset.created_by", Dataset.objects.exclude(created_by=admin)),
-            ("Category.created_by", Category.objects.exclude(created_by=admin)),
-            ("Style.created_by", Style.objects.exclude(created_by=admin)),
-            ("DataLayer.created_by", DataLayer.objects.exclude(created_by=admin)),
+            # planning app
+            (TreatmentPlan, "created_by_id"),
+            (TreatmentPrescription, "created_by_id"),
+            (TreatmentPrescription, "updated_by_id"),
+            (TreatmentGoal, "created_by_id"),
+            (ProjectArea, "created_by_id"),
+            # climate_foresight app
+            (ClimateForesightRun, "created_by_id"),
+            (ClimateForesightPillar, "created_by_id"),
+            # organizations app
+            (Organization, "created_by_id"),
+            # datasets app
+            (Dataset, "created_by_id"),
+            (Category, "created_by_id"),
+            (Style, "created_by_id"),
+            (DataLayer, "created_by_id"),
         ]
 
-        for label, qs in reassignments:
-            count = qs.count()
-            field = label.split(".")[-1]
+        for model, field in reassignments:
+            table = model._meta.db_table
+            label = f"{model.__name__}.{field}"
+            where = f"{field} != %s"
             if dry_run:
-                self.stdout.write(
-                    f"[dry-run] Would reassign {count} {label} record(s) to admin."
-                )
+                count = self._count(table, where, [admin.pk])
+                self.stdout.write(f"[dry-run] Would reassign {count} {label} record(s) to admin.")
             else:
-                qs.update(**{field: admin})
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Reassigned {count} {label} record(s) to admin."
-                    )
-                )
+                count = self._update(table, f"{field} = %s", where, [admin.pk, admin.pk])
+                self.stdout.write(self.style.SUCCESS(f"Reassigned {count} {label} record(s) to admin."))
 
     def _delete_records(self, dry_run, admin):
         # Ordered to respect RESTRICT FK constraints — dependents first.
         steps = [
-            ("UserPrefs", UserPrefs.objects.all()),
-            ("SharedLink", SharedLink.objects.all()),
-            ("UserObjectRole", UserObjectRole.objects.all()),
-            ("PlanningAreaNote", PlanningAreaNote.objects.all()),
-            ("ProjectAreaNote", ProjectAreaNote.objects.all()),
-            ("TreatmentPlanNote", TreatmentPlanNote.objects.all()),
+            (UserPrefs, None, None),
+            (SharedLink, None, None),
+            (UserObjectRole, None, None),
+            (PlanningAreaNote, None, None),
+            (ProjectAreaNote, None, None),
+            (TreatmentPlanNote, None, None),
             # RESTRICT FK on TreatmentPlan + ProjectArea
-            ("TreatmentPrescription", TreatmentPrescription.objects.all()),
+            (TreatmentPrescription, None, None),
             # RESTRICT FK on TreatmentPlan
-            ("TreatmentResult", TreatmentResult.objects.all()),
-            ("ProjectAreaTreatmentResult", ProjectAreaTreatmentResult.objects.all()),
+            (TreatmentResult, None, None),
+            (ProjectAreaTreatmentResult, None, None),
             # RESTRICT FK on Scenario
-            ("ProjectArea", ProjectArea.objects.all()),
+            (ProjectArea, None, None),
             # RESTRICT FK on Scenario
-            ("TreatmentPlan", TreatmentPlan.objects.all()),
-            ("TreatmentGoal", TreatmentGoal.objects.all()),
+            (TreatmentPlan, None, None),
+            (TreatmentGoal, None, None),
             # Cascades ClimateForesightRun/Pillar via PlanningArea → Scenario
-            ("Scenario", Scenario.objects.all()),
+            (Scenario, None, None),
             # climate_foresight — FK to PlanningArea (CASCADE) and created_by (CASCADE)
-            ("ClimateForesightPillar", ClimateForesightPillar.objects.all()),
-            ("ClimateForesightRun", ClimateForesightRun.objects.all()),
+            (ClimateForesightPillar, None, None),
+            (ClimateForesightRun, None, None),
             # Cascades Scenario
-            ("PlanningArea", PlanningArea.objects.all()),
+            (PlanningArea, None, None),
             # Delete all users except admin
-            ("User", User.objects.exclude(pk=admin.pk)),
+            (User, "id != %s", [admin.pk]),
         ]
 
-        for label, qs in steps:
-            count = qs.count()
+        for model, where, params in steps:
+            table = model._meta.db_table
+            label = model.__name__
             if dry_run:
+                count = self._count(table, where or "", params)
                 self.stdout.write(f"[dry-run] Would delete {count} {label} record(s).")
             else:
-                qs.delete()
-                self.stdout.write(
-                    self.style.SUCCESS(f"Deleted {count} {label} record(s).")
-                )
+                count = self._delete(table, where or "", params)
+                self.stdout.write(self.style.SUCCESS(f"Deleted {count} {label} record(s)."))
 
     def handle(self, **options):
         if settings.ENV == "production":
