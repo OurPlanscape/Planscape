@@ -1,3 +1,6 @@
+<app-scenarios-empty-list *ngIf="!loading && planningAreaIsReady && !planningAreaIsLarge && totalScenarios === 0" [plan]="plan"></app-scenarios-empty-list> 
+
+<ng-container *ngIf="totalScenarios > 0">
 <div class="scenarios-header">
   <div class="sort-header" (click)="handleSortChange()">
     <mat-icon class="material-symbols-outlined">
@@ -62,22 +65,8 @@
     </mat-menu>
   </div>
 </div>
+
 <div class="saved-scenarios-wrapper">
-  <app-section-loader
-    *ngIf="planningAreaIsReady && !planningAreaIsLarge"
-    [isLoading]="loading"
-    [hasData]="totalScenarios > 0"
-    [ngClass]="{
-      'margin-top': totalScenarios === 0,
-    }"
-    emptyStateTitle="No scenarios yet"
-    [emptyStateContent]="
-      canAddScenarioForPlan
-        ? isValidPlanningArea
-          ? 'Click “New scenario” to start creating your scenarios.'
-          : 'Click “Upload Scenario” to add scenarios.'
-        : ''
-    ">
     <ng-container *ngIf="activeScenarios.length > 0">
       <app-scenarios-card-list
         [scenarios]="activeScenarios"
@@ -88,7 +77,6 @@
           removeScenarioFromList($event, 'activeScenarios')
         "></app-scenarios-card-list>
     </ng-container>
-  </app-section-loader>
 
   <div *ngIf="planningAreaIsLarge && !loading" class="large-message">
     <p>
@@ -132,3 +120,5 @@
     </div>
   </sg-banner>
 </div>
+
+</ng-container>
