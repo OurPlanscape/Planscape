@@ -102,9 +102,16 @@ Treatment cost per acre does not affect how project areas are created but is inc
     <!-- Help text % of available acreage treated -->
     <div class="total-areas-targeted">
       Total Acres Targeted:
-      <span class="calculated-total">{{
-        getTotalTreated() ? (getTotalTreated() | number: '1.0-2') : ' -- '
-      }}</span>
+      <span class="calculated-total">
+        <mat-spinner
+          *ngIf="isCalculatingTotal"
+          diameter="20"
+          class="total-spinner"></mat-spinner>
+
+        <span [style.visibility]="isCalculatingTotal ? 'hidden' : 'visible'">{{
+          (getTotalTreated$ | async | number: '1.0-2') ?? '--'
+        }}</span></span
+      >
     </div>
     <mat-divider class="form-divider"></mat-divider>
 

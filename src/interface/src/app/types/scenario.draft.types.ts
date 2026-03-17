@@ -34,4 +34,5 @@ export interface SubUnitsDetail {
   avg: number;
   max: number;
   min: number;
+  treated?: number;
 }

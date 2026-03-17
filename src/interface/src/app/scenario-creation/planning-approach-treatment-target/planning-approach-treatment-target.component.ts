@@ -14,13 +14,25 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
-import { distinctUntilChanged, filter, map, switchMap, take, tap } from 'rxjs';
+import {
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { STAND_SIZES } from '@plan/plan-helpers';
 import { ScenarioDraftConfiguration, SubUnitsDetail } from '@app/types';
 import { ScenarioService } from '@app/services';
 import { ActivatedRoute } from '@angular/router';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @UntilDestroy()
 @Component({
@@ -36,6 +48,7 @@ import { ActivatedRoute } from '@angular/router';
     NgxMaskModule,
     ReactiveFormsModule,
     SectionComponent,
+    MatProgressSpinnerModule,
   ],
   providers: [
     {
@@ -52,18 +65,26 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
   subUnitDetails: SubUnitsDetail | null = null;
   scenarioId = this.route.snapshot.data['scenarioId'];
 
-  subUnitDetails$ = this.newScenarioState.scenarioConfig$.pipe(
+  private subUnitsLayer$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.sub_units_layer),
     filter((sub_units_layer): sub_units_layer is number => !!sub_units_layer),
-    distinctUntilChanged(),
+    distinctUntilChanged()
+  );
+
+  subUnitDetails$ = this.subUnitsLayer$.pipe(
     switchMap((sub_units_layer) =>
-      this.scenarioService.getSubUnitsDetails(this.scenarioId, sub_units_layer)
+      this.scenarioService.getSubUnitsDetails(this.scenarioId, {
+        sub_units_layer,
+      })
     ),
     // keep local copy for validations
     tap((subUnitDetails) => {
       this.subUnitDetails = subUnitDetails;
     })
   );
+
+  getTotalTreated$!: Observable<number | null>;
+  isCalculatingTotal = false;
 
   constructor(
     private newScenarioState: NewScenarioState,
@@ -74,25 +95,51 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
   }
 
   override beforeStepLoad(): void {
-    this.form = new FormGroup(
-      {
-        estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
-          Validators.required,
-          Validators.min(1),
-        ]),
-        // sub_units_target_value: false = Percentage / true = Number of acres
-        sub_units_fixed_target: new FormControl<boolean>(true, [
-          Validators.required,
-        ]),
-        // Percentage (when sub_units_fixed_target is false) or number of acres (when sub_units_fixed_target is true)
-        sub_units_target_value: new FormControl<number | null>(null, [
-          Validators.required,
-        ]),
-      },
-      {
-        validators: [this.workingAreaValidator()],
-      }
-    );
+    if (!this.form) {
+      this.form = new FormGroup(
+        {
+          estimated_cost: new FormControl<number>(DEFAULT_TX_COST_PER_ACRE, [
+            Validators.required,
+            Validators.min(1),
+          ]),
+          // sub_units_target_value: false = Percentage / true = Number of acres
+          sub_units_fixed_target: new FormControl<boolean>(true, [
+            Validators.required,
+          ]),
+          // Percentage (when sub_units_fixed_target is false) or number of acres (when sub_units_fixed_target is true)
+          sub_units_target_value: new FormControl<number | null>(null, [
+            Validators.required,
+          ]),
+        },
+        {
+          validators: [this.workingAreaValidator()],
+        }
+      );
+
+      this.getTotalTreated$ = combineLatest([
+        this.subUnitsLayer$,
+        this.form.valueChanges.pipe(startWith(this.form.value)),
+        this.form.statusChanges.pipe(startWith(this.form.status)),
+      ]).pipe(
+        switchMap(([sub_units_layer, formValue, status]) => {
+          if (status !== 'VALID') {
+            this.isCalculatingTotal = false;
+            return of(null);
+          }
+          this.isCalculatingTotal = true;
+          return this.scenarioService
+            .getSubUnitsDetails(this.scenarioId, {
+              sub_units_layer,
+              sub_units_fixed_target: formValue.sub_units_fixed_target,
+              sub_units_target_value: formValue.sub_units_target_value,
+            })
+            .pipe(
+              map((subUnitDetails) => subUnitDetails.treated || null),
+              tap(() => (this.isCalculatingTotal = false))
+            );
+        })
+      );
+    }
 
     this.newScenarioState.scenarioConfig$
       .pipe(
@@ -119,15 +166,6 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
             ?.setValue(config.targets.sub_units_target_value);
         }
       });
-  }
-
-  // TODO: This is returning 0 for now since we are waiting for the calculations we need to do for percentage and number of acres
-  getTotalTreated(): number {
-    const formValues = this.form.value;
-    if (!formValues.sub_units_target_value) {
-      return 0;
-    }
-    return 0;
   }
 
   private workingAreaValidator(): ValidatorFn {
