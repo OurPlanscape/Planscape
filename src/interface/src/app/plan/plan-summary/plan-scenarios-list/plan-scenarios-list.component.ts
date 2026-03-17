@@ -51,7 +51,6 @@ export class PlanScenariosListComponent implements OnInit {
 
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;
-  showOnlyMyScenarios: boolean = false;
   activeScenarios: ScenarioRow[] = [];
   selectedTabIndex = 0;
   totalScenarios = 0;

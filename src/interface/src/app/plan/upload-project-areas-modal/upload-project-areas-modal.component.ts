@@ -193,7 +193,7 @@ export class UploadProjectAreasModalComponent {
             const errorsObject = err.error.errors;
 
             if (!!errorsObject.global) {
-              this.uploadFormError = err.error.global.join(' ');
+              this.uploadFormError = errorsObject.global.join(' ');
             } else if (errorsObject.name) {
               const nameControl = this.uploadProjectsForm.get('scenarioName');
               if (errorsObject.name?.join(' ').includes('blank.')) {
