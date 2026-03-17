@@ -889,6 +889,16 @@ class ValidateScenarioConfigurationTest(TestCase):
             treatment_goal=self.treatment_goal,
             configuration={},
         )
+        self.sub_units_datalayer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            metadata={
+            "modules": {
+                "prioritize_sub_units": {
+                "enabled": True
+                }
+            }
+        }
+        )
 
     def test_missing_stand_size(self):
         self.scenario.configuration = {
@@ -959,7 +969,6 @@ class ValidateScenarioConfigurationTest(TestCase):
         ):
             errors = validate_scenario_configuration(self.scenario)
             self.assertEqual(errors, [])
-
     
     def test_missing_treatment_goal(self):
         self.scenario.treatment_goal = None
@@ -980,11 +989,108 @@ class ValidateScenarioConfigurationTest(TestCase):
     def test_missing_sub_units_layer(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
             "sub_units_layer": None
         }
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Configuration field `sub_units_layer` is required for this Scenario.", errors)
+
+    def test_invalid_sub_units_layer_id(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        datalayer = DataLayerFactory.create()
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": datalayer.pk
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Invalid `sub_units_layer`.", errors)
+
+    def test_missing_sub_units_fixed_target(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.", errors)
+
+    def test_missing_sub_units_target_value(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk,
+            "targets": {
+                "sub_units_fixed_target": False,
+                "sub_units_target_value": None
+            }
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.", errors)
+
+    def test_sub_units_target_value_zero_percent(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk,
+            "targets": {
+                "sub_units_fixed_target": False,
+                "sub_units_target_value": 0
+            }
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.", errors)
+
+    def test_sub_units_target_value_bigger_than_100_percent(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk,
+            "targets": {
+                "sub_units_fixed_target": False,
+                "sub_units_target_value": 101
+            }
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.", errors)
+
+    @mock.patch("planning.services.get_sub_units_details", return_value={"avg": 1000, "max": 1500, "min": 500})
+    def test_sub_units_target_value_smaller_than_1_stand(self, mock_sub_units_details):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk,
+            "targets": {
+                "sub_units_fixed_target": True,
+                "sub_units_target_value": 400
+            }
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("`sub_units_target_value` cannot be smaller than 1 Stand.", errors)
+        mock_sub_units_details.assert_called_once()
+
+    @mock.patch("planning.services.get_sub_units_details", return_value={"avg": 1000, "max": 1500, "min": 500})
+    def test_sub_units_target_value_bigger_than_largest_sub_unit(self, mock_sub_units_details):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk,
+            "targets": {
+                "sub_units_fixed_target": True,
+                "sub_units_target_value": 1600
+            }
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("`sub_units_target_value` cannot be larger than 1500.", errors)
+        mock_sub_units_details.assert_called_once()
+
 
 
 class CreateScenarioGuardTest(TestCase):
