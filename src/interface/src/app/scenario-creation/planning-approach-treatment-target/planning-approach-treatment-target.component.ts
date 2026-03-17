@@ -108,15 +108,15 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
             .get('estimated_cost')
             ?.setValue(config.targets.estimated_cost);
         }
-        if (config.sub_units_fixed_target) {
+        if (config.targets?.sub_units_fixed_target) {
           this.form
             .get('sub_units_fixed_target')
-            ?.setValue(config.sub_units_fixed_target);
+            ?.setValue(config.targets.sub_units_fixed_target);
         }
-        if (config.sub_units_target_value) {
+        if (config.targets?.sub_units_target_value) {
           this.form
             .get('sub_units_target_value')
-            ?.setValue(config.sub_units_target_value);
+            ?.setValue(config.targets.sub_units_target_value);
         }
       });
   }
@@ -136,18 +136,16 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
       const sub_units_target_value = form.get('sub_units_target_value');
 
       // If sub_units_fixed_target is TRUE we should validate number of acres
+      // min number of acres is the stand size.
       if (sub_units_fixed_target?.value === true) {
-        if (
-          this.subUnitDetails?.min &&
-          sub_units_target_value?.value < this.subUnitDetails.min
-        ) {
+        if (sub_units_target_value?.value < this.minAcreage) {
           return { invalidAcres: true };
         }
         if (
           this.subUnitDetails?.max &&
           sub_units_target_value?.value > this.subUnitDetails?.max
         ) {
-          return { exceedMaxArea: true };
+          return { invalidAcres: true };
         }
       }
       // If sub_units_fixed_target is FALSE we should validate percentage

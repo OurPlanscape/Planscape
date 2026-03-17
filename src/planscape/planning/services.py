@@ -713,7 +713,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         if not cfg.get("sub_units_layer"):
             errors.append("Configuration field `sub_units_layer` is required for this Scenario.")
 
-        if cfg.get("sub_units_fixed_target") is None or cfg.get("sub_units_target_value") is None:
+        if targets.get("sub_units_fixed_target") is None or targets.get("sub_units_target_value") is None:
             errors.append("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Configurations for this Scenario.")
     
     else: # scenario.planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS

@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import {
+  catchError,
   combineLatest,
   EMPTY,
   interval,
@@ -9,7 +10,6 @@ import {
   Observable,
   of,
   skip,
-  catchError,
   switchMap,
   take,
   takeUntil,
@@ -34,6 +34,7 @@ import { getPlanPath, POLLING_INTERVAL } from '@plan/plan-helpers';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import {
+  isPlanningApproachSubUnits,
   scenarioCanHaveTreatmentPlans,
   suggestUniqueName,
 } from '../scenario-helper';
@@ -89,6 +90,17 @@ export class ViewScenarioComponent {
         this.scenarioCanHaveTreatmentPlans(scenario)
     )
   );
+
+  showTreatmentTab$ = this.scenario$.pipe(
+    map(
+      (scenario) =>
+        this.scenarioHasResults(scenario) &&
+        scenario.planning_approach &&
+        // hide tab for sub units planning approach
+        !isPlanningApproachSubUnits(scenario.planning_approach)
+    )
+  );
+
   isLoadingDialog = false;
 
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;

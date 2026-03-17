@@ -1730,6 +1730,23 @@ class RunScenarioEndpointTest(APITestCase):
         )
         trigger_mock.assert_not_called()
 
+    def test_run_skips_default_planning_approach_when_flag_on(self):
+        self.scenario.planning_approach = None
+        self.scenario.save(update_fields=["planning_approach"])
+        self.client.force_authenticate(self.user)
+        with (
+            mock.patch(
+                "planning.views_v2.validate_scenario_configuration", return_value=[]
+            ),
+            mock.patch("planning.views_v2.trigger_scenario_run"),
+            mock.patch("planning.views_v2.feature_enabled", return_value=True),
+        ):
+            response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.planning_approach)
+
     def test_run_unauthenticated_returns_401(self):
         response = self.client.post(self.url, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
