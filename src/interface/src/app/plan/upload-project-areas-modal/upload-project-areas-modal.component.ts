@@ -196,6 +196,7 @@ export class UploadProjectAreasModalComponent {
               this.uploadFormError = errorsObject.global.join(' ');
             } else if (errorsObject.name) {
               const nameControl = this.uploadProjectsForm.get('scenarioName');
+
               if (errorsObject.name?.join(' ').includes('blank.')) {
                 nameControl?.setErrors({
                   customError: 'Name must not be blank',
