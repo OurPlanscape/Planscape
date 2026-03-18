@@ -48,6 +48,7 @@ from planning.serializers import (
     ScenarioSerializer,
     ScenarioV2Serializer,
     ScenarioV3Serializer,
+    SubUnitsDetailsParamsSerializer,
     TreatmentGoalSerializer,
     UpdatePlanningAreaSerializer,
     UploadedScenarioDataSerializer,
@@ -422,13 +423,19 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["GET"], detail=True, url_path="sub_units_details")
     def get_sub_units_details(self, request, pk=None):
         scenario = self.get_object()
-        datalayer_pk = request.query_params.get("sub_units_layer") or scenario.configuration.get("sub_units_layer")
+        query_params_serializer = SubUnitsDetailsParamsSerializer(data=request.query_params)
+        query_params_serializer.is_valid(raise_exception=True)
+
+        datalayer_pk = query_params_serializer.validated_data.get("sub_units_layer") or scenario.configuration.get("sub_units_layer")
         if not datalayer_pk:
             return Response({"errors": "Sub-Unit layer not selected."}, status=status.HTTP_412_PRECONDITION_FAILED)
+        
+        sub_units_fixed_target = query_params_serializer.validated_data.get("sub_units_fixed_target")
+        sub_units_target_value = query_params_serializer.validated_data.get("sub_units_target_value")
 
         datalayer = DataLayer.objects.get(pk=datalayer_pk)
         stand_size = scenario.get_stand_size()
-        details = get_sub_units_details(scenario, stand_size, datalayer)
+        details = get_sub_units_details(scenario, stand_size, datalayer, sub_units_fixed_target, sub_units_target_value)
         if not details:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

@@ -50,6 +50,7 @@ from planning.services import (
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
+    get_sub_units_details,
     planning_area_covers,
     sanitize_shp_field_name,
     toggle_scenario_status,
@@ -1341,3 +1342,72 @@ class TriggerScenarioTest(TestCase):
                 "PRIORITIZE_SUB_UNITS"
             ]
         )
+
+
+class SubUnitsDetailsTest(TestCase):
+
+    def setUp(self):
+        self.scenario = ScenarioFactory()
+        self.datalayer = DataLayerFactory()
+        return super().setUp()
+
+    @mock.patch("planning.services.get_sub_units_areas", return_value=None)
+    def test_no_areas(self, mock_get_units_area):
+
+        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+
+        self.assertIsNone(details)
+        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+
+    
+    @mock.patch(
+        "planning.services.get_sub_units_areas", 
+        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    )
+    def test_no_targets_defined(self, mock_get_units_area):
+        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+
+        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        self.assertIsNotNone(details)
+
+        self.assertEqual(details.get("avg"), 550)
+        self.assertEqual(details.get("max"), 1000)
+        self.assertEqual(details.get("min"), 100)
+        self.assertEqual(details.get("sum"), 5500)
+        self.assertIsNone(details.get("targeted_area"))
+
+    @mock.patch(
+        "planning.services.get_sub_units_areas", 
+        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    )
+    def test_percentage_target_defined(self, mock_get_units_area):
+        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer, False, 80)
+
+        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        self.assertIsNotNone(details)
+
+        self.assertEqual(details.get("avg"), 550)
+        self.assertEqual(details.get("max"), 1000)
+        self.assertEqual(details.get("min"), 100)
+        self.assertEqual(details.get("sum"), 5500)
+        
+        # 5500 * 80% (sum * (target_value / 100))
+        self.assertEqual(details.get("targeted_area"), 4400)
+
+    @mock.patch(
+        "planning.services.get_sub_units_areas", 
+        return_value=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    )
+    def test_acreage_target_defined(self, mock_get_units_area):
+        details = get_sub_units_details(self.scenario, self.scenario.get_stand_size(), self.datalayer, True, 550)
+
+        mock_get_units_area.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), self.datalayer)
+        self.assertIsNotNone(details)
+
+        self.assertEqual(details.get("avg"), 550)
+        self.assertEqual(details.get("max"), 1000)
+        self.assertEqual(details.get("min"), 100)
+        self.assertEqual(details.get("sum"), 5500)
+
+        # 100 + 200 + 300 + 400 + 500 + 550 (of 600) + 550 (of 700) + 550 (of 800) + 550 (of 900) + 550 (of 100))
+        self.assertEqual(details.get("targeted_area"), 4250)

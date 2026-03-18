@@ -1546,7 +1546,7 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_sub_units_details(scenario: Scenario, stand_size: StandSizeChoices, datalayer: DataLayer) -> Optional[dict[str, float]]:
+def get_sub_units_areas(scenario: Scenario, stand_size: StandSizeChoices, datalayer: DataLayer) -> Optional[List[int]]:
     planning_area = scenario.planning_area
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
@@ -1562,14 +1562,45 @@ def get_sub_units_details(scenario: Scenario, stand_size: StandSizeChoices, data
         if sub_unit_stands_count > 0:
             acreage = sub_unit_stands_count * stand_area
             areas.append(acreage)
-    
+
     if len(areas) == 0:
         return None
+    
+    return areas
+    
+
+def get_sub_units_details(
+        scenario: Scenario, 
+        stand_size: StandSizeChoices, 
+        datalayer: DataLayer,
+        fixed_target: Optional[bool] = None,
+        target_value: Optional[float] = None,
+    ) -> Optional[dict[str, Optional[float]]]:
+    
+    areas = get_sub_units_areas(scenario, stand_size, datalayer)
+    
+    if areas is None:
+        return
+    
+    targeted_area = None
+    if fixed_target is True and target_value is not None:
+        targeted_area = 0
+        for area in areas:
+            if area > target_value:
+                # area is bigger than target, then use target value
+                targeted_area += target_value
+            else:
+                # area is equal or smaller than target, then use area
+                targeted_area += area
+    elif fixed_target is False and target_value is not None:
+        targeted_area = sum(areas) * (target_value / 100)
 
     return {
         "avg": truncate_result(sum(areas) / len(areas)),
         "max": truncate_result(max(areas)),
         "min": truncate_result(min(areas)),
+        "sum": sum(areas),
+        "targeted_area": targeted_area,
     }
 
 
