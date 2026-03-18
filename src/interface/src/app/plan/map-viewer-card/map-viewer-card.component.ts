@@ -13,6 +13,7 @@ import { filter, tap } from 'rxjs';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@app/services';
 import { RouterModule } from '@angular/router';
+import { FrontendConstants } from '@app/map/map.constants';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -36,8 +37,14 @@ export class MapViewerCardComponent {
   currentPlan$ = this.planState.currentPlan$;
 
   boundsOptions = {
-    padding: 30,
+    padding: {
+      top: 18,
+      bottom: 76,
+      left: 20,
+      right: 20
+    },
     duration: 0,
+    maxZoom: FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM,
   };
 
   constructor(
