@@ -1415,3 +1415,11 @@ class AvailableStandsSerializer(serializers.Serializer):
     unavailable = UnavailableStandsSerializer()
 
     summary = AvailableStandsSummarySerializer()
+
+
+class SubUnitsDetailsParamsSerializer(serializers.Serializer):
+    sub_units_layer = serializers.IntegerField(required=False)
+
+    sub_units_fixed_target = serializers.BooleanField(required=False, allow_null=True)
+
+    sub_units_target_value = serializers.FloatField(required=False, allow_null=True)
