@@ -7,7 +7,7 @@ import zipfile
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Collection, Dict, List, Optional, Set, Tuple, Type, Union
 
 import fiona
 from actstream import action
@@ -23,6 +23,7 @@ from django.contrib.gis.db.models.functions import Area, Transform, Centroid
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
+from django.db.models import QuerySet
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
 from django.utils.text import slugify
@@ -755,7 +756,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
             # Expensive validations below
             try:
                 available_stand_ids = get_available_stand_ids(
-                    planning_area=scenario.planning_area,
+                    scenario=scenario,
                     stand_size=stand_size,
                     excludes=excluded_areas,
                 )
@@ -1457,8 +1458,24 @@ def get_constrained_stands(
     return stands_qs.values_list("id", flat=True)
 
 
+@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
+def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningArea, stand_size: str, datalayer: DataLayer) -> Set[int]:
+    geometry = planning_area.geometry
+    DynamicModel = model_from_fiona(datalayer)
+
+    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    
+    sub_units_stands = []
+    for sub_unit in queryset.all():
+        geo_intersection = geometry.intersection(sub_unit.geometry)
+        sub_units_ids = stands.filter(centroid__within=geo_intersection).values_list("id", flat=True)
+        sub_units_stands.extend(list(sub_units_ids))
+    return set(sub_units_stands)
+
+
 def get_available_stands(
     planning_area: PlanningArea,
+    scenario: Optional[Scenario] = None,
     *,
     stand_size: str = "LARGE",
     includes: Optional[List[DataLayer]] = None,
@@ -1482,6 +1499,19 @@ def get_available_stands(
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+
+    if (
+        scenario 
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and scenario.configuration.get("sub_units_layer")
+    ):
+        # Exclude stands that is not included to any sub-unit
+        stands_queryset = stands.all()
+        datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
+        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, stand_size, datalayer)
+        stand_ids = stands_queryset.exclude(id__in=sub_units_stands).values_list("id", flat=True)
+
+        excluded_ids.extend(list(stand_ids))
 
     for constraint in constraints:
         stands_queryset = stands.all()
@@ -1538,13 +1568,14 @@ def get_available_stands(
 
 
 def get_available_stand_ids(
-    planning_area: PlanningArea,
+    scenario: Scenario,
     stand_size: str = "LARGE",
     excludes: Optional[List[DataLayer]] = None,
 ) -> List[int]:
     if not excludes:
         excludes = list()
 
+    planning_area = scenario.planning_area
     stands = planning_area.get_stands(stand_size=stand_size)
 
     excluded_ids = []
@@ -1552,6 +1583,18 @@ def get_available_stand_ids(
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+
+    if (
+        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and scenario.configuration.get("sub_units_layer")
+    ):
+        # Exclude stands that is not included to any sub-unit
+        stands_queryset = stands.all()
+        datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
+        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, stand_size, datalayer)
+        stand_ids = stands_queryset.exclude(id__in=sub_units_stands).values_list("id", flat=True)
+
+        excluded_ids.extend(list(stand_ids))
 
     stand_ids = stands.values_list("id", flat=True)
 
