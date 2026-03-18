@@ -417,6 +417,20 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 location=OpenApiParameter.QUERY,
                 required=False,
                 description="Override the scenario's sub_units_layer with this DataLayer ID.",
+            ),
+            OpenApiParameter(
+                name="sub_units_fixed_target",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Flag that determine the Sub-Units Prioritization target (false = percentage | true = fixed value).",
+            ),
+            OpenApiParameter(
+                name="sub_units_target_value",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Absolute value or relative percent of project area sum.",
             )
         ],
     )
