@@ -219,6 +219,7 @@ class ScenarioPlanningApproach(models.TextChoices):
     PRIORITIZE_SUB_UNITS = "PRIORITIZE_SUB_UNITS", "Prioritize Sub-Units"
     OPTIMIZE_PROJECT_AREAS = "OPTIMIZE_PROJECT_AREAS", "Optimize Project Areas"
 
+
 class ScenarioOrigin(models.TextChoices):
     # project comes from optimization algorithm, such as forsys
     SYSTEM = "SYSTEM", "System"
@@ -250,6 +251,10 @@ class TreatmentGoalGroup(models.TextChoices):
     CALIFORNIA_PLANNING_METRICS = (
         "CALIFORNIA_PLANNING_METRICS",
         "California Landscape Metrics",
+    )
+    CLIMATE_FORESIGHT_DEMO = (
+        "CLIMATE_FORESIGHT_DEMO",
+        "Climate Foresight Demo",
     )
     PYROLOGIX = ("PYROLOGIX", "Pyrologix")
     RISK_BASED_STRATEGIC_PLANNING = (
@@ -562,15 +567,17 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         )
         logger.info("PUBLIC URL GENERATED %s", signed_url)
         return signed_url
-    
+
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         if self.type == ScenarioType.CUSTOM:
             priority_objectives = self.configuration.get("priority_objectives", [])
             cobenefits = self.configuration.get("cobenefits", [])
             datalayer_ids = priority_objectives + cobenefits
-            datalayers = DataLayer.objects.filter(id__in=datalayer_ids).filter(type=DataLayerType.RASTER)
+            datalayers = DataLayer.objects.filter(id__in=datalayer_ids).filter(
+                type=DataLayerType.RASTER
+            )
             datalayers = list(datalayers)
-            
+
             for name in ["slope", "distance_from_roads"]:
                 datalayer = DataLayer.objects.all().by_meta_name(name=name)
                 if datalayer:
@@ -578,7 +585,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
             return datalayers
         else:
-            return self.treatment_goal.get_raster_datalayers() # type: ignore
+            return self.treatment_goal.get_raster_datalayers()  # type: ignore
 
     objects = ScenarioManager()
 

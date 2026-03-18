@@ -427,7 +427,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             return Response({"errors": "Sub-Unit layer not selected."}, status=status.HTTP_412_PRECONDITION_FAILED)
 
         datalayer = DataLayer.objects.get(pk=datalayer_pk)
-        details = get_sub_units_details(scenario, datalayer)
+        stand_size = scenario.get_stand_size()
+        details = get_sub_units_details(scenario, stand_size, datalayer)
         if not details:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
