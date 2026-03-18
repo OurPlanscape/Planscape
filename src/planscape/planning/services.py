@@ -727,7 +727,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         elif sub_units_fixed_target is False and (sub_units_target_value <= 0 or sub_units_target_value > 100):
             errors.append("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.")
 
-        else:
+        elif sub_units_fixed_target is True:
             sub_units_layer = DataLayer.objects.get(pk=sub_units_layer_id)
             min_area = get_min_project_area(scenario=scenario)
             max_area = get_sub_units_details(scenario=scenario, stand_size=scenario.get_stand_size(), datalayer=sub_units_layer).get("max")

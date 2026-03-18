@@ -1032,6 +1032,20 @@ class ValidateScenarioConfigurationTest(TestCase):
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario.", errors)
 
+    def test_sub_units_target_value_expected_percentage(self):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk,
+            "targets": {
+                "sub_units_fixed_target": False,
+                "sub_units_target_value": 50
+            }
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertEqual(errors, [])
+
     def test_sub_units_target_value_zero_percent(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
@@ -1059,6 +1073,22 @@ class ValidateScenarioConfigurationTest(TestCase):
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.", errors)
+
+    @mock.patch("planning.services.get_sub_units_details", return_value={"avg": 1000, "max": 1500, "min": 500})
+    def test_sub_units_target_value_expected_acreage(self, mock_sub_units_details):
+        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "sub_units_layer": self.sub_units_datalayer.pk,
+            "targets": {
+                "sub_units_fixed_target": True,
+                "sub_units_target_value": 1000
+            }
+        }
+        self.scenario.save()
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertEqual(errors, [])
+        mock_sub_units_details.assert_called_once()
 
     @mock.patch("planning.services.get_sub_units_details", return_value={"avg": 1000, "max": 1500, "min": 500})
     def test_sub_units_target_value_smaller_than_1_stand(self, mock_sub_units_details):
