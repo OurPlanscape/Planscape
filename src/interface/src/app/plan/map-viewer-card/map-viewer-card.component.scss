@@ -8,12 +8,13 @@
     flex-direction: column;
     gap: 16px;
     box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
-    height: 250px;
+    min-height: 200px;
     width: 100%;
+    flex-shrink: 0;
 }
 
 mgl-map {
-    height: 300px;
+    height: 100%;
     width: 100%;
     overflow: hidden;
     border-radius: 8px;
