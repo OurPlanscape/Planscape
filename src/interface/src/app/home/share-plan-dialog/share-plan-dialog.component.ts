@@ -9,7 +9,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
   Viewer: 'Viewer',
-  Collaborator: 'Collaborator',
+  Collaborator: 'Editor',
+  Editor: 'Editor',
   Owner: 'Owner',
 };
 
