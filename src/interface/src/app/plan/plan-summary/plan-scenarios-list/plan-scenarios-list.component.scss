@@ -3,9 +3,22 @@
 @import 'mixins';
 @import 'colors';
 
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 .saved-scenarios-wrapper {
   position: relative;
-  padding: 20px;
+  width: 100%;
+  overflow: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .margin-top {
@@ -13,16 +26,16 @@
 }
 
 .scenarios-header {
-  position: sticky;
+  position: relative;
   top: 0px;
   background: $color-white;
-  z-index: 11;
   height: 40px;
   padding: 16px;
   display: flex;
   justify-content: space-between;
   gap: 8px;
   align-items: center;
+  width: 100%;
 
   h4 {
     margin: 0 auto 0 0;
@@ -118,4 +131,15 @@ app-section-loader {
   padding: 0 8px;
   margin-left: 6px;
   margin-right: -12px;
+}
+
+.card-list {
+  width: 100%;
+}
+
+.list-spinner {
+  flex: 1;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
 }

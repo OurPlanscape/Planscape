@@ -22,7 +22,6 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { FeaturesModule } from '@features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 import { ButtonComponent } from '@styleguide';
-import { MatTabsModule } from '@angular/material/tabs';
 import { ScenariosCardListComponent } from '@plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PlanState } from '@plan/plan.state';
@@ -80,7 +79,6 @@ describe('PlanScenariosListComponent (updated polling/manual preemption)', () =>
         NoopAnimationsModule,
         FeaturesModule,
         ButtonComponent,
-        MatTabsModule,
         MatCardModule,
         RouterTestingModule,
       ],
@@ -242,6 +240,7 @@ describe('PlanScenariosListComponent (updated polling/manual preemption)', () =>
   }));
 
   it('permission gating: shows New Scenario with add_scenario', () => {
+    component.activeScenarios.length = 1; // button header won't appear unless we have at least 1 scenario
     mockPlan$.next({ ...mockPlan$.value, permissions: ['add_scenario'] });
     fixture.detectChanges();
     const btn = fixture.debugElement.query(By.css('[data-id="new-scenario"]'));
@@ -249,6 +248,7 @@ describe('PlanScenariosListComponent (updated polling/manual preemption)', () =>
   });
 
   it('permission gating: hides New Scenario without add_scenario', () => {
+    component.activeScenarios.length = 1; // button header won't appear unless we have at least 1 scenario
     mockPlan$.next({ ...mockPlan$.value, permissions: ['nothing_here'] });
     fixture.detectChanges();
     const btn = fixture.debugElement.query(By.css('[data-id="new-scenario"]'));
