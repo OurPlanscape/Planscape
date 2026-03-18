@@ -36,7 +36,7 @@ export class MapViewerCardComponent {
   currentPlan$ = this.planState.currentPlan$;
 
   boundsOptions = {
-    padding: 80,
+    padding: 30,
     duration: 0,
   };
 
