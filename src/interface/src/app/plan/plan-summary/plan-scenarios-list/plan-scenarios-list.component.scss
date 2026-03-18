@@ -14,11 +14,11 @@
 .saved-scenarios-wrapper {
   position: relative;
   width: 100%;
-  overflow: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: visible;
 }
 
 .margin-top {
@@ -65,10 +65,12 @@ app-section-loader {
   flex: 1;
 }
 
-.custom-tab-group::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+.custom-tab-group::ng-deep
+  .mat-mdc-tab-header
+  .mat-mdc-tab-label-container
+  .mat-mdc-tab {
   flex-grow: 0;
 }
-
 
 .banner {
   margin-top: 20px;
@@ -78,7 +80,6 @@ app-section-loader {
   width: 100%;
   margin: 40px auto;
 }
-
 
 .pending-message,
 .large-message {
@@ -100,7 +101,6 @@ app-section-loader {
 }
 
 .scenario-option {
-
   align-items: flex-start;
   padding: 14px;
 

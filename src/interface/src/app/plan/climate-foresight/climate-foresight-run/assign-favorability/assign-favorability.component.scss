@@ -51,7 +51,7 @@ $left-panel-width: 398px;
 .data-layers-header {
   display: flex;
   flex-direction: row;
-  align-items: end;
+  align-items: flex-end;
   margin-bottom: 16px;
 
   .header {

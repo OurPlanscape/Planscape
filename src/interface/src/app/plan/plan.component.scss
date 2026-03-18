@@ -76,13 +76,11 @@
   flex-direction: column;
   padding: 16px;
   padding-left: 8px;
-  max-width: $plan-right-lg-max;
   box-sizing: border-box;
   flex: 1;
 
   @include on-large() {
     width: $plan-right-md-max;
-    max-width: $plan-right-lg-max;
   }
 
   @include on-small() {
@@ -174,7 +172,7 @@
   flex-direction: column;
   max-width: $plan-left-lg-max;
   gap: 16px;
-  flex:1;
+  flex: 1;
 
   @include on-large() {
     max-width: $plan-left-md-max;

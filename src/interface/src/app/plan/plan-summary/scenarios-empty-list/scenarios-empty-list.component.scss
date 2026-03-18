@@ -13,7 +13,7 @@
 .option-set {
   display: flex;
   flex-direction: column;
-  align-items: start;
+  align-items: flex-start;
   width: 100%;
   gap: 10px;
 }
@@ -25,12 +25,12 @@
 }
 
 h4 {
-    @include h4();
+  @include h4();
 }
 
 .subtitle {
-    @include regular-paragraph();
-    color: $color-dark-gray;
+  @include regular-paragraph();
+  color: $color-dark-gray;
 }
 
 .awaiting-block {
@@ -58,4 +58,3 @@ h4 {
   @include small-paragraph();
   color: $color-md-gray;
 }
-
