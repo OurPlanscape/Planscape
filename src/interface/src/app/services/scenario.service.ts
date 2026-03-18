@@ -147,14 +147,14 @@ export class ScenarioService {
   }
 
   getExcludedStands(
-    planId: number,
+    scenarioId: number,
     stand_size: string,
     excludes?: number[],
     constraints?: Constraint[]
   ) {
     const url =
       environment.backend_endpoint +
-      `/v2/planningareas/${planId}/available_stands/`;
+      `/v2/scenarios/${scenarioId}/available_stands/`;
     return this.http.post<AvailableStands>(
       url,
       {
