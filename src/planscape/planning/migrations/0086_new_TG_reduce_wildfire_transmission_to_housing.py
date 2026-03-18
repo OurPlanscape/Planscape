@@ -235,7 +235,7 @@ def add_riskmonitor_transmission_to_housing_treatment_goal(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning", "0083_alter_scenario_planning_approach"),
+        ("planning", "0085_add_new_climate_foresight_demo_treatment_goal_group"),
         ("datasets", "0026_dataset_modules"),
     ]
 
