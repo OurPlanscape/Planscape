@@ -160,18 +160,6 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
             headers=headers,
         )
 
-    @action(methods=["POST"], detail=True)
-    def available_stands(self, request, pk=None):
-        planning_area = self.get_object()
-        serializer = GetAvailableStandsSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        result = get_available_stands(planning_area=planning_area, **serializer.validated_data)
-        out_serializer = AvailableStandsSerializer(instance=result)
-        return Response(
-            out_serializer.data,
-            status=status.HTTP_200_OK,
-        )
-
     def perform_destroy(self, instance):
         delete_planning_area(
             user=self.request.user,
@@ -458,10 +446,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["POST"], detail=True)
     def available_stands(self, request, pk=None):
         scenario = self.get_object()
-        planning_area = scenario.planning_area
         serializer = GetAvailableStandsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result = get_available_stands(planning_area=planning_area, scenario=scenario, **serializer.validated_data)
+        result = get_available_stands(scenario, **serializer.validated_data)
         out_serializer = AvailableStandsSerializer(instance=result)
         return Response(
             out_serializer.data,

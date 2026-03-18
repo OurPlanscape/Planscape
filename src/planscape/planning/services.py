@@ -1474,8 +1474,7 @@ def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningAr
 
 
 def get_available_stands(
-    planning_area: PlanningArea,
-    scenario: Optional[Scenario] = None,
+    scenario: Scenario,
     *,
     stand_size: str = "LARGE",
     includes: Optional[List[DataLayer]] = None,
@@ -1489,6 +1488,7 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
+    planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     stands = planning_area.get_stands(stand_size).annotate(area=area_transform)
     total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
