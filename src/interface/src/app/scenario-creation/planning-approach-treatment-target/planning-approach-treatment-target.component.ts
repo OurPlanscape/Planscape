@@ -134,7 +134,7 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
               sub_units_target_value: formValue.sub_units_target_value,
             })
             .pipe(
-              map((subUnitDetails) => subUnitDetails.treated || null),
+              map((subUnitDetails) => subUnitDetails.targeted_area || null),
               tap(() => (this.isCalculatingTotal = false))
             );
         })
