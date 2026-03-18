@@ -165,7 +165,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         planning_area = self.get_object()
         serializer = GetAvailableStandsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result = get_available_stands(planning_area, **serializer.validated_data)
+        result = get_available_stands(planning_area=planning_area, **serializer.validated_data)
         out_serializer = AvailableStandsSerializer(instance=result)
         return Response(
             out_serializer.data,
@@ -455,6 +455,18 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         return Response(details, status=status.HTTP_200_OK)
 
+    @action(methods=["POST"], detail=True)
+    def available_stands(self, request, pk=None):
+        scenario = self.get_object()
+        planning_area = scenario.planning_area
+        serializer = GetAvailableStandsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = get_available_stands(planning_area=planning_area, scenario=scenario, **serializer.validated_data)
+        out_serializer = AvailableStandsSerializer(instance=result)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
 # TODO: migrate this to an action inside the planning area viewset
 @extend_schema_view(
