@@ -41,7 +41,7 @@ export class MapViewerCardComponent {
       top: 18,
       bottom: 76,
       left: 20,
-      right: 20
+      right: 20,
     },
     duration: 0,
     maxZoom: FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM,
