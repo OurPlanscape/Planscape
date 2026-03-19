@@ -1,5 +1,6 @@
 @import 'colors';
 @import 'mixins';
+@import 'media';
 
 .in-overview {
   border-radius: 8px;
@@ -10,6 +11,10 @@
   flex-direction: column;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
   gap: 24px;
+
+  @include on-vert-small() {
+    gap: 12px;
+  }
 }
 
 .analytics-tools-container {
@@ -36,10 +41,19 @@
   justify-content: space-between;
   gap: 12px;
   max-width: 550px;
+  @include on-vert-small() {
+    height: 130px;
+  }
 }
 
 ::ng-deep .in-overview sg-tile-button  {
   flex: 1;
+}
+
+::ng-deep sg-tile-button .tile-button.lg {
+  @include on-vert-small() {
+    min-height: 100px;
+  }
 }
 
 ::ng-deep sg-tile-button.climate-foresight .tile-button {

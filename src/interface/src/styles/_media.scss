@@ -3,6 +3,7 @@ $breakpoint_xl: 1366px;
 $breakpoint_lg: 840px;
 $breakpoint_md: 768px;
 
+$breakpoint_vert_tiny: 700px; // TODO: TBD
 $breakpoint_vert_small: 800px; // TODO: TBD
 
 @mixin on-extra-extra-large() {
@@ -31,6 +32,12 @@ $breakpoint_vert_small: 800px; // TODO: TBD
 
 @mixin on-small() {
   @media screen and (max-width: $breakpoint_lg) {
+    @content;
+  }
+}
+
+@mixin on-vert-tiny {
+  @media screen and (max-height: $breakpoint_vert_tiny) {
     @content;
   }
 }

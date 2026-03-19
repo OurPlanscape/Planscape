@@ -181,6 +181,10 @@
     padding: 16px;
     padding-bottom: 0;
   }
+
+  @include on-vert-tiny() {
+    overflow-y: auto;
+  }
 }
 
 /* TODO - remove this when PLANNING_AREA_OVERVIEW items are in place*/
