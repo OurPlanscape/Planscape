@@ -86,6 +86,7 @@ export interface ScenarioConfig {
   seed?: number | null;
   priority_objectives?: number[];
   cobenefits?: number[];
+  sub_units_layer?: number;
 }
 
 // Backend scenario run result object.

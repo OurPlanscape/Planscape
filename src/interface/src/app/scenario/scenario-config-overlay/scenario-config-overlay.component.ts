@@ -13,9 +13,10 @@ import {
   isCustomScenario,
   isPlanningApproachSubUnits,
 } from '../scenario-helper';
-import { DataLayersService } from '@services';
+import { DataLayersService, ScenarioService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureService } from '@features/feature.service';
+import { filter } from 'rxjs/operators';
 
 @UntilDestroy()
 @Component({
@@ -33,10 +34,11 @@ import { FeatureService } from '@features/feature.service';
   styleUrl: './scenario-config-overlay.component.scss',
 })
 export class ScenarioConfigOverlayComponent implements OnDestroy {
-  private scenarioState: ScenarioState = inject(ScenarioState);
-  private forsysService: ForsysService = inject(ForsysService);
-  private dataLayersService: DataLayersService = inject(DataLayersService);
-  private featureService: FeatureService = inject(FeatureService);
+  private scenarioState = inject(ScenarioState);
+  private forsysService = inject(ForsysService);
+  private dataLayersService = inject(DataLayersService);
+  private featureService = inject(FeatureService);
+  private scenarioService = inject(ScenarioService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -45,6 +47,12 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   configuration: ScenarioV3Config | null = null;
   slopeId: number | null = null;
   distanceToRoadsId: number | null = null;
+
+  constructor() {
+    this.currentScenario$.pipe(untilDestroyed(this)).subscribe((scenario) => {
+      this.configuration = scenario.configuration as ScenarioV3Config;
+    });
+  }
 
   readonly standSizeOptions = STAND_OPTIONS;
   readonly planningApproachLabels = PLANNING_APPROACH_LABELS;
@@ -56,6 +64,13 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
       this.distanceToRoadsId = forsys.thresholds.distance_from_roads.id;
     });
 
+  scenarioHasPlanningApproachSubUnits$ = this.currentScenario$.pipe(
+    map(
+      (s) =>
+        s.planning_approach && isPlanningApproachSubUnits(s.planning_approach)
+    )
+  );
+
   selectedExcludedAreas$ = combineLatest([
     this.currentScenario$,
     this.excludedAreas$,
@@ -64,9 +79,8 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     map(([scenario, excludedAreas]) => {
       //TODO: when we have a ScenarioBase type and a way to query just config
       // we should replace this cast
-      this.configuration = scenario.configuration as ScenarioV3Config;
-
-      const ids = this.configuration.excluded_areas ?? [];
+      const config = scenario.configuration as ScenarioV3Config;
+      const ids = config.excluded_areas ?? [];
       const labels = ids
         .map((id) => excludedAreas.find((a) => a.id === id)?.name)
         .filter((v): v is string => !!v);
@@ -105,6 +119,28 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     shareReplay(1)
   );
 
+  subUnitLayerName$ = this.currentScenario$.pipe(
+    map((s) => s.configuration?.sub_units_layer),
+    filter((id): id is number => id !== undefined),
+    switchMap((id) => this.dataLayersService.getDataLayersByIds([id])),
+    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    shareReplay(1)
+  );
+
+  targetTreated$ = this.currentScenario$.pipe(
+    switchMap((s) =>
+      this.scenarioService.getSubUnitsDetails(s.id, {
+        sub_units_layer: this.configuration?.sub_units_layer,
+        sub_units_fixed_target:
+          this.configuration?.targets.sub_units_fixed_target,
+        sub_units_target_value:
+          this.configuration?.targets.sub_units_target_value,
+      })
+    ),
+    map((subUnitDetails) => subUnitDetails.targeted_area),
+    shareReplay(1)
+  );
+
   close() {
     this.scenarioState.setDisplayOverlay(false);
   }
@@ -115,12 +151,5 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
 
   get isPlanningApproachEnabled() {
     return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
-  }
-
-  get scenarioHasPlanningApproachSubUnits() {
-    return (
-      this.configuration?.planning_approach &&
-      isPlanningApproachSubUnits(this.configuration?.planning_approach)
-    );
   }
 }
