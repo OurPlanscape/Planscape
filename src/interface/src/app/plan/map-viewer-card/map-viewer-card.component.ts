@@ -3,7 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapComponent, LayerComponent } from '@maplibre/ngx-maplibre-gl';
 import { Map, Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
-import { DEFAULT_BASE_MAP, Extent, Plan } from '@app/types';
+import { Extent, Plan } from '@app/types';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
@@ -55,7 +55,7 @@ export class MapViewerCardComponent {
   ) {
     this.mapConfigService.initialize();
     this.mapConfigState.setShowMapControls(false);
-    this.mapConfigState.updateBaseMap(DEFAULT_BASE_MAP);
+    this.mapConfigState.updateBaseMap('terrain');
   }
 
   onMapLoad(map: Map) {

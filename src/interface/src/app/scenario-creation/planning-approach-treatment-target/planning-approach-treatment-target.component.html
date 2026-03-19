@@ -45,6 +45,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
             matInput
             type="text"
             mask="separator"
+            autocomplete="off"
             [placeholder]="
               form.get('sub_units_fixed_target')?.value === false
                 ? 'Enter Percentage'
@@ -102,9 +103,16 @@ Treatment cost per acre does not affect how project areas are created but is inc
     <!-- Help text % of available acreage treated -->
     <div class="total-areas-targeted">
       Total Acres Targeted:
-      <span class="calculated-total">{{
-        getTotalTreated() ? (getTotalTreated() | number: '1.0-2') : ' -- '
-      }}</span>
+      <mat-spinner
+        *ngIf="isCalculatingTotal"
+        diameter="20"
+        class="total-spinner"></mat-spinner>
+
+      <span class="calculated-total">
+        <span [style.visibility]="isCalculatingTotal ? 'hidden' : 'visible'">{{
+          (getTotalTreated$ | async | number: '1.0-2') ?? '--'
+        }}</span></span
+      >
     </div>
     <mat-divider class="form-divider"></mat-divider>
 
