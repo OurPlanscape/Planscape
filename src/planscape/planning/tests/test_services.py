@@ -911,6 +911,7 @@ class TestRemoveExcludes(TestCase):
         pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
         self.metrics = calculate_stand_vector_stats_with_stand_list(
             stand_ids=[stand.id for stand in self.stands],
             datalayer=self.datalayer,
@@ -974,18 +975,35 @@ class TestRemoveExcludes(TestCase):
         self.assertEqual(6, len(excluded_stands))
 
     def test_get_available_stands_ids(self):
-        stand_ids = get_available_stand_ids(self.planning_area, StandSizeChoices.LARGE)
+        stand_ids = get_available_stand_ids(self.scenario, StandSizeChoices.LARGE)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
         self.assertEquals(len(stand_ids), len(stands))
 
     def test_get_available_stands_ids_with_excluded_area(self):
         stand_ids = get_available_stand_ids(
-            self.planning_area, StandSizeChoices.LARGE, [self.datalayer]
+            self.scenario, StandSizeChoices.LARGE, [self.datalayer]
         )
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
         self.assertLess(len(stand_ids), len(stands))
+
+    def test_get_available_stands_ids_with_sub_units(self):
+        sub_units_stands = [stand.id for stand in self.stands]
+        sub_units_stands = sub_units_stands[:-1] # one stand out of sub-units (should be excluded)
+        with mock.patch("planning.services.get_stands_from_sub_units", return_value=sub_units_stands):
+            scenario = ScenarioFactory(
+                planning_area=self.planning_area,
+                planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            )
+            scenario.configuration = {"sub_units_layer": self.datalayer.pk}
+            scenario.save()
+            stand_ids = get_available_stand_ids(
+                scenario, StandSizeChoices.LARGE, [self.datalayer]
+            )
+            stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+            self.assertEquals(17, len(stands))
+            self.assertLess(len(stand_ids), len(stands) - 1)
 
 
 class ValidateScenarioConfigurationTest(TestCase):

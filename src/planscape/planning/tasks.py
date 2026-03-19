@@ -277,14 +277,12 @@ def prepare_planning_area(planning_area_id: int) -> int:
 def async_pre_forsys_process(scenario_id: int) -> None:
     scenario = Scenario.objects.get(id=scenario_id)
 
-    planning_area = scenario.planning_area
-
     excluded_datalayers = None
     excluded_areas_ids = scenario.configuration.get("excluded_areas_ids")
     if excluded_areas_ids:
         excluded_datalayers = DataLayer.objects.filter(pk__in=excluded_areas_ids)
     stand_ids = get_available_stand_ids(
-        planning_area, scenario.get_stand_size(), excluded_datalayers
+        scenario, scenario.get_stand_size(), excluded_datalayers
     )
     run_config = build_run_configuration(scenario)
 
