@@ -13,7 +13,7 @@ import {
   isCustomScenario,
   isPlanningApproachSubUnits,
 } from '../scenario-helper';
-import { DataLayersService, ScenarioService } from '@services';
+import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureService } from '@features/feature.service';
 import { filter } from 'rxjs/operators';
@@ -38,7 +38,6 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   private forsysService = inject(ForsysService);
   private dataLayersService = inject(DataLayersService);
   private featureService = inject(FeatureService);
-  private scenarioService = inject(ScenarioService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -124,20 +123,6 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     filter((id): id is number => id !== undefined),
     switchMap((id) => this.dataLayersService.getDataLayersByIds([id])),
     map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
-    shareReplay(1)
-  );
-
-  targetTreated$ = this.currentScenario$.pipe(
-    switchMap((s) =>
-      this.scenarioService.getSubUnitsDetails(s.id, {
-        sub_units_layer: this.configuration?.sub_units_layer,
-        sub_units_fixed_target:
-          this.configuration?.targets.sub_units_fixed_target,
-        sub_units_target_value:
-          this.configuration?.targets.sub_units_target_value,
-      })
-    ),
-    map((subUnitDetails) => subUnitDetails.targeted_area),
     shareReplay(1)
   );
 
