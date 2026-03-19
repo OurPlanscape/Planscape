@@ -25,8 +25,8 @@
 }
 
 .details {
-    @include small-paragraph();
-    color: $color-dark-gray;
+  @include small-paragraph();
+  color: $color-dark-gray;
 }
 
 .tools-grid {
@@ -38,14 +38,23 @@
   max-width: 550px;
 }
 
-::ng-deep .in-overview sg-tile-button  {
+::ng-deep .in-overview sg-tile-button {
   flex: 1;
 }
 
-::ng-deep sg-tile-button.climate-foresight .tile-button {
-  background-size: contain;
+::ng-deep .in-overview .climate-foresight .tile-button {
+  background-size: 140px;
 }
 
-::ng-deep sg-tile-button.coming-soon .tile-button {
+::ng-deep .in-overview .coming-soon .tile-button {
   background-size: 80px;
+
+  &:hover:not(:disabled) {
+    box-shadow: none !important;
+
+    .tile-content,
+    .tile-overlay {
+      background-color: transparent !important;
+    }
+  }
 }
