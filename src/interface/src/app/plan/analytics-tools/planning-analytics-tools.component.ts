@@ -76,7 +76,7 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
         localClass: 'coming-soon',
         subtitle: '',
         featureFlag: 'PLANNING_AREA_OVERVIEW',
-        enabled: true,
+        enabled: false,
       });
     }
 
