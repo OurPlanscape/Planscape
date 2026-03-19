@@ -2,6 +2,7 @@
 @use '@angular/material' as mat;
 @import 'mixins';
 @import 'colors';
+@import 'media';
 
 :host {
   display: flex;
@@ -17,8 +18,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding-right: 8px;
+  padding-left: 4px;
   align-items: center;
-  overflow: visible;
+  overflow-y: auto;
 }
 
 .margin-top {
@@ -42,6 +45,13 @@
     font-size: 18px;
     font-weight: 600;
   }
+
+  @include on-small() {
+    flex-direction: column-reverse;
+    height: unset;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
 }
 
 .sort-header {
@@ -56,6 +66,11 @@
   display: flex;
   flex-direction: row;
   gap: 8px;
+        
+  @include on-small() {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 app-section-loader {
@@ -65,10 +80,7 @@ app-section-loader {
   flex: 1;
 }
 
-.custom-tab-group::ng-deep
-  .mat-mdc-tab-header
-  .mat-mdc-tab-label-container
-  .mat-mdc-tab {
+.custom-tab-group::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
   flex-grow: 0;
 }
 
