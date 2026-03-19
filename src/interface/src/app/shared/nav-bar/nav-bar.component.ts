@@ -58,5 +58,4 @@ export class NavBarComponent implements OnInit {
       panelClass: 'no-padding-dialog',
     });
   }
-
 }
