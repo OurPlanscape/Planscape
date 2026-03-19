@@ -43,6 +43,13 @@
   height: 32px;
 }
 
+.current-page {
+  @include top-level-label();
+  color: $color-md-gray;
+  // font-size: 16px;
+  // font-weight: 500;
+}
+
 @media print {
   :host {
     display: none;

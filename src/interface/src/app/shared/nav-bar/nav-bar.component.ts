@@ -1,5 +1,4 @@
-import { Component, Inject, Input, OnInit } from '@angular/core';
-import { WINDOW } from '@services';
+import { Component, Input, OnInit } from '@angular/core';
 
 import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
 import { Params } from '@angular/router';
@@ -40,7 +39,6 @@ export class NavBarComponent implements OnInit {
   @Input() showForsysLogo = false;
 
   constructor(
-    @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
     private homeParametersStorageService: HomeParametersStorageService,
     private planState: PlanState,
@@ -49,10 +47,6 @@ export class NavBarComponent implements OnInit {
 
   ngOnInit(): void {
     this.params = this.homeParametersStorageService.getItem();
-  }
-
-  print() {
-    this.window.print();
   }
 
   async sharePlan() {
@@ -65,20 +59,4 @@ export class NavBarComponent implements OnInit {
     });
   }
 
-  showPrintButton() {
-    return ![
-      'TREATMENTS',
-      'TREATMENTS_PROJECT_AREA',
-      'EXPLORE',
-      'CLIMATE_FORESIGHT',
-      'NEW_SCENARIO',
-    ].some((area) => area === this.area);
-  }
-
-  showTooltip() {
-    // should hide if its on area explore or climate
-    return !['EXPLORE', 'CLIMATE_FORESIGHT', 'NEW_SCENARIO'].some(
-      (area) => area === this.area
-    );
-  }
 }
