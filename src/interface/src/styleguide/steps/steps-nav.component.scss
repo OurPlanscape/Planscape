@@ -17,10 +17,12 @@
   display: flex;
   align-items: center;
   flex: 1;
+  min-width: 0;
   position: relative;
 
   &:last-child {
     flex: 0;
+    min-width: fit-content;
   }
 }
 
@@ -32,6 +34,8 @@
   position: relative;
   margin-right: 8px;
   margin-left: 8px;
+  min-width: 0;
+  overflow: hidden;
 
   &.clickable {
     cursor: pointer;
@@ -109,6 +113,8 @@
   font-size: 14px;
   text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .step-connector {
@@ -124,11 +130,7 @@
 }
 
 @media (max-width: 768px) {
-  .stepper-container {
-    overflow-x: auto;
-    padding-bottom: 8px;
-  }
-
+  
   .step-item {
     min-width: 80px;
   }
