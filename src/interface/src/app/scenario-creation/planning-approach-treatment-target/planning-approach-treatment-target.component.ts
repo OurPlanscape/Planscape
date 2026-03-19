@@ -14,6 +14,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DEFAULT_TX_COST_PER_ACRE } from '@shared';
+import { LoadingValueComponent } from '@scenario-creation/loading-value.component';
 import {
   combineLatest,
   distinctUntilChanged,
@@ -49,6 +50,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     ReactiveFormsModule,
     SectionComponent,
     MatProgressSpinnerModule,
+    LoadingValueComponent,
   ],
   providers: [
     {
