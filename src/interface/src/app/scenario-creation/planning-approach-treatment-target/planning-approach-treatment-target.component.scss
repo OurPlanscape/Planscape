@@ -117,6 +117,8 @@
 
 .total-areas-targeted {
   @include small-input-label();
+  display: flex;
+  gap: 8px;
   color: $color-dark-gray;
 
   .calculated-total {
