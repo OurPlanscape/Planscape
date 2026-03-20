@@ -12,13 +12,13 @@
   <div class="tools-grid">
     <ng-container *ngFor="let tool of analyticsTools">
       <sg-tile-button
-        *ngIf="tool.enabled"
         [backgroundImage]="tool.backgroundImage"
         [backgroundColor]="tool.backgroundColor ?? ''"
         [title]="tool.title"
         [ngClass]="tool.localClass || ''"
         size="lg"
         [subtitle]="tool.subtitle"
+        [disabled]="!tool.enabled"
         (tileClick)="onToolClick(tool.id)">
       </sg-tile-button>
     </ng-container>
