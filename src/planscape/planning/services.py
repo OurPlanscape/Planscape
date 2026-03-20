@@ -7,7 +7,7 @@ import zipfile
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
@@ -40,6 +40,7 @@ from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 from pyproj import Geod
 from shapely import wkt
+from shapely.ops import unary_union
 from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
@@ -1459,18 +1460,16 @@ def get_constrained_stands(
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningArea, stand_size: str, datalayer: DataLayer) -> Set[int]:
+def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningArea, datalayer: DataLayer) -> QuerySet[Stand]:
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
 
     queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
     
-    sub_units_stands = []
-    for sub_unit in queryset.all():
-        geo_intersection = geometry.intersection(sub_unit.geometry)
-        sub_units_ids = stands.filter(centroid__within=geo_intersection).values_list("id", flat=True)
-        sub_units_stands.extend(list(sub_units_ids))
-    return set(sub_units_stands)
+    sub_units_geometry = [sub_unit.geometry for sub_unit in queryset.all()]
+    merged_geometry = unary_union(sub_units_geometry)
+    sub_units_stands = stands.filter(centroid__within=merged_geometry)
+    return sub_units_stands
 
 
 def get_available_stands(
@@ -1508,8 +1507,9 @@ def get_available_stands(
         # Exclude stands that is not included to any sub-unit
         stands_queryset = stands.all()
         datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
-        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, stand_size, datalayer)
-        stand_ids = stands_queryset.exclude(id__in=sub_units_stands).values_list("id", flat=True)
+        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
+        sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
+        stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list("id", flat=True)
 
         excluded_ids.extend(list(stand_ids))
 
@@ -1578,23 +1578,20 @@ def get_available_stand_ids(
     planning_area = scenario.planning_area
     stands = planning_area.get_stands(stand_size=stand_size)
 
+    if (
+        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and scenario.configuration.get("sub_units_layer")
+    ):
+        stands_queryset = stands.all()
+        datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
+        stands = get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
+
     excluded_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
-    if (
-        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
-        and scenario.configuration.get("sub_units_layer")
-    ):
-        # Exclude stands that is not included to any sub-unit
-        stands_queryset = stands.all()
-        datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
-        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, stand_size, datalayer)
-        stand_ids = stands_queryset.exclude(id__in=sub_units_stands).values_list("id", flat=True)
-
-        excluded_ids.extend(list(stand_ids))
 
     stand_ids = stands.values_list("id", flat=True)
 
