@@ -268,12 +268,12 @@ class AsyncPreForsysProcessTest(TestCase):
                 self.scenario.refresh_from_db()
                 forsys_input = self.scenario.forsys_input
                 self.assertFalse(forsys_input.get("run_with_patchmax"))
-                expected_stand_ids = stand_ids[0:60]
-                expected_stand_ids.sort()
+                sub_units_stand_ids.sort()
 
                 output_stand_ids = forsys_input.get("stand_ids")
                 output_stand_ids.sort()
-                self.assertListEqual(output_stand_ids, expected_stand_ids)
+                self.assertEqual(len(sub_units_stand_ids), len(output_stand_ids))
+                self.assertListEqual(output_stand_ids, sub_units_stand_ids)
                 self.assertDictEqual(forsys_input.get("projects_data"), {"1" : stand_ids[0:10], "2": stand_ids[10:30], "3": stand_ids[30:60]})
                 self.assertFalse(forsys_input["variables"]["sub_units_fixed_target"])
                 self.assertEqual(forsys_input["variables"]["sub_units_target_value"], 0.99)
