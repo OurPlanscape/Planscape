@@ -1,10 +1,12 @@
 <mgl-map
+  *ngIf="bounds$ | async as bounds"
   [id]="'map_viewer_card'"
   [fitBoundsOptions]="boundsOptions"
+  [fitBounds]="bounds"
   [attributionControl]="false"
   [transformRequest]="transformRequest"
   [interactive]="false"
-  [style]="(baseLayerUrl$ | async) || ''"
+  [style]="baseLayerUrl"
   (mapLoad)="onMapLoad($event)">
   <mgl-layer
     type="background"
