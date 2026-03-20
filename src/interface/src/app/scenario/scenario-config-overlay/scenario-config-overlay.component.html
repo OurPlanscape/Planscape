@@ -22,7 +22,7 @@
       </ng-container>
 
       <ng-container *ngIf="configuration?.sub_units_layer">
-        <dt>Sub Unit:</dt>
+        <dt>Subunit:</dt>
         <mat-spinner
           diameter="20"
           *ngIf="(subUnitLayerName$ | async) === null"></mat-spinner>
@@ -81,16 +81,14 @@
       </dd>
       <dd
         *ngIf="configuration && (scenarioHasPlanningApproachSubUnits$ | async)">
-        <mat-spinner
-          diameter="20"
-          *ngIf="(targetTreated$ | async) === null"></mat-spinner>
-
-        <ng-container *ngIf="targetTreated$ | async as targetTreated">
-          {{ targetTreated | number: '1.0-2' }} acres &#64; ${{
-            configuration.targets.estimated_cost | number: '1.0-2'
-          }}
-          / acre
-        </ng-container>
+        Targeted area within each subunit:
+        <span *ngIf="configuration.targets.sub_units_fixed_target">
+          {{ configuration.targets.sub_units_target_value | number: '1.0-2' }}
+          Acres
+        </span>
+        <span *ngIf="!configuration.targets.sub_units_fixed_target"
+          >{{ configuration.targets.sub_units_target_value }}%
+        </span>
       </dd>
     </dl>
   </div>
