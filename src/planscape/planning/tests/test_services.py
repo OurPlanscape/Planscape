@@ -18,7 +18,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
 from django.test import TestCase, override_settings
 from fiona.crs import to_string
-from stands.models import StandSizeChoices
+from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
 
@@ -989,9 +989,11 @@ class TestRemoveExcludes(TestCase):
         self.assertLess(len(stand_ids), len(stands))
 
     def test_get_available_stands_ids_with_sub_units(self):
-        sub_units_stands = [stand.id for stand in self.stands]
-        sub_units_stands = sub_units_stands[:-1] # one stand out of sub-units (should be excluded)
-        with mock.patch("planning.services.get_stands_from_sub_units", return_value=sub_units_stands):
+        # one stand out of sub-units (should be excluded)
+        stand_to_remove = self.stands[0]
+        stand_ids = [stand.id for stand in self.stands]
+        sub_unit_stands = Stand.objects.filter(id__in=stand_ids).exclude(id=stand_to_remove.pk).all()
+        with mock.patch("planning.services.get_stands_from_sub_units", return_value=sub_unit_stands):
             scenario = ScenarioFactory(
                 planning_area=self.planning_area,
                 planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,

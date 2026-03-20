@@ -243,8 +243,11 @@ class AsyncPreForsysProcessTest(TestCase):
     def test_async_pre_forsys_process_sub_units(self):
         stands = self.planning_area.get_stands(self.scenario.get_stand_size())
         stand_ids = [stand.pk for stand in stands]
+        sub_units_stand_ids = stand_ids[0:60]
+        sub_units_stands = Stand.objects.filter(id__in=sub_units_stand_ids).all()
+
         with mock.patch("planning.services.get_sub_units_stands_lookup_table", return_value={"1" : stand_ids[0:10], "2": stand_ids[10:30], "3": stand_ids[30:60]}):
-            with mock.patch("planning.services.get_stands_from_sub_units", return_value=stand_ids[0:60]):
+            with mock.patch("planning.services.get_stands_from_sub_units", return_value=sub_units_stands):
                 configuration = self.scenario.configuration
                 sub_units_datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
                 configuration.update(
