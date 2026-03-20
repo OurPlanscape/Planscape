@@ -182,7 +182,7 @@
     padding-bottom: 0;
   }
 
-  @include on-vert-tiny() {
+  @include on-vert-tiny-min-med-width() {
     overflow-y: auto;
   }
 }

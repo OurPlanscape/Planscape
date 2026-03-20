@@ -14,7 +14,7 @@
     width: 100%;
     flex-shrink: 0;
 
-    @include on-vert-small()
+    @include on-vert-small-min-med-width()
     {
         height: 56px;
     }
@@ -25,7 +25,7 @@ mgl-map {
     width: 100%;
     overflow: hidden;
     border-radius: 8px;
-        @include on-vert-small()
+        @include on-vert-small-min-med-width()
     {
         display: none;
     }
