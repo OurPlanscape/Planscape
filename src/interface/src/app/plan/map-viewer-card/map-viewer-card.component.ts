@@ -3,17 +3,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapComponent, LayerComponent } from '@maplibre/ngx-maplibre-gl';
 import { Map, Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
-import { Extent, Plan } from '@app/types';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
-import { PlanState } from '../plan.state';
-import bbox from '@turf/bbox';
-import { filter, tap } from 'rxjs';
-import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
+import {
+  addRequestHeaders,
+  getBoundsFromGeometry,
+} from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@app/services';
 import { RouterModule } from '@angular/router';
 import { FrontendConstants } from '@app/map/map.constants';
+import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
+import { PlanState } from '../plan.state';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -33,8 +35,13 @@ import { FrontendConstants } from '@app/map/map.constants';
 })
 export class MapViewerCardComponent {
   mapLibreMap!: MapLibreMap;
-  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+  baseLayerUrl = baseMapStyles['terrain'];
   currentPlan$ = this.planState.currentPlan$;
+  bounds$ = this.planState.planningAreaGeometry$.pipe(
+    map((geometry) => {
+      return getBoundsFromGeometry(geometry);
+    })
+  );
 
   boundsOptions = {
     padding: {
@@ -55,26 +62,10 @@ export class MapViewerCardComponent {
   ) {
     this.mapConfigService.initialize();
     this.mapConfigState.setShowMapControls(false);
-    this.mapConfigState.updateBaseMap('terrain');
   }
 
   onMapLoad(map: Map) {
     this.mapLibreMap = map;
-    this.fitToPlan();
-  }
-
-  fitToPlan() {
-    this.currentPlan$
-      .pipe(
-        filter((plan) => !!plan && !!plan.geometry),
-        tap((plan: Plan) => {
-          const bounds = bbox(plan.geometry) as Extent;
-          if (this.mapLibreMap) {
-            this.mapLibreMap.fitBounds(bounds, this.boundsOptions);
-          }
-        })
-      )
-      .subscribe();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
