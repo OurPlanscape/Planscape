@@ -184,6 +184,7 @@
 
   @include on-vert-tiny-min-med-width() {
     overflow-y: auto;
+    overflow-x: hidden;
   }
 }
 

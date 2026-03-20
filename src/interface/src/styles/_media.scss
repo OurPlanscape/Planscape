@@ -3,8 +3,8 @@ $breakpoint_xl: 1366px;
 $breakpoint_lg: 840px;
 $breakpoint_md: 768px;
 
-$breakpoint_vert_tiny: 800px;
-$breakpoint_vert_small: 900px;
+$breakpoint_vert_tiny: 900px;
+$breakpoint_vert_small: 1000px;
 
 @mixin on-extra-extra-large() {
   @media screen and (min-width: $breakpoint_xxl) {
