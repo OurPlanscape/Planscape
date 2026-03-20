@@ -14,6 +14,7 @@ from actstream import action
 from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
@@ -1505,7 +1506,7 @@ def get_available_stands(
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     if (
-        scenario 
+        feature_enabled("PLANNING_APPROACH") and feature_enabled("RENDER_SUB_UNITS_FILTERED") 
         and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         and scenario.configuration.get("sub_units_layer")
     ):
