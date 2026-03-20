@@ -40,7 +40,6 @@ from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 from pyproj import Geod
 from shapely import wkt
-from shapely.ops import unary_union
 from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
