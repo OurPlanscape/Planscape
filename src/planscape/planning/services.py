@@ -1466,11 +1466,17 @@ def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningAr
 
     queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
     
-    sub_units_geometry = [sub_unit.geometry for sub_unit in queryset.all()]
-    merged_geometry = unary_union(sub_units_geometry)
-    sub_units_stands = stands.filter(centroid__within=merged_geometry)
-    return sub_units_stands
+    merged_geometry = None
+    for sub_unit in queryset.all():
+        if merged_geometry is None:
+            merged_geometry = sub_unit.geometry
+        else:
+            merged_geometry.union(sub_unit.geometry)
+    
+    if merged_geometry:
+        return stands.filter(centroid__within=merged_geometry)
 
+    return stands.none()
 
 def get_available_stands(
     scenario: Scenario,
@@ -1584,7 +1590,7 @@ def get_available_stand_ids(
     ):
         stands_queryset = stands.all()
         datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
-        stands = get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
+        get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
 
     excluded_ids = []
     for exclude in excludes:
