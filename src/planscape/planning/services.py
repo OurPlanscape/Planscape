@@ -1589,7 +1589,7 @@ def get_available_stand_ids(
     ):
         stands_queryset = stands.all()
         datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
-        get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
+        stands = get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
 
     excluded_ids = []
     for exclude in excludes:
