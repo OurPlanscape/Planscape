@@ -3,8 +3,8 @@
 :host {
     position: relative;
     border-radius: 8px;
-    border: 1px solid var(--Neutral-Soft-gray, #E1E1E1);
-    background: var(--Neutral-White, #FFF);
+    border: 1px solid $color-soft-gray;
+    background: $color-white;
     display: flex;
     overflow: hidden;
     flex-direction: column;
@@ -32,37 +32,44 @@ mgl-map {
 }
 
 .overlay-navigation {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    height: 56;
-    background: lightblue;
-    color: black;
-    border-radius: 0 0 8px 8px;
-    background: linear-gradient(193deg, rgba(6, 75, 186, 0.00) -134.4%, #064BBA 97.6%);
-    display: flex;
-    padding: 16px;
-    justify-content: space-between;
-    align-items: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: 56;
+  background: lightblue;
+  color: black;
+  border-radius: 0 0 8px 8px;
+  background: linear-gradient(
+    193deg,
+    rgba(6, 75, 186, 0) -134.4%,
+    $color-standard-blue 97.6%
+  );
+  display: flex;
+  padding: 16px;
+  justify-content: space-between;
+  align-items: center;
 
-    &:hover {
-        background: linear-gradient(193deg, rgba(6, 75, 186, 0.00) -244.4%, #064BBA 67.6%);
-    }
+  &:hover {
+    background: linear-gradient(
+      193deg,
+      rgba(6, 75, 186, 0) -244.4%,
+      $color-standard-blue 67.6%
+    );
+    cursor: pointer;
+  }
 
-    .label {
-        color: var(--Neutral-White, #FFF);
-        font-family: "Public Sans";
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 600;
-        line-height: 16px; /* 100% */
-        text-transform: capitalize;
-    }
-    mat-icon {
-        color: white;
-    }
-
-
+  .label {
+    color: $color-white;
+    font-family: 'Public Sans';
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 16px; /* 100% */
+    text-transform: capitalize;
+  }
+  mat-icon {
+    color: $color-white;
+  }
 }

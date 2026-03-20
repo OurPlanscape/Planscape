@@ -43,6 +43,11 @@
   height: 32px;
 }
 
+.current-page {
+  @include top-level-label();
+  color: $color-md-gray;
+}
+
 @media print {
   :host {
     display: none;

@@ -1,4 +1,4 @@
-import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
+import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
 import { StepsNavComponent } from './steps-nav.component';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
@@ -162,6 +162,22 @@ export const LongLabels: Story = {
     steps: [
       { label: 'Initial Data Collection and Validation', completed: true },
       { label: 'Advanced Configuration Parameters', completed: false },
+      { label: 'Final Review and Submission Process' },
+    ],
+    selectedIndex: 1,
+    allowNavigation: true,
+  },
+};
+
+// lots of labels
+export const LotsOfLabels: Story = {
+  args: {
+    steps: [
+      { label: 'Initial Data Collection and Validation', completed: true },
+      { label: 'Advanced Configuration Parameters', completed: false },
+      { label: 'Pre Approval Process' },
+      { label: 'Sharing and Discussion' },
+      { label: 'Revisions and Changes' },
       { label: 'Final Review and Submission Process' },
     ],
     selectedIndex: 1,
