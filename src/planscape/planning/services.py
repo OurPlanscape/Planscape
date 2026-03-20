@@ -1470,7 +1470,7 @@ def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningAr
         if merged_geometry is None:
             merged_geometry = sub_unit.geometry
         else:
-            merged_geometry.union(sub_unit.geometry)
+            merged_geometry = merged_geometry.union(sub_unit.geometry)
     
     if merged_geometry is not None:
         return stands.filter(centroid__within=merged_geometry)
