@@ -72,10 +72,15 @@ $sg-steps-index: 30;
 
 
 sg-steps.new-scenario-ui {
+  width: $scenario-sidebar-width;
   max-width: $scenario-sidebar-width;
   background-color: $color-soft-purple;
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
   z-index: $sg-steps-index;
+
+  @include on-small() {
+    width: 100%;
+  }
 
   &:not(.full-screen-steps) {
     @include on-small() {
