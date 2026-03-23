@@ -60,13 +60,14 @@
   flex-direction: row;
   align-items: center;
   gap: 8px;
+  color: $color-black;
 }
 
 .button-section {
   display: flex;
   flex-direction: row;
   gap: 8px;
-        
+
   @include on-small() {
     width: 100%;
     justify-content: space-between;
@@ -80,7 +81,10 @@ app-section-loader {
   flex: 1;
 }
 
-.custom-tab-group::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+.custom-tab-group::ng-deep
+  .mat-mdc-tab-header
+  .mat-mdc-tab-label-container
+  .mat-mdc-tab {
   flex-grow: 0;
 }
 
