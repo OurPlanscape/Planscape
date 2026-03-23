@@ -54,7 +54,11 @@
   }
 } @else {
   <div class="scenarios-header">
-    <div class="sort-header" (click)="handleSortChange()">
+    <button
+      class="sort-header"
+      sg-button
+      (click)="handleSortChange()"
+      variant="text">
       <mat-icon class="material-symbols-outlined">
         {{
           sortSelection === '-created_at'
@@ -63,7 +67,7 @@
         }}
       </mat-icon>
       <span>Date Created</span>
-    </div>
+    </button>
     <div class="button-section">
       <button
         sg-button
