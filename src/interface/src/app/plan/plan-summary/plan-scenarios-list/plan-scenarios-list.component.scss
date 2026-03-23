@@ -9,7 +9,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  flex: 1;
 }
 
 .saved-scenarios-wrapper {
@@ -82,9 +82,9 @@ app-section-loader {
 }
 
 .custom-tab-group::ng-deep
-  .mat-mdc-tab-header
-  .mat-mdc-tab-label-container
-  .mat-mdc-tab {
+.mat-mdc-tab-header
+.mat-mdc-tab-label-container
+.mat-mdc-tab {
   flex-grow: 0;
 }
 

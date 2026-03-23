@@ -193,12 +193,10 @@
   border-radius: 8px;
   border: 1px solid $color-soft-gray;
   background-color: $color-white;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
-  height: 100%;
+  flex: 1;
   max-height: 100%;
   overflow-y: auto;
-  padding-top: 0;
 }
