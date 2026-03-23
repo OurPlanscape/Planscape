@@ -1513,7 +1513,7 @@ def get_available_stands(
         # Exclude stands that is not included to any sub-unit
         stands_queryset = stands.all()
         datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
-        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
+        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, scenario.get_stand_size(), datalayer)
         sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
         stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list("id", flat=True)
 
@@ -1590,7 +1590,7 @@ def get_available_stand_ids(
     ):
         stands_queryset = stands.all()
         datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
-        stands = get_stands_from_sub_units(stands_queryset, planning_area, datalayer)
+        stands = get_stands_from_sub_units(stands_queryset, planning_area, stand_size, datalayer)
 
     excluded_ids = []
     for exclude in excludes:
