@@ -1460,11 +1460,11 @@ def get_constrained_stands(
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningArea, datalayer: DataLayer) -> QuerySet[Stand]:
+def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningArea, stand_size: str, datalayer: DataLayer) -> QuerySet[Stand]:
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
 
-    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(geometry__intersects=geometry)
     
     merged_geometry = None
     for sub_unit in queryset.all():
@@ -1474,7 +1474,7 @@ def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningAr
             merged_geometry = merged_geometry.union(sub_unit.geometry)
     
     if merged_geometry is not None:
-        return stands.filter(centroid__within=merged_geometry)
+        return stands.within_polygon(merged_geometry, stand_size)
 
     return stands.none()
 
@@ -1624,12 +1624,12 @@ def get_sub_units_areas(scenario: Scenario, stand_size: StandSizeChoices, datala
     stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
     stand_area = get_min_project_area(scenario=scenario)
 
-    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(geometry__intersects=geometry)
     
     areas = []
     for sub_unit in queryset.all():
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        sub_unit_stands_count = stands.filter(centroid__within=geo_intersection).count()
+        sub_unit_stands_count = stands.within_polygon(geo_intersection, stand_size).count()
         if sub_unit_stands_count > 0:
             acreage = sub_unit_stands_count * stand_area
             areas.append(acreage)
@@ -1682,13 +1682,13 @@ def get_sub_units_stands_lookup_table(scenario: Scenario, datalayer: DataLayer) 
     stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
 
     DynamicModel = model_from_fiona(datalayer)
-    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(geometry__intersects=geometry)
 
     lookup_table = {}
     for sub_unit in queryset.all():
         sub_unit_id = sub_unit.pk
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        stand_ids = stands.filter(centroid__within=geo_intersection).values_list("id", flat=True)
+        stand_ids = stands.within_polygon(geo_intersection, scenario.get_stand_size()).values_list("id", flat=True)
         lookup_table.update({str(sub_unit_id): list(stand_ids)})
 
     return lookup_table
