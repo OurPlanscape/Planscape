@@ -68,6 +68,8 @@ class TreatmentPlan(
     stand_size = models.CharField(
         max_length=16,
         choices=StandSizeChoices.choices,
+        null=True,
+        blank=True,
         help_text="Stand size for this treatment plan.",
     )
 
