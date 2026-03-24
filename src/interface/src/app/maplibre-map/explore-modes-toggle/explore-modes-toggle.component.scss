@@ -1,4 +1,4 @@
-@import "colors";
+@import 'colors';
 
 :host {
   box-sizing: border-box;
@@ -8,25 +8,16 @@
   gap: 8px;
 }
 
-.mode-buttons {
+:host ::ng-deep {
+  .selection-button.ghost-button {
+    border: 1px solid $color-text-gray;
+  }
+}
+
+.button {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-}
-
-.left-option {
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px;
-  border-right: 1px $color-text-gray solid;
-}
-
-.right-option {
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px;
-}
-
-button {
-  border: none;
+  justify-content: center;
+  align-items: center;
   background: $color-white;
   border-radius: 4px;
   padding: 3px;
@@ -35,14 +26,28 @@ button {
   cursor: pointer;
   color: $color-standard-blue;
 
+  &.no-border {
+    border: none;
+  }
+
   &:hover {
     background: $color-soft-gray;
   }
-}
 
-mat-icon {
-  &:hover {
-    background: none;
+  &.active {
+    background-color: $color-standard-blue;
+    color: $color-white;
+  }
+
+  &.active:hover {
+    color: $color-white;
+    background: darken($color-standard-blue, 10);
+  }
+
+  &:disabled {
+    background-color: $color-white;
+    opacity: 0.3;
+    pointer-events: none;
   }
 }
 
@@ -58,8 +63,56 @@ mat-icon {
     width: 40px;
   }
 
-
   .check-button {
     color: $color-brand-teal;
   }
+}
+
+::ng-deep .planning-area-options-menu {
+  margin-top: 8px;
+  min-width: 190px;
+}
+
+.new-planning-down {
+  height: 38px;
+  line-height: 40px;
+  border-left: 1px solid $color-soft-gray;
+  padding: 0 8px;
+  margin-left: 6px;
+  margin-right: -12px;
+}
+
+.mode-selection-wrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+
+  .button {
+    padding: 6px 16px;
+    height: auto;
+    width: auto;
+  }
+
+  .button:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .button:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+.line {
+  border-left: 1px solid $color-white;
+  height: 100%;
+}
+
+.cancel-button {
+  color: $color-black;
+}
+
+.check-button {
+  color: $color-brand-teal;
 }

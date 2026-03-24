@@ -1,47 +1,78 @@
 <div
-  class="mode-buttons"
   *ngIf="
     (mapInteractionMode$ | async) !== 'draw' &&
     (mapInteractionMode$ | async) !== 'upload'
   ">
   <button
-    type="button"
-    [ngClass]="{
-      active: false,
-    }"
-    class="left-option"
-    (click)="handleUploadButton()"
-    matTooltip="Upload Planning Area"
-    matTooltipPosition="below">
-    <mat-icon class="material-symbols-outlined">upload_file</mat-icon>
+    sg-button
+    class="selection-button"
+    data-id="map-action"
+    icon="add"
+    variant="ghost"
+    [matMenuTriggerFor]="menu"
+    #trigger="matMenuTrigger">
+    Planning Area
+
+    <mat-icon class="material-symbols-outlined new-planning-down"
+      >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+    </mat-icon>
   </button>
-  <button
-    type="button"
-    (click)="handleDrawingButton()"
-    class="right-option"
-    matTooltip="Draw Planning Area"
-    matTooltipPosition="below">
-    <mat-icon class="material-symbols-outlined">draw</mat-icon>
-  </button>
+  <mat-menu #menu="matMenu" class="planning-area-options-menu">
+    <button mat-menu-item (click)="handleUploadButton()">
+      <mat-icon class="material-symbols-outlined">upload_file</mat-icon>
+      Upload
+    </button>
+    <button mat-menu-item (click)="handleDrawingButton()">
+      <mat-icon class="material-symbols-outlined">draw</mat-icon>
+      Draw
+    </button>
+  </mat-menu>
 </div>
 
 <div class="drawing-options" *ngIf="(mapInteractionMode$ | async) !== 'view'">
+  <div class="mode-selection-wrapper">
+    <button
+      sg-button
+      type="button"
+      icon="upload_file"
+      [ngClass]="{
+        active: (mapInteractionMode$ | async) === 'upload',
+      }"
+      class="button"
+      [disabled]="(mapInteractionMode$ | async) === 'draw'"
+      (click)="handleUploadButton()"
+      matTooltip="Upload Planning Area"
+      matTooltipPosition="below"></button>
+    <button
+      sg-button
+      type="button"
+      icon="draw"
+      [ngClass]="{
+        active: (mapInteractionMode$ | async) === 'draw',
+      }"
+      (click)="handleDrawingButton()"
+      class="button"
+      [disabled]="(mapInteractionMode$ | async) === 'upload'"
+      matTooltip="Draw Planning Area"
+      matTooltipPosition="below"></button>
+  </div>
+  <div class="line"></div>
   <button
+    sg-button
     type="button"
-    class="drawing-mode-button"
+    class="button cancel-button no-border"
     (click)="handleCancelButton()"
     matTooltip="Cancel"
-    matTooltipPosition="below">
-    <mat-icon class="material-symbols-outlined">close</mat-icon>
-  </button>
+    icon="close"
+    matTooltipPosition="below"></button>
   <button
+    sg-button
+    icon="check"
     type="button"
-    class="drawing-mode-button check-button"
+    class="button check-button no-border"
     (click)="handleSaveButton()"
     matTooltip="Save"
-    matTooltipPosition="below">
-    <mat-icon class="material-symbols-outlined">check</mat-icon>
-  </button>
+    matTooltipPosition="below"></button>
 </div>
 
 <app-upload-planning-area-box
