@@ -16,17 +16,17 @@ Treatment cost per acre does not affect how project areas are created but is inc
     reporting to ensure accurate financial results.
   </p>
   <div class="sub-unit-details">
-    <h5>Sub-Unit Details</h5>
+    <h5>Subunit Details</h5>
     <dl class="list" *ngIf="{ value: subUnitDetails$ | async } as subUnits">
-      <dt>Average Sub-Unit Acreage:</dt>
+      <dt>Average Subunit Acreage:</dt>
       <dd>
         <app-loading-value [value]="subUnits.value?.avg ?? null" />
       </dd>
-      <dt>Smallest Sub-Unit Acreage:</dt>
+      <dt>Smallest Subunit Acreage:</dt>
       <dd>
         <app-loading-value [value]="subUnits.value?.min ?? null" />
       </dd>
-      <dt>Largest Sub-Unit Acreage:</dt>
+      <dt>Largest Subunit Acreage:</dt>
       <dd>
         <app-loading-value [value]="subUnits.value?.max ?? null" />
       </dd>
@@ -35,7 +35,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
   <form *ngIf="form" [formGroup]="form!" class="form-box">
     <div class="area-selector-row">
       <p class="label">
-        How much area within each sub-unit do you want to treat?
+        How much area within each subunit do you want to treat?
         <span class="required">*</span>
       </p>
       <div class="selector">
