@@ -11,13 +11,16 @@ import { TreatmentGoalsService } from '@services';
 import { getGroupedGoals } from '@scenario/scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { filter, map, shareReplay, take } from 'rxjs';
+import { filter, map, shareReplay, take, tap } from 'rxjs';
+import { BannerComponent } from '@styleguide';
+import { ScenarioGoal } from '@app/types';
 
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-goal-selector',
   standalone: true,
   imports: [
+    BannerComponent,
     CommonModule,
     ReactiveFormsModule,
     MatExpansionModule,
@@ -35,9 +38,13 @@ export class TreatmentGoalSelectorComponent implements OnInit {
 
   private planId = this.route.parent?.snapshot.data['planId'];
 
+  mappableGoal = false;
+  allGoals : ScenarioGoal[] = [];
+
   categorizedStatewideGoals$ = this.treatmentGoalsService
     .getTreatmentGoals(this.planId)
     .pipe(
+      tap((goals) => this.allGoals = goals),
       map((goals) => getGroupedGoals(goals)),
       shareReplay(1)
     );
@@ -46,7 +53,7 @@ export class TreatmentGoalSelectorComponent implements OnInit {
     private treatmentGoalsService: TreatmentGoalsService,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.newScenarioState.scenarioConfig$
@@ -57,6 +64,8 @@ export class TreatmentGoalSelectorComponent implements OnInit {
       )
       .subscribe((config) => {
         if (config.treatment_goal) {
+          // if goal exists from config, but it doesnt match an existing goal, we consider it unmappable
+          this.mappableGoal = this.allGoals.map((goal : ScenarioGoal) => goal.id).includes(config.treatment_goal);
           this.control.setValue(config.treatment_goal);
         }
       });

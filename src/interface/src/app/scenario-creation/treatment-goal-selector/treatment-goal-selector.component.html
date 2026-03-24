@@ -12,6 +12,12 @@ Click on a Treatment Goal option to see full scenario details.">
     *ngIf="control.touched && control.hasError('required')">
     Please select a treatment goal to continue
   </span>
+      <sg-banner
+        type="warning"
+        class="apply-warning"
+        *ngIf="!mappableGoal"
+        >Your selected treatment goal is no longer available. Please choose a new one to continue. All your other previous selections have been saved.
+      </sg-banner>
 
   <mat-radio-group
     name="treatmentGoalSelect"
