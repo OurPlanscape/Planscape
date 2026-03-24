@@ -68,6 +68,7 @@ def create_treatment_plan(
         scenario=scenario,
         status=TreatmentPlanStatus.PENDING,
         name=name,
+        stand_size=scenario.get_stand_size(),
     )
     track_openpanel(
         name="impacts.treatment_plan.create",
@@ -153,6 +154,7 @@ def clone_treatment_plan(
         scenario=treatment_plan.scenario,
         status=TreatmentPlanStatus.PENDING,
         name=get_cloned_name(treatment_plan.name),
+        stand_size=treatment_plan.stand_size,
     )
 
     cloned_prescriptions = list(
