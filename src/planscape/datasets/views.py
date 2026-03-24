@@ -68,15 +68,15 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             geometry=serializer.validated_data.get("geometry"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
-        if request.user and request.user.is_authenticated:
-            track_openpanel(
-                name="datasets.dataset.browse",
-                properties={
-                    "dataset_id": dataset.pk,
-                    "email": request.user.email,
-                },
-                user_id=request.user.pk,
-            )
+        is_authenticated = request.user and request.user.is_authenticated
+        track_openpanel(
+            name="datasets.dataset.browse",
+            properties={
+                "dataset_id": dataset.pk,
+                "email": request.user.email if is_authenticated else None,
+            },
+            user_id=request.user.pk if is_authenticated else None,
+        )
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,
