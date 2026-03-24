@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -42,11 +42,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datasets accessible by the organization
-        match self.action:
-            case "browse":
-                filters = {}
-            case _:
-                filters = {"visibility": VisibilityOptions.PUBLIC}
+        filters = {"visibility": VisibilityOptions.PUBLIC}
 
         return Dataset.objects.filter(**filters).select_related(
             "organization", "created_by"
@@ -59,7 +55,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             200: BrowseDataLayerSerializer(many=True),
         },
     )
-    @action(detail=True, methods=["get", "post"])
+    @action(detail=True, methods=["get", "post"], permission_classes=[AllowAny])
     def browse(self, request, pk=None):
         dataset = self.get_object()
         params = request.query_params if request.method == "GET" else request.data
@@ -72,18 +68,14 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             geometry=serializer.validated_data.get("geometry"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
-        email = (
-            request.user.email
-            if request.user and hasattr(request.user, "email")
-            else None
-        )
+        is_authenticated = request.user and request.user.is_authenticated
         track_openpanel(
             name="datasets.dataset.browse",
             properties={
                 "dataset_id": dataset.pk,
-                "email": email,
+                "email": request.user.email if is_authenticated else None,
             },
-            user_id=request.user.pk,
+            user_id=request.user.pk if is_authenticated else None,
         )
         return Response(
             serializer.data,
@@ -126,7 +118,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         parameters=[FindAnythingSerializer],
         responses={200: SearchResultsSerializer(many=True)},
     )
-    @action(detail=False, methods=["get", "post"])
+    @action(detail=False, methods=["get", "post"], permission_classes=[AllowAny])
     def find_anything(self, request):
         params = request.query_params if request.method == "GET" else request.data
         serializer = FindAnythingSerializer(data=params)
