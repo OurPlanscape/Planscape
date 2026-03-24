@@ -95,9 +95,9 @@ class PermissionsTest(TestCase):
             PlanningAreaPermission.can_change(self.invitee, self.planning_area)
         )
 
-    def test_collaborator_cannot_change_planning_area(self):
+    def test_collaborator_can_change_planning_area(self):
         self.create_collaborator_record(Role.COLLABORATOR)
-        self.assertFalse(
+        self.assertTrue(
             PlanningAreaPermission.can_change(self.invitee, self.planning_area)
         )
 
@@ -222,9 +222,9 @@ class PermissionsTest(TestCase):
             CollaboratorPermission.can_view(self.invitee, self.planning_area)
         )
 
-    def test_collaborator_cannot_view_collaborator(self):
+    def test_collaborator_can_view_collaborator(self):
         self.create_collaborator_record(Role.COLLABORATOR)
-        self.assertFalse(
+        self.assertTrue(
             CollaboratorPermission.can_view(self.invitee, self.planning_area)
         )
 
