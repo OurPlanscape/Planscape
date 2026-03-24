@@ -87,6 +87,7 @@
           </ng-container>
           <ng-container *ngSwitchCase="'menu'">
             <app-planning-area-menu
+              *ngIf="showMenu(element)"
               [plan]="element"
               (afterDelete)="reload()"
               (afterRename)="afterRename()"></app-planning-area-menu>
