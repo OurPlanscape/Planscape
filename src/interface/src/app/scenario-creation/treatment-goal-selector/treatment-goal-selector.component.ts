@@ -11,9 +11,8 @@ import { TreatmentGoalsService } from '@services';
 import { getGroupedGoals } from '@scenario/scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { filter, map, shareReplay, take, tap } from 'rxjs';
+import { combineLatest, filter, map, shareReplay, take } from 'rxjs';
 import { BannerComponent } from '@styleguide';
-import { ScenarioGoal } from '@app/types';
 
 @UntilDestroy()
 @Component({
@@ -38,35 +37,35 @@ export class TreatmentGoalSelectorComponent implements OnInit {
 
   private planId = this.route.parent?.snapshot.data['planId'];
 
-  mappableGoal = false;
-  allGoals : ScenarioGoal[] = [];
+  mappableGoal = true;
 
-  categorizedStatewideGoals$ = this.treatmentGoalsService
+  availableTreatmentGoals$ = this.treatmentGoalsService
     .getTreatmentGoals(this.planId)
-    .pipe(
-      tap((goals) => this.allGoals = goals),
-      map((goals) => getGroupedGoals(goals)),
-      shareReplay(1)
-    );
+    .pipe(shareReplay(1));
+
+  categorizedStatewideGoals$ = this.availableTreatmentGoals$.pipe(
+    map((goals) => getGroupedGoals(goals))
+  );
 
   constructor(
     private treatmentGoalsService: TreatmentGoalsService,
     private newScenarioState: NewScenarioState,
     private route: ActivatedRoute
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.newScenarioState.scenarioConfig$
-      .pipe(
-        untilDestroyed(this),
-        filter((c) => !!c?.treatment_goal),
-        take(1)
-      )
-      .subscribe((config) => {
-        if (config.treatment_goal) {
-          // if goal exists from config, but it doesnt match an existing goal, we consider it unmappable
-          this.mappableGoal = this.allGoals.map((goal : ScenarioGoal) => goal.id).includes(config.treatment_goal);
-          this.control.setValue(config.treatment_goal);
+    combineLatest([
+      this.availableTreatmentGoals$,
+      this.newScenarioState.scenarioConfig$.pipe(
+        map((c) => c?.treatment_goal),
+        filter((goalId) => !!goalId)
+      ),
+    ])
+      .pipe(take(1), untilDestroyed(this))
+      .subscribe(([goals, selectedId]) => {
+        this.mappableGoal = goals.some((g) => g.id === selectedId);
+        if (selectedId) {
+          this.control.setValue(selectedId);
         }
       });
   }
