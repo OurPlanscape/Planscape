@@ -1,18 +1,19 @@
 @import 'mixins';
 @import 'colors';
 
-:host{
-    border-radius: 8px;
-    border: 1px solid $color-soft-gray;
-    background-color: $color-white;
-    padding: 16px;
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
-    align-items: center;
-    justify-content: space-between;
-    height: 32px;
+.notes {
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  cursor: pointer;
 }
 
 .section-title {
@@ -20,5 +21,5 @@
   color: $color-text-dark;
   line-height: 42px;
   letter-spacing: normal;
-  height: 100%;
+  margin: 0;
 }

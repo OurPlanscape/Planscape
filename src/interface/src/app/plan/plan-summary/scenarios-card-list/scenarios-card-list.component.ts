@@ -11,24 +11,16 @@ import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '@plan/plan-helpers';
-import {
-  scenarioCanHaveTreatmentPlans,
-  suggestUniqueName,
-} from '@scenario/scenario-helper';
+import { suggestUniqueName } from '@scenario/scenario-helper';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
-import { CreateTreatmentDialogComponent } from '@scenario/create-treatment-dialog/create-treatment-dialog.component';
 import { catchError, of, take, map } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { AnalyticsService } from '@services/analytics.service';
-import {
-  canEditScenarioName,
-  userCanAddTreatmentPlan,
-} from '@plan/permissions';
+import { canEditScenarioName } from '@plan/permissions';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -66,8 +58,7 @@ export class ScenariosCardListComponent {
     private router: Router,
     private route: ActivatedRoute,
     private overlayLoaderService: OverlayLoaderService,
-    private dialog: MatDialog,
-    private analyticsService: AnalyticsService
+    private dialog: MatDialog
   ) {}
 
   numberOfAreas(scenario: Scenario) {
@@ -120,11 +111,7 @@ export class ScenariosCardListComponent {
     return parseResultsToTotals(projectAreas);
   }
 
-  isSelected(s: ScenarioRow): boolean {
-    return this.selectedCard == s;
-  }
-
-  userCanArchiveScenario(scenario: Scenario) {
+  userCanDeleteScenario(scenario: Scenario) {
     if (!this.plan) {
       return false;
     }
@@ -150,48 +137,13 @@ export class ScenariosCardListComponent {
     }
   }
 
-  userCanCreateTreatmentPlan() {
-    if (!this.plan) {
-      return false;
-    }
-    return userCanAddTreatmentPlan(this.plan) || false;
-  }
-
-  hasTreatmentPlanCapability(scenario: Scenario) {
-    return scenarioCanHaveTreatmentPlans(scenario);
-  }
-
-  toggleScenarioStatus(scenario: Scenario) {
-    if (scenario.id) {
-      const originalStatus = scenario.status;
-      this.scenarioService.toggleScenarioStatus(Number(scenario.id)).subscribe({
-        next: () => {
-          this.snackbar.open(
-            `"${scenario.name}" has been ${originalStatus === 'ARCHIVED' ? 'restored' : 'archived'}`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
-          this.triggerRefresh.emit(scenario);
-        },
-        error: (err) => {
-          this.snackbar.open(
-            `Error: ${err.error.error}`,
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-        },
-      });
-    }
-  }
-
   showDeleteScenarioDialog(scenario: Scenario) {
     if (scenario.id) {
       this.dialog
         .open(DeleteDialogComponent, {
           data: {
             title: `Delete "${scenario?.name}"?`,
-            body: `Are you sure you want to delete this scenario? All configuration details and
-                    results will be permanently deleted, and this action cannot be undone.`,
+            body: `Deleting this project area will permanently remove all associated scenarios and analyses. This action cannot be undone.`,
           },
         })
         .afterClosed()
@@ -222,28 +174,6 @@ export class ScenariosCardListComponent {
         );
       },
     });
-  }
-
-  openNewTreatmentDialog(event: Event, s: Scenario) {
-    event.stopPropagation();
-    this.analyticsService.emitEvent(
-      'new_treatment_plan',
-      'scenario_list_page',
-      'New Treatment Plan'
-    );
-    const scenarioId = s.id;
-    if (!scenarioId) {
-      return;
-    }
-    this.dialog
-      .open(CreateTreatmentDialogComponent)
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((name) => {
-        if (name) {
-          this.createTreatmentPlan(scenarioId, name);
-        }
-      });
   }
 
   createTreatmentPlan(scenarioId: number, name: string) {

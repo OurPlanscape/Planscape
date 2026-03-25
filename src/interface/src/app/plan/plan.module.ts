@@ -42,6 +42,7 @@ import { MapViewerCardComponent } from './map-viewer-card/map-viewer-card.compon
 import { PlanningAreaDetailsCardComponent } from './planning-area-details-card/planning-area-details-card.component';
 import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expansion-card.component';
 import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/plan-scenarios-list.component';
+import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list/scenarios-empty-list.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -95,6 +96,7 @@ import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/p
     PlanningAreaDetailsCardComponent,
     NotesExpansionCardComponent,
     ToggleComponent,
+    ScenariosEmptyListComponent,
   ],
 })
 export class PlanModule {}

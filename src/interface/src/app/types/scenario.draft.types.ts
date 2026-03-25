@@ -34,4 +34,6 @@ export interface SubUnitsDetail {
   avg: number;
   max: number;
   min: number;
+  sum?: number;
+  targeted_area?: number;
 }

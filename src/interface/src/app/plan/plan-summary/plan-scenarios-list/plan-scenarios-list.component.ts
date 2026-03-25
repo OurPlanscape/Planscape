@@ -25,7 +25,6 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { canAddScenario } from '@plan/permissions';
-import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '@plan/upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioCreateConfirmationComponent } from '@plan/scenario-create-confirmation/scenario-create-confirmation.component';
 import { TreatmentsService } from '@services/treatments.service';
@@ -52,10 +51,7 @@ export class PlanScenariosListComponent implements OnInit {
 
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;
-  showOnlyMyScenarios: boolean = false;
   activeScenarios: ScenarioRow[] = [];
-  archivedScenarios: ScenarioRow[] = [];
-  scenariosForUser: ScenarioRow[] = [];
   selectedTabIndex = 0;
   totalScenarios = 0;
   sortSelection = '-created_at';
@@ -124,22 +120,15 @@ export class PlanScenariosListComponent implements OnInit {
         tap((scenarios) => {
           this.totalScenarios = scenarios.length;
 
-          this.scenariosForUser = this.showOnlyMyScenarios
-            ? scenarios.filter((s) => s.user === this.user$.value?.id)
-            : scenarios;
-
-          const fetchedActive = this.scenariosForUser.filter(
-            (s) => s.status === 'ACTIVE'
+          // TODO:  we will not have archived records in the future
+          // so inverting the condition here to stay compatible for when those are gone
+          // might be able remove after PLANNING_AREA_OVERVIEW is released
+          const fetchedActive = scenarios.filter(
+            (s) => s.status !== 'ARCHIVED'
           );
+
           if (this.listsDiffer(this.activeScenarios, fetchedActive)) {
             this.activeScenarios = fetchedActive;
-          }
-
-          const fetchedArchived = this.scenariosForUser.filter(
-            (s) => s.status === 'ARCHIVED'
-          );
-          if (this.listsDiffer(this.archivedScenarios, fetchedArchived)) {
-            this.archivedScenarios = fetchedArchived;
           }
           this.loading = false;
         }),
@@ -152,10 +141,7 @@ export class PlanScenariosListComponent implements OnInit {
       );
   }
 
-  removeScenarioFromList(
-    scenario: Scenario,
-    list: 'activeScenarios' | 'archivedScenarios'
-  ) {
+  removeScenarioFromList(scenario: Scenario, list: 'activeScenarios') {
     this[list] = this[list].filter((s) => s.id !== scenario.id);
     this.fetchScenarios();
   }
@@ -183,11 +169,11 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   get planningAreaIsReady() {
-    return this.plan && planningAreaMetricsAreReady(this.plan);
+    return !!this.plan && planningAreaMetricsAreReady(this.plan);
   }
 
   get planningAreaFailed() {
-    return this.plan && planningAreaMetricsFailed(this.plan);
+    return !!this.plan && planningAreaMetricsFailed(this.plan);
   }
 
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
@@ -210,12 +196,6 @@ export class PlanScenariosListComponent implements OnInit {
     this.router.navigate(['scenario', clickedScenario.id], {
       relativeTo: this.route,
     });
-  }
-
-  tabChange(data: { index: number; tab: MatTab }) {
-    this.selectedTabIndex = data.index;
-    // reset selected row when changing tabs.
-    this.highlightedScenarioRow = null;
   }
 
   get isValidPlanningArea() {

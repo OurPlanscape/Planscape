@@ -24,13 +24,19 @@ type Story = StoryObj<ScenarioCardComponent>;
 export const Default: Story = {
   args: {
     name: 'Test Scenario',
-    areas: 5,
     resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
-    budget: 1234567,
-    treatmentPlansCount: 5,
-    userCanArchiveScenario: true,
+  },
+};
+
+export const ProjectArea: Story = {
+  args: {
+    name: 'Test Project Area',
+    resultStatus: 'SUCCESS',
+    creator: 'Larry Larrington',
+    created_at: '2024-01-01 12:34:00',
+    origin: 'USER',
   },
 };
 
@@ -55,62 +61,14 @@ export const Failed: Story = {
   },
 };
 
-export const TreatmentsPlansEnabled: Story = {
-  args: {
-    name: 'Test Scenario',
-    areas: 5,
-    resultStatus: 'SUCCESS',
-    creator: 'Larry Larrington',
-    created_at: '2024-01-01 12:34:00',
-    budget: 1234567,
-    treatmentPlansCount: 5,
-  },
-};
-
-export const FailedWithTreatmentPlansEnabled: Story = {
-  args: {
-    ...Default.args,
-    resultStatus: 'FAILURE',
-  },
-};
-
-export const PanickedWithTreatmentPlansEnabled: Story = {
-  args: {
-    ...Default.args,
-    resultStatus: 'PANIC',
-  },
-};
-
-export const RunningWithTreatmentPlansEnabled: Story = {
-  args: {
-    ...Default.args,
-    resultStatus: 'RUNNING',
-  },
-};
-
-export const UserCannotArchiveScenario: Story = {
-  args: {
-    name: 'Test Scenario',
-    areas: 5,
-    resultStatus: 'SUCCESS',
-    creator: 'Larry Larrington',
-    created_at: '2024-01-01 12:34:00',
-    budget: 1234567,
-    treatmentPlansCount: 5,
-    userCanArchiveScenario: false,
-  },
-};
-
 export const DisabledScenario: Story = {
   args: {
     name: 'Test Scenario',
-    areas: 5,
     resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
-    budget: 1234567,
-    treatmentPlansCount: 5,
-    userCanArchiveScenario: false,
     disabled: true,
+    contextualMenuEnabled: false,
+    userCanDeleteScenario: true,
   },
 };

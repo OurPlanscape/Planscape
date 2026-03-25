@@ -15,23 +15,27 @@ Treatment cost per acre does not affect how project areas are created but is inc
     You can also update Treatment Costs, which will be included in scenario
     reporting to ensure accurate financial results.
   </p>
-  <div
-    class="sub-unit-details"
-    *ngIf="subUnitDetails$ | async as subUnitDetails">
-    <h5>Sub-Unit Details</h5>
-    <dl class="list">
-      <dt>Average Sub-Unit Acreage:</dt>
-      <dd>{{ (subUnitDetails.avg | number: '1.0-2') || '--' }} acres</dd>
-      <dt>Smallest Sub-Unit Acreage:</dt>
-      <dd>{{ (subUnitDetails.min | number: '1.0-2') || '--' }} acres</dd>
-      <dt>Largest Sub-Unit Acreage:</dt>
-      <dd>{{ (subUnitDetails.max | number: '1.0-2') || '--' }} acres</dd>
+  <div class="sub-unit-details">
+    <h5>Subunit Details</h5>
+    <dl class="list" *ngIf="{ value: subUnitDetails$ | async } as subUnits">
+      <dt>Average Subunit Acreage:</dt>
+      <dd>
+        <app-loading-value [value]="subUnits.value?.avg ?? null" />
+      </dd>
+      <dt>Smallest Subunit Acreage:</dt>
+      <dd>
+        <app-loading-value [value]="subUnits.value?.min ?? null" />
+      </dd>
+      <dt>Largest Subunit Acreage:</dt>
+      <dd>
+        <app-loading-value [value]="subUnits.value?.max ?? null" />
+      </dd>
     </dl>
   </div>
   <form *ngIf="form" [formGroup]="form!" class="form-box">
     <div class="area-selector-row">
       <p class="label">
-        How much area within each sub-unit do you want to treat?
+        How much area within each subunit do you want to treat?
         <span class="required">*</span>
       </p>
       <div class="selector">
@@ -45,6 +49,7 @@ Treatment cost per acre does not affect how project areas are created but is inc
             matInput
             type="text"
             mask="separator"
+            autocomplete="off"
             [placeholder]="
               form.get('sub_units_fixed_target')?.value === false
                 ? 'Enter Percentage'
@@ -102,9 +107,16 @@ Treatment cost per acre does not affect how project areas are created but is inc
     <!-- Help text % of available acreage treated -->
     <div class="total-areas-targeted">
       Total Acres Targeted:
-      <span class="calculated-total">{{
-        getTotalTreated() ? (getTotalTreated() | number: '1.0-2') : ' -- '
-      }}</span>
+      <mat-spinner
+        *ngIf="isCalculatingTotal"
+        diameter="20"
+        class="total-spinner"></mat-spinner>
+
+      <span class="calculated-total">
+        <span [style.visibility]="isCalculatingTotal ? 'hidden' : 'visible'">{{
+          (getTotalTreated$ | async | number: '1.0-2') ?? '--'
+        }}</span></span
+      >
     </div>
     <mat-divider class="form-divider"></mat-divider>
 

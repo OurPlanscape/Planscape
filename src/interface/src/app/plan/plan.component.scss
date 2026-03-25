@@ -76,13 +76,11 @@
   flex-direction: column;
   padding: 16px;
   padding-left: 8px;
-  max-width: $plan-right-lg-max;
   box-sizing: border-box;
   flex: 1;
 
   @include on-large() {
     width: $plan-right-md-max;
-    max-width: $plan-right-lg-max;
   }
 
   @include on-small() {
@@ -174,11 +172,7 @@
   flex-direction: column;
   max-width: $plan-left-lg-max;
   gap: 16px;
-  flex:1;
-
-  @include on-large() {
-    max-width: $plan-left-md-max;
-  }
+  flex: 1;
 
   @include on-small() {
     height: fit-content;
@@ -187,6 +181,11 @@
     padding: 16px;
     padding-bottom: 0;
   }
+
+  @include on-vert-tiny-min-med-width() {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 }
 
 /* TODO - remove this when PLANNING_AREA_OVERVIEW items are in place*/
@@ -194,12 +193,10 @@
   border-radius: 8px;
   border: 1px solid $color-soft-gray;
   background-color: $color-white;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
-  height: 100%;
+  flex: 1;
   max-height: 100%;
-  overflow-y: scroll;
-  padding-top: 0;
+  overflow-y: auto;
 }

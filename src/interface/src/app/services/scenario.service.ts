@@ -147,14 +147,14 @@ export class ScenarioService {
   }
 
   getExcludedStands(
-    planId: number,
+    scenarioId: number,
     stand_size: string,
     excludes?: number[],
     constraints?: Constraint[]
   ) {
     const url =
       environment.backend_endpoint +
-      `/v2/planningareas/${planId}/available_stands/`;
+      `/v2/scenarios/${scenarioId}/available_stands/`;
     return this.http.post<AvailableStands>(
       url,
       {
@@ -168,13 +168,31 @@ export class ScenarioService {
     );
   }
 
-  getSubUnitsDetails(scenarioId: number, sub_units_layer?: number) {
+  getSubUnitsDetails(
+    scenarioId: number,
+    options: {
+      sub_units_layer?: number;
+      sub_units_fixed_target?: boolean;
+      sub_units_target_value?: number | null;
+    } = {}
+  ) {
+    const { sub_units_layer, sub_units_fixed_target, sub_units_target_value } =
+      options;
     const base =
       environment.backend_endpoint +
       `/v2/scenarios/${scenarioId}/sub_units_details/`;
-    const params =
-      sub_units_layer != null ? `?sub_units_layer=${sub_units_layer}` : '';
-    return this.http.get<SubUnitsDetail>(base + params, {
+    const queryParams = new URLSearchParams();
+    if (sub_units_layer != null) {
+      queryParams.set('sub_units_layer', String(sub_units_layer));
+    }
+    if (sub_units_fixed_target != null) {
+      queryParams.set('sub_units_fixed_target', String(sub_units_fixed_target));
+    }
+    if (sub_units_target_value != null) {
+      queryParams.set('sub_units_target_value', String(sub_units_target_value));
+    }
+    const qs = queryParams.toString();
+    return this.http.get<SubUnitsDetail>(base + (qs ? `?${qs}` : ''), {
       withCredentials: true,
     });
   }

@@ -14,6 +14,7 @@ from actstream import action
 from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
@@ -23,6 +24,7 @@ from django.contrib.gis.db.models.functions import Area, Transform, Centroid
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
+from django.db.models import QuerySet
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
 from django.utils.text import slugify
@@ -727,7 +729,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         elif sub_units_fixed_target is False and (sub_units_target_value <= 0 or sub_units_target_value > 100):
             errors.append("Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100.")
 
-        else:
+        elif sub_units_fixed_target is True:
             sub_units_layer = DataLayer.objects.get(pk=sub_units_layer_id)
             min_area = get_min_project_area(scenario=scenario)
             max_area = get_sub_units_details(scenario=scenario, stand_size=scenario.get_stand_size(), datalayer=sub_units_layer).get("max")
@@ -755,7 +757,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
             # Expensive validations below
             try:
                 available_stand_ids = get_available_stand_ids(
-                    planning_area=scenario.planning_area,
+                    scenario=scenario,
                     stand_size=stand_size,
                     excludes=excluded_areas,
                 )
@@ -915,6 +917,13 @@ def map_property(key_value_pair):
     return (key, type)
 
 
+def map_property_for_numeric_export(key_value_pair):
+    key, value = key_value_pair
+    if value is None:
+        return (key, "float")
+    return map_property(key_value_pair)
+
+
 def get_schema(
     geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]],
 ) -> Dict[str, Any]:
@@ -1044,7 +1053,16 @@ def export_scenario_stand_outputs_to_geopackage(
                     case _:
                         try:
                             f = float(value)
-                            f = truncate_result(f, quantize=".001")
+                            if math.isfinite(f):
+                                f = truncate_result(f, quantize=".001")
+                            else:
+                                logger.warning(
+                                    "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
+                                    value,
+                                    key,
+                                    scenario.pk,
+                                )
+                                f = None
                         except ValueError:
                             logger.warning(
                                 "Value %s for key %s in scenario %s is not a float.",
@@ -1079,7 +1097,7 @@ def export_scenario_stand_outputs_to_geopackage(
             )
 
     properties = features[0].get("properties", {})
-    field_type_pairs = list(map(map_property, properties.items()))
+    field_type_pairs = list(map(map_property_for_numeric_export, properties.items()))
     schema = {
         "geometry": "MultiPolygon",
         "properties": field_type_pairs,
@@ -1138,7 +1156,16 @@ def export_scenario_inputs_to_geopackage(
                     case _:
                         try:
                             f = float(value)
-                            f = truncate_result(f, quantize=".001")
+                            if math.isfinite(f):
+                                f = truncate_result(f, quantize=".001")
+                            else:
+                                logger.warning(
+                                    "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
+                                    value,
+                                    key,
+                                    scenario.pk,
+                                )
+                                f = None
                         except ValueError:
                             logger.warning(
                                 "Value %s for key %s in scenario %s is not a float.",
@@ -1157,7 +1184,7 @@ def export_scenario_inputs_to_geopackage(
     stand_id = next(iter(scenario_inputs))
     feature = scenario_inputs[stand_id].copy()
     feature.pop("WKT", None)  # Remove WKT if present
-    field_type_pairs = list(map(map_property, feature.items()))
+    field_type_pairs = list(map(map_property_for_numeric_export, feature.items()))
     schema = {
         "geometry": "MultiPolygon",
         "properties": field_type_pairs,
@@ -1432,8 +1459,28 @@ def get_constrained_stands(
     return stands_qs.values_list("id", flat=True)
 
 
+@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
+def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningArea, stand_size: str, datalayer: DataLayer) -> QuerySet[Stand]:
+    geometry = planning_area.geometry
+    DynamicModel = model_from_fiona(datalayer)
+
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(geometry__intersects=geometry)
+    
+    merged_geometry = None
+    for sub_unit in queryset.all():
+        if merged_geometry is None:
+            merged_geometry = sub_unit.geometry
+        else:
+            merged_geometry = merged_geometry.union(sub_unit.geometry)
+
+    if merged_geometry is not None:
+        intersection = geometry.intersection(merged_geometry)
+        return stands.within_polygon(intersection, stand_size)
+
+    return stands.none()
+
 def get_available_stands(
-    planning_area: PlanningArea,
+    scenario: Scenario,
     *,
     stand_size: str = "LARGE",
     includes: Optional[List[DataLayer]] = None,
@@ -1447,6 +1494,7 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
+    planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     stands = planning_area.get_stands(stand_size).annotate(area=area_transform)
     total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
@@ -1457,6 +1505,20 @@ def get_available_stands(
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+
+    if (
+        feature_enabled("PLANNING_APPROACH") and feature_enabled("RENDER_SUB_UNITS_FILTERED") 
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and scenario.configuration.get("sub_units_layer")
+    ):
+        # Exclude stands that is not included to any sub-unit
+        stands_queryset = stands.all()
+        datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
+        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, scenario.get_stand_size(), datalayer)
+        sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
+        stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list("id", flat=True)
+
+        excluded_ids.extend(list(stand_ids))
 
     for constraint in constraints:
         stands_queryset = stands.all()
@@ -1513,20 +1575,30 @@ def get_available_stands(
 
 
 def get_available_stand_ids(
-    planning_area: PlanningArea,
+    scenario: Scenario,
     stand_size: str = "LARGE",
     excludes: Optional[List[DataLayer]] = None,
 ) -> List[int]:
     if not excludes:
         excludes = list()
 
+    planning_area = scenario.planning_area
     stands = planning_area.get_stands(stand_size=stand_size)
+
+    if (
+        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and scenario.configuration.get("sub_units_layer")
+    ):
+        stands_queryset = stands.all()
+        datalayer = DataLayer.objects.get(pk=scenario.configuration.get("sub_units_layer"))
+        stands = get_stands_from_sub_units(stands_queryset, planning_area, stand_size, datalayer)
 
     excluded_ids = []
     for exclude in excludes:
         stands_queryset = stands.all()
         excluded_stands = get_excluded_stands(stands_queryset, exclude)
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+
 
     stand_ids = stands.values_list("id", flat=True)
 
@@ -1546,30 +1618,61 @@ def get_min_project_area(scenario: Scenario) -> float:
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_sub_units_details(scenario: Scenario, stand_size: StandSizeChoices, datalayer: DataLayer) -> Optional[dict[str, float]]:
+def get_sub_units_areas(scenario: Scenario, stand_size: StandSizeChoices, datalayer: DataLayer) -> Optional[List[int]]:
     planning_area = scenario.planning_area
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
     stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
     stand_area = get_min_project_area(scenario=scenario)
 
-    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(geometry__intersects=geometry)
     
     areas = []
     for sub_unit in queryset.all():
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        sub_unit_stands_count = stands.filter(centroid__within=geo_intersection).count()
+        sub_unit_stands_count = stands.within_polygon(geo_intersection, stand_size).count()
         if sub_unit_stands_count > 0:
             acreage = sub_unit_stands_count * stand_area
             areas.append(acreage)
-    
+
     if len(areas) == 0:
         return None
+    
+    return areas
+    
+
+def get_sub_units_details(
+        scenario: Scenario, 
+        stand_size: StandSizeChoices, 
+        datalayer: DataLayer,
+        fixed_target: Optional[bool] = None,
+        target_value: Optional[float] = None,
+    ) -> Optional[dict[str, Optional[float]]]:
+    
+    areas = get_sub_units_areas(scenario, stand_size, datalayer)
+    
+    if areas is None:
+        return
+    
+    targeted_area = None
+    if fixed_target is True and target_value is not None:
+        targeted_area = 0
+        for area in areas:
+            if area > target_value:
+                # area is bigger than target, then use target value
+                targeted_area += target_value
+            else:
+                # area is equal or smaller than target, then use area
+                targeted_area += area
+    elif fixed_target is False and target_value is not None:
+        targeted_area = sum(areas) * (target_value / 100)
 
     return {
         "avg": truncate_result(sum(areas) / len(areas)),
         "max": truncate_result(max(areas)),
         "min": truncate_result(min(areas)),
+        "sum": sum(areas),
+        "targeted_area": targeted_area,
     }
 
 
@@ -1580,13 +1683,13 @@ def get_sub_units_stands_lookup_table(scenario: Scenario, datalayer: DataLayer) 
     stands = planning_area.get_stands(stand_size).annotate(centroid=Centroid("geometry"))
 
     DynamicModel = model_from_fiona(datalayer)
-    queryset = DynamicModel.objects.filter(geometry__intersects=geometry)
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(geometry__intersects=geometry)
 
     lookup_table = {}
     for sub_unit in queryset.all():
         sub_unit_id = sub_unit.pk
         geo_intersection = geometry.intersection(sub_unit.geometry)
-        stand_ids = stands.filter(centroid__within=geo_intersection).values_list("id", flat=True)
+        stand_ids = stands.within_polygon(geo_intersection, scenario.get_stand_size()).values_list("id", flat=True)
         lookup_table.update({str(sub_unit_id): list(stand_ids)})
 
     return lookup_table

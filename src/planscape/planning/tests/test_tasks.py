@@ -143,6 +143,7 @@ class AsyncPreForsysProcessTest(TestCase):
             "seed": 42,
         }
         self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
             treatment_goal=self.treatment_goal,
             configuration=configuration,
             type=ScenarioType.PRESET,
@@ -239,31 +240,43 @@ class AsyncPreForsysProcessTest(TestCase):
         )
 
     @override_settings(FEATURE_FLAGS=["PLANNING_APPROACH"])
-    @mock.patch("planning.services.get_sub_units_stands_lookup_table", return_value={"1" : [8, 9], "2": [7, 6, 5], "3": [4]})
-    def test_async_pre_forsys_process_sub_units(self, mock):
-        configuration = self.scenario.configuration
-        sub_units_datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
-        configuration.update(
-            {
-                "sub_units_layer": sub_units_datalayer.pk,
-                "targets" :{
-                    "sub_units_fixed_target": False,
-                    "sub_units_target_value": 99,
-                }
-            }
-        )
-        self.scenario.configuration = configuration
-        self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
-        self.scenario.save()
+    def test_async_pre_forsys_process_sub_units(self):
+        stands = self.planning_area.get_stands(self.scenario.get_stand_size())
+        stand_ids = [stand.pk for stand in stands]
+        sub_units_stand_ids = stand_ids[0:60]
+        sub_units_stands = Stand.objects.filter(id__in=sub_units_stand_ids).all()
 
-        async_pre_forsys_process(self.scenario.pk)
+        with mock.patch("planning.services.get_sub_units_stands_lookup_table", return_value={"1" : stand_ids[0:10], "2": stand_ids[10:30], "3": stand_ids[30:60]}):
+            with mock.patch("planning.services.get_stands_from_sub_units", return_value=sub_units_stands):
+                configuration = self.scenario.configuration
+                sub_units_datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+                configuration.update(
+                    {
+                        "sub_units_layer": sub_units_datalayer.pk,
+                        "targets" :{
+                            "sub_units_fixed_target": False,
+                            "sub_units_target_value": 99,
+                        }
+                    }
+                )
+                self.scenario.configuration = configuration
+                self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+                self.scenario.save()
 
-        self.scenario.refresh_from_db()
-        forsys_input = self.scenario.forsys_input
-        self.assertFalse(forsys_input.get("run_with_patchmax"))
-        self.assertDictEqual(self.scenario.forsys_input.get("projects_data"), {"1" : [8, 9], "2": [7, 6, 5], "3": [4]})
-        self.assertFalse(forsys_input["variables"]["sub_units_fixed_target"])
-        self.assertEqual(forsys_input["variables"]["sub_units_target_value"], 0.99)        
+                async_pre_forsys_process(self.scenario.pk)
+
+                self.scenario.refresh_from_db()
+                forsys_input = self.scenario.forsys_input
+                self.assertFalse(forsys_input.get("run_with_patchmax"))
+                sub_units_stand_ids.sort()
+
+                output_stand_ids = forsys_input.get("stand_ids")
+                output_stand_ids.sort()
+                self.assertEqual(len(sub_units_stand_ids), len(output_stand_ids))
+                self.assertListEqual(output_stand_ids, sub_units_stand_ids)
+                self.assertDictEqual(forsys_input.get("projects_data"), {"1" : stand_ids[0:10], "2": stand_ids[10:30], "3": stand_ids[30:60]})
+                self.assertFalse(forsys_input["variables"]["sub_units_fixed_target"])
+                self.assertEqual(forsys_input["variables"]["sub_units_target_value"], 0.99)
 
 
 class PrepareScenariosForForsysTest(TestCase):

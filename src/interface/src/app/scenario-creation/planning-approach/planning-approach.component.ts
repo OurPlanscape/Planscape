@@ -33,17 +33,6 @@ export class PlanningApproachComponent implements OnInit {
 
   readonly planningApproachOptions = [
     {
-      value: 'PRIORITIZE_SUB_UNITS',
-      title: 'Prioritize Sub-Units',
-      description:
-        'Would you like to prioritize existing sub-units within your Planning Area based on your scenario?',
-      recommendation:
-        'Recommended for Larger Planning Areas, e.g., National Forest or County',
-      imageSrc: 'assets/png/sub-units.png',
-      imageAlt: 'Ex. shows prioritized Subwatersheds',
-      imageCaption: 'Ex. shows prioritized Subwatersheds.',
-    },
-    {
       value: 'OPTIMIZE_PROJECT_AREAS',
       title: 'Optimize Project Areas',
       description:
@@ -53,6 +42,17 @@ export class PlanningApproachComponent implements OnInit {
       imageSrc: 'assets/png/project-areas.png',
       imageAlt: 'Ex. shows show optimized project areas',
       imageCaption: 'Ex. shows show optimized project areas.',
+    },
+    {
+      value: 'PRIORITIZE_SUB_UNITS',
+      title: 'Prioritize Subunits',
+      description:
+        'Would you like to prioritize existing subunits within your Planning Area based on your scenario?',
+      recommendation:
+        'Recommended for Larger Planning Areas, e.g., National Forest or County',
+      imageSrc: 'assets/png/sub-units.png',
+      imageAlt: 'Ex. shows prioritized Subwatersheds',
+      imageCaption: 'Ex. shows prioritized Subwatersheds.',
     },
   ];
 
