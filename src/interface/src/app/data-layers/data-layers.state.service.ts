@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   map,
   Observable,
@@ -27,7 +28,8 @@ import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-d
 import { distinctUntilChanged } from 'rxjs/operators';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
-import { UnselectableType } from '@app/shared';
+import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface unselectableLayer {
   id: number;
@@ -100,7 +102,17 @@ export class DataLayersStateService {
         .listDataLayers(dataset.id, this.mapModuleService.moduleName, geometry)
         .pipe(
           map((items) => buildPathTree(items)),
-          tap((s) => this.loadingSubject.next(false))
+          tap((s) => this.loadingSubject.next(false)),
+          catchError((e) => {
+            this.loadingSubject.next(false);
+            this._selectedDataSet$.next(null);
+            this.matSnackBar.open(
+              `Error: Could not load layers for ${dataset.name}`,
+              'Dismiss',
+              SNACK_ERROR_CONFIG
+            );
+            return of(null);
+          })
         );
     }),
     shareReplay(1)
@@ -179,7 +191,8 @@ export class DataLayersStateService {
     private maxSelectedDatalayers: number,
     @Inject(USE_GEOMETRY)
     private readonly sendGeometry: boolean,
-    private planState: PlanState
+    private planState: PlanState,
+    private matSnackBar: MatSnackBar
   ) {}
 
   selectDataSet(dataset: BaseDataSet) {
