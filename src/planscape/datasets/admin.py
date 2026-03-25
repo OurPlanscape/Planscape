@@ -1,6 +1,10 @@
+import json
 from typing import Any, Dict
 
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, JsonResponse
+from django.urls import path
 from treebeard.admin import TreeAdmin
 
 from datasets.forms import (
@@ -52,6 +56,8 @@ class DataLayerHasStyleAdmin(admin.TabularInline):
 
 
 class DataLayerAdmin(admin.ModelAdmin):
+    geometry_preview_fields = {"geometry", "outline"}
+
     @admin.display(description="Public URL")
     def public_url(self, instance):
         return instance.get_public_url()
@@ -106,6 +112,37 @@ class DataLayerAdmin(admin.ModelAdmin):
         "enable_map",
         "enable_climate_foresight",
     ]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).defer("geometry", "outline")
+
+    def get_urls(self):
+        return [
+            path(
+                "<path:object_id>/geometry-preview/<str:field_name>/",
+                self.admin_site.admin_view(self.geometry_preview_view),
+                name="datasets_datalayer_geometry_preview",
+            ),
+            *super().get_urls(),
+        ]
+
+    def geometry_preview_view(self, request, object_id, field_name):
+        if field_name not in self.geometry_preview_fields:
+            raise Http404
+
+        obj = DataLayer.objects.only(field_name).filter(pk=object_id).first()
+        if obj is None:
+            raise Http404
+        if not self.has_view_or_change_permission(request, obj):
+            raise PermissionDenied
+
+        geometry = getattr(obj, field_name)
+        if geometry and geometry.srid != 4326:
+            geometry = geometry.transform(4326, clone=True)
+
+        return JsonResponse(
+            {"geometry": json.loads(geometry.geojson) if geometry else None}
+        )
 
     def _enable_module(self, request, queryset, module: str) -> None:
         for datalayer in queryset:

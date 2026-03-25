@@ -3,7 +3,7 @@ version: "3.9"
 services:
   _planscape:
     image: planscape
-    command: ["echo", "build done"]
+    command: [ "echo", "build done" ]
     user: "${UID}:${GID}"
     environment:
       - UID=${UID}
@@ -103,7 +103,7 @@ services:
       - db
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db/postgres
-    command: --config /usr/src/app/martin.yaml
+    command: --config /app/martin.yaml
     volumes:
       - .:/app
 volumes:
