@@ -59,7 +59,7 @@ export class ScenariosCardListComponent {
     private route: ActivatedRoute,
     private overlayLoaderService: OverlayLoaderService,
     private dialog: MatDialog
-  ) { }
+  ) {}
 
   numberOfAreas(scenario: Scenario) {
     return scenario.scenario_result?.result?.features?.length;
@@ -93,9 +93,10 @@ export class ScenariosCardListComponent {
   displayDraftCreatorTooltip(row: ScenarioRow): boolean {
     const user = this.authService.currentUser();
     if (!!user && !!this.plan) {
-
       // draft creators and  planning area owners/collaborators
-      return !this.isDraftCreator(row, user?.id) && !canEditPlan(this.plan, user);
+      return (
+        !this.isDraftCreator(row, user?.id) && !canEditPlan(this.plan, user)
+      );
     } else {
       return true;
     }
@@ -135,10 +136,14 @@ export class ScenariosCardListComponent {
     if (!this.plan || !user) {
       return false;
     }
-    return user?.id == scenario.user || canEditScenarioName(this.plan, user) || canEditPlan(this.plan, user);
+    return (
+      user?.id == scenario.user ||
+      canEditScenarioName(this.plan, user) ||
+      canEditPlan(this.plan, user)
+    );
   }
 
-    // Planning Area Creators and Owners, and Scenario Creators can edit scenarios
+  // Planning Area Creators and Owners, and Scenario Creators can edit scenarios
   userCanRenameScenario(scenario: Scenario) {
     const user = this.authService.currentUser();
     if (!this.plan || !user) {
@@ -154,7 +159,10 @@ export class ScenariosCardListComponent {
     }
     // Planning Area Creators and Owners, and Scenario Creators should be able to see some options
     if (this.isDraft(scenario)) {
-      return (user?.id == scenario.user) || (!!this.plan && canEditPlan(this.plan, user))
+      return (
+        user?.id == scenario.user ||
+        (!!this.plan && canEditPlan(this.plan, user))
+      );
     } else {
       return true;
     }
