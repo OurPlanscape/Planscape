@@ -62,7 +62,7 @@ export class DrawService {
 
   private _uploadedShape: GeoJSON.GeoJSON | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     this._mapRef = map;
@@ -197,9 +197,18 @@ export class DrawService {
   }
 
   clearFeatures() {
-    this._terraDraw?.clear();
-    this._totalAcres$.next(0);
+    if (!this._terraDraw) return;
+    const activeMode = this._terraDraw.getMode();
+    this._terraDraw.stop();
     this.removeUploadedShapeLayer();
+    if (this._terraDraw?.enabled) {
+      this._terraDraw.clear();
+    }
+    this._totalAcres$.next(0);
+    this._terraDraw.start();
+    if (activeMode && activeMode !== 'static') {
+      this._terraDraw.setMode(activeMode);
+    }
   }
 
   removeUploadedShapeLayer(): void {

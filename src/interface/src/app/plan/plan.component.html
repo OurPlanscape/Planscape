@@ -1,4 +1,9 @@
 @if (!isPlanningOverviewEnabled) {
+
+  @if (planLoading) {
+    <DIV>WE ARE LOADING!</DIV>
+  }@else {
+
   <app-nav-bar area="SCENARIOS">
     <app-planning-area-titlebar-menu
       *ngIf="currentPlan$ | async; let currentPlan"
@@ -31,6 +36,7 @@
       </div>
     </ng-container>
   </div>
+}
 } @else {
   <app-nav-bar area="SCENARIOS"></app-nav-bar>
   <div>
