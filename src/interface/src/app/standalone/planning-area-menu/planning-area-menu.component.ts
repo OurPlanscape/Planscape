@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Plan, PreviewPlan } from '@types';
 import {
   canDeletePlanningArea,
-  canEditPlanName,
+  canEditPlan,
   canViewCollaborators,
 } from '@plan/permissions';
 import { take } from 'rxjs';
@@ -83,7 +83,7 @@ export class PlanningAreaMenuComponent {
     if (!user) {
       return false;
     }
-    return canEditPlanName(this.plan, user);
+    return canEditPlan(this.plan, user);
   }
 
   editPlanName() {

@@ -8,7 +8,7 @@
       {{ isProjectArea ? 'Project areas' : 'Scenario' }}
     </div>
     <button
-      [hidden]="!userCanDeleteScenario && hasFailed"
+      [hidden]="!userCanEditScenario && hasFailed"
       [disabled]="isRunning() || !contextualMenuEnabled"
       [matMenuTriggerFor]="menu"
       aria-label="More scenario options"
