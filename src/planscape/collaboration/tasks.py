@@ -29,8 +29,11 @@ def send_invitation(
         user_object_role = UserObjectRole.objects.get(pk=user_object_role_id)
         planning_area = user_object_role.content_object
         role = user_object_role.role.lower()
+        ## TODO: changing this just for this email template
+        if role == "collaborator":
+            role = "editor"
         role_article = "a"
-        if role == "owner":
+        if role == "owner" or role == "editor":
             role_article = "an"
 
         context = {
