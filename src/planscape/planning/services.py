@@ -1472,9 +1472,10 @@ def get_stands_from_sub_units(stands: QuerySet[Stand], planning_area: PlanningAr
             merged_geometry = sub_unit.geometry
         else:
             merged_geometry = merged_geometry.union(sub_unit.geometry)
-    
+
     if merged_geometry is not None:
-        return stands.within_polygon(merged_geometry, stand_size)
+        intersection = geometry.intersection(merged_geometry)
+        return stands.within_polygon(intersection, stand_size)
 
     return stands.none()
 
