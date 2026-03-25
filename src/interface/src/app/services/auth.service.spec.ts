@@ -11,6 +11,12 @@ import { RedirectService } from './redirect.service';
 import { MockProvider } from 'ng-mocks';
 import { environment } from '@env/environment';
 import { RouterTestingModule } from '@angular/router/testing';
+import {
+  ExploreStorageService,
+  HomeParametersStorageService,
+  LoginRedirectStorageService,
+  MultiMapsStorageService,
+} from './local-storage.service';
 
 // Define a dummy component for the route
 import { Component } from '@angular/core';
@@ -40,6 +46,10 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         MockProvider(RedirectService),
+        MockProvider(LoginRedirectStorageService),
+        MockProvider(HomeParametersStorageService),
+        MockProvider(MultiMapsStorageService),
+        MockProvider(ExploreStorageService),
         { provide: CookieService, useFactory: cookieServiceStub },
         {
           provide: MatSnackBar,
@@ -275,6 +285,37 @@ describe('AuthService', () => {
         environment.backend_endpoint + '/dj-rest-auth/logout/'
       );
       req.flush(mockResponse);
+    });
+
+    it('clears app local storage on successful logout', (done) => {
+      const loginRedirectStorageService = TestBed.inject(
+        LoginRedirectStorageService
+      );
+      const homeParametersStorageService = TestBed.inject(
+        HomeParametersStorageService
+      );
+      const multiMapsStorageService = TestBed.inject(MultiMapsStorageService);
+      const exploreStorageService = TestBed.inject(ExploreStorageService);
+
+      spyOn(loginRedirectStorageService, 'removeItem');
+      spyOn(homeParametersStorageService, 'removeItem');
+      spyOn(multiMapsStorageService, 'removeItem');
+      spyOn(exploreStorageService, 'removeItem');
+
+      service.logout().subscribe((_) => {
+        expect(loginRedirectStorageService.removeItem).toHaveBeenCalled();
+        expect(homeParametersStorageService.removeItem).toHaveBeenCalled();
+        expect(multiMapsStorageService.removeItem).toHaveBeenCalled();
+        expect(exploreStorageService.removeItem).toHaveBeenCalled();
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        environment.backend_endpoint + '/dj-rest-auth/logout/'
+      );
+      req.flush({
+        detail: 'Successfully logged out',
+      });
     });
   });
 
