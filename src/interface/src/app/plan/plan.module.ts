@@ -41,10 +41,17 @@ import { MatCardModule } from '@angular/material/card';
 import { MapViewerCardComponent } from './map-viewer-card/map-viewer-card.component';
 import { PlanningAreaDetailsCardComponent } from './planning-area-details-card/planning-area-details-card.component';
 import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expansion-card.component';
+import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/plan-scenarios-list.component';
+import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list/scenarios-empty-list.component';
 
 /** Components used in the plan flow. */
 @NgModule({
-  declarations: [AreaNotesComponent, PlanComponent, SavedScenariosComponent],
+  declarations: [
+    AreaNotesComponent,
+    PlanComponent,
+    PlanScenariosListComponent,
+    SavedScenariosComponent,
+  ],
   providers: [
     WINDOW_PROVIDERS,
     MapConfigState,
@@ -89,6 +96,7 @@ import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expans
     PlanningAreaDetailsCardComponent,
     NotesExpansionCardComponent,
     ToggleComponent,
+    ScenariosEmptyListComponent,
   ],
 })
 export class PlanModule {}

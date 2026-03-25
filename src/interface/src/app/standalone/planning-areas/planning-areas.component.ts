@@ -15,7 +15,6 @@ import {
   AsyncPipe,
   DatePipe,
   DecimalPipe,
-  KeyValuePipe,
   NgForOf,
   NgIf,
   NgSwitch,
@@ -63,7 +62,6 @@ import { PopoverComponent } from '@styleguide/popover/popover.component';
     AsyncPipe,
     NgIf,
     MatProgressSpinnerModule,
-    KeyValuePipe,
     KeyPipe,
     PlanningAreaMenuComponent,
     PlanningAreasSearchComponent,
@@ -175,5 +173,9 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   selectCreators(creators: Creator[]) {
     this.dataSource.filterCreator(creators.map((creator) => creator.id));
+  }
+
+  showMenu(plan: PreviewPlan) {
+    return plan.role !== 'Viewer';
   }
 }

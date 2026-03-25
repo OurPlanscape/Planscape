@@ -1,67 +1,42 @@
 <div class="title-row">
   <div class="scenario-name">{{ name }}</div>
-  <sg-status-chip
-    *ngIf="resultStatus && origin === 'SYSTEM'"
-    [status]="getChipStatus()"
-    [label]="getChipLabel()"></sg-status-chip>
-  <div *ngIf="hasFailed()" class="failed-message">
-    <mat-icon class="error-icon">error</mat-icon>
-    Create a new scenario to proceed to treatment plan
-  </div>
+
   <div class="controls-section">
+    <div
+      class="scenario-type-chip scenario"
+      [class.project-area]="isProjectArea">
+      {{ isProjectArea ? 'Project areas' : 'Scenario' }}
+    </div>
     <button
-      sg-button
-      icon="add"
-      class="new-treatment-btn"
-      [disabled]="!isDone()"
-      type="button"
-      *ngIf="!hasFailed() && showTreatmentPlanButton"
-      (click)="openNewTreatment.emit($event)">
-      New Treatment Plan
-    </button>
-    <button
-      [hidden]="!userCanArchiveScenario && hasFailed"
+      [hidden]="!userCanDeleteScenario && hasFailed"
       [disabled]="isRunning() || !contextualMenuEnabled"
       [matMenuTriggerFor]="menu"
       aria-label="More scenario options"
       class="more-menu-button"
       (click)="handleMoreMenuClick($event)"
-      mat-icon-button>
+      mat-icon-button
+      matTooltip="More actions">
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu class="scenario-more-menu" #menu="matMenu">
-      <button *ngIf="!hasFailed()" mat-menu-item (click)="openScenario.emit()">
-        <mat-icon class="material-symbols-outlined">folder_open</mat-icon>
-        <span>Open</span>
-      </button>
       <button
+        class="action-button"
         mat-menu-item
-        *ngIf="userCanEditScenario"
-        (click)="editScenario.emit()">
-        <mat-icon class="material-symbols-outlined">edit</mat-icon>
-        <span>Rename</span>
-      </button>
-      <button
-        mat-menu-item
-        *ngIf="userCanEditScenario"
+        *ngIf="userCanEditScenario && !isProjectArea"
         (click)="copyScenario.emit()">
         <mat-icon class="material-symbols-outlined">file_copy</mat-icon>
         <span>Copy & Edit</span>
       </button>
       <button
         mat-menu-item
-        *ngIf="userCanArchiveScenario"
-        (click)="toggleArchiveStatus.emit()">
-        <mat-icon *ngIf="!isArchived()" class="material-symbols-outlined"
-          >archive
-        </mat-icon>
-        <mat-icon *ngIf="isArchived()" class="material-symbols-outlined"
-          >unarchive
-        </mat-icon>
-        <span>{{ isArchived() ? 'Restore' : 'Archive' }}</span>
+        class="action-button"
+        *ngIf="userCanEditScenario"
+        (click)="editScenario.emit()">
+        <mat-icon class="material-symbols-outlined">edit</mat-icon>
+        <span>Rename</span>
       </button>
       <button
-        class="delete"
+        class="action-button delete"
         mat-menu-item
         *ngIf="userCanDeleteScenario"
         (click)="deleteScenario.emit()">
@@ -71,7 +46,6 @@
     </mat-menu>
   </div>
 </div>
-
 <div class="detail-row">
   <div class="detail-column">
     <div class="detail-header">Creator</div>
@@ -79,26 +53,19 @@
       {{ creator ?? 'N/A' }}
     </div>
   </div>
-  <ng-container *ngIf="!isRunning()">
-    <div class="detail-column hide-on-small">
-      <div class="detail-header">Areas</div>
-      <div class="detail-info">{{ areas ?? 'N/A' }}</div>
+  <div class="detail-column">
+    <div class="detail-header">Date Created</div>
+    <div class="detail-info">
+      {{ created_at ? (created_at | date: 'MMM d, y') : '-' }}
     </div>
-    <div class="detail-column hide-on-small">
-      <div class="detail-header">Est Budget</div>
-      <div class="detail-info">
-        {{ (budget | currency: 'USD' : 'symbol' : '1.0-0') ?? 'N/A' }}
-      </div>
+  </div>
+  <div class="detail-column" [hidden]="isProjectArea">
+    <div class="detail-header" [hidden]="isProjectArea">Status</div>
+    <div class="detail-info">
+      <sg-status-chip
+        *ngIf="resultStatus && origin === 'SYSTEM'"
+        [status]="getChipStatus()"
+        [label]="getChipLabel()"></sg-status-chip>
     </div>
-    <div class="detail-column hide-on-small">
-      <div class="detail-header">Treatment Plans</div>
-      <div class="detail-info">{{ treatmentPlansCount }}</div>
-    </div>
-    <div class="detail-column">
-      <div class="detail-header">Created</div>
-      <div class="detail-info">
-        {{ created_at | date: "MMMM d, y 'at' h:mm a" }}
-      </div>
-    </div>
-  </ng-container>
+  </div>
 </div>

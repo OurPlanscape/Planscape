@@ -1,0 +1,139 @@
+@if (activeScenarios.length === 0) {
+  @if (loading) {
+    <div *ngIf="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+    <app-scenarios-empty-list
+      *ngIf="planningAreaIsReady && !planningAreaIsLarge && !planningAreaFailed"
+      [plan]="plan"></app-scenarios-empty-list>
+
+    <div *ngIf="planningAreaIsLarge" class="large-message">
+      <p>
+        Your Planning Area is greater than 3 million acres. The Planscape team
+        would like to work with you to ensure we're meeting your scenario
+        planning needs.<br />Please contact
+        <a href="mailto:support@planscape.org">support&#64;planscape.org</a> to
+        move forward with scenario planning.
+      </p>
+    </div>
+
+    <div
+      *ngIf="
+        !planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed
+      "
+      class="pending-message">
+      <mat-spinner diameter="32" class="spinner"></mat-spinner>
+      <h4>Your Planning Area is being prepared for Scenario Planning</h4>
+      <p>
+        For larger areas (over 1 million acres), this process may take up to 20
+        minutes.
+      </p>
+    </div>
+
+    <sg-banner
+      [dismissible]="false"
+      type="error"
+      *ngIf="!planningAreaIsReady && planningAreaFailed"
+      class="banner">
+      <div>
+        <div>
+          There was an error preparing your Planning Area for Scenario Planning.
+        </div>
+        <div>
+          Please
+          <a
+            href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw"
+            target="_blank"
+            >contact support</a
+          >
+          or try creating a new Planning Area.
+        </div>
+      </div>
+    </sg-banner>
+  }
+} @else {
+  <div class="scenarios-header">
+    <button
+      class="sort-header"
+      sg-button
+      (click)="handleSortChange()"
+      variant="text">
+      <mat-icon class="material-symbols-outlined">
+        {{
+          sortSelection === '-created_at'
+            ? 'arrow_downward_alt'
+            : 'arrow_upward_alt'
+        }}
+      </mat-icon>
+      <span>Date Created</span>
+    </button>
+    <div class="button-section">
+      <button
+        sg-button
+        icon="drive_folder_upload"
+        [outlined]="true"
+        *ngIf="canAddScenarioForPlan"
+        (click)="openUploadDialog()">
+        Upload Project Areas
+      </button>
+
+      <button
+        sg-button
+        [matTooltip]="scenarioDisabledTooltipReason"
+        [matTooltipDisabled]="isValidPlanningArea"
+        *ngIf="canAddScenarioForPlan"
+        [disabled]="!isValidPlanningArea || planningAreaIsLarge"
+        data-id="new-scenario"
+        icon="add"
+        variant="primary"
+        [matMenuTriggerFor]="menu"
+        #trigger="matMenuTrigger">
+        New Scenario
+
+        <mat-icon class="material-symbols-outlined new-scenario-down"
+          >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+        </mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" class="scenario-options-menu">
+        <button
+          mat-menu-item
+          (click)="openScenarioSetupDialog('PRESET')"
+          class="scenario-option">
+          <mat-icon class="material-symbols-outlined">contract</mat-icon>
+          Choose Treatment Goal
+          <span>
+            Start from a template with preset objectives, co-benefits, and
+            constraints
+          </span>
+        </button>
+        <button
+          mat-menu-item
+          (click)="openScenarioSetupDialog('CUSTOM')"
+          class="scenario-option">
+          <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
+          Create Custom Scenario
+          <span>
+            Build from scratch: choose all objectives, co-benefits, and
+            constraints.
+          </span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <div class="saved-scenarios-wrapper">
+    <div *ngIf="loading" class="list-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <app-scenarios-card-list
+      *ngIf="!loading && activeScenarios.length > 0"
+      [scenarios]="activeScenarios"
+      [plan]="plan"
+      (viewScenario)="navigateToScenario($event)"
+      (triggerEdit)="fetchScenarios()"
+      (triggerRefresh)="removeScenarioFromList($event, 'activeScenarios')"
+      class="card-list"></app-scenarios-card-list>
+  </div>
+}

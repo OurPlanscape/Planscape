@@ -14,7 +14,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from planning.models import ProjectArea, Scenario
-from stands.models import Stand
+from stands.models import Stand, StandSizeChoices
 from typing_extensions import Self
 
 User = get_user_model()
@@ -65,11 +65,22 @@ class TreatmentPlan(
     )
     name = models.CharField(max_length=256, help_text="Name of Treatment Plan.")
 
+    stand_size = models.CharField(
+        max_length=16,
+        choices=StandSizeChoices.choices,
+        null=True,
+        blank=True,
+        help_text="Stand size for this treatment plan.",
+    )
+
     started_at = models.DateTimeField(null=True)
 
     finished_at = models.DateTimeField(null=True)
 
     objects = TreatmentPlanManager()
+
+    def get_stand_size(self) -> StandSizeChoices:
+        return StandSizeChoices(self.stand_size)
 
     class Meta(TypedModelMeta):
         verbose_name = "Treatment Plan"

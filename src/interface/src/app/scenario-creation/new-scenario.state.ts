@@ -33,7 +33,7 @@ import { ScenarioStepConfig } from '@scenario/scenario.constants';
 
 @Injectable()
 export class NewScenarioState {
-  planId = this.route.snapshot.data['planId'];
+  scenarioId = this.route.snapshot.data['scenarioId'];
 
   private _scenarioConfig$ = new BehaviorSubject<Partial<ScenarioV3Config>>({});
   public scenarioConfig$ = this._scenarioConfig$.asObservable();
@@ -129,7 +129,7 @@ export class NewScenarioState {
     switchMap(([_, step, standSize, excludedAreas, constraints]) =>
       this.scenarioService
         .getExcludedStands(
-          this.planId,
+          this.scenarioId,
           standSize,
           step?.includeExcludedAreas ? excludedAreas : undefined,
           step?.includeConstraints ? constraints : undefined

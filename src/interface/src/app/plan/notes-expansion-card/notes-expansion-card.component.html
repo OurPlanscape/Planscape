@@ -1,4 +1,4 @@
-<ng-container *ngIf="notes$ | async as notes">
+<div class="notes" *ngIf="notes$ | async as notes" (click)="openNotesPanel()">
   <h3 class="section-title">
     Notes<span *ngIf="notes.length > 0"> ({{ notes.length }})</span>
   </h3>
@@ -6,6 +6,5 @@
     sg-button
     variant="icon-only"
     icon="open_in_full"
-    [outlined]="true"
-    (click)="openNotesPanel()"></button>
-</ng-container>
+    [outlined]="true"></button>
+</div>

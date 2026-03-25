@@ -68,7 +68,7 @@ describe('PlanningApproachTreatmentTargetComponent', () => {
       expect(result).toEqual({ invalidAcres: true });
     });
 
-    it('should return exceedMaxArea when fixed target is true and value exceeds subUnitDetails.max', () => {
+    it('should return invalidAcres when fixed target is true and value exceeds subUnitDetails.max', () => {
       component.subUnitDetails = { min: 1, max: 10, avg: 5 };
 
       const form = createForm(true, 11);
@@ -76,7 +76,7 @@ describe('PlanningApproachTreatmentTargetComponent', () => {
 
       const result = validator(form);
 
-      expect(result).toEqual({ exceedMaxArea: true });
+      expect(result).toEqual({ invalidAcres: true });
     });
 
     it('should return null when fixed target is true and value is valid', () => {

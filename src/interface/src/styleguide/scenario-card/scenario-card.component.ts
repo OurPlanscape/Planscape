@@ -22,6 +22,8 @@ import {
   StatusChipStatus,
 } from '@styleguide/status-chip/status-chip.component';
 import { ButtonComponent } from '@styleguide/button/button.component';
+import { LegacyMaterialModule } from '@app/material/legacy-material.module';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
 
@@ -42,32 +44,25 @@ export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed' | 'Draft';
     MatIconModule,
     MatMenuModule,
     MatButtonModule,
+    LegacyMaterialModule,
+    MatTooltipModule,
   ],
   templateUrl: './scenario-card.component.html',
   styleUrl: './scenario-card.component.scss',
 })
 export class ScenarioCardComponent {
   @Input() resultStatus: ScenarioResultStatus = 'SUCCESS';
-  @Input() archiveStatus: 'ACTIVE' | 'ARCHIVED' = 'ACTIVE';
   @Input() name = '';
-  @Input() areas? = 0;
-  @Input() budget: number | null = null;
-  @Input() treatmentPlansCount?: number = 0;
   @Input() creator?: string = '';
   @Input() created_at? = '';
-  @Input() selected: boolean = false;
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
-  @Input() userCanArchiveScenario = false;
   @Input() userCanDeleteScenario = false;
   @Input() userCanEditScenario = false;
-  @Input() showTreatmentPlanButton = false;
   @Input() contextualMenuEnabled = true;
   @Input() disabled = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
-  @Output() openNewTreatment = new EventEmitter();
-  @Output() toggleArchiveStatus = new EventEmitter();
   @Output() deleteScenario = new EventEmitter();
   @Output() editScenario = new EventEmitter();
   @Output() copyScenario = new EventEmitter();
@@ -105,18 +100,14 @@ export class ScenarioCardComponent {
     return doneValues.includes(this.resultStatus);
   }
 
-  isArchived(): boolean {
-    return this.archiveStatus === 'ARCHIVED';
-  }
-
   @HostBinding('class.disabled-content')
   get disabledContent() {
     return this.isRunning() || this.disabled;
   }
 
-  @HostBinding('class.selected')
-  get isSelected() {
-    return this.selected;
+  @HostBinding('class.project-area')
+  get isProjectArea() {
+    return this.origin === 'USER';
   }
 
   getChipStatus(): StatusChipStatus {
