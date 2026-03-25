@@ -14,7 +14,7 @@ import { BaseLayer } from '@types';
 export class SubUnitToggleComponent {
   @Input({ required: true }) layer!: BaseLayer;
 
-  showBaseLayer = false;
+  showBaseLayer = true;
 
   constructor(private baseLayersStateService: BaseLayersStateService) {}
 
