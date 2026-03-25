@@ -138,6 +138,15 @@ export class ScenariosCardListComponent {
     return user?.id == scenario.user || canEditScenarioName(this.plan, user) || canEditPlan(this.plan, user);
   }
 
+    // Planning Area Creators and Owners, and Scenario Creators can edit scenarios
+  userCanRenameScenario(scenario: Scenario) {
+    const user = this.authService.currentUser();
+    if (!this.plan || !user) {
+      return false;
+    }
+    return user?.id == scenario.user || canEditScenarioName(this.plan, user);
+  }
+
   canShowContextualMenu(scenario: Scenario) {
     const user = this.authService.currentUser();
     if (!user) {
