@@ -703,9 +703,9 @@ class ProjectArea(
         stored_stand_count = self.data.get("stand_count") if self.data else None
         return stored_stand_count or self.get_stands().count()
 
-    def get_stands(self) -> QuerySet[Stand]:
-        scenario = self.scenario
-        return Stand.objects.within_polygon(self.geometry, scenario.get_stand_size())
+    def get_stands(self, stand_size=None) -> QuerySet[Stand]:
+        size = stand_size or self.scenario.get_stand_size()
+        return Stand.objects.within_polygon(self.geometry, size)
 
     class Meta(TypedModelMeta):
         verbose_name = "Project Area"
