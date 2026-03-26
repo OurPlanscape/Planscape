@@ -62,7 +62,7 @@ export class DrawService {
 
   private _uploadedShape: GeoJSON.GeoJSON | null = null;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     this._mapRef = map;
