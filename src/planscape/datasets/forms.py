@@ -3,10 +3,12 @@ import json
 import mmh3
 from cacheops import invalidate_model
 from django import forms
+from django.urls import reverse
 from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
 from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.widgets import ReadOnlyOSMGeometryWidget
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -77,12 +79,47 @@ class CategoryAdminForm(movenodeform_factory(Category)):
 
 
 class DataLayerAdminForm(forms.ModelForm):
+    geometry = forms.CharField(
+        required=False,
+        disabled=True,
+        widget=ReadOnlyOSMGeometryWidget(),
+    )
+    outline = forms.CharField(
+        required=False,
+        disabled=True,
+        widget=ReadOnlyOSMGeometryWidget(),
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["info"].required = False
         self.fields["info"].disabled = True
         self.fields["category"].required = False
         self.fields["metadata"].required = False
+
+        if self.instance and self.instance.pk:
+            self.fields["geometry"].widget.geometry_url = reverse(
+                "admin:datasets_datalayer_geometry_preview",
+                args=[self.instance.pk, "geometry"],
+            )
+            self.fields["outline"].widget.geometry_url = reverse(
+                "admin:datasets_datalayer_geometry_preview",
+                args=[self.instance.pk, "outline"],
+            )
+
+        self.order_fields(
+            [
+                "organization",
+                "dataset",
+                "category",
+                "name",
+                "table",
+                "info",
+                "metadata",
+                "geometry",
+                "outline",
+            ]
+        )
 
     def save(self, commit=True):
         invalidate_model(DataLayer)

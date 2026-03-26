@@ -19,21 +19,6 @@ from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
 from fiona.crs import from_epsg
 from gis.core import get_storage_session
-from planning.models import PlanningArea, ProjectArea, Scenario
-from planscape.openpanel import track_openpanel
-from stands.models import (
-    STAND_AREA_ACRES,
-    Stand,
-    StandMetric,
-    StandSizeChoices,
-    pixels_from_size,
-)
-from stands.services import (
-    calculate_stand_zonal_stats,
-    calculate_stand_zonal_stats_api,
-    get_missing_stand_ids_for_datalayer_from_stand_list,
-)
-
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -49,6 +34,21 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
+from planning.models import PlanningArea, ProjectArea, Scenario
+from stands.models import (
+    STAND_AREA_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    pixels_from_size,
+)
+from stands.services import (
+    calculate_stand_zonal_stats,
+    calculate_stand_zonal_stats_api,
+    get_missing_stand_ids_for_datalayer_from_stand_list,
+)
+
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +58,7 @@ def create_treatment_plan(
     scenario: Scenario,
     name: str,
     created_by: AbstractUser,
+    stand_size: Optional[StandSizeChoices] = None,
 ) -> TreatmentPlan:
     # question: should we add a constraint on
     # treament plan to prevent users from creating
@@ -68,6 +69,7 @@ def create_treatment_plan(
         scenario=scenario,
         status=TreatmentPlanStatus.PENDING,
         name=name,
+        stand_size=stand_size or scenario.get_stand_size(),
     )
     track_openpanel(
         name="impacts.treatment_plan.create",
@@ -153,6 +155,7 @@ def clone_treatment_plan(
         scenario=treatment_plan.scenario,
         status=TreatmentPlanStatus.PENDING,
         name=get_cloned_name(treatment_plan.name),
+        stand_size=treatment_plan.stand_size,
     )
 
     cloned_prescriptions = list(
@@ -184,7 +187,7 @@ def generate_summary(
 ) -> Dict[str, Any]:
     scenario = treatment_plan.scenario
     plan_area = scenario.planning_area
-    stand_size = scenario.get_stand_size()
+    stand_size = treatment_plan.get_stand_size()
     stand_area = STAND_AREA_ACRES[stand_size]
     pa_filter = {"scenario": scenario}
     tp_filter = {"treatment_plan": treatment_plan}
@@ -431,7 +434,7 @@ def calculate_impacts(
         "project_area",
     )
     stand_ids = prescriptions.values_list("stand_id", flat=True)
-    stand_size = treatment_plan.scenario.get_stand_size()
+    stand_size = treatment_plan.get_stand_size()
     baseline_layer = ImpactVariable.get_datalayer(
         impact_variable=variable,
         action=None,
@@ -511,6 +514,7 @@ def calculate_impacts(
                 baseline_dict=baseline_dict,
                 action_dict=action_dict,
                 action=action,
+                stand_size=stand_size,
             )
         )
 
@@ -589,7 +593,7 @@ def calculate_impacts_for_untreated_stands(
     variable: ImpactVariable,
     year: int,
 ) -> List[TreatmentResult]:
-    stand_size = treatment_plan.scenario.get_stand_size()
+    stand_size = treatment_plan.get_stand_size()
     prescriptions = treatment_plan.tx_prescriptions.select_related(
         "stand",
         "treatment_plan",
@@ -598,7 +602,7 @@ def calculate_impacts_for_untreated_stands(
     )
     treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
     untreated_stand_ids = (
-        treatment_plan.scenario.get_project_areas_stands()
+        treatment_plan.get_project_areas_stands()
         .exclude(id__in=treated_stand_ids)
         .values_list("id", flat=True)
     )
@@ -689,6 +693,7 @@ def calculate_project_area_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: TreatmentPrescriptionAction,
+    stand_size: Optional[StandSizeChoices] = None,
 ) -> List[Dict[str, Any]]:
     pass
 
@@ -718,7 +723,7 @@ def calculate_project_area_deltas(
     # untreated stands just copy the values from baselines
     results = []
     stands_in_project_area = list(
-        project_area.get_stands().values_list("id", flat=True)
+        project_area.get_stands(stand_size=stand_size).values_list("id", flat=True)
     )
 
     baseline_dict = {
@@ -906,12 +911,13 @@ def tretment_result_to_json(
     stand_result: Dict[str, Any],
     scenario: Scenario,
     planning_area: PlanningArea,
+    stand_size: Optional[StandSizeChoices] = None,
 ) -> Dict[str, Any]:
     return {
         "geometry": json.loads(stand.geometry.geojson),
         "properties": {
             "stand_id": stand.pk,
-            "stand_size": scenario.get_stand_size(),
+            "stand_size": stand_size or scenario.get_stand_size(),
             "planning_area_id": planning_area.pk,
             "planning_area_name": planning_area.name,
             "scenario_id": scenario.pk,
@@ -970,6 +976,7 @@ def fetch_treatment_plan_data(
 ) -> Collection[Dict[str, Any]]:
     scenario = treatment_plan.scenario
     planning_area = scenario.planning_area
+    stand_size = treatment_plan.get_stand_size()
 
     results = (
         TreatmentResult.objects.filter(treatment_plan=treatment_plan)
@@ -999,6 +1006,7 @@ def fetch_treatment_plan_data(
                 result_data[stand.id],
                 scenario,
                 planning_area,
+                stand_size=stand_size,
             ),
             stands,
         )

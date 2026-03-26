@@ -12,7 +12,7 @@ export interface ScenarioStepConfig {
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
-  label: 'Select Sub-Units',
+  label: 'Select Subunits',
   description: '',
   icon: '',
   includeConstraints: false,

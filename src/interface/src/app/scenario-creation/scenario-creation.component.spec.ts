@@ -18,6 +18,7 @@ import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/tr
 import { SharedModule } from '@shared';
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { MOCK_SCENARIO } from '@services/mocks';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -30,6 +31,7 @@ describe('ScenarioCreationComponent', () => {
         ScenarioCreationComponent,
         NgxMaskModule.forRoot(),
         NoopAnimationsModule,
+        MatSnackBarModule,
         MockModule(SharedModule),
         MockComponents(
           Step1WithOverviewComponent,
