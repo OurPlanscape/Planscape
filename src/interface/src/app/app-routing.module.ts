@@ -92,7 +92,13 @@ const routes: Routes = [
           ).then((m) => m.AccountValidationComponent),
       },
 
-      // todo add explore fallback
+      // Keep explore redirect but remove eventually
+      { path: 'explore', redirectTo: 'map-viewer', pathMatch: 'full' },
+      {
+        path: 'explore/:planId',
+        redirectTo: 'map-viewer/:planId',
+        pathMatch: 'full',
+      },
       {
         path: 'map-viewer',
         title: 'Map Viewer',
