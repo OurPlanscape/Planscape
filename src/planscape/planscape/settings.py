@@ -491,6 +491,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+CATALOG_DUMPS_PATH = config("CATALOG_DUMPS_PATH", "/mnt/catalog_dumps")
 S3_BUCKET = config("S3_BUCKET", "planscape-control-dev")
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
