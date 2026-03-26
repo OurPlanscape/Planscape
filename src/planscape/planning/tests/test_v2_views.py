@@ -871,16 +871,16 @@ class UpdatePlanningAreaTest(APITestCase):
         self.planning_area.refresh_from_db()
         self.assertEqual(self.planning_area.name, "Renamed Area")
 
-    def test_collaborator_can_rename_planning_area(self):
+    def test_collaborator_cannot_rename_planning_area(self):
         self.client.force_authenticate(self.collaborator)
         response = self.client.patch(
             self.url,
             self.payload,
             format="json",
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.planning_area.refresh_from_db()
-        self.assertEqual(self.planning_area.name, "Renamed Area")
+        self.assertEqual(self.planning_area.name, "Editable Area")
 
     def test_viewer_cannot_rename_planning_area(self):
         self.client.force_authenticate(self.viewer)
