@@ -250,9 +250,9 @@ class PermissionsTest(TestCase):
             CollaboratorPermission.can_add(self.invitee, self.planning_area)
         )
 
-    def test_collaborator_cannot_add_collaborator(self):
+    def test_collaborator_can_add_collaborator(self):
         self.create_collaborator_record(Role.COLLABORATOR)
-        self.assertFalse(
+        self.assertTrue(
             CollaboratorPermission.can_add(self.invitee, self.planning_area)
         )
 
@@ -280,9 +280,9 @@ class PermissionsTest(TestCase):
             CollaboratorPermission.can_change(self.invitee, self.planning_area)
         )
 
-    def test_collaborator_cannot_change_collaborator(self):
+    def test_collaborator_can_change_collaborator(self):
         self.create_collaborator_record(Role.COLLABORATOR)
-        self.assertFalse(
+        self.assertTrue(
             CollaboratorPermission.can_change(self.invitee, self.planning_area)
         )
 
@@ -310,9 +310,9 @@ class PermissionsTest(TestCase):
             CollaboratorPermission.can_remove(self.invitee, self.planning_area)
         )
 
-    def test_collaborator_cannot_delete_collaborator(self):
+    def test_collaborator_can_delete_collaborator(self):
         self.create_collaborator_record(Role.COLLABORATOR)
-        self.assertFalse(
+        self.assertTrue(
             CollaboratorPermission.can_remove(self.invitee, self.planning_area)
         )
 

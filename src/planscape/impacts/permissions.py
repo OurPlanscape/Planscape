@@ -33,13 +33,13 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "change_climate_foresight",
     "change_planning_area",
     "view_collaborator",
+    "add_collaborator",
+    "delete_collaborator",
+    "change_collaborator",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "change_scenario",
     "remove_scenario",
-    "add_collaborator",
-    "delete_collaborator",
-    "change_collaborator",
 ]
 PERMISSIONS = {
     Role.OWNER: OWNER_PERMISSIONS,
