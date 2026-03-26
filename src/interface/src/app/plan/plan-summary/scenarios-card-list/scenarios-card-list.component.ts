@@ -90,16 +90,6 @@ export class ScenariosCardListComponent {
     return this.open_statuses.includes(status);
   }
 
-  displayDraftCreatorTooltip(row: ScenarioRow): boolean {
-    const user = this.authService.currentUser();
-    if (!user || !this.plan) return true;
-    // draft creators and  planning area owners/collaborators
-    if (this.isDraftCreator(row, user.id) || canEditPlan(this.plan, user)) {
-      return false;
-    }
-    return true;
-  }
-
   handleOpenScenario(row: ScenarioRow): void {
     const userId = this.authService.currentUser()?.id;
     if (!this.canOpenScenario(row, userId)) return;
