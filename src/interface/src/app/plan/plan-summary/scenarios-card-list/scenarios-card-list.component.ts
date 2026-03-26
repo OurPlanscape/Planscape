@@ -20,7 +20,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { catchError, of, take, map } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { canEditPlan, canEditScenarioName } from '@plan/permissions';
+import { canAddScenario, canEditScenario, canEditScenarioName } from '@plan/permissions';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -126,8 +126,7 @@ export class ScenariosCardListComponent {
     }
     return (
       user?.id == scenario.user ||
-      canEditScenarioName(this.plan, user) ||
-      canEditPlan(this.plan, user)
+      canEditScenario(this.plan, user)
     );
   }
 
@@ -143,14 +142,11 @@ export class ScenariosCardListComponent {
   canShowContextualMenu(scenario: Scenario): boolean {
     const user = this.authService.currentUser();
     if (!user || !this.plan) return false;
-
-    if (user.id === scenario.user || canEditPlan(this.plan, user)) {
+    // available if user is also a collaborator
+    if (user.id === scenario.user || canAddScenario(this.plan)) {
       return true;
     }
-
-    if (this.isDraft(scenario)) return false;
-
-    return canEditScenarioName(this.plan, user);
+    return false;
   }
 
   showDeleteScenarioDialog(scenario: Scenario) {
