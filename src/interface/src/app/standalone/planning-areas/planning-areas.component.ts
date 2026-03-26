@@ -22,7 +22,7 @@ import {
   NgSwitchDefault,
 } from '@angular/common';
 
-import { PlanService } from '@services';
+import { AuthService, PlanService } from '@services';
 import { Creator, PreviewPlan } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -40,6 +40,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeaturesModule } from '@features/features.module';
 import { PlanState } from '@plan/plan.state';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
+import { canEditPlanName } from '@plan/permissions';
 
 @Component({
   selector: 'app-planning-areas',
@@ -103,8 +104,9 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
-    private router: Router,
     public dataSource: PlanningAreasDataSource,
+    private router: Router,
+    private authService: AuthService,
     private breadcrumbService: BreadcrumbService,
     private planState: PlanState
   ) {}
@@ -176,6 +178,10 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   }
 
   showMenu(plan: PreviewPlan) {
-    return plan.role !== 'Viewer';
+    const user = this.authService.currentUser();
+    if (!user) {
+      return false;
+    }
+    return canEditPlanName(plan, user);
   }
 }
