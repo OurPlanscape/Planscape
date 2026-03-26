@@ -92,9 +92,10 @@ const routes: Routes = [
           ).then((m) => m.AccountValidationComponent),
       },
 
+      // todo add explore fallback
       {
-        path: 'explore',
-        title: 'Explore',
+        path: 'map-viewer',
+        title: 'Map Viewer',
         loadComponent: () =>
           import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
@@ -104,8 +105,8 @@ const routes: Routes = [
         },
       },
       {
-        path: 'explore/:planId',
-        title: 'Explore',
+        path: 'map-viewer/:planId',
+        title: 'Map Viewer',
         loadComponent: () =>
           import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
