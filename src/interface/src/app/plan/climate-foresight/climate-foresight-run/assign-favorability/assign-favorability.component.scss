@@ -78,9 +78,7 @@ $left-panel-width: 398px;
 
 .data-layers-list {
   .no-selection {
-    p {
-      text-align: center;
-    }
+    margin: auto;
   }
 
   .layer-favorability-item {
@@ -203,9 +201,5 @@ $left-panel-width: 398px;
 }
 
 .no-datalayers-selected {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
-  width: 100%;
+  margin: auto;
 }
