@@ -17,7 +17,7 @@ export class AppComponent implements OnInit {
   sidebarOpen = false;
 
   readonly isCatalogEnvironment = environment.isCatalogEnvironment;
-  
+
   constructor(
     private authService: AuthService,
     private overlayLoaderService: OverlayLoaderService,
