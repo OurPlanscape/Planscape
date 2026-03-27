@@ -20,7 +20,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { catchError, of, take, map } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { canAddScenario, canEditScenario, canEditScenarioName } from '@plan/permissions';
+import { canAddScenario, canEditScenario } from '@plan/permissions';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -124,10 +124,7 @@ export class ScenariosCardListComponent {
     if (!this.plan || !user) {
       return false;
     }
-    return (
-      user?.id == scenario.user ||
-      canEditScenario(this.plan, user)
-    );
+    return user?.id == scenario.user || canEditScenario(this.plan, user);
   }
 
   // Planning Area Creators and Owners, and Scenario Creators can edit scenarios
@@ -136,7 +133,7 @@ export class ScenariosCardListComponent {
     if (!this.plan || !user) {
       return false;
     }
-    return user?.id == scenario.user || canEditScenarioName(this.plan, user);
+    return user?.id == scenario.user || canEditScenario(this.plan, user);
   }
 
   canShowContextualMenu(scenario: Scenario): boolean {
