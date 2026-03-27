@@ -1,6 +1,6 @@
 import { Component, HostBinding, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EMPTY, interval, switchMap, take } from 'rxjs';
+import { EMPTY, finalize, interval, switchMap, take } from 'rxjs';
 import { Plan } from '@types';
 import { Note, PlanningAreaNotesService } from '@services';
 import { NotesPanelState } from '@styleguide';
@@ -38,6 +38,8 @@ export class PlanComponent implements OnInit {
   notesPanelState: NotesPanelState = 'READY';
   currentPlan$ = this.planState.currentPlan$;
 
+  loadingPlan = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -48,22 +50,32 @@ export class PlanComponent implements OnInit {
     private planState: PlanState,
     private featureService: FeatureService
   ) {
+    this.loadingPlan = true;
     if (this.planId === null) {
       this.planNotFound = true;
       return;
     }
-    this.currentPlan$.pipe(untilDestroyed(this)).subscribe({
-      next: (plan) => {
-        // Setting up breadcrumbs
-        this.breadcrumbService.updateBreadCrumb({
-          label: 'Planning Area: ' + plan.name,
-          backUrl: '/home',
-        });
-      },
-      error: () => {
-        this.planNotFound = true;
-      },
-    });
+    this.currentPlan$
+      .pipe(
+        untilDestroyed(this),
+        finalize(() => {
+          this.loadingPlan = false;
+        })
+      )
+      .subscribe({
+        next: (plan) => {
+          this.loadingPlan = false;
+
+          // Setting up breadcrumbs
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Planning Area: ' + plan.name,
+            backUrl: '/home',
+          });
+        },
+        error: () => {
+          this.planNotFound = true;
+        },
+      });
 
     this.checkForInProgressModal();
   }
