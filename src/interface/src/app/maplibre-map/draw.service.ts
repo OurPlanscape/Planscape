@@ -19,6 +19,7 @@ import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
 import area from '@turf/area';
 import Decimal from 'decimal.js';
+import * as Sentry from '@sentry/angular';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -196,35 +197,46 @@ export class DrawService {
     );
   }
 
+  private isMapOperable(): boolean {
+    return !!(this._mapRef && this._mapRef.style);
+  }
+
   clearFeatures() {
-    if (!this._terraDraw) return;
-    const activeMode = this._terraDraw.getMode();
-    this._terraDraw.stop();
-    this.removeUploadedShapeLayer();
-    if (this._terraDraw?.enabled) {
-      this._terraDraw.clear();
-    }
-    this._totalAcres$.next(0);
-    this._terraDraw.start();
-    if (activeMode && activeMode !== 'static') {
-      this._terraDraw.setMode(activeMode);
+    if (!this._mapRef) return;
+    if (this.isMapOperable()) {
+      this.removeUploadedShapeLayer();
+    } else {
+      // waiting for map to be ready for operations
+      this._mapRef.once('data', () => {
+        if (this.isMapOperable()) {
+          this.removeUploadedShapeLayer();
+        }
+      });
     }
   }
 
-  removeUploadedShapeLayer(): void {
-    if (!this._mapRef) {
-      return;
+  private removeUploadedShapeLayer(): void {
+    try {
+      if (this._terraDraw?.enabled) {
+        this._terraDraw.clear();
+      }
+      const map = this._mapRef;
+      if (map?.style) {
+        const layers = ['uploaded-shape-outline', 'uploaded-shape-fill'];
+        layers.forEach((id) => {
+          if (map.getLayer(id)) map.removeLayer(id);
+        });
+        if (map.getSource('uploaded-shape')) {
+          map.removeSource('uploaded-shape');
+        }
+      }
+    } catch (error) {
+      // quietly log this issue for analysis but don't interrupt the cleanup
+      Sentry.captureException(error);
+    } finally {
+      this._totalAcres$.next(0);
+      this._uploadedShape = null;
     }
-    if (this._mapRef.getLayer('uploaded-shape-outline')) {
-      this._mapRef.removeLayer('uploaded-shape-outline');
-    }
-    if (this._mapRef.getLayer('uploaded-shape-fill')) {
-      this._mapRef.removeLayer('uploaded-shape-fill');
-    }
-    if (this._mapRef.getSource('uploaded-shape')) {
-      this._mapRef.removeSource('uploaded-shape');
-    }
-    this._uploadedShape = null;
   }
 
   isDrawingWithinBoundary(): boolean {
