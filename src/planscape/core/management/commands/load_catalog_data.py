@@ -7,16 +7,9 @@ from datasets.models import DataLayer, DataLayerType, DataLayerStatus
 from datasets.tasks import datalayer_uploaded
 
 class Command(BaseCommand):
-    help = "Dump Dataset catalog data into json file to be loaded in another env."
-
+    help = "Loads catalog backup and trigger Vector layers post-upload tasks."
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--rsync-executed",
-            action="store_true",
-            default=False,
-            help="Flag to confirm that the Buckets syncronization was executed.",
-        )
         parser.add_argument(
             "--file-name",
             default="latest_catalog_backup.json",
@@ -26,6 +19,15 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         rsync_executed = options.get("rsync_executed")
+        
+        self.stdout.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        self.stdout.write(f"!!   WARNING: you are running this command on {settings.ENV}.    !!\n")
+        self.stdout.write("!!   It will load the backup data generated on Catalag env.      !!\n")
+        self.stdout.write("!! Make sure to run RSYNC command before executing this command. !!\n")
+        self.stdout.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+
+        rsync_executed = input("Do you confirm that RSYNC was already executed? (y,N)") or "n"
+
         if settings.ENV == "catalog":
             raise SystemExit(
                 "\n"
@@ -35,12 +37,11 @@ class Command(BaseCommand):
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
         
-        if not rsync_executed:
+        if rsync_executed.lower() != "y":
             raise SystemExit(
                 "\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                 "!!         ERROR: RSYNC execution not confirmed.            !!\n"
-                "!! Make sure to excute RSYNC and add flag --rsync-executed. !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
         
@@ -53,7 +54,6 @@ class Command(BaseCommand):
                 "!!     Error: Backups path is not configured.         !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
-        
 
         filename = options.get("file_name", "latest_catalog_backup.json")
         file_path = os.path.join(backups_dir, filename)
@@ -65,9 +65,6 @@ class Command(BaseCommand):
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
         
-        #TODO: execut GCS rsync
-        # gcloud storage rsync gs://planscape-datastore-catalog/datalayers gs://planscape-datastore-<env>/ --recursive
-
         try:
             call_command(
                 "loaddata", 
@@ -81,5 +78,6 @@ class Command(BaseCommand):
             for vector_layer in ready_vector_layers.iterator():
                 datalayer_uploaded.delay(vector_layer.pk)
 
+            self.stdout.write(self.style.SUCCESS(f"Triggered post-upload process for {ready_vector_layers.count()} Datalayers type=VECTOR and status=READY."))
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
