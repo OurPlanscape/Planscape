@@ -5,6 +5,7 @@
 export const environment = {
   environment: '',
   production: false,
+  isCatalogEnvironment: false,
   backend_endpoint: 'http://localhost:8000/planscape-backend',
   google_analytics_id: '', // Replace with actual ID.
   download_endpoint: '', // Replace with actual URL
