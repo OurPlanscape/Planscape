@@ -1,13 +1,13 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test('navigate to explore from home', async ({ page }) => {
+test('navigate to map-viewer from home', async ({ page }) => {
   await page.goto('/home');
-  await page.click('a[routerLink="/explore"]');
-  await expect(page).toHaveURL(/\/explore/);
+  await page.click('a[routerLink="/map-viewer"]');
+  await expect(page).toHaveURL(/\/map-viewer/);
 });
 
-test('explore page has data layers panel and map', async ({ page }) => {
-  await page.goto('/explore');
+test('map-viewer page has data layers panel and map', async ({ page }) => {
+  await page.goto('/map-viewer');
   // Data Layers tab is visible
   await expect(page.getByText('Data Layers')).toBeVisible();
   // Search bar is visible
@@ -19,7 +19,7 @@ test('explore page has data layers panel and map', async ({ page }) => {
 });
 
 test('basemap switcher changes the rendered map', async ({ page }) => {
-  await page.goto('/explore');
+  await page.goto('/map-viewer');
 
   const canvas = page.locator('.maplibregl-canvas');
   await expect(canvas).toBeVisible();
@@ -44,7 +44,7 @@ test('basemap switcher changes the rendered map', async ({ page }) => {
 test('map count switcher toggles between 1, 2, and 4 maps', async ({
   page,
 }) => {
-  await page.goto('/explore');
+  await page.goto('/map-viewer');
 
   const mapControl = page.locator('app-multi-map-control');
   const buttons = mapControl.locator('button');
