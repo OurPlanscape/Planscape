@@ -6,6 +6,56 @@
   height: 100%;
 }
 
+.catalog-environment-banner-wrap {
+  padding: 8px 16px 0;
+  background: #f5f7fa;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.catalog-environment-banner {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  background: #e3e8ee;
+  border: 1px solid #c5ced8;
+  border-radius: 4px;
+}
+
+.catalog-environment-banner__title {
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #2a2f36;
+}
+
+.catalog-environment-banner__text {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #4a5560;
+}
+
 section {
-  height: calc(100% - $toolbar-height);
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .catalog-environment-banner-wrap {
+    padding: 6px 12px 0;
+  }
+
+  .catalog-environment-banner {
+    padding: 9px 12px;
+  }
+
+  .catalog-environment-banner__title {
+    font-size: 0.9rem;
+  }
+
+  .catalog-environment-banner__text {
+    font-size: 0.82rem;
+  }
 }
