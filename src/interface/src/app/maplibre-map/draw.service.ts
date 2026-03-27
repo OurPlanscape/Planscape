@@ -207,7 +207,7 @@ export class DrawService {
       this.removeUploadedShapeLayer();
     } else {
       // waiting for map to be ready for operations
-      this._mapRef.once('data', () => {
+      this._mapRef.once('styledata', () => {
         if (this.isMapOperable()) {
           this.removeUploadedShapeLayer();
         }
