@@ -1,6 +1,6 @@
 import { Component, HostBinding, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EMPTY, finalize, interval, switchMap, take } from 'rxjs';
+import { EMPTY, interval, switchMap, take } from 'rxjs';
 import { Plan } from '@types';
 import { Note, PlanningAreaNotesService } from '@services';
 import { NotesPanelState } from '@styleguide';
@@ -37,7 +37,6 @@ export class PlanComponent implements OnInit {
   panelNotes: Note[] = [];
   notesPanelState: NotesPanelState = 'READY';
   currentPlan$ = this.planState.currentPlan$;
-  planLoading = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -53,10 +52,7 @@ export class PlanComponent implements OnInit {
       this.planNotFound = true;
       return;
     }
-    this.planLoading = true;
-    this.currentPlan$.pipe(untilDestroyed(this),
-    finalize(() => this.planLoading = false)
-  ).subscribe({
+    this.currentPlan$.pipe(untilDestroyed(this)).subscribe({
       next: (plan) => {
         // Setting up breadcrumbs
         this.breadcrumbService.updateBreadCrumb({
