@@ -1,4 +1,5 @@
 import os
+import subprocess
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -18,15 +19,24 @@ class Command(BaseCommand):
 
 
     def handle(self, **options):
-        rsync_executed = options.get("rsync_executed")
-        
         self.stdout.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
         self.stdout.write(f"!!   WARNING: you are running this command on {settings.ENV}.    !!\n")
-        self.stdout.write("!!   It will load the backup data generated on Catalag env.      !!\n")
-        self.stdout.write("!! Make sure to run RSYNC command before executing this command. !!\n")
+        self.stdout.write("!! It will perform the following steps:                          !!\n")
+        self.stdout.write("!! 1. Sync Catalog datalayers bucket with targeted env bucket;   !!\n")
+        self.stdout.write("!! 2. Load data from given JSON file to targeted env database;   !!\n")
+        self.stdout.write("!! 3. Update datalayers url to point to targeted env bucket;     !!\n")
+        self.stdout.write("!! 4. Execute post-update process for Vector Layers (Ready only);!!\n")
         self.stdout.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
 
-        rsync_executed = input("Do you confirm that RSYNC was already executed? (y,N)") or "n"
+        confirmed = input("Confirm to proceed with process? (y,N)") or "n"
+
+        if confirmed.lower() != "y":
+            raise SystemExit(
+                "\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                "!!                    Operation canceled                   !!\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+            )
 
         if settings.ENV == "catalog":
             raise SystemExit(
@@ -36,15 +46,6 @@ class Command(BaseCommand):
                 "!! It loads all dataset app data from catalog's json file. !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
-        
-        if rsync_executed.lower() != "y":
-            raise SystemExit(
-                "\n"
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                "!!         ERROR: RSYNC execution not confirmed.            !!\n"
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-            )
-        
 
         backups_dir = os.path.join(settings.CATALOG_BACKUPS_PATH)
         if not os.path.exists(backups_dir):
@@ -66,11 +67,22 @@ class Command(BaseCommand):
             )
         
         try:
+            subprocess.call(
+                [
+                    "gcloud",
+                    "storage", 
+                    "rsync",
+                    "gs://planscape-datastore-catalog/datalayers",
+                    f"gs://planscape-datastore-{settings.ENV}/datalayers",
+                    "--recursive"
+                ]
+            )
+            
             call_command(
                 "loaddata", 
                 str(file_path),
             )
-            
+
             self.stdout.write(self.style.SUCCESS(f"Successfully loaded data from {file_path}"))
 
             ready_vector_layers = DataLayer.objects.filter(type=DataLayerType.VECTOR, status=DataLayerStatus.READY)
