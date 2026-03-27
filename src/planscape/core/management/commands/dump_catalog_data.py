@@ -1,5 +1,5 @@
-import io
 import os
+import shutil
 from datetime import datetime
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -30,9 +30,9 @@ class Command(BaseCommand):
         
 
         now = datetime.now()
-        output_filenames = [f"{now.strftime('%Y-%m-%d_%H:%M:%S')}_catalog_backup.json", "latest_catalog_backup.json"]
+        output_filename = f"{now.strftime('%Y-%m-%d_%H:%M:%S')}_catalog_backup.json"
+        output_path = os.path.join(backups_dir, output_filename)
         
-        buf = io.StringIO()
         try:
             call_command(
                 "dumpdata", 
@@ -42,19 +42,13 @@ class Command(BaseCommand):
                 "dataset.Style",
                 "dataset.DataLayer",
                 "planning.TreatmentGoal",
-                format='json', 
-                indent=2, 
-                stdout=buf,
+                ">",
+                str(output_path),
             )
             
-            # Read from the buffer and write to the file
-            for output_filename in output_filenames:
-                output_path = os.path.join(backups_dir, output_filename)
-                buf.seek(0)
-                with open(output_path, "w") as f:
-                    f.write(buf.read())
-                
-                self.stdout.write(self.style.SUCCESS(f"Successfully dumped data to {output_path}"))
+            latest_output_file_name = "latest_catalog_backup.json"
+            latest_output_path = os.path.join(backups_dir, latest_output_file_name)
+            shutil.copy(str(output_path), str(latest_output_path))
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error dumping data: {e}"))
