@@ -20,7 +20,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { catchError, of, take, map } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { canEditScenarioName } from '@plan/permissions';
+import { canAddScenario, canEditScenario } from '@plan/permissions';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -77,6 +77,10 @@ export class ScenariosCardListComponent {
     return this.isDraft(row) && !this.isCreator(row, userId);
   }
 
+  isDraftCreator(row: ScenarioRow, userId?: number): boolean {
+    return this.isDraft(row) && this.isCreator(row, userId);
+  }
+
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {
     const status = row.scenario_result?.status;
     if (!status) return false;
@@ -84,11 +88,6 @@ export class ScenariosCardListComponent {
     if (this.isDraftByOtherUser(row, userId)) return false;
 
     return this.open_statuses.includes(status);
-  }
-
-  displayDraftCreatorTooltip(row: ScenarioRow): boolean {
-    const userId = this.authService.currentUser()?.id;
-    return this.isDraftByOtherUser(row, userId);
   }
 
   handleOpenScenario(row: ScenarioRow): void {
@@ -119,22 +118,32 @@ export class ScenariosCardListComponent {
     return user?.id === this.plan?.user || user?.id == scenario.user;
   }
 
-  // Planning Area Creators and Owners, and Scenario Creators can rename scenarios
+  // Planning Area Creators and Owners, and Scenario Creators can edit scenarios
   userCanEditScenario(scenario: Scenario) {
     const user = this.authService.currentUser();
     if (!this.plan || !user) {
       return false;
     }
-    return user?.id == scenario.user || canEditScenarioName(this.plan, user);
+    return user?.id == scenario.user || canEditScenario(this.plan, user);
   }
 
-  canShowContextualMenu(scenario: Scenario) {
+  // Planning Area Creators and Owners, and Scenario Creators can edit scenarios
+  userCanRenameScenario(scenario: Scenario) {
     const user = this.authService.currentUser();
-    if (this.isDraft(scenario)) {
-      return user?.id == scenario.user;
-    } else {
+    if (!this.plan || !user) {
+      return false;
+    }
+    return user?.id == scenario.user || canEditScenario(this.plan, user);
+  }
+
+  canShowContextualMenu(scenario: Scenario): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !this.plan) return false;
+    // available if user is also a collaborator
+    if (user.id === scenario.user || canAddScenario(this.plan)) {
       return true;
     }
+    return false;
   }
 
   showDeleteScenarioDialog(scenario: Scenario) {
