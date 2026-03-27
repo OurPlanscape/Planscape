@@ -1,87 +1,69 @@
-<script>
-  (function () {
-    "use strict";
+<div id="{{ id }}_div_map" class="dj_map_wrapper">
+  <div id="{{ id }}_map" class="dj_map"></div>
+  <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}"{% if widget.attrs.disabled %} disabled{% endif %} hidden></textarea>
+  <script>
+    (function () {
+      "use strict";
 
-    function patchMapWidget() {
-      const MapWidgetCtor =
-        (typeof window.MapWidget !== "undefined" && window.MapWidget) ||
-        (typeof MapWidget !== "undefined" && MapWidget);
+      function lockMap(widget) {
+        widget.disableDrawing();
 
-      if (!MapWidgetCtor) {
-        return false;
+        if (widget.interactions.draw) {
+          widget.map.removeInteraction(widget.interactions.draw);
+        }
+        if (widget.interactions.modify) {
+          widget.interactions.modify.setActive(false);
+          widget.map.removeInteraction(widget.interactions.modify);
+        }
       }
 
-      if (MapWidgetCtor.prototype.__planscapeReadonlyGeomPatched) {
-        return true;
-      }
+      const options = JSON.parse("{{ widget.map_options_json|escapejs }}");
+      options.base_layer = new ol.layer.Tile({ source: new ol.source.OSM() });
 
-      MapWidgetCtor.prototype.__planscapeReadonlyGeomPatched = true;
+      const mapWidget = new MapWidget(options);
+      lockMap(mapWidget);
 
-      const originalCreateInteractions =
-        MapWidgetCtor.prototype.createInteractions;
-
-      MapWidgetCtor.prototype.createInteractions = function () {
-        originalCreateInteractions.call(this);
-
-        const map = this.map;
-
-        if (map && !map.__planscapeReadonlyMapPatched) {
-          map.__planscapeReadonlyMapPatched = true;
-
-          const originalAddInteraction = map.addInteraction.bind(map);
-
-          map.addInteraction = function (interaction) {
-            if (
-              interaction instanceof ol.interaction.Draw ||
-              interaction instanceof ol.interaction.Modify
-            ) {
-              interaction.setActive(false);
-              return;
-            }
-
-            return originalAddInteraction(interaction);
-          };
-        }
-
-        if (this.interactions.draw) {
-          this.map.removeInteraction(this.interactions.draw);
-          this.interactions.draw = null;
-        }
-
-        if (this.interactions.modify) {
-          this.map.removeInteraction(this.interactions.modify);
-          this.interactions.modify = null;
-        }
-
-        const clearNode =
-          document.getElementById(this.map.getTarget()).nextElementSibling;
-
-        if (clearNode && clearNode.classList.contains("clear_features")) {
-          clearNode.style.display = "none";
-        }
-      };
-
-      return true;
-    }
-
-    if (!patchMapWidget()) {
-      if (window.__planscapeReadonlyRetryRunning) {
+      const geometryUrl = "{{ widget.geometry_url|escapejs }}";
+      if (!geometryUrl) {
         return;
       }
 
-      window.__planscapeReadonlyRetryRunning = true;
+      fetch(geometryUrl, {
+        credentials: "same-origin",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            return null;
+          }
+          return response.json();
+        })
+        .then(function (payload) {
+          if (!payload || !payload.geometry) {
+            return;
+          }
 
-      let attempts = 0;
-      const timer = window.setInterval(function () {
-        attempts += 1;
+          const features = new ol.format.GeoJSON().readFeatures(
+            {
+              type: "Feature",
+              geometry: payload.geometry,
+              properties: {}
+            },
+            {
+              featureProjection: mapWidget.map.getView().getProjection()
+            }
+          );
 
-        if (patchMapWidget() || attempts >= 50) {
-          window.clearInterval(timer);
-          window.__planscapeReadonlyRetryRunning = false;
-        }
-      }, 25);
-    }
-  })();
-</script>
+          const extent = ol.extent.createEmpty();
+          features.forEach(function (feature) {
+            mapWidget.featureOverlay.getSource().addFeature(feature);
+            ol.extent.extend(extent, feature.getGeometry().getExtent());
+          });
 
-{% include "gis/openlayers-osm.html" %}
+          if (!ol.extent.isEmpty(extent)) {
+            mapWidget.map.getView().fit(extent, { minResolution: 1 });
+          }
+        });
+    })();
+  </script>
+</div>

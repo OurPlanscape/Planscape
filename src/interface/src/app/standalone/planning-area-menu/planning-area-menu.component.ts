@@ -142,7 +142,7 @@ export class PlanningAreaMenuComponent {
 
   saveBreadcrumbs() {
     this.breadcrumbService.updateBreadCrumb({
-      label: 'Explore: ' + this.plan.name,
+      label: 'Map Viewer: ' + this.plan.name,
       backUrl: '/',
     });
   }

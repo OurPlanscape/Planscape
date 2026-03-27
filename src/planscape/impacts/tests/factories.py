@@ -24,6 +24,7 @@ class TreatmentPlanFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "treatment plan %s" % n)
     scenario = factory.SubFactory(ScenarioFactory)
     created_by = factory.SelfAttribute("scenario.user")
+    stand_size = StandSizeChoices.LARGE
 
 
 class TreatmentPrescriptionFactory(factory.django.DjangoModelFactory):

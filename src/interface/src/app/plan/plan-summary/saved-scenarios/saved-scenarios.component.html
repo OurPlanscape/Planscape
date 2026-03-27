@@ -20,7 +20,7 @@
       {{ loading ? plan?.scenario_count : activeScenarios.length }}
     </div>
 
-    <a [routerLink]="['/explore', plan?.id]" class="view-map">View Map</a>
+    <a [routerLink]="['/map-viewer', plan?.id]" class="view-map">View Map</a>
   </div>
   <div class="scenarios-header">
     <h4 class="scenarios-title">Scenarios</h4>

@@ -12,6 +12,7 @@ import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('SyncedMapComponent', () => {
   let component: SyncedMapComponent;
@@ -19,7 +20,7 @@ describe('SyncedMapComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SyncedMapComponent, FeaturesModule],
+      imports: [SyncedMapComponent, FeaturesModule, MatSnackBarModule],
       providers: [
         MockProvider(DataLayersService),
         MockProviders(MultiMapConfigState, AuthService, DrawService),

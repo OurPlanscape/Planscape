@@ -156,7 +156,10 @@ class SummaryTest(TestCase):
         self.scenario = ScenarioFactory.create(
             configuration={"stand_size": StandSizeChoices.SMALL}
         )
-        self.tx_plan = TreatmentPlanFactory.create(scenario=self.scenario)
+        self.tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            stand_size=StandSizeChoices.SMALL,
+        )
         self.proj1 = ProjectAreaFactory(scenario=self.tx_plan.scenario)
         self.proj2 = ProjectAreaFactory(scenario=self.tx_plan.scenario)
         self.proj3 = ProjectAreaFactory(scenario=self.tx_plan.scenario)
