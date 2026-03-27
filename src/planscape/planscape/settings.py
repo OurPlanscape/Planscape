@@ -107,6 +107,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "core.context_processors.catalog_environment_banner",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
@@ -351,6 +352,7 @@ LOGGING = {
 
 
 ENV = config("ENV", "dev")
+IS_CATALOG_ENVIRONMENT = ENV.lower() == "catalog"
 PROVIDER = config("PROVIDER", "aws", cast=str).lower()
 SENTRY_DSN = config("SENTRY_DSN", None)
 if SENTRY_DSN is not None:
@@ -561,7 +563,9 @@ AVAILABLE_STANDS_SIMPLIFY_TOLERANCE = config(
     "AVAILABLE_STANDS_SIMPLIFY_TOLERANCE", default=100, cast=int
 )
 
-DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS = config("DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS", default=10, cast=int)
+DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS = config(
+    "DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS", default=10, cast=int
+)
 
 E2E_TESTS_ENABLED = config("E2E_TESTS_ENABLED", default=False, cast=bool)
 STAND_METRICS_API_URL = config(

@@ -1,8 +1,19 @@
 <!-- Toolbar -->
 <app-top-bar (toggleEvent)="toggleSidebar($event)"></app-top-bar>
+
+<div *ngIf="isCatalogEnvironment" class="catalog-environment-banner-wrap">
+  <div class="catalog-environment-banner">
+    <div class="catalog-environment-banner__title">Catalog Environment</div>
+    <p class="catalog-environment-banner__text">
+      Source of truth for datasets and data layers.
+    </p>
+  </div>
+</div>
+
 <section>
   <router-outlet></router-outlet>
 </section>
+
 <sg-overlay-loader
   *ngIf="isLoading$ | async"
   [offsetTop]="48"></sg-overlay-loader>
