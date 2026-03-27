@@ -55,12 +55,15 @@ export class PlanComponent implements OnInit {
       this.planNotFound = true;
       return;
     }
-    this.currentPlan$.pipe(untilDestroyed(this),
-      finalize(() => {
-        this.loadingPlan = false;
-      })).subscribe({
+    this.currentPlan$
+      .pipe(
+        untilDestroyed(this),
+        finalize(() => {
+          this.loadingPlan = false;
+        })
+      )
+      .subscribe({
         next: (plan) => {
-
           this.loadingPlan = false;
 
           // Setting up breadcrumbs
