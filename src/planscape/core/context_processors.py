@@ -1,7 +1,7 @@
 from django.conf import settings
 
 
-def catalog_environment_banner(request):
+def environment_context(request):
     return {
-        "IS_CATALOG_ENVIRONMENT": getattr(settings, "IS_CATALOG_ENVIRONMENT", False),
+        "ENV": getattr(settings, "ENV", "").lower(),
     }
