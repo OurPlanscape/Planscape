@@ -1,4 +1,4 @@
-@import "colors";
+@import 'colors';
 
 :host {
   box-sizing: border-box;
@@ -26,17 +26,20 @@
 }
 
 button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border: none;
-  background: $color-white;
+  background: $color-standard-blue;
   border-radius: 4px;
   padding: 3px;
   height: 40px;
   width: 56px;
   cursor: pointer;
-  color: $color-standard-blue;
+  color: $color-white;
 
   &:hover {
-    background: $color-soft-gray;
+    background: darken($color-standard-blue, 10);
   }
 }
 
@@ -57,7 +60,6 @@ mat-icon {
     height: 40px;
     width: 40px;
   }
-
 
   .check-button {
     color: $color-brand-teal;
