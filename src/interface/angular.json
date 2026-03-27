@@ -88,36 +88,6 @@
                 }
               }
             },
-            "catalog": {
-              "sourceMap": {
-                "scripts": true,
-                "hidden": true
-              },
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "3mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kb",
-                  "maximumError": "110kb"
-                }
-              ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.catalog.ts"
-                }
-              ],
-              "outputHashing": "all",
-              "optimization": {
-                "fonts": {
-                  "inline": false
-                }
-              }
-            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
@@ -140,10 +110,6 @@
           "configurations": {
             "production": {
               "buildTarget": "interface:build:production"
-            },
-            "catalog": {
-              "buildTarget": "interface:build:catalog",
-              "proxyConfig": "proxy.conf.json"
             },
             "development": {
               "buildTarget": "interface:build:development",
