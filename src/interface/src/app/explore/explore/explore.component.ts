@@ -101,7 +101,7 @@ export class ExploreComponent implements OnDestroy {
         let label = 'New Plan';
         let backUrl = '/';
         if (plan) {
-          label = 'Explore: ' + plan.name;
+          label = 'Map Viewer: ' + plan.name;
           backUrl = getPlanPath(plan.id);
         }
         this.breadcrumbService.updateBreadCrumb({

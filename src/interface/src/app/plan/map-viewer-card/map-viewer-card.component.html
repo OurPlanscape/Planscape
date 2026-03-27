@@ -18,7 +18,7 @@
 <div
   *ngIf="currentPlan$ | async as plan"
   class="overlay-navigation"
-  [routerLink]="['/explore', plan?.id]">
+  [routerLink]="['/map-viewer', plan?.id]">
   <div class="label">Map Viewer</div>
   <mat-icon>chevron_right</mat-icon>
 </div>

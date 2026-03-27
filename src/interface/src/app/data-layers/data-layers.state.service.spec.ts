@@ -9,13 +9,14 @@ import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
 import { PlanState } from '@plan/plan.state';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('DataLayersStateService', () => {
   let service: DataLayersStateService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [FeaturesModule],
+      imports: [FeaturesModule, MatSnackBarModule],
       providers: [
         MockProvider(DataLayersService, {
           listDataSets: () => of({} as Pagination<DataSet>),
