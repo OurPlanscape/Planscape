@@ -13,12 +13,39 @@ class TestStorageService extends BaseLocalStorageService<TestData> {
   }
 }
 
+class ExpiringStorageService extends BaseLocalStorageService<TestData> {
+  constructor() {
+    super('expiringTestKey', { maxAgeMs: 1000 });
+  }
+}
+
+class ValidatingStorageService extends BaseLocalStorageService<TestData> {
+  constructor() {
+    super('validatingTestKey');
+  }
+
+  protected override isValidValue(value: unknown): value is TestData {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      'key1' in value &&
+      'key2' in value &&
+      typeof value.key1 === 'string' &&
+      typeof value.key2 === 'number'
+    );
+  }
+}
+
 describe('BaseStorageService', () => {
   let service: TestStorageService;
+  let expiringService: ExpiringStorageService;
+  let validatingService: ValidatingStorageService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = new TestStorageService();
+    expiringService = new ExpiringStorageService();
+    validatingService = new ValidatingStorageService();
   });
 
   afterEach(() => {
@@ -50,4 +77,39 @@ describe('BaseStorageService', () => {
     const storedData = service.getItem();
     expect(storedData).toBeNull();
   });
+
+  it('should remove legacy values that do not match the storage format', () => {
+    localStorage.setItem('testKey', JSON.stringify({ key1: 'value1', key2: 42 }));
+
+    const storedData = service.getItem();
+
+    expect(storedData).toBeNull();
+    expect(localStorage.getItem('testKey')).toBeNull();
+  });
+
+  it('should expire data when it is older than the configured max age', () => {
+    const testData: TestData = { key1: 'value1', key2: 42 };
+    spyOn(Date, 'now').and.returnValues(1_000, 2_001);
+    expiringService.setItem(testData);
+
+    const storedData = expiringService.getItem();
+    expect(storedData).toBeNull();
+    expect(localStorage.getItem('expiringTestKey')).toBeNull();
+  });
+
+  it('should remove values rejected by subclass validation', () => {
+    localStorage.setItem(
+      'validatingTestKey',
+      JSON.stringify({
+        value: { key1: 'value1', key2: 'bad' },
+        savedAt: 1_000,
+      })
+    );
+
+    const storedData = validatingService.getItem();
+
+    expect(storedData).toBeNull();
+    expect(localStorage.getItem('validatingTestKey')).toBeNull();
+  });
+
 });
