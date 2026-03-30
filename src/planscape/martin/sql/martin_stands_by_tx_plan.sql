@@ -6,8 +6,7 @@ DECLARE
 BEGIN
 
   SELECT INTO p_stand_size (
-    SELECT (configuration->>'stand_size')::varchar FROM planning_scenario sc
-    RIGHT JOIN impacts_treatmentplan tp ON (tp.scenario_id = sc.id)
+    SELECT tp.stand_size::varchar FROM impacts_treatmentplan tp
     WHERE tp.id = (query_params->>'treatment_plan_id')::int
   );
 
@@ -18,8 +17,7 @@ BEGIN
       pa.geometry AS "geometry"
     FROM 
       planning_projectarea pa
-    LEFT JOIN planning_scenario sc ON (pa.scenario_id = sc.id)
-    LEFT JOIN impacts_treatmentplan tp ON (sc.id = tp.scenario_id)
+    LEFT JOIN impacts_treatmentplan tp ON (pa.scenario_id = tp.scenario_id)
     WHERE 
       ((query_params->>'project_area_id') IS NULL OR pa.id = (query_params->>'project_area_id')::int) AND
       tp.id = (query_params->>'treatment_plan_id')::int AND

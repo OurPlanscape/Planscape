@@ -8,7 +8,7 @@
       {{ isProjectArea ? 'Project areas' : 'Scenario' }}
     </div>
     <button
-      [hidden]="!userCanDeleteScenario && hasFailed"
+      [hidden]="!contextualMenuEnabled && hasFailed"
       [disabled]="isRunning() || !contextualMenuEnabled"
       [matMenuTriggerFor]="menu"
       aria-label="More scenario options"
@@ -22,7 +22,7 @@
       <button
         class="action-button"
         mat-menu-item
-        *ngIf="userCanEditScenario && !isProjectArea"
+        *ngIf="contextualMenuEnabled && !isProjectArea"
         (click)="copyScenario.emit()">
         <mat-icon class="material-symbols-outlined">file_copy</mat-icon>
         <span>Copy & Edit</span>
@@ -30,7 +30,7 @@
       <button
         mat-menu-item
         class="action-button"
-        *ngIf="userCanEditScenario"
+        *ngIf="userCanRenameScenario"
         (click)="editScenario.emit()">
         <mat-icon class="material-symbols-outlined">edit</mat-icon>
         <span>Rename</span>

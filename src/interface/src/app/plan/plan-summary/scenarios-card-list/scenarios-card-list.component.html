@@ -9,11 +9,10 @@
   (openScenario)="handleOpenScenario(s)"
   [userCanDeleteScenario]="userCanDeleteScenario(s)"
   [userCanEditScenario]="userCanEditScenario(s)"
+  [userCanRenameScenario]="userCanRenameScenario(s)"
   [contextualMenuEnabled]="canShowContextualMenu(s)"
   (deleteScenario)="showDeleteScenarioDialog(s)"
   (editScenario)="editScenario(s)"
   (copyScenario)="handleCopyScenario(s)"
-  matTooltip="Only the creator can edit this draft"
-  [matTooltipDisabled]="!displayDraftCreatorTooltip(s)"
-  [disabled]="displayDraftCreatorTooltip(s)">
+  [disabled]="!userCanEditScenario(s)">
 </sg-scenario-card>

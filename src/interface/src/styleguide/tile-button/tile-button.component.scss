@@ -1,8 +1,9 @@
 @import 'colors';
 @import 'mixins';
+@import 'media';
 
-$tile-size-md: 176px;
-$tile-height-lg: 180px;
+$tile-size-md: 146px;
+$tile-height-lg: 176px;
 
 .tile-button {
   border-radius: 4px;
@@ -19,20 +20,19 @@ $tile-height-lg: 180px;
   background-size: 60%;
   padding: 0;
 
-  &.md {
+  @include on-small() {
     min-height: $tile-size-md;
     max-height: $tile-size-md;
     min-width: $tile-size-md;
     max-width: $tile-size-md;
   }
 
-  &.lg {
+  @include on-medium() {
     min-height: $tile-height-lg;
-    max-height: 100%;
-    min-width: 120px;
-    max-width: 100%
+    max-height: $tile-height-lg;
+    min-width: $tile-height-lg;
+    max-width: $tile-height-lg;
   }
-
 
   &:hover:not(:disabled) {
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
@@ -91,7 +91,7 @@ $tile-height-lg: 180px;
     @include standard-label();
 
     &.lg {
-    @include xs-label();
+      @include xs-label();
       font-weight: 700;
       line-height: 22px;
     }
@@ -103,6 +103,10 @@ $tile-height-lg: 180px;
     &.lg {
       font-weight: 400;
       line-height: 22px;
+    }
+
+    @include on-small() {
+      display: none;
     }
   }
 }
