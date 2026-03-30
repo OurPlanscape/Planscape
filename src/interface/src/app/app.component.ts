@@ -16,7 +16,9 @@ import { MapModuleService } from '@services/map-module.service';
 export class AppComponent implements OnInit {
   sidebarOpen = false;
 
-  readonly isCatalogEnvironment = environment.isCatalogEnvironment ?? false;
+  readonly isCatalogEnvironment =
+    (environment as typeof environment & { isCatalogEnvironment?: boolean })
+      .isCatalogEnvironment ?? false;
 
   constructor(
     private authService: AuthService,
