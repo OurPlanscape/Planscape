@@ -8,7 +8,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.20);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
   gap: 24px;
 }
 
@@ -25,21 +25,16 @@
 }
 
 .details {
-    @include small-paragraph();
-    color: $color-dark-gray;
+  @include small-paragraph();
+  color: $color-dark-gray;
 }
 
 .tools-grid {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
   gap: 12px;
   max-width: 550px;
-}
-
-::ng-deep .in-overview sg-tile-button  {
-  flex: 1;
 }
 
 ::ng-deep sg-tile-button.climate-foresight .tile-button {
