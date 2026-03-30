@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { map, switchMap } from 'rxjs';
 
 import { AuthService } from '@services';
-import { KNOWLEDGE_BASE_URL } from '@app/shared';
+import { KNOWLEDGE_BASE_URL, SUPPORT_URL } from '@app/shared';
 
 @Component({
   selector: 'app-top-bar',
@@ -80,4 +80,5 @@ export class TopBarComponent implements OnInit {
   }
 
   protected readonly KNOWLEDGE_BASE_URL = KNOWLEDGE_BASE_URL;
+  protected readonly SUPPORT_URL = SUPPORT_URL;
 }

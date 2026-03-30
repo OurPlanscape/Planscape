@@ -125,15 +125,6 @@ const routes: Routes = [
       },
 
       {
-        path: 'feedback',
-        canActivate: [RedirectGuard],
-        component: RedirectGuard,
-        data: {
-          externalUrl:
-            'https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw',
-        },
-      },
-      {
         path: 'forsys',
         canActivate: [RedirectGuard],
         component: RedirectGuard,

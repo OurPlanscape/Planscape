@@ -10,20 +10,8 @@
   <!-- Show this section once we know if the user is logged in or not to avoid -->
   <!-- flashing guest / default icon and content shifting -->
   <ng-container *ngIf="(displayName$ | async) !== undefined">
-    <!-- Sign in with menu if loged in is false -->
-    <button
-      sg-button
-      *ngIf="(loggedIn$ | async) === false"
-      [matMenuTriggerFor]="dotMenu"
-      class="navbar-item mat-body-2 user-menu"
-      [outlined]="true"
-      variant="link"
-      data-id="menu-trigger">
-      {{ displayName$ | async }}
-    </button>
-
     <a
-      class="navbar-item help"
+      class="navbar-item"
       target="_blank"
       aria-label="help button"
       [href]="KNOWLEDGE_BASE_URL"
@@ -31,22 +19,20 @@
       Knowledge Base
     </a>
 
-    <!--  Feedback-->
     <a
-      routerLink="/feedback"
-      class="navbar-item feedback"
+      [href]="SUPPORT_URL"
+      class="navbar-item"
       data-id="feedback"
       target="_blank"
       rel="noopener noreferrer">
-      Feedback
+      Support
     </a>
 
-    <!-- User with menu if loged in is true -->
+    <!-- User with menu if logged in is true -->
     <button
       sg-button
       [outlined]="true"
       variant="link"
-      *ngIf="(loggedIn$ | async) === true"
       [matMenuTriggerFor]="dotMenu"
       class="navbar-item mat-body-2 user-menu"
       data-id="menu-trigger">
@@ -103,11 +89,11 @@
     </a>
 
     <a
-      routerLink="/feedback"
+      [href]="SUPPORT_URL"
       data-id="feedback"
       target="_blank"
       rel="noopener noreferrer">
-      Feedback
+      Support
     </a>
 
     <ng-container *ngIf="loggedIn$ | async">
