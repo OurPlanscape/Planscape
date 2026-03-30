@@ -141,3 +141,6 @@ export const unselectableReason: Record<UnselectableType, string> = {
   PRIORITY_OBJECTIVE: 'Layer selected as Priority Objective',
   CO_BENEFIT: 'Layer selected as Co-Benefit',
 };
+
+export const KNOWLEDGE_BASE_URL =
+  'https://support.planscape.org/support/solutions';

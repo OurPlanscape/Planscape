@@ -134,15 +134,6 @@ const routes: Routes = [
         },
       },
       {
-        path: 'help',
-        canActivate: [RedirectGuard],
-        component: RedirectGuard,
-        data: {
-          externalUrl:
-            'https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide',
-        },
-      },
-      {
         path: 'forsys',
         canActivate: [RedirectGuard],
         component: RedirectGuard,

@@ -23,14 +23,12 @@
     </button>
 
     <a
-      class="help"
-      mat-icon-button
-      routerLink="/help"
+      class="navbar-item help"
       target="_blank"
       aria-label="help button"
-      rel="noopener noreferrer"
+      [href]="KNOWLEDGE_BASE_URL"
       data-id="help">
-      <mat-icon class="material-symbols-outlined">help_outline</mat-icon>
+      Knowledge Base
     </a>
 
     <!--  Feedback-->
@@ -96,12 +94,12 @@
     </ng-container>
 
     <a
-      routerLink="/help"
       target="_blank"
       aria-label="help button"
       rel="noopener noreferrer"
+      [href]="KNOWLEDGE_BASE_URL"
       data-id="help">
-      Help
+      Knowledge Base
     </a>
 
     <a
