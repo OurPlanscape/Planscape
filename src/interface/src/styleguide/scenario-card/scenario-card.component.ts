@@ -58,6 +58,7 @@ export class ScenarioCardComponent {
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
   @Input() userCanDeleteScenario = false;
   @Input() userCanEditScenario = false;
+  @Input() userCanRenameScenario = false;
   @Input() contextualMenuEnabled = true;
   @Input() disabled = false;
 

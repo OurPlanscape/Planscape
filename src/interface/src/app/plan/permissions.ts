@@ -18,7 +18,7 @@ export function canEditPlanName(plan: Plan | PreviewPlan, user: User) {
   );
 }
 
-export function canEditScenarioName(plan: Plan | PreviewPlan, user: User) {
+export function canEditScenario(plan: Plan | PreviewPlan, user: User) {
   return plan.user === user.id || plan.permissions?.includes('change_scenario');
 }
 

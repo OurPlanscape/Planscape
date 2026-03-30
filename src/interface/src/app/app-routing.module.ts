@@ -92,9 +92,16 @@ const routes: Routes = [
           ).then((m) => m.AccountValidationComponent),
       },
 
+      // Keep explore redirect but remove eventually
+      { path: 'explore', redirectTo: 'map-viewer', pathMatch: 'full' },
       {
-        path: 'explore',
-        title: 'Explore',
+        path: 'explore/:planId',
+        redirectTo: 'map-viewer/:planId',
+        pathMatch: 'full',
+      },
+      {
+        path: 'map-viewer',
+        title: 'Map Viewer',
         loadComponent: () =>
           import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
@@ -104,8 +111,8 @@ const routes: Routes = [
         },
       },
       {
-        path: 'explore/:planId',
-        title: 'Explore',
+        path: 'map-viewer/:planId',
+        title: 'Map Viewer',
         loadComponent: () =>
           import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent

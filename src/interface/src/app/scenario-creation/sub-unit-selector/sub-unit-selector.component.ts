@@ -89,7 +89,5 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
     });
   }
 
-  override beforeStepExit(): void {
-    this.baseLayersStateService.clearBaseLayer();
-  }
+  override beforeStepExit(): void {}
 }

@@ -12,6 +12,8 @@ from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
+from django.contrib.gis.db.models import Union as UnionOp
+from django.db.models import QuerySet
 from django_stubs_ext.db.models import TypedModelMeta
 from planning.models import ProjectArea, Scenario
 from stands.models import Stand, StandSizeChoices
@@ -80,7 +82,15 @@ class TreatmentPlan(
     objects = TreatmentPlanManager()
 
     def get_stand_size(self) -> StandSizeChoices:
-        return StandSizeChoices(self.stand_size)
+        if self.stand_size:
+            return StandSizeChoices(self.stand_size)
+        return self.scenario.get_stand_size()
+
+    def get_project_areas_stands(self) -> QuerySet[Stand]:
+        geometry = self.scenario.project_areas.all().aggregate(
+            geometry=UnionOp("geometry")
+        )["geometry"]
+        return Stand.objects.within_polygon(geometry, self.get_stand_size())
 
     class Meta(TypedModelMeta):
         verbose_name = "Treatment Plan"
