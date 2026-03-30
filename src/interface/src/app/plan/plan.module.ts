@@ -21,6 +21,7 @@ import {
   ButtonComponent,
   NotesPanelComponent,
   OpacitySliderComponent,
+  OverlayLoaderComponent,
   ScenarioCardComponent,
   SectionComponent,
   ToggleComponent,
@@ -97,6 +98,7 @@ import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list
     NotesExpansionCardComponent,
     ToggleComponent,
     ScenariosEmptyListComponent,
+    OverlayLoaderComponent,
   ],
 })
 export class PlanModule {}
