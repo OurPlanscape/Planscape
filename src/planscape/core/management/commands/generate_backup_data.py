@@ -7,19 +7,14 @@ from django.conf import settings
 
 
 class Command(BaseCommand):
-    help = "Generates backup of catalog data, by pushing it into json file to be loaded in another env."
+    help = "Generates backup data by pushing it into json file to be loaded in another env."
     def handle(self, **options):
-        if settings.ENV != "catalog":
-            raise SystemExit(
-                "\n"
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                "!! DANGER: This command can only be runned in catalog.!!\n"
-                "!! It dumps all dataset app data into a json file.    !!\n"
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-            )
+        self.stdout.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        self.stdout.write(f"!!   WARNING: you are running this command on {settings.ENV}.    !!\n")
+        self.stdout.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
         
 
-        backups_dir = os.path.join(settings.CATALOG_BACKUPS_PATH)
+        backups_dir = os.path.join(settings.BACKUPS_PATH)
         if not os.path.exists(backups_dir):
             raise SystemError(
                 "\n"
@@ -30,23 +25,25 @@ class Command(BaseCommand):
         
 
         now = datetime.now()
-        output_filename = f"{now.strftime('%Y-%m-%d_%H:%M:%S')}_catalog_backup.json"
+        output_filename = f"{now.strftime('%Y-%m-%d_%H:%M:%S')}_{settings.ENV}_backup.json"
         output_path = os.path.join(backups_dir, output_filename)
         
         try:
             call_command(
                 "dumpdata", 
                 "organizations.Organization",
-                "dataset.Dataset",
-                "dataset.Category",
-                "dataset.Style",
-                "dataset.DataLayer",
+                "datasets.Dataset",
+                "datasets.Category",
+                "datasets.Style",
+                "datasets.DataLayer",
                 "planning.TreatmentGoal",
+                "--indent",
+                "4",
                 ">",
                 str(output_path),
             )
             
-            latest_output_file_name = "latest_catalog_backup.json"
+            latest_output_file_name = f"latest_{settings.ENV}_backup.json"
             latest_output_path = os.path.join(backups_dir, latest_output_file_name)
             shutil.copy(str(output_path), str(latest_output_path))
 
