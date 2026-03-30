@@ -38,9 +38,12 @@ export class QueryParamsService {
         )
       )
       .subscribe((event: NavigationStart) => {
-        if (event.url === '/home') {
-          //reset parameters
-          this.homeParametersStorageService.setItem({});
+        const isRootOrAuth =
+          event.url === '/' ||
+          event.url === '/home' ||
+          event.url.startsWith('/login');
+        if (isRootOrAuth) {
+          this.homeParametersStorageService.removeItem();
         } else {
           // save parameters when leaving
           const currentParams = this.getCurrentParams();
