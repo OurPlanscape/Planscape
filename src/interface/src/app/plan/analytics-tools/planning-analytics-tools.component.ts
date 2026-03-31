@@ -50,10 +50,7 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
    */
   private initEnabledTools(): void {
     // CLIMATE FORESIGHT TOOL
-    if (
-      this.featureService.isFeatureEnabled('CLIMATE_FORESIGHT') &&
-      this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')
-    ) {
+    if (this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')) {
       this.analyticsTools.push({
         id: 'climate-foresight',
         backgroundImage: '/assets/svg/climate-foresight.svg',
@@ -61,7 +58,7 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
         title: 'Climate Foresight',
         localClass: 'climate-foresight',
         subtitle: 'Integrate climate data...',
-        featureFlag: 'CLIMATE_FORESIGHT',
+        featureFlag: '',
         enabled: true,
       });
     }
