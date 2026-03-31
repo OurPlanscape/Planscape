@@ -13,6 +13,8 @@
   display: flex;
   align-items: center;
   z-index: 500;
+  gap: 16px;
+
   @include on-small() {
     padding: 0 12px;
   }
@@ -40,15 +42,9 @@
   .logo {
     height: 100%;
   }
-  
-
-  .help.mat-icon-button {
-    line-height: 36px;
-  }
 }
 
 .user-menu,
-.help,
 .navbar-item {
   @include on-small() {
     display: none;
@@ -90,21 +86,6 @@ a.navbar-item {
   text-underline-position: under;
 }
 
-.help {
-  margin-left: 16px;
-  margin-right: 8px;
-
-  &:active,
-  &:hover {
-    color: $color-light-blue;
-  }
-
-  .mat-icon {
-    font-size: 20px;
-    padding-top: 2px;
-
-  }
-}
 
 .mat-menu-trigger {
   height: 100%;
@@ -151,7 +132,6 @@ a.navbar-item {
 @media print {
   .navbar-item,
   .mat-menu-trigger,
-  .help,
   .side-panel {
     display: none;
   }
@@ -166,10 +146,6 @@ a.navbar-item {
   .site-link img {
     filter: invert(1);
   }
-}
-
-.feedback {
-  margin-right: 16px;
 }
 
 button.user-menu.link-button {
