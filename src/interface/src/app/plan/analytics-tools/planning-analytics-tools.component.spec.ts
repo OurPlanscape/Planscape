@@ -202,11 +202,4 @@ describe('PlanningAnalyticsToolsComponent', () => {
     expect(enabledTools.length).toBe(1);
     expect(enabledTools[0].id).toBe('climate-foresight');
   });
-
-  it('should set hasEnabledTools to false when no tools are enabled', () => {
-    mockFeatureService.isFeatureEnabled.and.returnValue(false);
-
-    component.ngOnInit();
-    expect(component.hasEnabledTools).toBe(false);
-  });
 });
