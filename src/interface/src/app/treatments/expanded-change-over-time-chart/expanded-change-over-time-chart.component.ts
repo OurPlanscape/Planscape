@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
-import { SharedModule } from '@shared';
+import { LANDSCAPE_OUTPUTS_URL, SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
 import { MapConfigState } from '@maplibre-map/map-config.state';
@@ -42,9 +42,9 @@ import { TreatmentFilterComponent } from '@treatments/treatment-filter/treatment
 })
 export class ExpandedChangeOverTimeChartComponent {
   loading = false;
-  downloadingShapefile = false;
   scenario: Scenario | null = null;
-  valueKey = 'value' as any;
+
+  public readonly LANDSCAPE_OUTPUTS_URL = LANDSCAPE_OUTPUTS_URL;
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -78,8 +78,6 @@ export class ExpandedChangeOverTimeChartComponent {
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
-
-  treatmentTypeOptions$ = this.treatmentsState.treatmentTypeOptions$;
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
