@@ -1,21 +1,27 @@
 <div class="main" *ngIf="!showHelp">
   <section class="header">
     <button
-      mat-icon-button
+      sg-button
+      icon="arrow_back"
       (click)="startOver()"
-      aria-label="back"
-      *ngIf="showMessageBox">
-      <mat-icon class="back-btn" (click)="showHelp = false"
-        >arrow_back
-      </mat-icon>
-    </button>
+      *ngIf="showMessageBox"
+      variant="icon-only"></button>
+
     <h2>Share {{ data.plan.name }}</h2>
-    <button mat-icon-button (click)="showHelp = true" aria-label="help">
-      <mat-icon class="help-btn">help_outlined</mat-icon>
-    </button>
-    <button mat-icon-button (click)="close()" aria-label="close">
-      <mat-icon class="close-btn">close</mat-icon>
-    </button>
+
+    <button
+      sg-button
+      icon="help_outlined"
+      (click)="showHelp = true"
+      aria-label="help"
+      variant="icon-only"></button>
+
+    <button
+      sg-button
+      icon="close"
+      (click)="close()"
+      aria-label="close"
+      variant="icon-only"></button>
   </section>
 
   <app-form-message
@@ -124,16 +130,18 @@
 
 <div class="help" *ngIf="showHelp">
   <section class="header">
-    <button mat-icon-button (click)="showHelp = true" aria-label="back">
-      <mat-icon class="back-btn" (click)="showHelp = false"
-        >arrow_back
-      </mat-icon>
-    </button>
+    <button
+      sg-button
+      icon="arrow_back"
+      (click)="showHelp = false"
+      variant="icon-only"></button>
 
     <h2>Help</h2>
-    <button mat-icon-button (click)="showHelp = true" aria-label="help">
-      <mat-icon class="close-btn" (click)="close()">close</mat-icon>
-    </button>
+    <button
+      sg-button
+      icon="close"
+      (click)="close()"
+      variant="icon-only"></button>
   </section>
   <section class="help-content">
     <h4>How do I restrict permission to access a planning area?</h4>
