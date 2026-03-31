@@ -47,7 +47,7 @@ export class PlanningApproachComponent implements OnInit {
       value: 'PRIORITIZE_SUB_UNITS',
       title: 'Prioritize Subunits',
       description:
-        'Would you like to prioritize existing subunits within your Planning Area based on your scenario?',
+        'Would you like to identify and prioritize the top 10 existing subunits within your Planning Area based on your scenario?',
       recommendation:
         'Recommended for Larger Planning Areas, e.g., National Forest or County',
       imageSrc: 'assets/png/sub-units.png',
