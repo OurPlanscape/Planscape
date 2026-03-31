@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TileButtonComponent } from '@styleguide';
-import { FeatureService } from '@features/feature.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { Capabilities } from '@types';
 
@@ -32,17 +31,12 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
 
   constructor(
     private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.initEnabledTools();
-  }
-
-  get isPlanningOverviewEnabled(): boolean {
-    return this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW');
   }
 
   /**
@@ -62,17 +56,14 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
         enabled: true,
       });
     }
-    if (
-      this.featureService.isFeatureEnabled('PLANNING_AREA_OVERVIEW') &&
-      this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')
-    ) {
+    if (this.planningAreaCapabilities.includes('CLIMATE_FORESIGHT')) {
       this.analyticsTools.push({
         id: 'coming-soon',
         backgroundImage: '/assets/svg/lock.svg',
         title: 'Coming Soon',
         localClass: 'coming-soon',
         subtitle: '',
-        featureFlag: 'PLANNING_AREA_OVERVIEW',
+        featureFlag: '',
         enabled: false,
       });
     }

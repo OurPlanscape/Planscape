@@ -119,16 +119,8 @@ export class PlanScenariosListComponent implements OnInit {
         take(1),
         tap((scenarios) => {
           this.totalScenarios = scenarios.length;
-
-          // TODO:  we will not have archived records in the future
-          // so inverting the condition here to stay compatible for when those are gone
-          // might be able remove after PLANNING_AREA_OVERVIEW is released
-          const fetchedActive = scenarios.filter(
-            (s) => s.status !== 'ARCHIVED'
-          );
-
-          if (this.listsDiffer(this.activeScenarios, fetchedActive)) {
-            this.activeScenarios = fetchedActive;
+          if (this.listsDiffer(this.activeScenarios, scenarios)) {
+            this.activeScenarios = scenarios;
           }
           this.loading = false;
         }),
