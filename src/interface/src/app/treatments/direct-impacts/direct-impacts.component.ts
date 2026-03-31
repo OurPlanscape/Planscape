@@ -1,6 +1,6 @@
 import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
-import { SharedModule } from '@shared';
+import { LANDSCAPE_OUTPUTS_URL, SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, switchMap } from 'rxjs';
@@ -93,6 +93,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       return `${STAND_SIZES_LABELS[stand_size]} (${STAND_SIZES[stand_size]} acres)`;
     })
   );
+
+  public readonly LANDSCAPE_OUTPUTS_URL = LANDSCAPE_OUTPUTS_URL;
 
   constructor(
     private treatmentsState: TreatmentsState,
