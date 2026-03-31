@@ -548,14 +548,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         ]
         return {"type": "FeatureCollection", "features": features}
 
-    def get_project_areas_stands(self) -> QuerySet[Stand]:
+    def get_project_areas_stands(self, stand_size=None) -> QuerySet[Stand]:
         project_areas = self.project_areas
         project_areas_geometry = project_areas.all().aggregate(
             geometry=UnionOp("geometry")
         )["geometry"]
-        return Stand.objects.within_polygon(
-            project_areas_geometry, self.get_stand_size()
-        )
+        size = stand_size or self.get_stand_size()
+        return Stand.objects.within_polygon(project_areas_geometry, size)
 
     def get_geopackage_url(self) -> Optional[str]:
         if not self.geopackage_url:
