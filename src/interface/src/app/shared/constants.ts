@@ -147,3 +147,5 @@ export const KNOWLEDGE_BASE_URL =
 export const FAQ_URL =
   'https://support.planscape.org/support/solutions/articles/32000036476-faqs';
 export const SUPPORT_URL = 'https://support.planscape.org/support/tickets/new';
+export const LANDSCAPE_OUTPUTS_URL =
+  'https://support.planscape.org/support/solutions/articles/32000036429-landscape-outputs';
