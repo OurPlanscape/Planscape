@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { PlanComponent } from './plan.component';
 import { AuthGuard } from '@services';
 import { planLoaderResolver } from '@resolvers/plan-loader.resolver';
-import { createFeatureGuard } from '@features/feature.guard';
 
 const routes: Routes = [
   // the url `/plan/` is not being used and invalid, redirect
@@ -29,10 +28,7 @@ const routes: Routes = [
       import('@plan/climate-foresight/climate-foresight.component').then(
         (m) => m.ClimateForesightComponent
       ),
-    canActivate: [
-      createFeatureGuard({ featureName: 'CLIMATE_FORESIGHT' }),
-      AuthGuard,
-    ],
+    canActivate: [AuthGuard],
     resolve: {
       planId: planLoaderResolver,
     },
@@ -44,10 +40,7 @@ const routes: Routes = [
       import(
         '@plan/climate-foresight/climate-foresight-run/climate-foresight-run.component'
       ).then((m) => m.ClimateForesightRunComponent),
-    canActivate: [
-      createFeatureGuard({ featureName: 'CLIMATE_FORESIGHT' }),
-      AuthGuard,
-    ],
+    canActivate: [AuthGuard],
     resolve: {
       planId: planLoaderResolver,
     },
@@ -59,10 +52,7 @@ const routes: Routes = [
       import(
         '@plan/climate-foresight/climate-foresight-run/analysis/analysis.component'
       ).then((m) => m.AnalysisComponent),
-    canActivate: [
-      createFeatureGuard({ featureName: 'CLIMATE_FORESIGHT' }),
-      AuthGuard,
-    ],
+    canActivate: [AuthGuard],
     resolve: {
       planId: planLoaderResolver,
     },
