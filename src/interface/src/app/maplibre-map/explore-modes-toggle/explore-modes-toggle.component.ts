@@ -12,6 +12,8 @@ import { UploadPlanningAreaBoxComponent } from '@explore/upload-planning-area-bo
 import { CreatePlanDialogComponent } from '@explore/create-plan-dialog/create-plan-dialog.component';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { BlockDialogComponent } from '@standalone/block-dialog/block-dialog.component';
+import { ButtonComponent } from '@styleguide';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -24,6 +26,8 @@ import { BlockDialogComponent } from '@standalone/block-dialog/block-dialog.comp
     NgClass,
     NgIf,
     UploadPlanningAreaBoxComponent,
+    ButtonComponent,
+    MatMenuModule,
   ],
   templateUrl: './explore-modes-toggle.component.html',
   styleUrl: './explore-modes-toggle.component.scss',
