@@ -23,6 +23,12 @@ import { User } from '@types';
 import { RedirectService } from './redirect.service';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  ExploreStorageService,
+  HomeParametersStorageService,
+  LoginRedirectStorageService,
+  MultiMapsStorageService,
+} from './local-storage.service';
 
 interface LogoutResponse {
   detail: string;
@@ -49,7 +55,11 @@ export class AuthService {
     private http: HttpClient,
     private cookieService: CookieService,
     private snackbar: MatSnackBar,
-    private redirectService: RedirectService
+    private redirectService: RedirectService,
+    private loginRedirectStorageService: LoginRedirectStorageService,
+    private homeParametersStorageService: HomeParametersStorageService,
+    private multiMapsStorageService: MultiMapsStorageService,
+    private exploreStorageService: ExploreStorageService
   ) {}
 
   currentUser() {
@@ -128,9 +138,17 @@ export class AuthService {
         tap((response) => {
           this.loggedInStatus$.next(false);
           this.loggedInUser$.next(null);
+          this.clearLocalStorage();
           this.snackbar.open(response.detail, 'Dismiss', SNACK_NOTICE_CONFIG);
         })
       );
+  }
+
+  private clearLocalStorage() {
+    this.loginRedirectStorageService.removeItem();
+    this.homeParametersStorageService.removeItem();
+    this.multiMapsStorageService.removeItem();
+    this.exploreStorageService.removeItem();
   }
 
   validateAccount(token: string): Observable<boolean> {
