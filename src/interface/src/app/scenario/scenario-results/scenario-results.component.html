@@ -1,5 +1,26 @@
+<ng-template #tableTooltipContent>
+  <dl class="table-tooltip">
+    <dt>Acres:</dt>
+    <dd>Total number of treated acres based on scenario</dd>
+
+    <dt>% Total:</dt>
+    <dd>Treated Acres/Planning Area Acres</dd>
+
+    <dt>Rx Leverage:</dt>
+    <dd>The treatment efficiency per 1000 acres treated.</dd>
+    <dd>
+      (Sum of Treatment Opportunity for Priority Objectives/Treated Acres) *
+      1000
+    </dd>
+
+    <dt>Estimated Cost:</dt>
+    <dd>Treatment Cost Per Acre * Treated Acres</dd>
+  </dl>
+</ng-template>
+
 <sg-section
   [isCollapsible]="hasAnalytics()"
+  [tooltipTemplate]="isPlanningApproachSubUnits ? tableTooltipContent : null"
   [headline]="isPlanningApproachSubUnits ? 'SubUnits' : 'Project Areas'">
   <app-project-areas [areas]="areas"></app-project-areas>
 </sg-section>
@@ -7,9 +28,7 @@
 <sg-section
   [isCollapsible]="true"
   headline="Scenario Analytics"
-  tooltipContent="This section helps you interpret how well projects perform in your selected scenario based on priority metrics and co-benefits.
-Treatment Opportunity x Project Areas compares each project's potential to deliver treatment benefits.
-Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects, showing the cumulative opportunity if all projects were sequentially implemented to achieve treatment goals."
+  [tooltipContent]="scenarioAnalyticsTooltip"
   *ngIf="hasAnalytics()">
   <app-scenario-metrics-legend
     *ngIf="results"
