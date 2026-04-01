@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
-import { ScenarioRow } from '@plan/plan-summary/saved-scenarios/saved-scenarios.component';
 import { OverlayLoaderComponent, ScenarioCardComponent } from '@styleguide';
 import {
   SharedModule,
@@ -24,6 +23,11 @@ import { canAddScenario, canEditScenario } from '@plan/permissions';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
+
+export interface ScenarioRow extends Scenario {
+  selected?: boolean;
+  created_at?: string;
+}
 
 @Component({
   selector: 'app-scenarios-card-list',
