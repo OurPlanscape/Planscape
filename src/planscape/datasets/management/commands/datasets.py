@@ -46,6 +46,7 @@ class Command(PlanscapeCommand):
         version: Optional[str],
         **kwargs,
     ) -> None:
+        self.require_catalog_env()
         base_url = self.get_base_url(**kwargs)
         url = base_url + "/v2/admin/datasets/"
         headers = self.get_headers(**kwargs)

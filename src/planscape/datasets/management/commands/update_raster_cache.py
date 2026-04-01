@@ -27,5 +27,6 @@ class Command(BaseCommand):
                 )
             except Exception:
                 logger.exception(
-                    f"Failed to update cache control for DataLayer id={datalayer.id} url={datalayer.url}"
+                    f"Failed to update cache control for DataLayer "
+                    f"id={datalayer.id} url={datalayer.url}"
                 )

@@ -53,5 +53,6 @@ class Command(BaseCommand):
                 failed += 1
                 self.stderr.write(f" [NOK] {prefix} failed: {exc}")
         self.stdout.write(
-            f"Finished processing {total} datalayers. Updated {updated}, skipped {skipped}, failed {failed}."
+            f"Finished processing {total} datalayers. "
+            f"Updated {updated}, skipped {skipped}, failed {failed}."
         )

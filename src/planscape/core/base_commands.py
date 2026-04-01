@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional, Tuple
-from django.core.management.base import BaseCommand, CommandParser
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 import requests
 from utils.cli_utils import options_from_file
 
@@ -41,6 +43,7 @@ class PlanscapeCommand(BaseCommand):
                 "dev",
                 "staging",
                 "app",
+                "catalog",
             ],
         )
 
@@ -62,6 +65,13 @@ class PlanscapeCommand(BaseCommand):
     def get_headers(self, token, **kwargs):
         return {"Authorization": f"Bearer {token}"}
 
+    def require_catalog_env(self):
+        if settings.ENV != "catalog":
+            raise CommandError(
+                "This command can only be run in the catalog environment. "
+                f"Current ENV={settings.ENV}"
+            )
+
     def validate_options(
         self, cli_options, file_options
     ) -> Tuple[bool, Dict[str, Any]]:
@@ -72,13 +82,15 @@ class PlanscapeCommand(BaseCommand):
 
         if "org" not in options:
             self.stderr.write(
-                "Org argument is mandatory. Add it to the CLI arguments or add it to `.planconfig` file."
+                "Org argument is mandatory. Add it to the CLI arguments "
+                "or add it to `.planconfig` file."
             )
             return False, options
         org = options.get("org")
         if not org:
             self.stderr.write(
-                "org argument is mandatory and it is null or blank. Add it to the CLI arguments or add it to `.planconfig` file."
+                "org argument is mandatory and it is null or blank. "
+                "Add it to the CLI arguments or add it to `.planconfig` file."
             )
             return False, options
 

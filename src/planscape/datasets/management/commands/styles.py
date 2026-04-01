@@ -70,6 +70,7 @@ class Command(PlanscapeCommand):
         org: int,
         **kwargs,
     ) -> None:
+        self.require_catalog_env()
         base_url = self.get_base_url(**kwargs)
         url = base_url + "/v2/admin/styles/"
         headers = self.get_headers(**kwargs)
@@ -96,6 +97,7 @@ class Command(PlanscapeCommand):
          - Otherwise, sends the payload to the style creation API endpoint.
          - Finally, reports the nubmer of file import successes and failures
         """
+        self.require_catalog_env()
         base_url = self.get_base_url(**kwargs)
         headers = self.get_headers(**kwargs)
 
