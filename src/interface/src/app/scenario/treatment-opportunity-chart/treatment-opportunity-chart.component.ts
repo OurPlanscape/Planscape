@@ -1,21 +1,22 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { ScenarioResult, UsageType } from '@types';
+import { PLANNING_APPROACH, ScenarioResult, UsageType } from '@types';
 import { ChartData, ChartOptions } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import {
+  chartTooltipBaseConfig,
   CustomChartDataset,
   getChartBorderDash,
   getChartDatasetsFromFeatures,
   getChartFontConfig,
   getDarkGridConfig,
   getProjectAreaLabelsFromFeatures,
-  chartTooltipBaseConfig,
 } from '@app/chart-helper';
 import { ChartComponent } from '@styleguide';
 import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
 import { BehaviorSubject } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
 
 @UntilDestroy()
 @Component({
@@ -28,6 +29,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
   @Input() usageTypes: UsageType[] | null = [];
+  @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
 
   public barChartType: 'bar' = 'bar';
 
@@ -133,5 +135,11 @@ export class TreatmentOpportunityChartComponent implements OnInit {
       ),
     };
     this.selectedData$.next(selectedData);
+  }
+
+  get chartXAxisLabel() {
+    return isPlanningApproachSubUnits(this.planningApproach)
+      ? 'Subunits'
+      : 'Project Areas';
   }
 }
