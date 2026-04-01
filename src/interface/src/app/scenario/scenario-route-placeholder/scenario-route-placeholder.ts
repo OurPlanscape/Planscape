@@ -27,6 +27,8 @@ import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/con
 import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
 import { ScenarioComponent } from '../scenario.component';
+import { canEditScenario } from '@app/plan/permissions';
+import { PlanState } from '@app/plan/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -59,11 +61,13 @@ export class ScenarioRoutePlaceholderComponent
     private router: Router,
     private dialog: MatDialog,
     private scenarioState: ScenarioState,
-    private newScenarioState: NewScenarioState
+    private newScenarioState: NewScenarioState,
+    private planState: PlanState
   ) {}
 
   isDraft = false;
   scenarioName = '';
+  currentPlan$ = this.planState.currentPlan$;
 
   canDeactivate(): Observable<boolean> | boolean {
     if (this.isDraft && !this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -82,10 +86,11 @@ export class ScenarioRoutePlaceholderComponent
   canViewScenarioCreation$ = combineLatest([
     this.authService.loggedInUser$,
     this.scenarioState.currentScenario$,
+    this.planState.currentPlan$,
   ]).pipe(
     untilDestroyed(this),
     filter(([user]) => !!user),
-    map(([user, scenario]) => {
+    map(([user, scenario, plan]) => {
       this.isDraft = scenario?.scenario_result?.status === 'DRAFT';
       this.scenarioName = scenario.name;
 
@@ -99,14 +104,17 @@ export class ScenarioRoutePlaceholderComponent
       if (!this.isDraft) {
         return false;
       }
+      if (!user) {
+        return;
+      }
 
       // If it is a draft and the creator is not the same as the user logged in we redirect to planning areas
       const sameCreator = user?.id === scenario?.user;
-      if (!(sameCreator && this.isDraft)) {
+      if (!(sameCreator && this.isDraft) && !canEditScenario(plan, user)) {
         this.router.navigate(['/plan', scenario?.planning_area]);
         return false;
       }
-      return sameCreator && this.isDraft;
+      return (sameCreator && this.isDraft) || canEditScenario(plan, user);
     }),
     catchError(() => {
       this.router.navigate(['/home']);

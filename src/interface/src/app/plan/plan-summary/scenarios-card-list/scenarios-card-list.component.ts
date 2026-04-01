@@ -89,8 +89,8 @@ export class ScenariosCardListComponent {
     const status = row.scenario_result?.status;
     if (!status) return false;
 
-    if (this.isDraftByOtherUser(row, userId)) return false;
-
+    if (this.isDraftByOtherUser(row, userId) && !this.userCanEditScenario(row))
+      return false;
     return this.open_statuses.includes(status);
   }
 
@@ -128,7 +128,7 @@ export class ScenariosCardListComponent {
     if (!this.plan || !user) {
       return false;
     }
-    return user?.id == scenario.user || canEditScenario(this.plan, user);
+    return canEditScenario(this.plan, user);
   }
 
   // Planning Area Creators and Owners, and Scenario Creators can edit scenarios
