@@ -8,11 +8,15 @@
       {{ headline }}<span class="required" *ngIf="required"> *</span>
     </div>
     <sg-popover
-      *ngIf="tooltipContent"
+      *ngIf="tooltipContent || tooltipTemplate"
       class="popover-right"
-      [content]="tooltipContent"
+      [content]="tooltipTemplate ? null : tooltipContent"
       [icon]="tooltipIcon"
-      size="lg"></sg-popover>
+      size="lg">
+      <ng-container
+        *ngIf="tooltipTemplate"
+        [ngTemplateOutlet]="tooltipTemplate"></ng-container>
+    </sg-popover>
     <button
       *ngIf="tooltipLink"
       sg-button

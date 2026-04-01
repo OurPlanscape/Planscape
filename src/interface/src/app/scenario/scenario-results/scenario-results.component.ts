@@ -101,4 +101,20 @@ export class ScenarioResultsComponent implements OnChanges {
   get isPlanningApproachSubUnits() {
     return isPlanningApproachSubUnits(this.planningApproach);
   }
+
+  get scenarioAnalyticsTooltip() {
+    const projectAreaTooltip = `This section helps you interpret how well projects perform in your selected scenario based on priority metrics and co-benefits.
+Treatment Opportunity x Project Areas compares each project's potential to deliver treatment benefits.
+Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects, showing the cumulative opportunity if all projects
+were sequentially implemented to achieve treatment goals.`;
+
+    const subUnitTooltip = `This section helps you interpret how well subunits perform in your selected scenario based on priority metrics and co-benefits.
+Treatment Opportunity x Subunits compares each subunits's potential to deliver treatment benefits.
+Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all subunits,
+showing the cumulative opportunity if all projects were sequentially implemented to achieve treatment goals.`;
+
+    return this.isPlanningApproachSubUnits
+      ? subUnitTooltip
+      : projectAreaTooltip;
+  }
 }

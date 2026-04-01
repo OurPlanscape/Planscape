@@ -93,3 +93,32 @@ export const TooltipWithLink: Story = {
     tooltipLink: 'https://www.google.com',
   },
 };
+
+export const TooltipWithTemplate: Story = {
+  render: () => ({
+    template: `
+      <ng-template #tooltipTpl>
+        <b>This is it:</b> <i> Behold the tooltip content </i>
+      </ng-template>
+      <sg-section headline="SubUnits" [tooltipTemplate]="tooltipTpl">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      </sg-section>
+    `,
+  }),
+};
+
+export const TooltipTemplateTakesPrecedence: Story = {
+  render: () => ({
+    template: `
+      <ng-template #tooltipTpl>
+        <strong>I am the template — tooltipContent is ignored.</strong>
+      </ng-template>
+      <sg-section
+        headline="Both provided"
+        tooltipContent="This string content should NOT appear"
+        [tooltipTemplate]="tooltipTpl">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      </sg-section>
+    `,
+  }),
+};

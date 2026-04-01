@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { NgClass, NgIf } from '@angular/common';
+import { Component, Input, TemplateRef } from '@angular/core';
+import { NgClass, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -16,6 +16,7 @@ import { ButtonComponent } from '@styleguide/button/button.component';
   standalone: true,
   imports: [
     NgIf,
+    NgTemplateOutlet,
     MatMenuModule,
     MatButtonModule,
     MatExpansionModule,
@@ -29,6 +30,8 @@ import { ButtonComponent } from '@styleguide/button/button.component';
 export class SectionComponent {
   @Input() headline = '';
   @Input() tooltipContent = '';
+  // When both tooltipContent and tooltipTemplate are provided, tooltipTemplate takes precedence.
+  @Input() tooltipTemplate: TemplateRef<any> | null = null;
   @Input() tooltipLink = '';
   @Input() required = false;
 

@@ -21,3 +21,23 @@ sg-section {
 .chart {
   margin-top: 24px;
 }
+
+
+.table-tooltip {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+
+  dt {
+    font-weight: bold;
+    float: left;
+    padding-right: 4px;
+  }
+
+  dd {
+    padding: 0;
+    margin: 0 0 8px 0;
+  }
+
+
+}
