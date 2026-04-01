@@ -1,10 +1,7 @@
-<div
-  class="analytics-tools-container"
-  [class.in-overview]="isPlanningOverviewEnabled"
-  *ngIf="hasEnabledTools">
+<div class="analytics-tools-container in-overview" *ngIf="hasEnabledTools">
   <div class="header">
     <h3 class="section-title">Planning Area Analytics Tools</h3>
-    <div class="details" *ngIf="isPlanningOverviewEnabled">
+    <div class="details">
       Our planning area tools are available to provide detailed analyses
       tailored to your planning area.
     </div>

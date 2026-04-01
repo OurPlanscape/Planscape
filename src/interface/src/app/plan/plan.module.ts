@@ -12,7 +12,6 @@ import { NgxMaskModule } from 'ngx-mask';
 import { PlanComponent } from './plan.component';
 import { ResourceUnavailableComponent } from '@shared/resource-unavailable/resource-unavailable.component';
 import { RouterModule } from '@angular/router';
-import { SavedScenariosComponent } from '@plan/plan-summary/saved-scenarios/saved-scenarios.component';
 import { SharedModule } from '@shared';
 import { WINDOW_PROVIDERS } from '@services';
 import { PlanRoutingModule } from './plan-routing.module';
@@ -29,7 +28,6 @@ import {
 } from '@styleguide';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { UploadProjectAreasModalComponent } from '@plan/upload-project-areas-modal/upload-project-areas-modal.component';
-import { PlanningAreaTitlebarMenuComponent } from '@standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { ScenariosCardListComponent } from '@plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '@maplibre-map/map-config.state';
@@ -47,12 +45,7 @@ import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list
 
 /** Components used in the plan flow. */
 @NgModule({
-  declarations: [
-    AreaNotesComponent,
-    PlanComponent,
-    PlanScenariosListComponent,
-    SavedScenariosComponent,
-  ],
+  declarations: [AreaNotesComponent, PlanComponent, PlanScenariosListComponent],
   providers: [
     WINDOW_PROVIDERS,
     MapConfigState,
@@ -79,7 +72,6 @@ import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list
     ButtonComponent,
     DeleteDialogComponent,
     UploadProjectAreasModalComponent,
-    PlanningAreaTitlebarMenuComponent,
     ScenarioCardComponent,
     ScenariosCardListComponent,
     TreatmentCardComponent,

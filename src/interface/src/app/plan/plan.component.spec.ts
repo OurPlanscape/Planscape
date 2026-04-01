@@ -18,7 +18,6 @@ import { NavBarComponent } from '@shared';
 import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PlanningAreaTitlebarMenuComponent } from '@standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { MockDeclaration } from 'ng-mocks';
 
 describe('PlanComponent', () => {
@@ -102,11 +101,7 @@ describe('PlanComponent', () => {
         PlanModule,
       ],
       // Declare component under test and mock any child components used in its template.
-      declarations: [
-        PlanComponent,
-        MockDeclaration(NavBarComponent),
-        MockDeclaration(PlanningAreaTitlebarMenuComponent),
-      ],
+      declarations: [PlanComponent, MockDeclaration(NavBarComponent)],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: PlanningAreaNotesService, useValue: mockNotesService },
