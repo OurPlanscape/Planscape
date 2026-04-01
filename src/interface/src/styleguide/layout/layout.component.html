@@ -1,0 +1,14 @@
+<!-- Header is optional, if there is no content it will not be rendered -->
+<div class="header">
+  <ng-content select="[header]"></ng-content>
+</div>
+<!-- Two columns layout -->
+<div class="layout">
+  <div class="layout-column">
+    <ng-content select="[left-column]"></ng-content>
+  </div>
+
+  <div class="layout-column">
+    <ng-content select="[right-column]"></ng-content>
+  </div>
+</div>
