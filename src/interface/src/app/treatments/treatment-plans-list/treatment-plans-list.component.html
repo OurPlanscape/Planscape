@@ -1,0 +1,96 @@
+<p>treatment-plans-list works!</p>
+@if (treatmentPlans.length === 0) {
+  @if (loading) {
+    <div *ngIf="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+    <app-scenarios-empty-list
+      *ngIf="planningAreaIsReady && !planningAreaIsLarge && !planningAreaFailed"
+      [plan]="plan"></app-scenarios-empty-list>
+    
+  }
+} @else {
+  <div class="cards-header">
+    <button
+      class="sort-header"
+      sg-button
+      (click)="handleSortChange()"
+      variant="text">
+      <mat-icon class="material-symbols-outlined">
+        {{
+          sortSelection === '-created_at'
+            ? 'arrow_downward_alt'
+            : 'arrow_upward_alt'
+        }}
+      </mat-icon>
+      <span>Date Created</span>
+    </button>
+    <div class="button-section">
+      <button
+        sg-button
+        icon="drive_folder_upload"
+        [outlined]="true"
+        *ngIf="canAddScenarioForPlan"
+        (click)="openUploadDialog()">
+        Upload Project Areas
+      </button>
+
+      <button
+        sg-button
+        [matTooltip]="scenarioDisabledTooltipReason"
+        [matTooltipDisabled]="isValidPlanningArea"
+        *ngIf="canAddScenarioForPlan"
+        [disabled]="!isValidPlanningArea || planningAreaIsLarge"
+        data-id="new-scenario"
+        icon="add"
+        variant="primary"
+        [matMenuTriggerFor]="menu"
+        #trigger="matMenuTrigger">
+        New Scenario
+
+        <mat-icon class="material-symbols-outlined new-scenario-down"
+          >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+        </mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" class="scenario-options-menu">
+        <button
+          mat-menu-item
+          (click)="openScenarioSetupDialog('PRESET')"
+          class="scenario-option">
+          <mat-icon class="material-symbols-outlined">contract</mat-icon>
+          Choose Treatment Goal
+          <span>
+            Start from a template with preset objectives, co-benefits, and
+            constraints
+          </span>
+        </button>
+        <button
+          mat-menu-item
+          (click)="openScenarioSetupDialog('CUSTOM')"
+          class="scenario-option">
+          <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
+          Create Custom Scenario
+          <span>
+            Build from scratch: choose all objectives, co-benefits, and
+            constraints.
+          </span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <div class="saved-scenarios-wrapper">
+    <div *ngIf="loading" class="list-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <app-treatment-plan-cards-list
+      *ngIf="!loading && treatmentPlans.length > 0"
+      [scenarios]="treatmentPlans"
+      [plan]="plan"
+      (viewScenario)="openPlan($event)"
+      class="card-list">
+    </app-treatment-plan-cards-list>
+  </div>
+}
