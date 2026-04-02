@@ -12,6 +12,53 @@
   }
 } @else {
   <div class="cards-header">
+
+    <div *ngIf="planningAreaIsLarge" class="large-message">
+      <p>
+        Your Planning Area is greater than 3 million acres. The Planscape team
+        would like to work with you to ensure we're meeting your scenario
+        planning needs.<br />Please contact
+        <a href="mailto:support@planscape.org">support&#64;planscape.org</a> to
+        move forward with scenario planning.
+      </p>
+    </div>
+
+    <div
+      *ngIf="
+        !planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed
+      "
+      class="pending-message">
+      <mat-spinner diameter="32" class="spinner"></mat-spinner>
+      <h4>Your Planning Area is being prepared for Scenario Planning</h4>
+      <p>
+        For larger areas (over 1 million acres), this process may take up to 20
+        minutes.
+      </p>
+    </div>
+
+    <sg-banner
+      [dismissible]="false"
+      type="error"
+      *ngIf="!planningAreaIsReady && planningAreaFailed"
+      class="banner">
+      <div>
+        <div>
+          There was an error preparing your Planning Area for Scenario Planning.
+        </div>
+        <div>
+          Please
+          <a
+            href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw"
+            target="_blank"
+            >contact support</a
+          >
+          or try creating a new Planning Area.
+        </div>
+      </div>
+    </sg-banner>
+  }
+} @else {
+  <div class="scenarios-header">
     <button
       class="sort-header"
       sg-button
@@ -92,5 +139,6 @@
       (viewScenario)="openPlan($event)"
       class="card-list">
     </app-treatment-plan-cards-list>
+    
   </div>
 }

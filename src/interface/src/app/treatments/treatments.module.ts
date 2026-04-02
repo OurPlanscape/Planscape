@@ -9,10 +9,11 @@ import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 @NgModule({
   imports: [
     CommonModule,
+    
     TreatmentsRoutingModule,
     ReviewTreatmentPlanDialogComponent,
   ],
-  providers: [TreatmentToPDFService, MapConfigService, DataLayersStateService],
+  providers: [ TreatmentToPDFService, MapConfigService, DataLayersStateService],
 })
 export class TreatmentsModule {
   constructor(mapConfigService: MapConfigService) {
