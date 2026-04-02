@@ -149,7 +149,7 @@ const routes: Routes = [
       },
       {
         // treatment effects page
-        path: 'plan/:planId/scenario/:scenarioId/txfx', // temporary route
+        path: 'plan/:planId/scenario/:scenarioId/treatment', // temporary route
         canActivate: [AuthGuard],
         resolve: {
           planInit: planLoaderResolver,

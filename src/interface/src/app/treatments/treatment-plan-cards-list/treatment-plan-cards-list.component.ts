@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { TreatmentPlan } from '@app/types';
 
 @Component({
   selector: 'app-treatment-plan-cards-list',
@@ -8,5 +9,5 @@ import { Component } from '@angular/core';
   styleUrl: './treatment-plan-cards-list.component.scss'
 })
 export class TreatmentPlanCardsListComponent {
-
+  @Input() plans : TreatmentPlan[] = []; 
 }

@@ -1,16 +1,24 @@
 import { Component } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TreatmentPlan } from '@app/types';
+import { ButtonComponent } from '@styleguide';
+import { TreatmentPlanCardsListComponent } from '../treatment-plan-cards-list/treatment-plan-cards-list.component';
 
 @Component({
   selector: 'app-treatment-plans-list',
   standalone: true,
-  imports: [],
+  imports: [ButtonComponent, MatIconModule, MatProgressSpinnerModule, TreatmentPlanCardsListComponent],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss'
 })
 export class TreatmentPlansListComponent {
 
   treatmentPlans: TreatmentPlan[] = [];
+
+  sortSelection = '';
+
+  handleSortChange() { }
 
 }
 

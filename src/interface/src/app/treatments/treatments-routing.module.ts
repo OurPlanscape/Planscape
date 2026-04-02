@@ -9,7 +9,7 @@ import { TreatmentEffectsHomeComponent } from './treatment-effects-home/treatmen
 
 const routes: Routes = [
   {
-    path: '',
+    path: 'fx',
     title: 'Treatment Effects Overview',
     component: TreatmentEffectsHomeComponent,
     children: [
