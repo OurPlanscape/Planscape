@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
@@ -11,6 +11,7 @@ import {
   BehaviorSubject,
   catchError,
   concatMap,
+  EMPTY,
   map,
   Observable,
   of,
@@ -165,20 +166,30 @@ export class AuthService {
   }
 
   private refreshToken() {
+    const token = this.cookieService.get(this.authTokenRefreshKey);
+    if (!token) {
+      this.loggedInStatus$.next(false);
+      return EMPTY;
+    }
     return this.http
       .post(
         this.API_ROOT.concat('token/refresh/'),
-        { refresh: this.cookieService.get(this.authTokenRefreshKey) },
+        { refresh: token },
         { withCredentials: true }
       )
       .pipe(
         tap((response: any) => {
           this.loggedInStatus$.next(!!response.access);
         }),
-        catchError((err) => {
+        catchError((err: HttpErrorResponse) => {
           this.loggedInStatus$.next(false);
           this.loggedInUser$.next(null);
-          return throwError(err);
+          // 400/401 are expected when the session/token is expired — not a real error.
+          // Dont propagate this error to the user or sentry
+          if (err.status === 400 || err.status === 401) {
+            return EMPTY;
+          }
+          return throwError(() => err);
         })
       );
   }
