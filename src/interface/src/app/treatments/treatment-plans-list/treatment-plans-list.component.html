@@ -12,28 +12,7 @@
   } -->
   <div class="cards-header">
 
-    <div *ngIf="planningAreaIsLarge" class="large-message">
-      <p>
-        Your Planning Area is greater than 3 million acres. The Planscape team
-        would like to work with you to ensure we're meeting your scenario
-        planning needs.<br />Please contact
-        <a href="mailto:support@planscape.org">support&#64;planscape.org</a> to
-        move forward with scenario planning.
-      </p>
-    </div>
-
-    <div
-      *ngIf="
-        !planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed
-      "
-      class="pending-message">
-      <mat-spinner diameter="32" class="spinner"></mat-spinner>
-      <h4>Your Planning Area is being prepared for Scenario Planning</h4>
-      <p>
-        For larger areas (over 1 million acres), this process may take up to 20
-        minutes.
-      </p>
-    </div>
+    <div> there are no treatments </div>
 
     </div>
 

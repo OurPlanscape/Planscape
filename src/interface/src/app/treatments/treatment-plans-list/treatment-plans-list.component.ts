@@ -4,11 +4,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TreatmentPlan } from '@app/types';
 import { ButtonComponent } from '@styleguide';
 import { TreatmentPlanCardsListComponent } from '../treatment-plan-cards-list/treatment-plan-cards-list.component';
+import { NgIf } from '@angular/common';
+import { TreatmentsService } from '@app/services/treatments.service';
 
 @Component({
   selector: 'app-treatment-plans-list',
   standalone: true,
-  imports: [ButtonComponent, MatIconModule, MatProgressSpinnerModule, TreatmentPlanCardsListComponent],
+  imports: [ButtonComponent, MatIconModule, MatProgressSpinnerModule, NgIf, TreatmentPlanCardsListComponent],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss'
 })
@@ -18,48 +20,33 @@ export class TreatmentPlansListComponent {
 
   sortSelection = '';
 
+  loading = false;
+
+  state: 'loading' | 'empty' | 'loaded' = 'loading';
+
   handleSortChange() { }
+
+
+  scenarioId = '5659'; // TODO: placeholder
+
+  constructor(private treatmentsService: TreatmentsService) {
+    this.loadTreatments();
+
+  }
+
+    loadTreatments() {
+    this.treatmentsService
+      .listTreatmentPlans(Number(this.scenarioId))
+      .subscribe((results) => {
+        console.log('we have results? ', results);
+        this.treatmentPlans = results;
+        this.state = results.length > 0 ? 'loaded' : 'empty';
+      });
+  }
 
 }
 
-
 /*
-import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { TreatmentsService } from '@services/treatments.service';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
-import { Plan, TreatmentPlan, TreatmentStatus } from '@types';
-import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
-import { interval, take } from 'rxjs';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { BreadcrumbService } from '@services/breadcrumb.service';
-import { POLLING_INTERVAL } from '@plan/plan-helpers';
-import {
-  canCloneTreatmentPlan,
-  canDeleteTreatmentPlan,
-} from '@plan/permissions';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { TreatmentCardComponent } from '@styleguide';
-import { NgFor, NgIf } from '@angular/common';
-import { MatSnackBar } from '@angular/material/snack-bar';
-
-@UntilDestroy()
-@Component({
-  standalone: true,
-  selector: 'app-treatments-tab',
-  templateUrl: './treatments-tab.component.html',
-  styleUrl: './treatments-tab.component.scss',
-  imports: [
-    NgIf,
-    NgFor,
-    MatIconModule,
-    TreatmentCardComponent,
-    MatProgressSpinnerModule,
-  ],
-})
-export class TreatmentsTabComponent implements OnInit {
   @Input() scenarioId!: number;
   @Input() planningArea: Plan | null = null;
 
