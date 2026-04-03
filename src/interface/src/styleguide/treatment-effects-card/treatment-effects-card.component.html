@@ -1,0 +1,44 @@
+<div class="top">
+  <h4>{{ name }}</h4>
+  <sg-status-chip
+    [status]="chipsStatus[status]"
+    [label]="statusLabel[status]"></sg-status-chip>
+  <button
+    [matMenuTriggerFor]="menu"
+    aria-label="more options"
+    class="more-menu-button"
+    (click)="stopEventPropagation($event)">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu" class="more-treatment-menu">
+    <button mat-menu-item (click)="view.emit()" [disabled]="isDisabled">
+      <mat-icon class="material-symbols-outlined">file_open_outlined</mat-icon>
+      <span>Open</span>
+    </button>
+    <button
+      mat-menu-item
+      (click)="duplicate.emit()"
+      [disabled]="!userCanDuplicate">
+      <mat-icon class="material-symbols-outlined">file_copy_outlined</mat-icon>
+      <span>Copy</span>
+    </button>
+    <button
+      mat-menu-item
+      class="delete"
+      [disabled]="!userCanDelete"
+      (click)="delete.emit()">
+      <mat-icon class="material-symbols-outlined">delete_outlined</mat-icon>
+      <span>Delete</span>
+    </button>
+  </mat-menu>
+</div>
+<div class="bottom">
+  <div>
+    <div class="label">Creator</div>
+    <div class="value">{{ creator }}</div>
+  </div>
+  <div>
+    <div class="label">Created</div>
+    <div class="value">{{ createdAt | date: "MMMM d, y 'at' h:mm a" }}</div>
+  </div>
+</div>

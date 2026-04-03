@@ -2,8 +2,7 @@ import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
-import { ButtonComponent, TreatmentCardComponent } from '@styleguide';
-import { TreatmentPlanCardsListComponent } from '../treatment-plan-cards-list/treatment-plan-cards-list.component';
+import { ButtonComponent } from '@styleguide';
 import { NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
 import {
@@ -17,6 +16,7 @@ import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@app/shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
 import { take } from 'rxjs';
+import { TreatmentEffectsCardComponent } from '@styleguide/treatment-effects-card/treatment-effects-card.component';
 
 @Component({
   selector: 'app-treatment-plans-list',
@@ -27,8 +27,7 @@ import { take } from 'rxjs';
     MatProgressSpinnerModule,
     NgIf,
     NgFor,
-    TreatmentPlanCardsListComponent,
-    TreatmentCardComponent
+    TreatmentEffectsCardComponent
   ],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
