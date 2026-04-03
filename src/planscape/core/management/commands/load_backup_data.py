@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
         filename = options.get("file_name", "latest_catalog_backup.json")
         file_path = os.path.join(backups_dir, filename)
-        if not os.path.exists(backups_dir):
+        if not os.path.exists(file_path):
             raise SystemError(
                 "\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
@@ -89,6 +89,7 @@ class Command(BaseCommand):
                     "gcloud",
                     "storage", 
                     "rsync",
+                    f"--account={settings.STORAGE_SERVICE_ACCOUNT}",
                     f"gs://planscape-datastore-{source_env}/datalayers",
                     f"gs://planscape-datastore-{settings.ENV}/datalayers",
                     "--recursive"
@@ -104,7 +105,7 @@ class Command(BaseCommand):
                 [
                     "sed",
                     "-i",
-                    f"'s/planscape-datastore-{source_env}/planscape-datastore-{settings.ENV}/g'",
+                    f"s/planscape-datastore-{source_env}/planscape-datastore-{settings.ENV}/g",
                     f"/tmp/{filename}"
                 ]
             )
