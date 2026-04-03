@@ -1,4 +1,4 @@
-@if (treatmentPlans.length === 0) {
+@if (treatments.length === 0) {
 
   <!-- @if (loading) {
     <div *ngIf="loading">
@@ -17,7 +17,9 @@
     </div>
 
 } @else {
-  <div class="scenarios-header">
+  <div class="treatments-list-header">
+      <h4  class="header-left">Treatment Effects</h4>
+    <div class="header-right">
     <button
       class="sort-header"
       sg-button
@@ -34,23 +36,30 @@
     </button>
     <div class="button-section">
       <button
-        sg-button
-        >Ok
-      </button>
+  sg-button
+  variant="primary"
+  icon="add"
+  class="new-treatment"
+  [disabled]="creatingTreatment"
+  (click)="openNewTreatmentDialog()">
+  New Treatment Plan
+</button>
+</div>
+
 
       
       
     </div>
   </div>
 
-  <div class="saved-scenarios-wrapper">
+  <div class="treatment-cards-wrapper">
     <div *ngIf="loading" class="list-spinner">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
 
     <app-treatment-plan-cards-list
-      *ngIf="!loading && treatmentPlans.length > 0"
-      [plans]="treatmentPlans"
+      *ngIf="!loading && treatments.length > 0"
+      [plans]="treatments"
       class="card-list">
     </app-treatment-plan-cards-list>
     

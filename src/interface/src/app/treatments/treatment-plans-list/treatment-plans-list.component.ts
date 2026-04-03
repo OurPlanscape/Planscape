@@ -1,11 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { TreatmentPlan } from '@app/types';
+import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
 import { ButtonComponent } from '@styleguide';
 import { TreatmentPlanCardsListComponent } from '../treatment-plan-cards-list/treatment-plan-cards-list.component';
 import { NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
+import { canCloneTreatmentPlan, canDeleteTreatmentPlan } from '@app/plan/permissions';
+import { BreadcrumbService } from '@app/services/breadcrumb.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@app/shared';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-treatment-plans-list',
@@ -16,73 +24,53 @@ import { TreatmentsService } from '@app/services/treatments.service';
 })
 export class TreatmentPlansListComponent {
 
-  treatmentPlans: TreatmentPlan[] = [];
+  treatments: TreatmentPlan[] = [];
 
   sortSelection = '';
 
   loading = false;
+  creatingTreatment = false;
 
   state: 'loading' | 'empty' | 'loaded' = 'loading';
 
-  handleSortChange() { }
 
-
-  scenarioId = '5659'; // TODO: placeholder
-
-  constructor(private treatmentsService: TreatmentsService) {
+  handleSortChange() {
+    this.sortSelection =
+      this.sortSelection === '-created_at' ? 'created_at' : '-created_at';
+    this.loading = true;
     this.loadTreatments();
-
   }
-
-    loadTreatments() {
-    this.treatmentsService
-      .listTreatmentPlans(Number(this.scenarioId))
-      .subscribe((results) => {
-        console.log('we have results? ', results);
-        this.treatmentPlans = results;
-        this.state = results.length > 0 ? 'loaded' : 'empty';
-      });
-  }
-
-}
-
-/*
-  @Input() scenarioId!: number;
+  @Input() scenarioId: number = 5659;  // TODO: remove placeholder
   @Input() planningArea: Plan | null = null;
 
-  state: 'loading' | 'empty' | 'loaded' = 'loading';
-
-  treatments: TreatmentPlan[] = [];
-
-  constructor(
+  constructor(private treatmentsService: TreatmentsService,
+    private breadcrumbService: BreadcrumbService,
     private router: Router,
     private route: ActivatedRoute,
-    private treatmentsService: TreatmentsService,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog,
-    private breadcrumbService: BreadcrumbService
-  ) {}
 
-  ngOnInit(): void {
-    this.pollForChanges();
+
+  ) {
+    this.loadTreatments();
+
   }
 
-  private pollForChanges() {
-    this.loadTreatments();
-    // we might want to check if any scenario is still pending in order to poll
-    interval(POLLING_INTERVAL)
-      .pipe(untilDestroyed(this))
-      .subscribe(() => this.loadTreatments());
+  openNewTreatmentDialog() {
+
   }
 
   loadTreatments() {
     this.treatmentsService
       .listTreatmentPlans(Number(this.scenarioId))
       .subscribe((results) => {
+        console.log('we have results? ', results);
         this.treatments = results;
         this.state = results.length > 0 ? 'loaded' : 'empty';
+        this.loading = false;
       });
   }
+
 
   goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
     const route = ['treatment', treatment.id];
@@ -114,6 +102,21 @@ export class TreatmentPlansListComponent {
       this.planningArea !== null && canCloneTreatmentPlan(this.planningArea)
     );
   }
+
+  // TODO: handle polling
+
+  // ngOnInit(): void {
+  //   this.pollForChanges();
+  // }
+
+  // private pollForChanges() {
+  //   this.loadTreatments();
+  //   // we might want to check if any scenario is still pending in order to poll
+  //   interval(POLLING_INTERVAL)
+  //     .pipe(untilDestroyed(this))
+  //     .subscribe(() => this.loadTreatments());
+  // }
+
 
   deleteTreatment(treatment: TreatmentPlan) {
     const treatmentList = this.treatments;
@@ -178,6 +181,5 @@ export class TreatmentPlansListComponent {
       },
     });
   }
-}
-*/
 
+}
