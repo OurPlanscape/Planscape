@@ -7,19 +7,21 @@ import { TreatmentPlansListComponent } from '../treatment-plans-list/treatment-p
 @Component({
   selector: 'app-treatment-effects',
   standalone: true,
-  imports: [AsyncPipe, NgIf, OverlayLoaderComponent, TreatmentPlansListComponent],
+  imports: [
+    AsyncPipe,
+    NgIf,
+    OverlayLoaderComponent,
+    TreatmentPlansListComponent,
+  ],
   templateUrl: './treatment-effects-home.component.html',
-  styleUrl: './treatment-effects-home.component.scss'
+  styleUrl: './treatment-effects-home.component.scss',
 })
 export class TreatmentEffectsHomeComponent {
-
   currentPlan$ = this.planState.currentPlan$;
 
   loading = false;
 
   $navBarArea$ = 'ok';
 
-  constructor(
-    private planState: PlanState
-  ) {}
+  constructor(private planState: PlanState) {}
 }

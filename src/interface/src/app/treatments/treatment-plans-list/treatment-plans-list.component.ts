@@ -2,11 +2,14 @@ import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, TreatmentCardComponent } from '@styleguide';
 import { TreatmentPlanCardsListComponent } from '../treatment-plan-cards-list/treatment-plan-cards-list.component';
-import { NgIf } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
-import { canCloneTreatmentPlan, canDeleteTreatmentPlan } from '@app/plan/permissions';
+import {
+  canCloneTreatmentPlan,
+  canDeleteTreatmentPlan,
+} from '@app/plan/permissions';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,12 +21,19 @@ import { take } from 'rxjs';
 @Component({
   selector: 'app-treatment-plans-list',
   standalone: true,
-  imports: [ButtonComponent, MatIconModule, MatProgressSpinnerModule, NgIf, TreatmentPlanCardsListComponent],
+  imports: [
+    ButtonComponent,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    NgIf,
+    NgFor,
+    TreatmentPlanCardsListComponent,
+    TreatmentCardComponent
+  ],
   templateUrl: './treatment-plans-list.component.html',
-  styleUrl: './treatment-plans-list.component.scss'
+  styleUrl: './treatment-plans-list.component.scss',
 })
 export class TreatmentPlansListComponent {
-
   treatments: TreatmentPlan[] = [];
 
   sortSelection = '';
@@ -33,44 +43,37 @@ export class TreatmentPlansListComponent {
 
   state: 'loading' | 'empty' | 'loaded' = 'loading';
 
-
   handleSortChange() {
     this.sortSelection =
       this.sortSelection === '-created_at' ? 'created_at' : '-created_at';
     this.loading = true;
     this.loadTreatments();
   }
-  @Input() scenarioId: number = 5659;  // TODO: remove placeholder
+  @Input() scenarioId: number = 5659; // TODO: remove placeholder
   @Input() planningArea: Plan | null = null;
 
-  constructor(private treatmentsService: TreatmentsService,
+  constructor(
+    private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
     private router: Router,
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
-    private dialog: MatDialog,
-
-
+    private dialog: MatDialog
   ) {
     this.loadTreatments();
-
   }
 
-  openNewTreatmentDialog() {
-
-  }
+  openNewTreatmentDialog() {}
 
   loadTreatments() {
     this.treatmentsService
       .listTreatmentPlans(Number(this.scenarioId))
       .subscribe((results) => {
-        console.log('we have results? ', results);
         this.treatments = results;
         this.state = results.length > 0 ? 'loaded' : 'empty';
         this.loading = false;
       });
   }
-
 
   goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
     const route = ['treatment', treatment.id];
@@ -116,7 +119,6 @@ export class TreatmentPlansListComponent {
   //     .pipe(untilDestroyed(this))
   //     .subscribe(() => this.loadTreatments());
   // }
-
 
   deleteTreatment(treatment: TreatmentPlan) {
     const treatmentList = this.treatments;
@@ -181,5 +183,4 @@ export class TreatmentPlansListComponent {
       },
     });
   }
-
 }

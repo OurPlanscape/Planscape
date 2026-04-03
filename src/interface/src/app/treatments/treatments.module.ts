@@ -7,7 +7,6 @@ import { MapConfigService } from '@maplibre-map/map-config.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { SharedModule } from '@shared';
 
-
 @NgModule({
   imports: [
     CommonModule,
@@ -15,7 +14,7 @@ import { SharedModule } from '@shared';
     TreatmentsRoutingModule,
     ReviewTreatmentPlanDialogComponent,
   ],
-  providers: [ TreatmentToPDFService, MapConfigService, DataLayersStateService],
+  providers: [TreatmentToPDFService, MapConfigService, DataLayersStateService],
 })
 export class TreatmentsModule {
   constructor(mapConfigService: MapConfigService) {
