@@ -1,13 +1,14 @@
 from unittest import mock
 from urllib.parse import urlencode
+
 from datasets.models import DataLayer, Dataset
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
-from organizations.tests.factories import OrganizationFactory
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.urls import reverse
-from rest_framework.test import APITestCase
-
+from organizations.tests.factories import OrganizationFactory
 from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase
 
 User = get_user_model()
 
@@ -69,6 +70,7 @@ class TestAdminDataLayerViewSet(APITestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(0, DataLayer.objects.all().count())
 
+    @override_settings(ENV="catalog")
     @mock.patch(
         "datasets.services.create_upload_url_s3",
         return_value={"url": "foo"},
@@ -86,6 +88,20 @@ class TestAdminDataLayerViewSet(APITestCase):
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)
         self.assertEqual(1, DataLayer.objects.all().count())
+
+    def test_create_by_admin_user_blocked_outside_catalog(self):
+        self.client.force_authenticate(user=self.admin)
+        url = reverse("api:admin-datasets:datalayers-list")
+        data = {
+            "name": "my dataset",
+            "dataset": self.dataset.pk,
+            "type": "RASTER",
+            "organization": self.dataset.organization.pk,
+            "original_name": "foo",
+        }
+        response = self.client.post(url, data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(0, DataLayer.objects.all().count())
 
 
 class TestAdminDatasetViewSet(APITestCase):
@@ -117,6 +133,7 @@ class TestAdminDatasetViewSet(APITestCase):
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
+    @override_settings(ENV="catalog")
     def test_create_by_admin_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
         url = reverse("api:admin-datasets:datasets-list")
@@ -130,3 +147,15 @@ class TestAdminDatasetViewSet(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn("modules", response.json())
         self.assertEqual(1, Dataset.objects.filter(created_by=self.admin).count())
+
+    def test_create_by_admin_user_blocked_outside_catalog(self):
+        self.client.force_authenticate(user=self.admin)
+        url = reverse("api:admin-datasets:datasets-list")
+        data = {
+            "name": "my dataset",
+            "visibility": "PUBLIC",
+            "organization": self.org.pk,
+            "original_name": "foo.tif",
+        }
+        response = self.client.post(url, data=data, format="json")
+        self.assertEqual(response.status_code, 403)

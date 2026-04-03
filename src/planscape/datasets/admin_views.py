@@ -1,5 +1,6 @@
 import logging
 
+from core.permissions import IsCatalogEnvironment
 from core.serializers import MultiSerializerMixin
 from rest_framework import status
 from rest_framework.decorators import action
@@ -44,7 +45,7 @@ class AdminDatasetViewSet(
     GenericViewSet,
 ):
     queryset = Dataset.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsCatalogEnvironment]
     serializer_class = DatasetSerializer
     serializer_classes = {
         "list": DatasetSerializer,
@@ -74,7 +75,7 @@ class AdminDataLayerViewSet(
     GenericViewSet,
 ):
     queryset = DataLayer.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsCatalogEnvironment]
     serializer_class = DataLayerSerializer
     serializer_classes = {
         "list": DataLayerSerializer,
@@ -154,7 +155,7 @@ class AdminStyleViewSet(
     GenericViewSet,
 ):
     queryset = Style.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsCatalogEnvironment]
     serializer_class = StyleSerializer
     serializer_classes = {
         "list": StyleSerializer,
