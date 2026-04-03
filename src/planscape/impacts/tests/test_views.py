@@ -373,6 +373,35 @@ class TxPlanViewSetTest(APITestCase):
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
+    def test_create_tx_plan_with_stand_size(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        payload = {
+            "scenario": str(self.scenario.pk),
+            "name": "plan with stand size",
+            "stand_size": StandSizeChoices.SMALL,
+        }
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-list"),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+        self.assertEqual(data.get("stand_size"), StandSizeChoices.SMALL)
+        plan = TreatmentPlan.objects.get(id=data["id"])
+        self.assertEqual(plan.stand_size, StandSizeChoices.SMALL)
+
+    def test_create_tx_plan_response_includes_stand_size(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        payload = {"scenario": str(self.scenario.pk), "name": "check stand size field"}
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-list"),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("stand_size", response.json())
+
     def test_list_tx_plan(self):
         now = timezone.now()
         started_at = now - timezone.timedelta(seconds=10)
@@ -396,6 +425,19 @@ class TxPlanViewSetTest(APITestCase):
             response_data[0].get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
         )
         self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
+
+    def test_list_tx_plan_includes_stand_size(self):
+        TreatmentPlanFactory.create(
+            scenario=self.scenario, stand_size=StandSizeChoices.SMALL
+        )
+        self.client.force_authenticate(user=self.scenario.user)
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-list"),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("stand_size", response.json()[0])
+        self.assertEqual(response.json()[0]["stand_size"], StandSizeChoices.SMALL)
 
 
 class TxPlanViewSetPlotTest(APITestCase):

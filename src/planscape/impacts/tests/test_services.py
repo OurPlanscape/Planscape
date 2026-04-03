@@ -33,6 +33,7 @@ from impacts.services import (
     classify_flame_length,
     classify_rate_of_spread,
     clone_treatment_plan,
+    create_treatment_plan,
     export_geopackage,
     fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
@@ -149,6 +150,49 @@ class CloneTreatmentPlanTest(TestCase):
         self.assertEqual(TreatmentPlan.objects.all().count(), 2)
         self.assertEqual(TreatmentPrescription.objects.all().count(), 6)
         self.assertNotEqual(new_plan.pk, self.treatment_plan.pk)
+
+    def test_clone_treatment_plan_preserves_stand_size(self):
+        self.treatment_plan.stand_size = StandSizeChoices.SMALL
+        self.treatment_plan.save()
+
+        new_plan, _ = clone_treatment_plan(
+            self.treatment_plan,
+            self.treatment_plan.created_by,
+        )
+
+        self.assertEqual(new_plan.stand_size, StandSizeChoices.SMALL)
+
+
+class TreatmentPlanStandSizeTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.scenario = ScenarioFactory.create(
+            configuration={"stand_size": StandSizeChoices.SMALL}
+        )
+
+    def test_get_stand_size_returns_field_value(self):
+        plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            stand_size=StandSizeChoices.MEDIUM,
+        )
+        self.assertEqual(plan.get_stand_size(), StandSizeChoices.MEDIUM)
+
+    def test_create_treatment_plan_inherits_stand_size_from_scenario(self):
+        plan = create_treatment_plan(
+            scenario=self.scenario,
+            name="inherits stand size",
+            created_by=self.scenario.user,
+        )
+        self.assertEqual(plan.stand_size, StandSizeChoices.SMALL)
+
+    def test_create_treatment_plan_uses_explicit_stand_size(self):
+        plan = create_treatment_plan(
+            scenario=self.scenario,
+            name="explicit stand size",
+            created_by=self.scenario.user,
+            stand_size=StandSizeChoices.LARGE,
+        )
+        self.assertEqual(plan.stand_size, StandSizeChoices.LARGE)
 
 
 class SummaryTest(TestCase):
