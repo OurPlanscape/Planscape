@@ -11,7 +11,7 @@ from planning.services import get_acreage
 from collaboration.permissions import PlanningAreaPermission
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
-from stands.models import Stand, area_from_size
+from stands.models import Stand, StandSizeChoices, area_from_size
 
 
 class TxPrescriptionProjectAreaSerializer(serializers.ModelSerializer):
@@ -27,6 +27,10 @@ class CreateTreatmentPlanSerializer(serializers.ModelSerializer):
     created_by = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
+    stand_size = serializers.ChoiceField(
+        choices=StandSizeChoices.choices,
+        required=False,
+    )
 
     class Meta:
         model = TreatmentPlan
@@ -34,6 +38,7 @@ class CreateTreatmentPlanSerializer(serializers.ModelSerializer):
             "created_by",
             "scenario",
             "name",
+            "stand_size",
         )
 
 
@@ -64,6 +69,7 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
             "scenario",
             "name",
             "status",
+            "stand_size",
             "started_at",
             "finished_at",
             "elapsed_time_seconds",
@@ -96,6 +102,7 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
             "scenario",
             "name",
             "status",
+            "stand_size",
             "started_at",
             "finished_at",
             "elapsed_time_seconds",
