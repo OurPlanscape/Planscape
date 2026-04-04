@@ -1,13 +1,16 @@
 <!-- Header-->
 <div class="tool-title">
-  <img src="{{ mainImagePath }}" alt="{{ mainImageAlt }}" />
+  <img class="tool-icon" src="{{ mainImagePath }}" alt="{{ mainImageAlt }}" />
   <h2>{{ title }}</h2>
 </div>
 <!-- Developed by -->
 <div class="tool-metadata">
   <span class="developed-by">
     Developed by:
-    <img class="credit-icon" src="{{ creditImagePath }}" alt="{{ creditImageAlt }}" />
+    <img
+      class="credit-icon"
+      src="{{ creditImagePath }}"
+      alt="{{ creditImageAlt }}" />
     <span *ngIf="creditText">{{ creditText }}</span>
   </span>
   <button mat-icon-button class="info-button" (click)="handleTooltip()">

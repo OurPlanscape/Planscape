@@ -17,7 +17,11 @@ import { interval, Subject } from 'rxjs';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import { DeleteRunModalComponent } from '@plan/climate-foresight/delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { ButtonComponent, SectionComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  SectionComponent,
+  ToolInfoCardComponent,
+} from '@styleguide';
 import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
@@ -39,7 +43,6 @@ import {
   canDeleteClimateAnalysis,
   canRunClimateAnalysis,
 } from '../permissions';
-import { ToolInfoCardComponent } from '@styleguide/tool-info-card/tool-info-card.component';
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
