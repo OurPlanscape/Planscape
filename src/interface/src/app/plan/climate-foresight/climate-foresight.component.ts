@@ -39,6 +39,8 @@ import {
   canDeleteClimateAnalysis,
   canRunClimateAnalysis,
 } from '../permissions';
+import { ToolInfoCardComponent } from '@styleguide/tool-info-card/tool-info-card.component';
+
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
@@ -62,6 +64,7 @@ const POLLING_INTERVAL = 5000; // 5 seconds
     ClimateForesightRunCardComponent,
     SectionComponent,
     DecimalPipe,
+    ToolInfoCardComponent,
   ],
   templateUrl: './climate-foresight.component.html',
   styleUrls: ['./climate-foresight.component.scss'],

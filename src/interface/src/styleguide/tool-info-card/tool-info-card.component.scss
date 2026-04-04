@@ -1,0 +1,61 @@
+@import 'variables';
+@import 'colors';
+@import 'mixins';
+
+:host {
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    background: $color-white;
+    border: 1px solid $color-fields-gray;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
+}
+
+.tool-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+
+    border-radius: 8px;
+    border: 1px solid $color-soft-gray;
+    background: $color-white;
+
+    h2 {
+        @include h2();
+        margin: 0;
+    }
+}
+
+.tool-metadata {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .developed-by {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+
+        @include small-input-label();
+    }
+
+    .info-button {
+        color: $color-standard-blue;
+    }
+}
+
+.tool-description {
+    p {
+        @include standard-label();
+        font-weight: 400;
+        color: $color-dark-gray;
+        margin: 0;
+    }
+}
