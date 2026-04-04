@@ -7,14 +7,13 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [MatButtonModule, MatIconModule],
   templateUrl: './tool-info-card.component.html',
-  styleUrl: './tool-info-card.component.scss'
+  styleUrl: './tool-info-card.component.scss',
 })
 export class ToolInfoCardComponent {
-
   @Input() title = '';
   @Input() mainImagePath = '';
   @Input() mainImageAlt = this.title; // default the main image alt to title
- 
+
   @Input() creditImagePath = '';
   @Input() creditText = '';
   @Input() creditImageAlt = this.creditText; // default the image alt to the credit text
@@ -26,5 +25,4 @@ export class ToolInfoCardComponent {
   handleTooltip() {
     this.clickTooltip.emit();
   }
-
 }

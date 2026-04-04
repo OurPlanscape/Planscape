@@ -2,24 +2,20 @@
 
 <div class="climate-foresight-container" [class.normal-flex]="!hasRuns">
   <div class="left-panel">
-
     <sg-tool-info-card
-    title="Climate Foresight"
-    (clickTooltip)="navigateToClimateDoc()"
-    mainImagePath="/assets/svg/climate-foresight.svg"
-    creditImagePath="/assets/svg/icons/usfs.svg"
-    creditText="USFS"
-    description="
+      title="Climate Foresight"
+      (clickTooltip)="navigateToClimateDoc()"
+      mainImagePath="/assets/svg/climate-foresight.svg"
+      creditImagePath="/assets/svg/icons/usfs.svg"
+      creditText="USFS"
+      description="
           This tool integrates projections of landscape conditions under
           mid-21st century climate to help identify areas where specific
           management actions can mitigate risks, enhance future resilience, and
           achieve or hold favorable conditions over time. The tool offers
           actionable guidance for land management toward future sustainability,
           supporting scenario planning and long-term decision-making
-        "
-
-    ></sg-tool-info-card>
-
+        "></sg-tool-info-card>
 
     <!-- Map card -->
     <div class="left-panel-card map-card">

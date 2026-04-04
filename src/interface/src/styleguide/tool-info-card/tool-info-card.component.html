@@ -1,23 +1,20 @@
-
-    <!-- Header-->
-    <div class="tool-title">
-    <img src="{{ mainImagePath }}" alt="{{ mainImageAlt }}" />
-    <h2>{{ title }}</h2>
-    </div>
-    <!-- Developed by -->
-    <div class="tool-metadata">
-    <span class="developed-by">
-        Developed by:
-        <img src="{{ creditImagePath }}" alt="{{ creditImageAlt }}" /> {{ creditText}}
-    </span>
-    <button
-        mat-icon-button
-        class="info-button"
-        (click)="handleTooltip()">
-        <mat-icon> help_outline </mat-icon>
-    </button>
-    </div>
-    <!-- Description -->
-    <div class="tool-description">
-    <p>{{ description }}</p>
-    </div>
+<!-- Header-->
+<div class="tool-title">
+  <img src="{{ mainImagePath }}" alt="{{ mainImageAlt }}" />
+  <h2>{{ title }}</h2>
+</div>
+<!-- Developed by -->
+<div class="tool-metadata">
+  <span class="developed-by">
+    Developed by:
+    <img src="{{ creditImagePath }}" alt="{{ creditImageAlt }}" />
+    {{ creditText }}
+  </span>
+  <button mat-icon-button class="info-button" (click)="handleTooltip()">
+    <mat-icon> help_outline </mat-icon>
+  </button>
+</div>
+<!-- Description -->
+<div class="tool-description">
+  <p>{{ description }}</p>
+</div>

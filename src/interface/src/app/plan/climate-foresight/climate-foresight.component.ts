@@ -41,7 +41,6 @@ import {
 } from '../permissions';
 import { ToolInfoCardComponent } from '@styleguide/tool-info-card/tool-info-card.component';
 
-
 const POLLING_INTERVAL = 5000; // 5 seconds
 
 @UntilDestroy()
