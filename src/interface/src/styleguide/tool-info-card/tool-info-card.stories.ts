@@ -23,11 +23,11 @@ type Story = StoryObj<ToolInfoCardComponent>;
 
 export const Default: Story = {
   args: {
-    title: 'Test Module',
-    mainImagePath: '/assets/svg/icons/treatment-effects.svg',
-    creditImageAlt: '2024-01-01 12:34:00',
+    title: 'Treatment Effects',
+    mainImagePath: '/assets/svg/treatment-effects.svg',
+    creditImageAlt: 'Planscape',
     creditImagePath: 'assets/svg/icons/planscape-color-logo-w-text.svg',
     description:
-      'This is some explanatory text that describes the module itself. It might contain a lot of details like background information, instructions, or whatever else is helpful for the user.',
+      'The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency.',
   },
 };
