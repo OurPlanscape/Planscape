@@ -7,8 +7,8 @@
 <div class="tool-metadata">
   <span class="developed-by">
     Developed by:
-    <img src="{{ creditImagePath }}" alt="{{ creditImageAlt }}" />
-    {{ creditText }}
+    <img class="credit-icon" src="{{ creditImagePath }}" alt="{{ creditImageAlt }}" />
+    <span *ngIf="creditText">{{ creditText }}</span>
   </span>
   <button mat-icon-button class="info-button" (click)="handleTooltip()">
     <mat-icon> help_outline </mat-icon>

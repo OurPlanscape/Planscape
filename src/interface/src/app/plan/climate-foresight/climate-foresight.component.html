@@ -2,6 +2,15 @@
 
 <div class="climate-foresight-container" [class.normal-flex]="!hasRuns">
   <div class="left-panel">
+    <!-- TODO: this is just an text example -->
+    <sg-tool-info-card
+      title="Treatment Effects"
+      (clickTooltip)="navigateToClimateDoc()"
+      mainImagePath="/assets/svg/treatment-effects.svg"
+      creditImagePath="/assets/svg/icons/planscape-color-logo-w-text.svg"
+      creditText="Planscape"
+      description="The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency."></sg-tool-info-card>
+
     <sg-tool-info-card
       title="Climate Foresight"
       (clickTooltip)="navigateToClimateDoc()"
