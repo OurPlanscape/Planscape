@@ -8,6 +8,7 @@ import { TreatmentsService } from '@app/services/treatments.service';
 import {
   canCloneTreatmentPlan,
   canDeleteTreatmentPlan,
+  userCanAddTreatmentPlan,
 } from '@app/plan/permissions';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,9 +16,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@app/shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
-import { take } from 'rxjs';
+import { interval, take } from 'rxjs';
 import { TreatmentEffectsCardComponent } from '@styleguide/treatment-effects-card/treatment-effects-card.component';
+import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-treatment-plans-list',
   standalone: true,
@@ -48,7 +52,7 @@ export class TreatmentPlansListComponent {
     this.loading = true;
     this.loadTreatments();
   }
-  @Input() scenarioId: number = 5659; // TODO: remove placeholder
+  @Input() scenarioId!: number;
   @Input() planningArea: Plan | null = null;
 
   constructor(
@@ -59,10 +63,9 @@ export class TreatmentPlansListComponent {
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog
   ) {
-    this.loadTreatments();
   }
 
-  openNewTreatmentDialog() {}
+  openNewTreatmentDialog() { }
 
   loadTreatments() {
     this.treatmentsService
@@ -93,6 +96,12 @@ export class TreatmentPlansListComponent {
     this.router.navigate(route, { relativeTo: this.route });
   }
 
+  userCanAddPlan(): boolean {
+    return (
+      this.planningArea !== null && userCanAddTreatmentPlan(this.planningArea)
+    );
+  }
+
   userCanDelete(): boolean {
     return (
       this.planningArea !== null && canDeleteTreatmentPlan(this.planningArea)
@@ -105,19 +114,18 @@ export class TreatmentPlansListComponent {
     );
   }
 
-  // TODO: handle polling
+  ngOnInit(): void {
+    this.loading = true;
+    this.pollForChanges();
+  }
 
-  // ngOnInit(): void {
-  //   this.pollForChanges();
-  // }
-
-  // private pollForChanges() {
-  //   this.loadTreatments();
-  //   // we might want to check if any scenario is still pending in order to poll
-  //   interval(POLLING_INTERVAL)
-  //     .pipe(untilDestroyed(this))
-  //     .subscribe(() => this.loadTreatments());
-  // }
+  private pollForChanges() {
+    this.loadTreatments();
+    // we might want to check if any scenario is still pending in order to poll
+    interval(POLLING_INTERVAL)
+      .pipe(untilDestroyed(this))
+      .subscribe(() => this.loadTreatments());
+  }
 
   deleteTreatment(treatment: TreatmentPlan) {
     const treatmentList = this.treatments;

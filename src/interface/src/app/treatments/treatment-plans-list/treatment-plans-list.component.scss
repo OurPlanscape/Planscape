@@ -9,7 +9,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex: 1;
+    height: 100%;
 }
 
 .treatments-list-header {
@@ -133,4 +133,50 @@ app-section-loader {
     justify-content: center;
     display: flex;
     flex-direction: column;
+}
+
+.no-plans-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+
+
+.create-plans-block {
+    display: flex;
+    max-width: 700px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 16px;
+}
+
+
+.awaiting-block {
+    display: flex;
+    max-width: 700px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 16px;
+}
+
+    .no-plans-icon {
+        height: 36px;
+        width: 36px;
+        font-size: 36px;
+        color: $color-md-gray;
+    }
+
+    .title {
+        @include h4();
+    }
+
+    .awaiting-blurb {
+        @include small-paragraph();
+        color: $color-md-gray;
+        text-align: center;
+    }
 }

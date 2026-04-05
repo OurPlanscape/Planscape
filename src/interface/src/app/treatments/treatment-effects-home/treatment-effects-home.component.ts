@@ -3,6 +3,7 @@ import { PlanState } from '@app/plan/plan.state';
 import { OverlayLoaderComponent } from '@styleguide';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentPlansListComponent } from '../treatment-plans-list/treatment-plans-list.component';
+import { ScenarioState } from '@app/scenario/scenario.state';
 
 @Component({
   selector: 'app-treatment-effects',
@@ -18,10 +19,12 @@ import { TreatmentPlansListComponent } from '../treatment-plans-list/treatment-p
 })
 export class TreatmentEffectsHomeComponent {
   currentPlan$ = this.planState.currentPlan$;
+  currentScenario$ = this.scenarioState.currentScenario$;
 
   loading = false;
 
   $navBarArea$ = 'ok';
 
-  constructor(private planState: PlanState) {}
+  constructor(private planState: PlanState, 
+    private scenarioState: ScenarioState) {}
 }

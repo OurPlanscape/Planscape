@@ -3,9 +3,8 @@
 
 :host {
   display: flex;
-  padding: 16px 16px 24px 16px;
+  padding: 16px;
   flex-direction: column;
-  align-items: flex-start;
   gap: 16px;
 
   border-radius: 4px;
@@ -15,7 +14,7 @@
 
   box-sizing: border-box;
   width: 100%;
-  
+
 
   cursor: pointer;
 
@@ -24,9 +23,7 @@
   }
 
   &.disabled {
-    box-shadow: none;
     cursor: not-allowed;
-
     h4 {
       color: $color-text-gray;
     }
@@ -38,26 +35,52 @@
   gap: 16px;
   align-items: center;
   width: 100%;
+  height: 32px;
 }
 
-.label {
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 14px;
-  text-transform: uppercase;
-  color: $color-md-gray;
-  margin-bottom: 8px;
-}
-
-.value {
-  @include xs-label();
-  color: $color-black;
-}
 
 .bottom {
   display: flex;
   gap: 36px;
+  align-items: flex-start;
+  overflow: hidden;
 }
+
+
+.metadata-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  width: 160px;
+
+  .label {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 14px;
+    text-transform: uppercase;
+    color: $color-md-gray;
+  }
+
+  .value {
+    @include xs-label();
+    color: $color-black;
+    line-height: 24px;
+    height: 24px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .chip {
+    height: 24px;
+  }
+
+
+}
+
 
 h4 {
   @include h4();

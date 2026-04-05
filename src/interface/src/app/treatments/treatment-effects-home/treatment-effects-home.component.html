@@ -7,6 +7,8 @@
     resource="plan"></app-resource-unavailable> -->
 
 <div class="left-side"></div>
-<div class="right-side">
-  <app-treatment-plans-list></app-treatment-plans-list>
+<div class="right-side" *ngIf="currentPlan$ | async as plan">
+  <ng-container *ngIf="currentScenario$ | async as scenario">
+    <app-treatment-plans-list *ngIf="scenario.id" [planningArea]="plan" [scenarioId]="scenario.id"></app-treatment-plans-list>
+  </ng-container>
 </div>

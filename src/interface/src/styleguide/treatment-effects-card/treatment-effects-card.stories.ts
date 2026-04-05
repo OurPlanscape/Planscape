@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { TreatmentCardComponent } from './treatment-effects-card.component';
+import { TreatmentEffectsCardComponent } from './treatment-effects-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-const meta: Meta<TreatmentCardComponent> = {
-  title: 'Components/Treatment Card',
-  component: TreatmentCardComponent,
+const meta: Meta<TreatmentEffectsCardComponent> = {
+  title: 'Components/Treatment Effects Card',
+  component: TreatmentEffectsCardComponent,
   tags: ['autodocs'],
   decorators: [
     applicationConfig({
@@ -19,7 +19,7 @@ const meta: Meta<TreatmentCardComponent> = {
 };
 
 export default meta;
-type Story = StoryObj<TreatmentCardComponent>;
+type Story = StoryObj<TreatmentEffectsCardComponent>;
 
 export const Default: Story = {
   args: {
@@ -32,51 +32,47 @@ export const Default: Story = {
 
 export const Success: Story = {
   args: {
-    name: 'Treatment plan name',
+    ...Default.args,
     status: 'SUCCESS',
-    creator: 'John Doe',
-    createdAt: '2024-04-23T13:19:31.019747Z',
   },
 };
 
 export const Running: Story = {
   args: {
+    ...Default.args,
     name: 'Treatment plan that is running',
     status: 'RUNNING',
-    creator: 'John Doe',
-    createdAt: '2024-04-23T13:19:31.019747Z',
   },
 };
 
 export const Queued: Story = {
   args: {
+    ...Default.args,
     name: 'Treatment plan that is running',
     status: 'QUEUED',
-    creator: 'John Doe',
-    createdAt: '2024-04-23T13:19:31.019747Z',
   },
 };
 
 export const Failed: Story = {
   args: {
+    ...Default.args,
     name: 'Treatment plan that failed',
     status: 'FAILURE',
-    creator: 'John Doe',
-    createdAt: '2024-04-23T13:19:31.019747Z',
   },
 };
 
 export const WithCreatorPermissions: Story = {
-  ...Default,
   args: {
+    ...Default.args,
     userCanDelete: true,
     userCanDuplicate: true,
   },
 };
 
 export const WithViewerPermissions: Story = {
-  ...Default,
   args: {
+    ...Default.args,
+    creator: 'Someone Not the Person Viewing',
     userCanDelete: false,
     userCanDuplicate: false,
   },
