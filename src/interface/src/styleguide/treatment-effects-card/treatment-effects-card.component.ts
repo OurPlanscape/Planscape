@@ -79,9 +79,4 @@ export class TreatmentEffectsCardComponent {
     event.stopPropagation();
     return false;
   }
-
-  isRunning() {
-    
-  }
-
 }

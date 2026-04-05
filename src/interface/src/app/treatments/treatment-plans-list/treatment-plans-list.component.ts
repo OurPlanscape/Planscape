@@ -20,6 +20,7 @@ import { interval, take } from 'rxjs';
 import { TreatmentEffectsCardComponent } from '@styleguide/treatment-effects-card/treatment-effects-card.component';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -31,7 +32,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MatProgressSpinnerModule,
     NgIf,
     NgFor,
-    TreatmentEffectsCardComponent
+    TreatmentEffectsCardComponent,
   ],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
@@ -62,10 +63,7 @@ export class TreatmentPlansListComponent {
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog
-  ) {
-  }
-
-  openNewTreatmentDialog() { }
+  ) {}
 
   loadTreatments() {
     this.treatmentsService
@@ -189,5 +187,42 @@ export class TreatmentPlansListComponent {
         );
       },
     });
+  }
+
+  openNewTreatmentDialog() {
+    // this.analyticsService.emitEvent(
+    //   'new_treatment_plan',
+    //   'uploaded_scenario_page',
+    //   'New Treatment Plan'
+    // );
+    this.dialog
+      .open(CreateTreatmentDialogComponent)
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((name) => {
+        if (name) {
+          this.createTreatmentPlan(name);
+        }
+      });
+  }
+
+  createTreatmentPlan(name: string) {
+    this.creatingTreatment = true;
+
+    this.treatmentsService
+      .createTreatmentPlan(Number(this.scenarioId), name)
+      .subscribe({
+        next: (result) => {
+          this.goToTreatment(result, result.status);
+        },
+        error: () => {
+          this.creatingTreatment = false;
+          this.matSnackBar.open(
+            '[Error] Cannot create a new treatment plan',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+      });
   }
 }

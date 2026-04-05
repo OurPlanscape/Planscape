@@ -25,6 +25,8 @@ export class TreatmentEffectsHomeComponent {
 
   $navBarArea$ = 'ok';
 
-  constructor(private planState: PlanState, 
-    private scenarioState: ScenarioState) {}
+  constructor(
+    private planState: PlanState,
+    private scenarioState: ScenarioState
+  ) {}
 }

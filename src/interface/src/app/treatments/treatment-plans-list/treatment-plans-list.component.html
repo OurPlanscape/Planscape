@@ -1,81 +1,93 @@
 @if (treatments.length === 0) {
-@if (loading) {
-<div *ngIf="loading">
-  <mat-spinner diameter="40"></mat-spinner>
-</div>
-} @else {
-<div class="no-plans-view">
-
-
-  <div class="create-plans-block" *ngIf="userCanAddPlan()">
-    <div class="icon-row">
-      <mat-icon class="material-symbols-outlined no-plans-icon">
-        analytics
-      </mat-icon>
+  @if (loading) {
+    <div *ngIf="loading">
+      <mat-spinner diameter="40"></mat-spinner>
     </div>
-    <div class="title">No Treatment Plans Yet</div>
-    <div class="awaiting-blurb">Get started by creating a new treatment plan.</div>
-    <button sg-button variant="primary" icon="add" class="new-treatment" [disabled]="creatingTreatment"
-      (click)="openNewTreatmentDialog()">
-      New Treatment Plan
-    </button>
-  </div>
-  <div class="awaiting-block" *ngIf="!userCanAddPlan()">
-    <div class="icon-row">
-      <mat-icon class="material-symbols-outlined no-plans-icon">
-        document_search
-      </mat-icon>
+  } @else {
+    <div class="no-plans-view">
+      <div class="create-plans-block" *ngIf="userCanAddPlan()">
+        <div class="icon-row">
+          <mat-icon class="material-symbols-outlined no-plans-icon">
+            analytics
+          </mat-icon>
+        </div>
+        <div class="title">No Treatment Plans Yet</div>
+        <div class="awaiting-blurb">
+          Get started by creating a new treatment plan.
+        </div>
+        <button
+          sg-button
+          variant="primary"
+          icon="add"
+          class="new-treatment"
+          [disabled]="creatingTreatment"
+          (click)="openNewTreatmentDialog()">
+          New Treatment Plan
+        </button>
+      </div>
+      <div class="awaiting-block" *ngIf="!userCanAddPlan()">
+        <div class="icon-row">
+          <mat-icon class="material-symbols-outlined no-plans-icon">
+            document_search
+          </mat-icon>
+        </div>
+        <div class="title">Awaiting Treatment Plans</div>
+        <div class="awaiting-blurb">
+          Once an Editor or Owner create a treatment plan, it will be available
+          to view. To create treatment plans, please contact the planning area
+          owner to request Editor permissions.
+        </div>
+      </div>
     </div>
-    <div class="title">Awaiting Treatment Plans</div>
-    <div class="awaiting-blurb">Once an Editor or Owner create a treatment plan, it will be available to view. To create
-      treatment plans, please contact the planning area owner to request Editor permissions.</div>
-
-  </div>
-
-
-</div>
-}
-
+  }
 } @else {
-<div class="treatments-list-header">
-  <h4 class="header-left">Treatment Effects</h4>
-  <div class="header-right">
-    <button class="sort-header" sg-button (click)="handleSortChange()" variant="text">
-      <mat-icon class="material-symbols-outlined">
-        {{
-        sortSelection === '-created_at'
-        ? 'arrow_downward_alt'
-        : 'arrow_upward_alt'
-        }}
-      </mat-icon>
-      <span>Date Created</span>
-    </button>
-    <div class="button-section">
-      <button sg-button variant="primary" icon="add" class="new-treatment" [disabled]="creatingTreatment"
-        (click)="openNewTreatmentDialog()">
-        New Treatment Plan
+  <div class="treatments-list-header">
+    <h4 class="header-left">Treatment Effects</h4>
+    <div class="header-right">
+      <button
+        class="sort-header"
+        sg-button
+        (click)="handleSortChange()"
+        variant="text">
+        <mat-icon class="material-symbols-outlined">
+          {{
+            sortSelection === '-created_at'
+              ? 'arrow_downward_alt'
+              : 'arrow_upward_alt'
+          }}
+        </mat-icon>
+        <span>Date Created</span>
       </button>
+      <div class="button-section">
+        <button
+          sg-button
+          variant="primary"
+          icon="add"
+          class="new-treatment"
+          [disabled]="creatingTreatment"
+          (click)="openNewTreatmentDialog()">
+          New Treatment Plan
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="treatment-cards-wrapper">
-  <div *ngIf="loading" class="list-spinner">
-    <mat-spinner diameter="40"></mat-spinner>
+  <div class="treatment-cards-wrapper">
+    <div *ngIf="loading" class="list-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <sg-treatment-effects-card
+      class="in-list"
+      *ngFor="let tx of treatments"
+      [name]="tx.name"
+      [status]="tx.status"
+      [createdAt]="tx.created_at"
+      [creator]="tx.creator_name"
+      [userCanDelete]="userCanDelete()"
+      [userCanDuplicate]="userCanDuplicate()"
+      (view)="goToTreatment(tx, tx.status)"
+      (delete)="openDeleteDialog(tx)"
+      (duplicate)="duplicateTreatment(tx)"></sg-treatment-effects-card>
   </div>
-
-
-
-  <sg-treatment-effects-card class="in-list" *ngFor="let tx of treatments" [name]="tx.name" [status]="tx.status"
-    [createdAt]="tx.created_at" [creator]="tx.creator_name" [userCanDelete]="userCanDelete()"
-    [userCanDuplicate]="userCanDuplicate()" (view)="goToTreatment(tx, tx.status)" (delete)="openDeleteDialog(tx)"
-    (duplicate)="duplicateTreatment(tx)"></sg-treatment-effects-card>
-
-  <!-- 
-    <app-treatment-plan-cards-list
-      *ngIf="!loading && treatments.length > 0"
-      [plans]="treatments"
-      class="card-list">
-    </app-treatment-plan-cards-list> -->
-</div>
 }
