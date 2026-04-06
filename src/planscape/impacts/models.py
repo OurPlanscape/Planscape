@@ -70,8 +70,7 @@ class TreatmentPlan(
     stand_size = models.CharField(
         max_length=16,
         choices=StandSizeChoices.choices,
-        null=True,
-        blank=True,
+        default=StandSizeChoices.LARGE,
         help_text="Stand size for this treatment plan.",
     )
 
@@ -82,9 +81,7 @@ class TreatmentPlan(
     objects = TreatmentPlanManager()
 
     def get_stand_size(self) -> StandSizeChoices:
-        if self.stand_size:
-            return StandSizeChoices(self.stand_size)
-        return self.scenario.get_stand_size()
+        return StandSizeChoices(self.stand_size)
 
     def get_project_areas_stands(self) -> QuerySet[Stand]:
         geometry = self.scenario.project_areas.all().aggregate(

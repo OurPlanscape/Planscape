@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { NgIf } from '@angular/common';
 import { PLANNING_APPROACH, ScenarioResult, UsageType } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
@@ -15,6 +21,7 @@ import { ScenarioMetricsLegendComponent } from '@scenario/scenario-metrics-legen
 import { hasAnalytics, parseResultsToProjectAreas } from '@plan/plan-helpers';
 import { getGroupedAttainment } from '@app/chart-helper';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 @Component({
   standalone: true,
@@ -31,7 +38,7 @@ import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
   templateUrl: './scenario-results.component.html',
   styleUrls: ['./scenario-results.component.scss'],
 })
-export class ScenarioResultsComponent implements OnChanges {
+export class ScenarioResultsComponent implements OnChanges, OnInit {
   @Input() scenarioId!: number;
   @Input() scenarioVersion!: string;
   @Input() planningApproach!: PLANNING_APPROACH;
@@ -44,9 +51,15 @@ export class ScenarioResultsComponent implements OnChanges {
   constructor(
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
-    private chartService: ScenarioResultsChartsService
+    private chartService: ScenarioResultsChartsService,
+    private baseLayersStateService: BaseLayersStateService
   ) {
     this.chartService.resetColors();
+  }
+
+  ngOnInit() {
+    // clear base layers
+    this.baseLayersStateService.setBaseLayers([]);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -104,14 +117,16 @@ export class ScenarioResultsComponent implements OnChanges {
 
   get scenarioAnalyticsTooltip() {
     const projectAreaTooltip = `This section helps you interpret how well projects perform in your selected scenario based on priority metrics and co-benefits.
+
 Treatment Opportunity x Project Areas compares each project's potential to deliver treatment benefits.
-Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects, showing the cumulative opportunity if all projects
-were sequentially implemented to achieve treatment goals.`;
+
+Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all projects, showing the cumulative opportunity if all projects were sequentially implemented to achieve treatment goals.`;
 
     const subUnitTooltip = `This section helps you interpret how well subunits perform in your selected scenario based on priority metrics and co-benefits.
+
 Treatment Opportunity x Subunits compares each subunits's potential to deliver treatment benefits.
-Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all subunits,
-showing the cumulative opportunity if all projects were sequentially implemented to achieve treatment goals.`;
+
+Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all subunits, showing the cumulative opportunity if all projects were sequentially implemented to achieve treatment goals.`;
 
     return this.isPlanningApproachSubUnits
       ? subUnitTooltip
