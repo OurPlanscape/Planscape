@@ -6,7 +6,6 @@ import { numberResolver } from '@resolvers/number.resolver';
 import { TreatmentProjectAreaComponent } from '@treatments/treatment-project-area/treatment-project-area.component';
 import { TreatmentConfigComponent } from '@treatments/treatment-config/treatment-config.component';
 import { DirectImpactsComponent } from '@treatments/direct-impacts/direct-impacts.component';
-import { TreatmentEffectsHomeComponent } from './treatment-effects-home/treatment-effects-home.component';
 
 const routes: Routes = [
   {

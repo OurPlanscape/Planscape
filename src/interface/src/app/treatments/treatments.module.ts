@@ -5,12 +5,10 @@ import { ReviewTreatmentPlanDialogComponent } from '@treatments/review-treatment
 import { TreatmentToPDFService } from './treatment-to-pdf.service';
 import { MapConfigService } from '@maplibre-map/map-config.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { SharedModule } from '@shared';
 
 @NgModule({
   imports: [
     CommonModule,
-    SharedModule,
     TreatmentsRoutingModule,
     ReviewTreatmentPlanDialogComponent,
   ],
