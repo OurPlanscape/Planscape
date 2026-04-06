@@ -113,13 +113,12 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
         this.breadcrumbService.breadcrumb$
           .pipe(take(1))
           .subscribe((breadcrumb) => {
-            if (breadcrumb?.label !== 'Climate Foresight') {
               this.breadcrumbService.updateBreadCrumb({
-                label: 'Climate Foresight',
+                label: 'Planning Area Overview',
                 backUrl: `/plan/${this.currentPlan?.id}`,
               });
             }
-          });
+          );
 
         // Load existing runs for this planning area
         this.loadRuns();

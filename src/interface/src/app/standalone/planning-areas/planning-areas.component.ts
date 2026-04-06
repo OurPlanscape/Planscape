@@ -149,7 +149,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   viewPlan(plan: PreviewPlan) {
     this.breadcrumbService.updateBreadCrumb({
-      label: 'Planning Area: ' + plan.name,
+      label: 'Home',
       backUrl: '/',
     });
     this.router.navigate(['plan', plan.id]);

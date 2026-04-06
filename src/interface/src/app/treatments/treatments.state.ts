@@ -92,12 +92,14 @@ export class TreatmentsState {
       const navStateObject = {
         label: '',
         backUrl: '',
+        icon: 'back',
       };
 
       if (!summary) {
         return null;
       }
 
+      // TODO: simplify this...
       if (projectArea) {
         // if we are currently viewing a Project Area
         navStateObject.label = `Project Area:  ${projectArea.project_area_name}`;
@@ -116,8 +118,9 @@ export class TreatmentsState {
         !!treatmentPlan.name &&
         treatmentPlan.status !== 'SUCCESS'
       ) {
-        navStateObject.label = `Treatment Plan:  ${treatmentPlan.name}`;
+        navStateObject.label = 'Treatment Plan';
         navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
+        navStateObject.icon = 'close';
       }
       return navStateObject;
     })

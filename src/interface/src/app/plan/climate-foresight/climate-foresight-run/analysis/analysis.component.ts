@@ -189,11 +189,11 @@ export class AnalysisComponent implements OnInit, OnDestroy {
           this.breadcrumbService.breadcrumb$
             .pipe(take(1))
             .subscribe((breadcrumb) => {
-              if (breadcrumb?.label !== `Climate Foresight: ${run.name}`) {
+              if (breadcrumb?.label !== 'New Climate Foresight Analysis') {
                 this.breadcrumbService.updateBreadCrumb({
-                  label: `Climate Foresight: ${run.name}`,
+                  label: 'New Climate Foresight Analysis',
                   backUrl: `/plan/${this.planId}/climate-foresight`,
-                  icon: 'arrow_back',
+                  icon: 'close',
                 });
               }
             });

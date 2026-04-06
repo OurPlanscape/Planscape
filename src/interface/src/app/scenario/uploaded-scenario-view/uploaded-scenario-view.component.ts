@@ -38,7 +38,7 @@ export class UploadedScenarioViewComponent {
   ) {
     this.scenario$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.breadcrumbService.updateBreadCrumb({
-        label: 'Scenario: ' + s.name,
+        label: 'Planning Area Overview',
         backUrl: getPlanPath(this.planId),
       });
     });

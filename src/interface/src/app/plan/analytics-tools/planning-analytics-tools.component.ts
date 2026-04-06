@@ -76,7 +76,7 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
       const planId = this.route.snapshot.data['planId'];
       if (planId) {
         this.breadcrumbService.updateBreadCrumb({
-          label: 'Climate Foresight',
+          label: 'Planning Area Overview',
           backUrl: `/plan/${planId}`,
         });
         this.router.navigate(['/plan', planId, 'climate-foresight']);
