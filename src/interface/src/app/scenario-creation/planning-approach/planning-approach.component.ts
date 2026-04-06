@@ -10,6 +10,7 @@ import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { filter, take } from 'rxjs';
 import { PLANNING_APPROACH } from '@types';
+import { PLANNING_APPROACH_HELP_URL } from '@shared';
 
 @UntilDestroy()
 @Component({
@@ -75,4 +76,6 @@ export class PlanningApproachComponent implements OnInit {
         }
       });
   }
+
+  protected readonly PLANNING_APPROACH_HELP_URL = PLANNING_APPROACH_HELP_URL;
 }
