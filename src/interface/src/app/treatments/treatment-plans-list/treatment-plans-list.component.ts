@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
@@ -35,7 +35,7 @@ import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-d
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
 })
-export class TreatmentPlansListComponent {
+export class TreatmentPlansListComponent implements OnInit {
   treatments: TreatmentPlan[] = [];
 
   sortSelection = '';
