@@ -44,7 +44,7 @@ BEGIN
         p_max_number_of_features 10;
     END IF;
 
-    SELECT scenario.configuration->>"sub_units_layer"::json 
+    SELECT (COALESCE(scenario.configuration, '{}'::jsonb) ->> 'sub_units_layer')::int
         INTO layer_id
         FROM public.planning_scenario scenario
     WHERE id = p_scenario_id;
