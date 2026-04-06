@@ -12,7 +12,7 @@ import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
 import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, mergeMap, of, switchMap } from 'rxjs';
+import { combineLatest, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
 import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
@@ -34,6 +34,7 @@ import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
 import { ApiModule, Scenario, SubUnits } from '@types';
 import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-toggle.component';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 @UntilDestroy()
 @Component({
@@ -70,7 +71,8 @@ export class ScenarioMapComponent {
     private scenarioState: ScenarioState,
     private mapConfigService: MapConfigService,
     private newScenarioState: NewScenarioState,
-    private moduleService: ModuleService
+    private moduleService: ModuleService,
+    private baseLayersStateService: BaseLayersStateService
   ) {
     this.mapConfigService.initialize();
   }
@@ -165,6 +167,9 @@ export class ScenarioMapComponent {
     this.subUnitLayer$,
   ]).pipe(
     map(([show, layer]) => (show && layer ? layer : null)),
+    tap((layer) => {
+      if (layer) this.baseLayersStateService.addBaseLayer(layer);
+    }),
     untilDestroyed(this)
   );
 

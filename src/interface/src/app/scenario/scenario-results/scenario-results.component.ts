@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { NgIf } from '@angular/common';
 import { PLANNING_APPROACH, ScenarioResult, UsageType } from '@types';
 import { FileSaverService, ScenarioService } from '@services';
@@ -15,6 +21,7 @@ import { ScenarioMetricsLegendComponent } from '@scenario/scenario-metrics-legen
 import { hasAnalytics, parseResultsToProjectAreas } from '@plan/plan-helpers';
 import { getGroupedAttainment } from '@app/chart-helper';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 
 @Component({
   standalone: true,
@@ -31,7 +38,7 @@ import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
   templateUrl: './scenario-results.component.html',
   styleUrls: ['./scenario-results.component.scss'],
 })
-export class ScenarioResultsComponent implements OnChanges {
+export class ScenarioResultsComponent implements OnChanges, OnInit {
   @Input() scenarioId!: number;
   @Input() scenarioVersion!: string;
   @Input() planningApproach!: PLANNING_APPROACH;
@@ -44,9 +51,15 @@ export class ScenarioResultsComponent implements OnChanges {
   constructor(
     private scenarioService: ScenarioService,
     private fileServerService: FileSaverService,
-    private chartService: ScenarioResultsChartsService
+    private chartService: ScenarioResultsChartsService,
+    private baseLayersStateService: BaseLayersStateService
   ) {
     this.chartService.resetColors();
+  }
+
+  ngOnInit() {
+    // clear base layers
+    this.baseLayersStateService.setBaseLayers([]);
   }
 
   ngOnChanges(changes: SimpleChanges) {
