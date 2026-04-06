@@ -13,10 +13,6 @@
   background-color: $color-white;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.20);
 
-  box-sizing: border-box;
-  width: 100%;
-  
-
   cursor: pointer;
 
   &:hover:not(.disabled) {

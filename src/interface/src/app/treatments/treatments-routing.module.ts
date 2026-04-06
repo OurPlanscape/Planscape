@@ -39,11 +39,6 @@ const routes: Routes = [
     ],
   },
   {
-    path: 'fx',
-    title: 'Treatment Effects Landing Page',
-    component: TreatmentEffectsHomeComponent,
-  },
-  {
     path: 'impacts',
     title: 'Direct Treatment Impacts',
     component: DirectImpactsComponent,

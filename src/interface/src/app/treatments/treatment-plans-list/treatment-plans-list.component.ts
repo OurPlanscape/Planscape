@@ -17,7 +17,6 @@ import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@app/shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
 import { interval, take } from 'rxjs';
-import { TreatmentEffectsCardComponent } from '@styleguide/treatment-effects-card/treatment-effects-card.component';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
