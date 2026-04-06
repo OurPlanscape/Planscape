@@ -30,6 +30,7 @@ import {
   LoginRedirectStorageService,
   MultiMapsStorageService,
 } from './local-storage.service';
+import * as Sentry from '@sentry/browser';
 
 interface LogoutResponse {
   detail: string;
@@ -185,8 +186,10 @@ export class AuthService {
           this.loggedInStatus$.next(false);
           this.loggedInUser$.next(null);
           // 400/401 are expected when the session/token is expired — not a real error.
-          // Dont propagate this error to the user or sentry
+          // Dont propagate this error to the user
           if (err.status === 400 || err.status === 401) {
+            // but notify sentry
+            Sentry.captureException(err);
             return EMPTY;
           }
           return throwError(() => err);
