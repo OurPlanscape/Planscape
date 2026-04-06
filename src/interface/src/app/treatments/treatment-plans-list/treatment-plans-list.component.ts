@@ -31,7 +31,6 @@ import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-d
     MatProgressSpinnerModule,
     NgIf,
     NgFor,
-    TreatmentEffectsCardComponent,
   ],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
