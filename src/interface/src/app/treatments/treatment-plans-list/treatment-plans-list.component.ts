@@ -2,7 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
-import { ButtonComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  // TreatmentEffectsCardComponent
+} from '@styleguide';
 import { NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
 import {
@@ -31,6 +34,7 @@ import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-d
     MatProgressSpinnerModule,
     NgIf,
     NgFor,
+    // TreatmentEffectsCardComponent,
   ],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
@@ -38,7 +42,7 @@ import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-d
 export class TreatmentPlansListComponent implements OnInit {
   treatments: TreatmentPlan[] = [];
 
-  sortSelection = '';
+  sortSelection = '-created_at';
 
   loading = false;
   creatingTreatment = false;
@@ -65,7 +69,7 @@ export class TreatmentPlansListComponent implements OnInit {
 
   loadTreatments() {
     this.treatmentsService
-      .listTreatmentPlans(Number(this.scenarioId))
+      .listTreatmentPlans(Number(this.scenarioId), this.sortSelection)
       .subscribe((results) => {
         this.treatments = results;
         this.state = results.length > 0 ? 'loaded' : 'empty';
@@ -92,7 +96,7 @@ export class TreatmentPlansListComponent implements OnInit {
     this.router.navigate(route, { relativeTo: this.route });
   }
 
-  userCanAddPlan(): boolean {
+  userCanAddTreatmentPlan(): boolean {
     return (
       this.planningArea !== null && userCanAddTreatmentPlan(this.planningArea)
     );
@@ -117,7 +121,6 @@ export class TreatmentPlansListComponent implements OnInit {
 
   private pollForChanges() {
     this.loadTreatments();
-    // we might want to check if any scenario is still pending in order to poll
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
       .subscribe(() => this.loadTreatments());

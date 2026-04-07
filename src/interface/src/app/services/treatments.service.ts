@@ -23,12 +23,16 @@ export class TreatmentsService {
     );
   }
 
-  listTreatmentPlans(scenarioId: number) {
+  // Can make optional arg non-optional after 'SCENARIO_DASHBOARDS' FF removal
+  listTreatmentPlans(scenarioId: number, ordering?: string) {
+    if (!ordering) {
+      ordering = '-created_at'; // default to DESC created_at
+    }
     return this.http.get<TreatmentPlan[]>(this.baseUrl, {
       withCredentials: true,
       params: {
         scenario: scenarioId,
-        ordering: '-created_at',
+        ordering: ordering,
       },
     });
   }

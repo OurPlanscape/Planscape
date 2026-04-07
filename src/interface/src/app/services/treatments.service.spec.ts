@@ -62,6 +62,28 @@ describe('TreatmentsService', () => {
     req.flush(dummyResponse);
   });
 
+  it('should allow sorting of treatment plans', () => {
+    const dummyResponse: Partial<TreatmentPlan>[] = [
+      { id: 1, name: 'Plan A', created_at: '2025-01-01' },
+      { id: 2, name: 'Plan B', created_at: '2026-06-06' },
+    ];
+    const scenarioId = 1;
+    const sortSelection = 'created_at';
+
+    service
+      .listTreatmentPlans(scenarioId, sortSelection)
+      .subscribe((response) => {
+        expect(response).toEqual(dummyResponse as TreatmentPlan[]);
+      });
+
+    const req = httpMock.expectOne(
+      `${service.baseUrl}?scenario=${scenarioId}&ordering=created_at`
+    );
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(dummyResponse);
+  });
+
   it('should delete a treatment plan', () => {
     const dummyResponse: Partial<TreatmentPlan> = { id: 1, name: 'Plan A' };
     const id = 1;
