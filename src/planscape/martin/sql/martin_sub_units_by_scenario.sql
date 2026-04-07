@@ -90,7 +90,10 @@ BEGIN
                 ) AS geom,
                 ST_AsMVTGeom(
                     ST_PointOnSurface(
-                        ST_Intersection(t.geometry, planing_area.geom)
+                        ST_Transform(
+                            ST_Intersection(t.geometry, planing_area.geom), 
+                            3857
+                        )
                     ),
                     ST_TileEnvelope($1, $2, $3),
                     4096, 64, true) AS surface_point
@@ -99,7 +102,7 @@ BEGIN
         ),
         ranked_mvtgeom AS (
             SELECT 
-                t.id,
+                DISTINCT t.id,
                 pa.scenario_id,
                 pa.rank,
                 pa.proj_id,
@@ -109,7 +112,7 @@ BEGIN
         ),
         ranked_mvtpoint AS (
             SELECT 
-                t.id,
+                DISTINCT t.id,
                 pa.scenario_id,
                 pa.rank,
                 pa.proj_id,
