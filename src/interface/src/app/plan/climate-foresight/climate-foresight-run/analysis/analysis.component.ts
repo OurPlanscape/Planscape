@@ -191,7 +191,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
             .subscribe((breadcrumb) => {
               if (breadcrumb?.label !== 'New Climate Foresight Analysis') {
                 this.breadcrumbService.updateBreadCrumb({
-                  label: 'New Climate Foresight Analysis',
+                  label: `New Climate Foresight Analysis: ${run.name}`,
                   backUrl: `/plan/${this.planId}/climate-foresight`,
                   icon: 'close',
                 });
