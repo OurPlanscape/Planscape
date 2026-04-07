@@ -118,8 +118,8 @@ BEGIN
             INNER JOIN project_area AS pa ON pa.proj_id = t.id
         )
         SELECT 
-            ST_AsMVT(ranked_mvtgeom.*, 'sub_units_by_scenario', 4096, 'geom') || 
-            ST_AsMVT(ranked_mvtpoint.*, 'sub_units_by_scenario_label', 4096, 'geom')
+            ST_AsMVT(ranked_mvtgeom.*, 'sub_units_by_scenario') || 
+            ST_AsMVT(ranked_mvtpoint.*, 'sub_units_by_scenario_label')
         FROM ranked_mvtgeom, ranked_mvtpoint;
     $f$,
         p_scenario_id,
