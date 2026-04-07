@@ -220,6 +220,7 @@ PRIVATE_LAYERS = (
     "stands_by_tx_plan",
     "stands_by_tx_result",
     "stands_by_planning_area",
+    "sub_units_by_scenario",
 )
 
 
