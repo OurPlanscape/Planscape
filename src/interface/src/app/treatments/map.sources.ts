@@ -19,12 +19,19 @@ export const MARTIN_SOURCES = {
       standsByPlanningArea: 'stands_by_planning_area',
     },
   },
+  subUnitsByScenario: {
+    tilesUrl: environment.martin_server + 'sub_units_by_scenario/{z}/{x}/{y}',
+    sources: {
+      geometry: 'sub_units_by_scenario',
+      label: 'sub_units_by_scenario_label',
+    },
+  },
   projectAreasByScenario: {
     tilesUrl:
       environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}',
     sources: {
-      projectAreasByScenario: 'project_areas_by_scenario',
-      projectAreasByScenarioLabel: 'project_areas_by_scenario_label',
+      geometry: 'project_areas_by_scenario',
+      label: 'project_areas_by_scenario_label',
     },
   },
   standsByTxResult: {
