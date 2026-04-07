@@ -74,10 +74,12 @@
   </div>
 
   <div class="treatment-cards-wrapper">
+    
+    @if (loading) {
     <div *ngIf="loading" class="list-spinner">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
-
+  } @else {
     <sg-treatment-effects-card
       class="in-list"
       *ngFor="let tx of treatments"
@@ -90,5 +92,6 @@
       (view)="goToTreatment(tx, tx.status)"
       (delete)="openDeleteDialog(tx)"
       (duplicate)="duplicateTreatment(tx)"></sg-treatment-effects-card>
-  </div>
+  }
+    </div>
 }
