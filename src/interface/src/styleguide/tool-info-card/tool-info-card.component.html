@@ -1,6 +1,10 @@
 <!-- Header-->
 <div class="tool-title">
-  <img class="tool-icon" src="{{ mainImagePath }}" alt="{{ mainImageAlt }}" />
+  <img
+    class="tool-icon"
+    *ngIf="mainImagePath"
+    src="{{ mainImagePath }}"
+    alt="{{ mainImageAlt }}" />
   <h2>{{ title }}</h2>
 </div>
 <!-- Developed by -->
@@ -8,6 +12,7 @@
   <span class="developed-by">
     Developed by:
     <img
+      *ngIf="creditImagePath"
       class="credit-icon"
       src="{{ creditImagePath }}"
       alt="{{ creditImageAlt }}" />

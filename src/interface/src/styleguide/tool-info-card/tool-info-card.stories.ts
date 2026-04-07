@@ -31,3 +31,23 @@ export const Default: Story = {
       'The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency.',
   },
 };
+
+export const NoMainImage: Story = {
+  args: {
+    title: 'Treatment Effects',
+    creditImageAlt: 'Planscape',
+    creditImagePath: 'assets/svg/icons/planscape-color-logo-w-text.svg',
+    description:
+      'The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency.',
+  },
+};
+
+export const NoCreditImage: Story = {
+  args: {
+    title: 'Treatment Effects',
+    mainImagePath: '/assets/svg/treatment-effects.svg',
+    creditText: 'Planscape',
+    description:
+      'The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency.',
+  },
+};

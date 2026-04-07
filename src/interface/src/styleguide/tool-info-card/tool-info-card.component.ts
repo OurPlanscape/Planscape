@@ -12,10 +12,10 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class ToolInfoCardComponent {
   @Input() title = '';
-  @Input() mainImagePath = '';
+  @Input() mainImagePath: string | null = null;
   @Input() mainImageAlt = this.title; // default the main image alt to title
 
-  @Input() creditImagePath = '';
+  @Input() creditImagePath: string | null = null;
   @Input() creditText = '';
   @Input() creditImageAlt = this.creditText; // default the image alt to the credit text
 
