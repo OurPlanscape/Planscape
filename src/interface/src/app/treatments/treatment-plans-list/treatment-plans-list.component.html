@@ -5,7 +5,7 @@
     </div>
   } @else {
     <div class="no-plans-view">
-      <div class="create-plans-block" *ngIf="userCanAddPlan()">
+      <div class="create-plans-block" *ngIf="userCanAddTreatmentPlan()">
         <div class="icon-row">
           <mat-icon class="material-symbols-outlined no-plans-icon">
             analytics
@@ -25,7 +25,7 @@
           New Treatment Plan
         </button>
       </div>
-      <div class="awaiting-block" *ngIf="!userCanAddPlan()">
+      <div class="awaiting-block" *ngIf="!userCanAddTreatmentPlan()">
         <div class="icon-row">
           <mat-icon class="material-symbols-outlined no-plans-icon">
             document_search
@@ -59,7 +59,8 @@
         <span>Date Created</span>
       </button>
       <div class="button-section">
-        <button
+        <button 
+          *ngIf="userCanAddTreatmentPlan()"
           sg-button
           variant="primary"
           icon="add"

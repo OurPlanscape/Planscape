@@ -40,7 +40,7 @@ import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-d
 export class TreatmentPlansListComponent {
   treatments: TreatmentPlan[] = [];
 
-  sortSelection = '';
+  sortSelection = '-created_at';
 
   loading = false;
   creatingTreatment = false;
@@ -67,7 +67,7 @@ export class TreatmentPlansListComponent {
 
   loadTreatments() {
     this.treatmentsService
-      .listTreatmentPlans(Number(this.scenarioId))
+      .listTreatmentPlans(Number(this.scenarioId), this.sortSelection)
       .subscribe((results) => {
         this.treatments = results;
         this.state = results.length > 0 ? 'loaded' : 'empty';
@@ -94,7 +94,7 @@ export class TreatmentPlansListComponent {
     this.router.navigate(route, { relativeTo: this.route });
   }
 
-  userCanAddPlan(): boolean {
+  userCanAddTreatmentPlan(): boolean {
     return (
       this.planningArea !== null && userCanAddTreatmentPlan(this.planningArea)
     );
