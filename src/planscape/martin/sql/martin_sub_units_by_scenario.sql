@@ -79,7 +79,7 @@ BEGIN
         ),
         mvtgeom AS (
             SELECT
-                t.id as id,
+                DISTINCT t.id as id,
                 ST_AsMVTGeom(
                     ST_Transform(
                         ST_Intersection(t.geometry, planing_area.geom), 
