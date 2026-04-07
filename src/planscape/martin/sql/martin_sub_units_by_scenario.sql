@@ -11,6 +11,7 @@ DECLARE
     p_scenario_result_status varchar;
     p_planning_approach varchar;
     p_max_number_of_features integer;
+    layer_id integer;
     dyn_table text;
     tile bytea;
 BEGIN
@@ -41,7 +42,7 @@ BEGIN
         (query_params->>'number_of_features')::int;
 
     IF p_max_number_of_features IS NULL THEN
-        p_max_number_of_features 10;
+         SELECT INTO p_max_number_of_features 10;
     END IF;
 
     SELECT (COALESCE(scenario.configuration, '{}'::jsonb) ->> 'sub_units_layer')::int
