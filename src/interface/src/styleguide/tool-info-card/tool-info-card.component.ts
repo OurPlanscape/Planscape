@@ -19,7 +19,7 @@ export class ToolInfoCardComponent {
   @Input() creditText = '';
   @Input() creditImageAlt = this.creditText; // default the image alt to the credit text
 
-  @Input() description = ''; // TODO: use injection instead?
+  @Input() description = '';
 
   @Output() clickTooltip = new EventEmitter<void>();
 
