@@ -42,6 +42,7 @@ import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expans
 import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/plan-scenarios-list.component';
 import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list/scenarios-empty-list.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
+import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -91,6 +92,7 @@ import { DetailsCardComponent } from '@styleguide/details-card/details-card.comp
     ToggleComponent,
     ScenariosEmptyListComponent,
     OverlayLoaderComponent,
+    DashboardLayoutComponent,
   ],
 })
 export class PlanModule {}
