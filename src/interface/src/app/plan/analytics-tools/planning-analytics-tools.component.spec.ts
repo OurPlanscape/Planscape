@@ -143,7 +143,7 @@ describe('PlanningAnalyticsToolsComponent', () => {
     component.onToolClick('climate-foresight');
 
     expect(mockBreadcrumbService.updateBreadCrumb).toHaveBeenCalledWith({
-      label: 'Climate Foresight',
+      label: 'Planning Area Overview',
       backUrl: '/plan/1',
     });
     expect(mockRouter.navigate).toHaveBeenCalledWith([
