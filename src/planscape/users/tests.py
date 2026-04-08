@@ -742,3 +742,59 @@ class OpenPanelEventsTest(TestCase):
             properties={"email": user.email},
             user_id=user.pk,
         )
+
+
+class ReturningUserTrackingTest(TestCase):
+    def _make_user(self, date_joined_days_ago, last_login_days_ago=None):
+        now = timezone.now()
+        user = UserFactory.create()
+        user.date_joined = now - timedelta(days=date_joined_days_ago)
+        if last_login_days_ago is not None:
+            user.last_login = now - timedelta(days=last_login_days_ago)
+        else:
+            user.last_login = None
+        user.save()
+        return user
+
+    @patch("users.backends.track_openpanel")
+    def test_fires_on_first_login_after_30_days(self, mock_track):
+        user = self._make_user(date_joined_days_ago=31, last_login_days_ago=None)
+        from users.backends import PlanscapeAuthBackend
+
+        PlanscapeAuthBackend()._track_returning_user(user)
+        mock_track.assert_called_once_with(
+            "users.returned_after_30d",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
+
+    @patch("users.backends.track_openpanel")
+    def test_does_not_fire_if_already_returned_after_30_days(self, mock_track):
+        # date_joined=60d ago -> 30d mark was 30d ago
+        # last_login=25d ago -> after the 30d mark -> event already fired before, don't re-fire
+        user = self._make_user(date_joined_days_ago=60, last_login_days_ago=25)
+        from users.backends import PlanscapeAuthBackend
+
+        PlanscapeAuthBackend()._track_returning_user(user)
+        mock_track.assert_not_called()
+
+    @patch("users.backends.track_openpanel")
+    def test_does_not_fire_within_30_days(self, mock_track):
+        user = self._make_user(date_joined_days_ago=20, last_login_days_ago=None)
+        from users.backends import PlanscapeAuthBackend
+
+        PlanscapeAuthBackend()._track_returning_user(user)
+        mock_track.assert_not_called()
+
+    @patch("users.backends.track_openpanel")
+    def test_fires_when_last_login_was_before_30_day_mark(self, mock_track):
+        # User logged in at day 25 (before 30d mark), now returning at day 40
+        user = self._make_user(date_joined_days_ago=40, last_login_days_ago=25)
+        from users.backends import PlanscapeAuthBackend
+
+        PlanscapeAuthBackend()._track_returning_user(user)
+        mock_track.assert_called_once_with(
+            "users.returned_after_30d",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
