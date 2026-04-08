@@ -110,7 +110,7 @@ export class TreatmentsState {
         path === 'impacts'
       ) {
         // if we are currently viewing Treatment Impacts
-        navStateObject.label = `Direct Treatment Impacts: ${treatmentPlan.name}`;
+        navStateObject.label = `Treatment Effects Analysis: ${treatmentPlan.name}`;
         navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
         navStateObject.icon = 'close';
       } else if (
@@ -119,7 +119,7 @@ export class TreatmentsState {
         !!treatmentPlan.name &&
         treatmentPlan.status !== 'SUCCESS'
       ) {
-        navStateObject.label = 'Treatment Plan';
+        navStateObject.label = `Treatment Effects: ${treatmentPlan.name}`;
         navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
         navStateObject.icon = 'close';
       }
