@@ -52,7 +52,10 @@
       [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap"
-      [labelField]="'rank'">
+      [labelField]="'rank'"
+      [planningApproach]="
+        (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+      ">
     </app-map-project-areas>
   </ng-container>
   <mgl-control position="bottom-left">

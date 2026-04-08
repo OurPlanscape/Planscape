@@ -149,3 +149,5 @@ export const FAQ_URL =
 export const SUPPORT_URL = 'https://support.planscape.org/support/tickets/new';
 export const LANDSCAPE_OUTPUTS_URL =
   'https://support.planscape.org/support/solutions/articles/32000036429-landscape-outputs';
+export const PLANNING_APPROACH_HELP_URL =
+  'https://support.planscape.org/support/solutions/articles/32000036528-scenario-steps-choose-a-planning-approach';

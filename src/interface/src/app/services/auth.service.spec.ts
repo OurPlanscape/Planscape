@@ -389,19 +389,16 @@ describe('AuthService', () => {
         .flush(mockUser);
     });
 
-    it('updates loggedInStatus to false when token cannot be refreshed', (done) => {
-      service.refreshLoggedInUser().subscribe(
-        (_) => {
+    it('updates loggedInStatus to false when token refresh returns 400, and completes without error', (done) => {
+      service.refreshLoggedInUser().subscribe({
+        next: () => fail('should not emit'),
+        error: () => fail('400 is an expected error and should not propagate'),
+        complete: () => {
           expect(service.loggedInStatus$.value).toBeFalse();
           expect(service.loggedInUser$.value).toBeNull();
           done();
         },
-        (_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
-          expect(service.loggedInUser$.value).toBeNull();
-          done();
-        }
-      );
+      });
 
       httpTestingController
         .expectOne(
@@ -409,6 +406,42 @@ describe('AuthService', () => {
         )
         .flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
       httpTestingController.verify();
+    });
+
+    it('completes without error when token refresh returns 401 (session expired)', (done) => {
+      service.refreshLoggedInUser().subscribe({
+        next: () => fail('should not emit'),
+        error: () => fail('401 is an expected error and should not propagate'),
+        complete: () => {
+          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInUser$.value).toBeNull();
+          done();
+        },
+      });
+
+      httpTestingController
+        .expectOne(
+          environment.backend_endpoint + '/dj-rest-auth/token/refresh/'
+        )
+        .flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+      httpTestingController.verify();
+    });
+
+    it('does not make HTTP request when refresh token cookie is empty', (done) => {
+      const cookieServiceStub: CookieService = TestBed.inject(CookieService);
+      spyOn(cookieServiceStub, 'get').and.returnValue('');
+
+      service.refreshLoggedInUser().subscribe({
+        next: () => fail('should not emit'),
+        error: () => fail('should not error when token is absent'),
+        complete: () => {
+          expect(service.loggedInStatus$.value).toBeFalse();
+          httpTestingController.expectNone(
+            environment.backend_endpoint + '/dj-rest-auth/token/refresh/'
+          );
+          done();
+        },
+      });
     });
   });
 

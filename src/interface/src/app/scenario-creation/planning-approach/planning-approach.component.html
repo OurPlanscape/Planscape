@@ -1,4 +1,7 @@
-<sg-section headline="Choose your planning approach">
+<sg-section
+  headline="Choose your planning approach"
+  tooltipIcon="help"
+  [tooltipLink]="PLANNING_APPROACH_HELP_URL">
   <div
     class="error-message ng-invalid"
     *ngIf="control.touched && control.hasError('required')">
