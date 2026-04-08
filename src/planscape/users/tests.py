@@ -1,5 +1,6 @@
 import json
 import re
+from unittest.mock import call, patch
 
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
@@ -680,3 +681,43 @@ class LastLoginTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.user.refresh_from_db()
         self.assertGreaterEqual(self.user.last_login, first_login_time)
+
+
+class OpenPanelEventsTest(TestCase):
+    @patch("users.allauth_adapter.track_openpanel")
+    @patch("users.allauth_adapter.identify_openpanel")
+    def test_user_registered_event_is_tracked(self, mock_identify, mock_track):
+        from unittest.mock import MagicMock
+
+        from allauth.account.adapter import DefaultAccountAdapter
+
+        from users.allauth_adapter import CustomAllauthAdapter
+
+        user = UserFactory.create()
+        adapter = CustomAllauthAdapter()
+
+        with patch.object(DefaultAccountAdapter, "save_user", return_value=user):
+            adapter.save_user(request=None, user=user, form=MagicMock())
+
+        mock_track.assert_called_once_with(
+            "user_registered",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_user_email_confirmed_event_is_tracked(self, mock_track):
+        from allauth.account.signals import email_confirmed
+
+        user = UserFactory.create()
+        email_address = EmailAddress.objects.get_or_create(
+            user=user, email=user.email, defaults={"verified": False, "primary": True}
+        )[0]
+
+        email_confirmed.send(sender=None, request=None, email_address=email_address)
+
+        mock_track.assert_called_once_with(
+            "user_email_confirmed",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
