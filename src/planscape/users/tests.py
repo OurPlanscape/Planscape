@@ -1,10 +1,10 @@
 import json
 import re
-from unittest.mock import call, patch
+from datetime import timedelta
+from unittest.mock import patch
 
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
-from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -16,9 +16,8 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from rest_framework.test import APITestCase
-
 from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase
 
 
 class CreateUserTest(APITestCase):
