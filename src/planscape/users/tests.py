@@ -351,6 +351,28 @@ class LoginTest(TestCase):
         # No email is sent for user to verify email because login failed.
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_login_email_uppercase(self):
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
+
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "TESTUSER@TEST.COM", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_email_mixed_case(self):
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
+
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "TestUser@Test.Com", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 class DestroyUserTest(APITestCase):
     def setUp(self):
