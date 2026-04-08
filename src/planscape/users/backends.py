@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from allauth.account.auth_backends import AuthenticationBackend
+from django.conf import settings
 from django.utils import timezone
-
 from planscape.openpanel import identify_openpanel, track_openpanel
 
 
@@ -23,12 +23,13 @@ class PlanscapeAuthBackend(AuthenticationBackend):
 
     def _track_returning_user(self, user) -> None:
         now = timezone.now()
-        thirty_days_after_signup = user.date_joined + timedelta(days=30)
-        if now >= thirty_days_after_signup and (
-            user.last_login is None or user.last_login < thirty_days_after_signup
+        number_of_days = settings.RETURNING_USER_THRESHOLD_DAYS
+        target_date = user.date_joined + timedelta(days=number_of_days)
+        if now >= target_date and (
+            user.last_login is None or user.last_login < target_date
         ):
             track_openpanel(
-                "users.returned_after_30d",
+                f"users.returned_after_{number_of_days}d",
                 properties={"email": user.email},
                 user_id=user.pk,
             )
