@@ -23,6 +23,7 @@ import { interval, take } from 'rxjs';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
+import { AnalyticsService } from '@app/services/analytics.service';
 
 @UntilDestroy()
 @Component({
@@ -61,10 +62,11 @@ export class TreatmentPlansListComponent implements OnInit {
   constructor(
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
+    private analyticsService: AnalyticsService,
     private router: Router,
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {}
 
   loadTreatments() {
@@ -191,11 +193,11 @@ export class TreatmentPlansListComponent implements OnInit {
   }
 
   openNewTreatmentDialog() {
-    // this.analyticsService.emitEvent(
-    //   'new_treatment_plan',
-    //   'uploaded_scenario_page',
-    //   'New Treatment Plan'
-    // );
+    this.analyticsService.emitEvent(
+      'new_treatment_plan',
+      'treatment_effects_list',
+      'New Treatment Plan'
+    );
     this.dialog
       .open(CreateTreatmentDialogComponent)
       .afterClosed()
