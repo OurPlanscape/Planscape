@@ -1693,3 +1693,27 @@ def get_sub_units_stands_lookup_table(scenario: Scenario, datalayer: DataLayer) 
         lookup_table.update({str(sub_unit_id): list(stand_ids)})
 
     return lookup_table
+
+
+def calculate_and_update_rx_leverage(scenario: Scenario):
+    results = scenario.results
+    features = results.result.get("features")
+
+    if scenario.type == ScenarioType.CUSTOM:
+        cfg = scenario.configuration or {}
+        priority_ids = cfg.get("priority_objectives")
+        names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
+    else:
+        names = scenario.treatment_goal.datalayer_usages.filter(usage_type="PRIORITY").values_list("datalayer__name")
+    names = [name[0] for name in names]
+    
+    for feature in features:
+        attainment = feature.get("properties").get("attainment")
+        att_values = [attainment.get(name) for name in names]
+        area_acres = feature.get("properties").get("area_acres")
+        print(f"sum(att_values)={sum(att_values)} / area_acres={area_acres}")
+        rx_leverage = (sum(att_values)/area_acres)*1000 if area_acres else None
+        feature["properties"]["rx_leverage"] = rx_leverage
+
+    results.result["features"] = features
+    results.save(update_fields=["result"])

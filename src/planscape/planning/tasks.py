@@ -37,6 +37,7 @@ from planning.models import (
 )
 from planning.services import (
     build_run_configuration,
+    calculate_and_update_rx_leverage,
     create_metrics_task,
     export_to_geopackage,
     get_acreage,
@@ -398,30 +399,13 @@ def trigger_scenario_post_processing():
 def async_scenario_post_processing(scenario_id):
     scenario = Scenario.objects.get(pk=scenario_id)
 
-    results = scenario.results
-    features = results.result.get("features")
-
-    # Calculates Rx Leverage
-    if scenario.type == ScenarioType.CUSTOM:
-        cfg = scenario.configuration or {}
-        priority_ids = cfg.get("priority_objectives")
-        names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
+    try:
+        calculate_and_update_rx_leverage(scenario)
+    except Exception:
+        scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
     else:
-        names = scenario.treatment_goal.datalayer_usages.filter(usage_type="PRIORITY").values_list("datalayer__name")
-    names = [name[0] for name in names]
+        scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
     
-    for feature in features:
-        attainment = feature.get("properties").get("attainment")
-        att_values = [attainment.get(name) for name in names]
-        area_acres = feature.get("properties").get("area_acres")
-        print(f"sum(att_values)={sum(att_values)} / area_acres={area_acres}")
-        rx_leverage = (sum(att_values)/area_acres)*1000 if area_acres else None
-        feature["properties"]["rx_leverage"] = rx_leverage
-
-    results.result["features"] = features
-    results.save(update_fields=["result"])
-
-    scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
     scenario.save(update_fields=["post_process_status"])
 
 
