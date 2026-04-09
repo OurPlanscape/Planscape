@@ -28,6 +28,7 @@ test('user can create planning area by uploading area', async ({ page }) => {
 
   await expect(page).toHaveURL(/\/plan\/\d+$/);
   const planningAreaDetailsCard = page.locator('app-planning-area-details-card');
+  await expect(planningAreaDetailsCard).toBeVisible();
   await expect(planningAreaDetailsCard).toContainText('Planning Area Overview');
   await expect(planningAreaDetailsCard).toContainText(planningAreaName);
 
