@@ -39,21 +39,28 @@ export const ProjectArea: Story = {
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
     origin: 'USER',
-    leftEdgeColor: '#ffaaee',
+  },
+};
+
+export const TreatmentCard: Story = {
+  args: {
+    name: 'Treatment Plan Name',
+    resultStatus: 'INPROGRESS',
+    recordType: 'TREATMENT',
+    creator: 'Planny Plannington',
+    created_at: '2024-01-01 12:34:00',
   },
 };
 
 export const Scenario: Story = {
   args: {
-    name: 'Test Project Area',
+    name: 'Test Scenario',
     resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
     origin: 'USER',
-    leftEdgeColor: '#3344aa',
   },
 };
-
 
 export const Running: Story = {
   args: {
@@ -85,15 +92,5 @@ export const DisabledScenario: Story = {
     disabled: true,
     contextualMenuEnabled: false,
     userCanDeleteRecord: true,
-  },
-};
-
-export const TreatmentCard: Story = {
-  args: {
-    name: 'Treatment Plan Name',
-    resultStatus: 'INPROGRESS',
-    recordType: 'TREATMENT',
-    creator: 'Planny Plannington',
-    created_at: '2024-01-01 12:34:00',
   },
 };

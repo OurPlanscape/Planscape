@@ -1,4 +1,3 @@
-
 import {
   Component,
   EventEmitter,
@@ -26,8 +25,22 @@ import { ButtonComponent } from '@styleguide/button/button.component';
 import { LegacyMaterialModule } from '@app/material/legacy-material.module';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-export type ResultLabel = 'Done' | 'In Progress' | 'Running' | 'Failed' | 'Draft';
-export type ValidStatus = "LOADING" | "PENDING" | "RUNNING" | "SUCCESS" | "FAILURE" | "PANIC" | "TIMED_OUT" | "DRAFT" | 'INPROGRESS';
+export type ResultLabel =
+  | 'Done'
+  | 'In Progress'
+  | 'Running'
+  | 'Failed'
+  | 'Draft';
+export type ValidStatus =
+  | 'LOADING'
+  | 'PENDING'
+  | 'RUNNING'
+  | 'SUCCESS'
+  | 'FAILURE'
+  | 'PANIC'
+  | 'TIMED_OUT'
+  | 'DRAFT'
+  | 'INPROGRESS';
 
 /**
  * List Card for displaying scenario, project area, or treatment card data in a results list
@@ -49,27 +62,22 @@ export type ValidStatus = "LOADING" | "PENDING" | "RUNNING" | "SUCCESS" | "FAILU
     LegacyMaterialModule,
     MatTooltipModule,
   ],
-templateUrl: './list-card.component.html',
-  styleUrl: './list-card.component.scss'
+  templateUrl: './list-card.component.html',
+  styleUrl: './list-card.component.scss',
 })
-
 export class ListCardComponent {
-
   @Input() resultStatus: ScenarioResultStatus | 'INPROGRESS' = 'SUCCESS';
   @Input() name = '';
   @Input() creator?: string = '';
   @Input() created_at? = '';
- 
-  @Input() recordType: 'PROJECT_AREA' | 'SCENARIO' | 'TREATMENT' = 'SCENARIO'
+
+  @Input() recordType: 'PROJECT_AREA' | 'SCENARIO' | 'TREATMENT' = 'SCENARIO';
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
   @Input() userCanDeleteRecord = false;
   @Input() userCanEditRecord = false;
   @Input() userCanRenameRecord = false;
   @Input() contextualMenuEnabled = true;
   @Input() disabled = false;
-
-
-  @Input() leftEdgeColor : string | null = null; 
 
   @Output() openRecord = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
@@ -78,12 +86,11 @@ export class ListCardComponent {
   @Output() copyRecord = new EventEmitter();
   @Output() clicked = new EventEmitter();
 
-// Define which types actually get a chip
+  // Define which types actually get a chip
   readonly recordTypeChipConfig = {
-    'SCENARIO': { label: 'Scenario', class: 'scenario' },
-    'PROJECT_AREA': { label: 'Project areas', class: 'project-area' }
+    SCENARIO: { label: 'Scenario', class: 'scenario' },
+    PROJECT_AREA: { label: 'Project areas', class: 'project-area' },
   };
-
 
   readonly chipsStatus: Record<
     ValidStatus,
@@ -92,7 +99,7 @@ export class ListCardComponent {
       label: ResultLabel;
     }
   > = {
-    INPROGRESS: {status: 'inProgress', label: 'In Progress'},
+    INPROGRESS: { status: 'inProgress', label: 'In Progress' },
     FAILURE: { status: 'failed', label: 'Failed' },
     LOADING: { status: 'running', label: 'Running' },
     PANIC: { status: 'failed', label: 'Failed' },
@@ -119,7 +126,7 @@ export class ListCardComponent {
   }
 
   get showRecordChip() {
-    return this.recordType !== 'TREATMENT'; 
+    return this.recordType !== 'TREATMENT';
   }
 
   @HostBinding('class.disabled-content')
@@ -142,12 +149,8 @@ export class ListCardComponent {
     return this.recordType === 'TREATMENT';
   }
 
-
-
   getChipStatus(): StatusChipStatus {
-    console.log('for this name:', this.name);
     if (this.resultStatus) {
-      console.log('we have this status:', this.resultStatus);
       return this.chipsStatus[this.resultStatus].status;
     }
     return 'failed';
@@ -163,15 +166,4 @@ export class ListCardComponent {
   handleMoreMenuClick(event: Event) {
     event.stopPropagation();
   }
-
-
-  @HostBinding('class.show-left-border') get hasBorder() {
-    return !!this.leftEdgeColor;
-  }
-
-  @HostBinding('style.show-left-border') get colorVar() {
-    return this.leftEdgeColor;
-  }
-
 }
-
