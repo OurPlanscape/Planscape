@@ -6,7 +6,10 @@ const SHAPEFILE_ZIP = path.resolve(
   '../../../assets/simple-polygon-4326.zip',
 );
 
-test('user can create planning area by uploading area', async ({ page }) => {
+test(
+  'user can create planning area by uploading area',
+  { tag: ['@smoke'] },
+  async ({ page }) => {
   const planningAreaName = `E2E Upload Plan ${Date.now()}`;
 
   await page.goto('/map-viewer');
@@ -41,4 +44,5 @@ test('user can create planning area by uploading area', async ({ page }) => {
   await page.getByRole('menuitem', { name: 'Delete' }).click();
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(row).toHaveCount(0);
-});
+  }
+);
