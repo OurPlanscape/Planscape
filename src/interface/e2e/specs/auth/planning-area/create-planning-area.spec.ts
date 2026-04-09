@@ -3,7 +3,7 @@ import path from 'path';
 
 const SHAPEFILE_ZIP = path.resolve(
   __dirname,
-  '../../assets/simple-polygon-4326.zip',
+  '../../../assets/simple-polygon-4326.zip',
 );
 
 test('user can create planning area by uploading area', async ({ page }) => {
