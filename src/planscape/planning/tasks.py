@@ -387,7 +387,7 @@ def async_mark_scenario_panic(scenario_id: int) -> None:
 @app.task()
 def trigger_scenario_post_processing():
     scenarios = Scenario.objects.filter(
-        result_status=ScenarioResultStatus.SUCCESS,
+        result_status__in=(ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE),
         post_process_status=ScenarioPostProcessingStatus.PENDING,
     ).values_list("id", flat=True) 
     log.info(f"Found {scenarios.count()} scenarios pending post_processing.")
@@ -400,11 +400,12 @@ def async_scenario_post_processing(scenario_id):
     scenario = Scenario.objects.get(pk=scenario_id)
 
     try:
-        calculate_and_update_rx_leverage(scenario)
+        if scenario.status == ScenarioResultStatus.SUCCESS:
+            calculate_and_update_rx_leverage(scenario)
     except Exception:
-        scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
-    else:
         scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
+    else:
+        scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
     
     scenario.save(update_fields=["post_process_status"])
 

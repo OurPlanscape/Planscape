@@ -13,6 +13,7 @@ from planning.models import (
     Scenario,
     ScenarioOrigin,
     ScenarioType,
+    ScenarioPostProcessingStatus,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -188,6 +189,8 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
     result_status = ScenarioResultStatus.PENDING
 
     treatment_goal = factory.SubFactory(TreatmentGoalFactory)
+
+    post_process_status = ScenarioPostProcessingStatus.PENDING
 
     @factory.post_generation
     def with_scenario_result(self, create, extracted, **kwargs):
