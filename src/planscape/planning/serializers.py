@@ -305,22 +305,6 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
         features = result.get("features")
         scenario = instance.scenario
 
-        if scenario.type == ScenarioType.CUSTOM:
-            cfg = scenario.configuration or {}
-            priority_ids = cfg.get("priority_objectives")
-            names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
-        else:
-            names = scenario.treatment_goal.datalayer_usages.filter(usage_type="PRIORITY").values_list("datalayer__name")
-        names = [name[0] for name in names]
-        
-        for feature in features:
-            attainment = feature.get("properties").get("attainment")
-            att_values = [attainment.get(name) for name in names]
-            area_acres = feature.get("properties").get("area_acres")
-            print(f"sum(att_values)={sum(att_values)} / area_acres={area_acres}")
-            rx_leverage = (sum(att_values)/area_acres)*1000 if area_acres else None
-            feature["properties"]["rx_leverage"] = rx_leverage
-
         request = self.context.get("request")
         number_of_features = request.query_params.get("number_of_features") if request else None
 
