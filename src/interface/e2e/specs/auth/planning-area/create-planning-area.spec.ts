@@ -9,40 +9,103 @@ const SHAPEFILE_ZIP = path.resolve(
 test(
   'user can create planning area by uploading area',
   { tag: ['@smoke'] },
-  async ({ page }) => {
-  const planningAreaName = `E2E Upload Plan ${Date.now()}`;
+  async ({ page }, testInfo) => {
+    const planningAreaName = `E2E Upload Plan ${Date.now()}`;
+    const debugLines: string[] = [];
 
-  await page.goto('/map-viewer');
+    const isPlanningAreaRequest = (url: string) =>
+      url.includes('/planscape-backend/v2/planningareas/');
 
-  // Upload a real zipped shapefile
-  await page.getByRole('button', { name: /planning area/i }).click();
-  await page.getByRole('menuitem', { name: 'Upload' }).click();
+    page.on('requestfailed', (request) => {
+      const url = request.url();
+      if (!isPlanningAreaRequest(url)) {
+        return;
+      }
+      debugLines.push(
+        `REQUEST FAILED ${request.method()} ${url} ${request.failure()?.errorText ?? 'unknown'}`
+      );
+    });
 
-  await page.locator('sg-file-upload input[type="file"]').setInputFiles(SHAPEFILE_ZIP);
-  await expect(page.locator('app-upload-planning-area-box')).toHaveCount(0);
+    page.on('response', (response) => {
+      const url = response.url();
+      if (!isPlanningAreaRequest(url)) {
+        return;
+      }
+      debugLines.push(`RESPONSE ${response.status()} ${response.request().method()} ${url}`);
+    });
 
-  await page.locator('button.check-button').click();
+    try {
+      await page.goto('/map-viewer');
 
-  await expect(page.getByText('Name your Planning Area')).toBeVisible();
-  const planNameInput = page.getByRole('textbox', { name: 'Plan Name' });
-  await planNameInput.fill(planningAreaName);
-  await expect(page.getByRole('button', { name: 'Create' })).toBeEnabled();
-  await page.getByRole('button', { name: 'Create' }).click();
+      // Upload a real zipped shapefile
+      await page.getByRole('button', { name: /planning area/i }).click();
+      await page.getByRole('menuitem', { name: 'Upload' }).click();
 
-  await expect(page).toHaveURL(/\/plan\/\d+$/);
-  const planningAreaDetailsCard = page.locator('app-planning-area-details-card');
-  await expect(planningAreaDetailsCard).toBeVisible();
-  await expect(planningAreaDetailsCard).toContainText('Planning Area Overview');
-  await expect(planningAreaDetailsCard).toContainText(planningAreaName);
+      await page.locator('sg-file-upload input[type="file"]').setInputFiles(SHAPEFILE_ZIP);
+      await expect(page.locator('app-upload-planning-area-box')).toHaveCount(0);
 
-  await page.goto('/home');
+      await page.locator('button.check-button').click();
 
-  // Clean up
-  const row = page.getByRole('row', { name: new RegExp(planningAreaName) });
-  await expect(row).toBeVisible();
-  await row.locator('button.more-menu-button').click();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-  await page.getByRole('button', { name: 'Delete' }).click();
-  await expect(row).toHaveCount(0);
+      await expect(page.getByText('Name your Planning Area')).toBeVisible();
+      const planNameInput = page.getByRole('textbox', { name: 'Plan Name' });
+      await planNameInput.fill(planningAreaName);
+      await expect(page.getByRole('button', { name: 'Create' })).toBeEnabled();
+
+      const createPlanResponsePromise = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'POST' &&
+          isPlanningAreaRequest(response.url()) &&
+          response.url().endsWith('/planscape-backend/v2/planningareas/')
+      );
+
+      await page.getByRole('button', { name: 'Create' }).click();
+
+      const createPlanResponse = await createPlanResponsePromise;
+      let createdPlanId: number | null = null;
+      try {
+        const payload = await createPlanResponse.json();
+        createdPlanId = payload?.id ?? null;
+        debugLines.push(
+          `CREATE PAYLOAD id=${createdPlanId ?? 'unknown'} name=${payload?.name ?? 'unknown'}`
+        );
+      } catch {
+        debugLines.push('CREATE PAYLOAD could not be parsed as JSON');
+      }
+
+      await expect(page).toHaveURL(/\/plan\/\d+$/);
+
+      if (createdPlanId !== null) {
+        const getPlanResponse = await page.waitForResponse(
+          (response) =>
+            response.request().method() === 'GET' &&
+            response.url().includes(
+              `/planscape-backend/v2/planningareas/${createdPlanId}/`
+            )
+        );
+        debugLines.push(
+          `DETAIL FETCH ${getPlanResponse.status()} ${getPlanResponse.url()}`
+        );
+      }
+
+      const planningAreaDetailsCard = page.locator('app-planning-area-details-card');
+      await expect(planningAreaDetailsCard).toBeVisible();
+      await expect(planningAreaDetailsCard).toContainText('Planning Area Overview');
+      await expect(planningAreaDetailsCard).toContainText(planningAreaName);
+
+      await page.goto('/home');
+
+      // Clean up
+      const row = page.getByRole('row', { name: new RegExp(planningAreaName) });
+      await expect(row).toBeVisible();
+      await row.locator('button.more-menu-button').click();
+      await page.getByRole('menuitem', { name: 'Delete' }).click();
+      await page.getByRole('button', { name: 'Delete' }).click();
+      await expect(row).toHaveCount(0);
+    } finally {
+      await testInfo.attach('planning-area-network-log', {
+        body: Buffer.from(debugLines.join('\n') || 'No planning area network events captured'),
+        contentType: 'text/plain',
+      });
+    }
   }
 );
