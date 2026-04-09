@@ -3,7 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
 import { ButtonComponent } from '@styleguide';
-import { NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
 import {
   canCloneTreatmentPlan,
@@ -16,17 +16,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@app/shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
-import { interval, take } from 'rxjs';
-import { TreatmentEffectsCardComponent } from '@styleguide/treatment-effects-card/treatment-effects-card.component';
+import {
+  BehaviorSubject,
+  combineLatest,
+  interval,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
+import { AnalyticsService } from '@app/services/analytics.service';
+import { TreatmentEffectsCardComponent } from '@styleguide/treatment-effects-card/treatment-effects-card.component';
 
-@UntilDestroy()
 @Component({
   selector: 'app-treatment-plans-list',
   standalone: true,
   imports: [
+    AsyncPipe,
     ButtonComponent,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -38,42 +47,48 @@ import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-d
   styleUrl: './treatment-plans-list.component.scss',
 })
 export class TreatmentPlansListComponent {
-  treatments: TreatmentPlan[] = [];
+  sortSelection$ = new BehaviorSubject<string>('-created_at');
+  loading$ = new BehaviorSubject<boolean>(false);
+  @Input() scenarioId!: number;
+  @Input() planningArea: Plan | null = null;
+  manualRefresh$ = new BehaviorSubject<void>(undefined);
 
-  sortSelection = '-created_at';
+  treatments$ = combineLatest([
+    this.sortSelection$,
+    interval(POLLING_INTERVAL).pipe(startWith(0)),
+    this.manualRefresh$,
+  ]).pipe(
+    switchMap(([sort]) =>
+      this.treatmentsService.listTreatmentPlans(Number(this.scenarioId), sort)
+    ),
+    tap(() => this.loading$.next(false)),
+    shareReplay(1)
+  );
 
-  loading = false;
   creatingTreatment = false;
 
   state: 'loading' | 'empty' | 'loaded' = 'loading';
 
   handleSortChange() {
-    this.sortSelection =
-      this.sortSelection === '-created_at' ? 'created_at' : '-created_at';
-    this.loading = true;
-    this.loadTreatments();
+    this.loading$.next(true);
+    this.sortSelection$.next(
+      this.sortSelection$.value === '-created_at' ? 'created_at' : '-created_at'
+    );
   }
-  @Input() scenarioId!: number;
-  @Input() planningArea: Plan | null = null;
+
+  trackByFn(index: number, item: TreatmentPlan) {
+    return item.id;
+  }
 
   constructor(
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
+    private analyticsService: AnalyticsService,
     private router: Router,
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog
   ) {}
-
-  loadTreatments() {
-    this.treatmentsService
-      .listTreatmentPlans(Number(this.scenarioId), this.sortSelection)
-      .subscribe((results) => {
-        this.treatments = results;
-        this.state = results.length > 0 ? 'loaded' : 'empty';
-        this.loading = false;
-      });
-  }
 
   goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
     const route = ['treatment', treatment.id];
@@ -112,25 +127,11 @@ export class TreatmentPlansListComponent {
     );
   }
 
-  ngOnInit(): void {
-    this.loading = true;
-    this.pollForChanges();
-  }
-
-  private pollForChanges() {
-    this.loadTreatments();
-    // we might want to check if any scenario is still pending in order to poll
-    interval(POLLING_INTERVAL)
-      .pipe(untilDestroyed(this))
-      .subscribe(() => this.loadTreatments());
-  }
-
   deleteTreatment(treatment: TreatmentPlan) {
-    const treatmentList = this.treatments;
-    this.treatments = this.treatments.filter((t) => t.id != treatment.id);
     this.treatmentsService.deleteTreatmentPlan(treatment.id).subscribe({
       next: () => {
-        this.state = this.treatments.length > 0 ? 'loaded' : 'empty';
+        this.manualRefresh$.next();
+
         this.matSnackBar.open(
           `Deleted Treatment Plan '${treatment.name}'`,
           'Dismiss',
@@ -138,8 +139,6 @@ export class TreatmentPlansListComponent {
         );
       },
       error: () => {
-        this.state = 'loaded';
-        this.treatments = treatmentList;
         this.matSnackBar.open(
           `[Error] Cannot delete treatment plan '${treatment.name}'`,
           'Dismiss',
@@ -170,9 +169,12 @@ export class TreatmentPlansListComponent {
   }
 
   duplicateTreatment(treatment: TreatmentPlan) {
+    this.loading$.next(true);
+
     this.treatmentsService.duplicateTreatmentPlan(treatment.id).subscribe({
       next: (t) => {
-        this.treatments = [...this.treatments, t];
+        this.manualRefresh$.next();
+
         this.matSnackBar.open(
           `Duplicated Treatment Plan '${treatment.name}'`,
           'Dismiss',
@@ -180,6 +182,7 @@ export class TreatmentPlansListComponent {
         );
       },
       error: () => {
+        this.loading$.next(false);
         this.matSnackBar.open(
           `[Error] Cannot duplicate treatment plan '${treatment.name}'`,
           'Dismiss',
@@ -190,11 +193,11 @@ export class TreatmentPlansListComponent {
   }
 
   openNewTreatmentDialog() {
-    // this.analyticsService.emitEvent(
-    //   'new_treatment_plan',
-    //   'uploaded_scenario_page',
-    //   'New Treatment Plan'
-    // );
+    this.analyticsService.emitEvent(
+      'new_treatment_plan',
+      'treatment_effects_list',
+      'New Treatment Plan'
+    );
     this.dialog
       .open(CreateTreatmentDialogComponent)
       .afterClosed()
