@@ -57,10 +57,7 @@ BEGIN
     WHERE id = p_layer_id;
 
     EXECUTE format($f$
-        WITH bbox AS (
-            SELECT ST_TileEnvelope($1, $2, $3) AS geom
-        ),
-        planning_area AS (
+        WITH planning_area AS (
             SELECT p.geometry AS geom
             FROM planning_planningarea p
             WHERE p.id = %L
@@ -73,7 +70,9 @@ BEGIN
                 (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int AS "rank",
                 (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int AS "proj_id",
                 t.id AS "t_id",
-                ST_Intersection(t.geometry, p.geom) AS geom
+                ST_Transform(
+                    ST_Intersection(t.geometry, p.geom), 3857
+                 ) AS geom
             FROM planning_projectarea pa
             INNER JOIN %I.%I AS t ON t.id = (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int
             INNER JOIN planning_area p ON p.geom && t.geometry
@@ -89,15 +88,12 @@ BEGIN
                 name,
                 rank,
                 ST_AsMVTGeom(
-                    ST_Transform(
-                        pa.geom, 
-                        3857
-                    ),
+                    pa.geom,
                     ST_TileEnvelope($1, $2, $3),
                     4096, 64, true
                 ) AS geom
-            FROM project_area pa, bbox
-            WHERE pa.geom && ST_Transform(bbox.geom, ST_SRID(pa.geom))
+            FROM project_area pa
+            WHERE pa.geom && ST_TileEnvelope($1, $2, $3, margin => (64.0 / 4096))
         ),
         mvtpoint AS (
             SELECT
@@ -106,16 +102,12 @@ BEGIN
                 name,
                 rank,
                 ST_AsMVTGeom(
-                    ST_PointOnSurface(
-                        ST_Transform(
-                            pa.geom, 
-                            3857
-                        )
-                    ),
+                    ST_PointOnSurface(pa.geom),
                     ST_TileEnvelope($1, $2, $3),
-                4096, 64, true) AS geom
-            FROM project_area pa, bbox
-            WHERE ST_PointOnSurface(pa.geom) && ST_Transform(bbox.geom, ST_SRID(pa.geom))
+                    4096, 64, true
+                ) AS geom
+            FROM project_area pa
+            WHERE ST_PointOnSurface(pa.geom) && ST_TileEnvelope($1, $2, $3, margin => (64.0 / 4096))
         )
         SELECT 
             ST_AsMVT(mvtgeom.*, 'sub_units_by_scenario') || 
