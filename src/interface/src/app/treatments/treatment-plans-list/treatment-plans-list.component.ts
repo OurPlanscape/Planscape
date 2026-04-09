@@ -66,7 +66,7 @@ export class TreatmentPlansListComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
-    private dialog: MatDialog,
+    private dialog: MatDialog
   ) {}
 
   loadTreatments() {
