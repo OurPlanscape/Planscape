@@ -100,7 +100,15 @@ test(
       const overlayLoader = page.locator('sg-overlay-loader');
       await expect(overlayLoader).toHaveCount(0, { timeout: 15000 });
 
+      const resourceUnavailable = page.locator('app-resource-unavailable');
       const planningAreaDetailsCard = page.locator('app-planning-area-details-card');
+      debugLines.push(`FINAL URL ${page.url()}`);
+      debugLines.push(
+        `RESOURCE UNAVAILABLE COUNT ${await resourceUnavailable.count()}`
+      );
+      debugLines.push(`PLAN CARD COUNT ${await planningAreaDetailsCard.count()}`);
+
+      await expect(resourceUnavailable).toHaveCount(0, { timeout: 15000 });
       await expect(planningAreaDetailsCard).toBeVisible({ timeout: 15000 });
       await expect(planningAreaDetailsCard).toContainText('Planning Area Overview', {
         timeout: 15000,
@@ -119,8 +127,17 @@ test(
       await page.getByRole('button', { name: 'Delete' }).click();
       await expect(row).toHaveCount(0);
     } finally {
+      const bodyText = await page
+        .locator('body')
+        .innerText()
+        .catch(() => 'Unable to capture body text');
+
       await testInfo.attach('planning-area-network-log', {
         body: Buffer.from(debugLines.join('\n') || 'No planning area network events captured'),
+        contentType: 'text/plain',
+      });
+      await testInfo.attach('plan-page-text', {
+        body: Buffer.from(bodyText),
         contentType: 'text/plain',
       });
     }
