@@ -32,6 +32,7 @@ from planning.models import (
     TreatmentGoalUsageType,
 )
 from planning.services import (
+    calculate_and_update_rx_leverage,
     create_planning_area,
     create_scenario,
     create_scenario_from_upload,
@@ -1586,3 +1587,60 @@ class SubUnitsDetailsTest(TestCase):
 
         # 100 + 200 + 300 + 400 + 500 + 550 (of 600) + 550 (of 700) + 550 (of 800) + 550 (of 900) + 550 (of 100))
         self.assertEqual(details.get("targeted_area"), 4250)
+
+
+class RxLeverageTest(TestCase):
+
+    def setUp(self):
+        self.datalayers = DataLayerFactory.create_batch(2, type=DataLayerType.RASTER)
+        self.attainment = {
+            self.datalayers[0].name: 5.88021369042673,
+            self.datalayers[1].name: 4.85817693192524,
+        }
+
+    def _update_attainment(self, scenario_result):
+        result = scenario_result.result
+        features = result.get("features")
+        for feature in features:
+            feature["properties"]["attainment"] = self.attainment
+            
+        result["features"] = features
+        scenario_result.result = result
+        scenario_result.save()
+
+    def test_scenario_type_preset(self):
+        treatment_goal = TreatmentGoalFactory.create(datalayers=self.datalayers)
+        scenario = ScenarioFactory(
+            type=ScenarioType.PRESET,
+            treatment_goal=treatment_goal,
+        )
+        scenario_result = ScenarioResultFactory.create(scenario=scenario)
+
+        self._update_attainment(scenario_result)
+        calculate_and_update_rx_leverage(scenario)
+
+        scenario.refresh_from_db()
+        scenario_result.refresh_from_db()
+
+        result = scenario_result.result
+        features = result.get("features")
+        for feature in features:
+            self.assertIsNotNone(feature.get("properties", {}).get("rx_leverage"))
+
+    def test_scenario_type_custom(self):
+        scenario = ScenarioFactory(
+            type=ScenarioType.CUSTOM,
+            with_priority_objectives=self.datalayers
+        )
+        scenario_result = ScenarioResultFactory.create(scenario=scenario)
+        
+        self._update_attainment(scenario_result)
+        calculate_and_update_rx_leverage(scenario)
+
+        scenario.refresh_from_db()
+        scenario_result.refresh_from_db()
+
+        result = scenario_result.result
+        features = result.get("features")
+        for feature in features:
+            self.assertIsNotNone(feature.get("properties", {}).get("rx_leverage"))
