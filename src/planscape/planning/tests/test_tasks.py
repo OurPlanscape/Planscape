@@ -9,6 +9,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from planning.models import (
     GeoPackageStatus,
+    ScenarioPostProcessingStatus,
     ScenarioPlanningApproach,
     ScenarioResult,
     ScenarioResultStatus,
@@ -393,6 +394,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
         scenario = ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
             geopackage_status=GeoPackageStatus.PENDING,
+            post_process_status=ScenarioPostProcessingStatus.SUCCESS
         )
 
         trigger_geopackage_generation()
@@ -404,6 +406,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
         scenario = ScenarioFactory.create(
             result_status=ScenarioResultStatus.FAILURE,
             geopackage_status=GeoPackageStatus.PENDING,
+            post_process_status=ScenarioPostProcessingStatus.SUCCESS
         )
 
         trigger_geopackage_generation()
