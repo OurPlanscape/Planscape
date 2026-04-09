@@ -22,7 +22,9 @@
   [isCollapsible]="hasAnalytics()"
   [tooltipTemplate]="isPlanningApproachSubUnits ? tableTooltipContent : null"
   [headline]="isPlanningApproachSubUnits ? 'Top 10 Subunits' : 'Project Areas'">
-  <app-project-areas [areas]="areas"></app-project-areas>
+  <app-project-areas
+    [areas]="areas"
+    [showRxLeverage]="isPlanningApproachSubUnits"></app-project-areas>
 </sg-section>
 
 <sg-section
