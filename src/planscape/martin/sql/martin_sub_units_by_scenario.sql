@@ -58,7 +58,7 @@ BEGIN
 
     EXECUTE format($f$
         WITH bbox AS (
-            SELECT ST_TileEnvelope($1, $2, $3, margin => (64.0/4096)) AS geom
+            SELECT ST_TileEnvelope($1, $2, $3) AS geom
         ),
         planning_area AS (
             SELECT p.geometry AS geom
@@ -69,6 +69,7 @@ BEGIN
             SELECT
                 pa.id AS "pa_id",
                 pa.scenario_id AS "scenario_id",
+                pa.name,
                 (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int AS "rank",
                 (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int AS "proj_id",
                 t.id AS "t_id",
@@ -85,7 +86,7 @@ BEGIN
             SELECT
                 DISTINCT pa_id AS "id",
                 scenario_id,
-                proj_id,
+                name,
                 rank,
                 ST_AsMVTGeom(
                     ST_Transform(
@@ -102,7 +103,7 @@ BEGIN
             SELECT
                 DISTINCT pa_id AS "id",
                 scenario_id,
-                proj_id,
+                name,
                 rank,
                 ST_AsMVTGeom(
                     ST_PointOnSurface(
