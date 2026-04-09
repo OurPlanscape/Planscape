@@ -203,6 +203,11 @@ class ScenarioResultStatus(models.TextChoices):
     TIMED_OUT = "TIMED_OUT", "Timed Out"
     DRAFT = "DRAFT", "Draft"
 
+class ScenarioPostProcessingStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    RUNNING = "RUNNING", "Running"
+    SUCCESS = "SUCCESS", "Success"
+    FAILURE = "FAILURE", "Failure"
 
 class ScenarioManager(AliveObjectsManager):
     def list_by_user(self, user: Optional[User]):
@@ -513,6 +518,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     ready_email_sent_at = models.DateTimeField(
         null=True, help_text="When the ready email was sent."
+    )
+
+    post_process_status = models.CharField(
+        max_length=32,
+        choices=ScenarioPostProcessingStatus.choices,
+        default=ScenarioPostProcessingStatus.PENDING,
+        null=True,
+        help_text="Result status of the Scenario.",
     )
 
     @cached_property

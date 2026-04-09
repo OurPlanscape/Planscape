@@ -30,6 +30,7 @@ from planning.models import (
     PlanningArea,
     PlanningAreaMapStatus,
     Scenario,
+    ScenarioPostProcessingStatus,
     ScenarioResultStatus,
     ScenarioType,
     TreatmentGoalUsageType,
@@ -383,10 +384,53 @@ def async_mark_scenario_panic(scenario_id: int) -> None:
 
 
 @app.task()
+def trigger_scenario_post_processing():
+    scenarios = Scenario.objects.filter(
+        result_status=ScenarioResultStatus.SUCCESS,
+        post_process_status=ScenarioPostProcessingStatus.PENDING,
+    ).values_list("id", flat=True) 
+    log.info(f"Found {scenarios.count()} scenarios pending post_processing.")
+    for scenario in scenarios:
+        async_scenario_post_processing.delay(scenario)
+
+
+@app.task()
+def async_scenario_post_processing(scenario_id):
+    scenario = Scenario.objects.get(pk=scenario_id)
+
+    results = scenario.results
+    features = results.result.get("features")
+
+    # Calculates Rx Leverage
+    if scenario.type == ScenarioType.CUSTOM:
+        cfg = scenario.configuration or {}
+        priority_ids = cfg.get("priority_objectives")
+        names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
+    else:
+        names = scenario.treatment_goal.datalayer_usages.filter(usage_type="PRIORITY").values_list("datalayer__name")
+    names = [name[0] for name in names]
+    
+    for feature in features:
+        attainment = feature.get("properties").get("attainment")
+        att_values = [attainment.get(name) for name in names]
+        area_acres = feature.get("properties").get("area_acres")
+        print(f"sum(att_values)={sum(att_values)} / area_acres={area_acres}")
+        rx_leverage = (sum(att_values)/area_acres)*1000 if area_acres else None
+        feature["properties"]["rx_leverage"] = rx_leverage
+
+    results.result["features"] = features
+    results.save(update_fields=["result"])
+
+    scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
+    scenario.save(update_fields=["post_process_status"])
+
+
+@app.task()
 def trigger_geopackage_generation():
     scenarios = Scenario.objects.filter(
         result_status__in=(ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE),
         geopackage_status=GeoPackageStatus.PENDING,
+        post_process_status__in=(ScenarioPostProcessingStatus.SUCCESS, None),
     ).values_list("id", flat=True)
     log.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
     for scenario_id in scenarios:
