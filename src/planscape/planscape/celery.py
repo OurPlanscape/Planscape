@@ -9,6 +9,10 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
 beat_schedule = {
+    "trigger-scenario-post-processing": {
+        "task": "planning.tasks.trigger_scenario_post_processing",
+        "schedule": 10.0,  # runs every 10 seconds
+    },
     "trigger-geopackage-generation": {
         "task": "planning.tasks.trigger_geopackage_generation",
         "schedule": 10.0,  # runs every 10 seconds
