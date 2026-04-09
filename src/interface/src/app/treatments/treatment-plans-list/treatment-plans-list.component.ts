@@ -22,12 +22,12 @@ import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dial
 import {
   BehaviorSubject,
   combineLatest,
-  interval,
+  exhaustMap,
   shareReplay,
-  startWith,
   switchMap,
   take,
   tap,
+  timer,
 } from 'rxjs';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
@@ -55,21 +55,25 @@ export class TreatmentPlansListComponent {
   @Input() planningArea: Plan | null = null;
   manualRefresh$ = new BehaviorSubject<void>(undefined);
 
-  treatments$ = combineLatest([
-    this.sortSelection$,
-    interval(POLLING_INTERVAL).pipe(startWith(0)),
-    this.manualRefresh$,
-  ]).pipe(
+  treatments$ = combineLatest([this.sortSelection$, this.manualRefresh$]).pipe(
+    // Every time sort or manual trigger changes...
     switchMap(([sort]) =>
-      this.treatmentsService.listTreatmentPlans(Number(this.scenarioId), sort)
+      // ...restart the interval...
+      timer(0, POLLING_INTERVAL).pipe(
+        // ...but don't overlap
+        exhaustMap(() =>
+          this.treatmentsService.listTreatmentPlans(
+            Number(this.scenarioId),
+            sort
+          )
+        )
+      )
     ),
     tap(() => this.loading$.next(false)),
     shareReplay(1)
   );
 
   creatingTreatment = false;
-
-  state: 'loading' | 'empty' | 'loaded' = 'loading';
 
   handleSortChange() {
     this.loading$.next(true);
