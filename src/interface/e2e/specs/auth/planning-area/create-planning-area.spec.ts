@@ -25,14 +25,10 @@ test('user can create planning area by uploading area', async ({ page }) => {
   await planNameInput.fill(planningAreaName);
   await expect(page.getByRole('button', { name: 'Create' })).toBeEnabled();
   await page.getByRole('button', { name: 'Create' }).click();
-  // Wait for the stand metrics calculation and planning area to be created
-  await page.waitForTimeout(10_000);
 
   await expect(page).toHaveURL(/\/plan\/\d+$/);
-  const planningAreaDetailsCard = page.locator('app-planning-area-details-card');
-  await expect(planningAreaDetailsCard).toBeVisible({ timeout: 15000 });
-  await expect(planningAreaDetailsCard).toContainText('Planning Area Overview');
-  await expect(planningAreaDetailsCard).toContainText(planningAreaName);
+  await expect(page.getByText('Planning Area Overview')).toBeVisible();
+  await expect(page.getByText(planningAreaName)).toBeVisible();
 
   await page.goto('/home');
 
