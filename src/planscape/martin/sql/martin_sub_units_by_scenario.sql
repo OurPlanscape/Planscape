@@ -57,79 +57,75 @@ BEGIN
     WHERE id = p_layer_id;
 
     EXECUTE format($f$
-        WITH project_area AS (
+        WITH bbox AS (
+            SELECT ST_TileEnvelope($1, $2, $3, margin => (64.0/4096)) AS geom
+        ),
+        planning_area AS (
+            SELECT p.geometry AS geom
+            FROM planning_planningarea p
+            WHERE p.id = %L
+        ),
+        project_area AS (
             SELECT
-                pa.id AS "id",
+                pa.id AS "pa_id",
                 pa.scenario_id AS "scenario_id",
                 (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int AS "rank",
-                (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int AS "proj_id"
+                (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int AS "proj_id",
+                t.id AS "t_id",
+                ST_Intersection(t.geometry, p.geom) AS geom
             FROM planning_projectarea pa
+            INNER JOIN %I.%I AS t ON t.id = (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int
+            INNER JOIN planning_area p ON p.geom && t.geometry
             WHERE 
                 pa.deleted_at is NULL AND
                 pa.scenario_id = %L AND
                 (pa.data->>'treatment_rank')::int <= %L
         ),
-        planing_area AS (
-            SELECT p.geometry AS geom
-            FROM planning_planningarea p
-            WHERE p.id = %L
-        ),
-        bbox AS (
-            SELECT ST_TileEnvelope($1, $2, $3, margin => (64.0/4096)) AS geom
-        ),
         mvtgeom AS (
             SELECT
-                DISTINCT t.id as id,
+                DISTINCT pa_id AS "id",
+                scenario_id,
+                proj_id,
+                rank,
                 ST_AsMVTGeom(
                     ST_Transform(
-                        ST_Intersection(t.geometry, planing_area.geom), 
+                        pa.geom, 
                         3857
                     ),
                     ST_TileEnvelope($1, $2, $3),
                     4096, 64, true
-                ) AS geom,
+                ) AS geom
+            FROM project_area pa, bbox
+            WHERE pa.geom && ST_Transform(bbox.geom, ST_SRID(pa.geom))
+        ),
+        mvtpoint AS (
+            SELECT
+                DISTINCT pa_id AS "id",
+                scenario_id,
+                proj_id,
+                rank,
                 ST_AsMVTGeom(
                     ST_PointOnSurface(
                         ST_Transform(
-                            ST_Intersection(t.geometry, planing_area.geom), 
+                            pa.geom, 
                             3857
                         )
                     ),
                     ST_TileEnvelope($1, $2, $3),
-                    4096, 64, true) AS surface_point
-            FROM %I.%I AS t, bbox, planing_area
-            WHERE t.geometry && ST_Transform(bbox.geom, ST_SRID(t.geometry))
-        ),
-        ranked_mvtgeom AS (
-            SELECT 
-                DISTINCT t.id,
-                pa.scenario_id,
-                pa.rank,
-                pa.proj_id,
-                t.geom
-            FROM mvtgeom AS t
-            INNER JOIN project_area AS pa ON pa.proj_id = t.id
-        ),
-        ranked_mvtpoint AS (
-            SELECT 
-                DISTINCT t.id,
-                pa.scenario_id,
-                pa.rank,
-                pa.proj_id,
-                t.surface_point as geom
-            FROM mvtgeom AS t
-            INNER JOIN project_area AS pa ON pa.proj_id = t.id
+                4096, 64, true) AS geom
+            FROM project_area pa, bbox
+            WHERE ST_PointOnSurface(pa.geom) && ST_Transform(bbox.geom, ST_SRID(pa.geom))
         )
         SELECT 
-            ST_AsMVT(ranked_mvtgeom.*, 'sub_units_by_scenario') || 
-            ST_AsMVT(ranked_mvtpoint.*, 'sub_units_by_scenario_label')
-        FROM ranked_mvtgeom, ranked_mvtpoint;
+            ST_AsMVT(mvtgeom.*, 'sub_units_by_scenario') || 
+            ST_AsMVT(mvtpoint.*, 'sub_units_by_scenario_label')
+        FROM mvtgeom, mvtpoint;
     $f$,
-        p_scenario_id,
-        p_max_number_of_features,
         p_planning_area_id,
         split_part(p_dyn_table, '.', 1),
-        split_part(p_dyn_table, '.', 2)
+        split_part(p_dyn_table, '.', 2),
+        p_scenario_id,
+        p_max_number_of_features
     )
     INTO tile
     USING z, x, y;
