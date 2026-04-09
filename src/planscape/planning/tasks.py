@@ -400,7 +400,7 @@ def async_scenario_post_processing(scenario_id):
     scenario = Scenario.objects.get(pk=scenario_id)
 
     try:
-        if scenario.status == ScenarioResultStatus.SUCCESS:
+        if scenario.result_status == ScenarioResultStatus.SUCCESS:
             calculate_and_update_rx_leverage(scenario)
     except Exception:
         scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
