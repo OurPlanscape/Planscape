@@ -4,7 +4,8 @@
       <th class="rank">Rank</th>
       <th class="right">Acres</th>
       <th class="right">% Total</th>
-      <th class="right">Estimated Cost</th>
+      <th class="right" *ngIf="showRxLeverage">Rx Lev</th>
+      <th class="right">{{ showRxLeverage ? 'Est.' : 'Estimated' }} Cost</th>
     </tr>
   </thead>
   <tbody>
@@ -18,6 +19,9 @@
       <td data-id="percentTotal" class="right">
         {{ area.percentTotal | number: '1.0-2' }}%
       </td>
+      <td data-id="rxLeverage" class="right" *ngIf="showRxLeverage">
+        {{ area.rxLeverage | number: '1.0-2' }}%
+      </td>
       <td data-id="estimatedCost" class="right">
         {{ area.estimatedCost | currency: 'USD' : 'symbol' : '1.0-0' }}
       </td>
@@ -29,6 +33,9 @@
       </td>
       <td data-id="total-percent" class="right">
         {{ total.percentTotal | number: '1.0-2' }}%
+      </td>
+      <td data-id="total-rx-leverage" class="right" *ngIf="showRxLeverage">
+        {{ total.rxLeverage | number: '1.0-2' }}%
       </td>
       <td data-id="total-estimatedCost" class="right">
         {{ total.estimatedCost | currency: 'USD' : 'symbol' : '1.0-0' }}
