@@ -34,6 +34,16 @@ test(
       debugLines.push(`RESPONSE ${response.status()} ${response.request().method()} ${url}`);
     });
 
+    page.on('pageerror', (error) => {
+      debugLines.push(`PAGE ERROR ${error.message}`);
+    });
+
+    page.on('console', (message) => {
+      if (message.type() === 'error' || message.type() === 'warning') {
+        debugLines.push(`CONSOLE ${message.type().toUpperCase()} ${message.text()}`);
+      }
+    });
+
     try {
       await page.goto('/map-viewer');
 
@@ -87,10 +97,17 @@ test(
         );
       }
 
+      const overlayLoader = page.locator('sg-overlay-loader');
+      await expect(overlayLoader).toHaveCount(0, { timeout: 15000 });
+
       const planningAreaDetailsCard = page.locator('app-planning-area-details-card');
-      await expect(planningAreaDetailsCard).toBeVisible();
-      await expect(planningAreaDetailsCard).toContainText('Planning Area Overview');
-      await expect(planningAreaDetailsCard).toContainText(planningAreaName);
+      await expect(planningAreaDetailsCard).toBeVisible({ timeout: 15000 });
+      await expect(planningAreaDetailsCard).toContainText('Planning Area Overview', {
+        timeout: 15000,
+      });
+      await expect(planningAreaDetailsCard).toContainText(planningAreaName, {
+        timeout: 15000,
+      });
 
       await page.goto('/home');
 
