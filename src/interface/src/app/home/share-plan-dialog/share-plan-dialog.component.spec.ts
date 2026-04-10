@@ -121,12 +121,9 @@ describe('SharePlanDialogComponent', () => {
       const service = TestBed.inject(InvitesService);
       spyOn(service, 'changeRole').and.returnValue(of(mockInvite));
 
-      component.changeRole(mockInvite, 'Collaborator');
+      component.changeRole(mockInvite, 'Editor');
       fixture.detectChanges();
-      expect(service.changeRole).toHaveBeenCalledWith(
-        mockInvite.id,
-        'Collaborator'
-      );
+      expect(service.changeRole).toHaveBeenCalledWith(mockInvite.id, 'Editor');
     });
   });
 

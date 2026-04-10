@@ -8,4 +8,4 @@ export interface Invite {
   collaborator_name?: string;
 }
 
-export type INVITE_ROLE = 'Viewer' | 'Collaborator' | 'Owner';
+export type INVITE_ROLE = 'Viewer' | 'Collaborator' | 'Owner' | 'Editor';
