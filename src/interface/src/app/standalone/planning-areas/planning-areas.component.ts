@@ -98,7 +98,6 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     { key: 'name', label: 'Name' },
     { key: 'creator', label: 'Creator' },
     { key: 'area_acres', label: 'Total Acres' },
-    { key: 'scenario_count', label: '# of Scenarios' },
     { key: 'latest_updated', label: 'Date last modified' },
     { key: 'menu', label: '' },
   ];

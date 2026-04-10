@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PlanningAnalyticsToolsComponent } from './planning-analytics-tools.component';
 import { FeatureService } from '@features/feature.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of } from 'rxjs';
@@ -39,7 +39,6 @@ describe('PlanningAnalyticsToolsComponent', () => {
     role: 'Test Region',
     created_at: '2024-01-01',
     creator: 'Test Creator',
-    scenario_count: 0,
     latest_updated: '2024-01-01',
     capabilities: [],
     permissions: ['read', 'write'],
