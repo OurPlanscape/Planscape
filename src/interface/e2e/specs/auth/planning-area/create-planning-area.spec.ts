@@ -28,10 +28,9 @@ test('user can create planning area by uploading area', async ({ page }) => {
 
   await expect(page).toHaveURL(/\/plan\/\d+$/);
   await expect(page.getByText('Planning Area Overview')).toBeVisible();
-  await expect(page.locator('app-planning-area-details-card .name')).toHaveText(
-    planningAreaName,
-    { timeout: 120000 }
-  );
+  const planningAreaNameField = page.locator('app-planning-area-details-card .name');
+  await expect(planningAreaNameField).toBeVisible({ timeout: 120000 });
+  await expect(planningAreaNameField).toHaveText(planningAreaName);
 
   await page.goto('/home');
 
