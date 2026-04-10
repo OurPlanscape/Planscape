@@ -240,7 +240,7 @@ export class ScenarioCreationComponent implements OnInit {
       .subscribe((scenario) => {
         // Setting up the breadcrumb
         this.breadcrumbService.updateBreadCrumb({
-          label: 'Scenario: ' + scenario.name,
+          label: `New Scenario: ${scenario.name}`,
           backUrl: getPlanPath(this.planId),
           icon: 'close',
         });

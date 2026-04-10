@@ -30,12 +30,14 @@ from planning.models import (
     PlanningArea,
     PlanningAreaMapStatus,
     Scenario,
+    ScenarioPostProcessingStatus,
     ScenarioResultStatus,
     ScenarioType,
     TreatmentGoalUsageType,
 )
 from planning.services import (
     build_run_configuration,
+    calculate_and_update_rx_leverage,
     create_metrics_task,
     export_to_geopackage,
     get_acreage,
@@ -383,10 +385,37 @@ def async_mark_scenario_panic(scenario_id: int) -> None:
 
 
 @app.task()
+def trigger_scenario_post_processing():
+    scenarios = Scenario.objects.filter(
+        result_status__in=(ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE),
+        post_process_status=ScenarioPostProcessingStatus.PENDING,
+    ).values_list("id", flat=True) 
+    log.info(f"Found {scenarios.count()} scenarios pending post_processing.")
+    for scenario in scenarios:
+        async_scenario_post_processing.delay(scenario)
+
+
+@app.task()
+def async_scenario_post_processing(scenario_id):
+    scenario = Scenario.objects.get(pk=scenario_id)
+
+    try:
+        if scenario.result_status == ScenarioResultStatus.SUCCESS:
+            calculate_and_update_rx_leverage(scenario)
+    except Exception:
+        scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
+    else:
+        scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
+    
+    scenario.save(update_fields=["post_process_status"])
+
+
+@app.task()
 def trigger_geopackage_generation():
     scenarios = Scenario.objects.filter(
         result_status__in=(ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE),
         geopackage_status=GeoPackageStatus.PENDING,
+        post_process_status__in=(ScenarioPostProcessingStatus.SUCCESS, None),
     ).values_list("id", flat=True)
     log.info(f"Found {scenarios.count()} scenarios pending geopackage generation.")
     for scenario_id in scenarios:

@@ -1,9 +1,10 @@
 import json
 import re
+from datetime import timedelta
+from unittest.mock import patch
 
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
-from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -15,9 +16,8 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from rest_framework.test import APITestCase
-
 from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase
 
 
 class CreateUserTest(APITestCase):
@@ -351,6 +351,28 @@ class LoginTest(TestCase):
         # No email is sent for user to verify email because login failed.
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_login_email_uppercase(self):
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
+
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "TESTUSER@TEST.COM", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_email_mixed_case(self):
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
+
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "TestUser@Test.Com", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 class DestroyUserTest(APITestCase):
     def setUp(self):
@@ -680,3 +702,43 @@ class LastLoginTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.user.refresh_from_db()
         self.assertGreaterEqual(self.user.last_login, first_login_time)
+
+
+class OpenPanelEventsTest(TestCase):
+    @patch("users.allauth_adapter.track_openpanel")
+    @patch("users.allauth_adapter.identify_openpanel")
+    def test_user_registered_event_is_tracked(self, mock_identify, mock_track):
+        from unittest.mock import MagicMock
+
+        from allauth.account.adapter import DefaultAccountAdapter
+
+        from users.allauth_adapter import CustomAllauthAdapter
+
+        user = UserFactory.create()
+        adapter = CustomAllauthAdapter()
+
+        with patch.object(DefaultAccountAdapter, "save_user", return_value=user):
+            adapter.save_user(request=None, user=user, form=MagicMock())
+
+        mock_track.assert_called_once_with(
+            "user_registered",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_user_email_confirmed_event_is_tracked(self, mock_track):
+        from allauth.account.signals import email_confirmed
+
+        user = UserFactory.create()
+        email_address = EmailAddress.objects.get_or_create(
+            user=user, email=user.email, defaults={"verified": False, "primary": True}
+        )[0]
+
+        email_confirmed.send(sender=None, request=None, email_address=email_address)
+
+        mock_track.assert_called_once_with(
+            "user_email_confirmed",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )

@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 
 from allauth.account.adapter import DefaultAccountAdapter
 
-from planscape.openpanel import identify_openpanel
+from planscape.openpanel import identify_openpanel, track_openpanel
 
 
 class CustomAllauthAdapter(DefaultAccountAdapter):
@@ -20,4 +20,9 @@ class CustomAllauthAdapter(DefaultAccountAdapter):
     def save_user(self, request, user, form, commit=True):
         user = super().save_user(request, user, form, commit=commit)
         identify_openpanel(user)
+        track_openpanel(
+            "user_registered",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
         return user

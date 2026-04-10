@@ -92,6 +92,7 @@ export class TreatmentsState {
       const navStateObject = {
         label: '',
         backUrl: '',
+        icon: 'arrow_back',
       };
 
       if (!summary) {
@@ -107,17 +108,19 @@ export class TreatmentsState {
         !!treatmentPlan.name &&
         path === 'impacts'
       ) {
-        // if we are currently viewing Treatment Impacts
-        navStateObject.label = `Direct Treatment Impacts: ${treatmentPlan.name}`;
+        // if we are currently viewing Treatment Impacts results
+        navStateObject.label = `Treatment Effects Analysis: ${treatmentPlan.name}`;
         navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
+        navStateObject.icon = 'close';
       } else if (
-        // if we are currently viewing a Treatment Plan
+        // if we are currently viewing a Treatment Plan in progress
         !!treatmentPlan &&
         !!treatmentPlan.name &&
         treatmentPlan.status !== 'SUCCESS'
       ) {
-        navStateObject.label = `Treatment Plan:  ${treatmentPlan.name}`;
+        navStateObject.label = `Treatment Effects: ${treatmentPlan.name}`;
         navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
+        navStateObject.icon = 'close';
       }
       return navStateObject;
     })
