@@ -1,11 +1,12 @@
 from typing import Any, Dict
 
 from django.contrib import admin
+from datasets.admin import CatalogOnlyAdminMixin
 from organizations.forms import OrganizationAdminForm
 from organizations.models import Organization
 
 
-class OrganizationAdmin(admin.ModelAdmin):
+class OrganizationAdmin(CatalogOnlyAdminMixin, admin.ModelAdmin):
     search_fields = ["name"]
     list_display = ("id", "name", "type")
     list_display_links = ("id", "name")

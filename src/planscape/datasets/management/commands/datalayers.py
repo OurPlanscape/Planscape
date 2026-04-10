@@ -303,6 +303,7 @@ class Command(PlanscapeCommand):
             )
 
     def apply_style(self, **kwargs):
+        self.require_catalog_env()
         response = self._apply_style_request(**kwargs)
         data = response.json()
         self.stdout.write(
@@ -349,6 +350,7 @@ class Command(PlanscapeCommand):
         pprint(data)
 
     def create(self, **kwargs) -> None:
+        self.require_catalog_env()
         if kwargs.get("url") and not kwargs.get("layer_type"):
             raise ValueError("--layer-type is required when using --url")
         try:
@@ -597,6 +599,7 @@ class Command(PlanscapeCommand):
         process_count: int,
         **kwargs,
     ) -> None:
+        self.require_catalog_env()
         files = list_files(
             bucket=bucket,
             prefix=prefix,
