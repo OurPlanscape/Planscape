@@ -52,7 +52,7 @@ export class TreatmentPlansListComponent {
   sortSelection$ = new BehaviorSubject<string>('-created_at');
   loading$ = new BehaviorSubject<boolean>(false);
   @Input() scenarioId!: number;
-  @Input() planningArea: Plan | null = null;
+  @Input() planningArea!: Plan;
   manualRefresh$ = new BehaviorSubject<void>(undefined);
 
   treatments$ = combineLatest([this.sortSelection$, this.manualRefresh$]).pipe(
@@ -62,10 +62,7 @@ export class TreatmentPlansListComponent {
       timer(0, POLLING_INTERVAL).pipe(
         // ...but don't overlap
         exhaustMap(() =>
-          this.treatmentsService.listTreatmentPlans(
-            Number(this.scenarioId),
-            sort
-          )
+          this.treatmentsService.listTreatmentPlans(this.scenarioId, sort)
         )
       )
     ),
