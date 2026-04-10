@@ -721,7 +721,7 @@ class OpenPanelEventsTest(TestCase):
             adapter.save_user(request=None, user=user, form=MagicMock())
 
         mock_track.assert_called_once_with(
-            "user_registered",
+            "users.registered",
             properties={"email": user.email},
             user_id=user.pk,
         )
