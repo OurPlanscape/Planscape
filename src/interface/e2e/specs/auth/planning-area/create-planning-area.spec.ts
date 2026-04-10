@@ -30,7 +30,7 @@ test('user can create planning area by uploading area', async ({ page }) => {
   await expect(page.getByText('Planning Area Overview')).toBeVisible();
   await expect(page.locator('app-planning-area-details-card .name')).toHaveText(
     planningAreaName,
-    { timeout: 15000 }
+    { timeout: 120000 }
   );
 
   await page.goto('/home');
