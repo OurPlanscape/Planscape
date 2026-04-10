@@ -303,10 +303,11 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
         if not result:
             return None
         features = result.get("features")
+        scenario = instance.scenario
 
         request = self.context.get("request")
         number_of_features = request.query_params.get("number_of_features") if request else None
-        scenario = instance.scenario
+
         if number_of_features is not None:
             try:
                 number_of_features = int(number_of_features)
@@ -317,7 +318,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
                     features = features[:settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS]
         elif scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
             features = features[:settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS]
-        
+
         for feature in features:
             feature["properties"].pop("text_geometry", None)
         result["features"] = features

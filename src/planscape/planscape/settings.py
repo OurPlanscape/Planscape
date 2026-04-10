@@ -431,6 +431,12 @@ CELERY_TASK_ROUTES = {
     "planning.tasks.*": {
         "queue": "forsys",
     },
+    "planning.tasks.trigger_scenario_post_processing": {
+        "queue": "geopackage",
+    },
+    "planning.tasks.async_scenario_post_processing": {
+        "queue": "geopackage",
+    },
     "planning.tasks.trigger_geopackage_generation": {
         "queue": "geopackage",
     },

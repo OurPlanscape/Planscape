@@ -1,0 +1,112 @@
+@import 'colors';
+@import 'mixins';
+@import 'media';
+@import 'variables';
+
+$plan-left-min: 300px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: 0;
+  overflow: hidden; // preventing host scroll
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  flex: 0 0 auto;
+  z-index: 1;
+}
+
+.header:empty {
+  display: none;
+}
+
+.layout.normal {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 8px;
+  padding: 0;
+
+  overflow: hidden;
+
+  .layout-column {
+    flex: 1 1 0;
+    min-width: $plan-left-min;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .layout-column:first-child {
+    max-width: $plan-left-lg-max;
+    padding: 16px 8px 16px 16px;
+  }
+
+  .layout-column:last-child {
+    padding: 16px 16px 16px 8px;
+  }
+
+  @include on-small() {
+    flex-direction: column;
+
+    .layout-column:first-child {
+      max-width: 100%;
+    }
+  }
+}
+
+.layout.disable-right-scroll {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 8px;
+  padding: 0;
+
+  .layout-column {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .layout-column:first-child {
+    min-width: $plan-left-min;
+    max-width: $plan-left-lg-max;
+    overflow: auto;
+    padding: 16px 8px 16px 16px;
+  }
+
+  .layout-column:last-child {
+    display: flex;
+    overflow: hidden;
+    padding: 16px 16px 16px 8px;
+    min-width: $plan-right-md-max;
+  }
+
+  @include on-small() {
+    flex-direction: column;
+    overflow: auto;
+    display: block;
+
+    .layout-column:first-child {
+      max-width: 100%;
+      padding: 16px 16px 8px 16px;
+    }
+
+    .layout-column:last-child {
+      padding: 8px 16px 16px 16px;
+      min-width: 0;
+    }
+  }
+}

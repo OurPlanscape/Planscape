@@ -4,7 +4,7 @@ import {
   parseResultsToTotals,
 } from '../plan-helpers';
 import { PROJECT_AREA_COLORS } from '@shared';
-import { CurrencyPipe, DecimalPipe, NgFor } from '@angular/common';
+import { CurrencyPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 
 export interface ProjectAreaReport {
   rank: number;
@@ -12,29 +12,29 @@ export interface ProjectAreaReport {
   percentTotal: number;
   estimatedCost: number;
   score: number;
+  rxLeverage: number;
 }
 
-export interface ProjectTotalReport {
-  acres: number;
-  percentTotal: number;
-  estimatedCost: number;
-}
+export type ProjectTotalReport = Omit<ProjectAreaReport, 'rank' | 'score'>;
 
 @Component({
   standalone: true,
-  imports: [NgFor, DecimalPipe, CurrencyPipe],
+  imports: [NgFor, DecimalPipe, CurrencyPipe, NgIf],
   selector: 'app-project-areas',
   templateUrl: './project-areas.component.html',
   styleUrls: ['./project-areas.component.scss'],
 })
 export class ProjectAreasComponent implements OnChanges {
   @Input() areas!: ProjectAreaReport[];
+  @Input() showRxLeverage = false;
+
   colors = PROJECT_AREA_COLORS;
 
   total: ProjectTotalReport = {
     acres: 0,
     percentTotal: 0,
     estimatedCost: 0,
+    rxLeverage: 0,
   };
 
   ngOnChanges() {

@@ -54,6 +54,7 @@ export function parseResultsToProjectAreas(
       percentTotal: props.pct_area,
       estimatedCost: props.total_cost,
       score: props.weightedPriority,
+      rxLeverage: props.rx_leverage,
     };
   });
 }
@@ -66,12 +67,14 @@ export function parseResultsToTotals(
       acc.acres += value.acres;
       acc.estimatedCost += value.estimatedCost;
       acc.percentTotal += value.percentTotal;
+      acc.rxLeverage += value.rxLeverage;
       return acc;
     },
     {
       acres: 0,
       percentTotal: 0,
       estimatedCost: 0,
+      rxLeverage: 0,
     }
   );
 }
