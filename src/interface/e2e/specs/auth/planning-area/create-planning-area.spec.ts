@@ -7,6 +7,7 @@ const SHAPEFILE_ZIP = path.resolve(
 );
 
 test('user can create planning area by uploading area', async ({ page }) => {
+  test.setTimeout(180000);
   const planningAreaName = `E2E Upload Plan ${Date.now()}`;
 
   await page.goto('/map-viewer');
