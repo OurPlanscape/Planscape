@@ -9,8 +9,7 @@ test('user can create planning area by drawing on the map', async ({ page }) => 
   await expect(map).toBeVisible();
   await expect(canvas).toBeVisible();
 
-  // Zoom in first so the drawing area is closer to the scale from the
-  // recording session.
+  // Zoom in
   await canvas.hover({ position: { x: 320, y: 320 } });
   await page.mouse.wheel(0, -700);
   await page.waitForTimeout(250);
@@ -23,8 +22,6 @@ test('user can create planning area by drawing on the map', async ({ page }) => 
   await page.mouse.wheel(0, -700);
   await page.waitForTimeout(400);
 
-  // Follow the original recorder sequence closely to get to the same spot
-  // before entering draw mode.
   await map.click({ position: { x: 404, y: 337 } });
   await page.waitForTimeout(250);
   await map.click({ position: { x: 200, y: 361 } });
@@ -61,6 +58,7 @@ test('user can create planning area by drawing on the map', async ({ page }) => 
 
   await page.goto('/home');
 
+  // Clean up
   const row = page.getByRole('row', { name: new RegExp(planningAreaName) });
   await expect(row).toBeVisible();
   await row.getByLabel('more options').click();
