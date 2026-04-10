@@ -228,18 +228,18 @@ describe('ClimateForesightComponent', () => {
     fixture.detectChanges();
 
     expect(mockBreadcrumbService.updateBreadCrumb).toHaveBeenCalledWith({
-      label: 'Climate Foresight',
+      label: 'Planning Area Overview',
       backUrl: '/plan/123',
     });
   });
 
-  it('should not update breadcrumb if already set to Climate Foresight', async () => {
+  it('should not update breadcrumb if already set to Planning Area Overview', async () => {
     const mockBreadcrumbAlreadySet = jasmine.createSpyObj(
       'BreadcrumbService',
       ['updateBreadCrumb'],
       {
         breadcrumb$: of({
-          label: 'Climate Foresight',
+          label: 'Planning Area Overview',
           backUrl: '/plan/123',
         }),
       }

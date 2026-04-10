@@ -66,7 +66,7 @@ export class PlanComponent implements OnInit {
 
           // Setting up breadcrumbs
           this.breadcrumbService.updateBreadCrumb({
-            label: 'Planning Area: ' + plan.name,
+            label: 'Home',
             backUrl: '/home',
           });
         },
