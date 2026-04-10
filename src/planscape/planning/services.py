@@ -1,3 +1,4 @@
+import copy
 import csv
 import json
 import logging
@@ -1246,6 +1247,54 @@ def export_scenario_project_areas_outputs_to_geopackage(
         raise e
 
 
+def export_scenario_sub_units_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
+    geojson = get_flatten_geojson(scenario)
+
+    # rename proj_id to subunit_id on schema
+    schema_geojson = copy.deepcopy(geojson)
+    proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
+    proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
+    schema = get_schema(schema_geojson)
+
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+
+    configuration = scenario.configuration
+    sub_units_layer_id = configuration.get("sub_units_layer")
+    datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
+    DynamicModel = model_from_fiona(datalayer=datalayer)
+    planning_area = scenario.planning_area
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=planning_area.geometry).filter(geometry__intersects=planning_area.geometry)
+
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer="subunits_outputs",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in geojson.get("features", []):
+                    # rename proj_id to subunit_id on features
+                    proj_id = feature["properties"].pop("proj_id")
+                    feature["properties"]["subunit_id"] = proj_id
+                    sub_unit = queryset.get(id=proj_id)
+                    geometry = sub_unit.geometry.intersection(planning_area.geometry)
+                    geom_geojson = json.loads(geometry.geojson)
+                    geometry = to_multi(geom_geojson)
+                    feature = {**feature, "geometry": geometry}
+                    out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+        )
+        raise e
+    
+
 def export_planning_area_to_geopackage(
     planning_area: PlanningArea, geopackage_path: Path
 ) -> None:
@@ -1299,33 +1348,31 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
                 scenario.geopackage_url,
             )
             return scenario.geopackage_url
-
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
             temp_folder.mkdir(parents=True)
         temp_file = temp_folder / f"{scenario.uuid}.gpkg"
         if temp_file.exists():
             temp_file.unlink()
-
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save(update_fields=["geopackage_status", "updated_at"])
-
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
-
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
-            export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+            if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file)
+            else:
+                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+
             export_scenario_stand_outputs_to_geopackage(
                 scenario, temp_file, stand_inputs
             )
-
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
         if zip_file.exists():
             zip_file.unlink()
         with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(temp_file, arcname=temp_file.name)
-
         upload_file_via_cli(
             object_name=geopackage_path.replace(
                 f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
@@ -1333,14 +1380,12 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             input_file=str(zip_file),
             bucket_name=settings.GCS_MEDIA_BUCKET,
         )
-
         temp_file.unlink(missing_ok=True)
         scenario.geopackage_url = geopackage_path
         scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-
         return str(geopackage_path)
     except Exception:
         logger.exception("Failed to export to geopackage")
