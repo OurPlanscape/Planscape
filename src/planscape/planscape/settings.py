@@ -591,3 +591,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = config(
     default=2621440 * 10,
     cast=int,
 )
+
+RETURNING_USER_THRESHOLD_DAYS = config(
+    "RETURNING_USER_THRESHOLD_DAYS", default=30, cast=int
+)
