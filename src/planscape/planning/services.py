@@ -1348,16 +1348,20 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
                 scenario.geopackage_url,
             )
             return scenario.geopackage_url
+
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
             temp_folder.mkdir(parents=True)
         temp_file = temp_folder / f"{scenario.uuid}.gpkg"
         if temp_file.exists():
             temp_file.unlink()
+
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save(update_fields=["geopackage_status", "updated_at"])
+
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
+
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
             if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
                 export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file)
@@ -1367,6 +1371,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             export_scenario_stand_outputs_to_geopackage(
                 scenario, temp_file, stand_inputs
             )
+
         geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{settings.GEOPACKAGES_FOLDER}/{scenario.uuid}.gpkg.zip"
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
         if zip_file.exists():
