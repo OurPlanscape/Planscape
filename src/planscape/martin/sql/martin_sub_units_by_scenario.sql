@@ -1,3 +1,30 @@
+CREATE OR REPLACE FUNCTION private_sub_units_by_polygon(
+    in_geometry geometry,
+    dyn_table TEXT
+)
+RETURNS TABLE (id BIGINT, geom geometry)
+LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE
+AS $$
+DECLARE
+    schema_name TEXT;
+    table_name  TEXT;
+BEGIN
+    schema_name := split_part(dyn_table, '.', 1);
+    table_name  := split_part(dyn_table, '.', 2);
+
+    RETURN QUERY EXECUTE format($f$
+        SELECT
+            subunit.id,
+            subunit.geometry AS geom
+        FROM %I.%I AS subunit
+        WHERE $1 && subunit.geometry
+          AND ST_Intersects($1, subunit.geometry)
+    $f$, schema_name, table_name)
+    USING in_geometry;
+END;
+$$;
+
+
 CREATE OR REPLACE FUNCTION martin_sub_units_by_scenario( 
     z integer,
     x integer,
@@ -12,6 +39,7 @@ DECLARE
     p_planning_approach varchar;
     p_max_number_of_features integer;
     p_planning_area_id integer;
+    p_planning_area_geom geometry;
     p_layer_id integer;
     p_dyn_table text;
     tile bytea;
@@ -56,77 +84,65 @@ BEGIN
         FROM public.datasets_datalayer
     WHERE id = p_layer_id;
 
-    EXECUTE format($f$
-        WITH planning_area AS (
-            SELECT p.geometry AS geom
-            FROM planning_planningarea p
-            WHERE p.id = %L
-        ),
-        project_area AS (
-            SELECT
-                pa.id AS "pa_id",
-                pa.scenario_id AS "scenario_id",
-                pa.name,
-                (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int AS "rank",
-                (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int AS "proj_id",
-                t.id AS "t_id",
-                ST_Transform(
-                    ST_Intersection(t.geometry, p.geom), 3857
-                 ) AS geom
-            FROM planning_projectarea pa
-            INNER JOIN %I.%I AS t ON t.id = (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int
-            INNER JOIN planning_area p ON p.geom && t.geometry
-            WHERE 
-                pa.deleted_at is NULL AND
-                pa.scenario_id = %L AND
-                (pa.data->>'treatment_rank')::int <= %L
-        ),
-        mvtgeom AS (
-            SELECT
-                DISTINCT pa_id AS "id",
-                scenario_id,
-                name,
-                rank,
-                ST_AsMVTGeom(
-                    pa.geom,
-                    ST_TileEnvelope($1, $2, $3),
-                    4096, 64, true
-                ) AS geom
-            FROM project_area pa
-            WHERE pa.geom && ST_TileEnvelope($1, $2, $3, margin => (64.0 / 4096))
-        ),
-        mvtpoint AS (
-            SELECT
-                DISTINCT pa_id AS "id",
-                scenario_id,
-                name,
-                rank,
-                ST_AsMVTGeom(
-                    ST_PointOnSurface(pa.geom),
-                    ST_TileEnvelope($1, $2, $3),
-                    4096, 64, true
-                ) AS geom
-            FROM project_area pa
-            WHERE ST_PointOnSurface(pa.geom) && ST_TileEnvelope($1, $2, $3, margin => (64.0 / 4096))
-        )
-        SELECT 
-            ST_AsMVT(mvtgeom.*, 'sub_units_by_scenario') || 
-            ST_AsMVT(mvtpoint.*, 'sub_units_by_scenario_label')
-        FROM mvtgeom, mvtpoint;
-    $f$,
-        p_planning_area_id,
-        split_part(p_dyn_table, '.', 1),
-        split_part(p_dyn_table, '.', 2),
-        p_scenario_id,
-        p_max_number_of_features
+    SELECT p.geometry AS geom
+        INTO p_planning_area_geom
+    FROM planning_planningarea p
+    WHERE p.id = p_planning_area_id;
+
+    WITH subunits AS (
+        SELECT * 
+        FROM private_sub_units_by_polygon(p_planning_area_geom, p_dyn_table)
+    ),
+    project_area AS (
+        SELECT
+            pa.id AS "pa_id",
+            pa.scenario_id AS "scenario_id",
+            pa.name,
+            (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int AS "rank",
+            (COALESCE(pa.data, '{}'::jsonb) ->> 'proj_id')::int AS "proj_id",
+            ST_Transform(
+                ST_Intersection(su.geom, p_planning_area_geom), 3857
+            ) AS geom
+        FROM planning_projectarea pa
+        INNER JOIN subunits su ON su.id = (pa.data->>'proj_id')::int
+        WHERE 
+            pa.deleted_at is NULL AND
+            pa.scenario_id = p_scenario_id AND
+            (pa.data->>'treatment_rank')::int <= p_max_number_of_features
+    ),
+    mvtgeom AS (
+        SELECT
+            DISTINCT pa_id AS "id",
+            scenario_id,
+            name,
+            rank,
+            ST_AsMVTGeom(
+                pa.geom,
+                ST_TileEnvelope(z, x, y),
+                4096, 64, true
+            ) AS geom
+        FROM project_area pa
+        WHERE pa.geom && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096))
+    ),
+    mvtpoint AS (
+        SELECT
+            DISTINCT pa_id AS "id",
+            scenario_id,
+            name,
+            rank,
+            ST_AsMVTGeom(
+                ST_PointOnSurface(pa.geom),
+                ST_TileEnvelope(z, x, y),
+                4096, 64, true
+            ) AS geom
+        FROM project_area pa
+        WHERE ST_PointOnSurface(pa.geom) && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096))
     )
-    INTO tile
-    USING z, x, y;
+    SELECT INTO tile (
+        (SELECT ST_AsMVT(mvtgeom.*, 'sub_units_by_scenario') FROM mvtgeom WHERE geom IS NOT NULL) || 
+        (SELECT ST_AsMVT(mvtpoint.*, 'sub_units_by_scenario_label') FROM mvtpoint WHERE geom IS NOT NULL)
+    );
 
     RETURN tile;
-END;
 
-$$ LANGUAGE plpgsql
-IMMUTABLE
-STRICT
-PARALLEL SAFE;
+END $$ LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE;
