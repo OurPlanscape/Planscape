@@ -29,11 +29,6 @@ test('user can create planning area by uploading area', async ({ page }) => {
   await expect(page).toHaveURL(/\/plan\/\d+$/);
   await expect(page.getByText('Planning Area Overview')).toBeVisible();
   await expect(page.getByText(planningAreaName, { exact: true })).toBeVisible();
-  // below lines are not able to pass on GitHub Actions, but works locally. 
-  // It seems like the page is not fully loaded when the assertion is made.
-  // const planningAreaNameField = page.locator('app-planning-area-details-card .name');
-  // await expect(planningAreaNameField).toBeVisible();
-  // await expect(planningAreaNameField).toHaveText(planningAreaName);
 
   await page.goto('/home');
 
