@@ -15,7 +15,6 @@ export const MOCK_PLAN: Plan = {
   created_at: '2024-03-05T18:08:40.503963Z',
   latest_updated: '2024-03-05T18:08:40.503963Z',
   permissions: [],
-  scenario_count: 0,
   role: 'Creator',
   capabilities: [],
   map_status: 'DONE',

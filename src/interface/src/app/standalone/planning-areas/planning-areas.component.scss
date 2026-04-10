@@ -42,13 +42,11 @@ table.planning-areas {
   margin: 16px 0;
   overflow: hidden;
 
-  .mat-column-name,
-  .mat-column-creator {
-    width: 25%;
-  }
 
-  .mat-column-region_name {
-    width: 15%;
+  .mat-column-creator,
+  .mat-column-area_acres,
+  .mat-column-latest_updated {
+    width: 18%;
   }
 
   .mat-column-latest_updated {
@@ -77,10 +75,8 @@ table.planning-areas {
 
 @include on-small() {
   table.planning-areas {
-    .mat-column-region_name,
     .mat-column-latest_updated,
     .mat-column-creator,
-    .mat-column-scenario_count,
     .mat-column-area_acres {
       display: none;
     }
