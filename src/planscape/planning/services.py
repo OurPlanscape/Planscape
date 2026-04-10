@@ -1378,6 +1378,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             zip_file.unlink()
         with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(temp_file, arcname=temp_file.name)
+
         upload_file_via_cli(
             object_name=geopackage_path.replace(
                 f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
@@ -1385,12 +1386,14 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
             input_file=str(zip_file),
             bucket_name=settings.GCS_MEDIA_BUCKET,
         )
+
         temp_file.unlink(missing_ok=True)
         scenario.geopackage_url = geopackage_path
         scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
+
         return str(geopackage_path)
     except Exception:
         logger.exception("Failed to export to geopackage")
