@@ -4,17 +4,24 @@ import { TreatmentOverviewComponent } from '@treatments/treatment-overview/treat
 import { NgModule } from '@angular/core';
 import { numberResolver } from '@resolvers/number.resolver';
 import { TreatmentProjectAreaComponent } from '@treatments/treatment-project-area/treatment-project-area.component';
-import { TreatmentConfigComponent } from '@treatments/treatment-config/treatment-config.component';
+// import { TreatmentConfigComponent } from '@treatments/treatment-config/treatment-config.component';
 import { DirectImpactsComponent } from '@treatments/direct-impacts/direct-impacts.component';
+import { TreatmentEffectsHomeComponent } from './treatment-effects-home/treatment-effects-home.component';
 
 const routes: Routes = [
   {
     path: '',
     title: 'Treatment Plan Overview',
-    component: TreatmentConfigComponent,
+    // component: TreatmentConfigComponent,
     children: [
       {
-        path: '',
+        path: 'txfx',
+        title: 'Treatment Effects',
+        component: TreatmentEffectsHomeComponent,
+      },
+      {
+        // path: '',
+        path: 'treatment/:treatmentId',
         title: 'Treatment Plan Overview',
         component: TreatmentOverviewComponent,
         data: {
@@ -37,6 +44,7 @@ const routes: Routes = [
       },
     ],
   },
+
   {
     path: 'impacts',
     title: 'Direct Treatment Impacts',
@@ -48,4 +56,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class TreatmentsRoutingModule {}
+export class TreatmentsRoutingModule { }
