@@ -1,5 +1,5 @@
 <sg-dashboard-layout>
-    <div *ngIf="withHeader" header>
+    <div header>
         <h3 style="
               margin: 0;
               background: #dddddd;
@@ -17,8 +17,11 @@
     </div>
 
     <div right-column>
-        <app-treatment-plans-list scenarioId="scenarioId" planningArea="plan">
+        <div *ngIf="scenarioId$ | async as scenarioId">
+            <app-treatment-plans-list [scenarioId]="scenarioId"
+            [planningArea]="currentPlan">
 
-        </app-treatment-plans-list>
+            </app-treatment-plans-list>
+        </div>
     </div>
 </sg-dashboard-layout>
