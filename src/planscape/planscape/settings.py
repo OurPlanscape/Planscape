@@ -253,8 +253,8 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
     "users.backends.PlanscapeAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Who should receive internal alert emails
