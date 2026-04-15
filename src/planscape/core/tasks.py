@@ -4,7 +4,17 @@ from typing import Any, Dict
 
 import requests
 from django.conf import settings
+from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
+
+from core.backup_state import (
+    BACKUP_STATE_FAILED,
+    BACKUP_STATE_RUNNING,
+    BACKUP_STATE_SUCCESS,
+    acquire_backup_lock,
+    release_backup_lock,
+    set_backup_status,
+)
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
@@ -28,3 +38,20 @@ def track(payload: Dict[str, Any]) -> None:
         return
 
     log.info("Event tracked")
+
+
+@app.task()
+def generate_backup_data_task() -> None:
+    if not acquire_backup_lock():
+        raise RuntimeError("A backup is already running.")
+
+    set_backup_status(BACKUP_STATE_RUNNING)
+    try:
+        call_command("generate_backup_data")
+    except Exception as exc:
+        set_backup_status(BACKUP_STATE_FAILED, error=str(exc))
+        raise
+    else:
+        set_backup_status(BACKUP_STATE_SUCCESS)
+    finally:
+        release_backup_lock()
