@@ -30,9 +30,7 @@ class Command(BaseCommand):
             )
 
         now = datetime.now()
-        output_filename = (
-            f"{now.strftime('%Y-%m-%d_%H:%M:%S')}_{settings.ENV}_backup.json"
-        )
+        output_filename = f"{now.strftime('%Y%m%d_%H%M%S')}_{settings.ENV}_backup.json"
         output_path = os.path.join(backups_dir, output_filename)
 
         try:
