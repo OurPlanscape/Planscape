@@ -117,6 +117,17 @@
 {% endblock %}
 
 {% block messages %}
+  {% if ENV == "catalog" %}
+    <div class="catalog-environment-banner-wrap">
+      <div class="catalog-environment-banner">
+        <div class="catalog-environment-banner__title">Catalog Environment</div>
+        <p class="catalog-environment-banner__text">
+          Source of truth for datasets and data layers.
+        </p>
+      </div>
+    </div>
+  {% endif %}
+  {{ block.super }}
   {% if request.resolver_match.url_name == "index" %}
     <div class="admin-backup-trigger-wrap">
       <div class="admin-backup-trigger">
@@ -136,15 +147,4 @@
       </div>
     </div>
   {% endif %}
-  {% if ENV == "catalog" %}
-    <div class="catalog-environment-banner-wrap">
-      <div class="catalog-environment-banner">
-        <div class="catalog-environment-banner__title">Catalog Environment</div>
-        <p class="catalog-environment-banner__text">
-          Source of truth for datasets and data layers.
-        </p>
-      </div>
-    </div>
-  {% endif %}
-  {{ block.super }}
 {% endblock %}
