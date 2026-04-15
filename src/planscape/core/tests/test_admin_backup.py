@@ -198,6 +198,12 @@ class TestLoadLatestCatalogBackupTask(TestCase):
     def setUp(self) -> None:
         cache.clear()
 
+    def test_backup_and_restore_use_different_locks(self):
+        self.assertTrue(acquire_backup_lock())
+        self.assertTrue(acquire_restore_lock())
+        self.assertTrue(is_backup_locked())
+        self.assertTrue(is_restore_locked())
+
     def test_task_runs_command_and_releases_lock(self):
         set_restore_status(BACKUP_STATE_QUEUED)
 
