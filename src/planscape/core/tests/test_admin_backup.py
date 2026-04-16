@@ -52,6 +52,15 @@ class TestAdminBackupTrigger(TestCase):
         self.assertContains(response, "Restore from latest catalog")
         self.assertNotContains(response, "Restore in progress")
 
+    @override_settings(ENV="catalog")
+    def test_index_hides_restore_box_in_catalog_environment(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(self.index_url)
+
+        self.assertContains(response, "Run backup")
+        self.assertNotContains(response, "Restore from latest catalog")
+
     def test_index_shows_disabled_button_when_backup_running(self):
         self.client.force_login(self.superuser)
         acquire_backup_lock()
