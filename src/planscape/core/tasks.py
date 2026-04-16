@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Any, Dict
+from unittest.mock import patch
 
 import requests
 from django.conf import settings
@@ -12,11 +13,8 @@ from core.backup_state import (
     BACKUP_STATE_RUNNING,
     BACKUP_STATE_SUCCESS,
     acquire_backup_lock,
-    acquire_restore_lock,
     release_backup_lock,
-    release_restore_lock,
     set_backup_status,
-    set_restore_status,
 )
 from planscape.celery import app
 
@@ -61,17 +59,23 @@ def generate_backup_data_task() -> None:
 
 
 @app.task()
-def load_latest_catalog_backup_task() -> None:
-    if not acquire_restore_lock():
-        raise RuntimeError("A restore is already running.")
+def load_backup_data_to_dev_task() -> None:
+    if settings.ENV != "dev":
+        log.info("Skipping catalog backup load for dev because ENV=%s.", settings.ENV)
+        return
 
-    set_restore_status(BACKUP_STATE_RUNNING)
-    try:
-        call_command("load_backup_data", force=True)
-    except Exception as exc:
-        set_restore_status(BACKUP_STATE_FAILED, error=str(exc))
-        raise
-    else:
-        set_restore_status(BACKUP_STATE_SUCCESS)
-    finally:
-        release_restore_lock()
+    with patch("builtins.input", return_value="y"):
+        call_command("load_backup_data", source_env="catalog")
+
+
+@app.task()
+def load_backup_data_to_staging_task() -> None:
+    if settings.ENV != "staging":
+        log.info(
+            "Skipping catalog backup load for staging because ENV=%s.",
+            settings.ENV,
+        )
+        return
+
+    with patch("builtins.input", return_value="y"):
+        call_command("load_backup_data", source_env="catalog")

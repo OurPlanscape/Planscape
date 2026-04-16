@@ -1,6 +1,9 @@
 import os
+from datetime import timedelta
 
 from celery import Celery
+from celery.schedules import crontab
+from django.conf import settings
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "planscape.settings")
 
@@ -21,5 +24,31 @@ beat_schedule = {
         "task": "planning.tasks.trigger_scenario_ready_emails",
         "schedule": 10.0,
     },
+    "generate-catalog-backup": {
+        "task": "core.tasks.generate_backup_data_task",
+        "schedule": crontab(
+            minute=settings.CATALOG_BACKUP_CRON_MINUTE,
+            hour=settings.CATALOG_BACKUP_CRON_HOUR,
+        ),
+    },
+    "load-catalog-backup-into-dev": {
+        "task": "core.tasks.load_backup_data_to_dev_task",
+        "schedule": crontab(
+            minute=settings.CATALOG_DEV_LOAD_CRON_MINUTE,
+            hour=settings.CATALOG_DEV_LOAD_CRON_HOUR,
+            day_of_week=(
+                settings.CATALOG_DEV_LOAD_WEEKLY_DAY
+                if settings.CATALOG_DEV_LOAD_WEEKLY
+                else "*"
+            ),
+        ),
+    },
 }
+
+if settings.CATALOG_STAGING_LOAD_ENABLED:
+    beat_schedule["load-catalog-backup-into-staging"] = {
+        "task": "core.tasks.load_backup_data_to_staging_task",
+        "schedule": timedelta(days=settings.CATALOG_STAGING_LOAD_INTERVAL_DAYS),
+    }
+
 app.conf.beat_schedule = beat_schedule
