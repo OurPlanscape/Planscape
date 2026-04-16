@@ -13,10 +13,10 @@ export class TreatmentsService {
 
   constructor(private http: HttpClient) {}
 
-  createTreatmentPlan(scenarioId: number, name: string) {
+  createTreatmentPlan(scenarioId: number, name: string, standSize?: string) {
     return this.http.post<TreatmentPlan>(
       this.baseUrl,
-      { scenario: scenarioId, name: name },
+      { scenario: scenarioId, name: name, ...(standSize && { standSize }) },
       {
         withCredentials: true,
       }

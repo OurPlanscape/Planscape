@@ -48,14 +48,14 @@ export class NewTreatmentFooterComponent {
       .open(CreateTreatmentDialogComponent)
       .afterClosed()
       .pipe(take(1))
-      .subscribe((name) => {
-        if (name) {
-          this.createTreatmentPlan(name);
+      .subscribe((args) => {
+        if (args && args.treatmentName) {
+          this.createTreatmentPlan(args.treatmentName);
         }
       });
   }
 
-  createTreatmentPlan(name: string) {
+  createTreatmentPlan(name: string, standSize?: string) {
     this.creatingTreatment = true;
 
     this.treatmentsService

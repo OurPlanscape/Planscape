@@ -1,12 +1,16 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, NgIf } from '@angular/common';
+import { Component, Inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import {
   InputDirective,
@@ -25,6 +29,7 @@ import {
     InputDirective,
     InputFieldComponent,
     ModalComponent,
+    NgIf,
   ],
   templateUrl: './create-treatment-dialog.component.html',
   styleUrl: './create-treatment-dialog.component.scss',
@@ -34,17 +39,34 @@ export class CreateTreatmentDialogComponent {
   treatmentForm = new FormGroup({
     treatmentName: new FormControl('', [Validators.required]),
   });
+  standSize = new FormGroup({
+    standSize: new FormControl('', [Validators.required]),
+  });
 
   constructor(
-    private dialogRef: MatDialogRef<CreateTreatmentDialogComponent>
-  ) {}
+    private dialogRef: MatDialogRef<CreateTreatmentDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { requestStandSize: boolean }
+  ) {
+    this.data = data || { requestStandSize: false };
+  }
 
   async submit() {
     if (this.treatmentForm.valid) {
       this.submitting = true;
       const treatmentName =
         this.treatmentForm.get('treatmentName')?.value || '';
-      this.dialogRef.close(treatmentName);
+
+      const standSize = this.treatmentForm.get('')?.value || '';
+      if (this.data.requestStandSize) {
+        this.dialogRef.close({
+          treatmentName,
+          standSize
+        }
+        );
+
+      } else {
+        this.dialogRef.close({ treatmentName })
+      }
       this.submitting = false;
     }
   }
