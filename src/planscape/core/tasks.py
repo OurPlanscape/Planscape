@@ -1,7 +1,6 @@
 import json
 import logging
 from typing import Any, Dict
-from unittest.mock import patch
 
 import requests
 from django.conf import settings
@@ -60,5 +59,4 @@ def generate_backup_data_task() -> None:
 
 @app.task()
 def load_backup_data_task() -> None:
-    with patch("builtins.input", return_value="y"):
-        call_command("load_backup_data", source_env="catalog")
+    call_command("load_backup_data", source_env="catalog", force=True)
