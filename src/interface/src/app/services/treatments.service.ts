@@ -22,7 +22,7 @@ export class TreatmentsService {
       {
         scenario: scenarioId,
         name: options.name,
-        ...(options.standSize && { standSize: options.standSize }),
+        ...(options.standSize && { stand_size: options.standSize }),
       },
       {
         withCredentials: true,

@@ -54,7 +54,7 @@ export class CreateTreatmentDialogComponent {
       const treatmentName =
         this.treatmentForm.get('treatmentName')?.value || '';
 
-      const standSize = this.treatmentForm.get('')?.value || '';
+      const standSize = this.treatmentForm.get('standSize')?.value || '';
       if (this.data.requestStandSize) {
         this.dialogRef.close({
           treatmentName,
