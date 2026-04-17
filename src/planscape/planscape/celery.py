@@ -31,8 +31,11 @@ beat_schedule = {
             hour=settings.CATALOG_BACKUP_CRON_HOUR,
         ),
     },
-    "load-catalog-backup-into-dev": {
-        "task": "core.tasks.load_backup_data_to_dev_task",
+}
+
+if settings.ENV == "dev":
+    beat_schedule["load-catalog-backup"] = {
+        "task": "core.tasks.load_backup_data_task",
         "schedule": crontab(
             minute=settings.CATALOG_DEV_LOAD_CRON_MINUTE,
             hour=settings.CATALOG_DEV_LOAD_CRON_HOUR,
@@ -42,12 +45,10 @@ beat_schedule = {
                 else "*"
             ),
         ),
-    },
-}
-
-if settings.CATALOG_STAGING_LOAD_ENABLED:
-    beat_schedule["load-catalog-backup-into-staging"] = {
-        "task": "core.tasks.load_backup_data_to_staging_task",
+    }
+elif settings.ENV == "staging" and settings.CATALOG_STAGING_LOAD_ENABLED:
+    beat_schedule["load-catalog-backup"] = {
+        "task": "core.tasks.load_backup_data_task",
         "schedule": timedelta(days=settings.CATALOG_STAGING_LOAD_INTERVAL_DAYS),
     }
 

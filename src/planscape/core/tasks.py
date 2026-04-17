@@ -59,23 +59,6 @@ def generate_backup_data_task() -> None:
 
 
 @app.task()
-def load_backup_data_to_dev_task() -> None:
-    if settings.ENV != "dev":
-        log.info("Skipping catalog backup load for dev because ENV=%s.", settings.ENV)
-        return
-
-    with patch("builtins.input", return_value="y"):
-        call_command("load_backup_data", source_env="catalog")
-
-
-@app.task()
-def load_backup_data_to_staging_task() -> None:
-    if settings.ENV != "staging":
-        log.info(
-            "Skipping catalog backup load for staging because ENV=%s.",
-            settings.ENV,
-        )
-        return
-
+def load_backup_data_task() -> None:
     with patch("builtins.input", return_value="y"):
         call_command("load_backup_data", source_env="catalog")
