@@ -38,9 +38,7 @@ export class CreateTreatmentDialogComponent {
   submitting: boolean = false;
   treatmentForm = new FormGroup({
     treatmentName: new FormControl('', [Validators.required]),
-  });
-  standSize = new FormGroup({
-    standSize: new FormControl('', [Validators.required]),
+    standSize: new FormControl(''),
   });
 
   constructor(
@@ -60,12 +58,10 @@ export class CreateTreatmentDialogComponent {
       if (this.data.requestStandSize) {
         this.dialogRef.close({
           treatmentName,
-          standSize
-        }
-        );
-
+          standSize,
+        });
       } else {
-        this.dialogRef.close({ treatmentName })
+        this.dialogRef.close({ treatmentName });
       }
       this.submitting = false;
     }

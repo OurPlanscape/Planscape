@@ -45,21 +45,25 @@ export class NewTreatmentFooterComponent {
       'New Treatment Plan'
     );
     this.dialog
-      .open(CreateTreatmentDialogComponent)
+      .open(CreateTreatmentDialogComponent, {
+        data: { requestStandSize: false },
+      })
       .afterClosed()
       .pipe(take(1))
       .subscribe((args) => {
         if (args && args.treatmentName) {
-          this.createTreatmentPlan(args.treatmentName);
+          this.createTreatmentPlan({
+            name: args.treatmentName,
+            standSize: args.standSize,
+          });
         }
       });
   }
 
-  createTreatmentPlan(name: string, standSize?: string) {
+  createTreatmentPlan(options: { name: string; standSize?: string }) {
     this.creatingTreatment = true;
-
     this.treatmentsService
-      .createTreatmentPlan(Number(this.scenarioId), name)
+      .createTreatmentPlan(Number(this.scenarioId), options)
       .subscribe({
         next: (result) => {
           this.goToTreatment(result.id);

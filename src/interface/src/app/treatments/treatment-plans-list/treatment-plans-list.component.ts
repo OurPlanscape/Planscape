@@ -209,14 +209,14 @@ export class TreatmentPlansListComponent {
         if (args) {
           this.createTreatmentPlan(args);
         }
-        });
+      });
   }
 
-  createTreatmentPlan(options: {name: string, standSize?: string}) {
+  createTreatmentPlan(options: { name: string; standSize?: string }) {
     this.creatingTreatment = true;
 
     this.treatmentsService
-      .createTreatmentPlan(Number(this.scenarioId), options.name, options.standSize)
+      .createTreatmentPlan(Number(this.scenarioId), options)
       .subscribe({
         next: (result) => {
           this.goToTreatment(result, result.status);
