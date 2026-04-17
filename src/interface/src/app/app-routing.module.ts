@@ -154,7 +154,10 @@ const routes: Routes = [
           planInit: planLoaderResolver,
           scenarioInit: scenarioLoaderResolver,
         },
-        loadChildren: () => import('@treatments/treatments.module').then(m => m.TreatmentsModule),
+        loadChildren: () =>
+          import('@treatments/treatments.module').then(
+            (m) => m.TreatmentsModule
+          ),
       },
       {
         // follow the route structure of plan, but without nesting modules and components
@@ -204,4 +207,4 @@ export class PlanscapeTitleStrategy extends TitleStrategy {
     },
   ],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

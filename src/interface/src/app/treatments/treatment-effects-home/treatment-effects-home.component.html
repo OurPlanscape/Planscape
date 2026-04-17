@@ -1,27 +1,28 @@
 <sg-dashboard-layout>
-    <div header>
-        <h3 style="
-              margin: 0;
-              background: #dddddd;
-              padding: 8px;
-              border-radius: 8px;
-            ">
-            Title bar
-        </h3>
-    </div>
+  <div header>
+    <h3
+      style="margin: 0; background: #dddddd; padding: 8px; border-radius: 8px">
+      Title bar
+    </h3>
+  </div>
 
-    <div left-column>
-        <sg-tool-info-card title="Treatment Effects" mainImagePath="/assets/svg/treatment-effects.svg"
-            creditImageAlt="Planscape" , creditImagePath="assets/svg/icons/planscape-color-logo-w-text.svg"
-            description="The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency."></sg-tool-info-card>
-    </div>
+  <div left-column>
+    <sg-tool-info-card
+      title="Treatment Effects"
+      mainImagePath="/assets/svg/treatment-effects.svg"
+      creditImageAlt="Planscape"
+      ,
+      creditImagePath="assets/svg/icons/planscape-color-logo-w-text.svg"
+      description="The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency."></sg-tool-info-card>
+  </div>
 
-    <div right-column>
-        <div *ngIf="scenarioId$ | async as scenarioId">
-            <app-treatment-plans-list [scenarioId]="scenarioId"
-            [planningArea]="currentPlan">
-
-            </app-treatment-plans-list>
-        </div>
-    </div>
+  <div
+    right-column
+    class="right-side"
+    *ngIf="scenarioId$ | async as scenarioId">
+    <app-treatment-plans-list
+      [scenarioId]="scenarioId"
+      [planningArea]="currentPlan">
+    </app-treatment-plans-list>
+  </div>
 </sg-dashboard-layout>

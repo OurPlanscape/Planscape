@@ -10,16 +10,15 @@ import { TreatmentEffectsHomeComponent } from './treatment-effects-home/treatmen
 
 const routes: Routes = [
   {
-        path: '',
-        title: 'Treatment Effects Home',
-        component: TreatmentEffectsHomeComponent,
-      },
+    path: '',
+    title: 'Treatment Effects Home',
+    component: TreatmentEffectsHomeComponent,
+  },
   {
     path: '',
     title: 'Treatment Plan Overview',
     // component: TreatmentConfigComponent,
     children: [
-      
       {
         // path: '',
         path: 'treatment/:treatmentId',
@@ -57,4 +56,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class TreatmentsRoutingModule { }
+export class TreatmentsRoutingModule {}

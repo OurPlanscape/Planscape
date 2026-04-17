@@ -10,32 +10,27 @@ import { Plan } from '@app/types';
 @Component({
   selector: 'app-treatment-effects-home',
   standalone: true,
-  imports: [AsyncPipe, DashboardLayoutComponent, NgIf, ToolInfoCardComponent, TreatmentPlansListComponent],
+  imports: [
+    AsyncPipe,
+    DashboardLayoutComponent,
+    NgIf,
+    ToolInfoCardComponent,
+    TreatmentPlansListComponent,
+  ],
   templateUrl: './treatment-effects-home.component.html',
-  styleUrl: './treatment-effects-home.component.scss'
+  styleUrl: './treatment-effects-home.component.scss',
 })
 export class TreatmentEffectsHomeComponent {
-
   scenarioId$ = this.scenarioState.currentScenarioId$;
 
-  currentPlan!:Plan;
+  currentPlan!: Plan;
 
-
-constructor(
-  private scenarioState: ScenarioState,
-  private planState: PlanState,
-
-)
-{
-
-      this.planState.currentPlan$
-        .subscribe((plan: Plan) => {
-          this.currentPlan = plan;
-        });
-  
-
-
-
-}
-
+  constructor(
+    private scenarioState: ScenarioState,
+    private planState: PlanState
+  ) {
+    this.planState.currentPlan$.subscribe((plan: Plan) => {
+      this.currentPlan = plan;
+    });
+  }
 }

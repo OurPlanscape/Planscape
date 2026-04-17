@@ -143,26 +143,26 @@ app-section-loader {
 
 
 
-.create-plans-block {
-    display: flex;
-    max-width: 700px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px 16px;
-}
+    .create-plans-block {
+        display: flex;
+        max-width: 700px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 24px 16px;
+    }
 
 
-.awaiting-block {
-    display: flex;
-    max-width: 700px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px 16px;
-}
+    .awaiting-block {
+        display: flex;
+        max-width: 700px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 24px 16px;
+    }
 
     .no-plans-icon {
         height: 36px;
@@ -180,4 +180,13 @@ app-section-loader {
         color: $color-md-gray;
         text-align: center;
     }
+}
+
+// TODO: remove this when the 'list card' is in place
+
+.placeholder-card {
+    min-height: 80px;
+    border: 1px black solid;
+    padding: 8px;
+    width: 100%;
 }
