@@ -67,7 +67,7 @@ def load_latest_catalog_backup_task() -> None:
 
     set_restore_status(BACKUP_STATE_RUNNING)
     try:
-        call_command("load_backup_data", source_env="catalog", force=True)
+        call_command("load_backup_data", force=True)
     except Exception as exc:
         set_restore_status(BACKUP_STATE_FAILED, error=str(exc))
         raise
