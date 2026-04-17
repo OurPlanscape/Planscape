@@ -6,6 +6,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { PlanState } from '@app/plan/plan.state';
 import { Plan } from '@app/types';
+import { TREATMENT_EFFECTS_URL } from '@app/shared';
 
 @Component({
   selector: 'app-treatment-effects-home',
@@ -33,4 +34,12 @@ export class TreatmentEffectsHomeComponent {
       this.currentPlan = plan;
     });
   }
+
+  openTooltipLink() {
+    window.open(
+      TREATMENT_EFFECTS_URL,
+      '_blank'
+    );
+  }
+
 }
