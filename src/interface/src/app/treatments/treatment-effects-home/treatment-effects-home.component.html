@@ -1,9 +1,6 @@
 <sg-dashboard-layout>
   <div header>
-    <h3
-      style="margin: 0; background: #dddddd; padding: 8px; border-radius: 8px">
-      Title bar
-    </h3>
+    <app-nav-bar></app-nav-bar>
   </div>
 
   <div left-column>
@@ -13,8 +10,7 @@
       creditImageAlt="Planscape"
       creditImagePath="assets/svg/icons/planscape-color-logo-w-text.svg"
       description="The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency."
-      (clickTooltip)="openTooltipLink()"
-      ></sg-tool-info-card>
+      (clickTooltip)="openTooltipLink()"></sg-tool-info-card>
   </div>
 
   <div

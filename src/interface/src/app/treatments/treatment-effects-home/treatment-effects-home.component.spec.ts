@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TreatmentEffectsHomeComponent } from './treatment-effects-home.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TreatmentEffectsHomeComponent', () => {
   let component: TreatmentEffectsHomeComponent;
@@ -8,7 +9,7 @@ describe('TreatmentEffectsHomeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentEffectsHomeComponent],
+      imports: [HttpClientTestingModule, TreatmentEffectsHomeComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentEffectsHomeComponent);

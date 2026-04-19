@@ -85,6 +85,7 @@
           class="placeholder-card"
           *ngFor="let tx of treatments; trackBy: trackByFn">
           here is a treatment
+          <div>{{ tx.id }}</div>
           <span>{{ tx.name }} </span>
           <span>{{ tx.status }} </span>
           <span>{{ tx.created_at }} </span>

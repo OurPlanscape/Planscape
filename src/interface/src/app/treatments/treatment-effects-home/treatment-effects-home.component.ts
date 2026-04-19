@@ -6,7 +6,8 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { PlanState } from '@app/plan/plan.state';
 import { Plan } from '@app/types';
-import { TREATMENT_EFFECTS_URL } from '@app/shared';
+import { TREATMENT_EFFECTS_URL, SharedModule } from '@app/shared';
+import { BreadcrumbService } from '@app/services/breadcrumb.service';
 
 @Component({
   selector: 'app-treatment-effects-home',
@@ -17,6 +18,7 @@ import { TREATMENT_EFFECTS_URL } from '@app/shared';
     NgIf,
     ToolInfoCardComponent,
     TreatmentPlansListComponent,
+    SharedModule,
   ],
   templateUrl: './treatment-effects-home.component.html',
   styleUrl: './treatment-effects-home.component.scss',
@@ -28,18 +30,20 @@ export class TreatmentEffectsHomeComponent {
 
   constructor(
     private scenarioState: ScenarioState,
-    private planState: PlanState
+    private planState: PlanState,
+    private breadcrumbService: BreadcrumbService
   ) {
     this.planState.currentPlan$.subscribe((plan: Plan) => {
       this.currentPlan = plan;
+
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Scenario Dashboard ',
+        backUrl: '..',
+      });
     });
   }
 
   openTooltipLink() {
-    window.open(
-      TREATMENT_EFFECTS_URL,
-      '_blank'
-    );
+    window.open(TREATMENT_EFFECTS_URL, '_blank');
   }
-
 }
