@@ -40,6 +40,20 @@ from planning.models import (
 User = get_user_model()
 
 ADMIN_EMAIL = "admin@planscape.org"
+STANDARD_PILLAR_NAMES = [
+    "Air Quality",
+    "Biodiversity Conservation",
+    "Carbon Sequestration",
+    "Economic Diversity",
+    "Fire-Adapted Communities",
+    "Fire Dynamics",
+    "Forest and Shrubland Resilience",
+    "Wetland Integrity",
+    "Social and Cultural Well-Being",
+    "Water Security",
+]
+STANDARD_PILLAR_PLACEHOLDERS = ", ".join(["%s"] * len(STANDARD_PILLAR_NAMES))
+NON_STANDARD_PILLAR_WHERE = "run_id IS NOT NULL"
 
 
 class Command(BaseCommand):
@@ -153,16 +167,17 @@ class Command(BaseCommand):
             (TreatmentPlan, None, None),
             (ScenarioResult, None, None),
             (Scenario, None, None),
-            # climate_foresight — all depend on ClimateForesightRun (CASCADE)
-            # ClimateForesightPillarRollup also has CASCADE FK on Pillar → must precede Pillar
+            # climate_foresight PII/content tied to runs
+            # Rollups must be deleted before runs; global pillars are preserved.
             (ClimateForesightPillarRollup, None, None),
             # ClimateForesightRunInputDataLayer has CASCADE FK on Run, SET_NULL on Pillar
             (ClimateForesightRunInputDataLayer, None, None),
             # These two are OneToOne CASCADE on Run
             (ClimateForesightLandscapeRollup, None, None),
             (ClimateForesightPromote, None, None),
-            # Pillar has CASCADE FK on Run (null=True for global pillars)
-            (ClimateForesightPillar, None, None),
+            # Delete custom/global non-standard pillars, but preserve the 10
+            # system-seeded global pillars from climate_foresight.0007.
+            (ClimateForesightPillar, NON_STANDARD_PILLAR_WHERE, None),
             (ClimateForesightRun, None, None),
             # PlanningArea last among content — cascades Scenario and ClimateForesightRun
             (PlanningArea, None, None),
