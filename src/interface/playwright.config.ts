@@ -28,7 +28,11 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     ...devices['Desktop Chrome'],
-    headless: !!process.env['CI'],
+    // macOS headless Chrome lacks software WebGL rendering (needed for MapLibre/TerraDraw).
+    // Linux (CI) gets it for free via Mesa/EGL, so these flags are a no-op there.
+    launchOptions: {
+      args: process.platform === 'darwin' ? ['--use-gl=angle', '--use-angle=swiftshader'] : [],
+    },
   },
 
   projects: [
