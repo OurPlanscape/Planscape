@@ -292,7 +292,7 @@ EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
 PLANSCAPE_BASE_URL = config("PLANSCAPE_BASE_URL", default="localhost")
 
 SESSION_REMEMBER = True
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 days
+SESSION_COOKIE_AGE = 60 * 60 * 24  # 24 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # PostGIS constants. All raster data should be ingested with a common
