@@ -13,7 +13,6 @@ export interface Plan {
   notes?: string;
   permissions: string[];
   role: string;
-  scenario_count: number;
   user: number;
   capabilities: Capabilities[];
   map_status?:
