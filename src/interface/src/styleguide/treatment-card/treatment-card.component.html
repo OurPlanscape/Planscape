@@ -1,75 +1,3 @@
-<a [routerLink]="['/treatment/']" class="card-link">
-  <div class="card">
-    <div class="title-row">
-      <div class="record-name">{{ name }}</div>
-
-      <div class="controls-section">
-        <button
-          [hidden]="!contextualMenuEnabled && hasFailed"
-          [disabled]="isRunning() || !contextualMenuEnabled"
-          [matMenuTriggerFor]="menu"
-          aria-label="More options"
-          class="more-menu-button"
-          (click)="handleMoreMenuClick($event)"
-          mat-icon-button
-          matTooltip="More actions">
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu class="scenario-more-menu" #menu="matMenu">
-          <button
-            class="action-button"
-            mat-menu-item
-            *ngIf="contextualMenuEnabled && !isProjectArea"
-            (click)="copyRecord.emit()">
-            <mat-icon class="material-symbols-outlined">file_copy</mat-icon>
-            <span>Copy & Edit</span>
-          </button>
-          <button
-            mat-menu-item
-            class="action-button"
-            *ngIf="userCanRenameRecord"
-            (click)="editRecord.emit()">
-            <mat-icon class="material-symbols-outlined">edit</mat-icon>
-            <span>Rename</span>
-          </button>
-          <button
-            class="action-button delete"
-            mat-menu-item
-            *ngIf="userCanDeleteRecord"
-            (click)="deleteRecord.emit()">
-            <mat-icon class="material-symbols-outlined">delete</mat-icon>
-            <span>Delete</span>
-          </button>
-        </mat-menu>
-      </div>
-    </div>
-    <div class="detail-row">
-      <div class="detail-column">
-        <div class="detail-header">Creator</div>
-        <div class="detail-info">
-          {{ creator ?? 'N/A' }}
-        </div>
-      </div>
-      <div class="detail-column">
-        <div class="detail-header">Date Created</div>
-        <div class="detail-info">
-          {{ created_at ? (created_at | date: 'MMM d, y') : '-' }}
-        </div>
-      </div>
-      <div class="detail-column" [hidden]="isProjectArea">
-        <div class="detail-header" [hidden]="isProjectArea">Status</div>
-        <div class="detail-info">
-          <sg-status-chip
-            class="status-chip"
-            *ngIf="resultStatus"
-            [status]="getChipStatus()"
-            [label]="getChipLabel()"></sg-status-chip>
-        </div>
-      </div>
-    </div>
-  </div>
-</a>
-<!-- 
 <div class="top">
   <h4>{{ name }}</h4>
   <sg-status-chip
@@ -113,4 +41,4 @@
     <div class="label">Created</div>
     <div class="value">{{ createdAt | date: "MMMM d, y 'at' h:mm a" }}</div>
   </div>
-</div> -->
+</div>
