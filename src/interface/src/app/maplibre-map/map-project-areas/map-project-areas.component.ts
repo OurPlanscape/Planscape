@@ -21,6 +21,8 @@ import { getColorForProjectPosition } from '@plan/plan-helpers';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
+import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
+import { PLANNING_APPROACH } from '@types';
 
 type MapLayerData = {
   readonly name: string;
@@ -53,12 +55,17 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() projectAreasCount: number | null = null;
 
   @Input() labelField: 'name' | 'rank' = 'name';
+  @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
   @Output() selectProjectArea = new EventEmitter<string>();
 
-  private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
+  private get martinSource() {
+    return isPlanningApproachSubUnits(this.planningApproach)
+      ? MARTIN_SOURCES.subUnitsByScenario
+      : MARTIN_SOURCES.projectAreasByScenario;
+  }
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
@@ -69,34 +76,36 @@ export class MapProjectAreasComponent implements OnInit {
     'fill-opacity': this.opacity,
   };
 
-  readonly layers: Record<
+  get layers(): Record<
     | 'projectAreasOutline'
     | 'projectAreasHighlight'
     | 'projectAreasFill'
     | 'projectAreaLabels',
     MapLayerData
-  > = {
-    projectAreasOutline: {
-      name: 'map-project-areas-line',
-      sourceLayer: this.martinSource.sources.projectAreasByScenario,
-      color: BASE_COLORS.dark,
-    },
-    projectAreasHighlight: {
-      name: 'map-project-areas-highlight',
-      sourceLayer: this.martinSource.sources.projectAreasByScenario,
-      color: BASE_COLORS.yellow,
-    },
-    projectAreasFill: {
-      name: 'map-project-areas-fill',
-      sourceLayer: this.martinSource.sources.projectAreasByScenario,
-      color: BASE_COLORS.almost_white,
-    },
-    projectAreaLabels: {
-      name: 'map-project-areas-labels',
-      sourceLayer: this.martinSource.sources.projectAreasByScenarioLabel,
-      paint: LABEL_PAINT,
-    },
-  };
+  > {
+    return {
+      projectAreasOutline: {
+        name: 'map-project-areas-line',
+        sourceLayer: this.martinSource.sources.geometry,
+        color: BASE_COLORS.dark,
+      },
+      projectAreasHighlight: {
+        name: 'map-project-areas-highlight',
+        sourceLayer: this.martinSource.sources.geometry,
+        color: BASE_COLORS.yellow,
+      },
+      projectAreasFill: {
+        name: 'map-project-areas-fill',
+        sourceLayer: this.martinSource.sources.geometry,
+        color: BASE_COLORS.almost_white,
+      },
+      projectAreaLabels: {
+        name: 'map-project-areas-labels',
+        sourceLayer: this.martinSource.sources.label,
+        paint: LABEL_PAINT,
+      },
+    };
+  }
 
   scenarioId$ = this.scenarioState.currentScenarioId$.pipe(
     filter((scenarioId) => !!scenarioId),
@@ -151,6 +160,7 @@ export class MapProjectAreasComponent implements OnInit {
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
       e.point
     );
+
     if (this.hoveredProjectAreaFromFeatures?.properties?.['id']) {
       const id = this.hoveredProjectAreaFromFeatures.properties['id'];
       this.hoveredProjectAreaId$.next(id);

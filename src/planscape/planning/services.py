@@ -1,3 +1,4 @@
+import copy
 import csv
 import json
 import logging
@@ -1246,6 +1247,54 @@ def export_scenario_project_areas_outputs_to_geopackage(
         raise e
 
 
+def export_scenario_sub_units_outputs_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
+    geojson = get_flatten_geojson(scenario)
+
+    # rename proj_id to subunit_id on schema
+    schema_geojson = copy.deepcopy(geojson)
+    proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
+    proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
+    schema = get_schema(schema_geojson)
+
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+
+    configuration = scenario.configuration
+    sub_units_layer_id = configuration.get("sub_units_layer")
+    datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
+    DynamicModel = model_from_fiona(datalayer=datalayer)
+    planning_area = scenario.planning_area
+    queryset = DynamicModel.objects.filter(geometry__bboverlaps=planning_area.geometry).filter(geometry__intersects=planning_area.geometry)
+
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer="subunits_outputs",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in geojson.get("features", []):
+                    # rename proj_id to subunit_id on features
+                    proj_id = feature["properties"].pop("proj_id")
+                    feature["properties"]["subunit_id"] = proj_id
+                    sub_unit = queryset.get(id=proj_id)
+                    geometry = sub_unit.geometry.intersection(planning_area.geometry)
+                    geom_geojson = json.loads(geometry.geojson)
+                    geometry = to_multi(geom_geojson)
+                    feature = {**feature, "geometry": geometry}
+                    out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+        )
+        raise e
+    
+
 def export_planning_area_to_geopackage(
     planning_area: PlanningArea, geopackage_path: Path
 ) -> None:
@@ -1314,7 +1363,11 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
 
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
-            export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+            if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file)
+            else:
+                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+
             export_scenario_stand_outputs_to_geopackage(
                 scenario, temp_file, stand_inputs
             )
@@ -1693,3 +1746,26 @@ def get_sub_units_stands_lookup_table(scenario: Scenario, datalayer: DataLayer) 
         lookup_table.update({str(sub_unit_id): list(stand_ids)})
 
     return lookup_table
+
+
+def calculate_and_update_rx_leverage(scenario: Scenario):
+    results = scenario.results
+    features = results.result.get("features")
+
+    if scenario.type == ScenarioType.CUSTOM:
+        cfg = scenario.configuration or {}
+        priority_ids = cfg.get("priority_objectives")
+        names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
+    else:
+        names = scenario.treatment_goal.datalayer_usages.filter(usage_type="PRIORITY").values_list("datalayer__name")
+    names = [name[0] for name in names]
+    
+    for feature in features:
+        attainment = feature.get("properties").get("attainment")
+        att_values = [attainment.get(name) for name in names]
+        area_acres = feature.get("properties").get("area_acres")
+        rx_leverage = (sum(att_values)/area_acres)*1000 if area_acres else None
+        feature["properties"]["rx_leverage"] = rx_leverage
+
+    results.result["features"] = features
+    results.save(update_fields=["result"])

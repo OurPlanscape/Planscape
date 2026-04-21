@@ -82,7 +82,7 @@ export class TreatmentsTabComponent implements OnInit {
       });
     } else {
       this.breadcrumbService.updateBreadCrumb({
-        label: 'Treatment Plan: ' + treatment.name,
+        label: 'Treatment Plan',
         backUrl: this.router.url,
         icon: 'close',
       });

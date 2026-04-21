@@ -1,26 +1,33 @@
 <sg-overlay-loader *ngIf="loadingPlan"></sg-overlay-loader>
-<app-nav-bar area="SCENARIOS"></app-nav-bar>
-<div>
+<div class="no-plan" *ngIf="planNotFound">
   <app-resource-unavailable
     *ngIf="planNotFound"
     resource="plan"></app-resource-unavailable>
-  <ng-container *ngIf="currentPlan$ | async as plan">
-    <div class="plan-overview-container">
-      <div class="plan-overview-panel">
-        <app-planning-area-details-card
-          [plan]="currentPlan$ | async"></app-planning-area-details-card>
-        <app-map-viewer-card></app-map-viewer-card>
-        <app-planning-analytics-tools
-          [planningAreaCapabilities]="
-            plan.capabilities
-          "></app-planning-analytics-tools>
-        <app-notes-expansion-card></app-notes-expansion-card>
-      </div>
-      <div class="plan-content plan-overview">
-        <div class="placeholder-scenarios">
-          <app-plan-scenarios-list></app-plan-scenarios-list>
-        </div>
-      </div>
-    </div>
-  </ng-container>
 </div>
+
+<ng-container *ngIf="currentPlan$ | async as plan">
+  <sg-dashboard-layout layoutVariant="disable-right-scroll" class="layout">
+    <div header>
+      <app-nav-bar area="SCENARIOS"></app-nav-bar>
+    </div>
+    <div left-column class="plan-overview-column">
+      <ng-container *ngIf="currentPlan$ | async as plan">
+        <sg-details-card
+          title="Planning Area Overview"
+          [creator]="plan.creator"
+          [acres]="plan.area_acres"
+          [created_at]="plan.created_at"
+          [subtitle]="plan?.name || ''"></sg-details-card>
+      </ng-container>
+      <app-map-viewer-card></app-map-viewer-card>
+      <app-planning-analytics-tools
+        [planningAreaCapabilities]="
+          plan.capabilities
+        "></app-planning-analytics-tools>
+      <app-notes-expansion-card></app-notes-expansion-card>
+    </div>
+    <div right-column class="plan-scenarios-column">
+      <app-plan-scenarios-list></app-plan-scenarios-list>
+    </div>
+  </sg-dashboard-layout>
+</ng-container>

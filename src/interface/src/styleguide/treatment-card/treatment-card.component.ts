@@ -43,6 +43,12 @@ export class TreatmentCardComponent {
   @Output() duplicate = new EventEmitter();
   @Output() delete = new EventEmitter();
 
+
+  handleMoreMenuClick(event: Event) {
+    event.stopPropagation();
+  }
+
+
   readonly chipsStatus: Record<TreatmentStatus, StatusChipStatus> = {
     PENDING: 'inProgress',
     SUCCESS: 'success',
@@ -58,6 +64,7 @@ export class TreatmentCardComponent {
     RUNNING: 'Running',
     FAILURE: 'Failed',
   };
+
 
   @HostBinding('class.disabled')
   get isDisabled() {

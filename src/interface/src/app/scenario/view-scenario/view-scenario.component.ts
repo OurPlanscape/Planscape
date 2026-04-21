@@ -131,7 +131,7 @@ export class ViewScenarioComponent {
         switchMap((s) => {
           // On specific scenario
           this.breadcrumbService.updateBreadCrumb({
-            label: 'Scenario: ' + s.name,
+            label: 'Planning Area Overview',
             backUrl: getPlanPath(this.planId),
           });
           return this.shouldPoll(s) ? this.startPolling() : EMPTY;
