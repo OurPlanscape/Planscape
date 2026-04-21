@@ -3,6 +3,8 @@ import logging
 from django.apps import AppConfig
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.db import connection
+from django.db.models.signals import post_save
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +50,18 @@ def handle_user_logged_in(sender, request, user, **kwargs):
     )
 
 
+def create_user_profile(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    if "users_userprofile" not in connection.introspection.table_names():
+        return
+
+    from users.models import UserProfile
+
+    UserProfile.objects.get_or_create(user=instance)
+
+
 class UsersConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "users"
@@ -71,6 +85,11 @@ class UsersConfig(AppConfig):
         )
         user_logged_in.connect(
             handle_user_logged_in, dispatch_uid="users.handle_user_logged_in"
+        )
+        post_save.connect(
+            create_user_profile,
+            sender=get_user_model(),
+            dispatch_uid="users.create_user_profile",
         )
         email_confirmed.connect(
             handle_email_confirmed, dispatch_uid="users.handle_email_confirmed"

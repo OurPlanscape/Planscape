@@ -18,6 +18,7 @@ from planning.tests.factories import (
 )
 from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
+from users.models import UserProfile
 
 
 class CreateUserTest(APITestCase):
@@ -725,9 +726,12 @@ class LastLoginTest(TestCase):
         )
         mock_track.assert_any_call(
             "users.returned_after_30d",
-            properties={"email": self.email},
+            properties={"email": self.email, "count": 1},
             user_id=self.user.pk,
         )
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.last_returning_user_bucket, 1)
+        self.assertIsNotNone(self.user.profile.last_returning_user_event_at)
 
 
 class OpenPanelEventsTest(TestCase):
@@ -782,6 +786,13 @@ class ReturningUserTrackingTest(TestCase):
         user.save()
         return user
 
+    def test_profile_is_created_for_new_users(self):
+        user = UserFactory.create()
+
+        self.assertTrue(UserProfile.objects.filter(user=user).exists())
+        self.assertEqual(user.profile.last_returning_user_bucket, 0)
+        self.assertIsNone(user.profile.last_returning_user_event_at)
+
     @patch("planscape.openpanel.track_openpanel")
     def test_fires_on_first_login_after_30_days(self, mock_track):
         user = self._make_user(date_joined_days_ago=31, last_login_days_ago=None)
@@ -790,15 +801,24 @@ class ReturningUserTrackingTest(TestCase):
         track_returning_user(user)
         mock_track.assert_called_once_with(
             "users.returned_after_30d",
-            properties={"email": user.email},
+            properties={"email": user.email, "count": 1},
             user_id=user.pk,
         )
+        user.profile.refresh_from_db()
+        self.assertEqual(user.profile.last_returning_user_bucket, 1)
+        self.assertIsNotNone(user.profile.last_returning_user_event_at)
 
     @patch("planscape.openpanel.track_openpanel")
-    def test_does_not_fire_if_already_returned_after_30_days(self, mock_track):
-        # date_joined=60d ago -> 30d mark was 30d ago
-        # last_login=25d ago -> after the 30d mark -> event already fired before, don't re-fire
-        user = self._make_user(date_joined_days_ago=60, last_login_days_ago=25)
+    def test_does_not_fire_again_within_same_bucket(self, mock_track):
+        user = self._make_user(date_joined_days_ago=40, last_login_days_ago=5)
+        user.profile.last_returning_user_bucket = 1
+        user.profile.last_returning_user_event_at = timezone.now() - timedelta(days=2)
+        user.profile.save(
+            update_fields=[
+                "last_returning_user_bucket",
+                "last_returning_user_event_at",
+            ]
+        )
         from users.backends import track_returning_user
 
         track_returning_user(user)
@@ -813,14 +833,63 @@ class ReturningUserTrackingTest(TestCase):
         mock_track.assert_not_called()
 
     @patch("planscape.openpanel.track_openpanel")
-    def test_fires_when_last_login_was_before_30_day_mark(self, mock_track):
-        # User logged in at day 25 (before 30d mark), now returning at day 40
-        user = self._make_user(date_joined_days_ago=40, last_login_days_ago=25)
+    def test_fires_for_next_bucket(self, mock_track):
+        user = self._make_user(date_joined_days_ago=61, last_login_days_ago=5)
+        user.profile.last_returning_user_bucket = 1
+        user.profile.last_returning_user_event_at = timezone.now() - timedelta(days=20)
+        user.profile.save(
+            update_fields=[
+                "last_returning_user_bucket",
+                "last_returning_user_event_at",
+            ]
+        )
         from users.backends import track_returning_user
 
         track_returning_user(user)
         mock_track.assert_called_once_with(
+            "users.returned_after_60d",
+            properties={"email": user.email, "count": 2},
+            user_id=user.pk,
+        )
+        user.profile.refresh_from_db()
+        self.assertEqual(user.profile.last_returning_user_bucket, 2)
+        self.assertIsNotNone(user.profile.last_returning_user_event_at)
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_skipped_buckets_fire_only_for_current_bucket(self, mock_track):
+        user = self._make_user(date_joined_days_ago=95, last_login_days_ago=40)
+        user.profile.last_returning_user_bucket = 1
+        user.profile.last_returning_user_event_at = timezone.now() - timedelta(days=35)
+        user.profile.save(
+            update_fields=[
+                "last_returning_user_bucket",
+                "last_returning_user_event_at",
+            ]
+        )
+        from users.backends import track_returning_user
+
+        track_returning_user(user)
+
+        mock_track.assert_called_once_with(
+            "users.returned_after_90d",
+            properties={"email": user.email, "count": 3},
+            user_id=user.pk,
+        )
+        user.profile.refresh_from_db()
+        self.assertEqual(user.profile.last_returning_user_bucket, 3)
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_missing_profile_is_recreated_on_track(self, mock_track):
+        user = self._make_user(date_joined_days_ago=31, last_login_days_ago=None)
+        user.profile.delete()
+        from users.backends import track_returning_user
+
+        track_returning_user(user)
+
+        user.refresh_from_db()
+        self.assertTrue(UserProfile.objects.filter(user=user).exists())
+        mock_track.assert_called_once_with(
             "users.returned_after_30d",
-            properties={"email": user.email},
+            properties={"email": user.email, "count": 1},
             user_id=user.pk,
         )
