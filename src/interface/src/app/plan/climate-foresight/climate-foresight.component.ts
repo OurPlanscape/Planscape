@@ -17,7 +17,11 @@ import { interval, Subject } from 'rxjs';
 import { ClimateForesightService } from '@services/climate-foresight.service';
 import { DeleteRunModalComponent } from '@plan/climate-foresight/delete-run-modal/delete-run-modal.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { ButtonComponent, SectionComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  SectionComponent,
+  ToolInfoCardComponent,
+} from '@styleguide';
 import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import {
   Map as MapLibreMap,
@@ -62,6 +66,7 @@ const POLLING_INTERVAL = 5000; // 5 seconds
     ClimateForesightRunCardComponent,
     SectionComponent,
     DecimalPipe,
+    ToolInfoCardComponent,
   ],
   templateUrl: './climate-foresight.component.html',
   styleUrls: ['./climate-foresight.component.scss'],
@@ -113,9 +118,9 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
         this.breadcrumbService.breadcrumb$
           .pipe(take(1))
           .subscribe((breadcrumb) => {
-            if (breadcrumb?.label !== 'Climate Foresight') {
+            if (breadcrumb?.label !== 'Planning Area Overview') {
               this.breadcrumbService.updateBreadCrumb({
-                label: 'Climate Foresight',
+                label: 'Planning Area Overview',
                 backUrl: `/plan/${this.currentPlan?.id}`,
               });
             }

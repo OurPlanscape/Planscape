@@ -8,15 +8,30 @@ log = logging.getLogger(__name__)
 
 
 def log_login_failure(sender, credentials, request, **kwargs):
+    from planscape.openpanel import track_openpanel
+
     login_user_identifier = (
         credentials.get("email")
         or credentials.get("username")
         or "no identifier provided"
     )
+    track_openpanel(
+        "users.login_failed", properties={"email": credentials.get("email") or ""}
+    )
     log.warning(
         "Failed to login: %s via %s",
         login_user_identifier,
         request,
+    )
+
+
+def handle_email_confirmed(sender, request, email_address, **kwargs):
+    from planscape.openpanel import track_openpanel
+
+    track_openpanel(
+        "users.email_confirmed",
+        properties={"email": email_address.email},
+        user_id=email_address.user_id,
     )
 
 
@@ -48,6 +63,15 @@ class UsersConfig(AppConfig):
             registry.register(model)
 
     def ready(self):
+        from allauth.account.signals import email_confirmed
+
         self.register_actstream()
-        user_login_failed.connect(log_login_failure)
-        user_logged_in.connect(handle_user_logged_in)
+        user_login_failed.connect(
+            log_login_failure, dispatch_uid="users.log_login_failure"
+        )
+        user_logged_in.connect(
+            handle_user_logged_in, dispatch_uid="users.handle_user_logged_in"
+        )
+        email_confirmed.connect(
+            handle_email_confirmed, dispatch_uid="users.handle_email_confirmed"
+        )

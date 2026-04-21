@@ -77,3 +77,12 @@ export const WithViewerPermissions: Story = {
     userCanDuplicate: false,
   },
 };
+
+export const WrappingAndOverflow: Story = {
+  args: {
+    name: 'Here is an unnecessarily long name that probably exceeds the database column size',
+    status: 'FAILURE',
+    creator: 'Here is an unnecessarily long creator name',
+    createdAt: '2024-04-23T13:19:31.019747Z',
+  },
+};

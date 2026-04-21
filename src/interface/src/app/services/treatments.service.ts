@@ -23,12 +23,12 @@ export class TreatmentsService {
     );
   }
 
-  listTreatmentPlans(scenarioId: number) {
+  listTreatmentPlans(scenarioId: number, ordering: string = '-created_at') {
     return this.http.get<TreatmentPlan[]>(this.baseUrl, {
       withCredentials: true,
       params: {
         scenario: scenarioId,
-        ordering: '-created_at',
+        ordering: ordering,
       },
     });
   }

@@ -198,6 +198,10 @@ export class ScenarioMapComponent {
     })
   );
 
+  planningApproach$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
+  );
+
   showProjectAreas$ = this.scenarioState.currentScenarioId$.pipe(
     switchMap((scenarioId) => {
       if (!scenarioId) {

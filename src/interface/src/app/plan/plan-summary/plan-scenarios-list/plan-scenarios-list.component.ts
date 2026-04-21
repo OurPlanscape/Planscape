@@ -181,7 +181,7 @@ export class PlanScenariosListComponent implements OnInit {
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
     this.breadcrumbService.updateBreadCrumb({
-      label: 'Scenario: ' + clickedScenario.name,
+      label: 'Planning Area Overview',
       backUrl: getPlanPath(clickedScenario.planning_area),
     });
 

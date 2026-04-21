@@ -1,9 +1,10 @@
 import json
 import re
+from datetime import timedelta
+from unittest.mock import patch
 
 from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
-from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -15,9 +16,8 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from rest_framework.test import APITestCase
-
 from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase
 
 
 class CreateUserTest(APITestCase):
@@ -351,6 +351,28 @@ class LoginTest(TestCase):
         # No email is sent for user to verify email because login failed.
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_login_email_uppercase(self):
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
+
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "TESTUSER@TEST.COM", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_email_mixed_case(self):
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
+
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "TestUser@Test.Com", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 class DestroyUserTest(APITestCase):
     def setUp(self):
@@ -680,3 +702,125 @@ class LastLoginTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.user.refresh_from_db()
         self.assertGreaterEqual(self.user.last_login, first_login_time)
+
+    @patch("planscape.openpanel.track_openpanel")
+    @patch("planscape.openpanel.identify_openpanel")
+    def test_returning_user_event_is_tracked_on_login(self, mock_identify, mock_track):
+        self.user.date_joined = timezone.now() - timedelta(days=31)
+        self.user.last_login = None
+        self.user.save(update_fields=["date_joined", "last_login"])
+
+        resp = self.client.post(
+            reverse("rest_login"),
+            {"email": self.email, "password": self.password},
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        mock_identify.assert_called_once_with(self.user)
+        self.assertEqual(mock_track.call_count, 2)
+        mock_track.assert_any_call(
+            "users.logged_in",
+            properties={"email": self.email},
+            user_id=self.user.pk,
+        )
+        mock_track.assert_any_call(
+            "users.returned_after_30d",
+            properties={"email": self.email},
+            user_id=self.user.pk,
+        )
+
+
+class OpenPanelEventsTest(TestCase):
+    @patch("users.allauth_adapter.track_openpanel")
+    @patch("users.allauth_adapter.identify_openpanel")
+    def test_user_registered_event_is_tracked(self, mock_identify, mock_track):
+        from unittest.mock import MagicMock
+
+        from allauth.account.adapter import DefaultAccountAdapter
+
+        from users.allauth_adapter import CustomAllauthAdapter
+
+        user = UserFactory.create()
+        adapter = CustomAllauthAdapter()
+
+        with patch.object(DefaultAccountAdapter, "save_user", return_value=user):
+            adapter.save_user(request=None, user=user, form=MagicMock())
+
+        mock_track.assert_called_once_with(
+            "users.registered",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_user_email_confirmed_event_is_tracked(self, mock_track):
+        from allauth.account.signals import email_confirmed
+
+        user = UserFactory.create()
+        email_address = EmailAddress.objects.get_or_create(
+            user=user, email=user.email, defaults={"verified": False, "primary": True}
+        )[0]
+
+        email_confirmed.send(sender=None, request=None, email_address=email_address)
+
+        mock_track.assert_called_once_with(
+            "users.email_confirmed",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
+
+
+class ReturningUserTrackingTest(TestCase):
+    def _make_user(self, date_joined_days_ago, last_login_days_ago=None):
+        now = timezone.now()
+        user = UserFactory.create()
+        user.date_joined = now - timedelta(days=date_joined_days_ago)
+        if last_login_days_ago is not None:
+            user.last_login = now - timedelta(days=last_login_days_ago)
+        else:
+            user.last_login = None
+        user.save()
+        return user
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_fires_on_first_login_after_30_days(self, mock_track):
+        user = self._make_user(date_joined_days_ago=31, last_login_days_ago=None)
+        from users.backends import track_returning_user
+
+        track_returning_user(user)
+        mock_track.assert_called_once_with(
+            "users.returned_after_30d",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_does_not_fire_if_already_returned_after_30_days(self, mock_track):
+        # date_joined=60d ago -> 30d mark was 30d ago
+        # last_login=25d ago -> after the 30d mark -> event already fired before, don't re-fire
+        user = self._make_user(date_joined_days_ago=60, last_login_days_ago=25)
+        from users.backends import track_returning_user
+
+        track_returning_user(user)
+        mock_track.assert_not_called()
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_does_not_fire_within_30_days(self, mock_track):
+        user = self._make_user(date_joined_days_ago=20, last_login_days_ago=None)
+        from users.backends import track_returning_user
+
+        track_returning_user(user)
+        mock_track.assert_not_called()
+
+    @patch("planscape.openpanel.track_openpanel")
+    def test_fires_when_last_login_was_before_30_day_mark(self, mock_track):
+        # User logged in at day 25 (before 30d mark), now returning at day 40
+        user = self._make_user(date_joined_days_ago=40, last_login_days_ago=25)
+        from users.backends import track_returning_user
+
+        track_returning_user(user)
+        mock_track.assert_called_once_with(
+            "users.returned_after_30d",
+            properties={"email": user.email},
+            user_id=user.pk,
+        )

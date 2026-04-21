@@ -253,8 +253,8 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
     "users.backends.PlanscapeAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Who should receive internal alert emails
@@ -292,7 +292,7 @@ EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
 PLANSCAPE_BASE_URL = config("PLANSCAPE_BASE_URL", default="localhost")
 
 SESSION_REMEMBER = True
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 days
+SESSION_COOKIE_AGE = 60 * 60 * 24  # 24 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # PostGIS constants. All raster data should be ingested with a common
@@ -430,6 +430,12 @@ CELERY_TASK_AUTODISCOVER = True
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {
         "queue": "forsys",
+    },
+    "planning.tasks.trigger_scenario_post_processing": {
+        "queue": "geopackage",
+    },
+    "planning.tasks.async_scenario_post_processing": {
+        "queue": "geopackage",
     },
     "planning.tasks.trigger_geopackage_generation": {
         "queue": "geopackage",
@@ -584,4 +590,8 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = config(
     "DATA_UPLOAD_MAX_MEMORY_SIZE",
     default=2621440 * 10,
     cast=int,
+)
+
+RETURNING_USER_THRESHOLD_DAYS = config(
+    "RETURNING_USER_THRESHOLD_DAYS", default=30, cast=int
 )

@@ -3,7 +3,6 @@ from typing import Any, Dict
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-
 from planscape.exceptions import InvalidGeometry
 
 
@@ -75,4 +74,5 @@ def coerce_geometry(geometry: Any) -> GEOSGeometry:
     if geometry.geom_type != "MultiPolygon":
         raise InvalidGeometry("Could not parse geometry")
 
+    return geometry
     return geometry

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClimateForesightComponent } from './climate-foresight.component';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { AuthService, WINDOW } from '@services';
 import { MapConfigState } from '@maplibre-map/map-config.state';
@@ -55,7 +55,6 @@ describe('ClimateForesightComponent', () => {
     role: 'Test Role',
     created_at: '2024-01-01',
     creator: 'Test Creator',
-    scenario_count: 2,
     latest_updated: '2024-01-01',
     capabilities: [],
     permissions: ['read', 'write'],
@@ -228,18 +227,18 @@ describe('ClimateForesightComponent', () => {
     fixture.detectChanges();
 
     expect(mockBreadcrumbService.updateBreadCrumb).toHaveBeenCalledWith({
-      label: 'Climate Foresight',
+      label: 'Planning Area Overview',
       backUrl: '/plan/123',
     });
   });
 
-  it('should not update breadcrumb if already set to Climate Foresight', async () => {
+  it('should not update breadcrumb if already set to Planning Area Overview', async () => {
     const mockBreadcrumbAlreadySet = jasmine.createSpyObj(
       'BreadcrumbService',
       ['updateBreadCrumb'],
       {
         breadcrumb$: of({
-          label: 'Climate Foresight',
+          label: 'Planning Area Overview',
           backUrl: '/plan/123',
         }),
       }
