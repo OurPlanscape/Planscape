@@ -11,6 +11,15 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
 
+def get_catalog_backup_schedule() -> dict[str, dict]:
+    return {
+        "generate-catalog-backup": {
+            "task": "core.tasks.generate_backup_data_task",
+            "schedule": crontab.from_string(settings.CATALOG_BACKUP_CRON),
+        }
+    }
+
+
 def get_catalog_restore_schedule() -> dict[str, dict]:
     if not settings.CATALOG_RESTORE_ENABLED:
         return {}
@@ -18,13 +27,7 @@ def get_catalog_restore_schedule() -> dict[str, dict]:
     return {
         "load-catalog-backup": {
             "task": "core.tasks.load_latest_catalog_backup_task",
-            "schedule": crontab(
-                minute=settings.CATALOG_RESTORE_CRON_MINUTE,
-                hour=settings.CATALOG_RESTORE_CRON_HOUR,
-                day_of_week=settings.CATALOG_RESTORE_CRON_DAY_OF_WEEK,
-                day_of_month=settings.CATALOG_RESTORE_CRON_DAY_OF_MONTH,
-                month_of_year=settings.CATALOG_RESTORE_CRON_MONTH_OF_YEAR,
-            ),
+            "schedule": crontab.from_string(settings.CATALOG_RESTORE_CRON),
         }
     }
 
@@ -41,15 +44,9 @@ beat_schedule = {
         "task": "planning.tasks.trigger_scenario_ready_emails",
         "schedule": 10.0,
     },
-    "generate-catalog-backup": {
-        "task": "core.tasks.generate_backup_data_task",
-        "schedule": crontab(
-            minute=settings.CATALOG_BACKUP_CRON_MINUTE,
-            hour=settings.CATALOG_BACKUP_CRON_HOUR,
-        ),
-    },
 }
 
+beat_schedule.update(get_catalog_backup_schedule())
 beat_schedule.update(get_catalog_restore_schedule())
 
 app.conf.beat_schedule = beat_schedule
