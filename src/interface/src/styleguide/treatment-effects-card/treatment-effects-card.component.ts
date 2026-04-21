@@ -2,7 +2,6 @@ import {
   Component,
   EventEmitter,
   HostBinding,
-  HostListener,
   Input,
   Output,
 } from '@angular/core';
@@ -66,13 +65,6 @@ export class TreatmentEffectsCardComponent {
       this.status === 'QUEUED' ||
       this.status === 'FAILURE'
     );
-  }
-
-  @HostListener('click')
-  viewTreatment() {
-    if (!this.isDisabled) {
-      this.view.emit();
-    }
   }
 
   stopEventPropagation(event: Event) {
