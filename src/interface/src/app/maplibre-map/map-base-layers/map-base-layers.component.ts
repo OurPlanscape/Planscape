@@ -116,6 +116,7 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
         this.baseLayersStateService.removeLoadingSourceId(event.sourceId);
       });
     }
+
   };
 
   private onErrorListener = (event: any) => {
@@ -225,6 +226,28 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
       this.changeDetectorRef.markForCheck();
     });
   }
+
+  // Point-related helpers
+
+  getPointLayout(layer: any) {
+  return {
+    'icon-image': [
+      'match',  // pick specific icon
+      ['get', 'status'],
+      'open', 'icon-open',
+      'closed', 'icon-closed',
+      'coming_soon', 'icon-soon',
+      'icon-default'
+    ],
+
+    'icon-size': 0.6,
+    'icon-anchor': 'bottom', // Keeps the "point" of the pin on the coordinate
+
+    'icon-allow-overlap': true, // Automatically hide icons that touch
+    'icon-ignore-placement': false,
+    };
+}
+
 
   private removeHover() {
     if (this.hoveredFeature) {
