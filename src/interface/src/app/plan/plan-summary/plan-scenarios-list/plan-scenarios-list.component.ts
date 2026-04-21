@@ -212,7 +212,7 @@ export class PlanScenariosListComponent implements OnInit {
 
   createNewTreatmentPlan(scenarioId: string): void {
     this.treatmentsService
-      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .createTreatmentPlan(Number(scenarioId), { name: 'New Treatment Plan' })
       .subscribe({
         next: (result) => {
           this.router.navigate(
