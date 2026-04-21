@@ -18,7 +18,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 
 import {
-  ButtonComponent,
   FileUploadFieldComponent,
   InputDirective,
   InputFieldComponent,
@@ -45,7 +44,6 @@ export interface DialogData {
   styleUrl: './upload-project-areas-modal.component.scss',
   standalone: true,
   imports: [
-    ButtonComponent,
     FileUploadFieldComponent,
     InputFieldComponent,
     ModalComponent,
@@ -190,11 +188,11 @@ export class UploadProjectAreasModalComponent {
           },
           error: (err: any) => {
             this.uploadingData = false;
-            const errorsObject = err.error.errors;
+            const errorsObject = err.error?.errors;
 
-            if (!!errorsObject.global) {
+            if (errorsObject?.global) {
               this.uploadFormError = errorsObject.global.join(' ');
-            } else if (errorsObject.name) {
+            } else if (errorsObject?.name) {
               const nameControl = this.uploadProjectsForm.get('scenarioName');
 
               if (errorsObject.name?.join(' ').includes('blank.')) {

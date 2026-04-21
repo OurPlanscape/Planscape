@@ -1,4 +1,5 @@
 import json
+from unittest import mock
 
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
@@ -1183,6 +1184,50 @@ class CreateScenariosFromUpload(APITestCase):
             "errors": {"name": ["A scenario with this name already exists."]},
         }
         self.assertEqual(response.json(), expected_error)
+
+    @mock.patch("planning.views_v2.create_scenario_from_upload")
+    def test_invalid_geometry_returns_400_with_global_error(self, mock_create):
+        from planscape.exceptions import InvalidGeometry
+
+        mock_create.side_effect = InvalidGeometry("Geometry is invalid and cannot be processed.")
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "bad geometry scenario",
+            "stand_size": "LARGE",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse("api:planning:scenarios-upload-shapefiles"),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertEqual(response_data["detail"], "Validation error.")
+        self.assertIn("global", response_data["errors"])
+        self.assertIn("Geometry is invalid", response_data["errors"]["global"][0])
+
+    @mock.patch("planning.views_v2.create_scenario_from_upload")
+    def test_oversize_planning_area_returns_400_with_global_error(self, mock_create):
+        mock_create.side_effect = ValueError("Planning area is oversize; scenarios are disabled.")
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "oversize scenario",
+            "stand_size": "LARGE",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse("api:planning:scenarios-upload-shapefiles"),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertEqual(response_data["detail"], "Validation error.")
+        self.assertIn("global", response_data["errors"])
+        self.assertIn("oversize", response_data["errors"]["global"][0])
 
 
 class TreatmentGoalViewSetTest(APITestCase):

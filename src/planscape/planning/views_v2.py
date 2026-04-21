@@ -316,12 +316,18 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     @action(methods=["POST"], detail=False)
     def upload_shapefiles(self, request, pk=None, *args, **kwargs):
+        from planscape.exceptions import InvalidGeometry
+        from rest_framework.exceptions import ValidationError as DRFValidationError
+
         serializer = UploadedScenarioDataSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_scenario = create_scenario_from_upload(
-            validated_data=serializer.validated_data,
-            user=request.user,
-        )
+        try:
+            new_scenario = create_scenario_from_upload(
+                validated_data=serializer.validated_data,
+                user=request.user,
+            )
+        except (InvalidGeometry, ValueError) as e:
+            raise DRFValidationError({"global": [str(e)]})
         out_serializer = ScenarioAndProjectAreasSerializer(instance=new_scenario)
         return Response(
             out_serializer.data,

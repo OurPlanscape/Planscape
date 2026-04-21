@@ -1328,7 +1328,7 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 
         if not self._is_inside_planning_area(geometry, planning_area_id, stand_size):
             raise serializers.ValidationError(
-                "The uploaded geometry is not within the selected planning area."
+                {"global": ["The uploaded geometry is not within the selected planning area."]}
             )
         return attrs
 
@@ -1355,7 +1355,10 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         return geojson_serializer.validated_data
 
     def _is_inside_planning_area(self, geometry, planning_area_id, stand_size) -> bool:
-        uploaded_geos = union_geojson(geometry)
+        try:
+            uploaded_geos = union_geojson(geometry)
+        except ValueError as e:
+            raise serializers.ValidationError({"global": [str(e)]})
         try:
             planning_area = PlanningArea.objects.get(pk=planning_area_id)
         except PlanningArea.DoesNotExist:
