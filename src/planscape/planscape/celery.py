@@ -1,5 +1,4 @@
 import os
-from datetime import timedelta
 
 from celery import Celery
 from celery.schedules import crontab
@@ -10,6 +9,24 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "planscape.settings")
 app = Celery("planscape")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
+
+
+def get_catalog_restore_schedule() -> dict[str, dict]:
+    if not settings.CATALOG_RESTORE_ENABLED:
+        return {}
+
+    return {
+        "load-catalog-backup": {
+            "task": "core.tasks.load_latest_catalog_backup_task",
+            "schedule": crontab(
+                minute=settings.CATALOG_RESTORE_CRON_MINUTE,
+                hour=settings.CATALOG_RESTORE_CRON_HOUR,
+                day_of_week=settings.CATALOG_RESTORE_CRON_DAY_OF_WEEK,
+                day_of_month=settings.CATALOG_RESTORE_CRON_DAY_OF_MONTH,
+                month_of_year=settings.CATALOG_RESTORE_CRON_MONTH_OF_YEAR,
+            ),
+        }
+    }
 
 beat_schedule = {
     "trigger-scenario-post-processing": {
@@ -33,23 +50,6 @@ beat_schedule = {
     },
 }
 
-if settings.ENV == "dev":
-    beat_schedule["load-catalog-backup"] = {
-        "task": "core.tasks.load_latest_catalog_backup_task",
-        "schedule": crontab(
-            minute=settings.CATALOG_DEV_LOAD_CRON_MINUTE,
-            hour=settings.CATALOG_DEV_LOAD_CRON_HOUR,
-            day_of_week=(
-                settings.CATALOG_DEV_LOAD_WEEKLY_DAY
-                if settings.CATALOG_DEV_LOAD_WEEKLY
-                else "*"
-            ),
-        ),
-    }
-elif settings.ENV == "staging" and settings.CATALOG_STAGING_LOAD_ENABLED:
-    beat_schedule["load-catalog-backup"] = {
-        "task": "core.tasks.load_latest_catalog_backup_task",
-        "schedule": timedelta(days=settings.CATALOG_STAGING_LOAD_INTERVAL_DAYS),
-    }
+beat_schedule.update(get_catalog_restore_schedule())
 
 app.conf.beat_schedule = beat_schedule
