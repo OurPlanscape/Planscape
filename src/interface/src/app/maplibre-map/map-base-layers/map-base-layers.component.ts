@@ -13,13 +13,15 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   LayerComponent,
+  GeoJSONSourceComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
-} from 'maplibre-gl';
+ SymbolLayerSpecification,
+ } from 'maplibre-gl';
 import { MapBaseLayerTooltipComponent } from '@maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { MapArcgisVectorLayerComponent } from '@maplibre-map/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
@@ -29,6 +31,9 @@ import {
   BaseLayerStyleOverride,
 } from './map-base-layers-style.token';
 import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
+
+  type SymbolLayout = SymbolLayerSpecification['layout'];
+
 
 @Component({
   selector: 'app-map-base-layers',
@@ -41,6 +46,8 @@ import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
     LayerComponent,
     NgIf,
     MapArcgisVectorLayerComponent,
+
+    GeoJSONSourceComponent // TODO: for point test
   ],
   templateUrl: './map-base-layers.component.html',
   styleUrl: './map-base-layers.component.scss',
@@ -102,6 +109,7 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setupMapListeners();
+    console.log('what is this:', this.mapLibreMap);
   }
 
   private setupMapListeners() {
@@ -227,9 +235,51 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Point-related helpers
+  // Point-related helpers...maybe move to a separate component?
+public testData: any = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [-122.4194, 37.7749] }, // SF
+      properties: { status: 'open' }
+    },
+    {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [-117.1611, 32.7157] }, // SD
+      properties: { status: 'closed' }
+    }
+  ]
+};
 
-  getPointLayout(layer: any) {
+  public readonly testPointLayout: SymbolLayout = {
+  'icon-image': [
+    'match',
+    ['get', 'status'],
+    'open', 'icon-open',
+    'closed', 'icon-closed',
+    'icon-default'
+  ] as any, // 'as any' is a must for 4.5.0 expressions
+  'icon-size': 0.6,
+  'icon-anchor': 'top'
+};
+
+public testLayout: SymbolLayout = {
+  // 'icon-image': [
+  //   'match',
+  //   ['get', 'status'],
+  //   'open', 'icon-open',
+  //   'closed', 'icon-closed',
+  //   'coming_soon', 'icon-soon',
+  //   'icon-default' // Fallback
+  // ] as any,
+  'icon-image':'marker',
+  'icon-size': 0.8,
+  'icon-allow-overlap': true
+};
+
+
+  getPointLayout(layer: any) : SymbolLayout {
   return {
     'icon-image': [
       'match',  // pick specific icon
@@ -248,6 +298,13 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     };
 }
 
+  onMouseLeave() {
+
+  }
+
+  onMouseEnter() {}
+
+  handlePointClick(e: MapMouseEvent) {}
 
   private removeHover() {
     if (this.hoveredFeature) {
