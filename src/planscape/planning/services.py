@@ -1564,6 +1564,7 @@ def get_available_stands(
     includes: Optional[List[DataLayer]] = None,
     excludes: Optional[List[DataLayer]] = None,
     constraints: Optional[List[Dict[str, Any]]] = None,
+    sub_unit: Optional[DataLayer] = None,
     **kwargs,
 ):
     if not includes:
@@ -1588,16 +1589,11 @@ def get_available_stands(
         feature_enabled("PLANNING_APPROACH")
         and feature_enabled("RENDER_SUB_UNITS_FILTERED")
         and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
-        and scenario.configuration.get("sub_units_layer")
+        and sub_unit
     ):
         # Exclude stands that is not included to any sub-unit
         stands_queryset = stands.all()
-        datalayer = DataLayer.objects.get(
-            pk=scenario.configuration.get("sub_units_layer")
-        )
-        sub_units_stands = get_stands_from_sub_units(
-            stands_queryset, planning_area, scenario.get_stand_size(), datalayer
-        )
+        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, scenario.get_stand_size(), sub_unit)
         sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
         stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list(
             "id", flat=True
