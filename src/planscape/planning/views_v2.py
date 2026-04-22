@@ -470,7 +470,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         return Response(details, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer)
     def available_stands(self, request, pk=None):
         scenario = self.get_object()
         serializer = GetAvailableStandsSerializer(data=request.data)
