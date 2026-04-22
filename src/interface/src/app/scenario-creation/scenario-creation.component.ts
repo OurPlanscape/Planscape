@@ -72,6 +72,7 @@ import { PlanState } from '@plan/plan.state';
 import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-step/treatment-goal-step.component';
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/sub-units-treatment-target.component';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 @UntilDestroy()
 @Component({
@@ -119,6 +120,7 @@ import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/s
     Step1WithOverviewComponent,
     SubUnitsTreatmentTargetComponent,
     FeaturesModule,
+    NavBarComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
