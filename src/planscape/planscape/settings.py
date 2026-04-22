@@ -467,9 +467,8 @@ CELERY_TASK_ROUTES = {
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
-CATALOG_BACKUP_CRON = config("CATALOG_BACKUP_CRON", "0 2 * * *", cast=str)
-CATALOG_RESTORE_ENABLED = config("CATALOG_RESTORE_ENABLED", False, cast=bool)
-CATALOG_RESTORE_CRON = config("CATALOG_RESTORE_CRON", "0 3 * * *", cast=str)
+CATALOG_BACKUP_CRON = config("CATALOG_BACKUP_CRON", default=None, cast=str)
+CATALOG_RESTORE_CRON = config("CATALOG_RESTORE_CRON", default=None, cast=str)
 
 TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
 
