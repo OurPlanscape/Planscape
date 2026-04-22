@@ -202,15 +202,11 @@ class GetPlanningAreaTest(APITransactionTestCase):
             name="test pa1 scenario3",
             user=self.user,
         )
-        self.planning_area1.scenario_count = 3
-        self.planning_area1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory(
             planning_area=self.planning_area3,
             name="test pa3 scenario1",
             user=self.user,
         )
-        self.planning_area3.scenario_count = 1
-        self.planning_area3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory(
             planning_area=self.planning_area4,
             name="test pa4 scenario1",
@@ -226,8 +222,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
             name="test pa4 scenario3",
             user=self.user,
         )
-        self.planning_area4.scenario_count = 3
-        self.planning_area4.save(update_fields=["updated_at", "scenario_count"])
 
     def test_list_planning_areas(self):
         self.client.force_authenticate(self.user)
@@ -433,19 +427,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(planning_areas["count"], 0)
 
-    def test_list_planning_areas_scenario_count(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(
-            reverse("api:planning:planningareas-list") + "?ordering=-scenario_count",
-            {},
-            content_type="application/json",
-        )
-        content = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        results = content.get("results")
-        first_planning_area = results[0]
-        self.assertEqual(first_planning_area.get("scenario_count"), 3)
-
 
 class ListPlanningAreaSortingTest(APITestCase):
     def setUp(self):
@@ -553,15 +534,11 @@ class ListPlanningAreaSortingTest(APITestCase):
             name="test pa1 scenario3",
             user=self.user1,
         )
-        self.pa1.scenario_count = 3
-        self.pa1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory(
             planning_area=self.pa3,
             name="test pa3 scenario1",
             user=self.user1,
         )
-        self.pa3.scenario_count = 1
-        self.pa3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory(
             planning_area=self.pa4,
             name="test pa4 scenario1",
@@ -577,8 +554,6 @@ class ListPlanningAreaSortingTest(APITestCase):
             name="test pa4 scenario3",
             user=self.user1,
         )
-        self.pa4.scenario_count = 3
-        self.pa4.save(update_fields=["updated_at", "scenario_count"])
 
         # user1 can see all of user2 PA records as a collaborator
         UserObjectRoleFactory(
@@ -624,21 +599,6 @@ class ListPlanningAreaSortingTest(APITestCase):
             area_names.append(item["name"])
         expected_names = ["Area A", "Area B", "Area C", "Area D", "Area E", "Area F"]
         self.assertListEqual(area_names, expected_names)
-
-    def test_list_planning_areas_sort_by_scenario_count(self):
-        self.client.force_authenticate(self.user1)
-        query_params = {"ordering": "scenario_count"}
-        response = self.client.get(
-            reverse("api:planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        scenario_counts = []
-        for item in planning_areas["results"]:
-            scenario_counts.append(item["scenario_count"])
-        expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
-        self.assertListEqual(scenario_counts, expected_scenario_counts)
 
     def test_list_planning_areas_sort_by_area_acres(self):
         self.client.force_authenticate(self.user1)
