@@ -314,15 +314,16 @@ export class DrawService {
       return this._uploadedShape?.geometry;
     }
     if (this._uploadedShape.type === 'FeatureCollection') {
-      if (this._uploadedShape.features.length === 0) {
-        return null;
-      }
       // Use turf/union to consolidate the features
       const polygonFeatures = this._uploadedShape.features.filter(
         (f) =>
           f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon'
       );
+      // check feature count after filtering
       if (polygonFeatures.length === 0) return null;
+      if (polygonFeatures.length === 1) {
+        return this._uploadedShape.features[0].geometry;
+      }
       const polyCollection = {
         type: 'FeatureCollection',
         features: polygonFeatures,
