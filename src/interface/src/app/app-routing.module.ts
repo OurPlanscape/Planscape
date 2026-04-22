@@ -14,7 +14,6 @@ import {
   RedirectGuard,
   redirectResolver,
 } from '@services';
-import { numberResolver } from '@resolvers/number.resolver';
 import {
   planLoaderResolver,
   planResetResolver,
@@ -161,11 +160,10 @@ const routes: Routes = [
       },
       {
         // follow the route structure of plan, but without nesting modules and components
-        path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
+        path: 'plan/:planId/scenario/:scenarioId/treatment',
         canActivate: [AuthGuard],
         resolve: {
           planInit: planLoaderResolver,
-          treatmentId: numberResolver('treatmentId', ''),
           scenarioInit: scenarioLoaderResolver,
         },
         loadChildren: () =>
