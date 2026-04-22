@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { TreatmentEffectsCardComponent } from './treatment-effects-card.component';
+import { TreatmentPlanCardComponent } from './treatment-plan-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-const meta: Meta<TreatmentEffectsCardComponent> = {
-  title: 'Components/Treatment Effects Card',
-  component: TreatmentEffectsCardComponent,
+const meta: Meta<TreatmentPlanCardComponent> = {
+  title: 'Components/Treatment Plan Card',
+  component: TreatmentPlanCardComponent,
   tags: ['autodocs'],
   decorators: [
     applicationConfig({
@@ -14,12 +14,12 @@ const meta: Meta<TreatmentEffectsCardComponent> = {
   ],
   render: (args) => ({
     props: args,
-    template: `<sg-treatment-effects-card ${argsToTemplate(args)}></sg-treatment-effects-card>`,
+    template: `<sg-treatment-plan-card ${argsToTemplate(args)}></sg-treatment-plan-card>`,
   }),
 };
 
 export default meta;
-type Story = StoryObj<TreatmentEffectsCardComponent>;
+type Story = StoryObj<TreatmentPlanCardComponent>;
 
 export const Default: Story = {
   args: {

@@ -17,7 +17,7 @@ import {
 } from '@styleguide/status-chip/status-chip.component';
 
 @Component({
-  selector: 'sg-treatment-effects-card',
+  selector: 'sg-treatment-plan-card',
   standalone: true,
   imports: [
     StatusChipComponent,
@@ -26,10 +26,10 @@ import {
     MatButtonModule,
     MatIconModule,
   ],
-  templateUrl: './treatment-effects-card.component.html',
-  styleUrl: './treatment-effects-card.component.scss',
+  templateUrl: './treatment-plan-card.component.html',
+  styleUrl: './treatment-plan-card.component.scss',
 })
-export class TreatmentEffectsCardComponent {
+export class TreatmentPlanCardComponent {
   @Input() name = '';
   @Input() creator = '';
   @Input() createdAt = '';
