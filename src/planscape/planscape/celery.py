@@ -12,6 +12,9 @@ app.autodiscover_tasks()
 
 
 def get_catalog_backup_schedule() -> dict[str, dict]:
+    if not settings.CATALOG_BACKUP_CRON:
+        return {}
+
     return {
         "generate-catalog-backup": {
             "task": "core.tasks.generate_backup_data_task",
@@ -21,7 +24,7 @@ def get_catalog_backup_schedule() -> dict[str, dict]:
 
 
 def get_catalog_restore_schedule() -> dict[str, dict]:
-    if not settings.CATALOG_RESTORE_ENABLED:
+    if not settings.CATALOG_RESTORE_CRON:
         return {}
 
     return {
