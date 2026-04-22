@@ -14,10 +14,11 @@ import {
   tap,
   shareReplay,
 } from 'rxjs';
-import { GeoJSON } from 'geojson';
+import { FeatureCollection, GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
 import area from '@turf/area';
+import union from '@turf/union';
 import Decimal from 'decimal.js';
 import * as Sentry from '@sentry/angular';
 
@@ -313,9 +314,21 @@ export class DrawService {
       return this._uploadedShape?.geometry;
     }
     if (this._uploadedShape.type === 'FeatureCollection') {
-      return this._uploadedShape.features.length > 0
-        ? this._uploadedShape.features[0].geometry
-        : null;
+      if (this._uploadedShape.features.length === 0) {
+        return null;
+      }
+      // Use turf/union to consolidate the features
+      const polygonFeatures = this._uploadedShape.features.filter(
+        (f) =>
+          f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon'
+      );
+      if (polygonFeatures.length === 0) return null;
+      const polyCollection = {
+        type: 'FeatureCollection',
+        features: polygonFeatures,
+      } as FeatureCollection<Polygon | MultiPolygon>; // Cast to satisfy TS
+      const unioned = union(polyCollection);
+      return unioned ? unioned.geometry : null;
     }
     return this._uploadedShape as GeoJSON.Geometry;
   }
