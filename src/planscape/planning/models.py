@@ -124,8 +124,6 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         help_text="List of enabled capabilities for this Planning Area.",
     )
 
-    scenario_count = models.IntegerField(null=True)
-
     stands_ready_at = models.DateTimeField(null=True)
     metrics_ready_at = models.DateTimeField(null=True)
 
@@ -203,11 +201,13 @@ class ScenarioResultStatus(models.TextChoices):
     TIMED_OUT = "TIMED_OUT", "Timed Out"
     DRAFT = "DRAFT", "Draft"
 
+
 class ScenarioPostProcessingStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     RUNNING = "RUNNING", "Running"
     SUCCESS = "SUCCESS", "Success"
     FAILURE = "FAILURE", "Failure"
+
 
 class ScenarioManager(AliveObjectsManager):
     def list_by_user(self, user: Optional[User]):
