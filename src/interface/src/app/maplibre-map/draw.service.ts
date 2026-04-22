@@ -314,7 +314,6 @@ export class DrawService {
       return this._uploadedShape?.geometry;
     }
     if (this._uploadedShape.type === 'FeatureCollection') {
-      // Use turf/union to consolidate the features
       const polygonFeatures = this._uploadedShape.features.filter(
         (f) =>
           f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon'
@@ -324,10 +323,11 @@ export class DrawService {
       if (polygonFeatures.length === 1) {
         return this._uploadedShape.features[0].geometry;
       }
+      // Use turf/union to consolidate the features if we have more than one
       const polyCollection = {
         type: 'FeatureCollection',
         features: polygonFeatures,
-      } as FeatureCollection<Polygon | MultiPolygon>; // Cast to satisfy TS
+      } as FeatureCollection<Polygon | MultiPolygon>;
       const unioned = union(polyCollection);
       return unioned ? unioned.geometry : null;
     }
