@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   ControlComponent,
+  EventData,
   LayerComponent,
   MapComponent,
 } from '@maplibre/ngx-maplibre-gl';
@@ -219,6 +220,13 @@ export class ScenarioMapComponent {
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
+  }
+
+  onMapError(event: ErrorEvent & EventData) {
+    const status = (event.error as any)?.status;
+    if (status >= 500 && status < 600) {
+      this.newScenarioState.showMapError();
+    }
   }
 
   handleOpacityChange(opacity: number) {
