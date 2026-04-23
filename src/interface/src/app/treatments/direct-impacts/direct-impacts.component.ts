@@ -43,7 +43,7 @@ import { TreatmentSummaryButtonComponent } from '@treatments/treatment-summary-b
 import { ScenarioState } from '@scenario/scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 @UntilDestroy()
 @Component({

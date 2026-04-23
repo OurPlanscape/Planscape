@@ -9,7 +9,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 describe('ExploreComponent', () => {
   let component: ExploreComponent;

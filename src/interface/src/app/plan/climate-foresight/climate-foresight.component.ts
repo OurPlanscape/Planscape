@@ -43,7 +43,7 @@ import {
   canDeleteClimateAnalysis,
   canRunClimateAnalysis,
 } from '../permissions';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
