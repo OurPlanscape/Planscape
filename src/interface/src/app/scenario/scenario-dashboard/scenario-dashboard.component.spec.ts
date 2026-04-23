@@ -1,8 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ScenarioDashboardComponent } from './scenario-dashboard.component';
-import { MockDeclaration } from 'ng-mocks';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { MockDeclarations, MockProvider } from 'ng-mocks';
+import { OverlayLoaderComponent, TileButtonComponent } from '@styleguide';
+import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
+import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
+import { ScenarioState } from '../scenario.state';
+import { PlanState } from '@app/plan/plan.state';
+import { ActivatedRoute } from '@angular/router';
 
 describe('ScenarioDashboardComponent', () => {
   let component: ScenarioDashboardComponent;
@@ -11,7 +17,20 @@ describe('ScenarioDashboardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ScenarioDashboardComponent],
-      declarations: [MockDeclaration(NavBarComponent)],
+      declarations: [
+        MockDeclarations(
+          NavBarComponent,
+          OverlayLoaderComponent,
+          DashboardLayoutComponent,
+          DetailsCardComponent,
+          TileButtonComponent
+        ),
+      ],
+      providers: [
+        MockProvider(ScenarioState),
+        MockProvider(PlanState),
+        { provide: ActivatedRoute, useValue: { firstChild: {} } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioDashboardComponent);
