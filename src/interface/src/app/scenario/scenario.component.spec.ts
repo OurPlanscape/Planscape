@@ -4,8 +4,9 @@ import { ScenarioComponent } from './scenario.component';
 import { MockComponents, MockDeclarations } from 'ng-mocks';
 import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
 
-import { NavBarComponent, SharedModule } from '@shared';
+import { SharedModule } from '@shared';
 import { RouterTestingModule } from '@angular/router/testing';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 describe('ScenarioComponent', () => {
   let component: ScenarioComponent;

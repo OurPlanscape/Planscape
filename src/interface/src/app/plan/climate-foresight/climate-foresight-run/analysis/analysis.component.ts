@@ -39,6 +39,7 @@ import { ClimateLayersComponent } from '../climate-layers/climate-layers.compone
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
 import { DrawService } from '@app/maplibre-map/draw.service';
 import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 export interface ResultsLayer {
   id: string;
@@ -72,6 +73,7 @@ export interface ResultsLayer {
     MultiMapControlComponent,
     DynamicClimateLayersComponent,
     ClimateLayersComponent,
+    NavBarComponent,
   ],
   providers: [
     // 1. Create a single instance of the subclass

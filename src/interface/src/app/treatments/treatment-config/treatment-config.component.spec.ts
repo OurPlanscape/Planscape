@@ -6,11 +6,12 @@ import { TreatmentMapComponent } from '@treatments/treatment-map/treatment-map.c
 import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsService } from '@services/treatments.service';
-import { NavBarComponent, SharedModule } from '@shared';
+import { SharedModule } from '@shared';
 import { TreatmentNavbarMenuComponent } from '@treatments/treatment-navbar-menu/treatment-navbar-menu.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { of } from 'rxjs';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentConfigComponent;

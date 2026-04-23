@@ -5,6 +5,7 @@ from core.s3 import get_s3_hash, is_s3_file
 from django.conf import settings
 from django.db import connection
 from gis.vectors import ogr2ogr
+from planning.geometry import to_multipolygon
 from planscape.celery import app
 
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
@@ -34,7 +35,8 @@ def process_datalayer(
             datastore_table = ogr2ogr(datalayer.url)
             validate_datastore_table(datastore_table, datalayer)
             datalayer.table = datastore_table
-        datalayer.outline = get_datalayer_outline(datalayer)
+        outline = get_datalayer_outline(datalayer)
+        datalayer.outline = to_multipolygon(outline) if outline else None
     except Exception:
         logger.exception(
             "Something went wrong while ingesting and processing datalayer %s",
@@ -50,7 +52,7 @@ def process_datalayer(
 def datalayer_file_post_process(datalayer_id: int):
     """
     Post processing on datalayer's file after upload is complete.
-    
+
     :param datalayer: Description
     :type datalayer: DataLayer
     """
@@ -60,7 +62,7 @@ def datalayer_file_post_process(datalayer_id: int):
     except DataLayer.DoesNotExist:
         logger.warning("Datalayer %s does not exist", datalayer_id)
         return
-    
+
     if datalayer.status != DataLayerStatus.READY:
         logger.warning(
             "Datalayer %s is not in READY status, skipping post processing",
@@ -97,7 +99,8 @@ def calculate_datalayer_outline(datalayer_id: int) -> None:
         return
 
     try:
-        datalayer.outline = get_datalayer_outline(datalayer)
+        result = get_datalayer_outline(datalayer)
+        datalayer.outline = to_multipolygon(result) if result else None
         datalayer.save(update_fields=["outline", "updated_at"])
     except Exception:
         logger.exception(

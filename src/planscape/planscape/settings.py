@@ -253,8 +253,8 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
     "users.backends.PlanscapeAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Who should receive internal alert emails
@@ -292,7 +292,7 @@ EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
 PLANSCAPE_BASE_URL = config("PLANSCAPE_BASE_URL", default="localhost")
 
 SESSION_REMEMBER = True
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 days
+SESSION_COOKIE_AGE = 60 * 60 * 24  # 24 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # PostGIS constants. All raster data should be ingested with a common
@@ -467,6 +467,8 @@ CELERY_TASK_ROUTES = {
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
+CATALOG_BACKUP_CRON = config("CATALOG_BACKUP_CRON", default=None)
+CATALOG_RESTORE_CRON = config("CATALOG_RESTORE_CRON", default=None)
 
 TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
 
