@@ -2,7 +2,9 @@ import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
-import { ButtonComponent, TreatmentPlanCardComponent } from '@styleguide';
+import { ButtonComponent, 
+  // TreatmentPlanCardComponent 
+} from '@styleguide';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
 import {
@@ -40,7 +42,7 @@ import { AnalyticsService } from '@app/services/analytics.service';
     MatProgressSpinnerModule,
     NgIf,
     NgFor,
-    TreatmentPlanCardComponent,
+    // TreatmentPlanCardComponent,
   ],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
