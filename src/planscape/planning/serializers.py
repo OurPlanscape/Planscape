@@ -1424,7 +1424,11 @@ class GetAvailableStandsSerializer(serializers.Serializer):
         child=ConstraintSerializer(),
         required=False,
     )
-
+    sub_unit = serializers.PrimaryKeyRelatedField(
+        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR, status=DataLayerStatus.READY).all(),
+        required=False,
+        help_text="Vector Layer ID that contains Sub Units.",
+    )
 
 class UnavailableStandsSerializer(serializers.Serializer):
     by_inclusions = serializers.ListField(child=serializers.IntegerField())
