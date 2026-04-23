@@ -26,7 +26,7 @@ import { RouterLink } from '@angular/router';
     DatePipe,
     MatButtonModule,
     MatIconModule,
-    RouterLink
+    RouterLink,
   ],
   templateUrl: './treatment-plan-card.component.html',
   styleUrl: './treatment-plan-card.component.scss',
