@@ -193,7 +193,7 @@ export class ScenariosCardListComponent {
     this.overlayLoaderService.showLoader();
 
     this.treatmentsService
-      .createTreatmentPlan(Number(scenarioId), name)
+      .createTreatmentPlan(Number(scenarioId), { name: name })
       .subscribe({
         next: (result) => {
           this.overlayLoaderService.hideLoader();

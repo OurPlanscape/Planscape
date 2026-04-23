@@ -46,5 +46,15 @@ export function buildPathTree(items: DataLayer[]): TreeNode[] {
     currentLevel.push({ name: item.name, item });
   }
 
+  sortNodes(root);
   return root;
+}
+
+function sortNodes(nodes: TreeNode[]): void {
+  nodes.sort((a, b) => a.name.localeCompare(b.name));
+  for (const node of nodes) {
+    if (node.children) {
+      sortNodes(node.children);
+    }
+  }
 }

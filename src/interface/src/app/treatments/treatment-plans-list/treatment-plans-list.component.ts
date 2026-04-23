@@ -202,18 +202,18 @@ export class TreatmentPlansListComponent {
       .open(CreateTreatmentDialogComponent)
       .afterClosed()
       .pipe(take(1))
-      .subscribe((name) => {
-        if (name) {
-          this.createTreatmentPlan(name);
+      .subscribe((args) => {
+        if (args) {
+          this.createTreatmentPlan(args);
         }
       });
   }
 
-  createTreatmentPlan(name: string) {
+  createTreatmentPlan(options: { name: string; standSize?: string }) {
     this.creatingTreatment = true;
 
     this.treatmentsService
-      .createTreatmentPlan(Number(this.scenarioId), name)
+      .createTreatmentPlan(Number(this.scenarioId), options)
       .subscribe({
         next: (result) => {
           this.goToTreatment(result, result.status);

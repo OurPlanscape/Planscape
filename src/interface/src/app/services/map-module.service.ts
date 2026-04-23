@@ -15,7 +15,16 @@ export class MapModuleService {
     shareReplay(1)
   );
 
-  public datasets$ = this.mapData$.pipe(map((data) => data.datasets));
+  public datasets$ = this.mapData$.pipe(
+    map((data) => ({
+      main_datasets: [...data.datasets.main_datasets].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      ),
+      base_datasets: [...data.datasets.base_datasets].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      ),
+    }))
+  );
 
   constructor(
     private moduleService: ModuleService,
