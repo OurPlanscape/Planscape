@@ -8,6 +8,7 @@ import { PlanState } from '@app/plan/plan.state';
 import { Plan } from '@app/types';
 import { TREATMENT_EFFECTS_URL, SharedModule } from '@app/shared';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 @Component({
   selector: 'app-treatment-effects-home',
@@ -15,6 +16,7 @@ import { BreadcrumbService } from '@app/services/breadcrumb.service';
   imports: [
     AsyncPipe,
     DashboardLayoutComponent,
+    NavBarComponent,
     NgIf,
     ToolInfoCardComponent,
     TreatmentPlansListComponent,
