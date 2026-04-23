@@ -15,6 +15,7 @@ import {
   StatusChipComponent,
   StatusChipStatus,
 } from '@styleguide/status-chip/status-chip.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'sg-treatment-plan-card',
@@ -25,6 +26,7 @@ import {
     DatePipe,
     MatButtonModule,
     MatIconModule,
+    RouterLink
   ],
   templateUrl: './treatment-plan-card.component.html',
   styleUrl: './treatment-plan-card.component.scss',
