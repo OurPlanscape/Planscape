@@ -120,7 +120,7 @@ export class ReviewTreatmentPlanDialogComponent {
         this.dialog
           .open<PendingDialogComponent, DialogData>(PendingDialogComponent, {
             data: {
-              primaryButtonText: 'Go to Planning Area',
+              primaryButtonText: 'Go to Treatment Effects Dashboard',
               secondaryButtonText: 'Close',
               headline: 'Planscape is creating your treatment plan',
               message:
@@ -130,7 +130,7 @@ export class ReviewTreatmentPlanDialogComponent {
           .afterClosed()
           .subscribe((confirm) => {
             if (confirm) {
-              this.router.navigate(['../../../..'], { relativeTo: this.route });
+              this.router.navigate(['../..'], { relativeTo: this.route });
             }
           });
       },
