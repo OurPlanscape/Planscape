@@ -22,6 +22,11 @@ const routes: Routes = [
     ],
   },
   {
+    path: ':treatmentId/impacts',
+    component: DirectImpactsComponent,
+    resolve: { treatmentId: numberResolver('treatmentId', '') },
+  },
+  {
     path: '',
     title: 'Treatment Plan Overview',
     component: TreatmentConfigComponent,
@@ -52,12 +57,6 @@ const routes: Routes = [
         },
       },
     ],
-  },
-
-  {
-    path: 'impacts',
-    title: 'Direct Treatment Impacts',
-    component: DirectImpactsComponent,
   },
 ];
 
