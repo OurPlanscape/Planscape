@@ -1,11 +1,9 @@
+from django.contrib.auth.hashers import make_password
 from django.db import migrations
-from django.contrib.auth import get_user_model
-from organizations.models import Organization, OrganizationType
-
-User = get_user_model()
 
 
 def create_sig(apps, schema_editor):
+    User = apps.get_model("auth", "User")
     user_defaults = {
         "first_name": "Admin",
         "last_name": "Planscape",
@@ -17,12 +15,13 @@ def create_sig(apps, schema_editor):
         email="admin@planscape.org",
         defaults=user_defaults,
     )
-    user.set_unusable_password()
+    user.password = make_password(None)
     user.save()
+    Organization = apps.get_model("organizations", "Organization")
     _ = Organization.objects.update_or_create(
         created_by=user,
         name="Spatial Informatics Group",
-        type=OrganizationType.COMMERCIAL,
+        type="COMMERCIAL",
         website="https://sig-gis.com",
     )
 

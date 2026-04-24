@@ -3,6 +3,7 @@ import logging
 from django.apps import AppConfig
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.db.models.signals import post_save
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +49,24 @@ def handle_user_logged_in(sender, request, user, **kwargs):
     )
 
 
+def create_user_profile(sender, instance, created, **kwargs):
+    from django.db import OperationalError, ProgrammingError
+
+    from users.models import UserProfile
+
+    if not created:
+        return
+
+    try:
+        UserProfile.objects.get_or_create(user=instance)
+    except (OperationalError, ProgrammingError):
+        # DO NOT REMOVE THIS TRY/EXCEPT
+        # since our migration dependency chain is complicated, some migrations
+        # might touch users BEFORE the migration is complete
+        # (older migrations that create users for example)
+        pass
+
+
 class UsersConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "users"
@@ -71,6 +90,11 @@ class UsersConfig(AppConfig):
         )
         user_logged_in.connect(
             handle_user_logged_in, dispatch_uid="users.handle_user_logged_in"
+        )
+        post_save.connect(
+            create_user_profile,
+            sender=get_user_model(),
+            dispatch_uid="users.create_user_profile",
         )
         email_confirmed.connect(
             handle_email_confirmed, dispatch_uid="users.handle_email_confirmed"
