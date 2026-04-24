@@ -1,4 +1,11 @@
-import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { BASE_COLORS } from '@treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
@@ -32,7 +39,9 @@ import { FrontendConstants } from '@map/map.constants';
   imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './scenario-stands.component.html',
 })
-export class ScenarioStandsComponent implements OnInit, OnDestroy {
+export class ScenarioStandsComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   @Input() mapLibreMap!: MapLibreMap;
   readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
   readonly excludedKey = 'excluded';
@@ -143,6 +152,18 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
+  }
+
+  ngAfterViewInit(): void {
+    // If tiles are already loaded (cached from a previous mount), sourcedata won't re-fire.
+    // Check here — after mgl-vector-source has initialized — to avoid leaving loading stuck.
+    if (
+      !this.standsLoaded &&
+      this.mapLibreMap.isSourceLoaded(this.sourceName)
+    ) {
+      this.newScenarioState.setBaseStandsLoaded(true);
+      this.standsLoaded = true;
+    }
   }
 
   ngOnDestroy(): void {

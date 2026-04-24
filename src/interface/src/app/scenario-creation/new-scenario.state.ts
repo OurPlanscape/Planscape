@@ -14,6 +14,7 @@ import {
   combineLatest,
   EMPTY,
   filter,
+  finalize,
   map,
   mapTo,
   merge,
@@ -22,7 +23,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  tap,
 } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -122,12 +122,11 @@ export class NewScenarioState {
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([_, step]) => step?.refreshAvailableStands ?? false),
-    tap(() => {
-      this.setLoading(false);
-    }),
-    tap(() => this.setLoading(true)),
-    switchMap(([_, step, standSize, excludedAreas, constraints]) =>
-      this.scenarioService
+    switchMap(([_, step, standSize, excludedAreas, constraints]) => {
+      // Inside the project fn so it runs after switchMap cancels the previous inner (and its
+      // finalize fires) — a tap() before switchMap would be overridden by that finalize.
+      this.setLoading(true);
+      return this.scenarioService
         .getExcludedStands(
           this.scenarioId,
           standSize,
@@ -135,14 +134,13 @@ export class NewScenarioState {
           step?.includeConstraints ? constraints : undefined
         )
         .pipe(
-          tap(() => this.setLoading(false)),
           catchError(() => {
             this.showMapError();
-            this.setLoading(false);
             return EMPTY;
-          })
-        )
-    ),
+          }),
+          finalize(() => this.setLoading(false))
+        );
+    }),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 

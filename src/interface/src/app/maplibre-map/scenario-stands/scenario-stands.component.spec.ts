@@ -23,6 +23,7 @@ describe('ScenarioStandsComponent', () => {
   let mockMapLibreMap = {
     on: jasmine.createSpy('on'),
     off: jasmine.createSpy('off'),
+    isSourceLoaded: jasmine.createSpy('isSourceLoaded').and.returnValue(false),
   };
 
   beforeEach(async () => {
