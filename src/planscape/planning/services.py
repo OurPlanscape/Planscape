@@ -1795,10 +1795,18 @@ def get_sub_units_stands_lookup_table(
     return lookup_table
 
 
-def calculate_and_update_rx_leverage(scenario: Scenario):
+def calculate_and_update_scenario_result(scenario: Scenario):
     results = scenario.results
     features = results.result.get("features")
 
+    features = calculate_and_update_rx_leverage(scenario=scenario, features=features)
+    features = calculate_and_update_pct_treatable_area(scenario=scenario, features=features)
+
+    results.result["features"] = features
+    results.save(update_fields=["result"])
+
+
+def calculate_and_update_rx_leverage(scenario: Scenario, features: List) -> List:
     if scenario.type == ScenarioType.CUSTOM:
         cfg = scenario.configuration or {}
         priority_ids = cfg.get("priority_objectives")
@@ -1816,5 +1824,20 @@ def calculate_and_update_rx_leverage(scenario: Scenario):
         rx_leverage = (sum(att_values) / area_acres) * 1000 if area_acres else None
         feature["properties"]["rx_leverage"] = rx_leverage
 
-    results.result["features"] = features
-    results.save(update_fields=["result"])
+    return features
+
+
+def calculate_and_update_pct_treatable_area(scenario: Scenario, features: List) -> List:
+    forsys_input = scenario.forsys_input or {}
+
+    number_of_stands = len(forsys_input.get("stand_ids", []))
+    stand_area = get_min_project_area(scenario=scenario)
+
+    treatable_area = number_of_stands * stand_area
+
+    for feature in features:
+        proj_area_acres = feature.get("properties").get("area_acres")
+        pct_treatable_area = proj_area_acres / treatable_area
+        feature["properties"]["pct_treatable_area"] = pct_treatable_area
+
+    return features
