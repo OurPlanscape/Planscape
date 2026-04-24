@@ -164,20 +164,29 @@ app-section-loader {
     padding: 24px 16px;
 }
 
-    .no-plans-icon {
-        height: 36px;
-        width: 36px;
-        font-size: 36px;
-        color: $color-md-gray;
-    }
+.no-plans-icon {
+    height: 36px;
+    width: 36px;
+    font-size: 36px;
+    color: $color-md-gray;
+}
 
-    .title {
-        @include h4();
-    }
+.title {
+    @include h4();
+}
 
-    .awaiting-blurb {
-        @include small-paragraph();
-        color: $color-md-gray;
-        text-align: center;
-    }
+.awaiting-blurb {
+    @include small-paragraph();
+    color: $color-md-gray;
+    text-align: center;
+}
+}
+
+// TODO: remove this when the 'list card' is in place
+
+.placeholder-card {
+    min-height: 80px;
+    border: 1px black solid;
+    padding: 8px;
+    width: 100%;
 }
