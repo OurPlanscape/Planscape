@@ -11,9 +11,7 @@ describe('TreatmentEffectsHomeComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, TreatmentEffectsHomeComponent],
-      providers: [
-              { provide: ActivatedRoute, useValue: { snapshot: {} } },
-            ],
+      providers: [{ provide: ActivatedRoute, useValue: { snapshot: {} } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentEffectsHomeComponent);
