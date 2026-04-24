@@ -19,6 +19,7 @@ export class DetailsCardComponent {
   @Input() creator: string = '';
   @Input() acres: number | null = null;
   @Input() created_at: string = '';
+  @Input() planning_area_name: string = '';
 
   @Input() title: string = '';
   @Input() subtitle: string = '';

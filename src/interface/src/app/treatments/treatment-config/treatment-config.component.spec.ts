@@ -11,7 +11,7 @@ import { TreatmentNavbarMenuComponent } from '@treatments/treatment-navbar-menu/
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { of } from 'rxjs';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentConfigComponent;

@@ -182,11 +182,6 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    this.breadcrumbService.updateBreadCrumb({
-      label: 'Planning Area Overview',
-      backUrl: getPlanPath(clickedScenario.planning_area),
-    });
-
     // Update when SCENARIO_DASHBOARD be released
     if (
       this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS') &&
@@ -203,6 +198,10 @@ export class PlanScenariosListComponent implements OnInit {
         relativeTo: this.route,
       });
     }
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Planning Area Overview',
+      backUrl: getPlanPath(clickedScenario.planning_area),
+    });
   }
 
   get isValidPlanningArea() {

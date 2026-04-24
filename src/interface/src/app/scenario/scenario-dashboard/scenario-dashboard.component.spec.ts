@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ScenarioDashboardComponent } from './scenario-dashboard.component';
 import { MockDeclaration } from 'ng-mocks';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 describe('ScenarioDashboardComponent', () => {
   let component: ScenarioDashboardComponent;

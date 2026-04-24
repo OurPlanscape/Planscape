@@ -45,7 +45,7 @@ import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-d
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import * as Sentry from '@sentry/browser';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;

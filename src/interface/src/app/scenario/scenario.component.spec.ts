@@ -6,7 +6,7 @@ import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.co
 
 import { SharedModule } from '@shared';
 import { RouterTestingModule } from '@angular/router/testing';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 describe('ScenarioComponent', () => {
   let component: ScenarioComponent;

@@ -5,7 +5,7 @@ import { BASE_LAYER_STYLE } from '@maplibre-map/map-base-layers/map-base-layers-
 import { SUB_UNIT_LAYER_COLOR } from '@scenario/scenario.constants';
 import { ScenarioState } from '@scenario/scenario.state';
 import { BaseLayer } from '@types';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 /**
  * This component wraps the projected content on a right side panel and shows the

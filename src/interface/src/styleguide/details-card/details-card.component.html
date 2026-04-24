@@ -1,8 +1,14 @@
 <div class="heading">
-  <div class="title">{{ title }}</div>
-  <div class="name">{{ subtitle }}</div>
+  <div class="title" *ngIf="title">{{ title }}</div>
+  <div class="name" *ngIf="subtitle">{{ subtitle }}</div>
 </div>
 <div class="details">
+  <div class="detail-line" *ngIf="planning_area_name">
+    <div class="detail-icon">
+      <mat-icon class="material-symbols-outlined">activity_zone</mat-icon>
+    </div>
+    Planning area: {{ planning_area_name }}
+  </div>
   <div class="detail-line" *ngIf="creator">
     <div class="detail-icon">
       <mat-icon class="material-symbols-outlined">person_outline</mat-icon>
@@ -29,4 +35,5 @@
     </div>
     {{ d.label }}: {{ d.value }}
   </div>
+  <ng-content></ng-content>
 </div>

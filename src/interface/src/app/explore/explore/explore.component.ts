@@ -22,7 +22,7 @@ import { getPlanPath } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 enum SidebarTabs {
   DATA_LAYERS,

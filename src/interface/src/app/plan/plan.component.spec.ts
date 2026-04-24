@@ -18,7 +18,7 @@ import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MockDeclaration } from 'ng-mocks';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@app/shared/nav-bar/nav-bar.component';
 
 describe('PlanComponent', () => {
   let router: Router;
