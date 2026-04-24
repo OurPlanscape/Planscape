@@ -11,18 +11,19 @@ def create_default_workspace(apps, schema_editor):
     Category = apps.get_model("datasets", "Category")
     User = apps.get_model("auth", "User")
 
-    user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+    user = User.objects.filter(email=settings.DEFAULT_ADMIN_EMAIL).first()
 
     workspace = Workspace.objects.create(
         name="Default",
         visibility="PUBLIC",
     )
 
-    UserAccessWorkspace.objects.create(
-        user=user,
-        workspace=workspace,
-        role="OWNER",
-    )
+    if user:
+        UserAccessWorkspace.objects.get_or_create(
+            user=user,
+            workspace=workspace,
+            defaults={"role": "OWNER"},
+        )
 
     Dataset.objects.all().update(workspace=workspace)
     DataLayer.objects.all().update(workspace=workspace)
@@ -61,7 +62,7 @@ def delete_default_workspace(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("workspaces", "0001_initial"),
-        ("datasets", "0027_category_workspace_datalayer_workspace_and_more"),
+        ("datasets", "0028_dataset_style_datalayer_workspace"),
         ("auth", "0012_alter_user_first_name_max_length"),
     ]
 

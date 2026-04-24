@@ -5,21 +5,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("datasets", "0026_dataset_modules"),
-        ("workspaces", "0001_initial"),
+        ("datasets", "0027_category_workspace"),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="category",
-            name="workspace",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="categories",
-                to="workspaces.workspace",
-            ),
-        ),
         migrations.AddField(
             model_name="datalayer",
             name="workspace",
