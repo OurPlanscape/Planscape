@@ -3,7 +3,6 @@ import logging
 from django.apps import AppConfig
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in, user_login_failed
-from django.db import connection
 from django.db.models.signals import post_save
 
 log = logging.getLogger(__name__)
@@ -51,15 +50,21 @@ def handle_user_logged_in(sender, request, user, **kwargs):
 
 
 def create_user_profile(sender, instance, created, **kwargs):
-    if not created:
-        return
-
-    if "users_userprofile" not in connection.introspection.table_names():
-        return
+    from django.db import OperationalError, ProgrammingError
 
     from users.models import UserProfile
 
-    UserProfile.objects.get_or_create(user=instance)
+    if not created:
+        return
+
+    try:
+        UserProfile.objects.get_or_create(user=instance)
+    except (OperationalError, ProgrammingError):
+        # DO NOT REMOVE THIS TRY/EXCEPT
+        # since our migration dependency chain is complicated, some migrations
+        # might touch users BEFORE the migration is complete
+        # (older migrations that create users for example)
+        pass
 
 
 class UsersConfig(AppConfig):
