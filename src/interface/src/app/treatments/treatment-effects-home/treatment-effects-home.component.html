@@ -18,6 +18,7 @@
     class="right-side"
     *ngIf="scenarioId$ | async as scenarioId">
     <app-treatment-plans-list
+      *ngIf="currentPlan$ | async as currentPlan"
       [scenarioId]="scenarioId"
       [planningArea]="currentPlan">
     </app-treatment-plans-list>

@@ -5,7 +5,6 @@ import { TreatmentPlansListComponent } from '../treatment-plans-list/treatment-p
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { PlanState } from '@app/plan/plan.state';
-import { Plan } from '@app/types';
 import { TREATMENT_EFFECTS_URL, SharedModule } from '@app/shared';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
@@ -28,20 +27,16 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 export class TreatmentEffectsHomeComponent {
   scenarioId$ = this.scenarioState.currentScenarioId$;
 
-  currentPlan!: Plan;
+  currentPlan$ = this.planState.currentPlan$;
 
   constructor(
     private scenarioState: ScenarioState,
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService
   ) {
-    this.planState.currentPlan$.subscribe((plan: Plan) => {
-      this.currentPlan = plan;
-
-      this.breadcrumbService.updateBreadCrumb({
-        label: 'Scenario Dashboard ',
-        backUrl: '..',
-      });
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Scenario Dashboard ',
+      backUrl: '../..',
     });
   }
 

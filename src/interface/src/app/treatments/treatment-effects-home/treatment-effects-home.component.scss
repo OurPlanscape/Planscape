@@ -1,5 +1,6 @@
 @import 'variables';
 @import 'mixins';
+@import 'colors';
 
 :host {
   height: 100%;
@@ -12,7 +13,7 @@
     flex-direction: column;
     gap: 16px;
     background: #fff;
-    border: 1px solid #e1e1e1;
+    border: 1px solid $color-soft-gray;
     border-radius: 8px;
     padding: 0;
     height: 100%;
