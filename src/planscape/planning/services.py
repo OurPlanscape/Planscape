@@ -1837,7 +1837,7 @@ def calculate_and_update_pct_treatable_area(scenario: Scenario, features: List) 
 
     for feature in features:
         proj_area_acres = feature.get("properties").get("area_acres")
-        pct_treatable_area = proj_area_acres / treatable_area
+        pct_treatable_area = proj_area_acres / treatable_area if treatable_area else None
         feature["properties"]["pct_treatable_area"] = pct_treatable_area
 
     return features
