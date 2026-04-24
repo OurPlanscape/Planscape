@@ -1,6 +1,7 @@
 import json
 from typing import Any, Dict
 
+from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, JsonResponse
@@ -19,7 +20,24 @@ from datasets.services import enable_datalayer_module
 from datasets.tasks import calculate_datalayer_outline
 
 
-class CategoryAdmin(TreeAdmin):
+class CatalogOnlyAdminMixin:
+    """Restricts all write operations (add/change/delete) to the catalog environment.
+
+    Apply to any ModelAdmin whose models are managed exclusively through the
+    catalog deployment. Read access is still allowed in other environments.
+    """
+
+    def has_add_permission(self, request):
+        return settings.ENV == "catalog" and super().has_add_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        return settings.ENV == "catalog" and super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return settings.ENV == "catalog" and super().has_delete_permission(request, obj)
+
+
+class CategoryAdmin(CatalogOnlyAdminMixin, TreeAdmin):
     form = CategoryAdminForm
     search_fields = ["name"]
     list_display = ("id", "name", "order", "dataset")
@@ -28,7 +46,7 @@ class CategoryAdmin(TreeAdmin):
         return {"created_by": request.user}
 
 
-class DatasetAdmin(admin.ModelAdmin):
+class DatasetAdmin(CatalogOnlyAdminMixin, admin.ModelAdmin):
     list_filter = ["visibility"]
     search_fields = ["organization__name__icontains", "name"]
     autocomplete_fields = ["organization"]
@@ -49,13 +67,13 @@ class DatasetAdmin(admin.ModelAdmin):
         return {"created_by": request.user}
 
 
-class DataLayerHasStyleAdmin(admin.TabularInline):
+class DataLayerHasStyleAdmin(CatalogOnlyAdminMixin, admin.TabularInline):
     model = DataLayerHasStyle
     form = DataLayerHasStyleAdminForm
     raw_id_fields = ["style"]
 
 
-class DataLayerAdmin(admin.ModelAdmin):
+class DataLayerAdmin(CatalogOnlyAdminMixin, admin.ModelAdmin):
     geometry_preview_fields = {"geometry", "outline"}
 
     @admin.display(description="Public URL")
@@ -152,31 +170,36 @@ class DataLayerAdmin(admin.ModelAdmin):
             f"Enabled {module} module for {queryset.count()} datalayers.",
         )
 
-    @admin.action(description="Calculate outline for selected datalayers")
+    @admin.action(
+        description="Calculate outline for selected datalayers",
+        permissions=["change"],
+    )
     def calculate_outline(self, request, queryset):
         ids = list(queryset.values_list("id", flat=True))
         for datalayer_id in ids:
             calculate_datalayer_outline.delay(datalayer_id)
-        self.message_user(request, f"Queued outline calculation for {len(ids)} datalayers.")
+        self.message_user(
+            request, f"Queued outline calculation for {len(ids)} datalayers."
+        )
 
-    @admin.action(description="enable forsys")
+    @admin.action(description="enable forsys", permissions=["change"])
     def enable_forsys(self, request, queryset):
         self._enable_module(request, queryset, "forsys")
 
-    @admin.action(description="enable impacts")
+    @admin.action(description="enable impacts", permissions=["change"])
     def enable_impacts(self, request, queryset):
         self._enable_module(request, queryset, "impacts")
 
-    @admin.action(description="enable map")
+    @admin.action(description="enable map", permissions=["change"])
     def enable_map(self, request, queryset):
         self._enable_module(request, queryset, "map")
 
-    @admin.action(description="enable climate_foresight")
+    @admin.action(description="enable climate_foresight", permissions=["change"])
     def enable_climate_foresight(self, request, queryset):
         self._enable_module(request, queryset, "climate_foresight")
 
 
-class AssociateStyleWithDataLayer(admin.TabularInline):
+class AssociateStyleWithDataLayer(CatalogOnlyAdminMixin, admin.TabularInline):
     model = DataLayerHasStyle
     form = DataLayerHasStyleAdminForm
     raw_id_fields = ["datalayer"]
@@ -184,7 +207,7 @@ class AssociateStyleWithDataLayer(admin.TabularInline):
     max_num = 1
 
 
-class StyleAdmin(admin.ModelAdmin):
+class StyleAdmin(CatalogOnlyAdminMixin, admin.ModelAdmin):
     form = StyleAdminForm
     search_fields = [
         "organization__name__icontains",
