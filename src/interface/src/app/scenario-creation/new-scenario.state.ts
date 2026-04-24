@@ -25,7 +25,7 @@ import {
   tap,
 } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
@@ -137,11 +137,7 @@ export class NewScenarioState {
         .pipe(
           tap(() => this.setLoading(false)),
           catchError(() => {
-            this.snackbar.open(
-              '[Error] Cannot load map data',
-              'Dismiss',
-              SNACK_ERROR_CONFIG
-            );
+            this.showMapError();
             this.setLoading(false);
             return EMPTY;
           })
@@ -190,9 +186,12 @@ export class NewScenarioState {
   private slopeId = 0;
   private distanceToRoadsId = 0;
 
+  private readonly planId = this.route.snapshot.data['planId'];
+
   constructor(
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
+    private router: Router,
     private snackbar: MatSnackBar,
     private forsysService: ForsysService,
     private dataLayersService: DataLayersService
@@ -252,5 +251,18 @@ export class NewScenarioState {
 
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
+  }
+
+  showMapError() {
+    this.snackbar.open(
+      'There was a problem loading your scenario.\n Try editing your draft again or create a new scenario.',
+      'Dismiss',
+      {
+        ...SNACK_ERROR_CONFIG,
+        panelClass: ['snackbar-error', 'snackbar-error-multiline'],
+      }
+    );
+    this.setDraftFinished(true);
+    this.router.navigate(['/plan', this.planId]);
   }
 }
