@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 def track_returning_user(user) -> None:
     from planscape.openpanel import track_openpanel
-    from users.models import UserProfile
 
     logger.info(f"user {user} logging in - last login {user.last_login}")
     now = timezone.now()
@@ -18,7 +17,7 @@ def track_returning_user(user) -> None:
     if current_bucket < 1:
         return
 
-    profile, _ = UserProfile.objects.get_or_create(user=user)
+    profile = user.profile
     if current_bucket > profile.last_returning_user_bucket:
         period_days = current_bucket * number_of_days
         track_openpanel(

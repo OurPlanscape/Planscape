@@ -877,19 +877,3 @@ class ReturningUserTrackingTest(TestCase):
         )
         user.profile.refresh_from_db()
         self.assertEqual(user.profile.last_returning_user_bucket, 3)
-
-    @patch("planscape.openpanel.track_openpanel")
-    def test_missing_profile_is_recreated_on_track(self, mock_track):
-        user = self._make_user(date_joined_days_ago=31, last_login_days_ago=None)
-        user.profile.delete()
-        from users.backends import track_returning_user
-
-        track_returning_user(user)
-
-        user.refresh_from_db()
-        self.assertTrue(UserProfile.objects.filter(user=user).exists())
-        mock_track.assert_called_once_with(
-            "users.returned_after_30d",
-            properties={"email": user.email, "count": 1},
-            user_id=user.pk,
-        )
