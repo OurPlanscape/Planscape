@@ -30,9 +30,9 @@ def create_default_workspace(apps, schema_editor):
     Style.objects.all().update(workspace=workspace)
     Category.objects.all().update(workspace=workspace)
 
-    sig_gis_users = User.objects.filter(email__endswith="@sig-gis.com").exclude(
-        pk=user.pk
-    )
+    sig_gis_users = User.objects.filter(email__endswith="@sig-gis.com")
+    if user:
+        sig_gis_users = sig_gis_users.exclude(pk=user.pk)
     UserAccessWorkspace.objects.bulk_create(
         [
             UserAccessWorkspace(user=u, workspace=workspace, role="COLLABORATOR")
