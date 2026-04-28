@@ -7,6 +7,7 @@ from datasets.tasks import datalayer_uploaded
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from planscape.check_celery import post_to_mattermost
 
 
 class Command(BaseCommand):
@@ -161,6 +162,8 @@ class Command(BaseCommand):
                     f"Triggered post-upload process for {ready_vector_layers.count()} Datalayers type=VECTOR and status=READY."
                 )
             )
+            post_to_mattermost(f"Catalog data restored successfully on {settings.ENV}.")
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
+            post_to_mattermost(f"Catalog data restore failed on {settings.ENV}: {e}")

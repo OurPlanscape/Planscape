@@ -73,16 +73,5 @@ def load_latest_catalog_backup_task() -> None:
         raise
     else:
         set_restore_status(BACKUP_STATE_SUCCESS)
-        if settings.ENV in ("dev", "staging"):
-            try:
-                from planscape.check_celery import post_to_mattermost
-
-                post_to_mattermost(
-                    f"Catalog data loaded successfully on {settings.ENV}."
-                )
-            except Exception:
-                log.exception(
-                    "Unable to post catalog restore success alert to Mattermost"
-                )
     finally:
         release_restore_lock()
