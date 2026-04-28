@@ -162,8 +162,14 @@ class Command(BaseCommand):
                     f"Triggered post-upload process for {ready_vector_layers.count()} Datalayers type=VECTOR and status=READY."
                 )
             )
-            post_to_mattermost(f"Catalog data restored successfully on {settings.ENV}.")
+            post_to_mattermost(
+                f"Catalog data restored successfully on {settings.ENV}.",
+                env=settings.ENV,
+            )
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
-            post_to_mattermost(f"Catalog data restore failed on {settings.ENV}: {e}")
+            post_to_mattermost(
+                f"Catalog data restore failed on {settings.ENV}: {e}",
+                env=settings.ENV,
+            )
