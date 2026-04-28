@@ -1,5 +1,8 @@
 <div class="title">Change (%)</div>
-<div class="empty-data-overlay" *ngIf="emptyData">
+<div class="loading-overlay" *ngIf="chartService.loading$ | async"></div>
+<div
+  class="empty-data-overlay"
+  *ngIf="(chartService.hasChartData$ | async) === false">
   <div class="empty-data-heading">No Data Available</div>
   <div class="empty-data-detail">
     There is no data available for the selected parameters. Please try a
@@ -15,4 +18,6 @@
     [legend]="false"
     [type]="'bar'"></canvas>
 </div>
-<div class="title center-text">Years after initial treatment</div>
+<div class="title center-text" *ngIf="chartService.hasChartData$ | async">
+  Years after initial treatment
+</div>

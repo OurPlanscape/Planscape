@@ -91,15 +91,17 @@
           Acres: {{ projectAreaAcres$ | async | number: '1.0-0' }}
         </span>
       </div>
-      <div class="filter-label filter-label-treatment">Filter by</div>
-
-      <app-treatment-filter class="treatment-dropdown"></app-treatment-filter>
+      <ng-container *ngIf="hasChartData$ | async">
+        <div class="filter-label filter-label-treatment">Filter by</div>
+        <app-treatment-filter class="treatment-dropdown"></app-treatment-filter>
+      </ng-container>
     </div>
 
     <app-change-over-time-chart></app-change-over-time-chart>
 
     <div class="metric-selection">
       <app-metric-filters
+        *ngIf="hasChartData$ | async"
         [selectedOptions]="(filterOptions$ | async) || []"
         (metricSelected)="updateReportMetric($event)"></app-metric-filters>
     </div>
