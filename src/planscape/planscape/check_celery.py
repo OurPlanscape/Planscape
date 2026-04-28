@@ -20,6 +20,7 @@ MATTERMOST_CHANNEL: str = config(
     "#planscape-alerts-dev",
     cast=str,
 )  # type: ignore
+
 CELERY_CMD = [
     "/home/planscape/.local/bin/celery",
     "-A",
