@@ -15,14 +15,9 @@ MATTERMOST_WEBHOOK_URL: Optional[str] = config(
     default=None,
     cast=str,
 )  # type: ignore
-MATTERMOST_DEV_CHANNEL: str = config(
-    "MATTERMOST_DEV_CHANNEL",
+MATTERMOST_CHANNEL: str = config(
+    "MATTERMOST_CHANNEL",
     "#planscape-alerts-dev",
-    cast=str,
-)  # type: ignore
-MATTERMOST_PRODUCTION_CHANNEL: str = config(
-    "MATTERMOST_PRODUCTION_CHANNEL",
-    "#planscape-alerts-production",
     cast=str,
 )  # type: ignore
 CELERY_CMD = [
@@ -82,14 +77,11 @@ def format_mattermost_message(worker_counts: Dict[str, int], total: int) -> str:
     return "\n".join(lines)
 
 
-def post_to_mattermost(message: str, env: Optional[str] = None) -> None:
+def post_to_mattermost(message: str) -> None:
     if not MATTERMOST_WEBHOOK_URL:
         return
-    channel = MATTERMOST_DEV_CHANNEL
-    if env in ("staging", "production"):
-        channel = MATTERMOST_PRODUCTION_CHANNEL
     payload = {
-        "channel": channel,
+        "channel": MATTERMOST_CHANNEL,
         "text": message,
     }
     response = requests.post(MATTERMOST_WEBHOOK_URL, json=payload)
