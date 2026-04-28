@@ -7,7 +7,7 @@ from datasets.tasks import datalayer_uploaded
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from planscape.check_celery import post_to_mattermost
+from core.mattermost import post_to_mattermost
 
 
 class Command(BaseCommand):
