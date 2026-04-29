@@ -67,10 +67,10 @@ describe('SharePlanDialogComponent', () => {
       ],
     }).compileComponents();
 
+    spyOn(TestBed.inject(InvitesService), 'invitesList').and.returnValue(of([]) as any);
     fixture = TestBed.createComponent(SharePlanDialogComponent);
     component = fixture.componentInstance;
     component.isLoading = false;
-    spyOn(TestBed.inject(InvitesService), 'invitesList').and.returnValue(of([]) as any);
     fixture.detectChanges();
   });
 
@@ -108,7 +108,7 @@ describe('SharePlanDialogComponent', () => {
       component.message = 'Test message';
 
       const service = TestBed.inject(InvitesService);
-      spyOn(service, 'invitesCreate').and.callThrough();
+      spyOn(service, 'invitesCreate').and.returnValue(of({}) as any);
 
       component.invite();
       fixture.detectChanges();
@@ -147,7 +147,7 @@ describe('SharePlanDialogComponent', () => {
   describe('resendCode', () => {
     it('should call invite service with corresponding data', () => {
       const service = TestBed.inject(InvitesService);
-      spyOn(service, 'invitesCreate').and.callThrough();
+      spyOn(service, 'invitesCreate').and.returnValue(of({}) as any);
 
       component.selectedRole = RoleEnum.Owner;
       component.resendCode(mockInvite);

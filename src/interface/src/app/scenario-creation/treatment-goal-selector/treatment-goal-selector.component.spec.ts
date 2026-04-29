@@ -10,78 +10,35 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { TreatmentGoalSelectorComponent } from './treatment-goal-selector.component';
-import { TreatmentGoalsService } from '@services';
+import { TreatmentGoalsService } from '@app/api/generated/treatment-goals/treatment-goals.service';
 import { NewScenarioState } from '../new-scenario.state';
-import { ScenarioGoal } from '@app/types';
+import { TreatmentGoal } from '@app/api/generated/planscapeAPI.schemas';
 import { FormControl } from '@angular/forms';
 
 describe('TreatmentGoalSelectorComponent', () => {
   let component: TreatmentGoalSelectorComponent;
   let fixture: ComponentFixture<TreatmentGoalSelectorComponent>;
   const configSubject = new BehaviorSubject<any>({});
-  const goalsSubject = new BehaviorSubject<ScenarioGoal[]>([]);
+  const goalsSubject = new BehaviorSubject<TreatmentGoal[]>([]);
 
-  const mockGoals = [
-    {
-      id: 1,
-      name: 'Goal 1',
-      description: 'ok',
-      priorities: [''],
-      category: '',
-      category_text: '',
-      group: '',
-      group_text: '',
-    },
-    {
-      id: 201,
-      name: 'Goal 201',
-      description: 'ok',
-      priorities: [''],
-      category: '',
-      category_text: '',
-      group: '',
-      group_text: '',
-    },
-    {
-      id: 1234,
-      name: 'Goal 1234',
-      description: 'ok',
-      priorities: [''],
-      category: '',
-      category_text: '',
-      group: '',
-      group_text: '',
-    },
-    {
-      id: 1556,
-      name: 'Goal 1556',
-      description: 'ok',
-      priorities: [''],
-      category: '',
-      category_text: '',
-      group: '',
-      group_text: '',
-    },
-    {
-      id: 2678,
-      name: 'Goal 2678',
-      description: 'ok',
-      priorities: [''],
-      category: '',
-      category_text: '',
-      group: '',
-      group_text: '',
-    },
-    {
-      id: 9011,
-      name: 'Goal 9011',
-      description: 'ok',
-      priorities: [''],
-      category: '',
-      category_text: '',
-      group: '',
-      group_text: '',
-    },
+  const mockGoal = (id: number, name: string): TreatmentGoal => ({
+    id,
+    name,
+    description: 'ok',
+    category: null,
+    category_text: '',
+    group: null,
+    group_text: '',
+    usage_types: [],
+  });
+
+  const mockGoals: TreatmentGoal[] = [
+    mockGoal(1, 'Goal 1'),
+    mockGoal(201, 'Goal 201'),
+    mockGoal(1234, 'Goal 1234'),
+    mockGoal(1556, 'Goal 1556'),
+    mockGoal(2678, 'Goal 2678'),
+    mockGoal(9011, 'Goal 9011'),
   ];
 
   beforeEach(async () => {
@@ -92,15 +49,14 @@ describe('TreatmentGoalSelectorComponent', () => {
         NoopAnimationsModule,
       ],
       providers: [
-        MockProvider(TreatmentGoalsService, {
-          getTreatmentGoals: () => goalsSubject.asObservable(),
-        }),
+        MockProvider(TreatmentGoalsService),
         MockProvider(NewScenarioState, {
           scenarioConfig$: configSubject.asObservable(),
           currentStep$: of(null),
         }),
       ],
     }).compileComponents();
+    spyOn(TestBed.inject(TreatmentGoalsService), 'v2TreatmentGoalsList').and.returnValue(goalsSubject.asObservable() as any);
     fixture = TestBed.createComponent(TreatmentGoalSelectorComponent);
     component = fixture.componentInstance;
     component.control = new FormControl<number | null>(null);

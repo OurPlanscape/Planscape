@@ -2,155 +2,169 @@
 
 ## Goal
 
-Single source of truth for API types: backend declares the contract via OpenAPI schema, frontend consumes generated Angular services. No more duplicated interfaces.
+Single source of truth for API types: backend declares the contract via OpenAPI schema,
+frontend consumes generated Angular services. No more duplicated interfaces.
 
-**Stack**: `drf-spectacular` (backend schema) + `orval` (Angular `HttpClient` service generation).
-
-## Current state
-
-- `drf-spectacular` already installed and configured (`SPECTACULAR_SETTINGS` in `settings.py`)
-- Schema endpoint: `GET /planscape-backend/v2/schema` (dev/staging only)
-- Swagger UI: `GET /planscape-backend/v2/schema/swagger`
-- Some views already use `@extend_schema` (e.g. `DatasetViewSet`, `ModuleViewSet`)
-- Frontend: manual `HttpClient` services with hand-typed interfaces, CSRF + JWT interceptors in place
+**Stack**: `drf-spectacular` (backend schema) + `orval v8` (Angular `HttpClient` service generation).
 
 ---
 
-## POC first: vertical slice through `DatasetViewSet`
+## How it works
 
-Before doing anything sequentially, validate the full loop end-to-end on one endpoint.
+1. Django backend at `src/planscape/` exposes `GET /planscape-backend/v2/schema` (drf-spectacular)
+2. `npm run generate:api` (run from `src/interface/`) fetches the schema and runs orval
+3. Generated output lands in `src/app/api/generated/` — one service file per OpenAPI tag (`tags-split` mode)
+4. Untagged endpoints fall into `v2/v2.service.ts` (suppressed with `@ts-nocheck` — see known issues)
 
-**Why this endpoint**: `DatasetViewSet` already has `@extend_schema` on the `browse` action, drf-spectacular infers the `list` action automatically, and `DataLayersService` (`src/interface/src/app/services/data-layers.service.ts`) is the existing counterpart to compare against.
-
-### POC steps
-
-1. **Verify the schema** — hit `/planscape-backend/v2/schema` locally, confirm `datasets` endpoints appear with correct types.
-
-2. **Install orval** in the frontend:
-   ```
-   npm install -D orval
-   ```
-
-3. **Add `orval.config.ts`** at `src/interface/`:
-   ```ts
-   import { defineConfig } from 'orval';
-
-   export default defineConfig({
-     planscape: {
-       input: 'http://localhost:8000/planscape-backend/v2/schema',
-       output: {
-         mode: 'tags-split',           // one file per OpenAPI tag
-         target: 'src/app/api/generated',
-         client: 'angular',            // generates @Injectable() HttpClient services
-         httpClient: 'http-client',
-         baseUrl: '/planscape-backend',
-       },
-     },
-   });
-   ```
-
-4. **Add npm script** to `package.json`:
-   ```json
-   "generate:api": "orval --config orval.config.ts"
-   ```
-
-5. **Run generation**, inspect output in `src/app/api/generated/`.
-
-6. **Wire one call** — replace `listDataSets()` in a component with the generated service, verify:
-   - CSRF interceptor fires
-   - JWT interceptor fires
-   - Sentry logging interceptor fires
-   - Response shape matches
-
-7. **Assess** — does the generated service shape feel usable? What needs tweaking in orval config or backend annotations before scaling up?
+**Config**: `src/interface/orval.config.ts`  
+**Generated files**: committed to git — schema drift is visible in PR diffs
 
 ---
 
-## Sequential plan (post-POC)
+## When to run `generate:api`
 
-### Phase 1 — Backend: harden the schema
+Run it when a backend PR adds or changes serializers, views, or `@extend_schema` annotations.
+Commit the generated diff in the same PR as the backend change.
 
-- Audit `SPECTACULAR_SETTINGS`: add `SCHEMA_PATH_PREFIX` to strip the common URL prefix from generated paths if needed.
-- Establish tag convention: use `@extend_schema(tags=['typed'])` as the "this endpoint is migrated" marker. Views not ready get `@extend_schema(exclude=True)` only if their inferred schema is actively wrong.
-- Annotate remaining `DatasetViewSet` and `DataLayerViewSet` actions properly (return types, query params).
-- Work outward to other viewsets as they're touched.
+`generate:api` requires the backend running at `localhost:8000`. It cannot run in CI without
+a live server (future improvement: export schema to a file with `manage.py spectacular --file schema.json`).
 
-### Phase 2 — Frontend: configure orval properly
+---
 
-- Tune `orval.config.ts` based on POC learnings (path overrides, `withCredentials` default, tag filtering).
-- Commit generated files to `src/app/api/generated/` — schema drift becomes visible in PR diffs.
-- Add `generate:api` to CI: fail if committed generated files are stale relative to the schema.
+## Adding a new endpoint to generated types
 
-### Phase 3 — Incremental migration
+On the backend (`src/planscape/`):
 
-Rule: **touch an endpoint → migrate it**.
+1. Add `tags=["your-tag"]` to the view's `@extend_schema` or `@extend_schema_view`
+2. For `SerializerMethodField` with non-obvious return types, add `@extend_schema_field(...)` to the method
+3. If the response is a list but drf-spectacular wraps it in pagination, override `pagination_class`
+   as a `@property` returning `None` for that action
+4. If one view class handles multiple URL patterns, split into separate view classes —
+   otherwise drf-spectacular generates duplicate operation IDs (`operationName2`, `operationName3`, ...)
 
-- New endpoint: annotate backend with `tags=['typed']` from day one, use generated service on FE.
-- Existing endpoint: when you naturally visit it, add annotation, regenerate, swap the Angular service.
-- Old manual services stay untouched until their endpoint is migrated — no big-bang required.
-
+Then restart the backend and run:
 ```
-src/interface/src/app/
-  api/
-    generated/          ← committed, generated from schema
-      datasets.service.ts
-      ...
-  services/             ← existing manual services, removed endpoint by endpoint
-    data-layers.service.ts   (migrated → delete when done)
-    scenario.service.ts      (not yet migrated)
-    ...
+npm run generate:api
 ```
 
-### Phase 4 — CI guard
+---
 
-Once a critical mass of endpoints is covered, wire the schema check into CI:
-```
-npm run generate:api && git diff --exit-code src/app/api/generated/
-```
-This catches backend changes that break the FE contract before they merge.
+## Migrating a hand-written service
+
+1. Tag the backend view (step above), restart, regenerate
+2. Update component imports: `@services` → `@app/api/generated/your-tag/your-tag.service`
+3. Replace method calls with generated equivalents
+4. Update specs — use `MockProvider(GeneratedService)` with no inline overrides, then `spyOn` in `beforeEach` to avoid overload type conflicts
+5. Delete the hand-written service file, hand-written type file, and orphaned spec
+6. Remove barrel exports from `services/index.ts` and `types/index.ts`
+
+---
+
+## Endpoint / service catalog
+
+### ✅ Invites
+
+| | |
+|---|---|
+| Backend | `collaboration/views.py` — `CreateInvite`, `InvitationsForObject`, `InvitationDetail` |
+| Generated | `api/generated/invites/invites.service.ts` — `InvitesService` |
+| Generated types | `UserObjectRole`, `RoleEnum` |
+| Deleted | `services/invites.service.ts`, `types/invite.types.ts` (`Invite`, `INVITE_ROLE`) |
+| Used in | `home/share-plan-dialog/` |
+
+### ✅ Treatment Goals
+
+| | |
+|---|---|
+| Backend | `planning/views_v2.py` — `TreatmentGoalViewSet` |
+| Generated | `api/generated/treatment-goals/treatment-goals.service.ts` — `TreatmentGoalsService` |
+| Generated types | `TreatmentGoal` |
+| Deleted | `services/treatment-goals.service.ts`, `ScenarioGoal` from `types/scenario.types.ts` |
+| Used in | `scenario-creation/scenario-creation.component.ts`, `scenario-creation/treatment-goal-selector/`, `scenario/scenario-helper.ts` |
+
+### ⚠️ Planning Areas (tagged, migration blocked)
+
+| | |
+|---|---|
+| Backend | `planning/views_v2.py` — `PlanningAreaViewSet`, `CreatorViewSet` |
+| Generated | `api/generated/planning-areas/planning-areas.service.ts` — `PlanningAreasService` |
+| Generated types | `PlanningArea`, `ListPlanningArea`, `CreatePlanningArea`, `ListCreator`, `PaginatedListPlanningAreaList` |
+| Hand-written (still in use) | `services/plan.service.ts`, `types/plan.types.ts` (`Plan`, `PreviewPlan`, `Creator`, `CreatePlanPayload`) |
+| Used in | `plan/plan.state.ts`, `standalone/planning-areas/`, `standalone/planning-area-menu/`, `explore/create-plan-dialog/` + 20 other files |
+
+**Blockers:**
+- `PlanningArea.permissions` generates as `string` but backend returns `string[]` — needs `@extend_schema_field` on `get_permissions` in `planning/serializers.py`
+- `PlanningArea.geometry` generates as `unknown` — needs `@extend_schema_field`
+- `Plan.area_m2` exists in hand-written type but not in `PlanningArea` — verify if still needed
+- `plan.service.ts#uploadGeometryForNewScenario` hits `/v2/scenarios/upload_shapefiles/` — wrong service, move to `scenario.service.ts` first
+- `Plan` referenced in 20+ component files — migrating requires touching all of them
+
+### 🔲 Scenarios
+
+| | |
+|---|---|
+| Backend | `planning/views_v2.py` — `ScenarioViewSet` (no `tags` yet) |
+| Generated | None (lives in `v2/v2.service.ts`) |
+| Hand-written | `services/scenario.service.ts` (199 lines), `types/scenario.types.ts` |
+| Used in | Many components throughout the app |
+
+Tag the backend first and inspect generated types before migrating — `Scenario` type is embedded as deeply as `Plan`.
+
+### 🔲 Treatments
+
+| | |
+|---|---|
+| Backend | `impacts/views.py` — `TreatmentPlanViewSet` (no `tags` yet) |
+| Generated | None (lives in `v2/v2.service.ts`) |
+| Hand-written | `services/treatments.service.ts` (160 lines), `types/treatment.types.ts` |
+| Used in | `treatments/` feature module |
+
+### 🔲 Notes
+
+| | |
+|---|---|
+| Backend | `planning/views.py` — `PlanningAreaNotes` (4 URL patterns on one view class, no tags); `impacts/views.py` — `TreatmentPlanNoteViewSet` (no tags) |
+| Generated | Partially — drf-spectacular already generates `planningPlanningAreaNoteRetrieve2/3` etc. because of the 4-URL problem |
+| Hand-written | `services/notes.service.ts` (`BaseNotesService`, `PlanningAreaNotesService`, `TreatmentPlanNotesService`); `services/plan-notes.service.ts` (`PlanNotesService` — stateful BehaviorSubject wrapper over the same endpoint) |
+
+**Blockers:**
+- `PlanningAreaNotes` has 4 URL patterns on one view → must split into separate view classes first
+- `PlanNotesService` is stateful (`notes$` BehaviorSubject) — state management must move to a component before the HTTP calls can be replaced
+
+### 🔲 Data Layers (partial)
+
+| | |
+|---|---|
+| Backend | `datasets/views.py` — `DatasetViewSet` (tagged `datasets`) |
+| Generated | `api/generated/datasets/datasets.service.ts` — `DatasetsService.datasetsBrowsePost` |
+| Hand-written | `services/data-layers.service.ts` — 5 methods still using hand-written HTTP: `search`, `getPublicUrl`, `getDataLayerById`, `getDataLayersByIds`, `listBaseLayersByDataSet` |
+
+`datasetsBrowsePost` is wired via `toBrowseDataLayer()` adapter in `data-layers/data-layers.state.service.ts`.
+The adapter still has `as unknown as` casts for `styles`, `info`, and `metadata` — needs `@extend_schema_field`
+on those fields in `datasets/serializers.py` before the casts can be removed.
+
+### ✅ Auth / dj-rest-auth
+
+`services/auth.service.ts` already wraps `api/generated/dj-rest-auth/` internally. No further migration needed.
 
 ---
 
 ## Known issues
 
-### 1. `<DataLayer[]>` generic override (active lie — fix this before migrating more endpoints)
+### `v2/v2.service.ts` suppressed with `@ts-nocheck`
 
-`datasetsBrowsePost` is called with a generic override:
-```ts
-this.datasetsService.datasetsBrowsePost<DataLayer[]>(...)
-```
-This silences the type checker but lies to it. The endpoint returns `BrowseDataLayer[]` (generated type), not `DataLayer[]` (hand-written type). TypeScript accepts it, but if the shapes diverge at runtime the error is silent.
+Catch-all for untagged endpoints. Has 6 real type errors (Blob/Object overload mismatches on
+endpoints that return file downloads). `scripts/postgen-schema-nocheck.js` injects the
+`@ts-nocheck` comment after each `generate:api` run. Both the script and the suppression go
+away naturally as endpoints get tagged and move to their own service files.
 
-Root cause: the `path` field. The hand-written `DataLayer.path` is `string[]` (correct — backend returns `Collection[str]`). The generated `BrowseDataLayer.path` is `string` because drf-spectacular misreads `SerializerMethodField` return type hints. Fix: add `@extend_schema_field(serializers.ListField(child=serializers.CharField()))` to the `get_path` method in `BrowseDataLayerSerializer`.
+### `DataLayersStateService` spec missing mock
 
-Once fixed, re-evaluate which fields still differ and whether to converge to the generated type or keep the hand-written one as a domain type.
+`data-layers/data-layers.state.service.spec.ts` has `MockProvider(DataLayersService)` but not
+`MockProvider(DatasetsService)`. The spec will fail when run. Add `MockProvider(DatasetsService)`
+to the providers array.
 
-### 2. Two type systems in parallel
+### `as ModuleEnum` boundary cast
 
-Hand-written types (`src/app/types/data-sets.ts`: `DataLayer`, `DataSet`, `BaseDataSet`, `SearchResult`, `SearchQuery`, `BaseLayer`) are used app-wide. Generated types exist but we cast to the old ones. Until hand-written types are retired, both must be maintained. Each migrated endpoint should move its callers off the hand-written type.
-
-### 3. `as ModuleEnum` boundary cast
-
-`MAP_MODULE_NAME` injection token is typed `string` but always holds a valid `ModuleEnum` value. The cast in `data-layers.state.service.ts` is correct but fragile. Long-term fix: retype the token as `ModuleEnum`.
-
-### 4. Unmigrated `DataLayersService` methods
-
-`search`, `getPublicUrl`, `getDataLayerById`, `getDataLayersByIds`, `listBaseLayersByDataSet` still use hand-written `HttpClient` calls. Migrate as they are touched (Phase 3 rule).
-
-### 5. `DataLayersStateService` spec missing mock
-
-`DataLayersStateService` now injects `DatasetsService` but the spec only has `MockProvider(DataLayersService)`. Add `MockProvider(DatasetsService)` to the spec providers.
-
-### 6. `v2/v2.service.ts` @ts-nocheck
-
-Catch-all file for untagged endpoints. Suppression disappears naturally as endpoints gain tags and move to their own service files.
-
----
-
-## Migration tracking
-
-Use the `tags=['typed']` decorator as the canonical signal that a backend endpoint is ready.
-Check coverage at any time via:
-```
-grep -r "tags=\['typed'\]" src/planscape/
-```
+`MAP_MODULE_NAME` injection token is typed as `string` but always holds a `ModuleEnum` value.
+The cast in `data-layers/data-layers.state.service.ts` is correct but fragile. Fix: retype the token as `ModuleEnum`.

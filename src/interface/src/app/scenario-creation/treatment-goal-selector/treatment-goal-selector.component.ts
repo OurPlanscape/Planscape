@@ -7,7 +7,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { ActivatedRoute } from '@angular/router';
 import { SectionComponent } from '@styleguide';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
-import { TreatmentGoalsService } from '@services';
+import { TreatmentGoalsService } from '@app/api/generated/treatment-goals/treatment-goals.service';
 import { getGroupedGoals } from '@scenario/scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -40,7 +40,7 @@ export class TreatmentGoalSelectorComponent implements OnInit {
   mappableGoal = true;
 
   availableTreatmentGoals$ = this.treatmentGoalsService
-    .getTreatmentGoals(this.planId)
+    .v2TreatmentGoalsList({ planning_area: String(this.planId) })
     .pipe(shareReplay(1));
 
   categorizedStatewideGoals$ = this.availableTreatmentGoals$.pipe(

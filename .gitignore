@@ -192,3 +192,6 @@ planscape.sock
 
 # R files used to convert to Python
 R/
+
+# Claude Code
+.claude/

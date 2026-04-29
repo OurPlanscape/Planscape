@@ -5,6 +5,7 @@ import { MockProvider, MockProviders } from 'ng-mocks';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { MapConfigState, MapInteractionMode } from '../map-config.state';
 import { AuthService, DataLayersService } from '@services';
+import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
 import { DrawService } from '../draw.service';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 import { PlanState } from '@plan/plan.state';
@@ -23,6 +24,7 @@ describe('SyncedMapComponent', () => {
       imports: [SyncedMapComponent, FeaturesModule, MatSnackBarModule],
       providers: [
         MockProvider(DataLayersService),
+        MockProvider(DatasetsService),
         MockProviders(MultiMapConfigState, AuthService, DrawService),
         // alias the abstract token
         { provide: MapConfigState, useExisting: MultiMapConfigState },
