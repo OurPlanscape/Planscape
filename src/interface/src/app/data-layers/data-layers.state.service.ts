@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { DataLayersService } from '@services/data-layers.service';
+import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
 import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
 import {
   BrowseDataLayer,
@@ -109,9 +109,9 @@ export class DataLayersStateService {
       if (!layer) {
         return of(null);
       }
-      return this.service
-        .getPublicUrl(layer.id)
-        .pipe(map((url) => ({ layer, url })));
+      return this.datalayersService
+        .v2DatalayersUrlsRetrieve(layer.id)
+        .pipe(map((d) => ({ layer, url: d.layer_url })));
     })
   );
 
@@ -189,15 +189,18 @@ export class DataLayersStateService {
       const module = this.mapModuleService.moduleName;
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
 
-      return this.service
-        .search({
-          term,
-          limit: this.limit,
-          offset,
-          module,
-          geometry,
-        })
+      return this.datalayersService
+        .v2DatalayersFindAnythingCreate(
+          {
+            term,
+            type: TypeE04Enum.RASTER,
+            ...(module ? { module: module as ModuleEnum } : {}),
+            ...(geometry ? { geometry } : {}),
+          },
+          { limit: this.limit, ...(offset ? { offset } : {}) }
+        )
         .pipe(
+          map((results) => results as unknown as Pagination<SearchResult>),
           startWith(null),
           map((results) => {
             if (results) {
@@ -218,7 +221,7 @@ export class DataLayersStateService {
   isBrowsing$ = this._isBrowsing$.asObservable();
 
   constructor(
-    private service: DataLayersService,
+    private datalayersService: DatalayersService,
     private datasetsService: DatasetsService,
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)

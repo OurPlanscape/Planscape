@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
-import { DataLayersService } from '@services/data-layers.service';
+import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
 import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
 import { of } from 'rxjs';
 
@@ -19,7 +19,7 @@ describe('DataLayersStateService', () => {
     TestBed.configureTestingModule({
       imports: [FeaturesModule, MatSnackBarModule],
       providers: [
-        MockProvider(DataLayersService),
+        MockProvider(DatalayersService),
         MockProvider(DatasetsService),
         DataLayersStateService,
         MockProvider(MapModuleService, {

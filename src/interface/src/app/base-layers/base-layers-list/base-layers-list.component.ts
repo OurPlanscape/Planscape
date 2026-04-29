@@ -18,7 +18,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BASE_LAYERS_DEFAULT, SNACK_ERROR_CONFIG } from '@shared';
 import { BaseLayersStateService } from '../base-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DataLayersService } from '@services';
+import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
+import { TypeE04Enum, ModuleEnum } from '@app/api/generated/planscapeAPI.schemas';
 import { catchError, map, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
@@ -55,7 +56,7 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
     BaseLayersStateService
   );
 
-  private dataLayersService: DataLayersService = inject(DataLayersService);
+  private datasetsService: DatasetsService = inject(DatasetsService);
 
   BASE_LAYERS_DEFAULT = BASE_LAYERS_DEFAULT;
 
@@ -122,9 +123,13 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
 
   private listBaseLayersByDataSet() {
     this.loaded = false;
-    return this.dataLayersService
-      .listBaseLayersByDataSet(this.dataSet.id, this.mapModuleName)
+    return this.datasetsService
+      .datasetsBrowsePost(this.dataSet.id, {
+        type: TypeE04Enum.VECTOR,
+        module: this.mapModuleName as ModuleEnum,
+      })
       .pipe(
+        map((layers) => layers as unknown as BaseLayer[]),
         tap((_) => (this.loaded = true)),
         catchError((e) => {
           this.matSnackBar.open(

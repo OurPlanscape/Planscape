@@ -131,17 +131,41 @@ Tag the backend first and inspect generated types before migrating — `Scenario
 - `PlanningAreaNotes` has 4 URL patterns on one view → must split into separate view classes first
 - `PlanNotesService` is stateful (`notes$` BehaviorSubject) — state management must move to a component before the HTTP calls can be replaced
 
-### 🔲 Data Layers (partial)
+### ✅ Data Layers
 
 | | |
 |---|---|
-| Backend | `datasets/views.py` — `DatasetViewSet` (tagged `datasets`) |
-| Generated | `api/generated/datasets/datasets.service.ts` — `DatasetsService.datasetsBrowsePost` |
-| Hand-written | `services/data-layers.service.ts` — 5 methods still using hand-written HTTP: `search`, `getPublicUrl`, `getDataLayerById`, `getDataLayersByIds`, `listBaseLayersByDataSet` |
+| Backend | `datasets/views.py` — `DatasetViewSet` (tagged `datasets`), `DataLayerViewSet` (tagged `datalayers`) |
+| Generated | `api/generated/datasets/datasets.service.ts` — `DatasetsService`, `api/generated/datalayers/datalayers.service.ts` — `DatalayersService` |
+| Generated types | `DataLayer`, `BrowseDataLayer`, `DataLayerUrl`, `FindAnything`, `PaginatedDataLayerList`, `PaginatedSearchResultsList`, `SearchResults` |
+| Deleted | `services/data-layers.service.ts` (entire file) and its spec |
+| Used in | `new-scenario.state.ts`, `scenario-config-overlay.component.ts`, `data-layers.state.service.ts`, `data-layer-tooltip.component.ts`, `base-layers-list.component.ts` |
 
-`datasetsBrowsePost` is wired via `toBrowseDataLayer()` adapter in `data-layers/data-layers.state.service.ts`.
-The adapter still has `as unknown as` casts for `styles`, `info`, and `metadata` — needs `@extend_schema_field`
-on those fields in `datasets/serializers.py` before the casts can be removed.
+Hand-written `DataLayer` type in `types/data-sets.ts` is still kept because `DataLayersStateService` uses it as the app-wide domain type (with `toBrowseDataLayer()` adapter). `new-scenario.state.ts.priorityObjectivesDetails$` casts the generated response to hand-written `DataLayer[]` at the boundary so downstream consumers (form controls, `DataLayersStateService.updateSelectedLayers`) keep working.
+
+**Backend changes in `datasets/serializers.py`:**
+- `DatasetSimpleSerializer` is positioned BEFORE `DataLayerSerializer` (line ~37), required to avoid `NameError`
+- `DataLayerSerializer` has `organization = OrganizationSimpleSerializer()` and `dataset = DatasetSimpleSerializer()` so FK fields generate as nested `{id, name}` objects instead of bare integers
+- `@extend_schema_field(serializers.ListField(child=serializers.DictField()))` on `DataLayerSerializer.get_styles` and `BrowseDataLayerSerializer.get_styles`
+- `DataLayerUrlSerializer` for the `urls` action response
+
+**Backend changes in `datasets/views.py`:**
+- `DataLayerViewSet` tagged `datalayers`
+- `urls` action annotated with `@extend_schema(responses={200: DataLayerUrlSerializer})`
+- `find_anything` split into per-method decorators (single decorator without `methods=` was applying to both GET and POST and generating wrong POST body):
+  ```python
+  @extend_schema(methods=["get"], parameters=[FindAnythingSerializer], responses={200: SearchResultsSerializer(many=True)})
+  @extend_schema(methods=["post"], request=FindAnythingSerializer, responses={200: SearchResultsSerializer(many=True)})
+  ```
+
+**Frontend migrations:**
+- `data-layers.state.service.ts`: `getPublicUrl` → `v2DatalayersUrlsRetrieve`, `search` → `v2DatalayersFindAnythingCreate`, injected `DatalayersService`
+- `data-layer-tooltip.component.ts`: uses `v2DatalayersUrlsRetrieve(id).pipe(map(d => d.layer_url), take(1), shareReplay(1))`
+- `base-layers-list.component.ts`: uses `datasetsBrowsePost(id, { type: VECTOR, module })`
+- `new-scenario.state.ts`, `scenario/scenario-config-overlay/scenario-config-overlay.component.ts`: use `v2DatalayersList({ id__in: ids })` with empty-array guard returning `of([])` (the API returns ALL layers if `id__in` is empty)
+- Specs use `MockProvider(GeneratedService)` + `spyOn(...)` before `createComponent`
+
+Note: `toBrowseDataLayer()` adapter in `data-layers/data-layers.state.service.ts` still casts `info` and `metadata` as `unknown` because `DataLayerSerializer` doesn't annotate those JSONFields with `@extend_schema_field`. The `styles` cast was fixed (`BrowseDataLayerStylesItem[]` instead of `string`).
 
 ### ✅ Auth / dj-rest-auth
 
@@ -158,13 +182,32 @@ endpoints that return file downloads). `scripts/postgen-schema-nocheck.js` injec
 `@ts-nocheck` comment after each `generate:api` run. Both the script and the suppression go
 away naturally as endpoints get tagged and move to their own service files.
 
-### `DataLayersStateService` spec missing mock
-
-`data-layers/data-layers.state.service.spec.ts` has `MockProvider(DataLayersService)` but not
-`MockProvider(DatasetsService)`. The spec will fail when run. Add `MockProvider(DatasetsService)`
-to the providers array.
-
 ### `as ModuleEnum` boundary cast
 
 `MAP_MODULE_NAME` injection token is typed as `string` but always holds a `ModuleEnum` value.
 The cast in `data-layers/data-layers.state.service.ts` is correct but fragile. Fix: retype the token as `ModuleEnum`.
+
+### Docker uv cache wipes on every restart
+
+`UV_CACHE_DIR=/tmp/uv-cache` and `UV_PYTHON_INSTALL_DIR=/tmp/uv-python` are inside the container's ephemeral `/tmp`, so every `web-1` restart re-downloads ~all Python deps. Also, the `.:/app` volume mount means the container's `.venv` ends up on the Mac host — but its Python symlink points to the Linux `/tmp/uv-python/...` which doesn't exist on Mac, so the next start sees a broken venv.
+
+Proper fix (deferred): named Docker volumes for `.venv` and uv cache.
+```yaml
+services:
+  web:
+    volumes:
+      - .:/app
+      - planscape_venv:/app/.venv
+      - uv_cache:/root/.cache/uv
+volumes:
+  planscape_venv:
+  uv_cache:
+    driver: local
+```
+And drop `UV_CACHE_DIR` / `UV_PYTHON_INSTALL_DIR` from `.env` (or repoint cache to `/root/.cache/uv`).
+
+Workaround (what we do today): `rm -rf /Users/pablo/work/sig/Planscape/.venv` whenever `web-1` fails with `ModuleNotFoundError: No module named 'django'`, then `make docker-run`.
+
+### Martin tile server config path
+
+`docker-compose.yml` previously pointed Martin to `/usr/src/app/martin.yaml`, but the volume is mounted at `/app`. Already fixed: `--config /app/martin.yaml`.

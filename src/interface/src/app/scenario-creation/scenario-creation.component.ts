@@ -27,7 +27,6 @@ import { TreatmentGoalsService } from '@app/api/generated/treatment-goals/treatm
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   BaseLayer,
-  DataLayer,
   Scenario,
   SCENARIO_TYPE,
   ScenarioDraftConfiguration,
@@ -186,7 +185,7 @@ export class ScenarioCreationComponent implements OnInit {
 
   priorityObjectivesNames$ =
     this.newScenarioState.priorityObjectivesDetails$.pipe(
-      map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
+      map((layers) => layers.map((layer) => layer.name).join(', '))
     );
 
   scenarioType$ = this.scenarioState.currentScenario$.pipe(

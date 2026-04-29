@@ -5,7 +5,8 @@ import { of } from 'rxjs';
 import { BaseLayersListComponent } from './base-layers-list.component';
 import { BaseLayer, MapDataDataSet } from '@types';
 import { BaseLayersStateService } from '../base-layers.state.service';
-import { DataLayersService } from '@services';
+import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
+import { TypeE04Enum, ModuleEnum } from '@app/api/generated/planscapeAPI.schemas';
 import { MockProvider } from 'ng-mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
@@ -14,7 +15,6 @@ describe('BaseLayersListComponent', () => {
   let fixture: ComponentFixture<BaseLayersListComponent>;
 
   let baseLayersStateServiceMock: jasmine.SpyObj<BaseLayersStateService>;
-  let dataLayersServiceMock: jasmine.SpyObj<DataLayersService>;
 
   const mockDataSet: MapDataDataSet = {
     id: 123,
@@ -25,24 +25,18 @@ describe('BaseLayersListComponent', () => {
       imports: [BaseLayersListComponent, MatSnackBarModule],
       providers: [
         MockProvider(BaseLayersStateService, {
-          loadingLayers$: of([]), // or of([]) if that matches your type
+          loadingLayers$: of([]),
           resetSourceIds: jasmine.createSpy('resetSourceIds'),
         }),
-        MockProvider(DataLayersService, {
-          listBaseLayersByDataSet: jasmine
-            .createSpy('listBaseLayersByDataSet')
-            .and.returnValue(of([])),
-        }),
+        MockProvider(DatasetsService),
       ],
     }).compileComponents();
+
+    spyOn(TestBed.inject(DatasetsService), 'datasetsBrowsePost').and.returnValue(of([]) as any);
 
     baseLayersStateServiceMock = TestBed.inject(
       BaseLayersStateService
     ) as jasmine.SpyObj<BaseLayersStateService>;
-
-    dataLayersServiceMock = TestBed.inject(
-      DataLayersService
-    ) as jasmine.SpyObj<DataLayersService>;
 
     fixture = TestBed.createComponent(BaseLayersListComponent);
     component = fixture.componentInstance;
@@ -111,9 +105,8 @@ describe('BaseLayersListComponent', () => {
       { id: 10, name: 'Test', path: [] } as any,
     ];
 
-    dataLayersServiceMock.listBaseLayersByDataSet.and.returnValue(
-      of(returnedLayers)
-    );
+    const datasetsService = TestBed.inject(DatasetsService);
+    (datasetsService.datasetsBrowsePost as jasmine.Spy).and.returnValue(of(returnedLayers));
 
     component.baseLayers = [];
     expect(component.noBaseLayers).toBeTrue();
@@ -121,22 +114,21 @@ describe('BaseLayersListComponent', () => {
     component.expandDataSet();
 
     expect(component.expanded).toBeTrue();
-    expect(dataLayersServiceMock.listBaseLayersByDataSet).toHaveBeenCalledWith(
+    expect(datasetsService.datasetsBrowsePost).toHaveBeenCalledWith(
       mockDataSet.id,
-      'map'
+      { type: TypeE04Enum.VECTOR, module: 'map' as ModuleEnum }
     );
     expect(component.baseLayers).toEqual(returnedLayers);
   });
 
   it('expandDataSet should not call service again if base layers already loaded', () => {
     component.baseLayers = [{ id: 1 } as BaseLayer];
+    const datasetsService = TestBed.inject(DatasetsService);
 
     component.expandDataSet();
 
     expect(component.expanded).toBeTrue();
-    expect(
-      dataLayersServiceMock.listBaseLayersByDataSet
-    ).not.toHaveBeenCalled();
+    expect(datasetsService.datasetsBrowsePost).not.toHaveBeenCalled();
   });
 
   it('should honour initialExpanded only on first change', () => {

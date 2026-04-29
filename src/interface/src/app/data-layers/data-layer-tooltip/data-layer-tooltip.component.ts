@@ -3,8 +3,8 @@ import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
-import { DataLayersService } from '@services/data-layers.service';
-import { Observable, shareReplay, take } from 'rxjs';
+import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
+import { map, Observable, shareReplay, take } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 import { AccountRoutingModule } from '@account/account-routing.module';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -32,13 +32,13 @@ export class DataLayerTooltipComponent implements OnInit {
   loadingLink = false;
   filename: string | null = null;
 
-  constructor(private dataLayersService: DataLayersService) {}
+  constructor(private datalayersService: DatalayersService) {}
 
   ngOnInit() {
     this.loadingLink = true;
-    this.downloadLink$ = this.dataLayersService
-      .getPublicUrl(this.layer.id)
-      .pipe(take(1), shareReplay(1));
+    this.downloadLink$ = this.datalayersService
+      .v2DatalayersUrlsRetrieve(this.layer.id)
+      .pipe(map((d) => d.layer_url), take(1), shareReplay(1));
 
     this.downloadLink$.pipe(untilDestroyed(this)).subscribe((link) => {
       this.loadingLink = false;
