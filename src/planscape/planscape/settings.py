@@ -499,6 +499,9 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/planscape-backend",
+    "PREPROCESSING_HOOKS": [
+        "planscape.spectacular_hooks.exclude_admin_paths",
+    ],
 }
 
 BACKUPS_PATH = config("BACKUPS_PATH", "/mnt/backups")

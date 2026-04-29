@@ -19,7 +19,9 @@ frontend consumes generated Angular services. No more duplicated interfaces.
 
 **Config**: `src/interface/orval.config.ts`  
 **Schema**: `src/interface/api-schema.yaml` — committed; refresh with `make export-schema`  
-**Generated files**: committed to git — schema drift is visible in PR diffs
+**Generated files**: committed to git — schema drift is visible in PR diffs  
+**Schema filtering**: `src/planscape/planscape/spectacular_hooks.py` — drf-spectacular preprocessing hooks. Currently strips
+`/v2/admin/*` (the Django operator UI) so those endpoints never reach the Angular client.
 
 The orval config strips the leading `v2_` segment from every `operationId` and converts the rest to camelCase. drf-spectacular emits IDs like
 `v2_datalayers_list` (snake_case, prefixed with the URL segment); the override produces `datalayersList` so call sites read

@@ -685,82 +685,6 @@ export interface Constraint {
   value: string;
 }
 
-export const CreateDataLayerType = { ...TypeE04Enum } as const;
-/**
- * @nullable
- */
-export type CreateDataLayerOutline = {
-  type?: 'MultiPolygon';
-  coordinates?: number[][][][];
-} | null;
-
-export const CreateDataLayerGeometryType = { ...GeometryTypeEnum } as const;
-export const CreateDataLayerMapServiceType = { ...MapServiceTypeEnum } as const;
-export const CreateDataLayerStorageType = { ...StorageTypeEnum } as const;
-export interface CreateDataLayer {
-  readonly id: number;
-  /** @nullable */
-  organization?: number | null;
-  dataset: number;
-  /** @nullable */
-  category?: number | null;
-  /** @maxLength 256 */
-  name: string;
-  type: (typeof CreateDataLayerType)[keyof typeof CreateDataLayerType] | null;
-  info?: unknown | null;
-  metadata?: unknown | null;
-  /** @nullable */
-  original_name?: string | null;
-  /** @nullable */
-  url?: string | null;
-  /**
-   * @maxLength 256
-   * @nullable
-   */
-  mimetype?: string | null;
-  /** @nullable */
-  outline?: CreateDataLayerOutline;
-  geometry_type?:
-    | (typeof CreateDataLayerGeometryType)[keyof typeof CreateDataLayerGeometryType]
-    | null;
-  /** @nullable */
-  style?: number | null;
-  map_service_type?:
-    | (typeof CreateDataLayerMapServiceType)[keyof typeof CreateDataLayerMapServiceType]
-    | null;
-  storage_type?:
-    | (typeof CreateDataLayerStorageType)[keyof typeof CreateDataLayerStorageType]
-    | null;
-}
-
-/**
- * * `PRIVATE` - Private
- * `PUBLIC` - Public
- */
-export type VisibilityEnum =
-  (typeof VisibilityEnum)[keyof typeof VisibilityEnum];
-
-export const VisibilityEnum = {
-  PRIVATE: 'PRIVATE',
-  PUBLIC: 'PUBLIC',
-} as const;
-
-export interface CreateDataset {
-  readonly id: number;
-  /** @nullable */
-  organization?: number | null;
-  /** @maxLength 128 */
-  name: string;
-  visibility?: VisibilityEnum;
-  /** @nullable */
-  version?: string | null;
-  /**
-   * List of modules this dataset is associated with.
-   * @nullable
-   */
-  modules?: string[] | null;
-}
-
 /**
  * * `sierra-nevada` - Sierra Nevada
  * `southern-california` - Southern California
@@ -894,18 +818,6 @@ export interface CreateScenarioV2 {
   treatment_goal: number;
 }
 
-export interface CreateStyle {
-  readonly id: number;
-  /** @nullable */
-  organization: number | null;
-  /** @maxLength 128 */
-  name: string;
-  type: TypeE04Enum;
-  data: unknown;
-  /** Optional list of datalayer IDs to associate with this style upon creation. */
-  datalayers?: number[];
-}
-
 export interface CreateTreatmentPlan {
   /** Scenario ID. */
   scenario: number;
@@ -952,12 +864,6 @@ export interface CreateUserObjectRoles {
    * @nullable
    */
   message?: string | null;
-}
-
-export interface CreateWorkspace {
-  /** @maxLength 256 */
-  name: string;
-  visibility?: VisibilityEnum;
 }
 
 /**
@@ -1056,6 +962,18 @@ export const DatasetPreferredDisplayType = {
   ...PreferredDisplayTypeEnum,
   ...BlankEnum,
 } as const;
+/**
+ * * `PRIVATE` - Private
+ * `PUBLIC` - Public
+ */
+export type VisibilityEnum =
+  (typeof VisibilityEnum)[keyof typeof VisibilityEnum];
+
+export const VisibilityEnum = {
+  PRIVATE: 'PRIVATE',
+  PUBLIC: 'PUBLIC',
+} as const;
+
 export interface Dataset {
   readonly id: number;
   /** @nullable */
@@ -1465,31 +1383,6 @@ export interface PaginatedSearchResultsList {
   results: SearchResults[];
 }
 
-export interface Style {
-  readonly id: number;
-  created_by: number;
-  /** @nullable */
-  organization: number | null;
-  /** @maxLength 128 */
-  name: string;
-  type?: TypeE04Enum;
-  data: unknown;
-  /**
-   * @maxLength 256
-   * @nullable
-   */
-  data_hash?: string | null;
-}
-
-export interface PaginatedStyleList {
-  count: number;
-  /** @nullable */
-  next?: string | null;
-  /** @nullable */
-  previous?: string | null;
-  results: Style[];
-}
-
 export interface TxPrescriptionProjectArea {
   readonly id: number;
   /**
@@ -1544,30 +1437,6 @@ export interface PaginatedTreatmentPrescriptionListList {
   /** @nullable */
   previous?: string | null;
   results: TreatmentPrescriptionList[];
-}
-
-export interface Workspace {
-  readonly id: number;
-  /** @maxLength 256 */
-  name: string;
-  visibility?: VisibilityEnum;
-  /** @nullable */
-  readonly created_at: string | null;
-  readonly updated_at: string;
-  /**
-   * Define if the entity has been deleted or not and when
-   * @nullable
-   */
-  readonly deleted_at: string | null;
-}
-
-export interface PaginatedWorkspaceList {
-  count: number;
-  /** @nullable */
-  next?: string | null;
-  /** @nullable */
-  previous?: string | null;
-  results: Workspace[];
 }
 
 /**
@@ -1720,11 +1589,6 @@ export interface PatchedUpdatePlanningArea {
    * @maxLength 120
    */
   name?: string;
-}
-
-export interface PatchedUpdateWorkspace {
-  name?: string;
-  visibility?: string;
 }
 
 export interface PatchedUpsertConfigurationV2 {
@@ -2311,11 +2175,6 @@ export interface UpdatePlanningArea {
   name: string;
 }
 
-export interface UpdateWorkspace {
-  name?: string;
-  visibility?: string;
-}
-
 export const UpsertScenarioV3Origin = { ...OriginEnum } as const;
 export interface UpsertScenarioV3 {
   /** Planning Area ID. */
@@ -2389,123 +2248,6 @@ export interface UserObjectRole {
 export interface VerifyEmail {
   key: string;
 }
-
-export type AdminDatalayersListParams = {
-  category?: number;
-  /**
-   * dataset id
-   */
-  dataset?: number;
-  /**
-   * Multiple values may be separated by commas.
-   */
-  id__in?: number[];
-  /**
-   * Number of results to return per page.
-   */
-  limit?: number;
-  name?: string;
-  name__icontains?: string;
-  /**
-   * The initial index from which to return the results.
-   */
-  offset?: number;
-  /**
-   * Which field to use when ordering the results.
-   */
-  ordering?: string;
-  original_name?: string;
-  original_name__icontains?: string;
-  /**
- * Status of the file relative to our system.
-
-* `READY` - Ready
-* `PENDING` - Pending
-* `FAILED` - Failed
- */
-  status?: AdminDatalayersListStatus;
-  /**
-   * * `VECTOR` - Vector
-   * `RASTER` - Raster
-   * @nullable
-   */
-  type?: AdminDatalayersListType;
-};
-
-export type AdminDatalayersListStatus =
-  (typeof AdminDatalayersListStatus)[keyof typeof AdminDatalayersListStatus];
-
-export const AdminDatalayersListStatus = {
-  FAILED: 'FAILED',
-  PENDING: 'PENDING',
-  READY: 'READY',
-} as const;
-
-export type AdminDatalayersListType =
-  | (typeof AdminDatalayersListType)[keyof typeof AdminDatalayersListType]
-  | null;
-
-export const AdminDatalayersListType = {
-  RASTER: 'RASTER',
-  VECTOR: 'VECTOR',
-} as const;
-
-export type AdminDatasetsListParams = {
-  /**
-   * Number of results to return per page.
-   */
-  limit?: number;
-  /**
-   * The initial index from which to return the results.
-   */
-  offset?: number;
-  /**
-   * Which field to use when ordering the results.
-   */
-  ordering?: string;
-};
-
-export type AdminStylesListParams = {
-  /**
-   * Number of results to return per page.
-   */
-  limit?: number;
-  name?: string;
-  name__icontains?: string;
-  /**
-   * The initial index from which to return the results.
-   */
-  offset?: number;
-  /**
-   * Which field to use when ordering the results.
-   */
-  ordering?: string;
-  organization?: number;
-  /**
-   * * `VECTOR` - Vector
-   * `RASTER` - Raster
-   */
-  type?: AdminStylesListType;
-};
-
-export type AdminStylesListType =
-  (typeof AdminStylesListType)[keyof typeof AdminStylesListType];
-
-export const AdminStylesListType = {
-  RASTER: 'RASTER',
-  VECTOR: 'VECTOR',
-} as const;
-
-export type AdminWorkspacesListParams = {
-  /**
-   * Number of results to return per page.
-   */
-  limit?: number;
-  /**
-   * The initial index from which to return the results.
-   */
-  offset?: number;
-};
 
 export type ClimateForesightPillarsListParams = {
   /**
