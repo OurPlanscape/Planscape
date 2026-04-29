@@ -52,6 +52,7 @@ PLANSCAPE_APPS = [
     "stands",
     "users",
     "utils",
+    "workspaces",
 ]
 INSTALLED_APPS = [
     "allauth",

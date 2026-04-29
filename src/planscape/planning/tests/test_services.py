@@ -31,7 +31,7 @@ from planning.models import (
     TreatmentGoalUsageType,
 )
 from planning.services import (
-    calculate_and_update_rx_leverage,
+    calculate_and_update_scenario_result,
     create_planning_area,
     create_scenario,
     export_planning_area_to_geopackage,
@@ -1477,7 +1477,7 @@ class SubUnitsDetailsTest(TestCase):
         self.assertEqual(details.get("targeted_area"), 4250)
 
 
-class RxLeverageTest(TestCase):
+class CalculateAndUpdateScenarioResult(TestCase):
     def setUp(self):
         self.datalayers = DataLayerFactory.create_batch(2, type=DataLayerType.RASTER)
         self.attainment = {
@@ -1500,11 +1500,12 @@ class RxLeverageTest(TestCase):
         scenario = ScenarioFactory(
             type=ScenarioType.PRESET,
             treatment_goal=treatment_goal,
+            forsys_input={"stand_ids": [1, 2, 3, 4]},
         )
         scenario_result = ScenarioResultFactory.create(scenario=scenario)
 
         self._update_attainment(scenario_result)
-        calculate_and_update_rx_leverage(scenario)
+        calculate_and_update_scenario_result(scenario)
 
         scenario.refresh_from_db()
         scenario_result.refresh_from_db()
@@ -1513,15 +1514,18 @@ class RxLeverageTest(TestCase):
         features = result.get("features")
         for feature in features:
             self.assertIsNotNone(feature.get("properties", {}).get("rx_leverage"))
+            self.assertIsNotNone(feature.get("properties", {}).get("pct_treatable_area"))
 
     def test_scenario_type_custom(self):
         scenario = ScenarioFactory(
-            type=ScenarioType.CUSTOM, with_priority_objectives=self.datalayers
+            type=ScenarioType.CUSTOM, 
+            with_priority_objectives=self.datalayers,
+            forsys_input={"stand_ids": [1, 2, 3, 4]},
         )
         scenario_result = ScenarioResultFactory.create(scenario=scenario)
 
         self._update_attainment(scenario_result)
-        calculate_and_update_rx_leverage(scenario)
+        calculate_and_update_scenario_result(scenario)
 
         scenario.refresh_from_db()
         scenario_result.refresh_from_db()
@@ -1530,3 +1534,4 @@ class RxLeverageTest(TestCase):
         features = result.get("features")
         for feature in features:
             self.assertIsNotNone(feature.get("properties", {}).get("rx_leverage"))
+            self.assertIsNotNone(feature.get("properties", {}).get("pct_treatable_area"))

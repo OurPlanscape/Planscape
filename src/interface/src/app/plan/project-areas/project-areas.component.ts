@@ -9,10 +9,10 @@ import { CurrencyPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 export interface ProjectAreaReport {
   rank: number;
   acres: number;
-  percentTotal: number;
   estimatedCost: number;
   score: number;
   rxLeverage: number;
+  percentTreatableArea: number;
 }
 
 export type ProjectTotalReport = Omit<ProjectAreaReport, 'rank' | 'score'>;
@@ -32,7 +32,7 @@ export class ProjectAreasComponent implements OnChanges {
 
   total: ProjectTotalReport = {
     acres: 0,
-    percentTotal: 0,
+    percentTreatableArea: 0,
     estimatedCost: 0,
     rxLeverage: 0,
   };
