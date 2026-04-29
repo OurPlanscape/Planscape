@@ -219,6 +219,39 @@ Tag the backend first and inspect generated types before migrating — `Scenario
   `DataSetSearchResult` / `SearchQuery` — the generated `SearchResults` has `data: unknown`, so the hand-written discriminated union is more useful than
   what's generated and should stick around until the search endpoint migrates.
 
-### ✅ Auth / dj-rest-auth
+### 🔲 Auth / dj-rest-auth
 
-`services/auth.service.ts` already wraps `api/generated/dj-rest-auth/` internally. No further migration needed.
+|              |                                                                                                                                          |
+|--------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| Backend      | `dj-rest-auth` URL routes — already in the generated schema                                                                              |
+| Generated    | `api/generated/dj-rest-auth/dj-rest-auth.service.ts` — `DjRestAuthService` (zero consumers today)                                        |
+| Hand-written | `services/auth.service.ts` — 416 lines of raw `HttpClient` calls against `${backend_endpoint}/dj-rest-auth/*`                             |
+| Used in      | App-wide (login flows, password reset, registration, token refresh, route guards)                                                        |
+
+The generated `DjRestAuthService` exists but `auth.service.ts` hand-rolls every call. Migration would replace the raw `http.post`/`http.get` calls with
+the generated methods — mostly a 1:1 swap, but the auth flow has lots of side effects (cookie management, BehaviorSubject updates, redirect logic)
+so the wrapper class probably stays even after the swap.
+
+### Residual data-layers debt (sub-endpoint cleanup, not a full migration)
+
+These are smaller items inside the data-layers domain that we left after the main migration shipped. They retire specific casts / hand-written types
+without standing up a new endpoint catalog entry.
+
+1. **`SearchResults.data` is `unknown`** — backend currently emits `data: serializers.JSONField()`. Frontend casts the response to a hand-written
+   `Pagination<SearchResult>` discriminated union (the largest remaining cast in `data-layers.state.service.ts`). Fix is a `PolymorphicProxySerializer`
+   on the backend's `SearchResultsSerializer.data` keyed by `type` (`DATASET` → `DatasetSerializer`, `DATALAYER` → `BrowseDataLayerSerializer`). Once
+   the schema declares the polymorphism, generated types replace `SearchResult` / `DataLayerSearchResult` / `DataSetSearchResult` and the cast goes
+   away.
+2. **`metadata` schema is still `OpenApiTypes.OBJECT`** — generated as `BrowseDataLayerMetadata = {[key: string]: unknown} | null`. The frontend casts
+   to `Metadata = Record<string, any>` and uses bracket access. The fix is a real backend serializer for the heterogeneous shape (RRK ISO-19115
+   sub-object + module configs), but it's deferred — moderate cost, modest payoff.
+3. **`BaseLayer` cast at `base-layers-list.component.ts:132`** — `layers as unknown as BaseLayer[]`. Vector consumers want a narrower shape than the
+   raster-typed `BrowseDataLayer.styles`. Bigger backend lift (polymorphic styles schema discriminated by layer type). Defer until vector usage
+   actually causes pain.
+
+### Suggested next moves (cost / payoff)
+
+1. **(2)** Search PolymorphicProxySerializer — small, contained, retires the largest remaining cast in the data-layers module.
+2. **Planning Areas migration** — blockers in this doc are all small and well-understood; mechanics now well-rehearsed. Highest endpoint payoff.
+3. **Auth migration** — mostly mechanical 1:1 swap of `http.post`/`http.get` for `DjRestAuthService` methods; wrapper logic stays.
+4. **Scenarios recon** — tag the viewset, regen, look at the generated type. 5-min experiment, no commitment.
