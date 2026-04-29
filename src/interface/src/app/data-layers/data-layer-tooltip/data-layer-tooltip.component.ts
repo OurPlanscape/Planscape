@@ -3,7 +3,7 @@ import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
-import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
 import { map, Observable, shareReplay, take } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 import { AccountRoutingModule } from '@account/account-routing.module';

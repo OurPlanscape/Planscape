@@ -20,8 +20,8 @@ import {
   isCustomScenario,
   isPlanningApproachSubUnits,
 } from '../scenario-helper';
-import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
-import { DataLayer } from '@app/api/generated/planscapeAPI.schemas';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureService } from '@features/feature.service';
 import { filter } from 'rxjs/operators';

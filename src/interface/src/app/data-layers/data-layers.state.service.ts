@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@angular/core';
-import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
-import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
+import { DatasetsService } from '@api/datasets/datasets.service';
 import {
   BrowseDataLayer,
   TypeE04Enum,
-} from '@app/api/generated/planscapeAPI.schemas';
+} from '@api/planscapeAPI.schemas';
 import {
   BehaviorSubject,
   catchError,

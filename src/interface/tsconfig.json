@@ -10,6 +10,12 @@
       "@app/*": [
         "src/app/*"
       ],
+      "@api": [
+        "src/app/api/generated"
+      ],
+      "@api/*": [
+        "src/app/api/generated/*"
+      ],
       "@account": [
         "src/app/account"
       ],

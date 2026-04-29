@@ -8,7 +8,7 @@ import {
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
-import { TreatmentGoal } from '@app/api/generated/planscapeAPI.schemas';
+import { TreatmentGoal } from '@api/planscapeAPI.schemas';
 
 /**
  * This method will get a list of scenarioGoal and will return the grouped version of it

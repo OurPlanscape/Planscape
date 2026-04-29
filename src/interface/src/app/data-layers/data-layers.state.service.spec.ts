@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
-import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
-import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
+import { DatasetsService } from '@api/datasets/datasets.service';
 import { of } from 'rxjs';
 
 import { MapModuleService } from '@services/map-module.service';

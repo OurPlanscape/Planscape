@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { ModuleService } from './module.service';
 import { ApiModule, MapData } from '@types';
-import { ModuleEnum } from '@app/api/generated/planscapeAPI.schemas';
+import { ModuleEnum } from '@api/planscapeAPI.schemas';
 import { BehaviorSubject, map, shareReplay, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MAP_MODULE_NAME } from './map-module.token';

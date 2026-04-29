@@ -9,7 +9,7 @@ import {
   ScenarioDraftConfiguration,
   ScenarioV3Payload,
 } from '@types';
-import { TreatmentGoal } from '@app/api/generated/planscapeAPI.schemas';
+import { TreatmentGoal } from '@api/planscapeAPI.schemas';
 
 describe('getGroupedGoals', () => {
   const makeGoal = (overrides: Partial<TreatmentGoal> = {}): TreatmentGoal => ({

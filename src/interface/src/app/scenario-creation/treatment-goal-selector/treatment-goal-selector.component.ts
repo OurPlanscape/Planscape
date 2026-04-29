@@ -7,7 +7,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { ActivatedRoute } from '@angular/router';
 import { SectionComponent } from '@styleguide';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
-import { TreatmentGoalsService } from '@app/api/generated/treatment-goals/treatment-goals.service';
+import { TreatmentGoalsService } from '@api/treatment-goals/treatment-goals.service';
 import { getGroupedGoals } from '@scenario/scenario-helper';
 import { NewScenarioState } from '../new-scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';

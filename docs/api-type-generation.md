@@ -54,7 +54,7 @@ npm run generate:api
 ## Migrating a hand-written service
 
 1. Tag the backend view (step above), restart, regenerate
-2. Update component imports: `@services` → `@app/api/generated/your-tag/your-tag.service`
+2. Update component imports: `@services` → `@api/your-tag/your-tag.service` (the `@api` alias maps to `src/app/api/generated`; types live in `@api/planscapeAPI.schemas`)
 3. Replace method calls with generated equivalents
 4. Update specs — use `MockProvider(GeneratedService)` with no inline overrides, then `spyOn` in `beforeEach` to avoid overload type conflicts
 5. Delete the hand-written service file, hand-written type file, and orphaned spec

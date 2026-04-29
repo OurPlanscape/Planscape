@@ -5,8 +5,8 @@ import { of } from 'rxjs';
 import { BaseLayersListComponent } from './base-layers-list.component';
 import { BaseLayer, MapDataDataSet } from '@types';
 import { BaseLayersStateService } from '../base-layers.state.service';
-import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
-import { TypeE04Enum, ModuleEnum } from '@app/api/generated/planscapeAPI.schemas';
+import { DatasetsService } from '@api/datasets/datasets.service';
+import { TypeE04Enum, ModuleEnum } from '@api/planscapeAPI.schemas';
 import { MockProvider } from 'ng-mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 

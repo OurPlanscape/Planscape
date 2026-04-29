@@ -8,7 +8,7 @@ import {
   ScenarioDraftConfiguration,
   ScenarioV3Config,
 } from '@types';
-import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
 import {
   BehaviorSubject,
   catchError,

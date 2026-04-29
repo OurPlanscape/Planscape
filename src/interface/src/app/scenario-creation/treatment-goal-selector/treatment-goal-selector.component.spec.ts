@@ -10,9 +10,9 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { TreatmentGoalSelectorComponent } from './treatment-goal-selector.component';
-import { TreatmentGoalsService } from '@app/api/generated/treatment-goals/treatment-goals.service';
+import { TreatmentGoalsService } from '@api/treatment-goals/treatment-goals.service';
 import { NewScenarioState } from '../new-scenario.state';
-import { TreatmentGoal } from '@app/api/generated/planscapeAPI.schemas';
+import { TreatmentGoal } from '@api/planscapeAPI.schemas';
 import { FormControl } from '@angular/forms';
 
 describe('TreatmentGoalSelectorComponent', () => {

@@ -23,7 +23,7 @@ import {
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ScenarioService } from '@services';
-import { TreatmentGoalsService } from '@app/api/generated/treatment-goals/treatment-goals.service';
+import { TreatmentGoalsService } from '@api/treatment-goals/treatment-goals.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   BaseLayer,

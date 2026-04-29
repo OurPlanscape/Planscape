@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { ModuleEnum } from '@app/api/generated/planscapeAPI.schemas';
+import { ModuleEnum } from '@api/planscapeAPI.schemas';
 
 /**
  * Token used to define the module we want to consume for our datasets.

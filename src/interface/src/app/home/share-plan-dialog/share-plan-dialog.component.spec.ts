@@ -5,8 +5,8 @@ import { MockComponents, MockProvider } from 'ng-mocks';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthService } from '@services';
-import { InvitesService } from '@app/api/generated/invites/invites.service';
-import { RoleEnum } from '@app/api/generated/planscapeAPI.schemas';
+import { InvitesService } from '@api/invites/invites.service';
+import { RoleEnum } from '@api/planscapeAPI.schemas';
 import { BehaviorSubject, of } from 'rxjs';
 import { Plan, User } from '@types';
 import { ChipInputComponent } from '@home/chip-input/chip-input.component';

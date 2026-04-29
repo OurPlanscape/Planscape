@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DataLayerTooltipComponent } from './data-layer-tooltip.component';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { DatalayersService } from '@app/api/generated/datalayers/datalayers.service';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 
