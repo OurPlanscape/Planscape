@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ExpandedChangeOverTimeChartComponent } from './expanded-change-over-time-chart.component';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { ChangeOverTimeChartService } from '@treatments/change-over-time-chart/change-over-time-chart.service';
 import { TreatmentsState } from '../treatments.state';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, of } from 'rxjs';
@@ -43,6 +44,11 @@ describe('ExpandedChangeOverTimeChartComponent', () => {
           activeStand$: new BehaviorSubject(null),
           selectedProjectArea$: of('All' as any),
           reportMetrics$: of(null as any),
+        }),
+        MockProvider(ChangeOverTimeChartService, {
+          barChartData$: of(undefined),
+          hasChartData$: of(false),
+          loading$: of(false),
         }),
         { provide: MatDialogRef, useValue: {} },
       ],
