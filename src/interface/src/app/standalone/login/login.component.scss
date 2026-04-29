@@ -22,12 +22,15 @@
   display: flex;
   width: 50%;
   position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .signin-subcontainer {
   flex-direction: column;
-  margin: auto;
   margin-top: 6%;
+  display: flex;
+  flex-direction: column;
 }
 
 .signin-card-logo {
@@ -42,7 +45,6 @@
 }
 
 .signin-card {
-  margin: auto;
   max-width: 300px;
   border-radius: 8px;
   display: flex;
@@ -52,6 +54,7 @@
   padding: 40px 60px;
   background-color: white;
   border: 1px solid rgba(72, 84, 192, 0.5);
+  margin: auto auto 16px;
 }
 
 h1 {
@@ -186,7 +189,10 @@ mat-form-field {
   margin-top: 10px;
 }
 
-// When we have a login error the credits where overlapping some buttons on small screens
-.mb-90 {
-  margin-bottom: 90px;
+
+app-credits-blurb {
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }

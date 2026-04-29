@@ -1,4 +1,11 @@
-import { Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { BASE_COLORS } from '@treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
@@ -32,7 +39,9 @@ import { FrontendConstants } from '@map/map.constants';
   imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './scenario-stands.component.html',
 })
-export class ScenarioStandsComponent implements OnInit, OnDestroy {
+export class ScenarioStandsComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   @Input() mapLibreMap!: MapLibreMap;
   readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
   readonly excludedKey = 'excluded';
@@ -50,7 +59,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     ),
     distinctUntilChanged(),
     // when the stand size changes, set as loading
-    tap((s) => {
+    tap(() => {
       this.newScenarioState.setLoading(true);
       this.standsLoaded = false;
     })
@@ -67,31 +76,7 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     private newScenarioState: NewScenarioState,
     private zone: NgZone,
     private mapConfigState: MapConfigState
-  ) {
-    // clear constrained stands when navigating to a step that doesn't include constraints (or pre-step).
-    this.newScenarioState.currentStep$
-      .pipe(
-        untilDestroyed(this),
-        filter((step) => step === null || !step.includeConstraints)
-      )
-      .subscribe(() => {
-        this.constrainedStands.forEach((id) =>
-          this.removeFeatureState(id, this.constrainedKey)
-        );
-      });
-
-    this.newScenarioState.doesNotMeetConstraintsStands$
-      .pipe(untilDestroyed(this))
-      .subscribe((ids) => {
-        this.paintConstrainedStands(ids);
-      });
-
-    this.newScenarioState.excludedStands$
-      .pipe(untilDestroyed(this))
-      .subscribe((ids) => {
-        this.paintExcludedStands(ids);
-      });
-  }
+  ) {}
 
   filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
     this.newScenarioState.currentStep$,
@@ -143,6 +128,42 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
+
+    // clear constrained stands when navigating to a step that doesn't include constraints (or pre-step).
+    this.newScenarioState.currentStep$
+      .pipe(
+        untilDestroyed(this),
+        filter((step) => step === null || !step.includeConstraints)
+      )
+      .subscribe(() => {
+        this.constrainedStands.forEach((id) =>
+          this.removeFeatureState(id, this.constrainedKey)
+        );
+      });
+
+    this.newScenarioState.doesNotMeetConstraintsStands$
+      .pipe(untilDestroyed(this))
+      .subscribe((ids) => {
+        this.paintConstrainedStands(ids);
+      });
+
+    this.newScenarioState.excludedStands$
+      .pipe(untilDestroyed(this))
+      .subscribe((ids) => {
+        this.paintExcludedStands(ids);
+      });
+  }
+
+  ngAfterViewInit(): void {
+    // If tiles are already loaded (cached from a previous mount), sourcedata won't re-fire.
+    // Check here — after mgl-vector-source has initialized — to avoid leaving loading stuck.
+    if (
+      !this.standsLoaded &&
+      this.mapLibreMap.isSourceLoaded(this.sourceName)
+    ) {
+      this.newScenarioState.setBaseStandsLoaded(true);
+      this.standsLoaded = true;
+    }
   }
 
   ngOnDestroy(): void {
@@ -150,23 +171,29 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
   }
 
+  private paintStands(ids: number[], key: string, current: number[]): number[] {
+    current.forEach((id) => this.removeFeatureState(id, key));
+    ids.forEach((id) => this.setFeatureState(id, key));
+    return ids;
+  }
+
   private paintExcludedStands(ids: number[]) {
-    this.excludedStands.forEach((id) =>
-      this.removeFeatureState(id, this.excludedKey)
+    this.excludedStands = this.paintStands(
+      ids,
+      this.excludedKey,
+      this.excludedStands
     );
-    ids.forEach((id) => this.setFeatureState(id, this.excludedKey));
-    this.excludedStands = ids;
   }
 
   private paintConstrainedStands(ids: number[]) {
-    this.constrainedStands.forEach((id) =>
-      this.removeFeatureState(id, this.constrainedKey)
+    this.constrainedStands = this.paintStands(
+      ids,
+      this.constrainedKey,
+      this.constrainedStands
     );
-    ids.forEach((id) => this.setFeatureState(id, this.constrainedKey));
-    this.constrainedStands = ids;
   }
 
-  private onStyleDataListener = (e: Event) => {
+  private onStyleDataListener = () => {
     this.paintExcludedStands(this.excludedStands);
     this.paintConstrainedStands(this.constrainedStands);
   };
@@ -188,22 +215,14 @@ export class ScenarioStandsComponent implements OnInit, OnDestroy {
 
   private setFeatureState(id: number, key: string) {
     this.mapLibreMap.setFeatureState(
-      {
-        source: this.sourceName,
-        sourceLayer: this.sourceName,
-        id: id,
-      },
+      { source: this.sourceName, sourceLayer: this.sourceName, id },
       { [key]: true }
     );
   }
 
   private removeFeatureState(id: number, key: string) {
     this.mapLibreMap.removeFeatureState(
-      {
-        source: this.sourceName,
-        sourceLayer: this.sourceName,
-        id: id,
-      },
+      { source: this.sourceName, sourceLayer: this.sourceName, id },
       key
     );
   }

@@ -83,6 +83,15 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
     )
 
+    workspace_id: int
+    workspace = models.ForeignKey(
+        "workspaces.Workspace",
+        related_name="datasets",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
     datalayers: models.QuerySet["DataLayer"]
     categories: models.QuerySet["Category"]
 
@@ -152,6 +161,15 @@ class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
         Dataset,
         related_name="categories",
         on_delete=models.RESTRICT,
+    )
+
+    workspace_id: int
+    workspace = models.ForeignKey(
+        "workspaces.Workspace",
+        related_name="categories",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     datalayers: models.QuerySet["DataLayer"]
@@ -288,6 +306,15 @@ class Style(
         null=True,
     )
 
+    workspace_id: int
+    workspace = models.ForeignKey(
+        "workspaces.Workspace",
+        related_name="styles",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
     name = models.CharField(max_length=128)
 
     type = models.CharField(
@@ -362,6 +389,15 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         related_name="datalayers",
         on_delete=models.RESTRICT,
         null=True,
+    )
+
+    workspace_id: int
+    workspace = models.ForeignKey(
+        "workspaces.Workspace",
+        related_name="datalayers",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     name = models.CharField(max_length=256)

@@ -84,5 +84,16 @@ export const PlanningDetails: Story = {
     creator: 'Luke Skywalker',
     acres: 52572,
     created_at: '2026-04-07T12:09:36Z',
+    planning_area_name: 'My planning area',
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    details: [],
+    creator: 'Luke Skywalker',
+    acres: 52572,
+    created_at: '2026-04-07T12:09:36Z',
+    loading: true,
   },
 };

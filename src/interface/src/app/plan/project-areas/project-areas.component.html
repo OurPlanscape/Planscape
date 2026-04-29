@@ -17,7 +17,7 @@
       </td>
       <td data-id="acres" class="right">{{ area.acres | number: '1.0-0' }}</td>
       <td data-id="percentTotal" class="right">
-        {{ area.percentTotal | number: '1.0-2' }}%
+        {{ area.percentTreatableArea | number: '1.0-2' }}%
       </td>
       <td data-id="rxLeverage" class="right" *ngIf="showRxLeverage">
         {{ area.rxLeverage | number: '1.0-2' }}%
@@ -32,7 +32,7 @@
         {{ total.acres | number: '1.0-0' }}
       </td>
       <td data-id="total-percent" class="right">
-        {{ total.percentTotal | number: '1.0-2' }}%
+        {{ total.percentTreatableArea | number: '1.0-2' }}%
       </td>
       <td data-id="total-rx-leverage" class="right" *ngIf="showRxLeverage">
         {{ total.rxLeverage | number: '1.0-2' }}%

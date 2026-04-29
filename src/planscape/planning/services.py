@@ -984,6 +984,19 @@ def _get_datalayers_id_lookup_table(scenario):
     return dl_lookup
 
 
+def _get_sub_units_lookup_table(scenario: Scenario) -> Optional[Dict[int, Any]]:
+    if scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+        return None
+    geojson = get_flatten_geojson(scenario)
+    ret = {}
+    for feature in geojson.get("features", []):
+        proj_id = feature["properties"].get("proj_id")
+        ret[proj_id] = {
+            **feature
+        }
+    return ret
+
+
 def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
     """
     Get the geojson result of a scenario.
@@ -1057,6 +1070,9 @@ def export_scenario_stand_outputs_to_geopackage(
     scenario_outputs = {}
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
+
+    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario)
+
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -1067,6 +1083,12 @@ def export_scenario_stand_outputs_to_geopackage(
                         properties[key] = int(value)
                     case "DoTreat", "selected":
                         properties[key] = bool(int(value))
+                    case "sub_unit_id":
+                        properties[key] = int(value)
+                        if sub_units_lookup_table:
+                            properties["treatment_rank"] = (
+                                sub_units_lookup_table.get(int(value), {}).get("properties", {}).get("treatment_rank")
+                            )
                     case _:
                         try:
                             f = float(value)
@@ -1095,6 +1117,9 @@ def export_scenario_stand_outputs_to_geopackage(
             geometry = stand_inputs.get(stand_id, {}).get("WKT")
             properties["WKT"] = geometry
             properties["stand_size"] = stand_size
+            pcp_fields = [key for key in stand_inputs.get(stand_id, {}) if key.lower().endswith("_pcp")]
+            for pcp_field in pcp_fields:
+                properties[pcp_field] = stand_inputs.get(stand_id, {}).get(pcp_field)
             scenario_outputs[stand_id] = properties
 
     features = []
@@ -1795,10 +1820,18 @@ def get_sub_units_stands_lookup_table(
     return lookup_table
 
 
-def calculate_and_update_rx_leverage(scenario: Scenario):
+def calculate_and_update_scenario_result(scenario: Scenario):
     results = scenario.results
     features = results.result.get("features")
 
+    features = calculate_and_update_rx_leverage(scenario=scenario, features=features)
+    features = calculate_and_update_pct_treatable_area(scenario=scenario, features=features)
+
+    results.result["features"] = features
+    results.save(update_fields=["result"])
+
+
+def calculate_and_update_rx_leverage(scenario: Scenario, features: List) -> List:
     if scenario.type == ScenarioType.CUSTOM:
         cfg = scenario.configuration or {}
         priority_ids = cfg.get("priority_objectives")
@@ -1816,5 +1849,20 @@ def calculate_and_update_rx_leverage(scenario: Scenario):
         rx_leverage = (sum(att_values) / area_acres) * 1000 if area_acres else None
         feature["properties"]["rx_leverage"] = rx_leverage
 
-    results.result["features"] = features
-    results.save(update_fields=["result"])
+    return features
+
+
+def calculate_and_update_pct_treatable_area(scenario: Scenario, features: List) -> List:
+    forsys_input = scenario.forsys_input or {}
+
+    number_of_stands = len(forsys_input.get("stand_ids", []))
+    stand_area = get_min_project_area(scenario=scenario)
+
+    treatable_area = number_of_stands * stand_area
+
+    for feature in features:
+        proj_area_acres = feature.get("properties").get("area_acres")
+        pct_treatable_area = proj_area_acres / treatable_area if treatable_area else None
+        feature["properties"]["pct_treatable_area"] = pct_treatable_area
+
+    return features
