@@ -7,7 +7,7 @@ export default defineConfig({
     },
     output: {
       mode: 'tags-split',
-      target: 'src/app/api/generated',
+      target: 'src/generated/api',
       client: 'angular',
       // Run prettier on each generated file as it's written so the output
       // matches the project's `.prettierrc` (single quotes, trailing commas,
@@ -32,7 +32,7 @@ export default defineConfig({
       // After orval finishes, run eslint --fix over the generated tree to
       // resolve anything prettier alone can't (e.g. import ordering, unused
       // imports flagged by the @typescript-eslint plugin).
-      afterAllFilesWrite: 'eslint --fix src/app/api/generated',
+      afterAllFilesWrite: 'eslint --fix src/generated/api',
     },
   },
 });
