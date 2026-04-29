@@ -26,7 +26,11 @@ export interface InfoStats {
   mean: number;
 }
 
-export interface Info {
+// Shape of `DataLayer.info` for raster layers (the JSONified output of
+// gdalinfo). Vector layers store ogrinfo output here, which has a totally
+// different shape. Use as a narrowing cast: `(layer.info as RasterInfo | null)`
+// at sites that have already established the layer is a raster.
+export interface RasterInfo {
   crs: string;
   res: number[];
   count: number;
@@ -106,7 +110,9 @@ export interface DataLayer {
   type: string;
   geometry_type: string;
   status: string;
-  info: Info;
+  // Loose JSON: gdalinfo output for rasters, ogrinfo for vectors.
+  // Cast at read site to RasterInfo when the layer is known to be raster.
+  info: Record<string, unknown> | null;
   metadata: Metadata | null;
   styles: Styles[];
   geometry?: Geometry;

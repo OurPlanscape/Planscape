@@ -21,7 +21,6 @@ import {
   BaseDataSet,
   DataLayer,
   DataSet,
-  Info,
   Metadata,
   Pagination,
   SearchResult,
@@ -45,9 +44,10 @@ export interface unselectableLayer {
 }
 
 // Converts the generated BrowseDataLayer to the app-wide DataLayer domain type.
-// info/metadata/styles are loose JSON-ish on the wire; the hand-written
-// Info/Metadata/Styles interfaces describe the specific shape we expect, so
-// the cast goes through `unknown` to skip the structural compatibility check.
+// `info` is left as Record<string, unknown> — readers narrow to RasterInfo at
+// the use site when they know the layer is a raster. `metadata` and `styles`
+// still go through `as unknown as` because their hand-written interfaces add
+// structural shape that TS can't derive from {[key: string]: unknown}.
 function toBrowseDataLayer(layer: BrowseDataLayer): DataLayer {
   return {
     id: layer.id,
@@ -58,7 +58,7 @@ function toBrowseDataLayer(layer: BrowseDataLayer): DataLayer {
     type: (layer.type as string) ?? '',
     geometry_type: (layer.geometry_type as string) ?? '',
     status: (layer.status as string) ?? '',
-    info: layer.info as unknown as Info,
+    info: layer.info ?? null,
     metadata: (layer.metadata as unknown as Metadata) ?? null,
     styles: layer.styles as unknown as Styles[],
     map_service_type: layer.map_service_type as DataLayer['map_service_type'],

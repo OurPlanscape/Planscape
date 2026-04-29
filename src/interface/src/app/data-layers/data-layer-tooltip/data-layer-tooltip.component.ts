@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { DataLayer } from '@types';
+import { DataLayer, RasterInfo } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
 import { DatalayersService } from '@api/datalayers/datalayers.service';
 import { map, Observable, shareReplay, take } from 'rxjs';
@@ -47,9 +47,10 @@ export class DataLayerTooltipComponent implements OnInit {
   }
 
   hasMinMax(): boolean {
+    const info = this.layer.info as RasterInfo | null;
     return (
-      this.layer.info?.stats?.[0]?.min != undefined &&
-      this.layer.info?.stats?.[0]?.max != undefined
+      info?.stats?.[0]?.min != undefined &&
+      info?.stats?.[0]?.max != undefined
     );
   }
 
