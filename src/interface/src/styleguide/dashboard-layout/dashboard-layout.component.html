@@ -14,6 +14,12 @@
   </div>
 
   <div class="layout-column">
-    <ng-content select="[right-column]"></ng-content>
+    @if (layoutVariant === 'disable-right-scroll') {
+      <div class="layout-card">
+        <ng-content select="[right-column]"></ng-content>
+      </div>
+    } @else {
+      <ng-content select="[right-column]"></ng-content>
+    }
   </div>
 </div>
