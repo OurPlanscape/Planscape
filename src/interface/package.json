@@ -19,7 +19,7 @@
     "storybook": "ng run interface:storybook",
     "build-storybook": "ng run interface:build-storybook",
     "postinstall": "patch-package",
-    "generate:api": "orval --config orval.config.ts && node scripts/postgen-schema-nocheck.js"
+    "generate:api": "orval --config orval.config.ts"
   },
   "private": true,
   "engines": {

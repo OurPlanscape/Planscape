@@ -15,7 +15,7 @@ frontend consumes generated Angular services. No more duplicated interfaces.
 2. `make export-schema` writes the schema to `src/interface/api-schema.yaml` (committed to git)
 3. `npm run generate:api` (run from `src/interface/`) reads `api-schema.yaml` and runs orval
 4. Generated output lands in `src/app/api/generated/` — one service file per OpenAPI tag (`tags-split` mode)
-5. Untagged endpoints fall into `v2/v2.service.ts` (suppressed with `@ts-nocheck` — see known issues)
+5. Untagged endpoints fall into `v2/v2.service.ts` — typechecks clean today, will shrink as more viewsets get tagged
 
 **Config**: `src/interface/orval.config.ts`  
 **Schema**: `src/interface/api-schema.yaml` — committed; refresh with `make export-schema`  
@@ -184,18 +184,6 @@ Note: `toBrowseDataLayer()` adapter in `data-layers/data-layers.state.service.ts
 ---
 
 ## Known issues
-
-### `v2/v2.service.ts` suppressed with `@ts-nocheck`
-
-Catch-all for untagged endpoints. Has 6 real type errors (Blob/Object overload mismatches on
-endpoints that return file downloads). `scripts/postgen-schema-nocheck.js` injects the
-`@ts-nocheck` comment after each `generate:api` run. Both the script and the suppression go
-away naturally as endpoints get tagged and move to their own service files.
-
-### `as ModuleEnum` boundary cast
-
-`MAP_MODULE_NAME` injection token is typed as `string` but always holds a `ModuleEnum` value.
-The cast in `data-layers/data-layers.state.service.ts` is correct but fragile. Fix: retype the token as `ModuleEnum`.
 
 ### Docker uv cache wipes on every restart
 
