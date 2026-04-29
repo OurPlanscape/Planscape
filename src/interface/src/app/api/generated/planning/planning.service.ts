@@ -8,31 +8,23 @@
 import {
   HttpClient,
   HttpHeaders,
-  HttpResponse as AngularHttpResponse
+  HttpResponse as AngularHttpResponse,
 } from '@angular/common/http';
-import type {
-  HttpContext,
-  HttpEvent,
-  HttpParams
-} from '@angular/common/http';
+import type { HttpContext, HttpEvent, HttpParams } from '@angular/common/http';
 
-import {
-  Injectable,
-  inject
-} from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
-import {
-  Observable
-} from 'rxjs';
-
-
+import { Observable } from 'rxjs';
 
 interface HttpClientOptions {
   readonly headers?: HttpHeaders | Record<string, string | string[]>;
   readonly context?: HttpContext;
   readonly params?:
-        | HttpParams
-      | Record<string, string | number | boolean | Array<string | number | boolean>>;
+    | HttpParams
+    | Record<
+        string,
+        string | number | boolean | Array<string | number | boolean>
+      >;
   readonly reportProgress?: boolean;
   readonly withCredentials?: boolean;
   readonly credentials?: RequestCredentials;
@@ -44,7 +36,7 @@ interface HttpClientOptions {
   readonly referrer?: string;
   readonly integrity?: string;
   readonly referrerPolicy?: ReferrerPolicy;
-  readonly transferCache?: {includeHeaders?: string[]} | boolean;
+  readonly transferCache?: { includeHeaders?: string[] } | boolean;
   readonly timeout?: number;
 }
 
@@ -64,16 +56,10 @@ type HttpClientObserveOptions = HttpClientOptions & {
   readonly observe?: 'body' | 'events' | 'response';
 };
 
-
-
-
-
-
-
 @Injectable({ providedIn: 'root' })
 export class PlanningService {
   private readonly http = inject(HttpClient);
-/**
+  /**
  * Generates a new Zip file of the shapefile for a scenario based on ID.
 
 Requires a logged in user.  Users can only access a scenarios belonging to their own planning areas.
@@ -83,37 +69,47 @@ Returns: a Zip file generated with the shapefiles
 Required params:
   id (int): The scenario ID to be retrieved.
  */
- planningDownloadShapefileRetrieve<TData = void>( options?: HttpClientBodyOptions): Observable<TData>;
- planningDownloadShapefileRetrieve<TData = void>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningDownloadShapefileRetrieve<TData = void>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningDownloadShapefileRetrieve<TData = void>(
-     options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningDownloadShapefileRetrieve<TData = void>(
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningDownloadShapefileRetrieve<TData = void>(
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningDownloadShapefileRetrieve<TData = void>(
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/download_shapefile/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/download_shapefile/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/download_shapefile/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/download_shapefile/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/planning/download_shapefile/`,{
+      `/planscape-backend/planning/download_shapefile/`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
-/**
+  /**
  * Generates a new Zip file for a scenario based on ID.
 
 Requires a logged in user.  Users can only access a scenarios belonging to their own planning areas.
@@ -123,37 +119,47 @@ Returns: a Zip file generated with the CSVs ad JSON file for this particular sce
 Required params:
   id (int): The scenario ID to be retrieved.
  */
- planningGetScenarioDownloadByIdRetrieve<TData = void>( options?: HttpClientBodyOptions): Observable<TData>;
- planningGetScenarioDownloadByIdRetrieve<TData = void>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningGetScenarioDownloadByIdRetrieve<TData = void>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningGetScenarioDownloadByIdRetrieve<TData = void>(
-     options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningGetScenarioDownloadByIdRetrieve<TData = void>(
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningGetScenarioDownloadByIdRetrieve<TData = void>(
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningGetScenarioDownloadByIdRetrieve<TData = void>(
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/get_scenario_download_by_id/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/get_scenario_download_by_id/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/get_scenario_download_by_id/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/get_scenario_download_by_id/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/planning/get_scenario_download_by_id/`,{
+      `/planscape-backend/planning/get_scenario_download_by_id/`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
-/**
+  /**
  * Retrieves all planning areas for a user.
 Requires a logged in user.  Users can see only their owned planning_areas.
 
@@ -164,347 +170,504 @@ Returns: A list of planning areas in JSON form.  Each planning area JSON will al
 
 Required params: none
  */
- planningListPlanningAreasRetrieve<TData = void>( options?: HttpClientBodyOptions): Observable<TData>;
- planningListPlanningAreasRetrieve<TData = void>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningListPlanningAreasRetrieve<TData = void>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningListPlanningAreasRetrieve<TData = void>(
-     options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningListPlanningAreasRetrieve<TData = void>(
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningListPlanningAreasRetrieve<TData = void>(
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningListPlanningAreasRetrieve<TData = void>(
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/list_planning_areas/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/list_planning_areas/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/list_planning_areas/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/list_planning_areas/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/planning/list_planning_areas/`,{
+      `/planscape-backend/planning/list_planning_areas/`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteRetrieve<TData = void>(planningareaPk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteRetrieve<TData = void>(planningareaPk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteRetrieve<TData = void>(planningareaPk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteRetrieve<TData = void>(
-    planningareaPk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareaPk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteRetrieve<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteRetrieve<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteRetrieve<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteCreate<TData = void>(planningareaPk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteCreate<TData = void>(planningareaPk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteCreate<TData = void>(planningareaPk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteCreate<TData = void>(
-    planningareaPk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareaPk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteCreate<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteCreate<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteCreate<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,undefined,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+      undefined,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteDestroy<TData = void>(planningareaPk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteDestroy<TData = void>(planningareaPk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteDestroy<TData = void>(planningareaPk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteDestroy<TData = void>(
-    planningareaPk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareaPk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteDestroy<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteDestroy<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteDestroy<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteRetrieve2<TData = void>(planningareaPk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteRetrieve2<TData = void>(planningareaPk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteRetrieve2<TData = void>(planningareaPk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteRetrieve2<TData = void>(
-    planningareaPk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareaPk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteRetrieve2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteRetrieve2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteRetrieve2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteCreate2<TData = void>(planningareaPk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteCreate2<TData = void>(planningareaPk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteCreate2<TData = void>(planningareaPk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteCreate2<TData = void>(
-    planningareaPk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareaPk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteCreate2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteCreate2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteCreate2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,undefined,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+      undefined,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteDestroy2<TData = void>(planningareaPk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteDestroy2<TData = void>(planningareaPk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteDestroy2<TData = void>(planningareaPk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteDestroy2<TData = void>(
-    planningareaPk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareaPk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteDestroy2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteDestroy2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteDestroy2<TData = void>(
+    planningareaPk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note/`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteRetrieve3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteRetrieve3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteRetrieve3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteRetrieve3<TData = void>(
     planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareanotePk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteRetrieve3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteRetrieve3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteRetrieve3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteCreate3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteCreate3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteCreate3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteCreate3<TData = void>(
     planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareanotePk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteCreate3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteCreate3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteCreate3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.post<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,undefined,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+      undefined,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningPlanningAreaNoteDestroy3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientBodyOptions): Observable<TData>;
- planningPlanningAreaNoteDestroy3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningPlanningAreaNoteDestroy3<TData = void>(planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningPlanningAreaNoteDestroy3<TData = void>(
     planningareaPk: number,
-    planningareanotePk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    planningareanotePk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningPlanningAreaNoteDestroy3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningPlanningAreaNoteDestroy3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningPlanningAreaNoteDestroy3<TData = void>(
+    planningareaPk: number,
+    planningareanotePk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.delete<TData>(
-      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,{
+      `/planscape-backend/planning/planning_area/${planningareaPk}/note/${planningareanotePk}`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- planningValidatePlanningAreaCreate<TData = void>( options?: HttpClientBodyOptions): Observable<TData>;
- planningValidatePlanningAreaCreate<TData = void>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- planningValidatePlanningAreaCreate<TData = void>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   planningValidatePlanningAreaCreate<TData = void>(
-     options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  planningValidatePlanningAreaCreate<TData = void>(
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  planningValidatePlanningAreaCreate<TData = void>(
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  planningValidatePlanningAreaCreate<TData = void>(
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/validate_planning_area/`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/planning/validate_planning_area/`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.post<TData>(
-      `/planscape-backend/planning/validate_planning_area/`,undefined,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/planning/validate_planning_area/`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.post<TData>(
-      `/planscape-backend/planning/validate_planning_area/`,undefined,{
+      `/planscape-backend/planning/validate_planning_area/`,
+      undefined,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
-};
-
+}

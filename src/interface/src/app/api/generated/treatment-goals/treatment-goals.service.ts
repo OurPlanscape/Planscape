@@ -8,36 +8,28 @@
 import {
   HttpClient,
   HttpHeaders,
-  HttpResponse as AngularHttpResponse
+  HttpResponse as AngularHttpResponse,
 } from '@angular/common/http';
-import type {
-  HttpContext,
-  HttpEvent,
-  HttpParams
-} from '@angular/common/http';
+import type { HttpContext, HttpEvent, HttpParams } from '@angular/common/http';
 
-import {
-  Injectable,
-  inject
-} from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
-import {
-  Observable
-} from 'rxjs';
+import { Observable } from 'rxjs';
 
 import type {
   TreatmentGoal,
-  TreatmentGoalsListParams
+  TreatmentGoalsListParams,
 } from '../planscapeAPI.schemas';
-
-
 
 interface HttpClientOptions {
   readonly headers?: HttpHeaders | Record<string, string | string[]>;
   readonly context?: HttpContext;
   readonly params?:
-        | HttpParams
-      | Record<string, string | number | boolean | Array<string | number | boolean>>;
+    | HttpParams
+    | Record<
+        string,
+        string | number | boolean | Array<string | number | boolean>
+      >;
   readonly reportProgress?: boolean;
   readonly withCredentials?: boolean;
   readonly credentials?: RequestCredentials;
@@ -49,7 +41,7 @@ interface HttpClientOptions {
   readonly referrer?: string;
   readonly integrity?: string;
   readonly referrerPolicy?: ReferrerPolicy;
-  readonly transferCache?: {includeHeaders?: string[]} | boolean;
+  readonly transferCache?: { includeHeaders?: string[] } | boolean;
   readonly timeout?: number;
 }
 
@@ -69,23 +61,27 @@ type HttpClientObserveOptions = HttpClientOptions & {
   readonly observe?: 'body' | 'events' | 'response';
 };
 
-type AngularHttpParamValue = string | number | boolean | Array<string | number | boolean>;
+type AngularHttpParamValue =
+  | string
+  | number
+  | boolean
+  | Array<string | number | boolean>;
 type AngularHttpParamValueWithNullable = AngularHttpParamValue | null;
 
 function filterParams(
   params: Record<string, unknown>,
   requiredNullableKeys?: ReadonlySet<string>,
-  preserveRequiredNullables?: false,
+  preserveRequiredNullables?: false
 ): Record<string, AngularHttpParamValue>;
 function filterParams(
   params: Record<string, unknown>,
   requiredNullableKeys: ReadonlySet<string> | undefined,
-  preserveRequiredNullables: true,
+  preserveRequiredNullables: true
 ): Record<string, AngularHttpParamValueWithNullable>;
 function filterParams(
   params: Record<string, unknown>,
   requiredNullableKeys: ReadonlySet<string> = new Set(),
-  preserveRequiredNullables = false,
+  preserveRequiredNullables = false
 ): Record<string, AngularHttpParamValueWithNullable> {
   const filteredParams: Record<string, AngularHttpParamValueWithNullable> = {};
   for (const [key, value] of Object.entries(params)) {
@@ -95,7 +91,7 @@ function filterParams(
           item != null &&
           (typeof item === 'string' ||
             typeof item === 'number' ||
-            typeof item === 'boolean'),
+            typeof item === 'boolean')
       ) as Array<string | number | boolean>;
       if (filtered.length) {
         filteredParams[key] = filtered;
@@ -118,83 +114,103 @@ function filterParams(
   return filteredParams;
 }
 
-
-
-
-
 @Injectable({ providedIn: 'root' })
 export class TreatmentGoalsService {
   private readonly http = inject(HttpClient);
-/**
- * List Treatment Goals.
- */
- treatmentGoalsList<TData = TreatmentGoal[]>(params?: TreatmentGoalsListParams, options?: HttpClientBodyOptions): Observable<TData>;
- treatmentGoalsList<TData = TreatmentGoal[]>(params?: TreatmentGoalsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- treatmentGoalsList<TData = TreatmentGoal[]>(params?: TreatmentGoalsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  /**
+   * List Treatment Goals.
+   */
   treatmentGoalsList<TData = TreatmentGoal[]>(
-    params?: TreatmentGoalsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+    params?: TreatmentGoalsListParams,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  treatmentGoalsList<TData = TreatmentGoal[]>(
+    params?: TreatmentGoalsListParams,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  treatmentGoalsList<TData = TreatmentGoal[]>(
+    params?: TreatmentGoalsListParams,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  treatmentGoalsList<TData = TreatmentGoal[]>(
+    params?: TreatmentGoalsListParams,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams(
+      { ...params, ...options?.params },
+      new Set<string>([])
+    );
 
     if (options?.observe === 'events') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/treatment-goals/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      return this.http.get<TData>(`/planscape-backend/v2/treatment-goals/`, {
+        withCredentials: true,
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'events',
-        params: filteredParams,}
-    );
+        params: filteredParams,
+      });
     }
 
     if (options?.observe === 'response') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/treatment-goals/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      return this.http.get<TData>(`/planscape-backend/v2/treatment-goals/`, {
+        withCredentials: true,
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'response',
-        params: filteredParams,}
-    );
+        params: filteredParams,
+      });
     }
 
-    return this.http.get<TData>(
-      `/planscape-backend/v2/treatment-goals/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'body',
-        params: filteredParams,}
-    );
+    return this.http.get<TData>(`/planscape-backend/v2/treatment-goals/`, {
+      withCredentials: true,
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
   }
-/**
- * Detail Treatment Goal.
- */
- treatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- treatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- treatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  /**
+   * Detail Treatment Goal.
+   */
   treatmentGoalsRetrieve<TData = TreatmentGoal>(
-    id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    id: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  treatmentGoalsRetrieve<TData = TreatmentGoal>(
+    id: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  treatmentGoalsRetrieve<TData = TreatmentGoal>(
+    id: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  treatmentGoalsRetrieve<TData = TreatmentGoal>(
+    id: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/v2/treatment-goals/${id}/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/v2/treatment-goals/${id}/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/v2/treatment-goals/${id}/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/v2/treatment-goals/${id}/`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/v2/treatment-goals/${id}/`,{
+      `/planscape-backend/v2/treatment-goals/${id}/`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
-};
-
+}

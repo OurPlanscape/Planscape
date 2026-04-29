@@ -9,6 +9,10 @@ export default defineConfig({
       mode: 'tags-split',
       target: 'src/app/api/generated',
       client: 'angular',
+      // Run prettier on each generated file as it's written so the output
+      // matches the project's `.prettierrc` (single quotes, trailing commas,
+      // etc.) rather than orval's defaults.
+      prettier: true,
       override: {
         requestOptions: {
           withCredentials: true,
@@ -23,6 +27,12 @@ export default defineConfig({
           return stripped.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
         },
       },
+    },
+    hooks: {
+      // After orval finishes, run eslint --fix over the generated tree to
+      // resolve anything prettier alone can't (e.g. import ordering, unused
+      // imports flagged by the @typescript-eslint plugin).
+      afterAllFilesWrite: 'eslint --fix src/app/api/generated',
     },
   },
 });

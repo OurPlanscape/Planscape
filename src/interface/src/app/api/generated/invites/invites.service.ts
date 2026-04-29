@@ -8,64 +8,57 @@
 import {
   HttpClient,
   HttpHeaders,
-  HttpResponse as AngularHttpResponse
+  HttpResponse as AngularHttpResponse,
 } from '@angular/common/http';
-import type {
-  HttpContext,
-  HttpEvent,
-  HttpParams
-} from '@angular/common/http';
+import type { HttpContext, HttpEvent, HttpParams } from '@angular/common/http';
 
-import {
-  Injectable,
-  inject
-} from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
-import {
-  Observable
-} from 'rxjs';
+import { Observable } from 'rxjs';
 
 import type {
   CreateUserObjectRoles,
   PatchedUserObjectRole,
-  UserObjectRole
+  UserObjectRole,
 } from '../planscapeAPI.schemas';
 
-
 // https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir/49579497#49579497
-type IfEquals<X, Y, A = X, B = never> = (<T>() => T extends X ? 1 : 2) extends <
-T,
->() => T extends Y ? 1 : 2
-? A
-: B;
+type IfEquals<X, Y, A = X, B = never> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? A : B;
 
 type WritableKeys<T> = {
-[P in keyof T]-?: IfEquals<
-  { [Q in P]: T[P] },
-  { -readonly [Q in P]: T[P] },
-  P
->;
+  [P in keyof T]-?: IfEquals<
+    { [Q in P]: T[P] },
+    { -readonly [Q in P]: T[P] },
+    P
+  >;
 }[keyof T];
 
-type UnionToIntersection<U> =
-  (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
+  ? I
+  : never;
 type DistributeReadOnlyOverUnions<T> = T extends any ? NonReadonly<T> : never;
 
 type Writable<T> = Pick<T, WritableKeys<T>>;
-type NonReadonly<T> = [T] extends [UnionToIntersection<T>] ? {
-  [P in keyof Writable<T>]: T[P] extends object
-    ? NonReadonly<NonNullable<T[P]>>
-    : T[P];
-} : DistributeReadOnlyOverUnions<T>;
-
-
+type NonReadonly<T> = [T] extends [UnionToIntersection<T>]
+  ? {
+      [P in keyof Writable<T>]: T[P] extends object
+        ? NonReadonly<NonNullable<T[P]>>
+        : T[P];
+    }
+  : DistributeReadOnlyOverUnions<T>;
 
 interface HttpClientOptions {
   readonly headers?: HttpHeaders | Record<string, string | string[]>;
   readonly context?: HttpContext;
   readonly params?:
-        | HttpParams
-      | Record<string, string | number | boolean | Array<string | number | boolean>>;
+    | HttpParams
+    | Record<
+        string,
+        string | number | boolean | Array<string | number | boolean>
+      >;
   readonly reportProgress?: boolean;
   readonly withCredentials?: boolean;
   readonly credentials?: RequestCredentials;
@@ -77,7 +70,7 @@ interface HttpClientOptions {
   readonly referrer?: string;
   readonly integrity?: string;
   readonly referrerPolicy?: ReferrerPolicy;
-  readonly transferCache?: {includeHeaders?: string[]} | boolean;
+  readonly transferCache?: { includeHeaders?: string[] } | boolean;
   readonly timeout?: number;
 }
 
@@ -97,148 +90,197 @@ type HttpClientObserveOptions = HttpClientOptions & {
   readonly observe?: 'body' | 'events' | 'response';
 };
 
-
-
-
-
-
-
 @Injectable({ providedIn: 'root' })
 export class InvitesService {
   private readonly http = inject(HttpClient);
- invitesCreate<TData = UserObjectRole[]>(createUserObjectRoles: CreateUserObjectRoles, options?: HttpClientBodyOptions): Observable<TData>;
- invitesCreate<TData = UserObjectRole[]>(createUserObjectRoles: CreateUserObjectRoles, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- invitesCreate<TData = UserObjectRole[]>(createUserObjectRoles: CreateUserObjectRoles, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   invitesCreate<TData = UserObjectRole[]>(
-    createUserObjectRoles: CreateUserObjectRoles, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    createUserObjectRoles: CreateUserObjectRoles,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  invitesCreate<TData = UserObjectRole[]>(
+    createUserObjectRoles: CreateUserObjectRoles,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  invitesCreate<TData = UserObjectRole[]>(
+    createUserObjectRoles: CreateUserObjectRoles,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  invitesCreate<TData = UserObjectRole[]>(
+    createUserObjectRoles: CreateUserObjectRoles,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
-      `/planscape-backend/invites/create_invite/`,
-      createUserObjectRoles,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/invites/create_invite/`,
+        createUserObjectRoles,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.post<TData>(
-      `/planscape-backend/invites/create_invite/`,
-      createUserObjectRoles,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/invites/create_invite/`,
+        createUserObjectRoles,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.post<TData>(
       `/planscape-backend/invites/create_invite/`,
-      createUserObjectRoles,{
+      createUserObjectRoles,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- invitesPartialUpdate<TData = UserObjectRole>(invitationId: number,
-    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>, options?: HttpClientBodyOptions): Observable<TData>;
- invitesPartialUpdate<TData = UserObjectRole>(invitationId: number,
-    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- invitesPartialUpdate<TData = UserObjectRole>(invitationId: number,
-    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   invitesPartialUpdate<TData = UserObjectRole>(
     invitationId: number,
-    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  invitesPartialUpdate<TData = UserObjectRole>(
+    invitationId: number,
+    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  invitesPartialUpdate<TData = UserObjectRole>(
+    invitationId: number,
+    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  invitesPartialUpdate<TData = UserObjectRole>(
+    invitationId: number,
+    patchedUserObjectRole?: NonReadonly<PatchedUserObjectRole>,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.patch<TData>(
-      `/planscape-backend/invites/invitations/${invitationId}`,
-      patchedUserObjectRole,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/invites/invitations/${invitationId}`,
+        patchedUserObjectRole,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.patch<TData>(
-      `/planscape-backend/invites/invitations/${invitationId}`,
-      patchedUserObjectRole,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/invites/invitations/${invitationId}`,
+        patchedUserObjectRole,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.patch<TData>(
       `/planscape-backend/invites/invitations/${invitationId}`,
-      patchedUserObjectRole,{
+      patchedUserObjectRole,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- invitesDestroy<TData = void>(invitationId: number, options?: HttpClientBodyOptions): Observable<TData>;
- invitesDestroy<TData = void>(invitationId: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- invitesDestroy<TData = void>(invitationId: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   invitesDestroy<TData = void>(
-    invitationId: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    invitationId: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  invitesDestroy<TData = void>(
+    invitationId: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  invitesDestroy<TData = void>(
+    invitationId: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  invitesDestroy<TData = void>(
+    invitationId: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
-      `/planscape-backend/invites/invitations/${invitationId}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/invites/invitations/${invitationId}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.delete<TData>(
-      `/planscape-backend/invites/invitations/${invitationId}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/invites/invitations/${invitationId}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.delete<TData>(
-      `/planscape-backend/invites/invitations/${invitationId}`,{
+      `/planscape-backend/invites/invitations/${invitationId}`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
- invitesList<TData = UserObjectRole[]>(targetEntity: string,
-    objectPk: number, options?: HttpClientBodyOptions): Observable<TData>;
- invitesList<TData = UserObjectRole[]>(targetEntity: string,
-    objectPk: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- invitesList<TData = UserObjectRole[]>(targetEntity: string,
-    objectPk: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
   invitesList<TData = UserObjectRole[]>(
     targetEntity: string,
-    objectPk: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    objectPk: number,
+    options?: HttpClientBodyOptions
+  ): Observable<TData>;
+  invitesList<TData = UserObjectRole[]>(
+    targetEntity: string,
+    objectPk: number,
+    options?: HttpClientEventOptions
+  ): Observable<HttpEvent<TData>>;
+  invitesList<TData = UserObjectRole[]>(
+    targetEntity: string,
+    objectPk: number,
+    options?: HttpClientResponseOptions
+  ): Observable<AngularHttpResponse<TData>>;
+  invitesList<TData = UserObjectRole[]>(
+    targetEntity: string,
+    objectPk: number,
+    options?: HttpClientObserveOptions
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
-      `/planscape-backend/invites/invitations/${targetEntity}/${objectPk}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
+        `/planscape-backend/invites/invitations/${targetEntity}/${objectPk}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        }
+      );
     }
 
     if (options?.observe === 'response') {
       return this.http.get<TData>(
-      `/planscape-backend/invites/invitations/${targetEntity}/${objectPk}`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
+        `/planscape-backend/invites/invitations/${targetEntity}/${objectPk}`,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        }
+      );
     }
 
     return this.http.get<TData>(
-      `/planscape-backend/invites/invitations/${targetEntity}/${objectPk}`,{
+      `/planscape-backend/invites/invitations/${targetEntity}/${objectPk}`,
+      {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
     );
   }
-};
-
+}

@@ -7,25 +7,24 @@
  */
 /**
  * * `MODERATE_THINNING_BIOMASS` - Moderate Thinning & Biomass Removal
-* `HEAVY_THINNING_BIOMASS` - Heavy Thinning & Biomass Removal
-* `MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn
-* `HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn
-* `MODERATE_MASTICATION` - Moderate Mastication
-* `HEAVY_MASTICATION` - Heavy Mastication
-* `RX_FIRE` - Prescribed Fire
-* `HEAVY_THINNING_RX_FIRE` - Heavy Thinning & Prescribed Fire
-* `MASTICATION_RX_FIRE` - Mastication & Prescribed Fire
-* `MODERATE_THINNING_BURN_PLUS_RX_FIRE` - Moderate Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
-* `MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn (year 0), Moderate Thinning & Pile Burn (year 10)
-* `HEAVY_THINNING_BURN_PLUS_RX_FIRE` - Heavy Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
-* `HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn (year 0), Heavy Thinning & Pile Burn (year 10)
-* `RX_FIRE_PLUS_RX_FIRE` - Prescribed Fire (year 0), Prescribed Fire (year 10)
-* `MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION` - Moderate Mastication (year 0), Moderate Mastication (year 10)
-* `HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE` - Heavy Thinning & Biomass Removal (year 0), Prescribed Fire (year 10)
-* `MODERATE_MASTICATION_PLUS_RX_FIRE` - Moderate Mastication (year 0), Prescribed Fire (year 10)
+ * `HEAVY_THINNING_BIOMASS` - Heavy Thinning & Biomass Removal
+ * `MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn
+ * `HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn
+ * `MODERATE_MASTICATION` - Moderate Mastication
+ * `HEAVY_MASTICATION` - Heavy Mastication
+ * `RX_FIRE` - Prescribed Fire
+ * `HEAVY_THINNING_RX_FIRE` - Heavy Thinning & Prescribed Fire
+ * `MASTICATION_RX_FIRE` - Mastication & Prescribed Fire
+ * `MODERATE_THINNING_BURN_PLUS_RX_FIRE` - Moderate Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
+ * `MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn (year 0), Moderate Thinning & Pile Burn (year 10)
+ * `HEAVY_THINNING_BURN_PLUS_RX_FIRE` - Heavy Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
+ * `HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn (year 0), Heavy Thinning & Pile Burn (year 10)
+ * `RX_FIRE_PLUS_RX_FIRE` - Prescribed Fire (year 0), Prescribed Fire (year 10)
+ * `MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION` - Moderate Mastication (year 0), Moderate Mastication (year 10)
+ * `HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE` - Heavy Thinning & Biomass Removal (year 0), Prescribed Fire (year 10)
+ * `MODERATE_MASTICATION_PLUS_RX_FIRE` - Moderate Mastication (year 0), Prescribed Fire (year 10)
  */
-export type ActionEnum = typeof ActionEnum[keyof typeof ActionEnum];
-
+export type ActionEnum = (typeof ActionEnum)[keyof typeof ActionEnum];
 
 export const ActionEnum = {
   MODERATE_THINNING_BIOMASS: 'MODERATE_THINNING_BIOMASS',
@@ -38,36 +37,38 @@ export const ActionEnum = {
   HEAVY_THINNING_RX_FIRE: 'HEAVY_THINNING_RX_FIRE',
   MASTICATION_RX_FIRE: 'MASTICATION_RX_FIRE',
   MODERATE_THINNING_BURN_PLUS_RX_FIRE: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
-  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: 'MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN',
+  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN:
+    'MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN',
   HEAVY_THINNING_BURN_PLUS_RX_FIRE: 'HEAVY_THINNING_BURN_PLUS_RX_FIRE',
-  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: 'HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN',
+  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN:
+    'HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN',
   RX_FIRE_PLUS_RX_FIRE: 'RX_FIRE_PLUS_RX_FIRE',
-  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: 'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION',
+  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION:
+    'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION',
   HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: 'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE',
   MODERATE_MASTICATION_PLUS_RX_FIRE: 'MODERATE_MASTICATION_PLUS_RX_FIRE',
 } as const;
 
 /**
  * * `MODERATE_THINNING_BIOMASS` - Moderate Thinning & Biomass Removal
-* `HEAVY_THINNING_BIOMASS` - Heavy Thinning & Biomass Removal
-* `MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn
-* `HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn
-* `MODERATE_MASTICATION` - Moderate Mastication
-* `HEAVY_MASTICATION` - Heavy Mastication
-* `RX_FIRE` - Prescribed Fire
-* `HEAVY_THINNING_RX_FIRE` - Heavy Thinning & Prescribed Fire
-* `MASTICATION_RX_FIRE` - Mastication & Prescribed Fire
-* `MODERATE_THINNING_BURN_PLUS_RX_FIRE` - Moderate Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
-* `MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn (year 0), Moderate Thinning & Pile Burn (year 10)
-* `HEAVY_THINNING_BURN_PLUS_RX_FIRE` - Heavy Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
-* `HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn (year 0), Heavy Thinning & Pile Burn (year 10)
-* `RX_FIRE_PLUS_RX_FIRE` - Prescribed Fire (year 0), Prescribed Fire (year 10)
-* `MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION` - Moderate Mastication (year 0), Moderate Mastication (year 10)
-* `HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE` - Heavy Thinning & Biomass Removal (year 0), Prescribed Fire (year 10)
-* `MODERATE_MASTICATION_PLUS_RX_FIRE` - Moderate Mastication (year 0), Prescribed Fire (year 10)
+ * `HEAVY_THINNING_BIOMASS` - Heavy Thinning & Biomass Removal
+ * `MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn
+ * `HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn
+ * `MODERATE_MASTICATION` - Moderate Mastication
+ * `HEAVY_MASTICATION` - Heavy Mastication
+ * `RX_FIRE` - Prescribed Fire
+ * `HEAVY_THINNING_RX_FIRE` - Heavy Thinning & Prescribed Fire
+ * `MASTICATION_RX_FIRE` - Mastication & Prescribed Fire
+ * `MODERATE_THINNING_BURN_PLUS_RX_FIRE` - Moderate Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
+ * `MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN` - Moderate Thinning & Pile Burn (year 0), Moderate Thinning & Pile Burn (year 10)
+ * `HEAVY_THINNING_BURN_PLUS_RX_FIRE` - Heavy Thinning & Pile Burn (year 0), Prescribed Burn (year 10)
+ * `HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN` - Heavy Thinning & Pile Burn (year 0), Heavy Thinning & Pile Burn (year 10)
+ * `RX_FIRE_PLUS_RX_FIRE` - Prescribed Fire (year 0), Prescribed Fire (year 10)
+ * `MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION` - Moderate Mastication (year 0), Moderate Mastication (year 10)
+ * `HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE` - Heavy Thinning & Biomass Removal (year 0), Prescribed Fire (year 10)
+ * `MODERATE_MASTICATION_PLUS_RX_FIRE` - Moderate Mastication (year 0), Prescribed Fire (year 10)
  */
-export type ActionsEnum = typeof ActionsEnum[keyof typeof ActionsEnum];
-
+export type ActionsEnum = (typeof ActionsEnum)[keyof typeof ActionsEnum];
 
 export const ActionsEnum = {
   MODERATE_THINNING_BIOMASS: 'MODERATE_THINNING_BIOMASS',
@@ -80,11 +81,14 @@ export const ActionsEnum = {
   HEAVY_THINNING_RX_FIRE: 'HEAVY_THINNING_RX_FIRE',
   MASTICATION_RX_FIRE: 'MASTICATION_RX_FIRE',
   MODERATE_THINNING_BURN_PLUS_RX_FIRE: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
-  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: 'MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN',
+  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN:
+    'MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN',
   HEAVY_THINNING_BURN_PLUS_RX_FIRE: 'HEAVY_THINNING_BURN_PLUS_RX_FIRE',
-  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: 'HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN',
+  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN:
+    'HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN',
   RX_FIRE_PLUS_RX_FIRE: 'RX_FIRE_PLUS_RX_FIRE',
-  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: 'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION',
+  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION:
+    'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION',
   HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: 'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE',
   MODERATE_MASTICATION_PLUS_RX_FIRE: 'MODERATE_MASTICATION_PLUS_RX_FIRE',
 } as const;
@@ -102,50 +106,57 @@ export interface OrganizationMapOptions {
 
 /**
  * * `MAIN_DATALAYERS` - Main DataLayers
-* `BASE_DATALAYERS` - Base DataLayers
+ * `BASE_DATALAYERS` - Base DataLayers
  */
-export type PreferredDisplayTypeEnum = typeof PreferredDisplayTypeEnum[keyof typeof PreferredDisplayTypeEnum];
-
+export type PreferredDisplayTypeEnum =
+  (typeof PreferredDisplayTypeEnum)[keyof typeof PreferredDisplayTypeEnum];
 
 export const PreferredDisplayTypeEnum = {
   MAIN_DATALAYERS: 'MAIN_DATALAYERS',
   BASE_DATALAYERS: 'BASE_DATALAYERS',
 } as const;
 
-export type BlankEnum = typeof BlankEnum[keyof typeof BlankEnum];
-
+export type BlankEnum = (typeof BlankEnum)[keyof typeof BlankEnum];
 
 export const BlankEnum = {
   '': '',
 } as const;
 
-export type NullEnum = typeof NullEnum[keyof typeof NullEnum];
+export type NullEnum = (typeof NullEnum)[keyof typeof NullEnum];
 
-
-export const NullEnum = {
-} as const;
+export const NullEnum = {} as const;
 
 /**
  * * `SINGLE` - Single
-* `MULTIPLE` - Multiple
+ * `MULTIPLE` - Multiple
  */
-export type SelectionTypeEnum = typeof SelectionTypeEnum[keyof typeof SelectionTypeEnum];
-
+export type SelectionTypeEnum =
+  (typeof SelectionTypeEnum)[keyof typeof SelectionTypeEnum];
 
 export const SelectionTypeEnum = {
   SINGLE: 'SINGLE',
   MULTIPLE: 'MULTIPLE',
 } as const;
 
-export const DatasetMapOptionsPreferredDisplayType = {...PreferredDisplayTypeEnum,...BlankEnum,} as const
-export const DatasetMapOptionsSelectionType = {...SelectionTypeEnum,...BlankEnum,} as const
+export const DatasetMapOptionsPreferredDisplayType = {
+  ...PreferredDisplayTypeEnum,
+  ...BlankEnum,
+} as const;
+export const DatasetMapOptionsSelectionType = {
+  ...SelectionTypeEnum,
+  ...BlankEnum,
+} as const;
 export interface DatasetMapOptions {
   readonly id: number;
   organization: OrganizationMapOptions;
   /** @maxLength 128 */
   name: string;
-  preferred_display_type?: typeof DatasetMapOptionsPreferredDisplayType[keyof typeof DatasetMapOptionsPreferredDisplayType] | null;
-  selection_type?: typeof DatasetMapOptionsSelectionType[keyof typeof DatasetMapOptionsSelectionType] | null;
+  preferred_display_type?:
+    | (typeof DatasetMapOptionsPreferredDisplayType)[keyof typeof DatasetMapOptionsPreferredDisplayType]
+    | null;
+  selection_type?:
+    | (typeof DatasetMapOptionsSelectionType)[keyof typeof DatasetMapOptionsSelectionType]
+    | null;
 }
 
 export interface DatasetsOptionsSerializers {
@@ -164,29 +175,28 @@ export interface BaseModule {
 
 /**
  * * `VECTOR` - Vector
-* `RASTER` - Raster
+ * `RASTER` - Raster
  */
-export type TypeE04Enum = typeof TypeE04Enum[keyof typeof TypeE04Enum];
-
+export type TypeE04Enum = (typeof TypeE04Enum)[keyof typeof TypeE04Enum];
 
 export const TypeE04Enum = {
   VECTOR: 'VECTOR',
   RASTER: 'RASTER',
 } as const;
 
-export const BrowseDataLayerType = {...TypeE04Enum,} as const
+export const BrowseDataLayerType = { ...TypeE04Enum } as const;
 /**
  * * `NO_GEOM` - No Geometry Field
-* `RASTER` - Raster
-* `POINT` - Point
-* `MULTIPOINT` - MultiPoint
-* `LINESTRING` - LineString
-* `MULTILINESTRING` - MultiLineString
-* `POLYGON` - Polygon
-* `MULTIPOLYGON` - MultiPolygon
+ * `RASTER` - Raster
+ * `POINT` - Point
+ * `MULTIPOINT` - MultiPoint
+ * `LINESTRING` - LineString
+ * `MULTILINESTRING` - MultiLineString
+ * `POLYGON` - Polygon
+ * `MULTIPOLYGON` - MultiPolygon
  */
-export type GeometryTypeEnum = typeof GeometryTypeEnum[keyof typeof GeometryTypeEnum];
-
+export type GeometryTypeEnum =
+  (typeof GeometryTypeEnum)[keyof typeof GeometryTypeEnum];
 
 export const GeometryTypeEnum = {
   NO_GEOM: 'NO_GEOM',
@@ -199,26 +209,26 @@ export const GeometryTypeEnum = {
   MULTIPOLYGON: 'MULTIPOLYGON',
 } as const;
 
-export const BrowseDataLayerGeometryType = {...GeometryTypeEnum,} as const
+export const BrowseDataLayerGeometryType = { ...GeometryTypeEnum } as const;
 /**
  * @nullable
  */
-export type BrowseDataLayerInfo = {[key: string]: unknown} | null;
+export type BrowseDataLayerInfo = { [key: string]: unknown } | null;
 
 /**
  * @nullable
  */
-export type BrowseDataLayerMetadata = {[key: string]: unknown} | null;
+export type BrowseDataLayerMetadata = { [key: string]: unknown } | null;
 
 /**
  * * `VECTORTILES` - Vector Tiles
-* `COG` - Cog
-* `ESRI_GEOJSON` - ESRI GeoJSON
-* `ESRI_VECTORTILES` - ESRI Vector Tiles
-* `GEOJSON` - GeoJSON
+ * `COG` - Cog
+ * `ESRI_GEOJSON` - ESRI GeoJSON
+ * `ESRI_VECTORTILES` - ESRI Vector Tiles
+ * `GEOJSON` - GeoJSON
  */
-export type MapServiceTypeEnum = typeof MapServiceTypeEnum[keyof typeof MapServiceTypeEnum];
-
+export type MapServiceTypeEnum =
+  (typeof MapServiceTypeEnum)[keyof typeof MapServiceTypeEnum];
 
 export const MapServiceTypeEnum = {
   VECTORTILES: 'VECTORTILES',
@@ -228,8 +238,8 @@ export const MapServiceTypeEnum = {
   GEOJSON: 'GEOJSON',
 } as const;
 
-export const BrowseDataLayerMapServiceType = {...MapServiceTypeEnum,} as const
-export type BrowseDataLayerStylesItem = {[key: string]: unknown};
+export const BrowseDataLayerMapServiceType = { ...MapServiceTypeEnum } as const;
+export type BrowseDataLayerStylesItem = { [key: string]: unknown };
 
 export interface OrganizationSimple {
   readonly id: number;
@@ -242,19 +252,18 @@ export interface DatasetSimple {
   /** @maxLength 128 */
   name: string;
   /**
-     * List of modules this dataset is associated with.
-     * @nullable
-     */
+   * List of modules this dataset is associated with.
+   * @nullable
+   */
   modules?: string[] | null;
 }
 
 /**
  * * `READY` - Ready
-* `PENDING` - Pending
-* `FAILED` - Failed
+ * `PENDING` - Pending
+ * `FAILED` - Failed
  */
-export type Status8d6Enum = typeof Status8d6Enum[keyof typeof Status8d6Enum];
-
+export type Status8d6Enum = (typeof Status8d6Enum)[keyof typeof Status8d6Enum];
 
 export const Status8d6Enum = {
   READY: 'READY',
@@ -264,11 +273,11 @@ export const Status8d6Enum = {
 
 /**
  * * `DATABASE` - Database
-* `FILE_SYSTEM` - File System
-* `EXTERNAL_SERVICE` - External Service
+ * `FILE_SYSTEM` - File System
+ * `EXTERNAL_SERVICE` - External Service
  */
-export type StorageTypeEnum = typeof StorageTypeEnum[keyof typeof StorageTypeEnum];
-
+export type StorageTypeEnum =
+  (typeof StorageTypeEnum)[keyof typeof StorageTypeEnum];
 
 export const StorageTypeEnum = {
   DATABASE: 'DATABASE',
@@ -285,8 +294,10 @@ export interface BrowseDataLayer {
   readonly map_url: string | null;
   /** @maxLength 256 */
   name: string;
-  type: typeof BrowseDataLayerType[keyof typeof BrowseDataLayerType] | null;
-  geometry_type?: typeof BrowseDataLayerGeometryType[keyof typeof BrowseDataLayerGeometryType] | null;
+  type: (typeof BrowseDataLayerType)[keyof typeof BrowseDataLayerType] | null;
+  geometry_type?:
+    | (typeof BrowseDataLayerGeometryType)[keyof typeof BrowseDataLayerGeometryType]
+    | null;
   /** Status of the file relative to our system.
 
   * `READY` - Ready
@@ -298,19 +309,20 @@ export interface BrowseDataLayer {
   info?: BrowseDataLayerInfo;
   /** @nullable */
   metadata?: BrowseDataLayerMetadata;
-  map_service_type?: typeof BrowseDataLayerMapServiceType[keyof typeof BrowseDataLayerMapServiceType] | null;
+  map_service_type?:
+    | (typeof BrowseDataLayerMapServiceType)[keyof typeof BrowseDataLayerMapServiceType]
+    | null;
   readonly styles: readonly BrowseDataLayerStylesItem[];
 }
 
 /**
  * * `forsys` - forsys
-* `impacts` - impacts
-* `map` - map
-* `climate_foresight` - climate_foresight
-* `prioritize_sub_units` - prioritize_sub_units
+ * `impacts` - impacts
+ * `map` - map
+ * `climate_foresight` - climate_foresight
+ * `prioritize_sub_units` - prioritize_sub_units
  */
-export type ModuleEnum = typeof ModuleEnum[keyof typeof ModuleEnum];
-
+export type ModuleEnum = (typeof ModuleEnum)[keyof typeof ModuleEnum];
 
 export const ModuleEnum = {
   forsys: 'forsys',
@@ -328,13 +340,13 @@ export interface BrowseDataSet {
 
 /**
  * * `FORSYS` - Forsys
-* `IMPACTS` - Impacts
-* `MAP` - Map
-* `CLIMATE_FORESIGHT` - Climate Foresight
-* `PRIORITIZE_SUB_UNITS` - Prioritize Sub-Units
+ * `IMPACTS` - Impacts
+ * `MAP` - Map
+ * `CLIMATE_FORESIGHT` - Climate Foresight
+ * `PRIORITIZE_SUB_UNITS` - Prioritize Sub-Units
  */
-export type CapabilitiesEnum = typeof CapabilitiesEnum[keyof typeof CapabilitiesEnum];
-
+export type CapabilitiesEnum =
+  (typeof CapabilitiesEnum)[keyof typeof CapabilitiesEnum];
 
 export const CapabilitiesEnum = {
   FORSYS: 'FORSYS',
@@ -347,11 +359,11 @@ export const CapabilitiesEnum = {
 export interface CategoryEmbbed {
   readonly id: number;
   /**
-     * If necessary, changing the order allows the users to configure what categories appears first.
-     * @minimum -2147483648
-     * @maximum 2147483647
-     * @nullable
-     */
+   * If necessary, changing the order allows the users to configure what categories appears first.
+   * @minimum -2147483648
+   * @maximum 2147483647
+   * @nullable
+   */
   order?: number | null;
   /** @maxLength 128 */
   name: string;
@@ -361,11 +373,10 @@ export interface CategoryEmbbed {
 
 /**
  * * `FIRE_DYNAMICS` - Fire Dynamics
-* `BIODIVERSITY` - Biodiversity
-* `CARBON_BIOMASS` - Carbon/Biomass
+ * `BIODIVERSITY` - Biodiversity
+ * `CARBON_BIOMASS` - Carbon/Biomass
  */
-export type CategoryEnum = typeof CategoryEnum[keyof typeof CategoryEnum];
-
+export type CategoryEnum = (typeof CategoryEnum)[keyof typeof CategoryEnum];
 
 export const CategoryEnum = {
   FIRE_DYNAMICS: 'FIRE_DYNAMICS',
@@ -379,20 +390,20 @@ export const CategoryEnum = {
 export interface ClimateForesightPillar {
   readonly id: number;
   /**
-     * If null, this is a global/shared pillar. If set, it's specific to that run.
-     * @nullable
-     */
+   * If null, this is a global/shared pillar. If set, it's specific to that run.
+   * @nullable
+   */
   run: number | null;
   /**
-     * Name of the pillar
-     * @maxLength 255
-     */
+   * Name of the pillar
+   * @maxLength 255
+   */
   name: string;
   /**
-     * Display order for the pillar
-     * @minimum -2147483648
-     * @maximum 2147483647
-     */
+   * Display order for the pillar
+   * @minimum -2147483648
+   * @maximum 2147483647
+   */
   order?: number;
   /** @nullable */
   readonly created_at: string | null;
@@ -402,12 +413,11 @@ export interface ClimateForesightPillar {
 
 /**
  * * `draft` - Draft
-* `running` - Running
-* `done` - Done
-* `failed` - Failed
+ * `running` - Running
+ * `done` - Done
+ * `failed` - Failed
  */
-export type StatusF84Enum = typeof StatusF84Enum[keyof typeof StatusF84Enum];
-
+export type StatusF84Enum = (typeof StatusF84Enum)[keyof typeof StatusF84Enum];
 
 export const StatusF84Enum = {
   draft: 'draft',
@@ -424,14 +434,14 @@ export interface ClimateForesightRunInputDataLayer {
   /** Data layer being used as input */
   datalayer: number;
   /**
-     * True if high values are favorable, False if low values are favorable
-     * @nullable
-     */
+   * True if high values are favorable, False if low values are favorable
+   * @nullable
+   */
   favor_high?: boolean | null;
   /**
-     * Optional pillar assignment for this data layer
-     * @nullable
-     */
+   * Optional pillar assignment for this data layer
+   * @nullable
+   */
   pillar?: number | null;
   /** @nullable */
   readonly normalized_datalayer_id: number | null;
@@ -445,9 +455,9 @@ export interface ClimateForesightRunInputDataLayer {
 export interface ClimateForesightRun {
   readonly id: number;
   /**
-     * Name of the climate foresight run
-     * @maxLength 255
-     */
+   * Name of the climate foresight run
+   * @maxLength 255
+   */
   name: string;
   /** Planning area this run belongs to */
   planning_area: number;
@@ -461,16 +471,16 @@ export interface ClimateForesightRun {
   * `failed` - Failed */
   status?: StatusF84Enum;
   /**
-     * Current step user is on (1=data layers, 2=favorability, 3=pillars, 4=run)
-     * @minimum -2147483648
-     * @maximum 2147483647
-     */
+   * Current step user is on (1=data layers, 2=favorability, 3=pillars, 4=run)
+   * @minimum -2147483648
+   * @maximum 2147483647
+   */
   current_step?: number;
   /**
-     * Furthest step completed (enables resume/skip forward)
-     * @minimum -2147483648
-     * @maximum 2147483647
-     */
+   * Furthest step completed (enables resume/skip forward)
+   * @minimum -2147483648
+   * @maximum 2147483647
+   */
   furthest_step?: number;
   readonly created_at: string;
   input_datalayers?: ClimateForesightRunInputDataLayer[];
@@ -485,9 +495,9 @@ export interface ClimateForesightRun {
 export interface ClimateForesightRunList {
   readonly id: number;
   /**
-     * Name of the climate foresight run
-     * @maxLength 255
-     */
+   * Name of the climate foresight run
+   * @maxLength 255
+   */
   name: string;
   /** Planning area this run belongs to */
   planning_area: number;
@@ -506,11 +516,10 @@ export interface ClimateForesightRunList {
 
 /**
  * * `SMALL` - Small
-* `MEDIUM` - Medium
-* `LARGE` - Large
+ * `MEDIUM` - Medium
+ * `LARGE` - Large
  */
-export type StandSizeEnum = typeof StandSizeEnum[keyof typeof StandSizeEnum];
-
+export type StandSizeEnum = (typeof StandSizeEnum)[keyof typeof StandSizeEnum];
 
 export const StandSizeEnum = {
   SMALL: 'SMALL',
@@ -527,16 +536,16 @@ export interface Configuration {
   /** @nullable */
   max_budget?: number | null;
   /**
-     * @minimum 0
-     * @maximum 100
-     * @nullable
-     */
+   * @minimum 0
+   * @maximum 100
+   * @nullable
+   */
   max_slope?: number | null;
   /**
-     * @minimum 0
-     * @maximum 100000
-     * @nullable
-     */
+   * @minimum 0
+   * @maximum 100000
+   * @nullable
+   */
   min_distance_from_road?: number | null;
   stand_size?: StandSizeEnum;
   /** @minItems 0 */
@@ -552,21 +561,20 @@ export interface Configuration {
   /** @minimum 100 */
   max_treatment_area_ratio?: number;
   /**
-     * Optional seed for reproducible randomization.
-     * @nullable
-     */
+   * Optional seed for reproducible randomization.
+   * @nullable
+   */
   seed?: number | null;
 }
 
 /**
  * * `eq` - eq
-* `lt` - lt
-* `lte` - lte
-* `gt` - gt
-* `gte` - gte
+ * `lt` - lt
+ * `lte` - lte
+ * `gt` - gt
+ * `gte` - gte
  */
-export type OperatorEnum = typeof OperatorEnum[keyof typeof OperatorEnum];
-
+export type OperatorEnum = (typeof OperatorEnum)[keyof typeof OperatorEnum];
 
 export const OperatorEnum = {
   eq: 'eq',
@@ -583,7 +591,7 @@ export interface Constraint {
   value: string;
 }
 
-export const CreateDataLayerType = {...TypeE04Enum,} as const
+export const CreateDataLayerType = { ...TypeE04Enum } as const;
 /**
  * @nullable
  */
@@ -592,9 +600,9 @@ export type CreateDataLayerOutline = {
   coordinates?: number[][][][];
 } | null;
 
-export const CreateDataLayerGeometryType = {...GeometryTypeEnum,} as const
-export const CreateDataLayerMapServiceType = {...MapServiceTypeEnum,} as const
-export const CreateDataLayerStorageType = {...StorageTypeEnum,} as const
+export const CreateDataLayerGeometryType = { ...GeometryTypeEnum } as const;
+export const CreateDataLayerMapServiceType = { ...MapServiceTypeEnum } as const;
+export const CreateDataLayerStorageType = { ...StorageTypeEnum } as const;
 export interface CreateDataLayer {
   readonly id: number;
   /** @nullable */
@@ -604,7 +612,7 @@ export interface CreateDataLayer {
   category?: number | null;
   /** @maxLength 256 */
   name: string;
-  type: typeof CreateDataLayerType[keyof typeof CreateDataLayerType] | null;
+  type: (typeof CreateDataLayerType)[keyof typeof CreateDataLayerType] | null;
   info?: unknown | null;
   metadata?: unknown | null;
   /** @nullable */
@@ -612,25 +620,31 @@ export interface CreateDataLayer {
   /** @nullable */
   url?: string | null;
   /**
-     * @maxLength 256
-     * @nullable
-     */
+   * @maxLength 256
+   * @nullable
+   */
   mimetype?: string | null;
   /** @nullable */
   outline?: CreateDataLayerOutline;
-  geometry_type?: typeof CreateDataLayerGeometryType[keyof typeof CreateDataLayerGeometryType] | null;
+  geometry_type?:
+    | (typeof CreateDataLayerGeometryType)[keyof typeof CreateDataLayerGeometryType]
+    | null;
   /** @nullable */
   style?: number | null;
-  map_service_type?: typeof CreateDataLayerMapServiceType[keyof typeof CreateDataLayerMapServiceType] | null;
-  storage_type?: typeof CreateDataLayerStorageType[keyof typeof CreateDataLayerStorageType] | null;
+  map_service_type?:
+    | (typeof CreateDataLayerMapServiceType)[keyof typeof CreateDataLayerMapServiceType]
+    | null;
+  storage_type?:
+    | (typeof CreateDataLayerStorageType)[keyof typeof CreateDataLayerStorageType]
+    | null;
 }
 
 /**
  * * `PRIVATE` - Private
-* `PUBLIC` - Public
+ * `PUBLIC` - Public
  */
-export type VisibilityEnum = typeof VisibilityEnum[keyof typeof VisibilityEnum];
-
+export type VisibilityEnum =
+  (typeof VisibilityEnum)[keyof typeof VisibilityEnum];
 
 export const VisibilityEnum = {
   PRIVATE: 'PRIVATE',
@@ -647,20 +661,20 @@ export interface CreateDataset {
   /** @nullable */
   version?: string | null;
   /**
-     * List of modules this dataset is associated with.
-     * @nullable
-     */
+   * List of modules this dataset is associated with.
+   * @nullable
+   */
   modules?: string[] | null;
 }
 
 /**
  * * `sierra-nevada` - Sierra Nevada
-* `southern-california` - Southern California
-* `central-coast` - Central Coast
-* `northern-california` - Northern California
+ * `southern-california` - Southern California
+ * `central-coast` - Central Coast
+ * `northern-california` - Northern California
  */
-export type RegionNameEnum = typeof RegionNameEnum[keyof typeof RegionNameEnum];
-
+export type RegionNameEnum =
+  (typeof RegionNameEnum)[keyof typeof RegionNameEnum];
 
 export const RegionNameEnum = {
   'sierra-nevada': 'sierra-nevada',
@@ -669,88 +683,88 @@ export const RegionNameEnum = {
   'northern-california': 'northern-california',
 } as const;
 
-export const CreatePlanningAreaRegionName = {...RegionNameEnum,} as const
+export const CreatePlanningAreaRegionName = { ...RegionNameEnum } as const;
 export interface CreatePlanningArea {
   /**
-     * Name of the Planning Area.
-     * @maxLength 120
-     */
+   * Name of the Planning Area.
+   * @maxLength 120
+   */
   name: string;
-  region_name?: typeof CreatePlanningAreaRegionName[keyof typeof CreatePlanningAreaRegionName] | null;
+  region_name?:
+    | (typeof CreatePlanningAreaRegionName)[keyof typeof CreatePlanningAreaRegionName]
+    | null;
   geometry: unknown;
   /**
-     * Notes of the Planning Area.
-     * @nullable
-     */
+   * Notes of the Planning Area.
+   * @nullable
+   */
   notes?: string | null;
 }
 
 /**
  * * `SYSTEM` - System
-* `USER` - User
+ * `USER` - User
  */
-export type OriginEnum = typeof OriginEnum[keyof typeof OriginEnum];
-
+export type OriginEnum = (typeof OriginEnum)[keyof typeof OriginEnum];
 
 export const OriginEnum = {
   SYSTEM: 'SYSTEM',
   USER: 'USER',
 } as const;
 
-export const CreateScenarioV2Origin = {...OriginEnum,} as const
+export const CreateScenarioV2Origin = { ...OriginEnum } as const;
 /**
  * * `PRESET` - Preset
-* `CUSTOM` - Custom
+ * `CUSTOM` - Custom
  */
-export type Type5b6Enum = typeof Type5b6Enum[keyof typeof Type5b6Enum];
-
+export type Type5b6Enum = (typeof Type5b6Enum)[keyof typeof Type5b6Enum];
 
 export const Type5b6Enum = {
   PRESET: 'PRESET',
   CUSTOM: 'CUSTOM',
 } as const;
 
-export const CreateScenarioV2Type = {...Type5b6Enum,...BlankEnum,} as const
+export const CreateScenarioV2Type = { ...Type5b6Enum, ...BlankEnum } as const;
 export interface UpsertConfigurationV2 {
   stand_size?: StandSizeEnum;
   /** @minimum 1 */
   estimated_cost?: number;
   /**
-     * Maximum budget, in USD, that can be used for calculating possible treatments. Either max_budget or max_area needs to be specified.
-     * @nullable
-     */
+   * Maximum budget, in USD, that can be used for calculating possible treatments. Either max_budget or max_area needs to be specified.
+   * @nullable
+   */
   max_budget?: number | null;
   /**
-     * Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.
-     * @nullable
-     */
+   * Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.
+   * @nullable
+   */
   max_area?: number | null;
   /**
-     * Maximum number of areas that can be generated by Forsys.
-     * @minimum 2
-     * @maximum 10
-     */
+   * Maximum number of areas that can be generated by Forsys.
+   * @minimum 2
+   * @maximum 10
+   */
   max_project_count?: number;
   /**
-     * Constraints areas where the maximum slope is higher than specified.
-     * @minimum 0
-     * @maximum 100
-     * @nullable
-     */
+   * Constraints areas where the maximum slope is higher than specified.
+   * @minimum 0
+   * @maximum 100
+   * @nullable
+   */
   max_slope?: number | null;
   /**
-     * Constraints areas where the minimum distance from a road is higher than specified.
-     * @minimum 0
-     * @maximum 100000
-     * @nullable
-     */
+   * Constraints areas where the minimum distance from a road is higher than specified.
+   * @minimum 0
+   * @maximum 100000
+   * @nullable
+   */
   min_distance_from_road?: number | null;
   /** @minItems 0 */
   excluded_areas?: number[];
   /**
-     * Optional seed for reproducible randomization.
-     * @nullable
-     */
+   * Optional seed for reproducible randomization.
+   * @nullable
+   */
   seed?: number | null;
 }
 
@@ -758,24 +772,28 @@ export interface CreateScenarioV2 {
   /** Planning Area ID. */
   planning_area: number;
   /**
-     * Name of the Scenario.
-     * @maxLength 120
-     */
+   * Name of the Scenario.
+   * @maxLength 120
+   */
   name: string;
   /** Scenario Origin.
 
   * `SYSTEM` - System
   * `USER` - User */
-  origin?: typeof CreateScenarioV2Origin[keyof typeof CreateScenarioV2Origin] | null;
+  origin?:
+    | (typeof CreateScenarioV2Origin)[keyof typeof CreateScenarioV2Origin]
+    | null;
   /** Scenario type.
 
   * `PRESET` - Preset
   * `CUSTOM` - Custom */
-  type?: typeof CreateScenarioV2Type[keyof typeof CreateScenarioV2Type] | null;
+  type?:
+    | (typeof CreateScenarioV2Type)[keyof typeof CreateScenarioV2Type]
+    | null;
   /**
-     * Scenario notes.
-     * @nullable
-     */
+   * Scenario notes.
+   * @nullable
+   */
   notes?: string | null;
   configuration: UpsertConfigurationV2;
   /** Treatment goal of the scenario. */
@@ -798,9 +816,9 @@ export interface CreateTreatmentPlan {
   /** Scenario ID. */
   scenario: number;
   /**
-     * Name of Treatment Plan.
-     * @maxLength 256
-     */
+   * Name of Treatment Plan.
+   * @maxLength 256
+   */
   name: string;
   stand_size?: StandSizeEnum;
 }
@@ -808,8 +826,8 @@ export interface CreateTreatmentPlan {
 /**
  * * `planningarea` - Planning Area
  */
-export type TargetEntityEnum = typeof TargetEntityEnum[keyof typeof TargetEntityEnum];
-
+export type TargetEntityEnum =
+  (typeof TargetEntityEnum)[keyof typeof TargetEntityEnum];
 
 export const TargetEntityEnum = {
   planningarea: 'planningarea',
@@ -817,11 +835,10 @@ export const TargetEntityEnum = {
 
 /**
  * * `Owner` - Owner
-* `Collaborator` - Collaborator
-* `Viewer` - Viewer
+ * `Collaborator` - Collaborator
+ * `Viewer` - Viewer
  */
-export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
-
+export type RoleEnum = (typeof RoleEnum)[keyof typeof RoleEnum];
 
 export const RoleEnum = {
   Owner: 'Owner',
@@ -837,9 +854,9 @@ export interface CreateUserObjectRoles {
   emails: string[];
   role: RoleEnum;
   /**
-     * @maxLength 1024
-     * @nullable
-     */
+   * @maxLength 1024
+   * @nullable
+   */
   message?: string | null;
 }
 
@@ -880,30 +897,30 @@ export interface CustomPasswordResetConfirm {
   token: string;
 }
 
-export const DataLayerType = {...TypeE04Enum,} as const
-export const DataLayerGeometryType = {...GeometryTypeEnum,} as const
-export type DataLayerStylesItem = {[key: string]: unknown};
+export const DataLayerType = { ...TypeE04Enum } as const;
+export const DataLayerGeometryType = { ...GeometryTypeEnum } as const;
+export type DataLayerStylesItem = { [key: string]: unknown };
 
 /**
  * @nullable
  */
-export type DataLayerInfo = {[key: string]: unknown} | null;
+export type DataLayerInfo = { [key: string]: unknown } | null;
 
 /**
  * @nullable
  */
-export type DataLayerMetadata = {[key: string]: unknown} | null;
+export type DataLayerMetadata = { [key: string]: unknown } | null;
 
-export const DataLayerMapServiceType = {...MapServiceTypeEnum,} as const
+export const DataLayerMapServiceType = { ...MapServiceTypeEnum } as const;
 export interface DataLayer {
   readonly id: number;
   /** @nullable */
   readonly created_at: string | null;
   readonly updated_at: string;
   /**
-     * Define if the entity has been deleted or not and when
-     * @nullable
-     */
+   * Define if the entity has been deleted or not and when
+   * @nullable
+   */
   deleted_at?: string | null;
   created_by: number;
   organization: OrganizationSimple;
@@ -911,8 +928,10 @@ export interface DataLayer {
   category: CategoryEmbbed;
   /** @maxLength 256 */
   name: string;
-  type: typeof DataLayerType[keyof typeof DataLayerType] | null;
-  geometry_type?: typeof DataLayerGeometryType[keyof typeof DataLayerGeometryType] | null;
+  type: (typeof DataLayerType)[keyof typeof DataLayerType] | null;
+  geometry_type?:
+    | (typeof DataLayerGeometryType)[keyof typeof DataLayerGeometryType]
+    | null;
   /** Status of the file relative to our system.
 
   * `READY` - Ready
@@ -922,9 +941,9 @@ export interface DataLayer {
   readonly styles: readonly DataLayerStylesItem[];
   readonly path: readonly string[];
   /**
-     * @maxLength 1024
-     * @nullable
-     */
+   * @maxLength 1024
+   * @nullable
+   */
   url?: string | null;
   storage_type?: StorageTypeEnum;
   readonly public_url: string;
@@ -933,7 +952,9 @@ export interface DataLayer {
   info?: DataLayerInfo;
   /** @nullable */
   metadata?: DataLayerMetadata;
-  map_service_type?: typeof DataLayerMapServiceType[keyof typeof DataLayerMapServiceType] | null;
+  map_service_type?:
+    | (typeof DataLayerMapServiceType)[keyof typeof DataLayerMapServiceType]
+    | null;
   readonly original_name: string;
 }
 
@@ -941,17 +962,23 @@ export interface DataLayerUrl {
   layer_url: string;
 }
 
-export const DatasetSelectionType = {...SelectionTypeEnum,...BlankEnum,} as const
-export const DatasetPreferredDisplayType = {...PreferredDisplayTypeEnum,...BlankEnum,} as const
+export const DatasetSelectionType = {
+  ...SelectionTypeEnum,
+  ...BlankEnum,
+} as const;
+export const DatasetPreferredDisplayType = {
+  ...PreferredDisplayTypeEnum,
+  ...BlankEnum,
+} as const;
 export interface Dataset {
   readonly id: number;
   /** @nullable */
   readonly created_at: string | null;
   readonly updated_at: string;
   /**
-     * Define if the entity has been deleted or not and when
-     * @nullable
-     */
+   * Define if the entity has been deleted or not and when
+   * @nullable
+   */
   deleted_at?: string | null;
   created_by: number;
   organization: OrganizationSimple;
@@ -960,14 +987,18 @@ export interface Dataset {
   /** @nullable */
   description?: string | null;
   visibility?: VisibilityEnum;
-  selection_type?: typeof DatasetSelectionType[keyof typeof DatasetSelectionType] | null;
-  preferred_display_type?: typeof DatasetPreferredDisplayType[keyof typeof DatasetPreferredDisplayType] | null;
+  selection_type?:
+    | (typeof DatasetSelectionType)[keyof typeof DatasetSelectionType]
+    | null;
+  preferred_display_type?:
+    | (typeof DatasetPreferredDisplayType)[keyof typeof DatasetPreferredDisplayType]
+    | null;
   /** @nullable */
   version?: string | null;
   /**
-     * List of modules this dataset is associated with.
-     * @nullable
-     */
+   * List of modules this dataset is associated with.
+   * @nullable
+   */
   modules?: string[] | null;
 }
 
@@ -989,14 +1020,13 @@ export interface GetAvailableStands {
 
 /**
  * * `CALIFORNIA_PLANNING_METRICS` - California Landscape Metrics
-* `CLIMATE_FORESIGHT_DEMO` - Climate Foresight Demo
-* `PYROLOGIX` - Pyrologix
-* `RISK_BASED_STRATEGIC_PLANNING` - Risk-Based Strategic Planning
-* `TREEMAP_FVS_2020` - TreeMap FVS 2020
-* `WILDFIRE_RISK_TO_COMMUTIES` - Wildfire Risk to Communities
+ * `CLIMATE_FORESIGHT_DEMO` - Climate Foresight Demo
+ * `PYROLOGIX` - Pyrologix
+ * `RISK_BASED_STRATEGIC_PLANNING` - Risk-Based Strategic Planning
+ * `TREEMAP_FVS_2020` - TreeMap FVS 2020
+ * `WILDFIRE_RISK_TO_COMMUTIES` - Wildfire Risk to Communities
  */
-export type GroupEnum = typeof GroupEnum[keyof typeof GroupEnum];
-
+export type GroupEnum = (typeof GroupEnum)[keyof typeof GroupEnum];
 
 export const GroupEnum = {
   CALIFORNIA_PLANNING_METRICS: 'CALIFORNIA_PLANNING_METRICS',
@@ -1017,10 +1047,10 @@ export interface InputModule {
 export interface UserDetails {
   readonly pk: number;
   /**
-     * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
-     * @maxLength 150
-     * @pattern ^[\w.@+-]+$
-     */
+   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @maxLength 150
+   * @pattern ^[\w.@+-]+$
+   */
   username: string;
   readonly email: string;
   /** @maxLength 150 */
@@ -1048,14 +1078,13 @@ export interface ListCreator {
 
 /**
  * * `PENDING` - Pending
-* `IN_PROGRESS` - In Progress
-* `STANDS_DONE` - Stands Done
-* `DONE` - Done
-* `FAILED` - Failed
-* `OVERSIZE` - Oversize
+ * `IN_PROGRESS` - In Progress
+ * `STANDS_DONE` - Stands Done
+ * `DONE` - Done
+ * `FAILED` - Failed
+ * `OVERSIZE` - Oversize
  */
-export type MapStatusEnum = typeof MapStatusEnum[keyof typeof MapStatusEnum];
-
+export type MapStatusEnum = (typeof MapStatusEnum)[keyof typeof MapStatusEnum];
 
 export const MapStatusEnum = {
   PENDING: 'PENDING',
@@ -1066,18 +1095,18 @@ export const MapStatusEnum = {
   OVERSIZE: 'OVERSIZE',
 } as const;
 
-export const ListPlanningAreaMapStatus = {...MapStatusEnum,} as const
+export const ListPlanningAreaMapStatus = { ...MapStatusEnum } as const;
 export interface ListPlanningArea {
   readonly id: number;
   /**
-     * User ID that created the Planning Area.
-     * @nullable
-     */
+   * User ID that created the Planning Area.
+   * @nullable
+   */
   user: number | null;
   /**
-     * Name of the Planning Area.
-     * @maxLength 120
-     */
+   * Name of the Planning Area.
+   * @maxLength 120
+   */
   name: string;
   /** Notes of the Planning Area. */
   notes?: string;
@@ -1105,30 +1134,33 @@ export interface ListPlanningArea {
   * `DONE` - Done
   * `FAILED` - Failed
   * `OVERSIZE` - Oversize */
-  map_status?: typeof ListPlanningAreaMapStatus[keyof typeof ListPlanningAreaMapStatus] | null;
+  map_status?:
+    | (typeof ListPlanningAreaMapStatus)[keyof typeof ListPlanningAreaMapStatus]
+    | null;
 }
 
-export const ListScenarioOrigin = {...OriginEnum,} as const
-export const ListScenarioType = {...Type5b6Enum,...BlankEnum,} as const
+export const ListScenarioOrigin = { ...OriginEnum } as const;
+export const ListScenarioType = { ...Type5b6Enum, ...BlankEnum } as const;
 /**
  * * `PRIORITIZE_SUB_UNITS` - Prioritize Sub-Units
-* `OPTIMIZE_PROJECT_AREAS` - Optimize Project Areas
+ * `OPTIMIZE_PROJECT_AREAS` - Optimize Project Areas
  */
-export type PlanningApproachEnum = typeof PlanningApproachEnum[keyof typeof PlanningApproachEnum];
-
+export type PlanningApproachEnum =
+  (typeof PlanningApproachEnum)[keyof typeof PlanningApproachEnum];
 
 export const PlanningApproachEnum = {
   PRIORITIZE_SUB_UNITS: 'PRIORITIZE_SUB_UNITS',
   OPTIMIZE_PROJECT_AREAS: 'OPTIMIZE_PROJECT_AREAS',
 } as const;
 
-export const ListScenarioPlanningApproach = {...PlanningApproachEnum,} as const
+export const ListScenarioPlanningApproach = {
+  ...PlanningApproachEnum,
+} as const;
 /**
  * * `ACTIVE` - Active
-* `ARCHIVED` - Archived
+ * `ARCHIVED` - Archived
  */
-export type StatusF58Enum = typeof StatusF58Enum[keyof typeof StatusF58Enum];
-
+export type StatusF58Enum = (typeof StatusF58Enum)[keyof typeof StatusF58Enum];
 
 export const StatusF58Enum = {
   ACTIVE: 'ACTIVE',
@@ -1138,23 +1170,23 @@ export const StatusF58Enum = {
 export interface TreatmentGoalSimple {
   readonly id: number;
   /**
-     * Name of the Treatment Goal.
-     * @maxLength 120
-     */
+   * Name of the Treatment Goal.
+   * @maxLength 120
+   */
   name: string;
 }
 
 /**
  * * `PENDING` - Pending
-* `RUNNING` - Running
-* `SUCCESS` - Success
-* `FAILURE` - Failure
-* `PANIC` - Panic
-* `TIMED_OUT` - Timed Out
-* `DRAFT` - Draft
+ * `RUNNING` - Running
+ * `SUCCESS` - Success
+ * `FAILURE` - Failure
+ * `PANIC` - Panic
+ * `TIMED_OUT` - Timed Out
+ * `DRAFT` - Draft
  */
-export type ScenarioResultStatusEnum = typeof ScenarioResultStatusEnum[keyof typeof ScenarioResultStatusEnum];
-
+export type ScenarioResultStatusEnum =
+  (typeof ScenarioResultStatusEnum)[keyof typeof ScenarioResultStatusEnum];
 
 export const ScenarioResultStatusEnum = {
   PENDING: 'PENDING',
@@ -1172,14 +1204,14 @@ export interface ScenarioResult {
   readonly created_at: string | null;
   readonly updated_at: string;
   /**
-     * Start of the Forsys run, in UTC timezone.
-     * @nullable
-     */
+   * Start of the Forsys run, in UTC timezone.
+   * @nullable
+   */
   started_at?: string | null;
   /**
-     * End of the Forsys run, in UTC timezone.
-     * @nullable
-     */
+   * End of the Forsys run, in UTC timezone.
+   * @nullable
+   */
   completed_at?: string | null;
   status?: ScenarioResultStatusEnum;
   readonly result: string;
@@ -1198,16 +1230,16 @@ export interface ListScenario {
   /** Max budget. */
   readonly max_budget: string;
   /**
-     * Name of the Scenario.
-     * @maxLength 120
-     */
+   * Name of the Scenario.
+   * @maxLength 120
+   */
   name: string;
   /** Notes of the Scenario. */
   notes?: string;
   /**
-     * User ID that created the Scenario.
-     * @nullable
-     */
+   * User ID that created the Scenario.
+   * @nullable
+   */
   user?: number | null;
   /** Name of the creator of the Scenario. */
   readonly creator: string;
@@ -1228,12 +1260,12 @@ export interface ListScenario {
 
   * `SYSTEM` - System
   * `USER` - User */
-  origin?: typeof ListScenarioOrigin[keyof typeof ListScenarioOrigin] | null;
+  origin?: (typeof ListScenarioOrigin)[keyof typeof ListScenarioOrigin] | null;
   /** Scenario type.
 
   * `PRESET` - Preset
   * `CUSTOM` - Custom */
-  type?: typeof ListScenarioType[keyof typeof ListScenarioType] | null;
+  type?: (typeof ListScenarioType)[keyof typeof ListScenarioType] | null;
   readonly version: string;
   /** List of enabled capabilities for this Scenario. */
   capabilities?: CapabilitiesEnum[];
@@ -1241,7 +1273,9 @@ export interface ListScenario {
 
   * `PRIORITIZE_SUB_UNITS` - Prioritize Sub-Units
   * `OPTIMIZE_PROJECT_AREAS` - Optimize Project Areas */
-  planning_approach?: typeof ListScenarioPlanningApproach[keyof typeof ListScenarioPlanningApproach] | null;
+  planning_approach?:
+    | (typeof ListScenarioPlanningApproach)[keyof typeof ListScenarioPlanningApproach]
+    | null;
 }
 
 export interface Login {
@@ -1252,9 +1286,9 @@ export interface Login {
 
 export interface NameRegistration {
   /**
-     * @minLength 1
-     * @maxLength 150
-     */
+   * @minLength 1
+   * @maxLength 150
+   */
   username?: string;
   email: string;
   password1: string;
@@ -1355,9 +1389,9 @@ export interface Style {
   type?: TypeE04Enum;
   data: unknown;
   /**
-     * @maxLength 256
-     * @nullable
-     */
+   * @maxLength 256
+   * @nullable
+   */
   data_hash?: string | null;
 }
 
@@ -1373,9 +1407,9 @@ export interface PaginatedStyleList {
 export interface TxPrescriptionProjectArea {
   readonly id: number;
   /**
-     * Name of the Project Area.
-     * @maxLength 128
-     */
+   * Name of the Project Area.
+   * @maxLength 128
+   */
   name: string;
 }
 
@@ -1409,9 +1443,9 @@ export interface TreatmentPrescriptionList {
   * `MODERATE_MASTICATION_PLUS_RX_FIRE` - Moderate Mastication (year 0), Prescribed Fire (year 10) */
   action: ActionEnum;
   /**
-     * Stand which Treatment Prescription will be applied.
-     * @nullable
-     */
+   * Stand which Treatment Prescription will be applied.
+   * @nullable
+   */
   stand?: number | null;
   /** Area in acres. */
   readonly area_acres: number;
@@ -1435,9 +1469,9 @@ export interface Workspace {
   readonly created_at: string | null;
   readonly updated_at: string;
   /**
-     * Define if the entity has been deleted or not and when
-     * @nullable
-     */
+   * Define if the entity has been deleted or not and when
+   * @nullable
+   */
   readonly deleted_at: string | null;
 }
 
@@ -1456,20 +1490,20 @@ export interface PaginatedWorkspaceList {
 export interface PatchedClimateForesightPillar {
   readonly id?: number;
   /**
-     * If null, this is a global/shared pillar. If set, it's specific to that run.
-     * @nullable
-     */
+   * If null, this is a global/shared pillar. If set, it's specific to that run.
+   * @nullable
+   */
   run?: number | null;
   /**
-     * Name of the pillar
-     * @maxLength 255
-     */
+   * Name of the pillar
+   * @maxLength 255
+   */
   name?: string;
   /**
-     * Display order for the pillar
-     * @minimum -2147483648
-     * @maximum 2147483647
-     */
+   * Display order for the pillar
+   * @minimum -2147483648
+   * @maximum 2147483647
+   */
   order?: number;
   /** @nullable */
   readonly created_at?: string | null;
@@ -1483,9 +1517,9 @@ export interface PatchedClimateForesightPillar {
 export interface PatchedClimateForesightRun {
   readonly id?: number;
   /**
-     * Name of the climate foresight run
-     * @maxLength 255
-     */
+   * Name of the climate foresight run
+   * @maxLength 255
+   */
   name?: string;
   /** Planning area this run belongs to */
   planning_area?: number;
@@ -1499,16 +1533,16 @@ export interface PatchedClimateForesightRun {
   * `failed` - Failed */
   status?: StatusF84Enum;
   /**
-     * Current step user is on (1=data layers, 2=favorability, 3=pillars, 4=run)
-     * @minimum -2147483648
-     * @maximum 2147483647
-     */
+   * Current step user is on (1=data layers, 2=favorability, 3=pillars, 4=run)
+   * @minimum -2147483648
+   * @maximum 2147483647
+   */
   current_step?: number;
   /**
-     * Furthest step completed (enables resume/skip forward)
-     * @minimum -2147483648
-     * @maximum 2147483647
-     */
+   * Furthest step completed (enables resume/skip forward)
+   * @minimum -2147483648
+   * @maximum 2147483647
+   */
   furthest_step?: number;
   readonly created_at?: string;
   input_datalayers?: ClimateForesightRunInputDataLayer[];
@@ -1517,8 +1551,8 @@ export interface PatchedClimateForesightRun {
   readonly promote?: string;
 }
 
-export const PatchedScenarioOrigin = {...OriginEnum,} as const
-export const PatchedScenarioType = {...Type5b6Enum,...BlankEnum,} as const
+export const PatchedScenarioOrigin = { ...OriginEnum } as const;
+export const PatchedScenarioType = { ...Type5b6Enum, ...BlankEnum } as const;
 export interface PatchedScenario {
   readonly id?: number;
   /** Last update date and time in UTC. */
@@ -1528,20 +1562,22 @@ export interface PatchedScenario {
   /** Planning Area ID. */
   planning_area?: number;
   /**
-     * Name of the Scenario.
-     * @maxLength 120
-     */
+   * Name of the Scenario.
+   * @maxLength 120
+   */
   name?: string;
   /** Scenario Origin.
 
   * `SYSTEM` - System
   * `USER` - User */
-  origin?: typeof PatchedScenarioOrigin[keyof typeof PatchedScenarioOrigin] | null;
+  origin?:
+    | (typeof PatchedScenarioOrigin)[keyof typeof PatchedScenarioOrigin]
+    | null;
   /** Scenario type.
 
   * `PRESET` - Preset
   * `CUSTOM` - Custom */
-  type?: typeof PatchedScenarioType[keyof typeof PatchedScenarioType] | null;
+  type?: (typeof PatchedScenarioType)[keyof typeof PatchedScenarioType] | null;
   /** Notes of the Scenario. */
   notes?: string;
   configuration?: Configuration;
@@ -1550,9 +1586,9 @@ export interface PatchedScenario {
   /** Results of the scenario. */
   readonly scenario_result?: ScenarioResult;
   /**
-     * User ID that created the Scenario.
-     * @nullable
-     */
+   * User ID that created the Scenario.
+   * @nullable
+   */
   user?: number | null;
   /** Name of the creator of the Scenario. */
   readonly creator?: string;
@@ -1563,9 +1599,9 @@ export interface PatchedScenario {
   status?: StatusF58Enum;
   readonly version?: string;
   /**
-     * URL to download the scenario's geopackage file.
-     * @nullable
-     */
+   * URL to download the scenario's geopackage file.
+   * @nullable
+   */
   readonly geopackage_url?: string | null;
   /** List of enabled capabilities for this Scenario. */
   capabilities?: CapabilitiesEnum[];
@@ -1586,17 +1622,17 @@ export interface PatchedTreatmentPlanNote {
 
 export interface PatchedTreatmentPlanUpdate {
   /**
-     * Name of Treatment Plan.
-     * @maxLength 256
-     */
+   * Name of Treatment Plan.
+   * @maxLength 256
+   */
   name?: string;
 }
 
 export interface PatchedUpdatePlanningArea {
   /**
-     * Name of the Planning Area.
-     * @maxLength 120
-     */
+   * Name of the Planning Area.
+   * @maxLength 120
+   */
   name?: string;
 }
 
@@ -1610,45 +1646,45 @@ export interface PatchedUpsertConfigurationV2 {
   /** @minimum 1 */
   estimated_cost?: number;
   /**
-     * Maximum budget, in USD, that can be used for calculating possible treatments. Either max_budget or max_area needs to be specified.
-     * @nullable
-     */
+   * Maximum budget, in USD, that can be used for calculating possible treatments. Either max_budget or max_area needs to be specified.
+   * @nullable
+   */
   max_budget?: number | null;
   /**
-     * Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.
-     * @nullable
-     */
+   * Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.
+   * @nullable
+   */
   max_area?: number | null;
   /**
-     * Maximum number of areas that can be generated by Forsys.
-     * @minimum 2
-     * @maximum 10
-     */
+   * Maximum number of areas that can be generated by Forsys.
+   * @minimum 2
+   * @maximum 10
+   */
   max_project_count?: number;
   /**
-     * Constraints areas where the maximum slope is higher than specified.
-     * @minimum 0
-     * @maximum 100
-     * @nullable
-     */
+   * Constraints areas where the maximum slope is higher than specified.
+   * @minimum 0
+   * @maximum 100
+   * @nullable
+   */
   max_slope?: number | null;
   /**
-     * Constraints areas where the minimum distance from a road is higher than specified.
-     * @minimum 0
-     * @maximum 100000
-     * @nullable
-     */
+   * Constraints areas where the minimum distance from a road is higher than specified.
+   * @minimum 0
+   * @maximum 100000
+   * @nullable
+   */
   min_distance_from_road?: number | null;
   /** @minItems 0 */
   excluded_areas?: number[];
   /**
-     * Optional seed for reproducible randomization.
-     * @nullable
-     */
+   * Optional seed for reproducible randomization.
+   * @nullable
+   */
   seed?: number | null;
 }
 
-export const PatchedUpsertScenarioV3Origin = {...OriginEnum,} as const
+export const PatchedUpsertScenarioV3Origin = { ...OriginEnum } as const;
 export interface PatchedUpsertScenarioV3 {
   /** Planning Area ID. */
   planning_area?: number;
@@ -1659,11 +1695,13 @@ export interface PatchedUpsertScenarioV3 {
 
   * `SYSTEM` - System
   * `USER` - User */
-  origin?: typeof PatchedUpsertScenarioV3Origin[keyof typeof PatchedUpsertScenarioV3Origin] | null;
+  origin?:
+    | (typeof PatchedUpsertScenarioV3Origin)[keyof typeof PatchedUpsertScenarioV3Origin]
+    | null;
   /**
-     * Scenario notes.
-     * @nullable
-     */
+   * Scenario notes.
+   * @nullable
+   */
   notes?: string | null;
 }
 
@@ -1673,10 +1711,10 @@ export interface PatchedUpsertScenarioV3 {
 export interface PatchedUserDetails {
   readonly pk?: number;
   /**
-     * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
-     * @maxLength 150
-     * @pattern ^[\w.@+-]+$
-     */
+   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @maxLength 150
+   * @pattern ^[\w.@+-]+$
+   */
   username?: string;
   readonly email?: string;
   /** @maxLength 150 */
@@ -1697,9 +1735,9 @@ export interface PatchedUserObjectRole {
   readonly inviter?: number;
   content_type?: number;
   /**
-     * @minimum 0
-     * @maximum 2147483647
-     */
+   * @minimum 0
+   * @maximum 2147483647
+   */
   object_pk?: number;
   readonly permissions?: string;
   readonly collaborator_name?: string;
@@ -1714,21 +1752,21 @@ export type PlanningAreaGeometry = {
   coordinates?: number[][][][];
 } | null;
 
-export const PlanningAreaMapStatus = {...MapStatusEnum,} as const
+export const PlanningAreaMapStatus = { ...MapStatusEnum } as const;
 /**
  * Deprecated, will be removed in django-rest-framework-gis 1.0
  */
 export interface PlanningArea {
   readonly id: number;
   /**
-     * User ID that created the Planning Area.
-     * @nullable
-     */
+   * User ID that created the Planning Area.
+   * @nullable
+   */
   user: number | null;
   /**
-     * Name of the Planning Area.
-     * @maxLength 120
-     */
+   * Name of the Planning Area.
+   * @maxLength 120
+   */
   name: string;
   /** Notes of the Planning Area. */
   notes?: string;
@@ -1749,9 +1787,9 @@ export interface PlanningArea {
   /** Requester permissions for the Planning Area. */
   readonly permissions: string;
   /**
-     * Geometry of the Planning Area represented by polygons.
-     * @nullable
-     */
+   * Geometry of the Planning Area represented by polygons.
+   * @nullable
+   */
   geometry?: PlanningAreaGeometry;
   /** Controls the status of all the processes needed to allow the dynamic map to work.
 
@@ -1761,11 +1799,13 @@ export interface PlanningArea {
   * `DONE` - Done
   * `FAILED` - Failed
   * `OVERSIZE` - Oversize */
-  map_status?: typeof PlanningAreaMapStatus[keyof typeof PlanningAreaMapStatus] | null;
+  map_status?:
+    | (typeof PlanningAreaMapStatus)[keyof typeof PlanningAreaMapStatus]
+    | null;
 }
 
-export type ProjectAreaGeometryType = typeof ProjectAreaGeometryType[keyof typeof ProjectAreaGeometryType];
-
+export type ProjectAreaGeometryType =
+  (typeof ProjectAreaGeometryType)[keyof typeof ProjectAreaGeometryType];
 
 export const ProjectAreaGeometryType = {
   MultiPolygon: 'MultiPolygon',
@@ -1783,9 +1823,9 @@ export interface ProjectArea {
   readonly id: number;
   scenario: number;
   /**
-     * Name of the Project Area.
-     * @maxLength 128
-     */
+   * Name of the Project Area.
+   * @maxLength 128
+   */
   name: string;
   /** Project Area data from Forsys. */
   data?: unknown | null;
@@ -1802,8 +1842,8 @@ export interface RestAuthDetail {
   readonly detail: string;
 }
 
-export const ScenarioOrigin = {...OriginEnum,} as const
-export const ScenarioType = {...Type5b6Enum,...BlankEnum,} as const
+export const ScenarioOrigin = { ...OriginEnum } as const;
+export const ScenarioType = { ...Type5b6Enum, ...BlankEnum } as const;
 export interface Scenario {
   readonly id: number;
   /** Last update date and time in UTC. */
@@ -1813,20 +1853,20 @@ export interface Scenario {
   /** Planning Area ID. */
   planning_area: number;
   /**
-     * Name of the Scenario.
-     * @maxLength 120
-     */
+   * Name of the Scenario.
+   * @maxLength 120
+   */
   name: string;
   /** Scenario Origin.
 
   * `SYSTEM` - System
   * `USER` - User */
-  origin?: typeof ScenarioOrigin[keyof typeof ScenarioOrigin] | null;
+  origin?: (typeof ScenarioOrigin)[keyof typeof ScenarioOrigin] | null;
   /** Scenario type.
 
   * `PRESET` - Preset
   * `CUSTOM` - Custom */
-  type?: typeof ScenarioType[keyof typeof ScenarioType] | null;
+  type?: (typeof ScenarioType)[keyof typeof ScenarioType] | null;
   /** Notes of the Scenario. */
   notes?: string;
   configuration: Configuration;
@@ -1835,9 +1875,9 @@ export interface Scenario {
   /** Results of the scenario. */
   readonly scenario_result: ScenarioResult;
   /**
-     * User ID that created the Scenario.
-     * @nullable
-     */
+   * User ID that created the Scenario.
+   * @nullable
+   */
   user?: number | null;
   /** Name of the creator of the Scenario. */
   readonly creator: string;
@@ -1848,9 +1888,9 @@ export interface Scenario {
   status?: StatusF58Enum;
   readonly version: string;
   /**
-     * URL to download the scenario's geopackage file.
-     * @nullable
-     */
+   * URL to download the scenario's geopackage file.
+   * @nullable
+   */
   readonly geopackage_url: string | null;
   /** List of enabled capabilities for this Scenario. */
   capabilities?: CapabilitiesEnum[];
@@ -1858,13 +1898,12 @@ export interface Scenario {
 
 /**
  * * `PENDING` - Pending
-* `QUEUED` - Queued
-* `RUNNING` - Running
-* `SUCCESS` - Suceess
-* `FAILURE` - Failure
+ * `QUEUED` - Queued
+ * `RUNNING` - Running
+ * `SUCCESS` - Suceess
+ * `FAILURE` - Failure
  */
-export type Status5acEnum = typeof Status5acEnum[keyof typeof Status5acEnum];
-
+export type Status5acEnum = (typeof Status5acEnum)[keyof typeof Status5acEnum];
 
 export const Status5acEnum = {
   PENDING: 'PENDING',
@@ -1883,17 +1922,16 @@ export interface TokenVerify {
   token: string;
 }
 
-export const TreatmentGoalCategory = {...CategoryEnum,} as const
-export const TreatmentGoalGroup = {...GroupEnum,} as const
+export const TreatmentGoalCategory = { ...CategoryEnum } as const;
+export const TreatmentGoalGroup = { ...GroupEnum } as const;
 /**
  * * `PRIORITY` - Priority
-* `SECONDARY_METRIC` - Secondary Metric
-* `THRESHOLD` - Threshold
-* `EXCLUSION_ZONE` - Exclusion Zone
-* `INCLUSION_ZONE` - Inclusion Zone
+ * `SECONDARY_METRIC` - Secondary Metric
+ * `THRESHOLD` - Threshold
+ * `EXCLUSION_ZONE` - Exclusion Zone
+ * `INCLUSION_ZONE` - Inclusion Zone
  */
-export type UsageTypeEnum = typeof UsageTypeEnum[keyof typeof UsageTypeEnum];
-
+export type UsageTypeEnum = (typeof UsageTypeEnum)[keyof typeof UsageTypeEnum];
 
 export const UsageTypeEnum = {
   PRIORITY: 'PRIORITY',
@@ -1918,9 +1956,9 @@ export interface TreatmentGoalUsage {
 export interface TreatmentGoal {
   readonly id: number;
   /**
-     * Name of the Treatment Goal.
-     * @maxLength 120
-     */
+   * Name of the Treatment Goal.
+   * @maxLength 120
+   */
   name: string;
   /** Description of the Treatment Goal on HTML format. */
   readonly description: string;
@@ -1929,7 +1967,9 @@ export interface TreatmentGoal {
   * `FIRE_DYNAMICS` - Fire Dynamics
   * `BIODIVERSITY` - Biodiversity
   * `CARBON_BIOMASS` - Carbon/Biomass */
-  category?: typeof TreatmentGoalCategory[keyof typeof TreatmentGoalCategory] | null;
+  category?:
+    | (typeof TreatmentGoalCategory)[keyof typeof TreatmentGoalCategory]
+    | null;
   /** Text format of Treatment Goal Category. */
   readonly category_text: string;
   /** Treatment Goal group.
@@ -1940,7 +1980,7 @@ export interface TreatmentGoal {
   * `RISK_BASED_STRATEGIC_PLANNING` - Risk-Based Strategic Planning
   * `TREEMAP_FVS_2020` - TreeMap FVS 2020
   * `WILDFIRE_RISK_TO_COMMUTIES` - Wildfire Risk to Communities */
-  group?: typeof TreatmentGoalGroup[keyof typeof TreatmentGoalGroup] | null;
+  group?: (typeof TreatmentGoalGroup)[keyof typeof TreatmentGoalGroup] | null;
   /** Text format of Treatment Goal Group. */
   readonly group_text: string;
   readonly usage_types: readonly TreatmentGoalUsage[];
@@ -1958,9 +1998,9 @@ export interface TreatmentPlan {
   /** Scenario ID. */
   scenario: number;
   /**
-     * Name of Treatment Plan.
-     * @maxLength 256
-     */
+   * Name of Treatment Plan.
+   * @maxLength 256
+   */
   name: string;
   /** Status of Treatment Plan (choice).
 
@@ -1994,9 +2034,9 @@ export interface TreatmentPlanList {
   /** Scenario ID. */
   scenario: number;
   /**
-     * Name of Treatment Plan.
-     * @maxLength 256
-     */
+   * Name of Treatment Plan.
+   * @maxLength 256
+   */
   name: string;
   /** Status of Treatment Plan (choice).
 
@@ -2054,14 +2094,14 @@ export interface TreatmentPlanNoteList {
 
 export interface TreatmentPlanUpdate {
   /**
-     * Name of Treatment Plan.
-     * @maxLength 256
-     */
+   * Name of Treatment Plan.
+   * @maxLength 256
+   */
   name: string;
 }
 
-export type TreatmentPrescriptionGeometryType = typeof TreatmentPrescriptionGeometryType[keyof typeof TreatmentPrescriptionGeometryType];
-
+export type TreatmentPrescriptionGeometryType =
+  (typeof TreatmentPrescriptionGeometryType)[keyof typeof TreatmentPrescriptionGeometryType];
 
 export const TreatmentPrescriptionGeometryType = {
   Polygon: 'Polygon',
@@ -2085,16 +2125,16 @@ export interface TreatmentPrescription {
   /** User ID that updated Treatment Prescription. */
   updated_by: number;
   /**
-     * Treatment Plan ID.
-     * @nullable
-     */
+   * Treatment Plan ID.
+   * @nullable
+   */
   treatment_plan: number | null;
   /** Project Area. */
   project_area: TxPrescriptionProjectArea;
   /**
-     * Stand which Treatment Prescription will be applied.
-     * @nullable
-     */
+   * Stand which Treatment Prescription will be applied.
+   * @nullable
+   */
   stand: number | null;
   /** Action of Treatment Prescription (choice).
 
@@ -2129,25 +2169,24 @@ export interface TreatmentPrescriptionBatchDeleteResponse {
 
 /**
  * * `CBD` - Crown Bulk Density
-* `CBH` - Canopy Base Height
-* `CC` - Canopy Cover
-* `FBFM` - Fire Behavior/Fuel Model
-* `FL` - Flame Length
-* `LARGE_TREE_BIOMASS` - Large Tree Biomass
-* `MERCH_BIOMASS` - Merch Biomass
-* `MORTALITY` - Mortality
-* `NON_MERCH_BIOMASS` - Non Merch Biomass
-* `POTENTIAL_SMOKE` - Potential Smoke
-* `PTORCH` - Probabiliy of Torching
-* `QMD` - Quadratic Mean Diameter
-* `ROS` - Rate of Spread
-* `SDI` - Stand Density Index
-* `TH` - Total Height
-* `TOT_FLAME_SEV` - Total Flame Severity
-* `TOTAL_CARBON` - Total Carbon
+ * `CBH` - Canopy Base Height
+ * `CC` - Canopy Cover
+ * `FBFM` - Fire Behavior/Fuel Model
+ * `FL` - Flame Length
+ * `LARGE_TREE_BIOMASS` - Large Tree Biomass
+ * `MERCH_BIOMASS` - Merch Biomass
+ * `MORTALITY` - Mortality
+ * `NON_MERCH_BIOMASS` - Non Merch Biomass
+ * `POTENTIAL_SMOKE` - Potential Smoke
+ * `PTORCH` - Probabiliy of Torching
+ * `QMD` - Quadratic Mean Diameter
+ * `ROS` - Rate of Spread
+ * `SDI` - Stand Density Index
+ * `TH` - Total Height
+ * `TOT_FLAME_SEV` - Total Flame Severity
+ * `TOTAL_CARBON` - Total Carbon
  */
-export type VariablesEnum = typeof VariablesEnum[keyof typeof VariablesEnum];
-
+export type VariablesEnum = (typeof VariablesEnum)[keyof typeof VariablesEnum];
 
 export const VariablesEnum = {
   CBD: 'CBD',
@@ -2180,9 +2219,9 @@ export interface TreatmentResult {
 
 export interface UpdatePlanningArea {
   /**
-     * Name of the Planning Area.
-     * @maxLength 120
-     */
+   * Name of the Planning Area.
+   * @maxLength 120
+   */
   name: string;
 }
 
@@ -2191,7 +2230,7 @@ export interface UpdateWorkspace {
   visibility?: string;
 }
 
-export const UpsertScenarioV3Origin = {...OriginEnum,} as const
+export const UpsertScenarioV3Origin = { ...OriginEnum } as const;
 export interface UpsertScenarioV3 {
   /** Planning Area ID. */
   planning_area: number;
@@ -2202,11 +2241,13 @@ export interface UpsertScenarioV3 {
 
   * `SYSTEM` - System
   * `USER` - User */
-  origin?: typeof UpsertScenarioV3Origin[keyof typeof UpsertScenarioV3Origin] | null;
+  origin?:
+    | (typeof UpsertScenarioV3Origin)[keyof typeof UpsertScenarioV3Origin]
+    | null;
   /**
-     * Scenario notes.
-     * @nullable
-     */
+   * Scenario notes.
+   * @nullable
+   */
   notes?: string | null;
 }
 
@@ -2251,9 +2292,9 @@ export interface UserObjectRole {
   readonly inviter: number;
   content_type: number;
   /**
-     * @minimum 0
-     * @maximum 2147483647
-     */
+   * @minimum 0
+   * @maximum 2147483647
+   */
   object_pk: number;
   readonly permissions: string;
   readonly collaborator_name: string;
@@ -2264,49 +2305,49 @@ export interface VerifyEmail {
 }
 
 export type AdminDatalayersListParams = {
-category?: number;
-/**
- * dataset id
- */
-dataset?: number;
-/**
- * Multiple values may be separated by commas.
- */
-id__in?: number[];
-/**
- * Number of results to return per page.
- */
-limit?: number;
-name?: string;
-name__icontains?: string;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-original_name?: string;
-original_name__icontains?: string;
-/**
+  category?: number;
+  /**
+   * dataset id
+   */
+  dataset?: number;
+  /**
+   * Multiple values may be separated by commas.
+   */
+  id__in?: number[];
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  name?: string;
+  name__icontains?: string;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  original_name?: string;
+  original_name__icontains?: string;
+  /**
  * Status of the file relative to our system.
 
 * `READY` - Ready
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: AdminDatalayersListStatus;
-/**
- * * `VECTOR` - Vector
-* `RASTER` - Raster
- * @nullable
- */
-type?: AdminDatalayersListType;
+  status?: AdminDatalayersListStatus;
+  /**
+   * * `VECTOR` - Vector
+   * `RASTER` - Raster
+   * @nullable
+   */
+  type?: AdminDatalayersListType;
 };
 
-export type AdminDatalayersListStatus = typeof AdminDatalayersListStatus[keyof typeof AdminDatalayersListStatus];
-
+export type AdminDatalayersListStatus =
+  (typeof AdminDatalayersListStatus)[keyof typeof AdminDatalayersListStatus];
 
 export const AdminDatalayersListStatus = {
   FAILED: 'FAILED',
@@ -2314,8 +2355,9 @@ export const AdminDatalayersListStatus = {
   READY: 'READY',
 } as const;
 
-export type AdminDatalayersListType = typeof AdminDatalayersListType[keyof typeof AdminDatalayersListType] | null;
-
+export type AdminDatalayersListType =
+  | (typeof AdminDatalayersListType)[keyof typeof AdminDatalayersListType]
+  | null;
 
 export const AdminDatalayersListType = {
   RASTER: 'RASTER',
@@ -2323,45 +2365,45 @@ export const AdminDatalayersListType = {
 } as const;
 
 export type AdminDatasetsListParams = {
-/**
- * Number of results to return per page.
- */
-limit?: number;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
 };
 
 export type AdminStylesListParams = {
-/**
- * Number of results to return per page.
- */
-limit?: number;
-name?: string;
-name__icontains?: string;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-organization?: number;
-/**
- * * `VECTOR` - Vector
-* `RASTER` - Raster
- */
-type?: AdminStylesListType;
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  name?: string;
+  name__icontains?: string;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  organization?: number;
+  /**
+   * * `VECTOR` - Vector
+   * `RASTER` - Raster
+   */
+  type?: AdminStylesListType;
 };
 
-export type AdminStylesListType = typeof AdminStylesListType[keyof typeof AdminStylesListType];
-
+export type AdminStylesListType =
+  (typeof AdminStylesListType)[keyof typeof AdminStylesListType];
 
 export const AdminStylesListType = {
   RASTER: 'RASTER',
@@ -2369,74 +2411,74 @@ export const AdminStylesListType = {
 } as const;
 
 export type AdminWorkspacesListParams = {
-/**
- * Number of results to return per page.
- */
-limit?: number;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
 };
 
 export type ClimateForesightPillarsListParams = {
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
 };
 
 export type ClimateForesightRunsListParams = {
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
 };
 
 export type DatalayersListParams = {
-category?: number;
-/**
- * dataset id
- */
-dataset?: number;
-/**
- * Multiple values may be separated by commas.
- */
-id__in?: number[];
-/**
- * Number of results to return per page.
- */
-limit?: number;
-name?: string;
-name__icontains?: string;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-original_name?: string;
-original_name__icontains?: string;
-/**
+  category?: number;
+  /**
+   * dataset id
+   */
+  dataset?: number;
+  /**
+   * Multiple values may be separated by commas.
+   */
+  id__in?: number[];
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  name?: string;
+  name__icontains?: string;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  original_name?: string;
+  original_name__icontains?: string;
+  /**
  * Status of the file relative to our system.
 
 * `READY` - Ready
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: DatalayersListStatus;
-/**
- * * `VECTOR` - Vector
-* `RASTER` - Raster
- * @nullable
- */
-type?: DatalayersListType;
+  status?: DatalayersListStatus;
+  /**
+   * * `VECTOR` - Vector
+   * `RASTER` - Raster
+   * @nullable
+   */
+  type?: DatalayersListType;
 };
 
-export type DatalayersListStatus = typeof DatalayersListStatus[keyof typeof DatalayersListStatus];
-
+export type DatalayersListStatus =
+  (typeof DatalayersListStatus)[keyof typeof DatalayersListStatus];
 
 export const DatalayersListStatus = {
   FAILED: 'FAILED',
@@ -2444,8 +2486,9 @@ export const DatalayersListStatus = {
   READY: 'READY',
 } as const;
 
-export type DatalayersListType = typeof DatalayersListType[keyof typeof DatalayersListType] | null;
-
+export type DatalayersListType =
+  | (typeof DatalayersListType)[keyof typeof DatalayersListType]
+  | null;
 
 export const DatalayersListType = {
   RASTER: 'RASTER',
@@ -2453,63 +2496,63 @@ export const DatalayersListType = {
 } as const;
 
 export type DatalayersFindAnythingListParams = {
-category?: number;
-/**
- * dataset id
- */
-dataset?: number;
-geometry?: unknown;
-/**
- * Multiple values may be separated by commas.
- */
-id__in?: number[];
-/**
- * Number of results to return per page.
- */
-limit?: number;
-/**
- * * `forsys` - forsys
-* `impacts` - impacts
-* `map` - map
-* `climate_foresight` - climate_foresight
-* `prioritize_sub_units` - prioritize_sub_units
- * @minLength 1
- */
-module?: DatalayersFindAnythingListModule;
-name?: string;
-name__icontains?: string;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-original_name?: string;
-original_name__icontains?: string;
-/**
+  category?: number;
+  /**
+   * dataset id
+   */
+  dataset?: number;
+  geometry?: unknown;
+  /**
+   * Multiple values may be separated by commas.
+   */
+  id__in?: number[];
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  /**
+   * * `forsys` - forsys
+   * `impacts` - impacts
+   * `map` - map
+   * `climate_foresight` - climate_foresight
+   * `prioritize_sub_units` - prioritize_sub_units
+   * @minLength 1
+   */
+  module?: DatalayersFindAnythingListModule;
+  name?: string;
+  name__icontains?: string;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  original_name?: string;
+  original_name__icontains?: string;
+  /**
  * Status of the file relative to our system.
 
 * `READY` - Ready
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: DatalayersFindAnythingListStatus;
-/**
- * @minLength 1
- */
-term: string;
-/**
- * * `VECTOR` - Vector
-* `RASTER` - Raster
- * @minLength 1
- */
-type: DatalayersFindAnythingListType;
+  status?: DatalayersFindAnythingListStatus;
+  /**
+   * @minLength 1
+   */
+  term: string;
+  /**
+   * * `VECTOR` - Vector
+   * `RASTER` - Raster
+   * @minLength 1
+   */
+  type: DatalayersFindAnythingListType;
 };
 
-export type DatalayersFindAnythingListModule = typeof DatalayersFindAnythingListModule[keyof typeof DatalayersFindAnythingListModule];
-
+export type DatalayersFindAnythingListModule =
+  (typeof DatalayersFindAnythingListModule)[keyof typeof DatalayersFindAnythingListModule];
 
 export const DatalayersFindAnythingListModule = {
   forsys: 'forsys',
@@ -2519,8 +2562,8 @@ export const DatalayersFindAnythingListModule = {
   prioritize_sub_units: 'prioritize_sub_units',
 } as const;
 
-export type DatalayersFindAnythingListStatus = typeof DatalayersFindAnythingListStatus[keyof typeof DatalayersFindAnythingListStatus];
-
+export type DatalayersFindAnythingListStatus =
+  (typeof DatalayersFindAnythingListStatus)[keyof typeof DatalayersFindAnythingListStatus];
 
 export const DatalayersFindAnythingListStatus = {
   FAILED: 'FAILED',
@@ -2528,8 +2571,8 @@ export const DatalayersFindAnythingListStatus = {
   READY: 'READY',
 } as const;
 
-export type DatalayersFindAnythingListType = typeof DatalayersFindAnythingListType[keyof typeof DatalayersFindAnythingListType];
-
+export type DatalayersFindAnythingListType =
+  (typeof DatalayersFindAnythingListType)[keyof typeof DatalayersFindAnythingListType];
 
 export const DatalayersFindAnythingListType = {
   VECTOR: 'VECTOR',
@@ -2537,49 +2580,49 @@ export const DatalayersFindAnythingListType = {
 } as const;
 
 export type DatalayersFindAnythingCreateParams = {
-category?: number;
-/**
- * dataset id
- */
-dataset?: number;
-/**
- * Multiple values may be separated by commas.
- */
-id__in?: number[];
-/**
- * Number of results to return per page.
- */
-limit?: number;
-name?: string;
-name__icontains?: string;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-original_name?: string;
-original_name__icontains?: string;
-/**
+  category?: number;
+  /**
+   * dataset id
+   */
+  dataset?: number;
+  /**
+   * Multiple values may be separated by commas.
+   */
+  id__in?: number[];
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  name?: string;
+  name__icontains?: string;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  original_name?: string;
+  original_name__icontains?: string;
+  /**
  * Status of the file relative to our system.
 
 * `READY` - Ready
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: DatalayersFindAnythingCreateStatus;
-/**
- * * `VECTOR` - Vector
-* `RASTER` - Raster
- * @nullable
- */
-type?: DatalayersFindAnythingCreateType;
+  status?: DatalayersFindAnythingCreateStatus;
+  /**
+   * * `VECTOR` - Vector
+   * `RASTER` - Raster
+   * @nullable
+   */
+  type?: DatalayersFindAnythingCreateType;
 };
 
-export type DatalayersFindAnythingCreateStatus = typeof DatalayersFindAnythingCreateStatus[keyof typeof DatalayersFindAnythingCreateStatus];
-
+export type DatalayersFindAnythingCreateStatus =
+  (typeof DatalayersFindAnythingCreateStatus)[keyof typeof DatalayersFindAnythingCreateStatus];
 
 export const DatalayersFindAnythingCreateStatus = {
   FAILED: 'FAILED',
@@ -2587,8 +2630,9 @@ export const DatalayersFindAnythingCreateStatus = {
   READY: 'READY',
 } as const;
 
-export type DatalayersFindAnythingCreateType = typeof DatalayersFindAnythingCreateType[keyof typeof DatalayersFindAnythingCreateType] | null;
-
+export type DatalayersFindAnythingCreateType =
+  | (typeof DatalayersFindAnythingCreateType)[keyof typeof DatalayersFindAnythingCreateType]
+  | null;
 
 export const DatalayersFindAnythingCreateType = {
   RASTER: 'RASTER',
@@ -2596,44 +2640,45 @@ export const DatalayersFindAnythingCreateType = {
 } as const;
 
 export type DatasetsListParams = {
-/**
- * Number of results to return per page.
- */
-limit?: number;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
 };
 
 export type DatasetsBrowseParams = {
-/**
- * @nullable
- */
-category?: number | null;
-/**
- * @minLength 1
- */
-name?: string;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-/**
- * * `VECTOR` - Vector
-* `RASTER` - Raster
- * @minLength 1
- * @nullable
- */
-type?: DatasetsBrowseType;
+  /**
+   * @nullable
+   */
+  category?: number | null;
+  /**
+   * @minLength 1
+   */
+  name?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  /**
+   * * `VECTOR` - Vector
+   * `RASTER` - Raster
+   * @minLength 1
+   * @nullable
+   */
+  type?: DatasetsBrowseType;
 };
 
-export type DatasetsBrowseType = typeof DatasetsBrowseType[keyof typeof DatasetsBrowseType] | null;
-
+export type DatasetsBrowseType =
+  | (typeof DatasetsBrowseType)[keyof typeof DatasetsBrowseType]
+  | null;
 
 export const DatasetsBrowseType = {
   VECTOR: 'VECTOR',
@@ -2641,34 +2686,34 @@ export const DatasetsBrowseType = {
 } as const;
 
 export type DatasetsBrowsePostParams = {
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
 };
 
 export type PlanningareasListParams = {
-/**
- * Creator(s) ID(s) of Planning Area(s)
- */
-creator?: string;
-/**
- * Number of results to return per page.
- */
-limit?: number;
-/**
- * Case insensitive search for name of the Planning Area.
- */
-name?: string;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-/**
+  /**
+   * Creator(s) ID(s) of Planning Area(s)
+   */
+  creator?: string;
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  /**
+   * Case insensitive search for name of the Planning Area.
+   */
+  name?: string;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  /**
  * Region choice name of the Planning Area.
 
 * `sierra-nevada` - Sierra Nevada
@@ -2676,14 +2721,15 @@ ordering?: string;
 * `central-coast` - Central Coast
 * `northern-california` - Northern California
  */
-region_name?: PlanningareasListRegionNameItem[];
+  region_name?: PlanningareasListRegionNameItem[];
 };
 
 /**
  * @nullable
  */
-export type PlanningareasListRegionNameItem = typeof PlanningareasListRegionNameItem[keyof typeof PlanningareasListRegionNameItem] | null;
-
+export type PlanningareasListRegionNameItem =
+  | (typeof PlanningareasListRegionNameItem)[keyof typeof PlanningareasListRegionNameItem]
+  | null;
 
 export const PlanningareasListRegionNameItem = {
   'central-coast': 'central-coast',
@@ -2693,64 +2739,64 @@ export const PlanningareasListRegionNameItem = {
 } as const;
 
 export type PlanningareasCreatorsListParams = {
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
 };
 
 export type ScenariosListParams = {
-/**
- * Case insensitive search for name of Scenarios.
- */
-name?: string;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-/**
- * ID of the Planning Area.
- */
-planning_area?: number;
+  /**
+   * Case insensitive search for name of Scenarios.
+   */
+  name?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  /**
+   * ID of the Planning Area.
+   */
+  planning_area?: number;
 };
 
 export type ScenariosSubUnitsDetailsRetrieveParams = {
-/**
- * Flag that determine the Sub-Units Prioritization target (false = percentage | true = fixed value).
- */
-sub_units_fixed_target?: number;
-/**
- * Override the scenario's sub_units_layer with this DataLayer ID.
- */
-sub_units_layer?: number;
-/**
- * Absolute value or relative percent of project area sum.
- */
-sub_units_target_value?: number;
+  /**
+   * Flag that determine the Sub-Units Prioritization target (false = percentage | true = fixed value).
+   */
+  sub_units_fixed_target?: number;
+  /**
+   * Override the scenario's sub_units_layer with this DataLayer ID.
+   */
+  sub_units_layer?: number;
+  /**
+   * Absolute value or relative percent of project area sum.
+   */
+  sub_units_target_value?: number;
 };
 
 export type TreatmentGoalsListParams = {
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-planning_area?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  planning_area?: string;
 };
 
 export type TreatmentPlansListParams = {
-/**
- * Treatment Name.
- */
-name?: string;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
-/**
- * Scenario ID.
- */
-scenario?: number;
-/**
+  /**
+   * Treatment Name.
+   */
+  name?: string;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
+  /**
+   * Scenario ID.
+   */
+  scenario?: number;
+  /**
  * Treatment status choice (exact).
 
 * `PENDING` - Pending
@@ -2759,11 +2805,11 @@ scenario?: number;
 * `SUCCESS` - Suceess
 * `FAILURE` - Failure
  */
-status?: TreatmentPlansListStatus;
+  status?: TreatmentPlansListStatus;
 };
 
-export type TreatmentPlansListStatus = typeof TreatmentPlansListStatus[keyof typeof TreatmentPlansListStatus];
-
+export type TreatmentPlansListStatus =
+  (typeof TreatmentPlansListStatus)[keyof typeof TreatmentPlansListStatus];
 
 export const TreatmentPlansListStatus = {
   FAILURE: 'FAILURE',
@@ -2774,35 +2820,34 @@ export const TreatmentPlansListStatus = {
 } as const;
 
 export type TreatmentPlansStandTreatmentResultsRetrieveParams = {
-/**
- * The primary key (ID) of the stand for which to retrieve results.
- */
-stand_id: number;
+  /**
+   * The primary key (ID) of the stand for which to retrieve results.
+   */
+  stand_id: number;
 };
 
 export type TreatmentPlansSummaryRetrieveParams = {
-/**
- * Project Area ID.
- */
-project_area?: number;
+  /**
+   * Project Area ID.
+   */
+  project_area?: number;
 };
 
 export type TreatmentPlansNoteListParams = {
-treatment_plan?: number;
+  treatment_plan?: number;
 };
 
 export type TreatmentPlansTreatmentPrescriptionsListParams = {
-/**
- * Number of results to return per page.
- */
-limit?: number;
-/**
- * The initial index from which to return the results.
- */
-offset?: number;
-/**
- * Which field to use when ordering the results.
- */
-ordering?: string;
+  /**
+   * Number of results to return per page.
+   */
+  limit?: number;
+  /**
+   * The initial index from which to return the results.
+   */
+  offset?: number;
+  /**
+   * Which field to use when ordering the results.
+   */
+  ordering?: string;
 };
-
