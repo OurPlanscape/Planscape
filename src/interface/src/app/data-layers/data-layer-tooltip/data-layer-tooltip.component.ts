@@ -39,7 +39,11 @@ export class DataLayerTooltipComponent implements OnInit {
     this.loadingLink = true;
     this.downloadLink$ = this.datalayersService
       .datalayersUrlsRetrieve(this.layer.id)
-      .pipe(map((d) => d.layer_url), take(1), shareReplay(1));
+      .pipe(
+        map((d) => d.layer_url),
+        take(1),
+        shareReplay(1)
+      );
 
     this.downloadLink$.pipe(untilDestroyed(this)).subscribe((link) => {
       this.loadingLink = false;

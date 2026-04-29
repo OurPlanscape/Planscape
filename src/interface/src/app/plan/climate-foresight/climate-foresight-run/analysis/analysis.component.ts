@@ -11,10 +11,7 @@ import {
   OpacitySliderComponent,
   SectionComponent,
 } from '@styleguide';
-import {
-  ClimateForesightRun,
-  GeoPackageDownloadStatus,
-} from '@types';
+import { ClimateForesightRun, GeoPackageDownloadStatus } from '@types';
 import { DataLayer } from '@api/planscapeAPI.schemas';
 import { MapConfigState } from '@maplibre-map/map-config.state';
 import { ClimateForesightService } from '@services';

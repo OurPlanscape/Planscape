@@ -67,7 +67,9 @@ describe('SharePlanDialogComponent', () => {
       ],
     }).compileComponents();
 
-    spyOn(TestBed.inject(InvitesService), 'invitesList').and.returnValue(of([]) as any);
+    spyOn(TestBed.inject(InvitesService), 'invitesList').and.returnValue(
+      of([]) as any
+    );
     fixture = TestBed.createComponent(SharePlanDialogComponent);
     component = fixture.componentInstance;
     component.isLoading = false;
@@ -125,14 +127,15 @@ describe('SharePlanDialogComponent', () => {
   describe('changeRole ', () => {
     it('should call inviteService with corresponding data', () => {
       const service = TestBed.inject(InvitesService);
-      spyOn(service, 'invitesPartialUpdate').and.returnValue(of(mockInvite) as any);
+      spyOn(service, 'invitesPartialUpdate').and.returnValue(
+        of(mockInvite) as any
+      );
 
       component.changeRole(mockInvite, RoleEnum.Collaborator);
       fixture.detectChanges();
-      expect(service.invitesPartialUpdate).toHaveBeenCalledWith(
-        mockInvite.id,
-        { role: RoleEnum.Collaborator }
-      );
+      expect(service.invitesPartialUpdate).toHaveBeenCalledWith(mockInvite.id, {
+        role: RoleEnum.Collaborator,
+      });
     });
   });
 

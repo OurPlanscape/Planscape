@@ -370,9 +370,9 @@ export class AssignFavorabilityComponent
     }
 
     const metadata = this.currentLayer.metadata as Metadata | null;
-    const units = metadata?.['metadata']?.['identification']?.keywords?.units?.keywords?.filter(
-      (unit: any) => !!unit
-    );
+    const units = metadata?.['metadata']?.[
+      'identification'
+    ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
 
     if (!units || units.length === 0) {
       return '--';

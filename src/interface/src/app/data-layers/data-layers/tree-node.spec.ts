@@ -172,9 +172,21 @@ describe('buildPathTree', () => {
 
   it('should sort recursively at every depth', () => {
     const items: BrowseDataLayer[] = [
-      { id: 1, name: 'Z-leaf', path: ['B-cat', 'Z-sub'] } as unknown as BrowseDataLayer,
-      { id: 2, name: 'A-leaf', path: ['B-cat', 'A-sub'] } as unknown as BrowseDataLayer,
-      { id: 3, name: 'leaf', path: ['A-cat', 'sub'] } as unknown as BrowseDataLayer,
+      {
+        id: 1,
+        name: 'Z-leaf',
+        path: ['B-cat', 'Z-sub'],
+      } as unknown as BrowseDataLayer,
+      {
+        id: 2,
+        name: 'A-leaf',
+        path: ['B-cat', 'A-sub'],
+      } as unknown as BrowseDataLayer,
+      {
+        id: 3,
+        name: 'leaf',
+        path: ['A-cat', 'sub'],
+      } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);

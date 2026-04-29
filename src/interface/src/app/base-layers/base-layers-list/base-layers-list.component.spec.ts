@@ -32,7 +32,10 @@ describe('BaseLayersListComponent', () => {
       ],
     }).compileComponents();
 
-    spyOn(TestBed.inject(DatasetsService), 'datasetsBrowsePost').and.returnValue(of([]) as any);
+    spyOn(
+      TestBed.inject(DatasetsService),
+      'datasetsBrowsePost'
+    ).and.returnValue(of([]) as any);
 
     baseLayersStateServiceMock = TestBed.inject(
       BaseLayersStateService
@@ -106,7 +109,9 @@ describe('BaseLayersListComponent', () => {
     ];
 
     const datasetsService = TestBed.inject(DatasetsService);
-    (datasetsService.datasetsBrowsePost as jasmine.Spy).and.returnValue(of(returnedLayers));
+    (datasetsService.datasetsBrowsePost as jasmine.Spy).and.returnValue(
+      of(returnedLayers)
+    );
 
     component.baseLayers = [];
     expect(component.noBaseLayers).toBeTrue();

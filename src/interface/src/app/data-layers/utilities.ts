@@ -18,9 +18,7 @@ export interface RGBA {
 const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
 
 // Determines the legend format based on the datalayer
-export function extractLegendInfo(
-  dataLayer: BrowseDataLayer
-): ColorLegendInfo {
+export function extractLegendInfo(dataLayer: BrowseDataLayer): ColorLegendInfo {
   const { map_type, entries } = dataLayer.styles[0].data;
   // Note that this sort inverts the values from high to low
   const sorted = [...entries].sort((a, b) => b.value - a.value);
@@ -68,13 +66,17 @@ function parseColor(hexColor: string, opacity = 1.0): RGBA {
 }
 
 // generates a color mapping function for single entry maps
-function createSingleEntryMapper(entry: RasterStyleEntryOutput): (value: number) => RGBA {
+function createSingleEntryMapper(
+  entry: RasterStyleEntryOutput
+): (value: number) => RGBA {
   const color = parseColor(entry.color, entry.opacity ?? 1.0);
   return () => color;
 }
 
 // for VALUES maps, parses the colors in advance
-function prebufferValuesColors(entries: RasterStyleEntryOutput[]): Map<number, RGBA> {
+function prebufferValuesColors(
+  entries: RasterStyleEntryOutput[]
+): Map<number, RGBA> {
   const parsedColors = new Map<number, RGBA>();
 
   for (const entry of entries) {
@@ -84,7 +86,9 @@ function prebufferValuesColors(entries: RasterStyleEntryOutput[]): Map<number, R
   return parsedColors;
 }
 // color function just for VALUES mapping.
-function createValuesColorMapper(entries: RasterStyleEntryOutput[]): (value: number) => RGBA {
+function createValuesColorMapper(
+  entries: RasterStyleEntryOutput[]
+): (value: number) => RGBA {
   const valueMap = prebufferValuesColors(entries);
   return (value: number) => {
     return valueMap.get(value) || TRANSPARENT;
@@ -92,7 +96,9 @@ function createValuesColorMapper(entries: RasterStyleEntryOutput[]): (value: num
 }
 
 // precalculates colors for INTERVALS map type
-function prebufferIntervalsColors(sortedEntries: RasterStyleEntryOutput[]): [number, RGBA][] {
+function prebufferIntervalsColors(
+  sortedEntries: RasterStyleEntryOutput[]
+): [number, RGBA][] {
   return sortedEntries.map((entry) => [
     entry.value,
     parseColor(entry.color, entry.opacity ?? 1.0),

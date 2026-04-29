@@ -108,17 +108,19 @@ export class SharePlanDialogComponent {
 
   changeRole(invite: UserObjectRole, newRole: RoleEnum) {
     this.selectedRole = Roles[newRole];
-    this.inviteService.invitesPartialUpdate(invite.id, { role: newRole }).subscribe({
-      next: () => {
-        invite.role = newRole;
-        this.showSnackbar('Access Updated');
-      },
-      error: () => {
-        this.showSnackbar(
-          `There was an error trying to update the role of ${invite.email}. Please try again.`
-        );
-      },
-    });
+    this.inviteService
+      .invitesPartialUpdate(invite.id, { role: newRole })
+      .subscribe({
+        next: () => {
+          invite.role = newRole;
+          this.showSnackbar('Access Updated');
+        },
+        error: () => {
+          this.showSnackbar(
+            `There was an error trying to update the role of ${invite.email}. Please try again.`
+          );
+        },
+      });
   }
 
   changeInvitationsRole(role: RoleEnum) {

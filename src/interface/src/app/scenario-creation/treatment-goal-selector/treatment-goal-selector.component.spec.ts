@@ -56,7 +56,10 @@ describe('TreatmentGoalSelectorComponent', () => {
         }),
       ],
     }).compileComponents();
-    spyOn(TestBed.inject(TreatmentGoalsService), 'treatmentGoalsList').and.returnValue(goalsSubject.asObservable() as any);
+    spyOn(
+      TestBed.inject(TreatmentGoalsService),
+      'treatmentGoalsList'
+    ).and.returnValue(goalsSubject.asObservable() as any);
     fixture = TestBed.createComponent(TreatmentGoalSelectorComponent);
     component = fixture.componentInstance;
     component.control = new FormControl<number | null>(null);

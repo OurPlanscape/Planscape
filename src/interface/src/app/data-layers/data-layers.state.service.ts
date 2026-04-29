@@ -1,10 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { DatalayersService } from '@api/datalayers/datalayers.service';
 import { DatasetsService } from '@api/datasets/datasets.service';
-import {
-  BrowseDataLayer,
-  TypeE04Enum,
-} from '@api/planscapeAPI.schemas';
+import { BrowseDataLayer, TypeE04Enum } from '@api/planscapeAPI.schemas';
 import {
   BehaviorSubject,
   catchError,
@@ -17,11 +14,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {
-  BaseDataSet,
-  Pagination,
-  SearchResult,
-} from '@types';
+import { BaseDataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from '@data-layers/data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
@@ -323,9 +316,7 @@ export class DataLayersStateService {
     return unselectableLayers.some((ul) => ul.id === layer.id);
   }
 
-  getUnselectableLayer(
-    layer: BrowseDataLayer
-  ): unselectableLayer | undefined {
+  getUnselectableLayer(layer: BrowseDataLayer): unselectableLayer | undefined {
     const unselectableLayers: unselectableLayer[] =
       this._unSelectableDataLayerIds$.value ?? [];
     return unselectableLayers.find((ul) => ul.id === layer.id);

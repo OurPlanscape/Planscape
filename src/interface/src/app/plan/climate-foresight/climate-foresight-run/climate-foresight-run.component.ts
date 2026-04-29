@@ -22,12 +22,7 @@ import {
 import { SharedModule } from '@shared/shared.module';
 import { PlanState } from '@plan/plan.state';
 import { ClimateForesightService } from '@services/climate-foresight.service';
-import {
-  ClimateForesightRun,
-  InputDatalayer,
-  Pillar,
-  Plan,
-} from '@types';
+import { ClimateForesightRun, InputDatalayer, Pillar, Plan } from '@types';
 import { DataLayer } from '@api/planscapeAPI.schemas';
 import { DataLayerSelectionComponent } from '@plan/climate-foresight/climate-foresight-run/data-layer-selection/data-layer-selection.component';
 import { AssignFavorabilityComponent } from '@plan/climate-foresight/climate-foresight-run/assign-favorability/assign-favorability.component';
