@@ -31,9 +31,9 @@ import type {
   PaginatedListPlanningAreaList,
   PatchedUpdatePlanningArea,
   PlanningArea,
-  UpdatePlanningArea,
-  V2PlanningareasCreatorsListParams,
-  V2PlanningareasListParams
+  PlanningareasCreatorsListParams,
+  PlanningareasListParams,
+  UpdatePlanningArea
 } from '../planscapeAPI.schemas';
 
 
@@ -134,11 +134,11 @@ export class PlanningAreasService {
 /**
  * List Planning Area.
  */
- v2PlanningareasList<TData = PaginatedListPlanningAreaList>(params?: V2PlanningareasListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasList<TData = PaginatedListPlanningAreaList>(params?: V2PlanningareasListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasList<TData = PaginatedListPlanningAreaList>(params?: V2PlanningareasListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasList<TData = PaginatedListPlanningAreaList>(
-    params?: V2PlanningareasListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ planningareasList<TData = PaginatedListPlanningAreaList>(params?: PlanningareasListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ planningareasList<TData = PaginatedListPlanningAreaList>(params?: PlanningareasListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ planningareasList<TData = PaginatedListPlanningAreaList>(params?: PlanningareasListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  planningareasList<TData = PaginatedListPlanningAreaList>(
+    params?: PlanningareasListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -172,10 +172,10 @@ export class PlanningAreasService {
 /**
  * Create Planning Area.
  */
- v2PlanningareasCreate<TData = CreatePlanningArea>(createPlanningArea: CreatePlanningArea, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasCreate<TData = CreatePlanningArea>(createPlanningArea: CreatePlanningArea, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasCreate<TData = CreatePlanningArea>(createPlanningArea: CreatePlanningArea, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasCreate<TData = CreatePlanningArea>(
+ planningareasCreate<TData = CreatePlanningArea>(createPlanningArea: CreatePlanningArea, options?: HttpClientBodyOptions): Observable<TData>;
+ planningareasCreate<TData = CreatePlanningArea>(createPlanningArea: CreatePlanningArea, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ planningareasCreate<TData = CreatePlanningArea>(createPlanningArea: CreatePlanningArea, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  planningareasCreate<TData = CreatePlanningArea>(
     createPlanningArea: CreatePlanningArea, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -208,10 +208,10 @@ export class PlanningAreasService {
 /**
  * Detail a Planning Area.
  */
- v2PlanningareasRetrieve<TData = PlanningArea>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasRetrieve<TData = PlanningArea>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasRetrieve<TData = PlanningArea>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasRetrieve<TData = PlanningArea>(
+ planningareasRetrieve<TData = PlanningArea>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ planningareasRetrieve<TData = PlanningArea>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ planningareasRetrieve<TData = PlanningArea>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  planningareasRetrieve<TData = PlanningArea>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -241,13 +241,13 @@ export class PlanningAreasService {
 /**
  * Update Planning Area.
  */
- v2PlanningareasUpdate<TData = PlanningArea>(id: number,
+ planningareasUpdate<TData = PlanningArea>(id: number,
     updatePlanningArea: UpdatePlanningArea, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasUpdate<TData = PlanningArea>(id: number,
+ planningareasUpdate<TData = PlanningArea>(id: number,
     updatePlanningArea: UpdatePlanningArea, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasUpdate<TData = PlanningArea>(id: number,
+ planningareasUpdate<TData = PlanningArea>(id: number,
     updatePlanningArea: UpdatePlanningArea, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasUpdate<TData = PlanningArea>(
+  planningareasUpdate<TData = PlanningArea>(
     id: number,
     updatePlanningArea: UpdatePlanningArea, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -281,13 +281,13 @@ export class PlanningAreasService {
 /**
  * Update Planning Area.
  */
- v2PlanningareasPartialUpdate<TData = PlanningArea>(id: number,
+ planningareasPartialUpdate<TData = PlanningArea>(id: number,
     patchedUpdatePlanningArea?: PatchedUpdatePlanningArea, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasPartialUpdate<TData = PlanningArea>(id: number,
+ planningareasPartialUpdate<TData = PlanningArea>(id: number,
     patchedUpdatePlanningArea?: PatchedUpdatePlanningArea, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasPartialUpdate<TData = PlanningArea>(id: number,
+ planningareasPartialUpdate<TData = PlanningArea>(id: number,
     patchedUpdatePlanningArea?: PatchedUpdatePlanningArea, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasPartialUpdate<TData = PlanningArea>(
+  planningareasPartialUpdate<TData = PlanningArea>(
     id: number,
     patchedUpdatePlanningArea?: PatchedUpdatePlanningArea, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -321,10 +321,10 @@ export class PlanningAreasService {
 /**
  * Delete a Planning Area.
  */
- v2PlanningareasDestroy<TData = void>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasDestroy<TData = void>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasDestroy<TData = void>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasDestroy<TData = void>(
+ planningareasDestroy<TData = void>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ planningareasDestroy<TData = void>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ planningareasDestroy<TData = void>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  planningareasDestroy<TData = void>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
@@ -354,11 +354,11 @@ export class PlanningAreasService {
 /**
  * List creators of Planning Areas.
  */
- v2PlanningareasCreatorsList<TData = ListCreator[]>(params?: V2PlanningareasCreatorsListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasCreatorsList<TData = ListCreator[]>(params?: V2PlanningareasCreatorsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasCreatorsList<TData = ListCreator[]>(params?: V2PlanningareasCreatorsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasCreatorsList<TData = ListCreator[]>(
-    params?: V2PlanningareasCreatorsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ planningareasCreatorsList<TData = ListCreator[]>(params?: PlanningareasCreatorsListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ planningareasCreatorsList<TData = ListCreator[]>(params?: PlanningareasCreatorsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ planningareasCreatorsList<TData = ListCreator[]>(params?: PlanningareasCreatorsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  planningareasCreatorsList<TData = ListCreator[]>(
+    params?: PlanningareasCreatorsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -392,10 +392,10 @@ export class PlanningAreasService {
 /**
  * Retrieve the creator of a Planning Areas.
  */
- v2PlanningareasCreatorsRetrieve<TData = ListCreator>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2PlanningareasCreatorsRetrieve<TData = ListCreator>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2PlanningareasCreatorsRetrieve<TData = ListCreator>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2PlanningareasCreatorsRetrieve<TData = ListCreator>(
+ planningareasCreatorsRetrieve<TData = ListCreator>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ planningareasCreatorsRetrieve<TData = ListCreator>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ planningareasCreatorsRetrieve<TData = ListCreator>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  planningareasCreatorsRetrieve<TData = ListCreator>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(

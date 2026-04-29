@@ -22,7 +22,7 @@ describe('DataLayerTooltipComponent', () => {
       ],
     }).compileComponents();
 
-    spyOn(TestBed.inject(DatalayersService), 'v2DatalayersUrlsRetrieve').and.returnValue(of({ layer_url: '' }) as any);
+    spyOn(TestBed.inject(DatalayersService), 'datalayersUrlsRetrieve').and.returnValue(of({ layer_url: '' }) as any);
 
     fixture = TestBed.createComponent(DataLayerTooltipComponent);
     component = fixture.componentInstance;

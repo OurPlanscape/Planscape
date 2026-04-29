@@ -27,7 +27,7 @@ import {
 
 import type {
   TreatmentGoal,
-  V2TreatmentGoalsListParams
+  TreatmentGoalsListParams
 } from '../planscapeAPI.schemas';
 
 
@@ -128,11 +128,11 @@ export class TreatmentGoalsService {
 /**
  * List Treatment Goals.
  */
- v2TreatmentGoalsList<TData = TreatmentGoal[]>(params?: V2TreatmentGoalsListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentGoalsList<TData = TreatmentGoal[]>(params?: V2TreatmentGoalsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentGoalsList<TData = TreatmentGoal[]>(params?: V2TreatmentGoalsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentGoalsList<TData = TreatmentGoal[]>(
-    params?: V2TreatmentGoalsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ treatmentGoalsList<TData = TreatmentGoal[]>(params?: TreatmentGoalsListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentGoalsList<TData = TreatmentGoal[]>(params?: TreatmentGoalsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentGoalsList<TData = TreatmentGoal[]>(params?: TreatmentGoalsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentGoalsList<TData = TreatmentGoal[]>(
+    params?: TreatmentGoalsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -166,10 +166,10 @@ export class TreatmentGoalsService {
 /**
  * Detail Treatment Goal.
  */
- v2TreatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentGoalsRetrieve<TData = TreatmentGoal>(
+ treatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentGoalsRetrieve<TData = TreatmentGoal>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentGoalsRetrieve<TData = TreatmentGoal>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(

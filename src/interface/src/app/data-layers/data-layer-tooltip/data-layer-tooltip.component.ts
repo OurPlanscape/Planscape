@@ -37,7 +37,7 @@ export class DataLayerTooltipComponent implements OnInit {
   ngOnInit() {
     this.loadingLink = true;
     this.downloadLink$ = this.datalayersService
-      .v2DatalayersUrlsRetrieve(this.layer.id)
+      .datalayersUrlsRetrieve(this.layer.id)
       .pipe(map((d) => d.layer_url), take(1), shareReplay(1));
 
     this.downloadLink$.pipe(untilDestroyed(this)).subscribe((link) => {

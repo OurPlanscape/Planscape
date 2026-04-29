@@ -111,7 +111,7 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
       return of<DataLayer[]>([]);
     }
     return this.datalayersService
-      .v2DatalayersList({ id__in: ids })
+      .datalayersList({ id__in: ids })
       .pipe(map((response) => response.results ?? []));
   }
 

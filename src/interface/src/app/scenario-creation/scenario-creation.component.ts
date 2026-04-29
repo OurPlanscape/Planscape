@@ -167,7 +167,7 @@ export class ScenarioCreationComponent implements OnInit {
   );
 
   treatmentGoals$ = this.treatmentGoalsService
-    .v2TreatmentGoalsList({ planning_area: String(this.planId) })
+    .treatmentGoalsList({ planning_area: String(this.planId) })
     .pipe(shareReplay(1));
 
   treatmentGoalId$ = this.newScenarioState.scenarioConfig$.pipe(

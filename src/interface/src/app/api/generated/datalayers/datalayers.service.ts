@@ -27,12 +27,12 @@ import {
 
 import type {
   DataLayerUrl,
+  DatalayersFindAnythingCreateParams,
+  DatalayersFindAnythingListParams,
+  DatalayersListParams,
   FindAnything,
   PaginatedDataLayerList,
-  PaginatedSearchResultsList,
-  V2DatalayersFindAnythingCreateParams,
-  V2DatalayersFindAnythingListParams,
-  V2DatalayersListParams
+  PaginatedSearchResultsList
 } from '../planscapeAPI.schemas';
 
 
@@ -133,11 +133,11 @@ export class DatalayersService {
 /**
  * List datalayers.
  */
- v2DatalayersList<TData = PaginatedDataLayerList>(params?: V2DatalayersListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersList<TData = PaginatedDataLayerList>(params?: V2DatalayersListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersList<TData = PaginatedDataLayerList>(params?: V2DatalayersListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersList<TData = PaginatedDataLayerList>(
-    params?: V2DatalayersListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ datalayersList<TData = PaginatedDataLayerList>(params?: DatalayersListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ datalayersList<TData = PaginatedDataLayerList>(params?: DatalayersListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ datalayersList<TData = PaginatedDataLayerList>(params?: DatalayersListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  datalayersList<TData = PaginatedDataLayerList>(
+    params?: DatalayersListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -171,10 +171,10 @@ export class DatalayersService {
 /**
  * Returns the public map URL for a datalayer.
  */
- v2DatalayersUrlsRetrieve<TData = DataLayerUrl>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersUrlsRetrieve<TData = DataLayerUrl>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersUrlsRetrieve<TData = DataLayerUrl>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersUrlsRetrieve<TData = DataLayerUrl>(
+ datalayersUrlsRetrieve<TData = DataLayerUrl>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ datalayersUrlsRetrieve<TData = DataLayerUrl>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ datalayersUrlsRetrieve<TData = DataLayerUrl>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  datalayersUrlsRetrieve<TData = DataLayerUrl>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -201,11 +201,11 @@ export class DatalayersService {
       }
     );
   }
- v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: V2DatalayersFindAnythingListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: V2DatalayersFindAnythingListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: V2DatalayersFindAnythingListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(
-    params: V2DatalayersFindAnythingListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ datalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: DatalayersFindAnythingListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ datalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: DatalayersFindAnythingListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ datalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: DatalayersFindAnythingListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  datalayersFindAnythingList<TData = PaginatedSearchResultsList>(
+    params: DatalayersFindAnythingListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -236,15 +236,15 @@ export class DatalayersService {
         params: filteredParams,}
     );
   }
- v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(findAnything: FindAnything,
-    params?: V2DatalayersFindAnythingCreateParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(findAnything: FindAnything,
-    params?: V2DatalayersFindAnythingCreateParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(findAnything: FindAnything,
-    params?: V2DatalayersFindAnythingCreateParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(
+ datalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(findAnything: FindAnything,
+    params?: DatalayersFindAnythingCreateParams, options?: HttpClientBodyOptions): Observable<TData>;
+ datalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(findAnything: FindAnything,
+    params?: DatalayersFindAnythingCreateParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ datalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(findAnything: FindAnything,
+    params?: DatalayersFindAnythingCreateParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  datalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(
     findAnything: FindAnything,
-    params?: V2DatalayersFindAnythingCreateParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    params?: DatalayersFindAnythingCreateParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {

@@ -21,7 +21,7 @@ describe('TreatmentGoalStepComponent', () => {
       ],
       providers: [
         MockProvider(TreatmentGoalsService, {
-          v2TreatmentGoalsList: () => of([]) as any,
+          treatmentGoalsList: () => of([]) as any,
         }),
         MockProvider(NewScenarioState, {
           scenarioConfig$: of({}),

@@ -2241,7 +2241,7 @@ export interface VerifyEmail {
   key: string;
 }
 
-export type V2AdminDatalayersListParams = {
+export type AdminDatalayersListParams = {
 category?: number;
 /**
  * dataset id
@@ -2274,33 +2274,33 @@ original_name__icontains?: string;
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: V2AdminDatalayersListStatus;
+status?: AdminDatalayersListStatus;
 /**
  * * `VECTOR` - Vector
 * `RASTER` - Raster
  * @nullable
  */
-type?: V2AdminDatalayersListType;
+type?: AdminDatalayersListType;
 };
 
-export type V2AdminDatalayersListStatus = typeof V2AdminDatalayersListStatus[keyof typeof V2AdminDatalayersListStatus];
+export type AdminDatalayersListStatus = typeof AdminDatalayersListStatus[keyof typeof AdminDatalayersListStatus];
 
 
-export const V2AdminDatalayersListStatus = {
+export const AdminDatalayersListStatus = {
   FAILED: 'FAILED',
   PENDING: 'PENDING',
   READY: 'READY',
 } as const;
 
-export type V2AdminDatalayersListType = typeof V2AdminDatalayersListType[keyof typeof V2AdminDatalayersListType] | null;
+export type AdminDatalayersListType = typeof AdminDatalayersListType[keyof typeof AdminDatalayersListType] | null;
 
 
-export const V2AdminDatalayersListType = {
+export const AdminDatalayersListType = {
   RASTER: 'RASTER',
   VECTOR: 'VECTOR',
 } as const;
 
-export type V2AdminDatasetsListParams = {
+export type AdminDatasetsListParams = {
 /**
  * Number of results to return per page.
  */
@@ -2315,7 +2315,7 @@ offset?: number;
 ordering?: string;
 };
 
-export type V2AdminStylesListParams = {
+export type AdminStylesListParams = {
 /**
  * Number of results to return per page.
  */
@@ -2335,18 +2335,18 @@ organization?: number;
  * * `VECTOR` - Vector
 * `RASTER` - Raster
  */
-type?: V2AdminStylesListType;
+type?: AdminStylesListType;
 };
 
-export type V2AdminStylesListType = typeof V2AdminStylesListType[keyof typeof V2AdminStylesListType];
+export type AdminStylesListType = typeof AdminStylesListType[keyof typeof AdminStylesListType];
 
 
-export const V2AdminStylesListType = {
+export const AdminStylesListType = {
   RASTER: 'RASTER',
   VECTOR: 'VECTOR',
 } as const;
 
-export type V2AdminWorkspacesListParams = {
+export type AdminWorkspacesListParams = {
 /**
  * Number of results to return per page.
  */
@@ -2357,21 +2357,21 @@ limit?: number;
 offset?: number;
 };
 
-export type V2ClimateForesightPillarsListParams = {
+export type ClimateForesightPillarsListParams = {
 /**
  * Which field to use when ordering the results.
  */
 ordering?: string;
 };
 
-export type V2ClimateForesightRunsListParams = {
+export type ClimateForesightRunsListParams = {
 /**
  * Which field to use when ordering the results.
  */
 ordering?: string;
 };
 
-export type V2DatalayersListParams = {
+export type DatalayersListParams = {
 category?: number;
 /**
  * dataset id
@@ -2404,33 +2404,33 @@ original_name__icontains?: string;
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: V2DatalayersListStatus;
+status?: DatalayersListStatus;
 /**
  * * `VECTOR` - Vector
 * `RASTER` - Raster
  * @nullable
  */
-type?: V2DatalayersListType;
+type?: DatalayersListType;
 };
 
-export type V2DatalayersListStatus = typeof V2DatalayersListStatus[keyof typeof V2DatalayersListStatus];
+export type DatalayersListStatus = typeof DatalayersListStatus[keyof typeof DatalayersListStatus];
 
 
-export const V2DatalayersListStatus = {
+export const DatalayersListStatus = {
   FAILED: 'FAILED',
   PENDING: 'PENDING',
   READY: 'READY',
 } as const;
 
-export type V2DatalayersListType = typeof V2DatalayersListType[keyof typeof V2DatalayersListType] | null;
+export type DatalayersListType = typeof DatalayersListType[keyof typeof DatalayersListType] | null;
 
 
-export const V2DatalayersListType = {
+export const DatalayersListType = {
   RASTER: 'RASTER',
   VECTOR: 'VECTOR',
 } as const;
 
-export type V2DatalayersFindAnythingListParams = {
+export type DatalayersFindAnythingListParams = {
 category?: number;
 /**
  * dataset id
@@ -2453,7 +2453,7 @@ limit?: number;
 * `prioritize_sub_units` - prioritize_sub_units
  * @minLength 1
  */
-module?: V2DatalayersFindAnythingListModule;
+module?: DatalayersFindAnythingListModule;
 name?: string;
 name__icontains?: string;
 /**
@@ -2473,7 +2473,7 @@ original_name__icontains?: string;
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: V2DatalayersFindAnythingListStatus;
+status?: DatalayersFindAnythingListStatus;
 /**
  * @minLength 1
  */
@@ -2483,13 +2483,13 @@ term: string;
 * `RASTER` - Raster
  * @minLength 1
  */
-type: V2DatalayersFindAnythingListType;
+type: DatalayersFindAnythingListType;
 };
 
-export type V2DatalayersFindAnythingListModule = typeof V2DatalayersFindAnythingListModule[keyof typeof V2DatalayersFindAnythingListModule];
+export type DatalayersFindAnythingListModule = typeof DatalayersFindAnythingListModule[keyof typeof DatalayersFindAnythingListModule];
 
 
-export const V2DatalayersFindAnythingListModule = {
+export const DatalayersFindAnythingListModule = {
   forsys: 'forsys',
   impacts: 'impacts',
   map: 'map',
@@ -2497,24 +2497,24 @@ export const V2DatalayersFindAnythingListModule = {
   prioritize_sub_units: 'prioritize_sub_units',
 } as const;
 
-export type V2DatalayersFindAnythingListStatus = typeof V2DatalayersFindAnythingListStatus[keyof typeof V2DatalayersFindAnythingListStatus];
+export type DatalayersFindAnythingListStatus = typeof DatalayersFindAnythingListStatus[keyof typeof DatalayersFindAnythingListStatus];
 
 
-export const V2DatalayersFindAnythingListStatus = {
+export const DatalayersFindAnythingListStatus = {
   FAILED: 'FAILED',
   PENDING: 'PENDING',
   READY: 'READY',
 } as const;
 
-export type V2DatalayersFindAnythingListType = typeof V2DatalayersFindAnythingListType[keyof typeof V2DatalayersFindAnythingListType];
+export type DatalayersFindAnythingListType = typeof DatalayersFindAnythingListType[keyof typeof DatalayersFindAnythingListType];
 
 
-export const V2DatalayersFindAnythingListType = {
+export const DatalayersFindAnythingListType = {
   VECTOR: 'VECTOR',
   RASTER: 'RASTER',
 } as const;
 
-export type V2DatalayersFindAnythingCreateParams = {
+export type DatalayersFindAnythingCreateParams = {
 category?: number;
 /**
  * dataset id
@@ -2547,28 +2547,28 @@ original_name__icontains?: string;
 * `PENDING` - Pending
 * `FAILED` - Failed
  */
-status?: V2DatalayersFindAnythingCreateStatus;
+status?: DatalayersFindAnythingCreateStatus;
 /**
  * * `VECTOR` - Vector
 * `RASTER` - Raster
  * @nullable
  */
-type?: V2DatalayersFindAnythingCreateType;
+type?: DatalayersFindAnythingCreateType;
 };
 
-export type V2DatalayersFindAnythingCreateStatus = typeof V2DatalayersFindAnythingCreateStatus[keyof typeof V2DatalayersFindAnythingCreateStatus];
+export type DatalayersFindAnythingCreateStatus = typeof DatalayersFindAnythingCreateStatus[keyof typeof DatalayersFindAnythingCreateStatus];
 
 
-export const V2DatalayersFindAnythingCreateStatus = {
+export const DatalayersFindAnythingCreateStatus = {
   FAILED: 'FAILED',
   PENDING: 'PENDING',
   READY: 'READY',
 } as const;
 
-export type V2DatalayersFindAnythingCreateType = typeof V2DatalayersFindAnythingCreateType[keyof typeof V2DatalayersFindAnythingCreateType] | null;
+export type DatalayersFindAnythingCreateType = typeof DatalayersFindAnythingCreateType[keyof typeof DatalayersFindAnythingCreateType] | null;
 
 
-export const V2DatalayersFindAnythingCreateType = {
+export const DatalayersFindAnythingCreateType = {
   RASTER: 'RASTER',
   VECTOR: 'VECTOR',
 } as const;
@@ -2625,7 +2625,7 @@ export type DatasetsBrowsePostParams = {
 ordering?: string;
 };
 
-export type V2PlanningareasListParams = {
+export type PlanningareasListParams = {
 /**
  * Creator(s) ID(s) of Planning Area(s)
  */
@@ -2654,30 +2654,30 @@ ordering?: string;
 * `central-coast` - Central Coast
 * `northern-california` - Northern California
  */
-region_name?: V2PlanningareasListRegionNameItem[];
+region_name?: PlanningareasListRegionNameItem[];
 };
 
 /**
  * @nullable
  */
-export type V2PlanningareasListRegionNameItem = typeof V2PlanningareasListRegionNameItem[keyof typeof V2PlanningareasListRegionNameItem] | null;
+export type PlanningareasListRegionNameItem = typeof PlanningareasListRegionNameItem[keyof typeof PlanningareasListRegionNameItem] | null;
 
 
-export const V2PlanningareasListRegionNameItem = {
+export const PlanningareasListRegionNameItem = {
   'central-coast': 'central-coast',
   'northern-california': 'northern-california',
   'sierra-nevada': 'sierra-nevada',
   'southern-california': 'southern-california',
 } as const;
 
-export type V2PlanningareasCreatorsListParams = {
+export type PlanningareasCreatorsListParams = {
 /**
  * Which field to use when ordering the results.
  */
 ordering?: string;
 };
 
-export type V2ScenariosListParams = {
+export type ScenariosListParams = {
 /**
  * Case insensitive search for name of Scenarios.
  */
@@ -2692,7 +2692,7 @@ ordering?: string;
 planning_area?: number;
 };
 
-export type V2ScenariosSubUnitsDetailsRetrieveParams = {
+export type ScenariosSubUnitsDetailsRetrieveParams = {
 /**
  * Flag that determine the Sub-Units Prioritization target (false = percentage | true = fixed value).
  */
@@ -2707,7 +2707,7 @@ sub_units_layer?: number;
 sub_units_target_value?: number;
 };
 
-export type V2TreatmentGoalsListParams = {
+export type TreatmentGoalsListParams = {
 /**
  * Which field to use when ordering the results.
  */
@@ -2715,7 +2715,7 @@ ordering?: string;
 planning_area?: string;
 };
 
-export type V2TreatmentPlansListParams = {
+export type TreatmentPlansListParams = {
 /**
  * Treatment Name.
  */
@@ -2737,13 +2737,13 @@ scenario?: number;
 * `SUCCESS` - Suceess
 * `FAILURE` - Failure
  */
-status?: V2TreatmentPlansListStatus;
+status?: TreatmentPlansListStatus;
 };
 
-export type V2TreatmentPlansListStatus = typeof V2TreatmentPlansListStatus[keyof typeof V2TreatmentPlansListStatus];
+export type TreatmentPlansListStatus = typeof TreatmentPlansListStatus[keyof typeof TreatmentPlansListStatus];
 
 
-export const V2TreatmentPlansListStatus = {
+export const TreatmentPlansListStatus = {
   FAILURE: 'FAILURE',
   PENDING: 'PENDING',
   QUEUED: 'QUEUED',
@@ -2751,25 +2751,25 @@ export const V2TreatmentPlansListStatus = {
   SUCCESS: 'SUCCESS',
 } as const;
 
-export type V2TreatmentPlansStandTreatmentResultsRetrieveParams = {
+export type TreatmentPlansStandTreatmentResultsRetrieveParams = {
 /**
  * The primary key (ID) of the stand for which to retrieve results.
  */
 stand_id: number;
 };
 
-export type V2TreatmentPlansSummaryRetrieveParams = {
+export type TreatmentPlansSummaryRetrieveParams = {
 /**
  * Project Area ID.
  */
 project_area?: number;
 };
 
-export type V2TreatmentPlansNoteListParams = {
+export type TreatmentPlansNoteListParams = {
 treatment_plan?: number;
 };
 
-export type V2TreatmentPlansTreatmentPrescriptionsListParams = {
+export type TreatmentPlansTreatmentPrescriptionsListParams = {
 /**
  * Number of results to return per page.
  */

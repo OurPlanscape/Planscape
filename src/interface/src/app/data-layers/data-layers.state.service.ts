@@ -110,7 +110,7 @@ export class DataLayersStateService {
         return of(null);
       }
       return this.datalayersService
-        .v2DatalayersUrlsRetrieve(layer.id)
+        .datalayersUrlsRetrieve(layer.id)
         .pipe(map((d) => ({ layer, url: d.layer_url })));
     })
   );
@@ -190,7 +190,7 @@ export class DataLayersStateService {
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
 
       return this.datalayersService
-        .v2DatalayersFindAnythingCreate(
+        .datalayersFindAnythingCreate(
           {
             term,
             type: TypeE04Enum.RASTER,

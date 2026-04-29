@@ -65,7 +65,7 @@ export class NewScenarioState {
     switchMap((ids: number[]) =>
       ids.length === 0
         ? of<DataLayer[]>([])
-        : this.datalayersService.v2DatalayersList({ id__in: ids }).pipe(
+        : this.datalayersService.datalayersList({ id__in: ids }).pipe(
             map(
               (response) =>
                 (response.results ?? []) as unknown as DataLayer[]
@@ -88,7 +88,7 @@ export class NewScenarioState {
     switchMap((ids: number[]) =>
       ids.length === 0
         ? of<DataLayer[]>([])
-        : this.datalayersService.v2DatalayersList({ id__in: ids }).pipe(
+        : this.datalayersService.datalayersList({ id__in: ids }).pipe(
             map(
               (response) =>
                 (response.results ?? []) as unknown as DataLayer[]

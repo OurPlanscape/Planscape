@@ -27,10 +27,16 @@ import {
 } from 'rxjs';
 
 import type {
+  AdminDatalayersListParams,
+  AdminDatasetsListParams,
+  AdminStylesListParams,
+  AdminWorkspacesListParams,
   BaseModule,
   ClimateForesightPillar,
+  ClimateForesightPillarsListParams,
   ClimateForesightRun,
   ClimateForesightRunList,
+  ClimateForesightRunsListParams,
   CreateDataLayer,
   CreateDataset,
   CreateScenarioV2,
@@ -58,6 +64,8 @@ import type {
   PatchedUpsertScenarioV3,
   ProjectArea,
   Scenario,
+  ScenariosListParams,
+  ScenariosSubUnitsDetailsRetrieveParams,
   Style,
   TreatmentPlan,
   TreatmentPlanList,
@@ -65,6 +73,11 @@ import type {
   TreatmentPlanNoteCreate,
   TreatmentPlanNoteList,
   TreatmentPlanUpdate,
+  TreatmentPlansListParams,
+  TreatmentPlansNoteListParams,
+  TreatmentPlansStandTreatmentResultsRetrieveParams,
+  TreatmentPlansSummaryRetrieveParams,
+  TreatmentPlansTreatmentPrescriptionsListParams,
   TreatmentPrescription,
   TreatmentPrescriptionBatchDeleteResponse,
   TreatmentResult,
@@ -72,19 +85,6 @@ import type {
   UpsertConfigurationV2,
   UpsertScenarioV3,
   UpsertTreamentPrescription,
-  V2AdminDatalayersListParams,
-  V2AdminDatasetsListParams,
-  V2AdminStylesListParams,
-  V2AdminWorkspacesListParams,
-  V2ClimateForesightPillarsListParams,
-  V2ClimateForesightRunsListParams,
-  V2ScenariosListParams,
-  V2ScenariosSubUnitsDetailsRetrieveParams,
-  V2TreatmentPlansListParams,
-  V2TreatmentPlansNoteListParams,
-  V2TreatmentPlansStandTreatmentResultsRetrieveParams,
-  V2TreatmentPlansSummaryRetrieveParams,
-  V2TreatmentPlansTreatmentPrescriptionsListParams,
   Workspace
 } from '../planscapeAPI.schemas';
 
@@ -210,11 +210,11 @@ function filterParams(
 @Injectable({ providedIn: 'root' })
 export class V2Service {
   private readonly http = inject(HttpClient);
- v2AdminDatalayersList<TData = PaginatedDataLayerList>(params?: V2AdminDatalayersListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatalayersList<TData = PaginatedDataLayerList>(params?: V2AdminDatalayersListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatalayersList<TData = PaginatedDataLayerList>(params?: V2AdminDatalayersListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatalayersList<TData = PaginatedDataLayerList>(
-    params?: V2AdminDatalayersListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ adminDatalayersList<TData = PaginatedDataLayerList>(params?: AdminDatalayersListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ adminDatalayersList<TData = PaginatedDataLayerList>(params?: AdminDatalayersListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminDatalayersList<TData = PaginatedDataLayerList>(params?: AdminDatalayersListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminDatalayersList<TData = PaginatedDataLayerList>(
+    params?: AdminDatalayersListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -245,10 +245,10 @@ export class V2Service {
         params: filteredParams,}
     );
   }
- v2AdminDatalayersCreate<TData = CreateDataLayer>(createDataLayer: NonReadonly<CreateDataLayer>, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatalayersCreate<TData = CreateDataLayer>(createDataLayer: NonReadonly<CreateDataLayer>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatalayersCreate<TData = CreateDataLayer>(createDataLayer: NonReadonly<CreateDataLayer>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatalayersCreate<TData = CreateDataLayer>(
+ adminDatalayersCreate<TData = CreateDataLayer>(createDataLayer: NonReadonly<CreateDataLayer>, options?: HttpClientBodyOptions): Observable<TData>;
+ adminDatalayersCreate<TData = CreateDataLayer>(createDataLayer: NonReadonly<CreateDataLayer>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminDatalayersCreate<TData = CreateDataLayer>(createDataLayer: NonReadonly<CreateDataLayer>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminDatalayersCreate<TData = CreateDataLayer>(
     createDataLayer: NonReadonly<CreateDataLayer>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -278,10 +278,10 @@ export class V2Service {
       }
     );
   }
- v2AdminDatalayersRetrieve<TData = DataLayer>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatalayersRetrieve<TData = DataLayer>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatalayersRetrieve<TData = DataLayer>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatalayersRetrieve<TData = DataLayer>(
+ adminDatalayersRetrieve<TData = DataLayer>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ adminDatalayersRetrieve<TData = DataLayer>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminDatalayersRetrieve<TData = DataLayer>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminDatalayersRetrieve<TData = DataLayer>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -308,13 +308,13 @@ export class V2Service {
       }
     );
   }
- v2AdminDatalayersApplyStyleCreate<TData = DataLayer>(id: number,
+ adminDatalayersApplyStyleCreate<TData = DataLayer>(id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatalayersApplyStyleCreate<TData = DataLayer>(id: number,
+ adminDatalayersApplyStyleCreate<TData = DataLayer>(id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatalayersApplyStyleCreate<TData = DataLayer>(id: number,
+ adminDatalayersApplyStyleCreate<TData = DataLayer>(id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatalayersApplyStyleCreate<TData = DataLayer>(
+  adminDatalayersApplyStyleCreate<TData = DataLayer>(
     id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -345,13 +345,13 @@ export class V2Service {
       }
     );
   }
- v2AdminDatalayersChangeStatusCreate<TData = DataLayer>(id: number,
+ adminDatalayersChangeStatusCreate<TData = DataLayer>(id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatalayersChangeStatusCreate<TData = DataLayer>(id: number,
+ adminDatalayersChangeStatusCreate<TData = DataLayer>(id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatalayersChangeStatusCreate<TData = DataLayer>(id: number,
+ adminDatalayersChangeStatusCreate<TData = DataLayer>(id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatalayersChangeStatusCreate<TData = DataLayer>(
+  adminDatalayersChangeStatusCreate<TData = DataLayer>(
     id: number,
     dataLayer: NonReadonly<DataLayer>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -382,11 +382,11 @@ export class V2Service {
       }
     );
   }
- v2AdminDatasetsList<TData = PaginatedDatasetList>(params?: V2AdminDatasetsListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatasetsList<TData = PaginatedDatasetList>(params?: V2AdminDatasetsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatasetsList<TData = PaginatedDatasetList>(params?: V2AdminDatasetsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatasetsList<TData = PaginatedDatasetList>(
-    params?: V2AdminDatasetsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ adminDatasetsList<TData = PaginatedDatasetList>(params?: AdminDatasetsListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ adminDatasetsList<TData = PaginatedDatasetList>(params?: AdminDatasetsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminDatasetsList<TData = PaginatedDatasetList>(params?: AdminDatasetsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminDatasetsList<TData = PaginatedDatasetList>(
+    params?: AdminDatasetsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -417,10 +417,10 @@ export class V2Service {
         params: filteredParams,}
     );
   }
- v2AdminDatasetsCreate<TData = CreateDataset>(createDataset: NonReadonly<CreateDataset>, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatasetsCreate<TData = CreateDataset>(createDataset: NonReadonly<CreateDataset>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatasetsCreate<TData = CreateDataset>(createDataset: NonReadonly<CreateDataset>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatasetsCreate<TData = CreateDataset>(
+ adminDatasetsCreate<TData = CreateDataset>(createDataset: NonReadonly<CreateDataset>, options?: HttpClientBodyOptions): Observable<TData>;
+ adminDatasetsCreate<TData = CreateDataset>(createDataset: NonReadonly<CreateDataset>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminDatasetsCreate<TData = CreateDataset>(createDataset: NonReadonly<CreateDataset>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminDatasetsCreate<TData = CreateDataset>(
     createDataset: NonReadonly<CreateDataset>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -450,10 +450,10 @@ export class V2Service {
       }
     );
   }
- v2AdminDatasetsRetrieve<TData = Dataset>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminDatasetsRetrieve<TData = Dataset>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminDatasetsRetrieve<TData = Dataset>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminDatasetsRetrieve<TData = Dataset>(
+ adminDatasetsRetrieve<TData = Dataset>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ adminDatasetsRetrieve<TData = Dataset>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminDatasetsRetrieve<TData = Dataset>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminDatasetsRetrieve<TData = Dataset>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -480,11 +480,11 @@ export class V2Service {
       }
     );
   }
- v2AdminStylesList<TData = PaginatedStyleList>(params?: V2AdminStylesListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminStylesList<TData = PaginatedStyleList>(params?: V2AdminStylesListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminStylesList<TData = PaginatedStyleList>(params?: V2AdminStylesListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminStylesList<TData = PaginatedStyleList>(
-    params?: V2AdminStylesListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ adminStylesList<TData = PaginatedStyleList>(params?: AdminStylesListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ adminStylesList<TData = PaginatedStyleList>(params?: AdminStylesListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminStylesList<TData = PaginatedStyleList>(params?: AdminStylesListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminStylesList<TData = PaginatedStyleList>(
+    params?: AdminStylesListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -515,10 +515,10 @@ export class V2Service {
         params: filteredParams,}
     );
   }
- v2AdminStylesCreate<TData = CreateStyle>(createStyle: NonReadonly<CreateStyle>, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminStylesCreate<TData = CreateStyle>(createStyle: NonReadonly<CreateStyle>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminStylesCreate<TData = CreateStyle>(createStyle: NonReadonly<CreateStyle>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminStylesCreate<TData = CreateStyle>(
+ adminStylesCreate<TData = CreateStyle>(createStyle: NonReadonly<CreateStyle>, options?: HttpClientBodyOptions): Observable<TData>;
+ adminStylesCreate<TData = CreateStyle>(createStyle: NonReadonly<CreateStyle>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminStylesCreate<TData = CreateStyle>(createStyle: NonReadonly<CreateStyle>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminStylesCreate<TData = CreateStyle>(
     createStyle: NonReadonly<CreateStyle>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -548,10 +548,10 @@ export class V2Service {
       }
     );
   }
- v2AdminStylesRetrieve<TData = Style>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminStylesRetrieve<TData = Style>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminStylesRetrieve<TData = Style>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminStylesRetrieve<TData = Style>(
+ adminStylesRetrieve<TData = Style>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ adminStylesRetrieve<TData = Style>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminStylesRetrieve<TData = Style>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminStylesRetrieve<TData = Style>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -578,13 +578,13 @@ export class V2Service {
       }
     );
   }
- v2AdminStylesApplyStyleCreate<TData = Style>(id: number,
+ adminStylesApplyStyleCreate<TData = Style>(id: number,
     style: NonReadonly<Style>, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminStylesApplyStyleCreate<TData = Style>(id: number,
+ adminStylesApplyStyleCreate<TData = Style>(id: number,
     style: NonReadonly<Style>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminStylesApplyStyleCreate<TData = Style>(id: number,
+ adminStylesApplyStyleCreate<TData = Style>(id: number,
     style: NonReadonly<Style>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminStylesApplyStyleCreate<TData = Style>(
+  adminStylesApplyStyleCreate<TData = Style>(
     id: number,
     style: NonReadonly<Style>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -615,11 +615,11 @@ export class V2Service {
       }
     );
   }
- v2AdminWorkspacesList<TData = PaginatedWorkspaceList>(params?: V2AdminWorkspacesListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminWorkspacesList<TData = PaginatedWorkspaceList>(params?: V2AdminWorkspacesListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminWorkspacesList<TData = PaginatedWorkspaceList>(params?: V2AdminWorkspacesListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminWorkspacesList<TData = PaginatedWorkspaceList>(
-    params?: V2AdminWorkspacesListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ adminWorkspacesList<TData = PaginatedWorkspaceList>(params?: AdminWorkspacesListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ adminWorkspacesList<TData = PaginatedWorkspaceList>(params?: AdminWorkspacesListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminWorkspacesList<TData = PaginatedWorkspaceList>(params?: AdminWorkspacesListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminWorkspacesList<TData = PaginatedWorkspaceList>(
+    params?: AdminWorkspacesListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -650,10 +650,10 @@ export class V2Service {
         params: filteredParams,}
     );
   }
- v2AdminWorkspacesCreate<TData = CreateWorkspace>(createWorkspace: CreateWorkspace, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminWorkspacesCreate<TData = CreateWorkspace>(createWorkspace: CreateWorkspace, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminWorkspacesCreate<TData = CreateWorkspace>(createWorkspace: CreateWorkspace, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminWorkspacesCreate<TData = CreateWorkspace>(
+ adminWorkspacesCreate<TData = CreateWorkspace>(createWorkspace: CreateWorkspace, options?: HttpClientBodyOptions): Observable<TData>;
+ adminWorkspacesCreate<TData = CreateWorkspace>(createWorkspace: CreateWorkspace, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminWorkspacesCreate<TData = CreateWorkspace>(createWorkspace: CreateWorkspace, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminWorkspacesCreate<TData = CreateWorkspace>(
     createWorkspace: CreateWorkspace, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -683,10 +683,10 @@ export class V2Service {
       }
     );
   }
- v2AdminWorkspacesRetrieve<TData = Workspace>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminWorkspacesRetrieve<TData = Workspace>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminWorkspacesRetrieve<TData = Workspace>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminWorkspacesRetrieve<TData = Workspace>(
+ adminWorkspacesRetrieve<TData = Workspace>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ adminWorkspacesRetrieve<TData = Workspace>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminWorkspacesRetrieve<TData = Workspace>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminWorkspacesRetrieve<TData = Workspace>(
     id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -713,13 +713,13 @@ export class V2Service {
       }
     );
   }
- v2AdminWorkspacesUpdate<TData = UpdateWorkspace>(id: string,
+ adminWorkspacesUpdate<TData = UpdateWorkspace>(id: string,
     updateWorkspace?: UpdateWorkspace, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminWorkspacesUpdate<TData = UpdateWorkspace>(id: string,
+ adminWorkspacesUpdate<TData = UpdateWorkspace>(id: string,
     updateWorkspace?: UpdateWorkspace, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminWorkspacesUpdate<TData = UpdateWorkspace>(id: string,
+ adminWorkspacesUpdate<TData = UpdateWorkspace>(id: string,
     updateWorkspace?: UpdateWorkspace, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminWorkspacesUpdate<TData = UpdateWorkspace>(
+  adminWorkspacesUpdate<TData = UpdateWorkspace>(
     id: string,
     updateWorkspace?: UpdateWorkspace, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -750,13 +750,13 @@ export class V2Service {
       }
     );
   }
- v2AdminWorkspacesPartialUpdate<TData = UpdateWorkspace>(id: string,
+ adminWorkspacesPartialUpdate<TData = UpdateWorkspace>(id: string,
     patchedUpdateWorkspace?: PatchedUpdateWorkspace, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminWorkspacesPartialUpdate<TData = UpdateWorkspace>(id: string,
+ adminWorkspacesPartialUpdate<TData = UpdateWorkspace>(id: string,
     patchedUpdateWorkspace?: PatchedUpdateWorkspace, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminWorkspacesPartialUpdate<TData = UpdateWorkspace>(id: string,
+ adminWorkspacesPartialUpdate<TData = UpdateWorkspace>(id: string,
     patchedUpdateWorkspace?: PatchedUpdateWorkspace, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminWorkspacesPartialUpdate<TData = UpdateWorkspace>(
+  adminWorkspacesPartialUpdate<TData = UpdateWorkspace>(
     id: string,
     patchedUpdateWorkspace?: PatchedUpdateWorkspace, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -787,10 +787,10 @@ export class V2Service {
       }
     );
   }
- v2AdminWorkspacesDestroy<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2AdminWorkspacesDestroy<TData = void>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2AdminWorkspacesDestroy<TData = void>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2AdminWorkspacesDestroy<TData = void>(
+ adminWorkspacesDestroy<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ adminWorkspacesDestroy<TData = void>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ adminWorkspacesDestroy<TData = void>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  adminWorkspacesDestroy<TData = void>(
     id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
@@ -820,11 +820,11 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightPillar CRUD operations.
  */
- v2ClimateForesightPillarsList<TData = ClimateForesightPillar[]>(params?: V2ClimateForesightPillarsListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightPillarsList<TData = ClimateForesightPillar[]>(params?: V2ClimateForesightPillarsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightPillarsList<TData = ClimateForesightPillar[]>(params?: V2ClimateForesightPillarsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightPillarsList<TData = ClimateForesightPillar[]>(
-    params?: V2ClimateForesightPillarsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ climateForesightPillarsList<TData = ClimateForesightPillar[]>(params?: ClimateForesightPillarsListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightPillarsList<TData = ClimateForesightPillar[]>(params?: ClimateForesightPillarsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightPillarsList<TData = ClimateForesightPillar[]>(params?: ClimateForesightPillarsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightPillarsList<TData = ClimateForesightPillar[]>(
+    params?: ClimateForesightPillarsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -858,10 +858,10 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightPillar CRUD operations.
  */
- v2ClimateForesightPillarsCreate<TData = ClimateForesightPillar>(climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightPillarsCreate<TData = ClimateForesightPillar>(climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightPillarsCreate<TData = ClimateForesightPillar>(climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightPillarsCreate<TData = ClimateForesightPillar>(
+ climateForesightPillarsCreate<TData = ClimateForesightPillar>(climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightPillarsCreate<TData = ClimateForesightPillar>(climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightPillarsCreate<TData = ClimateForesightPillar>(climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightPillarsCreate<TData = ClimateForesightPillar>(
     climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -894,10 +894,10 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightPillar CRUD operations.
  */
- v2ClimateForesightPillarsRetrieve<TData = ClimateForesightPillar>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightPillarsRetrieve<TData = ClimateForesightPillar>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightPillarsRetrieve<TData = ClimateForesightPillar>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightPillarsRetrieve<TData = ClimateForesightPillar>(
+ climateForesightPillarsRetrieve<TData = ClimateForesightPillar>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightPillarsRetrieve<TData = ClimateForesightPillar>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightPillarsRetrieve<TData = ClimateForesightPillar>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightPillarsRetrieve<TData = ClimateForesightPillar>(
     id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -927,13 +927,13 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightPillar CRUD operations.
  */
- v2ClimateForesightPillarsUpdate<TData = ClimateForesightPillar>(id: string,
+ climateForesightPillarsUpdate<TData = ClimateForesightPillar>(id: string,
     climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightPillarsUpdate<TData = ClimateForesightPillar>(id: string,
+ climateForesightPillarsUpdate<TData = ClimateForesightPillar>(id: string,
     climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightPillarsUpdate<TData = ClimateForesightPillar>(id: string,
+ climateForesightPillarsUpdate<TData = ClimateForesightPillar>(id: string,
     climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightPillarsUpdate<TData = ClimateForesightPillar>(
+  climateForesightPillarsUpdate<TData = ClimateForesightPillar>(
     id: string,
     climateForesightPillar: NonReadonly<ClimateForesightPillar>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -967,13 +967,13 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightPillar CRUD operations.
  */
- v2ClimateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(id: string,
+ climateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(id: string,
     patchedClimateForesightPillar?: NonReadonly<PatchedClimateForesightPillar>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(id: string,
+ climateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(id: string,
     patchedClimateForesightPillar?: NonReadonly<PatchedClimateForesightPillar>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(id: string,
+ climateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(id: string,
     patchedClimateForesightPillar?: NonReadonly<PatchedClimateForesightPillar>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(
+  climateForesightPillarsPartialUpdate<TData = ClimateForesightPillar>(
     id: string,
     patchedClimateForesightPillar?: NonReadonly<PatchedClimateForesightPillar>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1007,10 +1007,10 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightPillar CRUD operations.
  */
- v2ClimateForesightPillarsDestroy<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightPillarsDestroy<TData = void>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightPillarsDestroy<TData = void>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightPillarsDestroy<TData = void>(
+ climateForesightPillarsDestroy<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightPillarsDestroy<TData = void>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightPillarsDestroy<TData = void>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightPillarsDestroy<TData = void>(
     id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
@@ -1040,11 +1040,11 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightRun CRUD operations.
  */
- v2ClimateForesightRunsList<TData = ClimateForesightRunList[]>(params?: V2ClimateForesightRunsListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsList<TData = ClimateForesightRunList[]>(params?: V2ClimateForesightRunsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsList<TData = ClimateForesightRunList[]>(params?: V2ClimateForesightRunsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsList<TData = ClimateForesightRunList[]>(
-    params?: V2ClimateForesightRunsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ climateForesightRunsList<TData = ClimateForesightRunList[]>(params?: ClimateForesightRunsListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightRunsList<TData = ClimateForesightRunList[]>(params?: ClimateForesightRunsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightRunsList<TData = ClimateForesightRunList[]>(params?: ClimateForesightRunsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightRunsList<TData = ClimateForesightRunList[]>(
+    params?: ClimateForesightRunsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -1078,10 +1078,10 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightRun CRUD operations.
  */
- v2ClimateForesightRunsCreate<TData = ClimateForesightRun>(climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsCreate<TData = ClimateForesightRun>(climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsCreate<TData = ClimateForesightRun>(climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsCreate<TData = ClimateForesightRun>(
+ climateForesightRunsCreate<TData = ClimateForesightRun>(climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightRunsCreate<TData = ClimateForesightRun>(climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightRunsCreate<TData = ClimateForesightRun>(climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightRunsCreate<TData = ClimateForesightRun>(
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -1114,10 +1114,10 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightRun CRUD operations.
  */
- v2ClimateForesightRunsRetrieve<TData = ClimateForesightRun>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsRetrieve<TData = ClimateForesightRun>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsRetrieve<TData = ClimateForesightRun>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsRetrieve<TData = ClimateForesightRun>(
+ climateForesightRunsRetrieve<TData = ClimateForesightRun>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightRunsRetrieve<TData = ClimateForesightRun>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightRunsRetrieve<TData = ClimateForesightRun>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightRunsRetrieve<TData = ClimateForesightRun>(
     id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -1147,13 +1147,13 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightRun CRUD operations.
  */
- v2ClimateForesightRunsUpdate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsUpdate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsUpdate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsUpdate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsUpdate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsUpdate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsUpdate<TData = ClimateForesightRun>(
+  climateForesightRunsUpdate<TData = ClimateForesightRun>(
     id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1187,13 +1187,13 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightRun CRUD operations.
  */
- v2ClimateForesightRunsPartialUpdate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsPartialUpdate<TData = ClimateForesightRun>(id: string,
     patchedClimateForesightRun?: NonReadonly<PatchedClimateForesightRun>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsPartialUpdate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsPartialUpdate<TData = ClimateForesightRun>(id: string,
     patchedClimateForesightRun?: NonReadonly<PatchedClimateForesightRun>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsPartialUpdate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsPartialUpdate<TData = ClimateForesightRun>(id: string,
     patchedClimateForesightRun?: NonReadonly<PatchedClimateForesightRun>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsPartialUpdate<TData = ClimateForesightRun>(
+  climateForesightRunsPartialUpdate<TData = ClimateForesightRun>(
     id: string,
     patchedClimateForesightRun?: NonReadonly<PatchedClimateForesightRun>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1227,10 +1227,10 @@ export class V2Service {
 /**
  * ViewSet for ClimateForesightRun CRUD operations.
  */
- v2ClimateForesightRunsDestroy<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsDestroy<TData = void>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsDestroy<TData = void>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsDestroy<TData = void>(
+ climateForesightRunsDestroy<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightRunsDestroy<TData = void>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightRunsDestroy<TData = void>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightRunsDestroy<TData = void>(
     id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
@@ -1260,13 +1260,13 @@ export class V2Service {
 /**
  * Create a copy of a Climate Foresight run. Only copies datalayers
  */
- v2ClimateForesightRunsCopyCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsCopyCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsCopyCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsCopyCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsCopyCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsCopyCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsCopyCreate<TData = ClimateForesightRun>(
+  climateForesightRunsCopyCreate<TData = ClimateForesightRun>(
     id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1300,10 +1300,10 @@ export class V2Service {
 /**
  * Download all Climate Foresight outputs as a zipped archive of GeoTIFFs.
  */
- v2ClimateForesightRunsDownloadRetrieve(id: string, options?: HttpClientBodyOptions): Observable<Blob>;
- v2ClimateForesightRunsDownloadRetrieve(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<Blob>>;
- v2ClimateForesightRunsDownloadRetrieve(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<Blob>>;
-  v2ClimateForesightRunsDownloadRetrieve(
+ climateForesightRunsDownloadRetrieve(id: string, options?: HttpClientBodyOptions): Observable<Blob>;
+ climateForesightRunsDownloadRetrieve(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<Blob>>;
+ climateForesightRunsDownloadRetrieve(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<Blob>>;
+  climateForesightRunsDownloadRetrieve(
     id: string, options?: HttpClientObserveOptions): Observable<Blob | HttpEvent<Blob> | AngularHttpResponse<Blob>> {
     if (options?.observe === 'events') {
       return this.http.get(
@@ -1345,13 +1345,13 @@ The run must be in DRAFT status and have:
 
 Returns a summary of what was started.
  */
- v2ClimateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(
+  climateForesightRunsRunAnalysisCreate<TData = ClimateForesightRun>(
     id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1390,13 +1390,13 @@ Celery chain. This endpoint now just checks completion status.
 
 Returns a summary of the run status.
  */
- v2ClimateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(id: string,
+ climateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(
+  climateForesightRunsTriggerNextStepsCreate<TData = ClimateForesightRun>(
     id: string,
     climateForesightRun: NonReadonly<ClimateForesightRun>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1430,10 +1430,10 @@ Returns a summary of the run status.
 /**
  * Get all runs for a specific planning area.
  */
- v2ClimateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(planningAreaId: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(planningAreaId: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(planningAreaId: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(
+ climateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(planningAreaId: string, options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(planningAreaId: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(planningAreaId: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightRunsByPlanningAreaRetrieve<TData = ClimateForesightRun>(
     planningAreaId: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -1463,10 +1463,10 @@ Returns a summary of the run status.
 /**
  * Get data layers available for climate foresight analysis.
  */
- v2ClimateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>( options?: HttpClientBodyOptions): Observable<TData>;
- v2ClimateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ClimateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ClimateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>(
+ climateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>( options?: HttpClientBodyOptions): Observable<TData>;
+ climateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ climateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  climateForesightRunsDatalayersRetrieve<TData = ClimateForesightRun>(
      options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -1493,10 +1493,10 @@ Returns a summary of the run status.
       }
     );
   }
- v2ModulesRetrieve<TData = BaseModule>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
- v2ModulesRetrieve<TData = BaseModule>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ModulesRetrieve<TData = BaseModule>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ModulesRetrieve<TData = BaseModule>(
+ modulesRetrieve<TData = BaseModule>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ modulesRetrieve<TData = BaseModule>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ modulesRetrieve<TData = BaseModule>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  modulesRetrieve<TData = BaseModule>(
     id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -1526,13 +1526,13 @@ Returns a summary of the run status.
 /**
  * Get Module's details filtering by geometry.
  */
- v2ModulesDetailsCreate<TData = BaseModule>(id: string,
+ modulesDetailsCreate<TData = BaseModule>(id: string,
     inputModule?: InputModule, options?: HttpClientBodyOptions): Observable<TData>;
- v2ModulesDetailsCreate<TData = BaseModule>(id: string,
+ modulesDetailsCreate<TData = BaseModule>(id: string,
     inputModule?: InputModule, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ModulesDetailsCreate<TData = BaseModule>(id: string,
+ modulesDetailsCreate<TData = BaseModule>(id: string,
     inputModule?: InputModule, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ModulesDetailsCreate<TData = BaseModule>(
+  modulesDetailsCreate<TData = BaseModule>(
     id: string,
     inputModule?: InputModule, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1566,10 +1566,10 @@ Returns a summary of the run status.
 /**
  * Project Area of a Planning Areas.
  */
- v2ProjectAreasRetrieve<TData = ProjectArea>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2ProjectAreasRetrieve<TData = ProjectArea>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ProjectAreasRetrieve<TData = ProjectArea>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ProjectAreasRetrieve<TData = ProjectArea>(
+ projectAreasRetrieve<TData = ProjectArea>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ projectAreasRetrieve<TData = ProjectArea>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ projectAreasRetrieve<TData = ProjectArea>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  projectAreasRetrieve<TData = ProjectArea>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -1599,11 +1599,11 @@ Returns a summary of the run status.
 /**
  * List Scenarios.
  */
- v2ScenariosList<TData = ListScenario[]>(params?: V2ScenariosListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosList<TData = ListScenario[]>(params?: V2ScenariosListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosList<TData = ListScenario[]>(params?: V2ScenariosListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosList<TData = ListScenario[]>(
-    params?: V2ScenariosListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ scenariosList<TData = ListScenario[]>(params?: ScenariosListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ scenariosList<TData = ListScenario[]>(params?: ScenariosListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ scenariosList<TData = ListScenario[]>(params?: ScenariosListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  scenariosList<TData = ListScenario[]>(
+    params?: ScenariosListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -1637,10 +1637,10 @@ Returns a summary of the run status.
 /**
  * Create a Scenario. In the `configuration` JSON, users can include a `seed` (integer) to make ForSys runs reproducible.
  */
- v2ScenariosCreate<TData = Scenario>(createScenarioV2: CreateScenarioV2, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosCreate<TData = Scenario>(createScenarioV2: CreateScenarioV2, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosCreate<TData = Scenario>(createScenarioV2: CreateScenarioV2, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosCreate<TData = Scenario>(
+ scenariosCreate<TData = Scenario>(createScenarioV2: CreateScenarioV2, options?: HttpClientBodyOptions): Observable<TData>;
+ scenariosCreate<TData = Scenario>(createScenarioV2: CreateScenarioV2, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ scenariosCreate<TData = Scenario>(createScenarioV2: CreateScenarioV2, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  scenariosCreate<TData = Scenario>(
     createScenarioV2: CreateScenarioV2, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -1673,10 +1673,10 @@ Returns a summary of the run status.
 /**
  * Detail a Scenario.
  */
- v2ScenariosRetrieve<TData = Scenario>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosRetrieve<TData = Scenario>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosRetrieve<TData = Scenario>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosRetrieve<TData = Scenario>(
+ scenariosRetrieve<TData = Scenario>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ scenariosRetrieve<TData = Scenario>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ scenariosRetrieve<TData = Scenario>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  scenariosRetrieve<TData = Scenario>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -1706,13 +1706,13 @@ Returns a summary of the run status.
 /**
  * Update Scenario.
  */
- v2ScenariosUpdate<TData = Scenario>(id: number,
+ scenariosUpdate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosUpdate<TData = Scenario>(id: number,
+ scenariosUpdate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosUpdate<TData = Scenario>(id: number,
+ scenariosUpdate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosUpdate<TData = Scenario>(
+  scenariosUpdate<TData = Scenario>(
     id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1746,13 +1746,13 @@ Returns a summary of the run status.
 /**
  * Update Scenario.
  */
- v2ScenariosPartialUpdate<TData = Scenario>(id: number,
+ scenariosPartialUpdate<TData = Scenario>(id: number,
     patchedUpsertScenarioV3?: PatchedUpsertScenarioV3, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosPartialUpdate<TData = Scenario>(id: number,
+ scenariosPartialUpdate<TData = Scenario>(id: number,
     patchedUpsertScenarioV3?: PatchedUpsertScenarioV3, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosPartialUpdate<TData = Scenario>(id: number,
+ scenariosPartialUpdate<TData = Scenario>(id: number,
     patchedUpsertScenarioV3?: PatchedUpsertScenarioV3, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosPartialUpdate<TData = Scenario>(
+  scenariosPartialUpdate<TData = Scenario>(
     id: number,
     patchedUpsertScenarioV3?: PatchedUpsertScenarioV3, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1786,10 +1786,10 @@ Returns a summary of the run status.
 /**
  * Delete a Scenario.
  */
- v2ScenariosDestroy<TData = void>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosDestroy<TData = void>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosDestroy<TData = void>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosDestroy<TData = void>(
+ scenariosDestroy<TData = void>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ scenariosDestroy<TData = void>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ scenariosDestroy<TData = void>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  scenariosDestroy<TData = void>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
@@ -1816,13 +1816,13 @@ Returns a summary of the run status.
       }
     );
   }
- v2ScenariosAvailableStandsCreate<TData = GetAvailableStands>(id: number,
+ scenariosAvailableStandsCreate<TData = GetAvailableStands>(id: number,
     getAvailableStands?: GetAvailableStands, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosAvailableStandsCreate<TData = GetAvailableStands>(id: number,
+ scenariosAvailableStandsCreate<TData = GetAvailableStands>(id: number,
     getAvailableStands?: GetAvailableStands, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosAvailableStandsCreate<TData = GetAvailableStands>(id: number,
+ scenariosAvailableStandsCreate<TData = GetAvailableStands>(id: number,
     getAvailableStands?: GetAvailableStands, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosAvailableStandsCreate<TData = GetAvailableStands>(
+  scenariosAvailableStandsCreate<TData = GetAvailableStands>(
     id: number,
     getAvailableStands?: GetAvailableStands, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1856,13 +1856,13 @@ Returns a summary of the run status.
 /**
  * Update Scenario's configuration.
  */
- v2ScenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(id: number,
+ scenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(id: number,
     patchedUpsertConfigurationV2?: PatchedUpsertConfigurationV2, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(id: number,
+ scenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(id: number,
     patchedUpsertConfigurationV2?: PatchedUpsertConfigurationV2, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(id: number,
+ scenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(id: number,
     patchedUpsertConfigurationV2?: PatchedUpsertConfigurationV2, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(
+  scenariosConfigurationPartialUpdate<TData = UpsertConfigurationV2>(
     id: number,
     patchedUpsertConfigurationV2?: PatchedUpsertConfigurationV2, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1893,13 +1893,13 @@ Returns a summary of the run status.
       }
     );
   }
- v2ScenariosDraftPartialUpdate<TData = Scenario>(id: number,
+ scenariosDraftPartialUpdate<TData = Scenario>(id: number,
     patchedScenario?: NonReadonly<PatchedScenario>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosDraftPartialUpdate<TData = Scenario>(id: number,
+ scenariosDraftPartialUpdate<TData = Scenario>(id: number,
     patchedScenario?: NonReadonly<PatchedScenario>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosDraftPartialUpdate<TData = Scenario>(id: number,
+ scenariosDraftPartialUpdate<TData = Scenario>(id: number,
     patchedScenario?: NonReadonly<PatchedScenario>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosDraftPartialUpdate<TData = Scenario>(
+  scenariosDraftPartialUpdate<TData = Scenario>(
     id: number,
     patchedScenario?: NonReadonly<PatchedScenario>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1933,13 +1933,13 @@ Returns a summary of the run status.
 /**
  * Trigger a ForSys run for this Scenario (V3 rules).
  */
- v2ScenariosRunCreate<TData = Scenario>(id: number,
+ scenariosRunCreate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosRunCreate<TData = Scenario>(id: number,
+ scenariosRunCreate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosRunCreate<TData = Scenario>(id: number,
+ scenariosRunCreate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosRunCreate<TData = Scenario>(
+  scenariosRunCreate<TData = Scenario>(
     id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -1973,15 +1973,15 @@ Returns a summary of the run status.
 /**
  * Sub-Units areas details.
  */
- v2ScenariosSubUnitsDetailsRetrieve<TData = Scenario>(id: number,
-    params?: V2ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosSubUnitsDetailsRetrieve<TData = Scenario>(id: number,
-    params?: V2ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosSubUnitsDetailsRetrieve<TData = Scenario>(id: number,
-    params?: V2ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosSubUnitsDetailsRetrieve<TData = Scenario>(
+ scenariosSubUnitsDetailsRetrieve<TData = Scenario>(id: number,
+    params?: ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientBodyOptions): Observable<TData>;
+ scenariosSubUnitsDetailsRetrieve<TData = Scenario>(id: number,
+    params?: ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ scenariosSubUnitsDetailsRetrieve<TData = Scenario>(id: number,
+    params?: ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  scenariosSubUnitsDetailsRetrieve<TData = Scenario>(
     id: number,
-    params?: V2ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    params?: ScenariosSubUnitsDetailsRetrieveParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -2015,13 +2015,13 @@ Returns a summary of the run status.
 /**
  * Toggle status of a Scenario.
  */
- v2ScenariosToggleStatusCreate<TData = Scenario>(id: number,
+ scenariosToggleStatusCreate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosToggleStatusCreate<TData = Scenario>(id: number,
+ scenariosToggleStatusCreate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosToggleStatusCreate<TData = Scenario>(id: number,
+ scenariosToggleStatusCreate<TData = Scenario>(id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosToggleStatusCreate<TData = Scenario>(
+  scenariosToggleStatusCreate<TData = Scenario>(
     id: number,
     scenario: NonReadonly<Scenario>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2052,10 +2052,10 @@ Returns a summary of the run status.
       }
     );
   }
- v2ScenariosDraftCreate<TData = UpsertScenarioV3>(upsertScenarioV3: UpsertScenarioV3, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosDraftCreate<TData = UpsertScenarioV3>(upsertScenarioV3: UpsertScenarioV3, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosDraftCreate<TData = UpsertScenarioV3>(upsertScenarioV3: UpsertScenarioV3, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosDraftCreate<TData = UpsertScenarioV3>(
+ scenariosDraftCreate<TData = UpsertScenarioV3>(upsertScenarioV3: UpsertScenarioV3, options?: HttpClientBodyOptions): Observable<TData>;
+ scenariosDraftCreate<TData = UpsertScenarioV3>(upsertScenarioV3: UpsertScenarioV3, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ scenariosDraftCreate<TData = UpsertScenarioV3>(upsertScenarioV3: UpsertScenarioV3, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  scenariosDraftCreate<TData = UpsertScenarioV3>(
     upsertScenarioV3: UpsertScenarioV3, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -2085,10 +2085,10 @@ Returns a summary of the run status.
       }
     );
   }
- v2ScenariosUploadShapefilesCreate<TData = Scenario>(scenario: NonReadonly<Scenario>, options?: HttpClientBodyOptions): Observable<TData>;
- v2ScenariosUploadShapefilesCreate<TData = Scenario>(scenario: NonReadonly<Scenario>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2ScenariosUploadShapefilesCreate<TData = Scenario>(scenario: NonReadonly<Scenario>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2ScenariosUploadShapefilesCreate<TData = Scenario>(
+ scenariosUploadShapefilesCreate<TData = Scenario>(scenario: NonReadonly<Scenario>, options?: HttpClientBodyOptions): Observable<TData>;
+ scenariosUploadShapefilesCreate<TData = Scenario>(scenario: NonReadonly<Scenario>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ scenariosUploadShapefilesCreate<TData = Scenario>(scenario: NonReadonly<Scenario>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  scenariosUploadShapefilesCreate<TData = Scenario>(
     scenario: NonReadonly<Scenario>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -2121,11 +2121,11 @@ Returns a summary of the run status.
 /**
  * List Treatment Plans.
  */
- v2TreatmentPlansList<TData = TreatmentPlanList[]>(params?: V2TreatmentPlansListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansList<TData = TreatmentPlanList[]>(params?: V2TreatmentPlansListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansList<TData = TreatmentPlanList[]>(params?: V2TreatmentPlansListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansList<TData = TreatmentPlanList[]>(
-    params?: V2TreatmentPlansListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+ treatmentPlansList<TData = TreatmentPlanList[]>(params?: TreatmentPlansListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansList<TData = TreatmentPlanList[]>(params?: TreatmentPlansListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansList<TData = TreatmentPlanList[]>(params?: TreatmentPlansListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansList<TData = TreatmentPlanList[]>(
+    params?: TreatmentPlansListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -2159,10 +2159,10 @@ Returns a summary of the run status.
 /**
  * Create Treatment Plan.
  */
- v2TreatmentPlansCreate<TData = TreatmentPlan>(createTreatmentPlan: CreateTreatmentPlan, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansCreate<TData = TreatmentPlan>(createTreatmentPlan: CreateTreatmentPlan, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansCreate<TData = TreatmentPlan>(createTreatmentPlan: CreateTreatmentPlan, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansCreate<TData = TreatmentPlan>(
+ treatmentPlansCreate<TData = TreatmentPlan>(createTreatmentPlan: CreateTreatmentPlan, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansCreate<TData = TreatmentPlan>(createTreatmentPlan: CreateTreatmentPlan, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansCreate<TData = TreatmentPlan>(createTreatmentPlan: CreateTreatmentPlan, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansCreate<TData = TreatmentPlan>(
     createTreatmentPlan: CreateTreatmentPlan, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.post<TData>(
@@ -2195,10 +2195,10 @@ Returns a summary of the run status.
 /**
  * Retrieve Treatment Plans.
  */
- v2TreatmentPlansRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansRetrieve<TData = TreatmentPlan>(
+ treatmentPlansRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansRetrieve<TData = TreatmentPlan>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -2228,13 +2228,13 @@ Returns a summary of the run status.
 /**
  * Update Treatment Plans.
  */
- v2TreatmentPlansUpdate<TData = TreatmentPlanUpdate>(id: number,
+ treatmentPlansUpdate<TData = TreatmentPlanUpdate>(id: number,
     treatmentPlanUpdate: TreatmentPlanUpdate, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansUpdate<TData = TreatmentPlanUpdate>(id: number,
+ treatmentPlansUpdate<TData = TreatmentPlanUpdate>(id: number,
     treatmentPlanUpdate: TreatmentPlanUpdate, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansUpdate<TData = TreatmentPlanUpdate>(id: number,
+ treatmentPlansUpdate<TData = TreatmentPlanUpdate>(id: number,
     treatmentPlanUpdate: TreatmentPlanUpdate, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansUpdate<TData = TreatmentPlanUpdate>(
+  treatmentPlansUpdate<TData = TreatmentPlanUpdate>(
     id: number,
     treatmentPlanUpdate: TreatmentPlanUpdate, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2268,13 +2268,13 @@ Returns a summary of the run status.
 /**
  * Update Treatment Plans.
  */
- v2TreatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(id: number,
+ treatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(id: number,
     patchedTreatmentPlanUpdate?: PatchedTreatmentPlanUpdate, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(id: number,
+ treatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(id: number,
     patchedTreatmentPlanUpdate?: PatchedTreatmentPlanUpdate, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(id: number,
+ treatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(id: number,
     patchedTreatmentPlanUpdate?: PatchedTreatmentPlanUpdate, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(
+  treatmentPlansPartialUpdate<TData = TreatmentPlanUpdate>(
     id: number,
     patchedTreatmentPlanUpdate?: PatchedTreatmentPlanUpdate, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2308,10 +2308,10 @@ Returns a summary of the run status.
 /**
  * Deletes a Treatment Plan.
  */
- v2TreatmentPlansDestroy<TData = void>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansDestroy<TData = void>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansDestroy<TData = void>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansDestroy<TData = void>(
+ treatmentPlansDestroy<TData = void>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansDestroy<TData = void>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansDestroy<TData = void>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansDestroy<TData = void>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.delete<TData>(
@@ -2341,13 +2341,13 @@ Returns a summary of the run status.
 /**
  * Clones a Treatment Plan.
  */
- v2TreatmentPlansCloneCreate<TData = TreatmentPlan>(id: number,
+ treatmentPlansCloneCreate<TData = TreatmentPlan>(id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansCloneCreate<TData = TreatmentPlan>(id: number,
+ treatmentPlansCloneCreate<TData = TreatmentPlan>(id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansCloneCreate<TData = TreatmentPlan>(id: number,
+ treatmentPlansCloneCreate<TData = TreatmentPlan>(id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansCloneCreate<TData = TreatmentPlan>(
+  treatmentPlansCloneCreate<TData = TreatmentPlan>(
     id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2381,10 +2381,10 @@ Returns a summary of the run status.
 /**
  * exports a treatment plan in a zipped shapefile format.
  */
- v2TreatmentPlansDownloadRetrieve(id: number, options?: HttpClientBodyOptions): Observable<Blob>;
- v2TreatmentPlansDownloadRetrieve(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<Blob>>;
- v2TreatmentPlansDownloadRetrieve(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<Blob>>;
-  v2TreatmentPlansDownloadRetrieve(
+ treatmentPlansDownloadRetrieve(id: number, options?: HttpClientBodyOptions): Observable<Blob>;
+ treatmentPlansDownloadRetrieve(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<Blob>>;
+ treatmentPlansDownloadRetrieve(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<Blob>>;
+  treatmentPlansDownloadRetrieve(
     id: number, options?: HttpClientObserveOptions): Observable<Blob | HttpEvent<Blob> | AngularHttpResponse<Blob>> {
     if (options?.observe === 'events') {
       return this.http.get(
@@ -2411,10 +2411,10 @@ Returns a summary of the run status.
       }
     );
   }
- v2TreatmentPlansPlotRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansPlotRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansPlotRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansPlotRetrieve<TData = TreatmentPlan>(
+ treatmentPlansPlotRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansPlotRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansPlotRetrieve<TData = TreatmentPlan>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansPlotRetrieve<TData = TreatmentPlan>(
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
       return this.http.get<TData>(
@@ -2444,13 +2444,13 @@ Returns a summary of the run status.
 /**
  * Runs a Treatment Plan.
  */
- v2TreatmentPlansRunCreate<TData = TreatmentPlan>(id: number,
+ treatmentPlansRunCreate<TData = TreatmentPlan>(id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansRunCreate<TData = TreatmentPlan>(id: number,
+ treatmentPlansRunCreate<TData = TreatmentPlan>(id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansRunCreate<TData = TreatmentPlan>(id: number,
+ treatmentPlansRunCreate<TData = TreatmentPlan>(id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansRunCreate<TData = TreatmentPlan>(
+  treatmentPlansRunCreate<TData = TreatmentPlan>(
     id: number,
     treatmentPlan: NonReadonly<TreatmentPlan>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2484,15 +2484,15 @@ Returns a summary of the run status.
 /**
  * Retrieve treatment results for a specific stand (via `stand_id`) within the specified Treatment Plan (via path parameter `id`).
  */
- v2TreatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(id: number,
-    params: V2TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(id: number,
-    params: V2TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(id: number,
-    params: V2TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(
+ treatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(id: number,
+    params: TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(id: number,
+    params: TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(id: number,
+    params: TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansStandTreatmentResultsRetrieve<TData = TreatmentResult>(
     id: number,
-    params: V2TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    params: TreatmentPlansStandTreatmentResultsRetrieveParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -2526,15 +2526,15 @@ Returns a summary of the run status.
 /**
  * Summary of a Treatment Plan.
  */
- v2TreatmentPlansSummaryRetrieve<TData = OutputSummary>(id: number,
-    params?: V2TreatmentPlansSummaryRetrieveParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansSummaryRetrieve<TData = OutputSummary>(id: number,
-    params?: V2TreatmentPlansSummaryRetrieveParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansSummaryRetrieve<TData = OutputSummary>(id: number,
-    params?: V2TreatmentPlansSummaryRetrieveParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansSummaryRetrieve<TData = OutputSummary>(
+ treatmentPlansSummaryRetrieve<TData = OutputSummary>(id: number,
+    params?: TreatmentPlansSummaryRetrieveParams, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansSummaryRetrieve<TData = OutputSummary>(id: number,
+    params?: TreatmentPlansSummaryRetrieveParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansSummaryRetrieve<TData = OutputSummary>(id: number,
+    params?: TreatmentPlansSummaryRetrieveParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansSummaryRetrieve<TData = OutputSummary>(
     id: number,
-    params?: V2TreatmentPlansSummaryRetrieveParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    params?: TreatmentPlansSummaryRetrieveParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -2565,15 +2565,15 @@ Returns a summary of the run status.
         params: filteredParams,}
     );
   }
- v2TreatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(txPlanPk: string,
-    params?: V2TreatmentPlansNoteListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(txPlanPk: string,
-    params?: V2TreatmentPlansNoteListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(txPlanPk: string,
-    params?: V2TreatmentPlansNoteListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(
+ treatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(txPlanPk: string,
+    params?: TreatmentPlansNoteListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(txPlanPk: string,
+    params?: TreatmentPlansNoteListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(txPlanPk: string,
+    params?: TreatmentPlansNoteListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansNoteList<TData = TreatmentPlanNoteList[]>(
     txPlanPk: string,
-    params?: V2TreatmentPlansNoteListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    params?: TreatmentPlansNoteListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -2604,13 +2604,13 @@ Returns a summary of the run status.
         params: filteredParams,}
     );
   }
- v2TreatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(txPlanPk: string,
+ treatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(txPlanPk: string,
     treatmentPlanNoteCreate?: TreatmentPlanNoteCreate, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(txPlanPk: string,
+ treatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(txPlanPk: string,
     treatmentPlanNoteCreate?: TreatmentPlanNoteCreate, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(txPlanPk: string,
+ treatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(txPlanPk: string,
     treatmentPlanNoteCreate?: TreatmentPlanNoteCreate, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(
+  treatmentPlansNoteCreate<TData = TreatmentPlanNoteCreate>(
     txPlanPk: string,
     treatmentPlanNoteCreate?: TreatmentPlanNoteCreate, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2641,13 +2641,13 @@ Returns a summary of the run status.
       }
     );
   }
- v2TreatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(
+  treatmentPlansNoteRetrieve<TData = TreatmentPlanNote>(
     txPlanPk: string,
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2675,16 +2675,16 @@ Returns a summary of the run status.
       }
     );
   }
- v2TreatmentPlansNoteUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNoteUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number,
     treatmentPlanNote: NonReadonly<TreatmentPlanNote>, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansNoteUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNoteUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number,
     treatmentPlanNote: NonReadonly<TreatmentPlanNote>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansNoteUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNoteUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number,
     treatmentPlanNote: NonReadonly<TreatmentPlanNote>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansNoteUpdate<TData = TreatmentPlanNote>(
+  treatmentPlansNoteUpdate<TData = TreatmentPlanNote>(
     txPlanPk: string,
     id: number,
     treatmentPlanNote: NonReadonly<TreatmentPlanNote>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
@@ -2716,16 +2716,16 @@ Returns a summary of the run status.
       }
     );
   }
- v2TreatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number,
     patchedTreatmentPlanNote?: NonReadonly<PatchedTreatmentPlanNote>, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number,
     patchedTreatmentPlanNote?: NonReadonly<PatchedTreatmentPlanNote>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
+ treatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(txPlanPk: string,
     id: number,
     patchedTreatmentPlanNote?: NonReadonly<PatchedTreatmentPlanNote>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(
+  treatmentPlansNotePartialUpdate<TData = TreatmentPlanNote>(
     txPlanPk: string,
     id: number,
     patchedTreatmentPlanNote?: NonReadonly<PatchedTreatmentPlanNote>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
@@ -2757,13 +2757,13 @@ Returns a summary of the run status.
       }
     );
   }
- v2TreatmentPlansNoteDestroy<TData = void>(txPlanPk: string,
+ treatmentPlansNoteDestroy<TData = void>(txPlanPk: string,
     id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansNoteDestroy<TData = void>(txPlanPk: string,
+ treatmentPlansNoteDestroy<TData = void>(txPlanPk: string,
     id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansNoteDestroy<TData = void>(txPlanPk: string,
+ treatmentPlansNoteDestroy<TData = void>(txPlanPk: string,
     id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansNoteDestroy<TData = void>(
+  treatmentPlansNoteDestroy<TData = void>(
     txPlanPk: string,
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2794,15 +2794,15 @@ Returns a summary of the run status.
 /**
  * List Treatment Prescriptions.
  */
- v2TreatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(txPlanPk: string,
-    params?: V2TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(txPlanPk: string,
-    params?: V2TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(txPlanPk: string,
-    params?: V2TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(
+ treatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(txPlanPk: string,
+    params?: TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ treatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(txPlanPk: string,
+    params?: TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ treatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(txPlanPk: string,
+    params?: TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  treatmentPlansTreatmentPrescriptionsList<TData = PaginatedTreatmentPrescriptionListList>(
     txPlanPk: string,
-    params?: V2TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    params?: TreatmentPlansTreatmentPrescriptionsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
 
     if (options?.observe === 'events') {
@@ -2836,13 +2836,13 @@ Returns a summary of the run status.
 /**
  * Create a Treatment Prescription.
  */
- v2TreatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(txPlanPk: string,
     upsertTreamentPrescription: UpsertTreamentPrescription, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(txPlanPk: string,
     upsertTreamentPrescription: UpsertTreamentPrescription, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(txPlanPk: string,
     upsertTreamentPrescription: UpsertTreamentPrescription, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(
+  treatmentPlansTreatmentPrescriptionsCreate<TData = TreatmentPrescription>(
     txPlanPk: string,
     upsertTreamentPrescription: UpsertTreamentPrescription, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2876,13 +2876,13 @@ Returns a summary of the run status.
 /**
  * Retrieve a Treatment Prescriptions.
  */
- v2TreatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(txPlanPk: string,
     id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(txPlanPk: string,
     id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(txPlanPk: string,
     id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(
+  treatmentPlansTreatmentPrescriptionsRetrieve<TData = TreatmentPrescription>(
     txPlanPk: string,
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2913,13 +2913,13 @@ Returns a summary of the run status.
 /**
  * Delete a Treatment Prescriptions.
  */
- v2TreatmentPlansTreatmentPrescriptionsDestroy<TData = void>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsDestroy<TData = void>(txPlanPk: string,
     id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansTreatmentPrescriptionsDestroy<TData = void>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsDestroy<TData = void>(txPlanPk: string,
     id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansTreatmentPrescriptionsDestroy<TData = void>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsDestroy<TData = void>(txPlanPk: string,
     id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansTreatmentPrescriptionsDestroy<TData = void>(
+  treatmentPlansTreatmentPrescriptionsDestroy<TData = void>(
     txPlanPk: string,
     id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
@@ -2950,13 +2950,13 @@ Returns a summary of the run status.
 /**
  * Delete Prescriptions from Treatment Precriptions.
  */
- v2TreatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(txPlanPk: string,
     treatmentPrescription: NonReadonly<TreatmentPrescription>, options?: HttpClientBodyOptions): Observable<TData>;
- v2TreatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(txPlanPk: string,
     treatmentPrescription: NonReadonly<TreatmentPrescription>, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2TreatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(txPlanPk: string,
+ treatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(txPlanPk: string,
     treatmentPrescription: NonReadonly<TreatmentPrescription>, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2TreatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(
+  treatmentPlansTreatmentPrescriptionsDeletePrescriptionsCreate<TData = TreatmentPrescriptionBatchDeleteResponse>(
     txPlanPk: string,
     treatmentPrescription: NonReadonly<TreatmentPrescription>, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {

@@ -40,7 +40,7 @@ export class TreatmentGoalSelectorComponent implements OnInit {
   mappableGoal = true;
 
   availableTreatmentGoals$ = this.treatmentGoalsService
-    .v2TreatmentGoalsList({ planning_area: String(this.planId) })
+    .treatmentGoalsList({ planning_area: String(this.planId) })
     .pipe(shareReplay(1));
 
   categorizedStatewideGoals$ = this.availableTreatmentGoals$.pipe(

@@ -19,6 +19,8 @@ frontend consumes generated Angular services. No more duplicated interfaces.
 **Config**: `src/interface/orval.config.ts`  
 **Generated files**: committed to git — schema drift is visible in PR diffs
 
+The orval config strips the leading `v2_` segment from every `operationId` and converts the rest to camelCase. drf-spectacular emits IDs like `v2_datalayers_list` (snake_case, prefixed with the URL segment); the override produces `datalayersList` so call sites read `this.datalayersService.datalayersList(...)` instead of `v2DatalayersList(...)`. The `v2` lives in the Django URL config and adds noise to every consumer.
+
 ---
 
 ## When to run `generate:api`
