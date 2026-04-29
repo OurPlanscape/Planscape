@@ -136,6 +136,31 @@ Tag the backend first and inspect generated types before migrating — `Scenario
 | Hand-written | `services/treatments.service.ts` (160 lines), `types/treatment.types.ts` |
 | Used in      | `treatments/` feature module                                             |
 
+### ⚠️ Climate Foresight (half-baked — generated types lie, hand-written is what consumers use)
+
+|              |                                                                                                                                                                            |
+|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Backend      | `climate_foresight/views.py` — `ClimateForesightRunViewSet`, `ClimateForesightPillarViewSet` (no `tags` yet)                                                               |
+| Generated    | Generated types exist (`ClimateForesightRun`, `ClimateForesightPillar`, `ClimateForesightRunInputDataLayer`, `ClimateForesightRunList`); calls live in `v2/v2.service.ts`  |
+| Hand-written | `services/climate-foresight.service.ts` (~200 lines), `types/climate-foresight.types.ts` (16 interfaces, including `Pillar` / `ClimateForesightPillar` near-duplicates)    |
+| Used in      | `plan/climate-foresight/` feature module — `data-layer-selection`, `assign-favorability`, `assign-pillars`, `analysis` and supporting components                            |
+
+**Why "half-baked":** the generated `ClimateForesightRun` interface has three `SerializerMethodField`-backed properties (`pillar_rollups`,
+`landscape_rollup`, `promote`) typed as `string` because drf-spectacular can't infer their return shape — the backend serializer has no
+`@extend_schema_field` annotation on those methods. Likewise `ClimateForesightRunInputDataLayer.statistics` is `unknown | null` because the
+serializer declares it as `JSONField`. The hand-written types are what consumers actually use and they encode the real shapes.
+
+**Blockers / cleanup needed:**
+
+- Backend: tag both viewsets, then add `@extend_schema_field` to `ClimateForesightRunSerializer.get_pillar_rollups` /
+  `get_landscape_rollup` / `get_promote` pointing at proper child serializers (`ClimateForesightPillarRollupSerializer`,
+  `ClimateForesightLandscapeRollupSerializer`, `ClimateForesightPromoteSerializer` — all already exist on the backend).
+- Backend: type `statistics` properly via a `LayerStatisticsSerializer` (the shape is documented in the field's `help_text`).
+- Frontend: the hand-written `Pillar` and generated `ClimateForesightPillar` are near-duplicates with field-name drift (`run` vs `run_id`, missing
+  `created_by`, missing `order` default) — pick the generated as canonical once the schema is right and drop the hand-written one.
+- Frontend: `climate-foresight.service.ts` hand-rolls `http.post`/`http.get` calls; once tagged, swap for the generated client (same pattern as
+  the eventual auth migration).
+
 ### 🔲 Notes
 
 |              |                                                                                                                                                                                                                            |
@@ -252,6 +277,8 @@ without standing up a new endpoint catalog entry.
 ### Suggested next moves (cost / payoff)
 
 1. **(2)** Search PolymorphicProxySerializer — small, contained, retires the largest remaining cast in the data-layers module.
-2. **Planning Areas migration** — blockers in this doc are all small and well-understood; mechanics now well-rehearsed. Highest endpoint payoff.
-3. **Auth migration** — mostly mechanical 1:1 swap of `http.post`/`http.get` for `DjRestAuthService` methods; wrapper logic stays.
-4. **Scenarios recon** — tag the viewset, regen, look at the generated type. 5-min experiment, no commitment.
+2. **Climate Foresight backend cleanup** — add `@extend_schema_field` annotations on the three `SerializerMethodField`s and `statistics`. Removes
+   the "generated types lie" status without committing to a frontend service swap.
+3. **Planning Areas migration** — blockers in this doc are all small and well-understood; mechanics now well-rehearsed. Highest endpoint payoff.
+4. **Auth migration** — mostly mechanical 1:1 swap of `http.post`/`http.get` for `DjRestAuthService` methods; wrapper logic stays.
+5. **Scenarios recon** — tag the viewset, regen, look at the generated type. 5-min experiment, no commitment.
