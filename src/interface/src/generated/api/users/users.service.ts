@@ -145,49 +145,6 @@ export class UsersService {
       }
     );
   }
-  usersE2eDestroyCreate<TData = void>(
-    options?: HttpClientBodyOptions
-  ): Observable<TData>;
-  usersE2eDestroyCreate<TData = void>(
-    options?: HttpClientEventOptions
-  ): Observable<HttpEvent<TData>>;
-  usersE2eDestroyCreate<TData = void>(
-    options?: HttpClientResponseOptions
-  ): Observable<AngularHttpResponse<TData>>;
-  usersE2eDestroyCreate<TData = void>(
-    options?: HttpClientObserveOptions
-  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    if (options?.observe === 'events') {
-      return this.http.post<TData>(
-        `/planscape-backend/users/e2e/destroy/`,
-        undefined,
-        {
-          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-          observe: 'events',
-        }
-      );
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.post<TData>(
-        `/planscape-backend/users/e2e/destroy/`,
-        undefined,
-        {
-          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-          observe: 'response',
-        }
-      );
-    }
-
-    return this.http.post<TData>(
-      `/planscape-backend/users/e2e/destroy/`,
-      undefined,
-      {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'body',
-      }
-    );
-  }
   usersGetUserByIdRetrieve<TData = void>(
     options?: HttpClientBodyOptions
   ): Observable<TData>;
@@ -249,45 +206,5 @@ export class UsersService {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
     });
-  }
-  usersValidateMartinRequestRetrieve<TData = void>(
-    options?: HttpClientBodyOptions
-  ): Observable<TData>;
-  usersValidateMartinRequestRetrieve<TData = void>(
-    options?: HttpClientEventOptions
-  ): Observable<HttpEvent<TData>>;
-  usersValidateMartinRequestRetrieve<TData = void>(
-    options?: HttpClientResponseOptions
-  ): Observable<AngularHttpResponse<TData>>;
-  usersValidateMartinRequestRetrieve<TData = void>(
-    options?: HttpClientObserveOptions
-  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    if (options?.observe === 'events') {
-      return this.http.get<TData>(
-        `/planscape-backend/users/validate_martin_request`,
-        {
-          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-          observe: 'events',
-        }
-      );
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.get<TData>(
-        `/planscape-backend/users/validate_martin_request`,
-        {
-          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-          observe: 'response',
-        }
-      );
-    }
-
-    return this.http.get<TData>(
-      `/planscape-backend/users/validate_martin_request`,
-      {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'body',
-      }
-    );
   }
 }

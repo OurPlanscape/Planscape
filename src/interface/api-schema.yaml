@@ -486,16 +486,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserDetails'
           description: ''
-  /planscape-backend/health:
-    get:
-      operationId: health_retrieve
-      tags:
-      - health
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
   /planscape-backend/invites/create_invite/:
     post:
       operationId: invites_create
@@ -877,18 +867,6 @@ paths:
       responses:
         '200':
           description: No response body
-  /planscape-backend/users/e2e/destroy/:
-    post:
-      operationId: users_e2e_destroy_create
-      tags:
-      - users
-      security:
-      - jwtHeaderAuth: []
-      - jwtCookieAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
   /planscape-backend/users/get_user_by_id/:
     get:
       operationId: users_get_user_by_id_retrieve
@@ -904,18 +882,6 @@ paths:
   /planscape-backend/users/is_verified/:
     get:
       operationId: users_is_verified_retrieve
-      tags:
-      - users
-      security:
-      - jwtHeaderAuth: []
-      - jwtCookieAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /planscape-backend/users/validate_martin_request:
-    get:
-      operationId: users_validate_martin_request_retrieve
       tags:
       - users
       security:

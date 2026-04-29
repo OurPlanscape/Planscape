@@ -500,7 +500,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/planscape-backend",
     "PREPROCESSING_HOOKS": [
-        "planscape.spectacular_hooks.exclude_admin_paths",
+        "planscape.spectacular_hooks.exclude_internal_paths",
     ],
 }
 
