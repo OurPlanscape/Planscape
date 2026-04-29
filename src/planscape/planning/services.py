@@ -1117,6 +1117,9 @@ def export_scenario_stand_outputs_to_geopackage(
             geometry = stand_inputs.get(stand_id, {}).get("WKT")
             properties["WKT"] = geometry
             properties["stand_size"] = stand_size
+            pcp_fields = [key for key in stand_inputs.get(stand_id, {}) if key.lower().endswith("_pcp")]
+            for pcp_field in pcp_fields:
+                properties[pcp_field] = stand_inputs.get(stand_id, {}).get(pcp_field)
             scenario_outputs[stand_id] = properties
 
     features = []
