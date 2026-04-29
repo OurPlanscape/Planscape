@@ -149,14 +149,14 @@ Tag the backend first and inspect generated types before migrating — `Scenario
 - `PlanningAreaNotes` has 4 URL patterns on one view → must split into separate view classes first
 - `PlanNotesService` is stateful (`notes$` BehaviorSubject) — state management must move to a component before the HTTP calls can be replaced
 
-### ⚠️ Data Layers (services done, hand-written `DataLayer` type still around)
+### ✅ Data Layers
 
 |                 |                                                                                                                                                                     |
 |-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Backend         | `datasets/views.py` — `DatasetViewSet` (tagged `datasets`), `DataLayerViewSet` (tagged `datalayers`)                                                                |
 | Generated       | `api/generated/datasets/datasets.service.ts` — `DatasetsService`, `api/generated/datalayers/datalayers.service.ts` — `DatalayersService`                            |
 | Generated types | `DataLayer`, `BrowseDataLayer`, `DataLayerUrl`, `FindAnything`, `PaginatedDataLayerList`, `PaginatedSearchResultsList`, `SearchResults`                             |
-| Deleted         | `services/data-layers.service.ts` (entire file) and its spec                                                                                                        |
+| Deleted         | `services/data-layers.service.ts` and spec; `interface DataLayer` from `types/data-sets.ts`                                                                         |
 | Used in         | `new-scenario.state.ts`, `scenario-config-overlay.component.ts`, `data-layers.state.service.ts`, `data-layer-tooltip.component.ts`, `base-layers-list.component.ts` |
 
 **Backend changes in `datasets/serializers.py`:**
@@ -191,26 +191,23 @@ Tag the backend first and inspect generated types before migrating — `Scenario
   empty-array guard returning `of([])` (the API returns ALL layers if `id__in` is empty)
 - Specs use `MockProvider(GeneratedService)` + `spyOn(...)` before `createComponent`
 
-**Pending: drop the hand-written `DataLayer` type (Option A in the cleanup plan).** Done so far:
+**Cleanup notes:**
 
-- `Info` renamed to `RasterInfo` and tagged as raster-only; `DataLayer.info` loosened from `Info` to `Record<string, unknown> | null`; three read
-  sites (`data-layer-tooltip`, `assign-favorability`, `map-data-layer`) cast to `RasterInfo` at use site.
-- `toBrowseDataLayer()` adapter no longer needs the `as unknown as Info` cast; `metadata` and `styles` still go through `as unknown as` because
-  hand-written `Metadata` and `Styles` add structure the loose JSON type doesn't carry.
-
-Still on the to-do list (~20 import sites):
-
-- Switch every `import { DataLayer } from '@types'` to `import { DataLayer } from '@api/planscapeAPI.schemas'` (or `BrowseDataLayer` where the source
-  is the browse endpoint).
-- Refactor `BaseLayer` in `types/data-sets.ts` so it doesn't `extends Omit<DataLayer, 'styles' | 'geometry'>` against the hand-written shape.
-- Delete `interface DataLayer` + `interface Styles` (and probably `interface Metadata`) from `types/data-sets.ts` once the readers narrow at the use
-  site like `RasterInfo` does.
-- Drop `toBrowseDataLayer()` entirely — `DataLayersStateService.dataTree$`, `selectedDataLayers$`, `viewedDataLayer$` become `BrowseDataLayer`-typed
+- `interface DataLayer` deleted from `types/data-sets.ts`; consumers now import generated `DataLayer` from `@api/planscapeAPI.schemas` (or
+  `BrowseDataLayer` where the source is the browse endpoint — `data-layers.state.service.ts` and everything downstream).
+- `BaseLayer` is now an explicit interface (no longer `extends Omit<DataLayer, ...>`); the file-level comment notes that it represents the narrowed,
+  cast shape returned by `datasets/{id}/browse` for vector layers.
+- `toBrowseDataLayer()` adapter is gone — `DataLayersStateService.dataTree$`, `selectedDataLayers$`, `viewedDataLayer$` are `BrowseDataLayer`-typed
   end to end.
-- Remove the `as unknown as DataLayer[]` boundary cast in `new-scenario.state.ts` (the consumers there only read `.name` so the generated type is
-  fine).
-- `types/data-sets.ts` will still own `BaseDataSet`, `DataSet`, `BaseLayer`, `SearchResult`/`SearchQuery` (until those migrations land too) and the
-  narrowing helpers `RasterInfo` / `InfoStats` / `Metadata` / `Styles` / `StyleJson`.
+- `as unknown as DataLayer[]` boundary cast removed from `new-scenario.state.ts`; `priorityObjectivesDetails$` / `coBenefitsDetails$` flow generated
+  `DataLayer[]` directly.
+- Narrowing helpers `RasterInfo` / `InfoStats` / `Metadata` / `Styles` / `StyleJson` remain in `types/data-sets.ts`. Read sites that need shaped
+  access cast at the call site (`layer.info as RasterInfo | null`, `layer.metadata as Metadata | null`, `layer.styles as unknown as Styles[]`) —
+  same pattern as `RasterInfo`.
+- `DataSet` in `types/data-sets.ts` is now a re-export of generated `Dataset`; `BaseDataSet` is `Pick<Dataset, 'id' | 'name' | 'organization'>`.
+- `types/data-sets.ts` still owns `BaseLayer` (narrowed cast view of `BrowseDataLayer` for vector layers) and `SearchResult` / `DataLayerSearchResult` /
+  `DataSetSearchResult` / `SearchQuery` — the generated `SearchResults` has `data: unknown`, so the hand-written discriminated union is more useful than
+  what's generated and should stick around until the search endpoint migrates.
 
 ### ✅ Auth / dj-rest-auth
 

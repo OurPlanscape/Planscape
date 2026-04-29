@@ -1,10 +1,12 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import {
-  DataLayer,
   LayerStyleEntry,
   Entry,
+  Metadata,
   StyleJson,
+  Styles,
   ColorLegendInfo,
 } from '@types';
 import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
@@ -19,8 +21,11 @@ export interface RGBA {
 const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
 
 // Determines the legend format based on the datalayer
-export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
-  const { map_type, entries } = dataLayer.styles[0].data;
+export function extractLegendInfo(
+  dataLayer: BrowseDataLayer
+): ColorLegendInfo {
+  const styles = dataLayer.styles as unknown as Styles[];
+  const { map_type, entries } = styles[0].data;
   // Note that this sort inverts the values from high to low
   const sorted = [...entries].sort((a, b) => b.value - a.value);
   const title = unitsTitleFromLayer(dataLayer);
@@ -33,9 +38,10 @@ export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
   return { title: title, type: map_type, entries: colorDetails };
 }
 
-function unitsTitleFromLayer(dataLayer: DataLayer): string {
+function unitsTitleFromLayer(dataLayer: BrowseDataLayer): string {
   const defaultTitle = 'Legend';
-  let units = dataLayer.metadata?.['metadata']?.[
+  const metadata = dataLayer.metadata as Metadata | null;
+  let units = metadata?.['metadata']?.[
     'identification'
   ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
   if (!units || units.length === 0) {

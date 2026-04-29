@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { DataLayer, RasterInfo } from '@types';
+import { Metadata, RasterInfo } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
 import { DatalayersService } from '@api/datalayers/datalayers.service';
 import { map, Observable, shareReplay, take } from 'rxjs';
@@ -26,7 +27,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   styleUrl: './data-layer-tooltip.component.scss',
 })
 export class DataLayerTooltipComponent implements OnInit {
-  @Input() layer!: DataLayer;
+  @Input() layer!: BrowseDataLayer;
 
   downloadLink$: Observable<string> | null = null;
   loadingLink = false;
@@ -46,26 +47,38 @@ export class DataLayerTooltipComponent implements OnInit {
     });
   }
 
+  // Narrow `info` to RasterInfo at the component boundary; the template binds
+  // to `firstStat()` so it can use typed `.min` / `.max` without re-asserting
+  // the raster shape inline.
+  private get rasterInfo(): RasterInfo | null {
+    return this.layer.info as RasterInfo | null;
+  }
+
+  firstStat() {
+    return this.rasterInfo?.stats?.[0] ?? null;
+  }
+
   hasMinMax(): boolean {
-    const info = this.layer.info as RasterInfo | null;
-    return (
-      info?.stats?.[0]?.min != undefined &&
-      info?.stats?.[0]?.max != undefined
-    );
+    const stat = this.firstStat();
+    return stat?.min != undefined && stat?.max != undefined;
+  }
+
+  private get narrowedMetadata(): Metadata | null {
+    return this.layer.metadata as Metadata | null;
   }
 
   getSource() {
-    return this.layer.metadata?.['metadata']?.['distribution']?.['download'];
+    return this.narrowedMetadata?.['metadata']?.['distribution']?.['download'];
   }
 
   get vintageDate() {
-    return this.layer.metadata?.['metadata']?.['identification']?.['date']?.[
+    return this.narrowedMetadata?.['metadata']?.['identification']?.['date']?.[
       'date'
     ];
   }
 
   getUnits() {
-    const units = this.layer.metadata?.['metadata']?.[
+    const units = this.narrowedMetadata?.['metadata']?.[
       'identification'
     ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
 

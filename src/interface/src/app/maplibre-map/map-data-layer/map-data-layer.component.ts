@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { generateColorFunction } from '@data-layers/utilities';
-import { RasterInfo } from '@types';
+import { RasterInfo, Styles } from '@types';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   Map as MapLibreMap,
@@ -42,7 +42,8 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
       .subscribe((data) => {
         if (data) {
           this.cogUrl = `cog://${data.url}`;
-          const colorFn = generateColorFunction(data.layer?.styles[0].data);
+          const styles = data.layer.styles as unknown as Styles[];
+          const colorFn = generateColorFunction(styles[0].data);
           setColorFunction(data.url, colorFn);
           const info = data.layer.info as RasterInfo | null;
           this.tileSize =

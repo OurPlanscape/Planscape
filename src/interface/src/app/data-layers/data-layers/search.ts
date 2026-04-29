@@ -36,7 +36,7 @@ export function groupSearchResults(results: SearchResult[]): Results {
   const grouped = dataLayers.reduce((acc, value) => {
     const org = value.data.organization;
     const dataset = value.data.dataset;
-    const pathArr = value.data.path || [];
+    const pathArr = [...(value.data.path ?? [])];
     const pathKey = pathArr.join(' - ');
     const dataSetPath = dataset.id + '-' + dataset.name;
 

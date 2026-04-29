@@ -19,12 +19,8 @@ import {
 } from 'rxjs';
 import {
   BaseDataSet,
-  DataLayer,
-  DataSet,
-  Metadata,
   Pagination,
   SearchResult,
-  Styles,
 } from '@types';
 import { buildPathTree } from '@data-layers/data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
@@ -43,28 +39,6 @@ export interface unselectableLayer {
   reason: UnselectableType;
 }
 
-// Converts the generated BrowseDataLayer to the app-wide DataLayer domain type.
-// `info` is left as Record<string, unknown> — readers narrow to RasterInfo at
-// the use site when they know the layer is a raster. `metadata` and `styles`
-// still go through `as unknown as` because their hand-written interfaces add
-// structural shape that TS can't derive from {[key: string]: unknown}.
-function toBrowseDataLayer(layer: BrowseDataLayer): DataLayer {
-  return {
-    id: layer.id,
-    organization: layer.organization,
-    dataset: layer.dataset,
-    path: [...layer.path],
-    name: layer.name,
-    type: (layer.type as string) ?? '',
-    geometry_type: (layer.geometry_type as string) ?? '',
-    status: (layer.status as string) ?? '',
-    info: layer.info ?? null,
-    metadata: (layer.metadata as unknown as Metadata) ?? null,
-    styles: layer.styles as unknown as Styles[],
-    map_service_type: layer.map_service_type as DataLayer['map_service_type'],
-  };
-}
-
 @Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
@@ -79,11 +53,13 @@ export class DataLayersStateService {
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   // Datalayers applied to the map
-  private _viewedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
+  private _viewedDataLayer$ = new BehaviorSubject<BrowseDataLayer | null>(null);
   viewedDataLayer$ = this._viewedDataLayer$.asObservable();
 
   // Datalayers selected from the list of layers
-  private _selectedDataLayers$ = new BehaviorSubject<DataLayer[] | []>([]);
+  private _selectedDataLayers$ = new BehaviorSubject<BrowseDataLayer[] | []>(
+    []
+  );
   selectedDataLayers$ = this._selectedDataLayers$.asObservable();
 
   // Datalayers selected from the list of layers
@@ -134,7 +110,7 @@ export class DataLayersStateService {
           ...(geometry ? { geometry } : {}),
         })
         .pipe(
-          map((items) => buildPathTree(items.map(toBrowseDataLayer))),
+          map((items) => buildPathTree(items)),
           tap((s) => this.loadingSubject.next(false)),
           catchError((e) => {
             this.loadingSubject.next(false);
@@ -165,7 +141,7 @@ export class DataLayersStateService {
   searchTerm$ = this._searchTerm$.asObservable();
 
   colorLegendInfo$ = this.viewedDataLayer$.pipe(
-    map((currentLayer: DataLayer | null) => {
+    map((currentLayer: BrowseDataLayer | null) => {
       if (currentLayer) {
         return extractLegendInfo(currentLayer);
       } else {
@@ -246,7 +222,7 @@ export class DataLayersStateService {
     }
   }
 
-  selectDataLayer(dataLayer: DataLayer) {
+  selectDataLayer(dataLayer: BrowseDataLayer) {
     this.setDataLayerLoading(true);
     this._viewedDataLayer$.next(dataLayer);
   }
@@ -281,28 +257,29 @@ export class DataLayersStateService {
     this._selectedDataSet$.next(null);
   }
 
-  goToSelectedLayer(layer: DataLayer) {
+  goToSelectedLayer(layer: BrowseDataLayer) {
     // Reset search
     this._searchTerm$.next('');
     this._offset.next(0);
     this.goToDataLayerCategory(layer);
   }
 
-  goToDataLayerCategory(layer: DataLayer) {
+  goToDataLayerCategory(layer: BrowseDataLayer) {
     this._isBrowsing$.next(true);
     this.loadingSubject.next(false);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
-      const dataSet: Partial<DataSet> = {
-        ...layer.dataset,
+      const dataSet: BaseDataSet = {
+        id: layer.dataset.id,
+        name: layer.dataset.name,
         organization: layer.organization,
       };
       // reset previous results
       this._selectedDataSet$.next(null);
       // select the new data set
-      this.selectDataSet(dataSet as DataSet);
+      this.selectDataSet(dataSet);
     }
-    this._paths$.next(layer.path);
+    this._paths$.next([...layer.path]);
   }
 
   resetPath() {
@@ -316,12 +293,12 @@ export class DataLayersStateService {
   }
 
   // Checking if the layer is already in the selected list
-  isSelectedLayer(layer: DataLayer) {
+  isSelectedLayer(layer: BrowseDataLayer) {
     return this._selectedDataLayers$.value.some((l) => l.id === layer.id);
   }
 
   // Remove a layer from the selected list
-  removeSelectedLayer(layer: DataLayer) {
+  removeSelectedLayer(layer: BrowseDataLayer) {
     const updatedSelectedDatalayers = this._selectedDataLayers$.value.filter(
       (l) => l.id !== layer.id
     );
@@ -340,20 +317,22 @@ export class DataLayersStateService {
     this._unSelectableDataLayerIds$.next([]);
   }
 
-  isLayerUnselectable(layer: DataLayer) {
+  isLayerUnselectable(layer: BrowseDataLayer) {
     const unselectableLayers: unselectableLayer[] =
       this._unSelectableDataLayerIds$.value ?? [];
     return unselectableLayers.some((ul) => ul.id === layer.id);
   }
 
-  getUnselectableLayer(layer: DataLayer): unselectableLayer | undefined {
+  getUnselectableLayer(
+    layer: BrowseDataLayer
+  ): unselectableLayer | undefined {
     const unselectableLayers: unselectableLayer[] =
       this._unSelectableDataLayerIds$.value ?? [];
     return unselectableLayers.find((ul) => ul.id === layer.id);
   }
 
   // Adding or removing an item to the selected list
-  toggleLayerAdition(layer: DataLayer) {
+  toggleLayerAdition(layer: BrowseDataLayer) {
     if (this.isSelectedLayer(layer)) {
       this.removeSelectedLayer(layer);
     } else if (
@@ -368,7 +347,7 @@ export class DataLayersStateService {
   }
 
   // Setting the list of selected list
-  updateSelectedLayers(layers: DataLayer[]) {
+  updateSelectedLayers(layers: BrowseDataLayer[]) {
     this._selectedDataLayers$.next(layers);
   }
 

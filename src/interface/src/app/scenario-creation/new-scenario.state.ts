@@ -3,11 +3,11 @@ import { ScenarioService } from '@services';
 import {
   BaseLayer,
   Constraint,
-  DataLayer,
   ScenarioConfig,
   ScenarioDraftConfiguration,
   ScenarioV3Config,
 } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { DatalayersService } from '@api/datalayers/datalayers.service';
 import {
   BehaviorSubject,
@@ -66,10 +66,7 @@ export class NewScenarioState {
       ids.length === 0
         ? of<DataLayer[]>([])
         : this.datalayersService.datalayersList({ id__in: ids }).pipe(
-            map(
-              (response) =>
-                (response.results ?? []) as unknown as DataLayer[]
-            ),
+            map((response) => response.results ?? []),
             catchError((error) => {
               console.error('Error fetching data layers:', error);
               return of<DataLayer[]>([]);
@@ -89,10 +86,7 @@ export class NewScenarioState {
       ids.length === 0
         ? of<DataLayer[]>([])
         : this.datalayersService.datalayersList({ id__in: ids }).pipe(
-            map(
-              (response) =>
-                (response.results ?? []) as unknown as DataLayer[]
-            ),
+            map((response) => response.results ?? []),
             catchError((error) => {
               console.error('Error fetching data layers:', error);
               return of<DataLayer[]>([]);

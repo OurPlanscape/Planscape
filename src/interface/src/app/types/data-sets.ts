@@ -1,23 +1,12 @@
 import { Geometry } from 'geojson';
+import { BrowseDataLayer, Dataset } from '@api/planscapeAPI.schemas';
 import { IdNamePair } from './general';
 
 export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
 
-export interface BaseDataSet {
-  id: number;
-  name: string;
-  organization: IdNamePair;
-}
-
-export interface DataSet extends BaseDataSet {
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  created_by: number;
-  description: string | null;
-  visibility: string;
-  version: string;
-}
+// Minimal dataset shape the data-layers UI deals with — id + name +
+// organization. Derived from the generated `Dataset` so it stays in sync.
+export type BaseDataSet = Pick<Dataset, 'id' | 'name' | 'organization'>;
 
 export interface InfoStats {
   max: number;
@@ -101,25 +90,22 @@ export interface Styles {
   data: StyleJson;
 }
 
-export interface DataLayer {
+// Vector base layer used by the base-layers state. Sourced from the
+// `datasets/{id}/browse` endpoint (generated `BrowseDataLayer`) and cast to
+// this narrower shape — `map_url` is non-nullable here because base layers are
+// only displayed once they have a tile URL, and `styles[0].data` is treated as
+// a string-keyed style dict (fill-color, fill-outline-color, etc.).
+export interface BaseLayer {
   id: number;
   organization: IdNamePair;
   dataset: IdNamePair;
-  path: string[]; // Array of category names describing the tree path
+  path: string[];
   name: string;
   type: string;
   geometry_type: string;
   status: string;
-  // Loose JSON: gdalinfo output for rasters, ogrinfo for vectors.
-  // Cast at read site to RasterInfo when the layer is known to be raster.
   info: Record<string, unknown> | null;
   metadata: Metadata | null;
-  styles: Styles[];
-  geometry?: Geometry;
-  map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
-}
-
-export interface BaseLayer extends Omit<DataLayer, 'styles' | 'geometry'> {
   map_url: string;
   storage_type?: string;
   styles: [
@@ -130,6 +116,7 @@ export interface BaseLayer extends Omit<DataLayer, 'styles' | 'geometry'> {
       };
     },
   ];
+  map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
 
 export interface ColorLegendInfo {
@@ -143,7 +130,7 @@ export interface SearchResult {
   name: string;
   type: 'DATASET' | 'DATALAYER';
   url: string;
-  data: DataLayer | DataSet;
+  data: BrowseDataLayer | Dataset;
 }
 
 export interface SearchQuery {
@@ -156,10 +143,10 @@ export interface SearchQuery {
 
 export interface DataSetSearchResult extends SearchResult {
   type: 'DATASET';
-  data: DataSet;
+  data: Dataset;
 }
 
 export interface DataLayerSearchResult extends SearchResult {
   type: 'DATALAYER';
-  data: DataLayer;
+  data: BrowseDataLayer;
 }

@@ -13,9 +13,9 @@ import {
 } from '@styleguide';
 import {
   ClimateForesightRun,
-  DataLayer,
   GeoPackageDownloadStatus,
 } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { MapConfigState } from '@maplibre-map/map-config.state';
 import { ClimateForesightService } from '@services';
 import { MapConfigService } from '@maplibre-map/map-config.service';
@@ -184,7 +184,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
             id: String(layer.id),
             name: layer.name,
             datalayerId: layer.id,
-            type: layer.type,
+            type: 'continuous',
             group: 'primary',
           })) as ResultsLayer[];
           this.buildClimateLayers();
