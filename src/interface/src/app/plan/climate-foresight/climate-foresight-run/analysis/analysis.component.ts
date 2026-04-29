@@ -176,14 +176,16 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ run, input_layers }) => {
           this.run = run;
-          this.inputLayers = input_layers.map((layer) => ({
-            datalayer: layer,
-            id: String(layer.id),
-            name: layer.name,
-            datalayerId: layer.id,
-            type: 'continuous',
-            group: 'primary',
-          })) as ResultsLayer[];
+          this.inputLayers = input_layers.map(
+            (layer): ResultsLayer => ({
+              datalayer: layer,
+              id: String(layer.id),
+              name: layer.name,
+              datalayerId: layer.id,
+              type: 'continuous',
+              group: 'primary',
+            })
+          );
           this.buildClimateLayers();
           this.breadcrumbService.breadcrumb$
             .pipe(take(1))
