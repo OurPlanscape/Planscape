@@ -22,6 +22,7 @@ from datasets.serializers import (
     BrowseDataLayerSerializer,
     BrowseDataSetSerializer,
     DataLayerSerializer,
+    DataLayerUrlSerializer,
     DatasetSerializer,
     FindAnythingSerializer,
     SearchResultsSerializer,
@@ -115,6 +116,10 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         return list(datalayers.all())
 
 
+@extend_schema(tags=["datalayers"])
+@extend_schema_view(
+    list=extend_schema(description="List datalayers."),
+)
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     queryset = DataLayer.objects.none()
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -125,13 +130,23 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     }
     filterset_class = DataLayerFilterSet
 
+    @extend_schema(
+        description="Returns the public map URL for a datalayer.",
+        responses={200: DataLayerUrlSerializer},
+    )
     @action(detail=True, methods=["get"])
     def urls(self, request, pk=None):
         datalayer = self.get_object()
         return Response({"layer_url": datalayer.get_map_url()})
 
     @extend_schema(
+        methods=["get"],
         parameters=[FindAnythingSerializer],
+        responses={200: SearchResultsSerializer(many=True)},
+    )
+    @extend_schema(
+        methods=["post"],
+        request=FindAnythingSerializer,
         responses={200: SearchResultsSerializer(many=True)},
     )
     @action(detail=False, methods=["get", "post"], permission_classes=[AllowAny])

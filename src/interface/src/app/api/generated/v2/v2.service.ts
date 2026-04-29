@@ -45,7 +45,6 @@ import type {
   OutputSummary,
   PaginatedDataLayerList,
   PaginatedDatasetList,
-  PaginatedSearchResultsList,
   PaginatedStyleList,
   PaginatedTreatmentPrescriptionListList,
   PaginatedWorkspaceList,
@@ -79,9 +78,6 @@ import type {
   V2AdminWorkspacesListParams,
   V2ClimateForesightPillarsListParams,
   V2ClimateForesightRunsListParams,
-  V2DatalayersFindAnythingCreateParams,
-  V2DatalayersFindAnythingListParams,
-  V2DatalayersListParams,
   V2ScenariosListParams,
   V2ScenariosSubUnitsDetailsRetrieveParams,
   V2TreatmentPlansListParams,
@@ -1495,148 +1491,6 @@ Returns a summary of the run status.
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
-    );
-  }
- v2DatalayersList<TData = PaginatedDataLayerList>(params?: V2DatalayersListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersList<TData = PaginatedDataLayerList>(params?: V2DatalayersListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersList<TData = PaginatedDataLayerList>(params?: V2DatalayersListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersList<TData = PaginatedDataLayerList>(
-    params?: V2DatalayersListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
-
-    if (options?.observe === 'events') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-        params: filteredParams,}
-    );
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-        params: filteredParams,}
-    );
-    }
-
-    return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'body',
-        params: filteredParams,}
-    );
-  }
- v2DatalayersUrlsRetrieve<TData = DataLayer>(id: number, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersUrlsRetrieve<TData = DataLayer>(id: number, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersUrlsRetrieve<TData = DataLayer>(id: number, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersUrlsRetrieve<TData = DataLayer>(
-    id: number, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    if (options?.observe === 'events') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/${id}/urls/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      }
-    );
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/${id}/urls/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      }
-    );
-    }
-
-    return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/${id}/urls/`,{
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'body',
-      }
-    );
-  }
- v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: V2DatalayersFindAnythingListParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: V2DatalayersFindAnythingListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(params: V2DatalayersFindAnythingListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersFindAnythingList<TData = PaginatedSearchResultsList>(
-    params: V2DatalayersFindAnythingListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
-
-    if (options?.observe === 'events') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/find_anything/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-        params: filteredParams,}
-    );
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/find_anything/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-        params: filteredParams,}
-    );
-    }
-
-    return this.http.get<TData>(
-      `/planscape-backend/v2/datalayers/find_anything/`,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'body',
-        params: filteredParams,}
-    );
-  }
- v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(dataLayer: NonReadonly<DataLayer>,
-    params: V2DatalayersFindAnythingCreateParams, options?: HttpClientBodyOptions): Observable<TData>;
- v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(dataLayer: NonReadonly<DataLayer>,
-    params: V2DatalayersFindAnythingCreateParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
- v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(dataLayer: NonReadonly<DataLayer>,
-    params: V2DatalayersFindAnythingCreateParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
-  v2DatalayersFindAnythingCreate<TData = PaginatedSearchResultsList>(
-    dataLayer: NonReadonly<DataLayer>,
-    params: V2DatalayersFindAnythingCreateParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
-
-    if (options?.observe === 'events') {
-      return this.http.post<TData>(
-      `/planscape-backend/v2/datalayers/find_anything/`,
-      dataLayer,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-        params: filteredParams,}
-    );
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.post<TData>(
-      `/planscape-backend/v2/datalayers/find_anything/`,
-      dataLayer,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-        params: filteredParams,}
-    );
-    }
-
-    return this.http.post<TData>(
-      `/planscape-backend/v2/datalayers/find_anything/`,
-      dataLayer,{
-  withCredentials: true,
-    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'body',
-        params: filteredParams,}
     );
   }
  v2ModulesRetrieve<TData = BaseModule>(id: string, options?: HttpClientBodyOptions): Observable<TData>;

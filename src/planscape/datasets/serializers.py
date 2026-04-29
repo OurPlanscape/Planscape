@@ -34,6 +34,16 @@ class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
         )
 
 
+class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "name",
+            "modules",
+        )
+
+
 class CategorySerializer(serializers.ModelSerializer[Category]):
     class Meta:
         model = Category
@@ -97,6 +107,8 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
 
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
+    organization = OrganizationSimpleSerializer()
+    dataset = DatasetSimpleSerializer()
     public_url = serializers.CharField(
         source="get_public_url",
         read_only=True,
@@ -113,6 +125,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         stats = instance.info.get("stats")[0]
         return get_default_raster_style(**stats)
 
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_styles(self, instance):
         if instance.styles.all().exists():
             style = instance.styles.all().first()
@@ -494,16 +507,6 @@ class DataLayerHasStyleSerializer(serializers.Serializer):
     style = StyleSerializer()  # type: ignore
 
 
-class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
-    class Meta:
-        model = Dataset
-        fields = (
-            "id",
-            "name",
-            "modules",
-        )
-
-
 class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
@@ -515,6 +518,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         stats = instance.info.get("stats")[0]
         return get_default_raster_style(**stats)
 
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_styles(self, instance) -> Collection[Dict[str, Any]]:
         if instance.styles.all().exists():
             style = instance.styles.all().first()
@@ -564,6 +568,10 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "map_service_type",
             "styles",
         )
+
+
+class DataLayerUrlSerializer(serializers.Serializer):
+    layer_url = serializers.CharField()
 
 
 class BrowseDataLayerFilterSerializer(serializers.Serializer):

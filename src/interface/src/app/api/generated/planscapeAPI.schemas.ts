@@ -219,6 +219,8 @@ export const MapServiceTypeEnum = {
 } as const;
 
 export const BrowseDataLayerMapServiceType = {...MapServiceTypeEnum,} as const
+export type BrowseDataLayerStylesItem = {[key: string]: unknown};
+
 export interface OrganizationSimple {
   readonly id: number;
   /** @maxLength 256 */
@@ -286,7 +288,7 @@ export interface BrowseDataLayer {
   info?: unknown | null;
   metadata?: unknown | null;
   map_service_type?: typeof BrowseDataLayerMapServiceType[keyof typeof BrowseDataLayerMapServiceType] | null;
-  readonly styles: string;
+  readonly styles: readonly BrowseDataLayerStylesItem[];
 }
 
 /**
@@ -869,6 +871,8 @@ export interface CustomPasswordResetConfirm {
 
 export const DataLayerType = {...TypeE04Enum,} as const
 export const DataLayerGeometryType = {...GeometryTypeEnum,} as const
+export type DataLayerStylesItem = {[key: string]: unknown};
+
 export const DataLayerMapServiceType = {...MapServiceTypeEnum,} as const
 export interface DataLayer {
   readonly id: number;
@@ -881,9 +885,8 @@ export interface DataLayer {
      */
   deleted_at?: string | null;
   created_by: number;
-  /** @nullable */
-  organization?: number | null;
-  dataset: number;
+  organization: OrganizationSimple;
+  dataset: DatasetSimple;
   category: CategoryEmbbed;
   /** @maxLength 256 */
   name: string;
@@ -895,7 +898,7 @@ export interface DataLayer {
   * `PENDING` - Pending
   * `FAILED` - Failed */
   status?: Status8d6Enum;
-  readonly styles: string;
+  readonly styles: readonly DataLayerStylesItem[];
   readonly path: readonly string[];
   /**
      * @maxLength 1024
@@ -910,6 +913,10 @@ export interface DataLayer {
   metadata?: unknown | null;
   map_service_type?: typeof DataLayerMapServiceType[keyof typeof DataLayerMapServiceType] | null;
   readonly original_name: string;
+}
+
+export interface DataLayerUrl {
+  layer_url: string;
 }
 
 export const DatasetSelectionType = {...SelectionTypeEnum,...BlankEnum,} as const
@@ -940,6 +947,13 @@ export interface Dataset {
      * @nullable
      */
   modules?: string[] | null;
+}
+
+export interface FindAnything {
+  term: string;
+  type: TypeE04Enum;
+  geometry?: unknown;
+  module?: ModuleEnum;
 }
 
 export interface GetAvailableStands {
@@ -2506,7 +2520,6 @@ category?: number;
  * dataset id
  */
 dataset?: number;
-geometry?: unknown;
 /**
  * Multiple values may be separated by commas.
  */
@@ -2515,15 +2528,6 @@ id__in?: number[];
  * Number of results to return per page.
  */
 limit?: number;
-/**
- * * `forsys` - forsys
-* `impacts` - impacts
-* `map` - map
-* `climate_foresight` - climate_foresight
-* `prioritize_sub_units` - prioritize_sub_units
- * @minLength 1
- */
-module?: V2DatalayersFindAnythingCreateModule;
 name?: string;
 name__icontains?: string;
 /**
@@ -2545,27 +2549,12 @@ original_name__icontains?: string;
  */
 status?: V2DatalayersFindAnythingCreateStatus;
 /**
- * @minLength 1
- */
-term: string;
-/**
  * * `VECTOR` - Vector
 * `RASTER` - Raster
- * @minLength 1
+ * @nullable
  */
-type: V2DatalayersFindAnythingCreateType;
+type?: V2DatalayersFindAnythingCreateType;
 };
-
-export type V2DatalayersFindAnythingCreateModule = typeof V2DatalayersFindAnythingCreateModule[keyof typeof V2DatalayersFindAnythingCreateModule];
-
-
-export const V2DatalayersFindAnythingCreateModule = {
-  forsys: 'forsys',
-  impacts: 'impacts',
-  map: 'map',
-  climate_foresight: 'climate_foresight',
-  prioritize_sub_units: 'prioritize_sub_units',
-} as const;
 
 export type V2DatalayersFindAnythingCreateStatus = typeof V2DatalayersFindAnythingCreateStatus[keyof typeof V2DatalayersFindAnythingCreateStatus];
 
@@ -2576,12 +2565,12 @@ export const V2DatalayersFindAnythingCreateStatus = {
   READY: 'READY',
 } as const;
 
-export type V2DatalayersFindAnythingCreateType = typeof V2DatalayersFindAnythingCreateType[keyof typeof V2DatalayersFindAnythingCreateType];
+export type V2DatalayersFindAnythingCreateType = typeof V2DatalayersFindAnythingCreateType[keyof typeof V2DatalayersFindAnythingCreateType] | null;
 
 
 export const V2DatalayersFindAnythingCreateType = {
-  VECTOR: 'VECTOR',
   RASTER: 'RASTER',
+  VECTOR: 'VECTOR',
 } as const;
 
 export type DatasetsListParams = {
