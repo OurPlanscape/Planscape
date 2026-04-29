@@ -1,0 +1,28 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+h4 {
+  @include h4();
+}
+
+p {
+    color: $color-dark-gray;
+}
+
+.logo {
+  width: 160px;
+  height: auto;
+}

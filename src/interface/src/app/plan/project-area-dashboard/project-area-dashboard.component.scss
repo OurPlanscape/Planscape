@@ -1,0 +1,29 @@
+@import 'mixins';
+@import 'colors';
+
+.plan-overview-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tools {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.description {
+  @include small-paragraph();
+  color: $color-dark-gray;
+  margin: 0;
+}
+
+.project-area-tools-card {
+  gap: 4px;
+}
+
+.project-area-dashboard-layout {
+  background-color: $color-light-gray;
+}
