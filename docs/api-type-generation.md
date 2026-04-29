@@ -12,11 +12,13 @@ frontend consumes generated Angular services. No more duplicated interfaces.
 ## How it works
 
 1. Django backend at `src/planscape/` exposes `GET /planscape-backend/v2/schema` (drf-spectacular)
-2. `npm run generate:api` (run from `src/interface/`) fetches the schema and runs orval
-3. Generated output lands in `src/app/api/generated/` — one service file per OpenAPI tag (`tags-split` mode)
-4. Untagged endpoints fall into `v2/v2.service.ts` (suppressed with `@ts-nocheck` — see known issues)
+2. `make export-schema` writes the schema to `src/interface/api-schema.yaml` (committed to git)
+3. `npm run generate:api` (run from `src/interface/`) reads `api-schema.yaml` and runs orval
+4. Generated output lands in `src/app/api/generated/` — one service file per OpenAPI tag (`tags-split` mode)
+5. Untagged endpoints fall into `v2/v2.service.ts` (suppressed with `@ts-nocheck` — see known issues)
 
 **Config**: `src/interface/orval.config.ts`  
+**Schema**: `src/interface/api-schema.yaml` — committed; refresh with `make export-schema`  
 **Generated files**: committed to git — schema drift is visible in PR diffs
 
 The orval config strips the leading `v2_` segment from every `operationId` and converts the rest to camelCase. drf-spectacular emits IDs like `v2_datalayers_list` (snake_case, prefixed with the URL segment); the override produces `datalayersList` so call sites read `this.datalayersService.datalayersList(...)` instead of `v2DatalayersList(...)`. The `v2` lives in the Django URL config and adds noise to every consumer.
@@ -26,10 +28,16 @@ The orval config strips the leading `v2_` segment from every `operationId` and c
 ## When to run `generate:api`
 
 Run it when a backend PR adds or changes serializers, views, or `@extend_schema` annotations.
-Commit the generated diff in the same PR as the backend change.
 
-`generate:api` requires the backend running at `localhost:8000`. It cannot run in CI without
-a live server (future improvement: export schema to a file with `manage.py spectacular --file schema.json`).
+Two-step flow (run both, commit both diffs in the same PR as the backend change):
+
+```
+make export-schema                  # backend → api-schema.yaml (needs Docker + a working web container)
+cd src/interface && npm run generate:api   # api-schema.yaml → src/app/api/generated/ (offline)
+```
+
+Because the schema is committed, `npm run generate:api` runs offline — useful for CI to verify the
+generated output is in sync with the schema, no live backend required.
 
 ---
 

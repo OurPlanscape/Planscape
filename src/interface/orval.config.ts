@@ -3,7 +3,7 @@ import { defineConfig } from 'orval';
 export default defineConfig({
   planscape: {
     input: {
-      target: 'http://localhost:8000/planscape-backend/v2/schema',
+      target: './api-schema.yaml',
     },
     output: {
       mode: 'tags-split',
