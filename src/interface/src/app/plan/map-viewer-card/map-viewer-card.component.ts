@@ -16,6 +16,7 @@ import { FrontendConstants } from '@app/map/map.constants';
 import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
 import { PlanState } from '../plan.state';
 import { map } from 'rxjs';
+import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -24,6 +25,7 @@ import { map } from 'rxjs';
     AsyncPipe,
     MapComponent,
     LayerComponent,
+    MapProjectAreasComponent,
     MatIconModule,
     NgIf,
     PlanningAreaLayerComponent,
@@ -36,9 +38,14 @@ import { map } from 'rxjs';
 export class MapViewerCardComponent {
   @Input() height: 'tall' | 'normal' = 'normal';
 
+  // TODO: just placeholders
+  @Input() showProjectAreas = true;
+  projectAreasCount = 10;
+
   mapLibreMap!: MapLibreMap;
   baseLayerUrl = baseMapStyles['terrain'];
   currentPlan$ = this.planState.currentPlan$;
+
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
       return getBoundsFromGeometry(geometry);

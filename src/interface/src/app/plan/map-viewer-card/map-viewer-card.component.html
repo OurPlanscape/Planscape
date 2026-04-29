@@ -14,6 +14,15 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
   <app-planning-area-layer before="middle-layer"></app-planning-area-layer>
+
+  <ng-container *ngIf="showProjectAreas">
+    <app-map-project-areas
+      [projectAreasCount]="projectAreasCount"
+      [showHoveredProjectAreas]="false"
+      [mapLibreMap]="mapLibreMap"
+      [labelField]="'rank'">
+    </app-map-project-areas>
+  </ng-container>
 </mgl-map>
 <div
   *ngIf="currentPlan$ | async as plan"
