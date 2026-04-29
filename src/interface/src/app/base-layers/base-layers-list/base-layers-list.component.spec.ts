@@ -116,7 +116,7 @@ describe('BaseLayersListComponent', () => {
     expect(component.expanded).toBeTrue();
     expect(datasetsService.datasetsBrowsePost).toHaveBeenCalledWith(
       mockDataSet.id,
-      { type: TypeE04Enum.VECTOR, module: 'map' as ModuleEnum }
+      { type: TypeE04Enum.VECTOR, module: ModuleEnum.map }
     );
     expect(component.baseLayers).toEqual(returnedLayers);
   });

@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import { ModuleEnum } from '@app/api/generated/planscapeAPI.schemas';
 
 /**
  * Token used to define the module we want to consume for our datasets.
@@ -7,11 +8,14 @@ import { InjectionToken } from '@angular/core';
  * providers: [
  *   ...
  *   MapModuleService,
- *   { provide: MAP_MODULE_NAME, useValue: 'climate_foresight' },
+ *   { provide: MAP_MODULE_NAME, useValue: ModuleEnum.climate_foresight },
  *   ...
  * ]
  */
-export const MAP_MODULE_NAME = new InjectionToken<string>('MAP_MODULE_NAME', {
-  providedIn: 'root',
-  factory: () => 'map', // default value
-});
+export const MAP_MODULE_NAME = new InjectionToken<ModuleEnum>(
+  'MAP_MODULE_NAME',
+  {
+    providedIn: 'root',
+    factory: () => ModuleEnum.map,
+  }
+);

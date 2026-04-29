@@ -68,7 +68,7 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
 
   constructor(
     private matSnackBar: MatSnackBar,
-    @Inject(MAP_MODULE_NAME) private mapModuleName: string
+    @Inject(MAP_MODULE_NAME) private mapModuleName: ModuleEnum
   ) {}
 
   ngAfterViewInit(): void {
@@ -126,7 +126,7 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
     return this.datasetsService
       .datasetsBrowsePost(this.dataSet.id, {
         type: TypeE04Enum.VECTOR,
-        module: this.mapModuleName as ModuleEnum,
+        module: this.mapModuleName,
       })
       .pipe(
         map((layers) => layers as unknown as BaseLayer[]),

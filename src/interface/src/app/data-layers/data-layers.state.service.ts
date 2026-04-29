@@ -3,7 +3,6 @@ import { DatalayersService } from '@app/api/generated/datalayers/datalayers.serv
 import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
 import {
   BrowseDataLayer,
-  ModuleEnum,
   TypeE04Enum,
 } from '@app/api/generated/planscapeAPI.schemas';
 import {
@@ -131,7 +130,7 @@ export class DataLayersStateService {
       return this.datasetsService
         .datasetsBrowsePost(dataset.id, {
           type: TypeE04Enum.RASTER,
-          module: this.mapModuleService.moduleName as ModuleEnum,
+          module: this.mapModuleService.moduleName,
           ...(geometry ? { geometry } : {}),
         })
         .pipe(
@@ -195,7 +194,7 @@ export class DataLayersStateService {
           {
             term,
             type: TypeE04Enum.RASTER,
-            ...(module ? { module: module as ModuleEnum } : {}),
+            ...(module ? { module } : {}),
             ...(geometry ? { geometry } : {}),
           },
           { limit: this.limit, ...(offset ? { offset } : {}) }

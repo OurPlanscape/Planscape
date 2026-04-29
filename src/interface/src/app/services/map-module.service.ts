@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { ModuleService } from './module.service';
 import { ApiModule, MapData } from '@types';
+import { ModuleEnum } from '@app/api/generated/planscapeAPI.schemas';
 import { BehaviorSubject, map, shareReplay, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MAP_MODULE_NAME } from './map-module.token';
@@ -28,7 +29,7 @@ export class MapModuleService {
 
   constructor(
     private moduleService: ModuleService,
-    @Inject(MAP_MODULE_NAME) private dynamicModuleName: string
+    @Inject(MAP_MODULE_NAME) private dynamicModuleName: ModuleEnum
   ) {}
 
   loadMapModule(geometry?: any) {
@@ -38,7 +39,7 @@ export class MapModuleService {
       .pipe(tap((data) => this._mapData$.next(data.options)));
   }
 
-  get moduleName(): string {
+  get moduleName(): ModuleEnum {
     return this.dynamicModuleName;
   }
 }
