@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from datetime import datetime
 import os
 import shutil
+from core.mattermost import post_to_mattermost
 
 
 class Command(BaseCommand):
