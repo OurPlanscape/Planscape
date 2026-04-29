@@ -4,6 +4,7 @@ from typing import Any, Collection, Dict, Optional
 from core.fields import GeometryTypeField
 from core.loaders import get_python_object
 from organizations.models import Organization
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
@@ -130,6 +131,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             case _:
                 return [get_default_vector_style()]
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
             return instance.category._get_full_path(instance.category.pk)
@@ -532,6 +534,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             case _:
                 return [get_default_vector_style()]
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
             return instance.category._get_full_path(instance.category.pk)

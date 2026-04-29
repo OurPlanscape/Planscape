@@ -1,5 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
+import { DatasetsService } from '@app/api/generated/datasets/datasets.service';
+import {
+  BrowseDataLayer,
+  ModuleEnum,
+  TypeE04Enum,
+} from '@app/api/generated/planscapeAPI.schemas';
 import {
   BehaviorSubject,
   catchError,
@@ -16,8 +22,11 @@ import {
   BaseDataSet,
   DataLayer,
   DataSet,
+  Info,
+  Metadata,
   Pagination,
   SearchResult,
+  Styles,
 } from '@types';
 import { buildPathTree } from '@data-layers/data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
@@ -34,6 +43,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export interface unselectableLayer {
   id: number;
   reason: UnselectableType;
+}
+
+// Converts the generated BrowseDataLayer to the app-wide DataLayer domain type.
+// Casts on info/metadata/styles reflect fields not yet fully annotated in the
+// backend schema — each cast is a TODO for a future @extend_schema_field fix.
+function toBrowseDataLayer(layer: BrowseDataLayer): DataLayer {
+  return {
+    id: layer.id,
+    organization: layer.organization,
+    dataset: layer.dataset,
+    path: [...layer.path],
+    name: layer.name,
+    type: (layer.type as string) ?? '',
+    geometry_type: (layer.geometry_type as string) ?? '',
+    status: (layer.status as string) ?? '',
+    info: layer.info as unknown as Info,
+    metadata: (layer.metadata as unknown as Metadata) ?? null,
+    styles: layer.styles as unknown as Styles[],
+    map_service_type: layer.map_service_type as DataLayer['map_service_type'],
+  };
 }
 
 @Injectable()
@@ -98,10 +127,14 @@ export class DataLayersStateService {
         return of(null);
       }
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-      return this.service
-        .listDataLayers(dataset.id, this.mapModuleService.moduleName, geometry)
+      return this.datasetsService
+        .datasetsBrowsePost(dataset.id, {
+          type: TypeE04Enum.RASTER,
+          module: this.mapModuleService.moduleName as ModuleEnum,
+          ...(geometry ? { geometry } : {}),
+        })
         .pipe(
-          map((items) => buildPathTree(items)),
+          map((items) => buildPathTree(items.map(toBrowseDataLayer))),
           tap((s) => this.loadingSubject.next(false)),
           catchError((e) => {
             this.loadingSubject.next(false);
@@ -186,6 +219,7 @@ export class DataLayersStateService {
 
   constructor(
     private service: DataLayersService,
+    private datasetsService: DatasetsService,
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,

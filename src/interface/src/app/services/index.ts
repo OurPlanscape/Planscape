@@ -2,7 +2,6 @@ export * from './auth.service';
 export * from './plan.service';
 export * from './popup.service';
 export * from './scenario.service';
-export * from './invites.service';
 export * from './redirect.service';
 export * from './treatment-goals.service';
 export * from './password-reset.resolver';

@@ -164,6 +164,7 @@
     "importHelpers": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "noUnusedLocals": true,
     "target": "ES2022",
     "module": "es2020",

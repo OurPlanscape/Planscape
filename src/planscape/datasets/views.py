@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Q
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from planscape.openpanel import track_openpanel
 from rest_framework import status
 from rest_framework.decorators import action
@@ -29,11 +29,20 @@ from datasets.serializers import (
 from datasets.services import browse, find_anything
 
 
+@extend_schema_view(
+    list=extend_schema(operation_id="datasets_list"),
+)
+@extend_schema(tags=["datasets"])
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     queryset = Dataset.objects.none()
     permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = LimitOffsetPagination
     serializer_class = DatasetSerializer
+
+    @property
+    def pagination_class(self):
+        if self.action == "browse":
+            return None
+        return LimitOffsetPagination
     serializer_classes = {
         "list": DatasetSerializer,
     }
@@ -49,11 +58,18 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         )
 
     @extend_schema(
+        methods=["get"],
+        operation_id="datasets_browse",
         description="Returns all datalayers inside this dataset",
         parameters=[BrowseDataLayerFilterSerializer],
-        responses={
-            200: BrowseDataLayerSerializer(many=True),
-        },
+        responses={200: BrowseDataLayerSerializer(many=True)},
+    )
+    @extend_schema(
+        methods=["post"],
+        operation_id="datasets_browse_post",
+        description="Returns all datalayers inside this dataset",
+        request=BrowseDataSetSerializer,
+        responses={200: BrowseDataLayerSerializer(many=True)},
     )
     @action(detail=True, methods=["get", "post"], permission_classes=[AllowAny])
     def browse(self, request, pk=None):

@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import {
   BaseLayer,
   DataLayer,
-  DataSet,
   Pagination,
   SearchQuery,
   SearchResult,
@@ -17,16 +16,6 @@ import { Geometry } from 'geojson';
 })
 export class DataLayersService {
   constructor(private http: HttpClient) {}
-
-  listDataSets(limit: number, offset?: number) {
-    return this.http.get<Pagination<DataSet>>(
-      environment.backend_endpoint + '/v2/datasets/',
-      {
-        withCredentials: true,
-        params: { limit: limit, ...(offset ? { offset } : {}) },
-      }
-    );
-  }
 
   listDataLayers(dataSetId: number, module: string, geometry?: Geometry) {
     let body = {

@@ -1,6 +1,7 @@
 import logging
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -19,6 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 class CreateInvite(APIView):
+    @extend_schema(
+        tags=["invites"],
+        operation_id="invites_create",
+        request=CreateUserObjectRolesSerializer,
+        responses={201: UserObjectRoleSerializer(many=True)},
+    )
     def post(self, request, format=None):
         serializer = CreateUserObjectRolesSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -61,6 +68,11 @@ class CreateInvite(APIView):
 
 
 class InvitationsForObject(APIView):
+    @extend_schema(
+        tags=["invites"],
+        operation_id="invites_list",
+        responses={200: UserObjectRoleSerializer(many=True)},
+    )
     def get(self, request: Request, target_entity: str, object_pk: int):
         user = request.user
         if not user.is_authenticated:
@@ -88,6 +100,14 @@ class InvitationsForObject(APIView):
         )
         return Response(serializer.data)
 
+
+class InvitationDetail(APIView):
+    @extend_schema(
+        tags=["invites"],
+        operation_id="invites_partial_update",
+        request=UserObjectRoleSerializer,
+        responses={200: UserObjectRoleSerializer},
+    )
     def patch(self, request: Request, invitation_id: int):
         try:
             user = request.user
@@ -138,6 +158,11 @@ class InvitationsForObject(APIView):
             logger.exception("Exception updating permissions: %s", e)
             raise
 
+    @extend_schema(
+        tags=["invites"],
+        operation_id="invites_destroy",
+        responses={204: None},
+    )
     def delete(self, request: Request, invitation_id: int):
         try:
             user = request.user
