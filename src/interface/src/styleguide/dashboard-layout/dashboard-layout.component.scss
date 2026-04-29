@@ -124,3 +124,8 @@ $plan-left-min: 300px;
 
   overflow-y: auto;
 }
+
+// When the layout is NOT 'disable-right-scroll', this wrapper should behave as if it doesn't exist.
+.layout-column > div:not(.layout-card) {
+  display: contents;
+}
