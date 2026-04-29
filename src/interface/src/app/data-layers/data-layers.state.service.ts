@@ -46,8 +46,9 @@ export interface unselectableLayer {
 }
 
 // Converts the generated BrowseDataLayer to the app-wide DataLayer domain type.
-// Casts on info/metadata/styles reflect fields not yet fully annotated in the
-// backend schema — each cast is a TODO for a future @extend_schema_field fix.
+// info/metadata/styles are loose JSON-ish on the wire; the hand-written
+// Info/Metadata/Styles interfaces describe the specific shape we expect, so
+// the cast goes through `unknown` to skip the structural compatibility check.
 function toBrowseDataLayer(layer: BrowseDataLayer): DataLayer {
   return {
     id: layer.id,

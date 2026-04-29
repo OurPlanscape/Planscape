@@ -4,6 +4,7 @@ from typing import Any, Collection, Dict, Optional
 from core.fields import GeometryTypeField
 from core.loaders import get_python_object
 from organizations.models import Organization
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -120,6 +121,12 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     styles = serializers.SerializerMethodField()
     path = serializers.SerializerMethodField()
     original_name = serializers.CharField(read_only=True)
+    info = extend_schema_field(OpenApiTypes.OBJECT)(
+        serializers.DictField(allow_null=True, required=False)
+    )
+    metadata = extend_schema_field(OpenApiTypes.OBJECT)(
+        serializers.DictField(allow_null=True, required=False)
+    )
 
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]
@@ -513,6 +520,12 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     path = serializers.SerializerMethodField()
     map_url = serializers.SerializerMethodField()
     styles = serializers.SerializerMethodField()
+    info = extend_schema_field(OpenApiTypes.OBJECT)(
+        serializers.DictField(allow_null=True, required=False)
+    )
+    metadata = extend_schema_field(OpenApiTypes.OBJECT)(
+        serializers.DictField(allow_null=True, required=False)
+    )
 
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]

@@ -167,7 +167,7 @@ Hand-written `DataLayer` type in `types/data-sets.ts` is still kept because `Dat
 - `new-scenario.state.ts`, `scenario/scenario-config-overlay/scenario-config-overlay.component.ts`: use `v2DatalayersList({ id__in: ids })` with empty-array guard returning `of([])` (the API returns ALL layers if `id__in` is empty)
 - Specs use `MockProvider(GeneratedService)` + `spyOn(...)` before `createComponent`
 
-Note: `toBrowseDataLayer()` adapter in `data-layers/data-layers.state.service.ts` still casts `info` and `metadata` as `unknown` because `DataLayerSerializer` doesn't annotate those JSONFields with `@extend_schema_field`. The `styles` cast was fixed (`BrowseDataLayerStylesItem[]` instead of `string`).
+Note: `toBrowseDataLayer()` adapter in `data-layers/data-layers.state.service.ts` still routes `info`, `metadata`, and `styles` through `as unknown as` casts. The schema sides are now properly typed (`info`/`metadata` are `Record<string, unknown> | null`, `styles` is `BrowseDataLayerStylesItem[]`) but the hand-written `Info` interface enumerates specific gdalinfo fields, so TS rejects a direct structural cast. The chain is the boundary between "loose JSON from the wire" and "the shape we expect to consume" — kept honest by the comment in the adapter.
 
 ### ✅ Auth / dj-rest-auth
 

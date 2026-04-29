@@ -201,6 +201,16 @@ export const GeometryTypeEnum = {
 
 export const BrowseDataLayerGeometryType = {...GeometryTypeEnum,} as const
 /**
+ * @nullable
+ */
+export type BrowseDataLayerInfo = {[key: string]: unknown} | null;
+
+/**
+ * @nullable
+ */
+export type BrowseDataLayerMetadata = {[key: string]: unknown} | null;
+
+/**
  * * `VECTORTILES` - Vector Tiles
 * `COG` - Cog
 * `ESRI_GEOJSON` - ESRI GeoJSON
@@ -284,9 +294,10 @@ export interface BrowseDataLayer {
   * `FAILED` - Failed */
   status?: Status8d6Enum;
   storage_type?: StorageTypeEnum;
-  /** output of gdalinfo or ogrinfo. */
-  info?: unknown | null;
-  metadata?: unknown | null;
+  /** @nullable */
+  info?: BrowseDataLayerInfo;
+  /** @nullable */
+  metadata?: BrowseDataLayerMetadata;
   map_service_type?: typeof BrowseDataLayerMapServiceType[keyof typeof BrowseDataLayerMapServiceType] | null;
   readonly styles: readonly BrowseDataLayerStylesItem[];
 }
@@ -873,6 +884,16 @@ export const DataLayerType = {...TypeE04Enum,} as const
 export const DataLayerGeometryType = {...GeometryTypeEnum,} as const
 export type DataLayerStylesItem = {[key: string]: unknown};
 
+/**
+ * @nullable
+ */
+export type DataLayerInfo = {[key: string]: unknown} | null;
+
+/**
+ * @nullable
+ */
+export type DataLayerMetadata = {[key: string]: unknown} | null;
+
 export const DataLayerMapServiceType = {...MapServiceTypeEnum,} as const
 export interface DataLayer {
   readonly id: number;
@@ -908,9 +929,10 @@ export interface DataLayer {
   storage_type?: StorageTypeEnum;
   readonly public_url: string;
   readonly map_url: string;
-  /** output of gdalinfo or ogrinfo. */
-  info?: unknown | null;
-  metadata?: unknown | null;
+  /** @nullable */
+  info?: DataLayerInfo;
+  /** @nullable */
+  metadata?: DataLayerMetadata;
   map_service_type?: typeof DataLayerMapServiceType[keyof typeof DataLayerMapServiceType] | null;
   readonly original_name: string;
 }
