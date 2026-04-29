@@ -1,14 +1,11 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
-import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import {
-  LayerStyleEntry,
-  Entry,
-  Metadata,
-  StyleJson,
-  Styles,
-  ColorLegendInfo,
-} from '@types';
+  BrowseDataLayer,
+  RasterStyleData,
+  RasterStyleEntryOutput,
+} from '@api/planscapeAPI.schemas';
+import { LayerStyleEntry, Metadata, ColorLegendInfo } from '@types';
 import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
 
 export interface RGBA {
@@ -24,17 +21,18 @@ const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
 export function extractLegendInfo(
   dataLayer: BrowseDataLayer
 ): ColorLegendInfo {
-  const styles = dataLayer.styles as unknown as Styles[];
-  const { map_type, entries } = styles[0].data;
+  const { map_type, entries } = dataLayer.styles[0].data;
   // Note that this sort inverts the values from high to low
   const sorted = [...entries].sort((a, b) => b.value - a.value);
   const title = unitsTitleFromLayer(dataLayer);
-  const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
-    return {
-      colorHex: e.color ?? '',
-      entryLabel: e.label ?? '',
-    };
-  });
+  const colorDetails: LayerStyleEntry[] = sorted.map(
+    (e: RasterStyleEntryOutput) => {
+      return {
+        colorHex: e.color ?? '',
+        entryLabel: e.label ?? '',
+      };
+    }
+  );
   return { title: title, type: map_type, entries: colorDetails };
 }
 
@@ -70,13 +68,13 @@ function parseColor(hexColor: string, opacity = 1.0): RGBA {
 }
 
 // generates a color mapping function for single entry maps
-function createSingleEntryMapper(entry: Entry): (value: number) => RGBA {
+function createSingleEntryMapper(entry: RasterStyleEntryOutput): (value: number) => RGBA {
   const color = parseColor(entry.color, entry.opacity ?? 1.0);
   return () => color;
 }
 
 // for VALUES maps, parses the colors in advance
-function prebufferValuesColors(entries: Entry[]): Map<number, RGBA> {
+function prebufferValuesColors(entries: RasterStyleEntryOutput[]): Map<number, RGBA> {
   const parsedColors = new Map<number, RGBA>();
 
   for (const entry of entries) {
@@ -86,7 +84,7 @@ function prebufferValuesColors(entries: Entry[]): Map<number, RGBA> {
   return parsedColors;
 }
 // color function just for VALUES mapping.
-function createValuesColorMapper(entries: Entry[]): (value: number) => RGBA {
+function createValuesColorMapper(entries: RasterStyleEntryOutput[]): (value: number) => RGBA {
   const valueMap = prebufferValuesColors(entries);
   return (value: number) => {
     return valueMap.get(value) || TRANSPARENT;
@@ -94,7 +92,7 @@ function createValuesColorMapper(entries: Entry[]): (value: number) => RGBA {
 }
 
 // precalculates colors for INTERVALS map type
-function prebufferIntervalsColors(sortedEntries: Entry[]): [number, RGBA][] {
+function prebufferIntervalsColors(sortedEntries: RasterStyleEntryOutput[]): [number, RGBA][] {
   return sortedEntries.map((entry) => [
     entry.value,
     parseColor(entry.color, entry.opacity ?? 1.0),
@@ -102,7 +100,7 @@ function prebufferIntervalsColors(sortedEntries: Entry[]): [number, RGBA][] {
 }
 // returns a function for INTERVALS map type
 function createIntervalsColorMapper(
-  sortedEntries: Entry[]
+  sortedEntries: RasterStyleEntryOutput[]
 ): (value: number) => RGBA {
   if (sortedEntries.length === 0) {
     return () => TRANSPARENT;
@@ -123,7 +121,7 @@ function createIntervalsColorMapper(
 
 // calculates scales in advance for RAMP map type
 const prebufferRampScales = (
-  sortedEntries: Entry[]
+  sortedEntries: RasterStyleEntryOutput[]
 ): {
   colorScale: ReturnType<typeof scaleLinear<string>>;
   opacityScale: ReturnType<typeof scaleLinear<number>>;
@@ -145,7 +143,7 @@ const prebufferRampScales = (
 };
 // returns color map for RAMP types
 function createRampColorMapper(
-  sortedEntries: Entry[]
+  sortedEntries: RasterStyleEntryOutput[]
 ): (value: number) => RGBA {
   const { colorScale, opacityScale } = prebufferRampScales(sortedEntries);
 
@@ -158,7 +156,7 @@ function createRampColorMapper(
 }
 
 const determineColorFunction = (
-  styleJson: StyleJson
+  styleJson: RasterStyleData
 ): ((value: number) => RGBA) => {
   const { map_type, entries } = styleJson;
 
@@ -191,7 +189,7 @@ function writeColorToBuffer(rgbaData: Uint8ClampedArray, color: RGBA): void {
 }
 
 export function generateColorFunction(
-  styleJson: StyleJson
+  styleJson: RasterStyleData
 ): (pixel: TypedArray, rgba: Uint8ClampedArray) => void {
   const knownNoDataValues = new Set(styleJson.no_data?.values || []);
   const colorMapper = determineColorFunction(styleJson);

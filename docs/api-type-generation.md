@@ -155,7 +155,7 @@ Tag the backend first and inspect generated types before migrating — `Scenario
 |-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Backend         | `datasets/views.py` — `DatasetViewSet` (tagged `datasets`), `DataLayerViewSet` (tagged `datalayers`)                                                                |
 | Generated       | `api/generated/datasets/datasets.service.ts` — `DatasetsService`, `api/generated/datalayers/datalayers.service.ts` — `DatalayersService`                            |
-| Generated types | `DataLayer`, `BrowseDataLayer`, `DataLayerUrl`, `FindAnything`, `PaginatedDataLayerList`, `PaginatedSearchResultsList`, `SearchResults`                             |
+| Generated types | `DataLayer`, `BrowseDataLayer`, `DataLayerUrl`, `FindAnything`, `PaginatedDataLayerList`, `PaginatedSearchResultsList`, `SearchResults`, `RasterInfo`, `RasterInfoStats`, `RasterStyleData`, `RasterStyleEntryOutput`, `RasterStyleNoDataOutput`, `RasterStyleOutput`, `MapTypeEnum`                             |
 | Deleted         | `services/data-layers.service.ts` and spec; `interface DataLayer` from `types/data-sets.ts`                                                                         |
 | Used in         | `new-scenario.state.ts`, `scenario-config-overlay.component.ts`, `data-layers.state.service.ts`, `data-layer-tooltip.component.ts`, `base-layers-list.component.ts` |
 
@@ -164,10 +164,15 @@ Tag the backend first and inspect generated types before migrating — `Scenario
 - `DatasetSimpleSerializer` is positioned BEFORE `DataLayerSerializer` (line ~37), required to avoid `NameError`
 - `DataLayerSerializer` has `organization = OrganizationSimpleSerializer()` and `dataset = DatasetSimpleSerializer()` so FK fields generate as nested
   `{id, name}` objects instead of bare integers
-- `@extend_schema_field(serializers.ListField(child=serializers.DictField()))` on `DataLayerSerializer.get_styles` and
-  `BrowseDataLayerSerializer.get_styles`
-- `info` and `metadata` declared explicitly as `extend_schema_field(OpenApiTypes.OBJECT)` over `DictField` so the generated TS becomes
-  `Record<string, unknown> | null` instead of `unknown | null`
+- `info` and `styles[].data` are properly typed via dedicated output serializers (`RasterInfoSerializer` / `RasterStyleOutputSerializer`):
+  - `info` and `styles` are declared as `SerializerMethodField`, with `@extend_schema_field(RasterInfoSerializer(allow_null=True))` and
+    `@extend_schema_field(RasterStyleOutputSerializer(many=True))` respectively. (Setting `extend_schema_field` on a plain `DictField` works for
+    `OpenApiTypes.*` but doesn't pull a serializer ref into `components.schemas` — the schema renderer only walks `SerializerMethodField`s.)
+  - The schema is honest for the raster case (the overwhelmingly common one). Vector layers store ogrinfo in `info` and a different `{fill-color,
+    fill-outline-color, fill-opacity}` shape in `styles[].data` — the schema "lies" for them, but vector consumers cast through `BaseLayer`
+    at the use site so the generated raster types never reach them.
+- `metadata` is still declared as `extend_schema_field(OpenApiTypes.OBJECT)` over `DictField` — it's heterogenous JSON (RRK ISO-19115-style metadata
+  embedded as a sub-object, plus `modules` keyed by module name). Frontend treats it as `Record<string, any>` and accesses keys via brackets.
 - `DataLayerUrlSerializer` for the `urls` action response
 
 **Backend changes in `datasets/views.py`:**
@@ -201,10 +206,15 @@ Tag the backend first and inspect generated types before migrating — `Scenario
   end to end.
 - `as unknown as DataLayer[]` boundary cast removed from `new-scenario.state.ts`; `priorityObjectivesDetails$` / `coBenefitsDetails$` flow generated
   `DataLayer[]` directly.
-- Narrowing helpers `RasterInfo` / `InfoStats` / `Metadata` / `Styles` / `StyleJson` remain in `types/data-sets.ts`. Read sites that need shaped
-  access cast at the call site (`layer.info as RasterInfo | null`, `layer.metadata as Metadata | null`, `layer.styles as unknown as Styles[]`) —
-  same pattern as `RasterInfo`.
-- `DataSet` in `types/data-sets.ts` is now a re-export of generated `Dataset`; `BaseDataSet` is `Pick<Dataset, 'id' | 'name' | 'organization'>`.
+- Hand-written `RasterInfo` / `InfoStats` / `Styles` / `StyleJson` / `Entry` / `NoData` are gone — consumers import generated `RasterInfo` /
+  `RasterInfoStats` / `RasterStyleOutput` / `RasterStyleData` / `RasterStyleEntryOutput` / `RasterStyleNoDataOutput` from
+  `@api/planscapeAPI.schemas` and the `as RasterInfo | null` / `as unknown as Styles[]` casts at call sites are gone.
+- `Metadata` is now `Record<string, any>` — the previous interface added zero protection (its index signature `[key: string]: any` already
+  allowed any access). Read sites cast `dl.metadata as Metadata | null` and access keys via brackets to satisfy `noPropertyAccessFromIndexSignature`.
+- `RasterColorType` is re-exported from `MapTypeEnum`; `LayerStyleEntry` and `ColorLegendInfo` are UI-only and stay.
+- The hand-written `DataSet` alias is gone; consumers use generated `Dataset` directly. `BaseDataSet` stays as
+  `Pick<Dataset, 'id' | 'name' | 'organization'>` because the data-layers UI passes a 3-field shape that doesn't fit `DatasetSimple` (no
+  `organization`).
 - `types/data-sets.ts` still owns `BaseLayer` (narrowed cast view of `BrowseDataLayer` for vector layers) and `SearchResult` / `DataLayerSearchResult` /
   `DataSetSearchResult` / `SearchQuery` — the generated `SearchResults` has `data: unknown`, so the hand-written discriminated union is more useful than
   what's generated and should stick around until the search endpoint migrates.

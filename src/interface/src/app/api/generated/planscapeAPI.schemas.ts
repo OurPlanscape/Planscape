@@ -213,11 +213,6 @@ export const BrowseDataLayerGeometryType = { ...GeometryTypeEnum } as const;
 /**
  * @nullable
  */
-export type BrowseDataLayerInfo = { [key: string]: unknown } | null;
-
-/**
- * @nullable
- */
 export type BrowseDataLayerMetadata = { [key: string]: unknown } | null;
 
 /**
@@ -239,8 +234,6 @@ export const MapServiceTypeEnum = {
 } as const;
 
 export const BrowseDataLayerMapServiceType = { ...MapServiceTypeEnum } as const;
-export type BrowseDataLayerStylesItem = { [key: string]: unknown };
-
 export interface OrganizationSimple {
   readonly id: number;
   /** @maxLength 256 */
@@ -285,6 +278,108 @@ export const StorageTypeEnum = {
   EXTERNAL_SERVICE: 'EXTERNAL_SERVICE',
 } as const;
 
+/**
+ * gdalinfo per-band stats. Embedded inside `RasterInfo.stats[]`.
+ */
+export interface RasterInfoStats {
+  min: number;
+  max: number;
+  mean: number;
+  std: number;
+}
+
+/**
+ * Output schema for `DataLayer.info` for raster layers — the JSONified
+output of gdalinfo. Vector layers store ogrinfo here instead, with a
+completely different shape; consumers that need vector info should treat
+`info` as opaque JSON. The schema declared here lets the generated TS
+client carry typed access for the (overwhelmingly common) raster case.
+ */
+export interface RasterInfo {
+  crs: string;
+  res: number[];
+  count: number;
+  dtype: string;
+  shape: number[];
+  stats: RasterInfoStats[];
+  tiled: boolean;
+  units: (string | null)[];
+  width: number;
+  bounds: number[];
+  driver: string;
+  height: number;
+  lnglat: number[];
+  nodata: number;
+  indexes: number[];
+  checksum: number[];
+  compress: string;
+  transform: number[];
+  blockxsize: number;
+  blockysize: number;
+  interleave: string;
+  mask_flags: string[][];
+  colorinterp: string[];
+  descriptions: (string | null)[];
+}
+
+/**
+ * * `RAMP` - RAMP
+ * `INTERVALS` - INTERVALS
+ * `VALUES` - VALUES
+ */
+export type MapTypeEnum = (typeof MapTypeEnum)[keyof typeof MapTypeEnum];
+
+export const MapTypeEnum = {
+  RAMP: 'RAMP',
+  INTERVALS: 'INTERVALS',
+  VALUES: 'VALUES',
+} as const;
+
+/**
+ * No-data sentinel block for a raster style (`RasterStyleData.no_data`).
+ */
+export interface RasterStyleNoDataOutput {
+  values: number[];
+  /** @nullable */
+  color?: string | null;
+  opacity?: number;
+  /** @nullable */
+  label?: string | null;
+}
+
+/**
+ * One color stop in a raster style (`RasterStyleData.entries[]`).
+ */
+export interface RasterStyleEntryOutput {
+  value: number;
+  color: string;
+  opacity?: number;
+  /** @nullable */
+  label?: string | null;
+}
+
+/**
+ * Raster style payload as emitted by `get_default_raster_style` /
+`get_raster_style`. Note `map_type` (output) vs `type` (validation, on
+`RasterStyleSerializer`) — the names diverge.
+ */
+export interface RasterStyleData {
+  map_type: MapTypeEnum;
+  no_data?: RasterStyleNoDataOutput;
+  entries: RasterStyleEntryOutput[];
+}
+
+/**
+ * Wrapper element of a layer's `styles[]` list. For vector layers the
+real shape is `{id, data: {"fill-color"..., "fill-outline-color"..., ...}}`
+— the generated TS client gets the raster shape; vector consumers cast
+through `BaseLayer` at the use site (see `interface/types/data-sets.ts`).
+ */
+export interface RasterStyleOutput {
+  id: number;
+  data: RasterStyleData;
+}
+
 export interface BrowseDataLayer {
   readonly id: number;
   organization: OrganizationSimple;
@@ -305,14 +400,13 @@ export interface BrowseDataLayer {
   * `FAILED` - Failed */
   status?: Status8d6Enum;
   storage_type?: StorageTypeEnum;
-  /** @nullable */
-  info?: BrowseDataLayerInfo;
+  readonly info: RasterInfo | null;
   /** @nullable */
   metadata?: BrowseDataLayerMetadata;
   map_service_type?:
     | (typeof BrowseDataLayerMapServiceType)[keyof typeof BrowseDataLayerMapServiceType]
     | null;
-  readonly styles: readonly BrowseDataLayerStylesItem[];
+  readonly styles: readonly RasterStyleOutput[];
 }
 
 /**
@@ -899,13 +993,6 @@ export interface CustomPasswordResetConfirm {
 
 export const DataLayerType = { ...TypeE04Enum } as const;
 export const DataLayerGeometryType = { ...GeometryTypeEnum } as const;
-export type DataLayerStylesItem = { [key: string]: unknown };
-
-/**
- * @nullable
- */
-export type DataLayerInfo = { [key: string]: unknown } | null;
-
 /**
  * @nullable
  */
@@ -938,7 +1025,7 @@ export interface DataLayer {
   * `PENDING` - Pending
   * `FAILED` - Failed */
   status?: Status8d6Enum;
-  readonly styles: readonly DataLayerStylesItem[];
+  readonly styles: readonly RasterStyleOutput[];
   readonly path: readonly string[];
   /**
    * @maxLength 1024
@@ -948,8 +1035,7 @@ export interface DataLayer {
   storage_type?: StorageTypeEnum;
   readonly public_url: string;
   readonly map_url: string;
-  /** @nullable */
-  info?: DataLayerInfo;
+  readonly info: RasterInfo | null;
   /** @nullable */
   metadata?: DataLayerMetadata;
   map_service_type?:

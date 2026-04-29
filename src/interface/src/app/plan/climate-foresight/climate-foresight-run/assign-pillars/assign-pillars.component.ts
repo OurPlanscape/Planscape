@@ -147,10 +147,10 @@ export class AssignPillarsComponent
         // Filtering just the enabled datalayers
         const enabledLayers =
           datalayers.filter((dl) => {
-            const modules = (dl.metadata as Metadata | null)?.modules as
-              | Record<string, { enabled?: boolean }>
-              | undefined;
-            return modules?.['climate_foresight']?.enabled === true;
+            const metadata = dl.metadata as Metadata | null;
+            return (
+              metadata?.['modules']?.['climate_foresight']?.['enabled'] === true
+            );
           }) || [];
         // geting the selected datalayers id
         const availableLayerIDs = this.run.input_datalayers?.map(

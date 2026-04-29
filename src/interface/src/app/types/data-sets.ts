@@ -1,93 +1,28 @@
 import { Geometry } from 'geojson';
-import { BrowseDataLayer, Dataset } from '@api/planscapeAPI.schemas';
+import {
+  BrowseDataLayer,
+  Dataset,
+  MapTypeEnum,
+} from '@api/planscapeAPI.schemas';
 import { IdNamePair } from './general';
 
-export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
+// Re-exported under a friendlier name for the UI-side legend code.
+export type RasterColorType = MapTypeEnum;
 
 // Minimal dataset shape the data-layers UI deals with — id + name +
 // organization. Derived from the generated `Dataset` so it stays in sync.
 export type BaseDataSet = Pick<Dataset, 'id' | 'name' | 'organization'>;
 
-export interface InfoStats {
-  max: number;
-  min: number;
-  std: number;
-  mean: number;
-}
+// Loose JSON shape for `DataLayer.metadata`. The backend declares this as
+// `OpenApiTypes.OBJECT` (no inner schema) and consumers do dynamic key
+// access — keeping `Metadata` as `Record<string, any>` instead of pretending
+// to know the keys.
+export type Metadata = Record<string, any>;
 
-// Shape of `DataLayer.info` for raster layers (the JSONified output of
-// gdalinfo). Vector layers store ogrinfo output here, which has a totally
-// different shape. Use as a narrowing cast: `(layer.info as RasterInfo | null)`
-// at sites that have already established the layer is a raster.
-export interface RasterInfo {
-  crs: string;
-  res: number[];
-  count: number;
-  dtype: string;
-  shape: number[];
-  stats: InfoStats[];
-  tiled: boolean;
-  units: Array<string | null>;
-  width: number;
-  bounds: number[];
-  driver: string;
-  height: number;
-  lnglat: number[];
-  nodata: number;
-  indexes: number[];
-  checksum: number[];
-  compress: string;
-  transform: number[];
-  blockxsize: number;
-  blockysize: number;
-  interleave: string;
-  mask_flags: string[][];
-  colorinterp: string[];
-  descriptions: Array<string | null>;
-}
-
-export interface Metadata {
-  // Add specific fields once we start using this
-  [key: string]: any;
-
-  modules?: {
-    map?: any;
-    toc?: any;
-    forsys?: { capabilities: string[] };
-  };
-  map?: {
-    arcgis?: any;
-  };
-}
-
+// UI-only — derived legend entry rendered by the color legend component.
 export interface LayerStyleEntry {
   colorHex: string;
   entryLabel: string;
-}
-
-export interface NoData {
-  values: number[];
-  color?: string;
-  opacity?: number;
-  label?: string;
-}
-
-export interface Entry {
-  value: number;
-  color: string;
-  opacity?: number;
-  label?: string | null;
-}
-
-export interface StyleJson {
-  map_type: RasterColorType;
-  no_data?: NoData;
-  entries: Entry[];
-}
-
-export interface Styles {
-  id: number;
-  data: StyleJson;
 }
 
 // Vector base layer used by the base-layers state. Sourced from the

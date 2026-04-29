@@ -4323,9 +4323,10 @@ components:
           - $ref: '#/components/schemas/StorageTypeEnum'
           default: FILE_SYSTEM
         info:
-          type: object
-          additionalProperties: {}
+          allOf:
+          - $ref: '#/components/schemas/RasterInfo'
           nullable: true
+          readOnly: true
         metadata:
           type: object
           additionalProperties: {}
@@ -4338,12 +4339,12 @@ components:
         styles:
           type: array
           items:
-            type: object
-            additionalProperties: {}
+            $ref: '#/components/schemas/RasterStyleOutput'
           readOnly: true
       required:
       - dataset
       - id
+      - info
       - map_url
       - name
       - organization
@@ -5060,8 +5061,7 @@ components:
         styles:
           type: array
           items:
-            type: object
-            additionalProperties: {}
+            $ref: '#/components/schemas/RasterStyleOutput'
           readOnly: true
         path:
           type: array
@@ -5084,9 +5084,10 @@ components:
           type: string
           readOnly: true
         info:
-          type: object
-          additionalProperties: {}
+          allOf:
+          - $ref: '#/components/schemas/RasterInfo'
           nullable: true
+          readOnly: true
         metadata:
           type: object
           additionalProperties: {}
@@ -5105,6 +5106,7 @@ components:
       - created_by
       - dataset
       - id
+      - info
       - map_url
       - name
       - organization
@@ -5586,6 +5588,16 @@ components:
         * `DONE` - Done
         * `FAILED` - Failed
         * `OVERSIZE` - Oversize
+    MapTypeEnum:
+      enum:
+      - RAMP
+      - INTERVALS
+      - VALUES
+      type: string
+      description: |-
+        * `RAMP` - RAMP
+        * `INTERVALS` - INTERVALS
+        * `VALUES` - VALUES
     ModuleEnum:
       enum:
       - forsys
@@ -6480,6 +6492,213 @@ components:
       - id
       - name
       - scenario
+    RasterInfo:
+      type: object
+      description: |-
+        Output schema for `DataLayer.info` for raster layers — the JSONified
+        output of gdalinfo. Vector layers store ogrinfo here instead, with a
+        completely different shape; consumers that need vector info should treat
+        `info` as opaque JSON. The schema declared here lets the generated TS
+        client carry typed access for the (overwhelmingly common) raster case.
+      properties:
+        crs:
+          type: string
+        res:
+          type: array
+          items:
+            type: number
+            format: double
+        count:
+          type: integer
+        dtype:
+          type: string
+        shape:
+          type: array
+          items:
+            type: integer
+        stats:
+          type: array
+          items:
+            $ref: '#/components/schemas/RasterInfoStats'
+        tiled:
+          type: boolean
+        units:
+          type: array
+          items:
+            type: string
+            nullable: true
+        width:
+          type: integer
+        bounds:
+          type: array
+          items:
+            type: number
+            format: double
+        driver:
+          type: string
+        height:
+          type: integer
+        lnglat:
+          type: array
+          items:
+            type: number
+            format: double
+        nodata:
+          type: number
+          format: double
+        indexes:
+          type: array
+          items:
+            type: integer
+        checksum:
+          type: array
+          items:
+            type: integer
+        compress:
+          type: string
+        transform:
+          type: array
+          items:
+            type: number
+            format: double
+        blockxsize:
+          type: integer
+        blockysize:
+          type: integer
+        interleave:
+          type: string
+        mask_flags:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        colorinterp:
+          type: array
+          items:
+            type: string
+        descriptions:
+          type: array
+          items:
+            type: string
+            nullable: true
+      required:
+      - blockxsize
+      - blockysize
+      - bounds
+      - checksum
+      - colorinterp
+      - compress
+      - count
+      - crs
+      - descriptions
+      - driver
+      - dtype
+      - height
+      - indexes
+      - interleave
+      - lnglat
+      - mask_flags
+      - nodata
+      - res
+      - shape
+      - stats
+      - tiled
+      - transform
+      - units
+      - width
+    RasterInfoStats:
+      type: object
+      description: gdalinfo per-band stats. Embedded inside `RasterInfo.stats[]`.
+      properties:
+        min:
+          type: number
+          format: double
+        max:
+          type: number
+          format: double
+        mean:
+          type: number
+          format: double
+        std:
+          type: number
+          format: double
+      required:
+      - max
+      - mean
+      - min
+      - std
+    RasterStyleData:
+      type: object
+      description: |-
+        Raster style payload as emitted by `get_default_raster_style` /
+        `get_raster_style`. Note `map_type` (output) vs `type` (validation, on
+        `RasterStyleSerializer`) — the names diverge.
+      properties:
+        map_type:
+          $ref: '#/components/schemas/MapTypeEnum'
+        no_data:
+          $ref: '#/components/schemas/RasterStyleNoDataOutput'
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/RasterStyleEntryOutput'
+      required:
+      - entries
+      - map_type
+    RasterStyleEntryOutput:
+      type: object
+      description: One color stop in a raster style (`RasterStyleData.entries[]`).
+      properties:
+        value:
+          type: number
+          format: double
+        color:
+          type: string
+        opacity:
+          type: number
+          format: double
+        label:
+          type: string
+          nullable: true
+      required:
+      - color
+      - value
+    RasterStyleNoDataOutput:
+      type: object
+      description: No-data sentinel block for a raster style (`RasterStyleData.no_data`).
+      properties:
+        values:
+          type: array
+          items:
+            type: number
+            format: double
+        color:
+          type: string
+          nullable: true
+        opacity:
+          type: number
+          format: double
+        label:
+          type: string
+          nullable: true
+      required:
+      - values
+    RasterStyleOutput:
+      type: object
+      description: |-
+        Wrapper element of a layer's `styles[]` list. For vector layers the
+        real shape is `{id, data: {"fill-color"..., "fill-outline-color"..., ...}}`
+        — the generated TS client gets the raster shape; vector consumers cast
+        through `BaseLayer` at the use site (see `interface/types/data-sets.ts`).
+      properties:
+        id:
+          type: integer
+        data:
+          $ref: '#/components/schemas/RasterStyleData'
+      required:
+      - data
+      - id
     RegionNameEnum:
       enum:
       - sierra-nevada

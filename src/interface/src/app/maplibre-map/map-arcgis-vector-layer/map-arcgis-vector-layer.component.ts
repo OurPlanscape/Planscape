@@ -214,7 +214,9 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   };
 
   private getTooltipTemplate(layer: BaseLayer): string | null {
-    return layer.metadata?.modules?.map?.tooltip_format ?? null;
+    return (
+      layer.metadata?.['modules']?.['map']?.['tooltip_format'] ?? null
+    );
   }
 
   private createTooltipContent(

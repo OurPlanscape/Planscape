@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { Metadata, RasterInfo } from '@types';
+import { Metadata } from '@types';
 import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
 import { DatalayersService } from '@api/datalayers/datalayers.service';
@@ -47,15 +47,10 @@ export class DataLayerTooltipComponent implements OnInit {
     });
   }
 
-  // Narrow `info` to RasterInfo at the component boundary; the template binds
-  // to `firstStat()` so it can use typed `.min` / `.max` without re-asserting
-  // the raster shape inline.
-  private get rasterInfo(): RasterInfo | null {
-    return this.layer.info as RasterInfo | null;
-  }
-
+  // Template helper — `info` is now typed as `RasterInfo | null` straight from
+  // the generated client, so this just trims to the first band's stats.
   firstStat() {
-    return this.rasterInfo?.stats?.[0] ?? null;
+    return this.layer.info?.stats?.[0] ?? null;
   }
 
   hasMinMax(): boolean {
