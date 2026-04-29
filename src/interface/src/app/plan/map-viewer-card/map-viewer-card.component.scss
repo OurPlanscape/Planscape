@@ -20,6 +20,9 @@
 
   @include on-vert-small-min-med-width() {
     height: 56px;
+    &.tall {
+      height: 56px;
+    }
   }
 }
 

@@ -7,6 +7,7 @@ import { canDeactivateGuard } from '@services/can-deactivate.guard';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { ScenarioDashboardComponent } from './scenario-dashboard/scenario-dashboard.component';
 import { createFeatureGuard } from '@app/features/feature.guard';
+import { ProjectAreaDashboardComponent } from '@app/plan/project-area-dashboard/project-area-dashboard.component';
 
 const routes: Routes = [
   {
@@ -21,6 +22,17 @@ const routes: Routes = [
     path: ':scenarioId/dashboard',
     component: ScenarioDashboardComponent,
     title: 'Scenario Dashboard',
+    canDeactivate: [canDeactivateGuard],
+    canActivate: [createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' })],
+    resolve: {
+      scenarioId: scenarioLoaderResolver,
+      dataLayerInit: resetDatalayerResolver,
+    },
+  },
+  {
+    path: ':scenarioId/projdashboard', // temporary route just for testing
+    component: ProjectAreaDashboardComponent,
+    title: 'Project Area Dashboard',
     canDeactivate: [canDeactivateGuard],
     canActivate: [createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' })],
     resolve: {
