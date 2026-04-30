@@ -40,7 +40,6 @@ export class MapViewerCardComponent {
 
   // TODO: just placeholders
   @Input() showProjectAreas = true;
-  projectAreasCount = 10;
 
   mapLibreMap!: MapLibreMap;
   baseLayerUrl = baseMapStyles['terrain'];

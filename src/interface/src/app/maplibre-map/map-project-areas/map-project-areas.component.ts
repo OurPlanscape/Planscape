@@ -54,7 +54,7 @@ export class MapProjectAreasComponent implements OnInit {
    */
   @Input() projectAreasCount: number | null = null;
 
-  @Input() labelField: 'name' | 'rank' = 'name';
+  @Input() labelField: 'name' | 'rank' | '' = 'name'; // TODO: maybe make empty the default?
   @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
