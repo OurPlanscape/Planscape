@@ -138,3 +138,10 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     hasMap: true,
   },
 ];
+
+export const GEO_PACKAGE_LABELS: { [key: string]: string } = {
+  FAILED: 'GeoPackage Failed',
+  SUCCEEDED: 'Download GeoPackage',
+  PENDING: 'Generating GeoPackage',
+  PROCESSING: 'Generating GeoPackage',
+};

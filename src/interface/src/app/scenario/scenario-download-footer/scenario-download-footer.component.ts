@@ -14,6 +14,7 @@ import { ScenarioConfigOverlayComponent } from '@scenario/scenario-config-overla
 import { MatMenuModule } from '@angular/material/menu';
 import { GeopackageFailureModalComponent } from '@scenario/geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { GEO_PACKAGE_LABELS } from '../scenario.constants';
 
 @Component({
   selector: 'app-scenario-download-footer',
@@ -49,12 +50,7 @@ export class ScenarioDownloadFooterComponent {
   downloadingScenario = false;
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
 
-  buttonLabels: { [key: string]: string } = {
-    FAILED: 'GeoPackage Failed',
-    SUCCEEDED: 'Download GeoPackage',
-    PENDING: 'Generating GeoPackage',
-    PROCESSING: 'Generating GeoPackage',
-  };
+  buttonLabels = GEO_PACKAGE_LABELS;
 
   handleButton() {
     if (this.geoPackageStatus === 'SUCCEEDED') {
