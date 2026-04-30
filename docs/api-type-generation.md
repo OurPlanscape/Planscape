@@ -46,6 +46,34 @@ generated output is in sync with the schema, no live backend required.
 
 ---
 
+## Keeping `api-schema.yaml` fresh (open question)
+
+Today the yaml is refreshed manually with `make export-schema`. Backend devs touching serializers/views won't always
+remember, and a stale yaml silently makes the generated client lie. We want this automatic. Generated TS in
+`src/generated/api/` is a separate problem — once the yaml is fresh, regenerating TS is offline and deterministic.
+
+Options considered for the yaml, ordered from least to most hands-off:
+
+1. **Pytest test that fails on drift.** A `SimpleTestCase` calls `spectacular` in-process via `call_command` and
+   compares the output to the committed `api-schema.yaml`. On failure, the assertion message tells the dev to run
+   `make export-schema` and commit. Backend devs already run pytest, so they get fast local feedback before pushing.
+   ~20 lines, zero infra changes.
+2. **CI check that fails the PR on drift.** A workflow boots the web container, runs `make export-schema`, and
+   `git diff --exit-code api-schema.yaml`. Safety net for PRs that skipped local tests. Reuses whatever job already
+   boots Django for backend tests. Same one-command fix as (1).
+3. **CI auto-commits a refreshed yaml to the PR branch.** Same workflow as (2) but commits the diff back instead of
+   failing. Fully hands-off for the dev. Requires a token with PR write perms (default `GITHUB_TOKEN` works for
+   same-repo PRs; forks need a PAT or GitHub App token; auto-commits from `GITHUB_TOKEN` don't re-trigger downstream
+   workflows by default).
+
+Recommendation when we tackle this: start with (1) + (2). They share the same fix instruction and together cost ~30
+lines. Graduate to (3) only if devs are still hitting drift in practice.
+
+Generated TS bundle (`src/generated/api/`) — separate decision, deferred. Options range from "keep committed" (today)
+to "gitignore + regenerate via `prebuild`/`postinstall` hook so it's a build artifact like `node_modules/`".
+
+---
+
 ## Adding a new endpoint to generated types
 
 On the backend (`src/planscape/`):
