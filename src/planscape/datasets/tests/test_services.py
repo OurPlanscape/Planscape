@@ -7,7 +7,13 @@ from django.db import connection
 from django.test import TestCase, override_settings
 from organizations.tests.factories import OrganizationFactory
 
-from datasets.models import Category, DataLayer, DataLayerStatus, DataLayerType
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    GeometryType,
+)
 from datasets.services import (
     create_datalayer,
     create_upload_url_for_org,
@@ -200,7 +206,11 @@ class TestGetTableMask(TestCase):
                 "POLYGON ((2 2, 3 2, 3 3, 2 3, 2 2))",
             ],
         )
-        datalayer = DataLayerFactory(table=table, type=DataLayerType.VECTOR)
+        datalayer = DataLayerFactory(
+            table=table,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
 
         result = get_table_mask(datalayer)
 
@@ -216,7 +226,11 @@ class TestGetTableMask(TestCase):
                 "POINT (0 1)",
             ],
         )
-        datalayer = DataLayerFactory(table=table, type=DataLayerType.VECTOR)
+        datalayer = DataLayerFactory(
+            table=table,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POINT,
+        )
 
         result = get_table_mask(datalayer)
 
@@ -231,7 +245,11 @@ class TestGetTableMask(TestCase):
                 "POINT (1 1)",
             ],
         )
-        datalayer = DataLayerFactory(table=table, type=DataLayerType.VECTOR)
+        datalayer = DataLayerFactory(
+            table=table,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POINT,
+        )
 
         result = get_table_mask(datalayer)
 
