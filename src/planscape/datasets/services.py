@@ -568,12 +568,16 @@ def get_table_mask(datalayer: DataLayer) -> Optional[GEOSGeometry]:
     """
     Given a datalayer, returns a polygonal mask for all table geometries.
     """
-    if datalayer.geometry_type in {GeometryType.NO_GEOM, GeometryType.RASTER, None}:
+    geometry_type = datalayer.geometry_type
+    if geometry_type in {None, GeometryType.NO_GEOM, GeometryType.RASTER}:
         return None
-    if datalayer.geometry_type in {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
-        mask_expression = "ST_UnaryUnion(ST_Collect(ST_Envelope(geometry)))"
-    else:
-        mask_expression = "ST_ConvexHull(ST_Collect(geometry))"
+
+    is_polygonal = geometry_type in {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}
+    mask_expression = (
+        "ST_UnaryUnion(ST_Collect(ST_Envelope(geometry)))"
+        if is_polygonal
+        else "ST_ConvexHull(ST_Collect(geometry))"
+    )
 
     srid = 4269  # hardcoded as we only import stuff in 4269
     schema, table = datalayer.table.split(".")
@@ -595,7 +599,7 @@ FROM (
 """
         cursor.execute(query)
         row = cursor.fetchone()
-        if row and row[0]:
+        if row:
             return GEOSGeometry(row[0], srid=srid)
 
         return None
