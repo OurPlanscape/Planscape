@@ -26,12 +26,13 @@ import {
 } from '@styleguide';
 import { SharedModule } from '@shared';
 import { FormMessageType } from '@types';
-import { PlanService } from '@services';
+import { PlanService, ScenarioUploadOptions } from '@services';
 import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
 import { MatMenuModule } from '@angular/material/menu';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
+import { FeatureService } from '@app/features/feature.service';
 
 export interface DialogData {
   planning_area_name: string;
@@ -82,7 +83,8 @@ export class UploadProjectAreasModalComponent {
 
   constructor(
     private fb: FormBuilder,
-    private planService: PlanService
+    private planService: PlanService,
+    private featureService: FeatureService
   ) {
     this.uploadProjectsForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
@@ -170,16 +172,22 @@ export class UploadProjectAreasModalComponent {
     this.uploadData();
   }
 
+  showStandSize() {
+    return !this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS');
+  }
+
   uploadData() {
     if (this.geometries !== null) {
       this.uploadingData = true;
+      const uploadOptions: ScenarioUploadOptions = {
+        shape: this.geometries,
+        scenarioName: this.uploadProjectsForm.get('scenarioName')?.value,
+        standSize: this.uploadProjectsForm.get('standSize')?.value ?? null,
+        planId: this.data.planId,
+      };
+
       this.planService
-        .uploadGeometryForNewScenario(
-          this.geometries,
-          this.uploadProjectsForm.get('scenarioName')?.value,
-          this.uploadProjectsForm.get('standSize')?.value,
-          this.data.planId
-        )
+        .uploadGeometryForNewScenario(uploadOptions)
         .pipe(take(1))
         .subscribe({
           next: (response) => {
