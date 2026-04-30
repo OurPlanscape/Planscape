@@ -13,6 +13,14 @@ from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 logger = logging.getLogger(__name__)
 
 
+def to_datalayer_outline(geometry):
+    if not geometry:
+        return None
+    if geometry.geom_type in {"Polygon", "MultiPolygon"}:
+        return to_multipolygon(geometry)
+    return None
+
+
 def process_datalayer(
     datalayer_id: int,
     status: DataLayerStatus = DataLayerStatus.READY,
@@ -36,7 +44,7 @@ def process_datalayer(
             validate_datastore_table(datastore_table, datalayer)
             datalayer.table = datastore_table
         outline = get_datalayer_outline(datalayer)
-        datalayer.outline = to_multipolygon(outline) if outline else None
+        datalayer.outline = to_datalayer_outline(outline)
     except Exception:
         logger.exception(
             "Something went wrong while ingesting and processing datalayer %s",
@@ -100,7 +108,7 @@ def calculate_datalayer_outline(datalayer_id: int) -> None:
 
     try:
         result = get_datalayer_outline(datalayer)
-        datalayer.outline = to_multipolygon(result) if result else None
+        datalayer.outline = to_datalayer_outline(result)
         datalayer.save(update_fields=["outline", "updated_at"])
     except Exception:
         logger.exception(
