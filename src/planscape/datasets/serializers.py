@@ -4,6 +4,8 @@ from typing import Any, Collection, Dict, Optional
 from core.fields import GeometryTypeField
 from core.loaders import get_python_object
 from organizations.models import Organization
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
@@ -31,6 +33,98 @@ class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
             "id",
             "name",
         )
+
+
+class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "name",
+            "modules",
+        )
+
+
+class RasterInfoStatsSerializer(serializers.Serializer):
+    """gdalinfo per-band stats. Embedded inside `RasterInfo.stats[]`."""
+
+    min = serializers.FloatField()
+    max = serializers.FloatField()
+    mean = serializers.FloatField()
+    std = serializers.FloatField()
+
+
+class RasterInfoSerializer(serializers.Serializer):
+    """Output schema for `DataLayer.info` for raster layers — the JSONified
+    output of gdalinfo. Vector layers store ogrinfo here instead, with a
+    completely different shape; consumers that need vector info should treat
+    `info` as opaque JSON. The schema declared here lets the generated TS
+    client carry typed access for the (overwhelmingly common) raster case."""
+
+    crs = serializers.CharField()
+    res = serializers.ListField(child=serializers.FloatField())
+    count = serializers.IntegerField()
+    dtype = serializers.CharField()
+    shape = serializers.ListField(child=serializers.IntegerField())
+    stats = RasterInfoStatsSerializer(many=True)
+    tiled = serializers.BooleanField()
+    units = serializers.ListField(child=serializers.CharField(allow_null=True))
+    width = serializers.IntegerField()
+    bounds = serializers.ListField(child=serializers.FloatField())
+    driver = serializers.CharField()
+    height = serializers.IntegerField()
+    lnglat = serializers.ListField(child=serializers.FloatField())
+    nodata = serializers.FloatField()
+    indexes = serializers.ListField(child=serializers.IntegerField())
+    checksum = serializers.ListField(child=serializers.IntegerField())
+    compress = serializers.CharField()
+    transform = serializers.ListField(child=serializers.FloatField())
+    blockxsize = serializers.IntegerField()
+    blockysize = serializers.IntegerField()
+    interleave = serializers.CharField()
+    mask_flags = serializers.ListField(
+        child=serializers.ListField(child=serializers.CharField())
+    )
+    colorinterp = serializers.ListField(child=serializers.CharField())
+    descriptions = serializers.ListField(child=serializers.CharField(allow_null=True))
+
+
+class RasterStyleEntryOutputSerializer(serializers.Serializer):
+    """One color stop in a raster style (`RasterStyleData.entries[]`)."""
+
+    value = serializers.FloatField()
+    color = serializers.CharField()
+    opacity = serializers.FloatField(required=False)
+    label = serializers.CharField(allow_null=True, required=False)
+
+
+class RasterStyleNoDataOutputSerializer(serializers.Serializer):
+    """No-data sentinel block for a raster style (`RasterStyleData.no_data`)."""
+
+    values = serializers.ListField(child=serializers.FloatField())
+    color = serializers.CharField(allow_null=True, required=False)
+    opacity = serializers.FloatField(required=False)
+    label = serializers.CharField(allow_null=True, required=False)
+
+
+class RasterStyleDataSerializer(serializers.Serializer):
+    """Raster style payload as emitted by `get_default_raster_style` /
+    `get_raster_style`. Note `map_type` (output) vs `type` (validation, on
+    `RasterStyleSerializer`) — the names diverge."""
+
+    map_type = serializers.ChoiceField(choices=["RAMP", "INTERVALS", "VALUES"])
+    no_data = RasterStyleNoDataOutputSerializer(required=False)
+    entries = RasterStyleEntryOutputSerializer(many=True)
+
+
+class RasterStyleOutputSerializer(serializers.Serializer):
+    """Wrapper element of a layer's `styles[]` list. For vector layers the
+    real shape is `{id, data: {"fill-color"..., "fill-outline-color"..., ...}}`
+    — the generated TS client gets the raster shape; vector consumers cast
+    through `BaseLayer` at the use site (see `interface/types/data-sets.ts`)."""
+
+    id = serializers.IntegerField()
+    data = RasterStyleDataSerializer()
 
 
 class CategorySerializer(serializers.ModelSerializer[Category]):
@@ -96,6 +190,8 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
 
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
+    organization = OrganizationSimpleSerializer()
+    dataset = DatasetSimpleSerializer()
     public_url = serializers.CharField(
         source="get_public_url",
         read_only=True,
@@ -107,11 +203,20 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     styles = serializers.SerializerMethodField()
     path = serializers.SerializerMethodField()
     original_name = serializers.CharField(read_only=True)
+    info = serializers.SerializerMethodField()
+    metadata = extend_schema_field(OpenApiTypes.OBJECT)(
+        serializers.DictField(allow_null=True, required=False)
+    )
 
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]
         return get_default_raster_style(**stats)
 
+    @extend_schema_field(RasterInfoSerializer(allow_null=True))
+    def get_info(self, instance):
+        return instance.info
+
+    @extend_schema_field(RasterStyleOutputSerializer(many=True))
     def get_styles(self, instance):
         if instance.styles.all().exists():
             style = instance.styles.all().first()
@@ -130,6 +235,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             case _:
                 return [get_default_vector_style()]
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
             return instance.category._get_full_path(instance.category.pk)
@@ -492,27 +598,26 @@ class DataLayerHasStyleSerializer(serializers.Serializer):
     style = StyleSerializer()  # type: ignore
 
 
-class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
-    class Meta:
-        model = Dataset
-        fields = (
-            "id",
-            "name",
-            "modules",
-        )
-
-
 class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
     path = serializers.SerializerMethodField()
     map_url = serializers.SerializerMethodField()
     styles = serializers.SerializerMethodField()
+    info = serializers.SerializerMethodField()
+    metadata = extend_schema_field(OpenApiTypes.OBJECT)(
+        serializers.DictField(allow_null=True, required=False)
+    )
 
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]
         return get_default_raster_style(**stats)
 
+    @extend_schema_field(RasterInfoSerializer(allow_null=True))
+    def get_info(self, instance):
+        return instance.info
+
+    @extend_schema_field(RasterStyleOutputSerializer(many=True))
     def get_styles(self, instance) -> Collection[Dict[str, Any]]:
         if instance.styles.all().exists():
             style = instance.styles.all().first()
@@ -532,6 +637,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             case _:
                 return [get_default_vector_style()]
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
             return instance.category._get_full_path(instance.category.pk)
@@ -561,6 +667,10 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "map_service_type",
             "styles",
         )
+
+
+class DataLayerUrlSerializer(serializers.Serializer):
+    layer_url = serializers.CharField()
 
 
 class BrowseDataLayerFilterSerializer(serializers.Serializer):

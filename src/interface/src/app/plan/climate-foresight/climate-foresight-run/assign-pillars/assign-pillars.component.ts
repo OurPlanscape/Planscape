@@ -21,7 +21,8 @@ import { NamePillarModalComponent } from '@plan/climate-foresight/name-pillar-mo
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { ClimateForesightService } from '@services';
-import { ClimateForesightRun, DataLayer, InputDatalayer, Pillar } from '@types';
+import { ClimateForesightRun, InputDatalayer, Metadata, Pillar } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormGroup } from '@angular/forms';
 import { PillarDragAndDrop } from '../climate-foresight-run.component';
@@ -145,10 +146,12 @@ export class AssignPillarsComponent
       next: (datalayers) => {
         // Filtering just the enabled datalayers
         const enabledLayers =
-          datalayers.filter(
-            (dl: any) =>
-              dl.metadata?.modules?.['climate_foresight']?.enabled === true
-          ) || [];
+          datalayers.filter((dl) => {
+            const metadata = dl.metadata as Metadata | null;
+            return (
+              metadata?.['modules']?.['climate_foresight']?.['enabled'] === true
+            );
+          }) || [];
         // geting the selected datalayers id
         const availableLayerIDs = this.run.input_datalayers?.map(
           (dl) => dl.datalayer

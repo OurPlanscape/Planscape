@@ -1,4 +1,4 @@
-import { DataLayer } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 
 /**
  * A tree node that can either be a "category" node (with children)
@@ -7,14 +7,14 @@ import { DataLayer } from '@types';
 export interface TreeNode {
   name: string;
   children?: TreeNode[];
-  item?: DataLayer;
+  item?: BrowseDataLayer;
 }
 
 /**
  * Builds a nested TreeNode structure from an array of DataItems,
  * using each item's `path` array to define the category nesting.
  */
-export function buildPathTree(items: DataLayer[]): TreeNode[] {
+export function buildPathTree(items: readonly BrowseDataLayer[]): TreeNode[] {
   const root: TreeNode[] = [];
 
   for (const item of items) {

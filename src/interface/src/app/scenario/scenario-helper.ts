@@ -5,19 +5,19 @@ import {
   Scenario,
   SCENARIO_TYPE,
   ScenarioDraftConfiguration,
-  ScenarioGoal,
   ScenarioV3Config,
   ScenarioV3Payload,
 } from '@types';
+import { TreatmentGoal } from '@api/planscapeAPI.schemas';
 
 /**
  * This method will get a list of scenarioGoal and will return the grouped version of it
  * @param goals : List of scenario goals
  */
 export function getGroupedGoals(
-  goals: ScenarioGoal[]
-): Record<string, Record<string, ScenarioGoal[]>> {
-  return goals.reduce<Record<string, Record<string, ScenarioGoal[]>>>(
+  goals: TreatmentGoal[]
+): Record<string, Record<string, TreatmentGoal[]>> {
+  return goals.reduce<Record<string, Record<string, TreatmentGoal[]>>>(
     (acc, goal) => {
       const groupLabel = goal.group_text;
       const categoryLabel = goal.category_text;

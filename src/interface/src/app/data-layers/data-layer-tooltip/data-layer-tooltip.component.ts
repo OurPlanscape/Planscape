@@ -1,10 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { DataLayer } from '@types';
+import { Metadata } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
-import { DataLayersService } from '@services/data-layers.service';
-import { Observable, shareReplay, take } from 'rxjs';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
+import { map, Observable, shareReplay, take } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 import { AccountRoutingModule } from '@account/account-routing.module';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -26,19 +27,23 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   styleUrl: './data-layer-tooltip.component.scss',
 })
 export class DataLayerTooltipComponent implements OnInit {
-  @Input() layer!: DataLayer;
+  @Input() layer!: BrowseDataLayer;
 
   downloadLink$: Observable<string> | null = null;
   loadingLink = false;
   filename: string | null = null;
 
-  constructor(private dataLayersService: DataLayersService) {}
+  constructor(private datalayersService: DatalayersService) {}
 
   ngOnInit() {
     this.loadingLink = true;
-    this.downloadLink$ = this.dataLayersService
-      .getPublicUrl(this.layer.id)
-      .pipe(take(1), shareReplay(1));
+    this.downloadLink$ = this.datalayersService
+      .datalayersUrlsRetrieve(this.layer.id)
+      .pipe(
+        map((d) => d.layer_url),
+        take(1),
+        shareReplay(1)
+      );
 
     this.downloadLink$.pipe(untilDestroyed(this)).subscribe((link) => {
       this.loadingLink = false;
@@ -46,25 +51,33 @@ export class DataLayerTooltipComponent implements OnInit {
     });
   }
 
+  // Template helper — `info` is now typed as `RasterInfo | null` straight from
+  // the generated client, so this just trims to the first band's stats.
+  firstStat() {
+    return this.layer.info?.stats?.[0] ?? null;
+  }
+
   hasMinMax(): boolean {
-    return (
-      this.layer.info?.stats?.[0]?.min != undefined &&
-      this.layer.info?.stats?.[0]?.max != undefined
-    );
+    const stat = this.firstStat();
+    return stat?.min != undefined && stat?.max != undefined;
+  }
+
+  private get narrowedMetadata(): Metadata | null {
+    return this.layer.metadata as Metadata | null;
   }
 
   getSource() {
-    return this.layer.metadata?.['metadata']?.['distribution']?.['download'];
+    return this.narrowedMetadata?.['metadata']?.['distribution']?.['download'];
   }
 
   get vintageDate() {
-    return this.layer.metadata?.['metadata']?.['identification']?.['date']?.[
+    return this.narrowedMetadata?.['metadata']?.['identification']?.['date']?.[
       'date'
     ];
   }
 
   getUnits() {
-    const units = this.layer.metadata?.['metadata']?.[
+    const units = this.narrowedMetadata?.['metadata']?.[
       'identification'
     ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
 

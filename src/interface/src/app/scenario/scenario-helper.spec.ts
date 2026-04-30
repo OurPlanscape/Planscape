@@ -7,20 +7,20 @@ import {
 import {
   Scenario,
   ScenarioDraftConfiguration,
-  ScenarioGoal,
   ScenarioV3Payload,
 } from '@types';
+import { TreatmentGoal } from '@api/planscapeAPI.schemas';
 
 describe('getGroupedGoals', () => {
-  const makeGoal = (overrides: Partial<ScenarioGoal> = {}): ScenarioGoal => ({
+  const makeGoal = (overrides: Partial<TreatmentGoal> = {}): TreatmentGoal => ({
     id: overrides.id ?? 1,
     name: overrides.name ?? 'Goal',
     description: overrides.description ?? '',
-    priorities: overrides.priorities ?? [],
-    category: overrides.category ?? 'CAT_KEY',
+    category: overrides.category ?? null,
     category_text: overrides.category_text ?? 'Category Label',
-    group: overrides.group ?? 'GRP_KEY',
+    group: overrides.group ?? null,
     group_text: overrides.group_text ?? 'Group Label',
+    usage_types: overrides.usage_types ?? [],
   });
 
   it('should return an empty object for empty input', () => {
@@ -52,14 +52,14 @@ describe('getGroupedGoals', () => {
       name: 'G3',
       group: 'CALIFORNIA_PLANNING_METRICS',
       group_text: 'California Planning Metrics',
-      category: 'OTHER_CAT',
+      category: 'BIODIVERSITY',
       category_text: 'Other Category',
     });
 
     const g4 = makeGoal({
       id: 4,
       name: 'G4',
-      group: 'ANOTHER_GROUP',
+      group: null,
       group_text: 'Another Group',
       category: 'FIRE_DYNAMICS',
       category_text: 'Fire Dynamics',
@@ -112,9 +112,9 @@ describe('getGroupedGoals', () => {
 
   it('uses the *_text labels as keys (not the raw keys)', () => {
     const goal = makeGoal({
-      group: 'GRP_RAW',
+      group: null,
       group_text: 'Group Pretty',
-      category: 'CAT_RAW',
+      category: null,
       category_text: 'Category Pretty',
     });
 

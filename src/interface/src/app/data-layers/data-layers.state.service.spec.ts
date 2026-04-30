@@ -2,9 +2,10 @@ import { TestBed } from '@angular/core/testing';
 
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
-import { DataLayersService } from '@services/data-layers.service';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
+import { DatasetsService } from '@api/datasets/datasets.service';
 import { of } from 'rxjs';
-import { DataSet, Pagination } from '@types';
+
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
 import { PlanState } from '@plan/plan.state';
@@ -18,9 +19,8 @@ describe('DataLayersStateService', () => {
     TestBed.configureTestingModule({
       imports: [FeaturesModule, MatSnackBarModule],
       providers: [
-        MockProvider(DataLayersService, {
-          listDataSets: () => of({} as Pagination<DataSet>),
-        }),
+        MockProvider(DatalayersService),
+        MockProvider(DatasetsService),
         DataLayersStateService,
         MockProvider(MapModuleService, {
           datasets$: of({

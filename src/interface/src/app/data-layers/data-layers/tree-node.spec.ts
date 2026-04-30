@@ -1,34 +1,34 @@
-import { DataLayer } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { buildPathTree, TreeNode } from './tree-node';
 
 describe('buildPathTree', () => {
-  it('should build the correct hierarchy for a typical set of DataLayer items', () => {
-    const items: DataLayer[] = [
+  it('should build the correct hierarchy for a typical set of BrowseDataLayer items', () => {
+    const items: BrowseDataLayer[] = [
       {
         id: 1,
         name: 'Item A1',
         path: ['CategoryA', 'SubcategoryA1'],
-      } as DataLayer,
+      } as unknown as BrowseDataLayer,
       {
         id: 2,
         name: 'Item A2',
         path: ['CategoryA', 'SubcategoryA2'],
-      } as DataLayer,
+      } as unknown as BrowseDataLayer,
       {
         id: 3,
         name: 'Item B1',
         path: ['CategoryB', 'SubcategoryB1'],
-      } as DataLayer,
+      } as unknown as BrowseDataLayer,
       {
         id: 4,
         name: 'Item B2',
         path: ['CategoryB', 'SubcategoryB1'],
-      } as DataLayer,
+      } as unknown as BrowseDataLayer,
       {
         id: 5,
         name: 'Item B3',
         path: ['CategoryB', 'SubcategoryB2'],
-      } as DataLayer,
+      } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);
@@ -97,17 +97,17 @@ describe('buildPathTree', () => {
   });
 
   it('should create top-level entries when the path is empty or undefined', () => {
-    const items: DataLayer[] = [
+    const items: BrowseDataLayer[] = [
       {
         id: 101,
         name: 'TopLevelItem',
         path: [],
-      } as unknown as DataLayer,
+      } as unknown as BrowseDataLayer,
       {
         id: 102,
         name: 'AlsoTopLevel',
         // no path => treat like empty array
-      } as unknown as DataLayer,
+      } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);
@@ -125,10 +125,10 @@ describe('buildPathTree', () => {
   });
 
   it('should sort top-level categories and leaves alphabetically', () => {
-    const items: DataLayer[] = [
-      { id: 1, name: 'Zebra Layer', path: [] } as unknown as DataLayer,
-      { id: 2, name: 'Alpha Layer', path: [] } as unknown as DataLayer,
-      { id: 3, name: 'Mango Layer', path: [] } as unknown as DataLayer,
+    const items: BrowseDataLayer[] = [
+      { id: 1, name: 'Zebra Layer', path: [] } as unknown as BrowseDataLayer,
+      { id: 2, name: 'Alpha Layer', path: [] } as unknown as BrowseDataLayer,
+      { id: 3, name: 'Mango Layer', path: [] } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);
@@ -141,10 +141,10 @@ describe('buildPathTree', () => {
   });
 
   it('should sort categories at the top level alphabetically', () => {
-    const items: DataLayer[] = [
-      { id: 1, name: 'Item', path: ['Zebra'] } as DataLayer,
-      { id: 2, name: 'Item', path: ['Alpha'] } as DataLayer,
-      { id: 3, name: 'Item', path: ['Mango'] } as DataLayer,
+    const items: BrowseDataLayer[] = [
+      { id: 1, name: 'Item', path: ['Zebra'] } as unknown as BrowseDataLayer,
+      { id: 2, name: 'Item', path: ['Alpha'] } as unknown as BrowseDataLayer,
+      { id: 3, name: 'Item', path: ['Mango'] } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);
@@ -153,10 +153,10 @@ describe('buildPathTree', () => {
   });
 
   it('should sort children within a category alphabetically', () => {
-    const items: DataLayer[] = [
-      { id: 1, name: 'Zebra', path: ['Cat'] } as DataLayer,
-      { id: 2, name: 'Alpha', path: ['Cat'] } as DataLayer,
-      { id: 3, name: 'Mango', path: ['Cat'] } as DataLayer,
+    const items: BrowseDataLayer[] = [
+      { id: 1, name: 'Zebra', path: ['Cat'] } as unknown as BrowseDataLayer,
+      { id: 2, name: 'Alpha', path: ['Cat'] } as unknown as BrowseDataLayer,
+      { id: 3, name: 'Mango', path: ['Cat'] } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);
@@ -171,10 +171,22 @@ describe('buildPathTree', () => {
   });
 
   it('should sort recursively at every depth', () => {
-    const items: DataLayer[] = [
-      { id: 1, name: 'Z-leaf', path: ['B-cat', 'Z-sub'] } as DataLayer,
-      { id: 2, name: 'A-leaf', path: ['B-cat', 'A-sub'] } as DataLayer,
-      { id: 3, name: 'leaf', path: ['A-cat', 'sub'] } as DataLayer,
+    const items: BrowseDataLayer[] = [
+      {
+        id: 1,
+        name: 'Z-leaf',
+        path: ['B-cat', 'Z-sub'],
+      } as unknown as BrowseDataLayer,
+      {
+        id: 2,
+        name: 'A-leaf',
+        path: ['B-cat', 'A-sub'],
+      } as unknown as BrowseDataLayer,
+      {
+        id: 3,
+        name: 'leaf',
+        path: ['A-cat', 'sub'],
+      } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);
@@ -185,12 +197,12 @@ describe('buildPathTree', () => {
   });
 
   it('should handle a single item with a single-level path', () => {
-    const items: DataLayer[] = [
+    const items: BrowseDataLayer[] = [
       {
         id: 999,
         name: 'LonelyItem',
         path: ['SingleCategory'],
-      } as DataLayer,
+      } as unknown as BrowseDataLayer,
     ];
 
     const result = buildPathTree(items);

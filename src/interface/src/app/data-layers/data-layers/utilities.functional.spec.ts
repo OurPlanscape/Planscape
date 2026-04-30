@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { StyleJson } from '@types';
+import { RasterStyleData } from '@api/planscapeAPI.schemas';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { generateColorFunction } from '../utilities';
 
 describe('Color Function Test For RAMP type', () => {
   let colorFunction: any;
-  const rampStyle: StyleJson = {
+  const rampStyle: RasterStyleData = {
     map_type: 'RAMP',
     no_data: {
       values: [0.003],
@@ -125,7 +125,7 @@ describe('Color Function Test For RAMP type', () => {
 
 describe('Color Function Test For INTERVALS type', () => {
   let colorFunction: any;
-  const intervalsStyle: StyleJson = {
+  const intervalsStyle: RasterStyleData = {
     map_type: 'INTERVALS',
     no_data: {
       values: [0.12],
@@ -200,7 +200,7 @@ describe('Color Function Test For INTERVALS type', () => {
 
 describe('Color Function Test For VALUES type', () => {
   let colorFunction: any;
-  const valuesStyles: StyleJson = {
+  const valuesStyles: RasterStyleData = {
     map_type: 'VALUES',
     no_data: {
       values: [],
@@ -311,7 +311,7 @@ describe('Color Function Test For VALUES type', () => {
 
 describe('Color Function Test For INTERVALS type', () => {
   let colorFunction: any;
-  const intervalsStyle: StyleJson = {
+  const intervalsStyle: RasterStyleData = {
     map_type: 'INTERVALS',
     no_data: {
       values: [0.003],

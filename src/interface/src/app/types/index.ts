@@ -2,7 +2,6 @@ export * from './climate-foresight.types';
 export * from './data-sets';
 export * from './data.types';
 export * from './general';
-export * from './invite.types';
 export * from './maplibre.map.types';
 export * from './module.types';
 export * from './plan.types';

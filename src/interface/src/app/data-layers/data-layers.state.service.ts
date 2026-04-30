@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
-import { DataLayersService } from '@services/data-layers.service';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
+import { DatasetsService } from '@api/datasets/datasets.service';
+import { BrowseDataLayer, TypeE04Enum } from '@api/planscapeAPI.schemas';
 import {
   BehaviorSubject,
   catchError,
@@ -12,13 +14,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {
-  BaseDataSet,
-  DataLayer,
-  DataSet,
-  Pagination,
-  SearchResult,
-} from '@types';
+import { BaseDataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from '@data-layers/data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
@@ -50,11 +46,13 @@ export class DataLayersStateService {
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   // Datalayers applied to the map
-  private _viewedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
+  private _viewedDataLayer$ = new BehaviorSubject<BrowseDataLayer | null>(null);
   viewedDataLayer$ = this._viewedDataLayer$.asObservable();
 
   // Datalayers selected from the list of layers
-  private _selectedDataLayers$ = new BehaviorSubject<DataLayer[] | []>([]);
+  private _selectedDataLayers$ = new BehaviorSubject<BrowseDataLayer[] | []>(
+    []
+  );
   selectedDataLayers$ = this._selectedDataLayers$.asObservable();
 
   // Datalayers selected from the list of layers
@@ -80,9 +78,9 @@ export class DataLayersStateService {
       if (!layer) {
         return of(null);
       }
-      return this.service
-        .getPublicUrl(layer.id)
-        .pipe(map((url) => ({ layer, url })));
+      return this.datalayersService
+        .datalayersUrlsRetrieve(layer.id)
+        .pipe(map((d) => ({ layer, url: d.layer_url })));
     })
   );
 
@@ -98,8 +96,12 @@ export class DataLayersStateService {
         return of(null);
       }
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-      return this.service
-        .listDataLayers(dataset.id, this.mapModuleService.moduleName, geometry)
+      return this.datasetsService
+        .datasetsBrowsePost(dataset.id, {
+          type: TypeE04Enum.RASTER,
+          module: this.mapModuleService.moduleName,
+          ...(geometry ? { geometry } : {}),
+        })
         .pipe(
           map((items) => buildPathTree(items)),
           tap((s) => this.loadingSubject.next(false)),
@@ -132,7 +134,7 @@ export class DataLayersStateService {
   searchTerm$ = this._searchTerm$.asObservable();
 
   colorLegendInfo$ = this.viewedDataLayer$.pipe(
-    map((currentLayer: DataLayer | null) => {
+    map((currentLayer: BrowseDataLayer | null) => {
       if (currentLayer) {
         return extractLegendInfo(currentLayer);
       } else {
@@ -156,15 +158,18 @@ export class DataLayersStateService {
       const module = this.mapModuleService.moduleName;
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
 
-      return this.service
-        .search({
-          term,
-          limit: this.limit,
-          offset,
-          module,
-          geometry,
-        })
+      return this.datalayersService
+        .datalayersFindAnythingCreate(
+          {
+            term,
+            type: TypeE04Enum.RASTER,
+            ...(module ? { module } : {}),
+            ...(geometry ? { geometry } : {}),
+          },
+          { limit: this.limit, ...(offset ? { offset } : {}) }
+        )
         .pipe(
+          map((results) => results as unknown as Pagination<SearchResult>),
           startWith(null),
           map((results) => {
             if (results) {
@@ -185,7 +190,8 @@ export class DataLayersStateService {
   isBrowsing$ = this._isBrowsing$.asObservable();
 
   constructor(
-    private service: DataLayersService,
+    private datalayersService: DatalayersService,
+    private datasetsService: DatasetsService,
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,
@@ -209,7 +215,7 @@ export class DataLayersStateService {
     }
   }
 
-  selectDataLayer(dataLayer: DataLayer) {
+  selectDataLayer(dataLayer: BrowseDataLayer) {
     this.setDataLayerLoading(true);
     this._viewedDataLayer$.next(dataLayer);
   }
@@ -244,28 +250,29 @@ export class DataLayersStateService {
     this._selectedDataSet$.next(null);
   }
 
-  goToSelectedLayer(layer: DataLayer) {
+  goToSelectedLayer(layer: BrowseDataLayer) {
     // Reset search
     this._searchTerm$.next('');
     this._offset.next(0);
     this.goToDataLayerCategory(layer);
   }
 
-  goToDataLayerCategory(layer: DataLayer) {
+  goToDataLayerCategory(layer: BrowseDataLayer) {
     this._isBrowsing$.next(true);
     this.loadingSubject.next(false);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
-      const dataSet: Partial<DataSet> = {
-        ...layer.dataset,
+      const dataSet: BaseDataSet = {
+        id: layer.dataset.id,
+        name: layer.dataset.name,
         organization: layer.organization,
       };
       // reset previous results
       this._selectedDataSet$.next(null);
       // select the new data set
-      this.selectDataSet(dataSet as DataSet);
+      this.selectDataSet(dataSet);
     }
-    this._paths$.next(layer.path);
+    this._paths$.next([...layer.path]);
   }
 
   resetPath() {
@@ -279,12 +286,12 @@ export class DataLayersStateService {
   }
 
   // Checking if the layer is already in the selected list
-  isSelectedLayer(layer: DataLayer) {
+  isSelectedLayer(layer: BrowseDataLayer) {
     return this._selectedDataLayers$.value.some((l) => l.id === layer.id);
   }
 
   // Remove a layer from the selected list
-  removeSelectedLayer(layer: DataLayer) {
+  removeSelectedLayer(layer: BrowseDataLayer) {
     const updatedSelectedDatalayers = this._selectedDataLayers$.value.filter(
       (l) => l.id !== layer.id
     );
@@ -303,20 +310,20 @@ export class DataLayersStateService {
     this._unSelectableDataLayerIds$.next([]);
   }
 
-  isLayerUnselectable(layer: DataLayer) {
+  isLayerUnselectable(layer: BrowseDataLayer) {
     const unselectableLayers: unselectableLayer[] =
       this._unSelectableDataLayerIds$.value ?? [];
     return unselectableLayers.some((ul) => ul.id === layer.id);
   }
 
-  getUnselectableLayer(layer: DataLayer): unselectableLayer | undefined {
+  getUnselectableLayer(layer: BrowseDataLayer): unselectableLayer | undefined {
     const unselectableLayers: unselectableLayer[] =
       this._unSelectableDataLayerIds$.value ?? [];
     return unselectableLayers.find((ul) => ul.id === layer.id);
   }
 
   // Adding or removing an item to the selected list
-  toggleLayerAdition(layer: DataLayer) {
+  toggleLayerAdition(layer: BrowseDataLayer) {
     if (this.isSelectedLayer(layer)) {
       this.removeSelectedLayer(layer);
     } else if (
@@ -331,7 +338,7 @@ export class DataLayersStateService {
   }
 
   // Setting the list of selected list
-  updateSelectedLayers(layers: DataLayer[]) {
+  updateSelectedLayers(layers: BrowseDataLayer[]) {
     this._selectedDataLayers$.next(layers);
   }
 

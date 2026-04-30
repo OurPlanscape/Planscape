@@ -22,11 +22,11 @@ import {
 } from 'rxjs';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ScenarioService, TreatmentGoalsService } from '@services';
+import { ScenarioService } from '@services';
+import { TreatmentGoalsService } from '@api/treatment-goals/treatment-goals.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   BaseLayer,
-  DataLayer,
   Scenario,
   SCENARIO_TYPE,
   ScenarioDraftConfiguration,
@@ -167,7 +167,7 @@ export class ScenarioCreationComponent implements OnInit {
   );
 
   treatmentGoals$ = this.treatmentGoalsService
-    .getTreatmentGoals(this.planId)
+    .treatmentGoalsList({ planning_area: String(this.planId) })
     .pipe(shareReplay(1));
 
   treatmentGoalId$ = this.newScenarioState.scenarioConfig$.pipe(
@@ -185,7 +185,7 @@ export class ScenarioCreationComponent implements OnInit {
 
   priorityObjectivesNames$ =
     this.newScenarioState.priorityObjectivesDetails$.pipe(
-      map((layers: DataLayer[]) => layers.map((layer) => layer.name).join(', '))
+      map((layers) => layers.map((layer) => layer.name).join(', '))
     );
 
   scenarioType$ = this.scenarioState.currentScenario$.pipe(
