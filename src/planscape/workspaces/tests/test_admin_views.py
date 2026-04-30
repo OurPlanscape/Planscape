@@ -4,12 +4,16 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from datasets.models import VisibilityOptions
+from datasets.tests.factories import DatasetFactory, StyleFactory
 from planscape.tests.factories import UserFactory
 from workspaces.models import UserAccessWorkspace, WorkspaceRole
 from workspaces.tests.factories import UserAccessWorkspaceFactory, WorkspaceFactory
 
 LIST_URL = "api:admin-workspaces:workspaces-list"
 DETAIL_URL = "api:admin-workspaces:workspaces-detail"
+DATASETS_URL = "api:admin-workspaces:workspaces-datasets"
+STYLES_URL = "api:admin-workspaces:workspaces-styles"
+USERS_URL = "api:admin-workspaces:workspaces-users"
 
 
 class TestAdminWorkspaceViewSetPermissions(APITestCase):
@@ -222,3 +226,128 @@ class TestAdminWorkspaceViewSetDelete(APITestCase):
         self.client.force_authenticate(user=self.admin)
         response = self.client.delete(reverse(DETAIL_URL, args=[workspace.pk]))
         self.assertEqual(response.status_code, 404)
+
+
+class TestAdminWorkspaceDatasetsAction(APITestCase):
+    def setUp(self):
+        self.admin = UserFactory.create(is_staff=True)
+        self.normal = UserFactory.create()
+        self.workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PUBLIC)
+
+    def test_returns_403_for_non_admin(self):
+        self.client.force_authenticate(user=self.normal)
+        response = self.client.get(reverse(DATASETS_URL, args=[self.workspace.pk]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_returns_200_for_admin(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(DATASETS_URL, args=[self.workspace.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_returns_404_for_inaccessible_workspace(self):
+        workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PRIVATE)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(DATASETS_URL, args=[workspace.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_only_returns_datasets_belonging_to_workspace(self):
+        dataset = DatasetFactory.create(workspace=self.workspace)
+        DatasetFactory.create()  # belongs to no workspace
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(DATASETS_URL, args=[self.workspace.pk]))
+        ids = [d["id"] for d in response.json()]
+        self.assertEqual([dataset.pk], ids)
+
+    def test_response_contains_expected_fields(self):
+        DatasetFactory.create(workspace=self.workspace)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(DATASETS_URL, args=[self.workspace.pk]))
+        item = response.json()[0]
+        self.assertSetEqual({"id", "name", "visibility"}, set(item.keys()))
+
+
+class TestAdminWorkspaceStylesAction(APITestCase):
+    def setUp(self):
+        self.admin = UserFactory.create(is_staff=True)
+        self.normal = UserFactory.create()
+        self.workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PUBLIC)
+
+    def test_returns_403_for_non_admin(self):
+        self.client.force_authenticate(user=self.normal)
+        response = self.client.get(reverse(STYLES_URL, args=[self.workspace.pk]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_returns_200_for_admin(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(STYLES_URL, args=[self.workspace.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_returns_404_for_inaccessible_workspace(self):
+        workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PRIVATE)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(STYLES_URL, args=[workspace.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_only_returns_styles_belonging_to_workspace(self):
+        style = StyleFactory.create(workspace=self.workspace)
+        StyleFactory.create()  # belongs to no workspace
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(STYLES_URL, args=[self.workspace.pk]))
+        ids = [s["id"] for s in response.json()]
+        self.assertEqual([style.pk], ids)
+
+    def test_response_contains_expected_fields(self):
+        StyleFactory.create(workspace=self.workspace)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(STYLES_URL, args=[self.workspace.pk]))
+        item = response.json()[0]
+        self.assertSetEqual({"id", "name", "type"}, set(item.keys()))
+
+
+class TestAdminWorkspaceUsersAction(APITestCase):
+    def setUp(self):
+        self.admin = UserFactory.create(is_staff=True)
+        self.normal = UserFactory.create()
+        self.workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PUBLIC)
+
+    def test_returns_403_for_non_admin(self):
+        self.client.force_authenticate(user=self.normal)
+        response = self.client.get(reverse(USERS_URL, args=[self.workspace.pk]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_returns_200_for_admin(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(USERS_URL, args=[self.workspace.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_returns_404_for_inaccessible_workspace(self):
+        workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PRIVATE)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(USERS_URL, args=[workspace.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_only_returns_users_belonging_to_workspace(self):
+        other_workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PUBLIC)
+        access = UserAccessWorkspaceFactory.create(workspace=self.workspace)
+        UserAccessWorkspaceFactory.create(workspace=other_workspace)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(USERS_URL, args=[self.workspace.pk]))
+        user_ids = [u["user_id"] for u in response.json()]
+        self.assertEqual([access.user_id], user_ids)
+
+    def test_response_contains_expected_fields(self):
+        UserAccessWorkspaceFactory.create(workspace=self.workspace)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(USERS_URL, args=[self.workspace.pk]))
+        item = response.json()[0]
+        self.assertSetEqual(
+            {"user_id", "email", "first_name", "last_name", "role"}, set(item.keys())
+        )
+
+    def test_returns_correct_role(self):
+        UserAccessWorkspaceFactory.create(
+            workspace=self.workspace, role=WorkspaceRole.OWNER
+        )
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(USERS_URL, args=[self.workspace.pk]))
+        self.assertEqual(response.json()[0]["role"], WorkspaceRole.OWNER)

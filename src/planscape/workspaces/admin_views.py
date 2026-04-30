@@ -1,7 +1,9 @@
 from core.serializers import MultiSerializerMixin
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
@@ -20,7 +22,10 @@ from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceRole
 from workspaces.serializers import (
     CreateWorkspaceSerializer,
     UpdateWorkspaceSerializer,
+    WorkspaceDatasetSerializer,
     WorkspaceSerializer,
+    WorkspaceStyleSerializer,
+    WorkspaceUserAccessSerializer,
 )
 
 
@@ -51,6 +56,39 @@ class AdminWorkspaceViewSet(
         return Workspace.objects.filter(
             Q(visibility=VisibilityOptions.PUBLIC) | Q(user_access__user=user)
         ).distinct()
+
+    @extend_schema(
+        description="List datasets belonging to this workspace.",
+        responses=WorkspaceDatasetSerializer(many=True),
+    )
+    @action(detail=True, methods=["get"], url_path="datasets")
+    def datasets(self, request, pk=None):
+        workspace = self.get_object()
+        qs = workspace.datasets.all()
+        serializer = WorkspaceDatasetSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        description="List styles belonging to this workspace.",
+        responses=WorkspaceStyleSerializer(many=True),
+    )
+    @action(detail=True, methods=["get"], url_path="styles")
+    def styles(self, request, pk=None):
+        workspace = self.get_object()
+        qs = workspace.styles.all()
+        serializer = WorkspaceStyleSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        description="List users with access to this workspace.",
+        responses=WorkspaceUserAccessSerializer(many=True),
+    )
+    @action(detail=True, methods=["get"], url_path="users")
+    def users(self, request, pk=None):
+        workspace = self.get_object()
+        qs = workspace.user_access.select_related("user").all()
+        serializer = WorkspaceUserAccessSerializer(qs, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

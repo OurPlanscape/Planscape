@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from datetime import datetime
 import os
 import shutil
+from core.mattermost import post_to_mattermost
 
 
 class Command(BaseCommand):
@@ -51,6 +52,12 @@ class Command(BaseCommand):
             latest_output_file_name = f"latest_{settings.ENV}_backup.json"
             latest_output_path = os.path.join(backups_dir, latest_output_file_name)
             shutil.copy(str(output_path), str(latest_output_path))
+            post_to_mattermost(
+                f"planscape-{settings.ENV} :white_check_mark: Catalog data backup completed successfully: {output_filename}"
+            )
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error dumping data: {e}"))
+            post_to_mattermost(
+                f"planscape-{settings.ENV} :x: Catalog data backup failed: {e}"
+            )
