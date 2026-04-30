@@ -572,17 +572,25 @@ def get_table_mask(datalayer: DataLayer) -> Optional[GEOSGeometry]:
     if geometry_type in {None, GeometryType.NO_GEOM}:
         return None
 
-    is_polygonal = geometry_type in {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}
-    mask_expression = (
-        "ST_UnaryUnion(ST_Collect(ST_Envelope(geometry)))"
-        if is_polygonal
-        else "ST_ConvexHull(ST_Collect(geometry))"
-    )
-
     srid = 4269  # hardcoded as we only import stuff in 4269
     schema, table = datalayer.table.split(".")
     with connection.cursor() as cursor:
-        query = f"""SELECT
+        if geometry_type in {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
+            query = f"""SELECT
+    ST_AsText(
+        ST_UnaryUnion(
+            ST_Collect(
+                ST_Envelope(geometry)
+            )
+        )
+    ) as geometry
+FROM "{schema}"."{table}"
+WHERE geometry IS NOT NULL;
+"""
+        else:
+            # ConvexHull can return POINT or LINESTRING for sparse point/line layers;
+            # only area masks are valid here, and ST_Multi normalizes POLYGON output.
+            query = f"""SELECT
     ST_AsText(
         CASE
             WHEN GeometryType(mask) IN ('POLYGON', 'MULTIPOLYGON')
@@ -592,7 +600,7 @@ def get_table_mask(datalayer: DataLayer) -> Optional[GEOSGeometry]:
     ) as geometry
 FROM (
     SELECT
-        {mask_expression} AS mask
+        ST_ConvexHull(ST_Collect(geometry)) AS mask
     FROM "{schema}"."{table}"
     WHERE geometry IS NOT NULL
 ) masks;
