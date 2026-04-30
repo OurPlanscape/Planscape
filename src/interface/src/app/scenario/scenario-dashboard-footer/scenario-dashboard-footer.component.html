@@ -1,0 +1,53 @@
+<div class="footer" *ngIf="scenario">
+  <button
+    sg-button
+    variant="link"
+    class="footer-button configuration-button"
+    (click)="setDisplayOverlay(true)"
+    [disabled]="displayScenarioConfigOverlay$ | async"
+    [matMenuTriggerFor]="popoverMenu"
+    (menuClosed)="setDisplayOverlay(false)">
+    View Configurations
+  </button>
+  <mat-menu #popoverMenu="matMenu" class="scenario-config-overlay">
+    <!-- Preventing modal to be closed if you click on the content-->
+    <div
+      matMenuContent
+      (click)="$event.stopPropagation()"
+      *ngIf="displayScenarioConfigOverlay$ | async">
+      <app-legacy-scenario-config-overlay
+        *ngIf="
+          scenario.version === 'V2' || scenario.version === 'V1'
+        "></app-legacy-scenario-config-overlay>
+      <app-scenario-config-overlay
+        *ngIf="scenario.version === 'V3'"></app-scenario-config-overlay>
+    </div>
+  </mat-menu>
+  <div class="right-buttons">
+    <button
+      *ngIf="scenario.geopackage_status"
+      sg-button
+      variant="ghost"
+      class="footer-button"
+      icon="download"
+      [disabled]="
+        downloadingScenario ||
+        scenario.geopackage_status === 'PENDING' ||
+        scenario.geopackage_status === 'PROCESSING'
+      "
+      [outlined]="true"
+      (click)="handleButton()">
+      {{ buttonLabels[scenario.geopackage_status] || 'Generating GeoPackage' }}
+    </button>
+
+    <button
+      sg-button
+      variant="primary"
+      class="footer-button"
+      icon="open_in_full"
+      [outlined]="true"
+      (click)="navigateToScenario()">
+      Open Full View
+    </button>
+  </div>
+</div>

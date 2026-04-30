@@ -7,10 +7,19 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 import { ScenarioState } from '../scenario.state';
 import { PlanState } from '@app/plan/plan.state';
-import { OverlayLoaderComponent, TileButtonComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  OverlayLoaderComponent,
+  TileButtonComponent,
+} from '@styleguide';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { getPlanPath } from '@app/plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
+import { ScenarioDownloadFooterComponent } from '../scenario-download-footer/scenario-download-footer.component';
+import { MatMenuModule } from '@angular/material/menu';
+import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
+import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
+import { ScenarioDashboardFooterComponent } from '../scenario-dashboard-footer/scenario-dashboard-footer.component';
 
 @UntilDestroy()
 @Component({
@@ -24,6 +33,12 @@ import { ActivatedRoute } from '@angular/router';
     DetailsCardComponent,
     TileButtonComponent,
     OverlayLoaderComponent,
+    ScenarioDownloadFooterComponent,
+    ButtonComponent,
+    MatMenuModule,
+    ScenarioConfigOverlayComponent,
+    LegacyScenarioConfigOverlayComponent,
+    ScenarioDashboardFooterComponent,
   ],
   templateUrl: './scenario-dashboard.component.html',
   styleUrl: './scenario-dashboard.component.scss',
@@ -34,6 +49,7 @@ export class ScenarioDashboardComponent implements OnInit {
   loadingPlan$ = this.planState.isPlanLoading$;
   loadingScenario$ = this.scenarioState.isScenarioLoading$;
   planId = this.route.parent?.snapshot.data['planId'];
+  displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
 
   scenarioDashboardTools = [
     {

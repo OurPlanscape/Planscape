@@ -27,3 +27,16 @@
 .scenario-dashboard-layout {
   background-color: $color-light-gray;
 }
+
+.right-column-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.right-column-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
