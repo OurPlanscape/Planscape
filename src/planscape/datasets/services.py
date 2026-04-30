@@ -599,7 +599,7 @@ FROM (
 """
         cursor.execute(query)
         row = cursor.fetchone()
-        if row:
+        if row and row[0]:
             return GEOSGeometry(row[0], srid=srid)
 
         return None
