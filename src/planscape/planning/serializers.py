@@ -595,6 +595,16 @@ class TargetsSerializer(serializers.Serializer):
 
         return super().validate(attrs)
 
+class WeighedPriorityObjectiveField(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+    weight = serializers.IntegerField()
+
+    def validate_weight(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("Invalid priority objective weight.")
+        
+        return value
+
 
 class ConfigurationV3Serializer(serializers.Serializer):
     stand_size = serializers.ChoiceField(
@@ -626,6 +636,14 @@ class ConfigurationV3Serializer(serializers.Serializer):
 
     priority_objectives = serializers.ListField(
         child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=1,
+        max_length=2,
+        required=False,
+    )
+
+    priorities = serializers.ListField(
+        child=WeighedPriorityObjectiveField(),
         allow_empty=True,
         min_length=1,
         max_length=2,
@@ -700,8 +718,16 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         allow_empty=True,
         required=False,
     )
+    # TODO: deprecate this field (replaced by priorities)
     priority_objectives = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        allow_empty=True,
+        min_length=1,
+        max_length=2,
+        required=False,
+    )
+    priorities = serializers.ListField(
+        child=WeighedPriorityObjectiveField(),
         allow_empty=True,
         min_length=1,
         max_length=2,
