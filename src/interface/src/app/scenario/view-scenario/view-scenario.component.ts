@@ -42,6 +42,7 @@ import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scen
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioService } from '@services';
+import { FeatureService } from '@app/features/feature.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -113,7 +114,8 @@ export class ViewScenarioComponent {
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
     private breadcrumbService: BreadcrumbService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private featureService: FeatureService
   ) {
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
@@ -129,11 +131,19 @@ export class ViewScenarioComponent {
       .pipe(
         untilDestroyed(this),
         switchMap((s) => {
-          // On specific scenario
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Planning Area Overview',
-            backUrl: getPlanPath(this.planId),
-          });
+          if (this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS')) {
+            // On specific scenario
+            this.breadcrumbService.updateBreadCrumb({
+              label: s.name,
+              backUrl: `${getPlanPath(this.planId)}/scenario/${this.scenarioId}/dashboard`,
+            });
+          } else {
+            // Remove this block once SCENARIO_DASHBOARS be released
+            this.breadcrumbService.updateBreadCrumb({
+              label: 'Planning Area Overview',
+              backUrl: getPlanPath(this.planId),
+            });
+          }
           return this.shouldPoll(s) ? this.startPolling() : EMPTY;
         })
       )

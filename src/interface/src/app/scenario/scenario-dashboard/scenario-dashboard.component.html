@@ -38,8 +38,13 @@
         </div>
       </sg-details-card>
     </div>
-    <div right-column>
-      <p>Right column placeholder</p>
+    <div right-column class="right-column-card">
+      <div class="right-column-content">
+        <p>Right column placeholder</p>
+      </div>
+
+      <app-scenario-dashboard-footer
+        [scenario]="currentScenario$ | async"></app-scenario-dashboard-footer>
     </div>
   </sg-dashboard-layout>
 </ng-container>

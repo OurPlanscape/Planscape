@@ -1,0 +1,21 @@
+@import 'colors';
+
+.footer {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+
+  display: flex;
+  padding: 16px;
+  justify-content: space-between;
+  align-items: center;
+
+  border-top: 2px solid $color-soft-gray;
+  background: $color-white;
+}
+
+.right-buttons {
+  display: flex;
+  gap: 8px;
+}
