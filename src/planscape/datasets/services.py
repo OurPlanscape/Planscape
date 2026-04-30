@@ -569,7 +569,7 @@ def get_table_mask(datalayer: DataLayer) -> Optional[GEOSGeometry]:
     Given a datalayer, returns a polygonal mask for all table geometries.
     """
     geometry_type = datalayer.geometry_type
-    if geometry_type in {None, GeometryType.NO_GEOM, GeometryType.RASTER}:
+    if geometry_type in {None, GeometryType.NO_GEOM}:
         return None
 
     is_polygonal = geometry_type in {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}
