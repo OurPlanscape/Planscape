@@ -1,0 +1,53 @@
+<sg-overlay-loader *ngIf="(loadingPlan$ | async) === true"></sg-overlay-loader>
+<!-- Two columns layout START -->
+<ng-container *ngIf="currentPlan$ | async as plan">
+  <sg-dashboard-layout
+    layoutVariant="disable-right-scroll"
+    class="project-area-dashboard-layout">
+    <div header>
+      <!-- NavBar -->
+      <app-nav-bar area="SCENARIO"></app-nav-bar>
+    </div>
+    <div
+      left-column
+      class="plan-overview-column"
+      *ngIf="currentScenario$ | async as scenario">
+      <sg-details-card
+        title="Project Area Dashboard"
+        [subtitle]="scenario.name || ''"
+        [creator]="plan.creator"
+        [acres]="plan.area_acres"
+        [created_at]="plan.created_at"
+        [loading]="(loadingProjectArea$ | async) === true"
+        [planning_area_name]="plan?.name || ''"></sg-details-card>
+
+      <app-map-viewer-card height="tall" [showProjectAreas]="true">
+      </app-map-viewer-card>
+
+      <!-- Dashboard tools -->
+      <sg-details-card
+        title="Project Area Tools"
+        class="project-area-tools-card">
+        <!--Subtitle-->
+        <p class="description">
+          Refine your project planning further by using our specialized project
+          area tools.
+        </p>
+        <!--Tools-->
+        <div class="tools">
+          <sg-tile-button
+            *ngFor="let tool of dashboardTools"
+            [backgroundImage]="tool.backgroundImage"
+            [backgroundColor]="tool.backgroundColor ?? ''"
+            [title]="tool.title"
+            size="lg"
+            [disabled]="!tool.enabled">
+          </sg-tile-button>
+        </div>
+      </sg-details-card>
+    </div>
+    <div right-column class="project-area-column">
+      <app-project-area-coming-soon></app-project-area-coming-soon>
+    </div>
+  </sg-dashboard-layout>
+</ng-container>

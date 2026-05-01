@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapComponent, LayerComponent } from '@maplibre/ngx-maplibre-gl';
@@ -16,6 +16,7 @@ import { FrontendConstants } from '@app/map/map.constants';
 import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
 import { PlanState } from '../plan.state';
 import { map } from 'rxjs';
+import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -24,6 +25,7 @@ import { map } from 'rxjs';
     AsyncPipe,
     MapComponent,
     LayerComponent,
+    MapProjectAreasComponent,
     MatIconModule,
     NgIf,
     PlanningAreaLayerComponent,
@@ -34,9 +36,14 @@ import { map } from 'rxjs';
   styleUrl: './map-viewer-card.component.scss',
 })
 export class MapViewerCardComponent {
+  @Input() height: 'tall' | 'normal' = 'normal';
+
+  @Input() showProjectAreas: boolean = false;
+
   mapLibreMap!: MapLibreMap;
   baseLayerUrl = baseMapStyles['terrain'];
   currentPlan$ = this.planState.currentPlan$;
+
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
       return getBoundsFromGeometry(geometry);
@@ -70,4 +77,9 @@ export class MapViewerCardComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  @HostBinding('class.tall')
+  get isTall() {
+    return this.height === 'tall';
+  }
 }
