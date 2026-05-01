@@ -149,14 +149,14 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
   circlePaint(layer: BaseLayer): any {
     const override = this.styleOverrideFor(layer);
     const styleData = layer.styles[0].data;
-    // const opacity = parseFloat(
-    //   override?.fillOpacity ?? styleData['fill-opacity'] ?? '1'
-    // );
+    const opacity = parseFloat(
+      override?.fillOpacity ?? styleData['fill-opacity'] ?? '1'
+    );
     const color = override?.fillColor ?? styleData['fill-color'];
     const strokeColor = styleData['fill-outline-color'] ?? '#ffffff';
     return {
       'circle-color': color,
-      'circle-opacity': 1,
+      'circle-opacity': opacity,
       'circle-radius': 8,
       'circle-stroke-width': 2,
       'circle-stroke-color': strokeColor,
