@@ -29,6 +29,7 @@ import { ButtonComponent } from '@styleguide/button/button.component';
 })
 export class SectionComponent {
   @Input() headline = '';
+  @Input() headlineHint = '';
   @Input() tooltipContent = '';
   // When both tooltipContent and tooltipTemplate are provided, tooltipTemplate takes precedence.
   @Input() tooltipTemplate: TemplateRef<any> | null = null;
@@ -39,6 +40,7 @@ export class SectionComponent {
   @Input() defaultExpanded = true;
 
   @Input() tooltipIcon: 'help' | 'info' = 'info';
+  @Input() tooltipSize: 'small' | 'medium' = 'small';
 
   stopPropagation(e: Event) {
     e.stopPropagation();

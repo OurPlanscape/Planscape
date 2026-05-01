@@ -8,7 +8,7 @@
   (click)="$event.stopPropagation()"
   [matMenuTriggerFor]="menu"></button>
 
-<mat-menu #menu="matMenu" class="info-popover-menu">
+<mat-menu #menu="matMenu" class="info-popover-menu {{ panelSize }}">
   <div class="tooltip">
     <ng-container *ngIf="content; else projected">
       <div [innerHTML]="content"></div>
