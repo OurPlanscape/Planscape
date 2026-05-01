@@ -7,7 +7,7 @@ import { canDeactivateGuard } from '@services/can-deactivate.guard';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { ScenarioDashboardComponent } from './scenario-dashboard/scenario-dashboard.component';
 import { createFeatureGuard } from '@app/features/feature.guard';
-import { ProjectAreaDashboardComponent } from '@app/plan/project-area-dashboard/project-area-dashboard.component';
+import { ProjectAreaDashboardComponent } from '@app/scenario/project-area-dashboard/project-area-dashboard.component';
 
 const routes: Routes = [
   {

@@ -8,10 +8,13 @@
       <!-- NavBar -->
       <app-nav-bar area="SCENARIO"></app-nav-bar>
     </div>
-    <div left-column class="plan-overview-column">
+    <div
+      left-column
+      class="plan-overview-column"
+      *ngIf="currentScenario$ | async as scenario">
       <sg-details-card
         title="Project Area Dashboard"
-        subtitle="INSERT NAME"
+        [subtitle]="scenario.name || ''"
         [creator]="plan.creator"
         [acres]="plan.area_acres"
         [created_at]="plan.created_at"

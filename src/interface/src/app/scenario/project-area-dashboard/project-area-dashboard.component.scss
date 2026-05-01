@@ -27,3 +27,8 @@
 .project-area-dashboard-layout {
   background-color: $color-light-gray;
 }
+
+.plan-project-area-column {
+  flex: 1;
+  display: flex;
+}

@@ -10,9 +10,9 @@ import { OverlayLoaderComponent, TileButtonComponent } from '@styleguide';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { getPlanPath } from '@app/plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
 import { MapViewerCardComponent } from '@app/plan/map-viewer-card/map-viewer-card.component';
 import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/project-area-coming-soon.component';
+import { ScenarioState } from '../scenario.state';
 
 @UntilDestroy()
 @Component({
@@ -33,10 +33,10 @@ import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/proj
   styleUrl: './project-area-dashboard.component.scss',
 })
 export class ProjectAreaDashboardComponent implements OnInit {
-  currentProjectArea$ = of(null);
   currentPlan$ = this.planState.currentPlan$;
   loadingPlan$ = this.planState.isPlanLoading$;
-  loadingProjectArea$ = of(false);
+  loadingProjectArea$ = this.scenarioState.isScenarioLoading$;
+  currentScenario$ = this.scenarioState.currentScenario$;
   planId = this.route.parent?.snapshot.data['planId'];
 
   dashboardTools = [
@@ -44,7 +44,6 @@ export class ProjectAreaDashboardComponent implements OnInit {
       backgroundImage: '/assets/svg/treatment-effects.svg',
       backgroundColor: '#dfede6',
       title: 'Treatment Effects',
-      subtitle: 'The Treatment Effects module aims t...',
       featureFlag: '',
       enabled: true,
     },
@@ -59,7 +58,7 @@ export class ProjectAreaDashboardComponent implements OnInit {
   ];
 
   constructor(
-    // private scenarioState: ScenarioState,
+    private scenarioState: ScenarioState,
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute
