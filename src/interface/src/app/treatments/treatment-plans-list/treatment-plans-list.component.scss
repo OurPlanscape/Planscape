@@ -5,145 +5,144 @@
 @import 'media';
 
 :host {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .treatments-list-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    padding: 16px;
-    background: $color-white;
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 16px;
+  background: $color-white;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 
-    h4 {
-        margin: 0 auto 0 0;
-        font-size: 18px;
-        font-weight: 600;
-    }
+  h4 {
+    margin: 0 auto 0 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
 
-    @include on-small() {
-        flex-direction: column-reverse;
-        height: unset;
-        justify-content: flex-start;
-        align-items: flex-start;
-    }
+  @include on-small() {
+    flex-direction: column-reverse;
+    height: unset;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
 }
 
 .header-right {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .treatment-cards-wrapper {
-    position: relative;
-    width: 100%;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 8px 16px;
-    align-items: center;
-    overflow-y: auto;
-    box-sizing: border-box;
-    gap: 16px;
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px;
+  align-items: center;
+  overflow-y: auto;
+  box-sizing: border-box;
+  gap: 16px;
 }
 
 .margin-top {
-    margin-top: 30px;
+  margin-top: 30px;
 }
 
-
-
 .sort-header {
-    @include small-input-label();
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    color: $color-black;
+  @include small-input-label();
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: $color-black;
 }
 
 .button-section {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 
-    @include on-small() {
-        width: 100%;
-        justify-content: space-between;
-    }
+  @include on-small() {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 app-section-loader {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
 }
 
-.custom-tab-group::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
-    flex-grow: 0;
+.custom-tab-group::ng-deep
+  .mat-mdc-tab-header
+  .mat-mdc-tab-label-container
+  .mat-mdc-tab {
+  flex-grow: 0;
 }
 
 .banner {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 .spinner {
-    width: 100%;
-    margin: 40px auto;
+  width: 100%;
+  margin: 40px auto;
 }
 
 .pending-message,
 .large-message {
-    text-align: center;
+  text-align: center;
 
-    h4 {
-        @include standard-input-label();
-        margin: 0 0 8px;
-        color: $color-text-dark;
-    }
+  h4 {
+    @include standard-input-label();
+    margin: 0 0 8px;
+    color: $color-text-dark;
+  }
 
-    p {
-        color: $color-md-gray;
-    }
+  p {
+    color: $color-md-gray;
+  }
 }
 
 .large-message {
-    margin: 32px;
+  margin: 32px;
 }
 
 .card-list {
-    width: 100%;
+  width: 100%;
 }
 
 .list-spinner {
-    flex: 1;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .no-plans-view {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-
-
-.create-plans-block {
+  .create-plans-block {
     display: flex;
     max-width: 700px;
     flex-direction: column;
@@ -151,10 +150,9 @@ app-section-loader {
     justify-content: center;
     gap: 8px;
     padding: 24px 16px;
-}
+  }
 
-
-.awaiting-block {
+  .awaiting-block {
     display: flex;
     max-width: 700px;
     flex-direction: column;
@@ -162,22 +160,22 @@ app-section-loader {
     justify-content: center;
     gap: 8px;
     padding: 24px 16px;
-}
+  }
 
-    .no-plans-icon {
-        height: 36px;
-        width: 36px;
-        font-size: 36px;
-        color: $color-md-gray;
-    }
+  .no-plans-icon {
+    height: 36px;
+    width: 36px;
+    font-size: 36px;
+    color: $color-md-gray;
+  }
 
-    .title {
-        @include h4();
-    }
+  .title {
+    @include h4();
+  }
 
-    .awaiting-blurb {
-        @include small-paragraph();
-        color: $color-md-gray;
-        text-align: center;
-    }
+  .awaiting-blurb {
+    @include small-paragraph();
+    color: $color-md-gray;
+    text-align: center;
+  }
 }

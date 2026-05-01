@@ -80,8 +80,9 @@
           <mat-spinner diameter="40"></mat-spinner>
         </div>
       } @else {
-        <!-- <sg-treatment-effects-card
+        <sg-treatment-plan-card
           class="in-list"
+          [treatmentLink]="tx.id.toString()"
           *ngFor="let tx of treatments; trackBy: trackByFn"
           [name]="tx.name"
           [status]="tx.status"
@@ -91,7 +92,7 @@
           [userCanDuplicate]="userCanDuplicate()"
           (view)="goToTreatment(tx, tx.status)"
           (delete)="openDeleteDialog(tx)"
-          (duplicate)="duplicateTreatment(tx)"></sg-treatment-effects-card> -->
+          (duplicate)="duplicateTreatment(tx)"></sg-treatment-plan-card>
       }
     </div>
   }
