@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { SectionComponent, StepDirective } from '@styleguide';
+import { ButtonComponent, SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
   FormControl,
@@ -14,7 +14,7 @@ import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
-import { finalize, take } from 'rxjs';
+import { finalize, map, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeaturesModule } from '@features/features.module';
 import { FeatureService } from '@features/feature.service';
@@ -33,6 +33,7 @@ const MAX_SELECTABLE_LAYERS = 2;
     SectionComponent,
     ReactiveFormsModule,
     FeaturesModule,
+    ButtonComponent,
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
@@ -51,6 +52,10 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
   uiLoading = false;
 
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
+
+  hasMoreThanOneSelected$ = this.selectionCount$.pipe(
+    map((count) => count > 1)
+  );
 
   selectedItems$ = this.dataLayersStateService.selectedDataLayers$;
 
