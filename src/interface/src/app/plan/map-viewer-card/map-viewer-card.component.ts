@@ -38,8 +38,7 @@ import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/ma
 export class MapViewerCardComponent {
   @Input() height: 'tall' | 'normal' = 'normal';
 
-  // TODO: just placeholders
-  @Input() showProjectAreas = true;
+  @Input() showProjectAreas: boolean = false;
 
   mapLibreMap!: MapLibreMap;
   baseLayerUrl = baseMapStyles['terrain'];

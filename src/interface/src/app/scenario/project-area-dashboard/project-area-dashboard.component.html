@@ -21,7 +21,8 @@
         [loading]="(loadingProjectArea$ | async) === true"
         [planning_area_name]="plan?.name || ''"></sg-details-card>
 
-      <app-map-viewer-card height="tall"> </app-map-viewer-card>
+      <app-map-viewer-card height="tall" [showProjectAreas]="true">
+      </app-map-viewer-card>
 
       <!-- Dashboard tools -->
       <sg-details-card
@@ -45,7 +46,7 @@
         </div>
       </sg-details-card>
     </div>
-    <div right-column class="plan-project-area-column">
+    <div right-column class="project-area-column">
       <app-project-area-coming-soon></app-project-area-coming-soon>
     </div>
   </sg-dashboard-layout>
