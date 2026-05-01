@@ -6,6 +6,7 @@ import { CustomCobenefitsComponent } from './custom-cobenefits.component';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { NewScenarioState } from '../new-scenario.state';
+import { FeaturesModule } from '@features/features.module';
 
 describe('CustomCobenefitsComponent', () => {
   let component: CustomCobenefitsComponent;
@@ -17,6 +18,7 @@ describe('CustomCobenefitsComponent', () => {
         CustomCobenefitsComponent,
         HttpClientTestingModule,
         NoopAnimationsModule,
+        FeaturesModule,
       ],
       providers: [
         MockProvider(NewScenarioState, {

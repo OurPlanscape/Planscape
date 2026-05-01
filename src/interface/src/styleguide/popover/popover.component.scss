@@ -3,6 +3,11 @@
 
 ::ng-deep .info-popover-menu {
   padding: 0;
+
+  &.medium {
+    max-width: 417px;
+  }
+
 }
 
 .tooltip {
@@ -27,3 +32,4 @@
 .black {
   color: $color-black;
 }
+
