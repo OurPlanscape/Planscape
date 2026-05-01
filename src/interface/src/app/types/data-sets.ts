@@ -110,7 +110,7 @@ export interface DataLayer {
   metadata: Metadata | null;
   styles: Styles[];
   geometry?: Geometry | string | null; // TODO: this is just a test...
-  map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON' | 'VECTORTILES_POINTS'; /// TODO: remove this last one?
+  map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
 
 export interface BaseLayer extends Omit<DataLayer, 'styles'> {

@@ -9,7 +9,10 @@
         setTooltipData($event)
       "></app-map-arcgis-vector-layer>
   </ng-container>
-  <ng-container *ngIf="layer.map_service_type === 'VECTORTILES' && layer.geometry !== 'POINT'">
+  <ng-container
+    *ngIf="
+      layer.map_service_type === 'VECTORTILES' && layer.geometry !== 'POINT'
+    ">
     <mgl-vector-source
       [id]="'source_' + layer.id"
       [tiles]="[layer.map_url]"
@@ -18,6 +21,7 @@
       [id]="'layer_fill_' + layer.id"
       [source]="'source_' + layer.id"
       [sourceLayer]="'dynamic_' + layer.id"
+      [filter]="['!=', '$type', 'Point']"
       (layerMouseMove)="hoverOnLayer($event, layer, 'layer_fill_')"
       (layerMouseOut)="hoverOutLayer()"
       type="fill"
@@ -27,74 +31,24 @@
       [id]="'layer_outline_' + layer.id"
       [source]="'source_' + layer.id"
       [sourceLayer]="'dynamic_' + layer.id"
-      (layerMouseMove)="hoverOnLayer($event, layer, 'layer_outline_')"
-      (layerMouseOut)="hoverOutLayer()"
-      type="line"
-      [paint]="lineLayerPaint(layer)"
-      [before]="'layer_fill_' + layer.id"></mgl-layer>
-  </ng-container>
-<ng-container *ngIf="layer.map_service_type === 'VECTORTILES' && layer.geometry === 'POINT'">
-    <mgl-vector-source
-      [id]="'source_' + layer.id"
-      [tiles]="[layer.map_url]"
-      [promoteId]="'id'"></mgl-vector-source>
-    <mgl-layer
-      [id]="'layer_fill_' + layer.id"
-      [source]="'source_' + layer.id"
-      [sourceLayer]="'dynamic_' + layer.id"
-      (layerMouseMove)="hoverOnLayer($event, layer, 'layer_fill_')"
-      (layerMouseOut)="hoverOutLayer()"
-      type="fill"
-      [paint]="fillLayerPaint(layer)"
-      [before]="layerInsertPosition"></mgl-layer>
-    <mgl-layer
-      [id]="'layer_outline_' + layer.id"
-      [source]="'source_' + layer.id"
-      [sourceLayer]="'dynamic_' + layer.id"
+      [filter]="['!=', '$type', 'Point']"
       (layerMouseMove)="hoverOnLayer($event, layer, 'layer_outline_')"
       (layerMouseOut)="hoverOutLayer()"
       type="line"
       [paint]="lineLayerPaint(layer)"
       [before]="'layer_fill_' + layer.id"></mgl-layer>
 
-  <mgl-geojson-source
-  id="'source_' + layer.id"
-  >
-</mgl-geojson-source>
-
-<mgl-layer
-  id="test-layer"
-  source="'source_' + layer.id"
-  type="circle" 
-  [paint]="{
-    'circle-radius': 12,
-    'circle-color': '#00ff00',
-    'circle-stroke-width': 10,
-    'circle-stroke-color': '#ffffff'
-  }"
->
-</mgl-layer>
-
-<!-- show some example circles, regardless -->
-<mgl-geojson-source
-  id="test-points-source"
-  [data]="testData">
-</mgl-geojson-source>
-
-<mgl-layer
-  id="test-layer"
-  source="test-points-source"
-  type="circle" 
-  [paint]="{
-    'circle-radius': 12,
-    'circle-color': '#00ff00',
-    'circle-stroke-width': 10,
-    'circle-stroke-color': '#ffffff'
-  }"
->
-</mgl-layer>
+    <mgl-layer
+      [id]="'layer_circle_' + layer.id"
+      [source]="'source_' + layer.id"
+      [sourceLayer]="'dynamic_' + layer.id"
+      [filter]="['==', '$type', 'Point']"
+      type="circle"
+      [paint]="circlePaint(layer)"
+      (layerMouseMove)="hoverOnLayer($event, layer, 'layer_circle_')"
+      (layerMouseOut)="hoverOutLayer()">
+    </mgl-layer>
   </ng-container>
-
 </div>
 <app-map-base-layer-tooltip
   *ngIf="enableBaseLayerHover$ && (currentTooltipInfo$ | async) as toolTipInfo"

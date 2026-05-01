@@ -13,15 +13,13 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   LayerComponent,
-  GeoJSONSourceComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
- SymbolLayerSpecification,
- } from 'maplibre-gl';
+} from 'maplibre-gl';
 import { MapBaseLayerTooltipComponent } from '@maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { MapArcgisVectorLayerComponent } from '@maplibre-map/map-arcgis-vector-layer/map-arcgis-vector-layer.component';
@@ -31,9 +29,6 @@ import {
   BaseLayerStyleOverride,
 } from './map-base-layers-style.token';
 import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
-
-  type SymbolLayout = SymbolLayerSpecification['layout'];
-
 
 @Component({
   selector: 'app-map-base-layers',
@@ -46,8 +41,6 @@ import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
     LayerComponent,
     NgIf,
     MapArcgisVectorLayerComponent,
-
-    GeoJSONSourceComponent // TODO: for point test
   ],
   templateUrl: './map-base-layers.component.html',
   styleUrl: './map-base-layers.component.scss',
@@ -109,7 +102,10 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setupMapListeners();
-    console.log('what is this:', this.mapLibreMap);
+
+    //enable debugging:
+    // this.mapLibreMap.showTileBoundaries = true; // Shows the grid of tiles
+    // this.mapLibreMap.showCollisionBoxes = true; // Shows the hitboxes for labels/symbols
   }
 
   private setupMapListeners() {
@@ -124,7 +120,6 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
         this.baseLayersStateService.removeLoadingSourceId(event.sourceId);
       });
     }
-
   };
 
   private onErrorListener = (event: any) => {
@@ -155,6 +150,24 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     );
   }
 
+  circlePaint(layer: BaseLayer): any {
+    const override = this.styleOverrideFor(layer);
+    const styleData = layer.styles[0].data;
+    // const opacity = parseFloat(
+    //   override?.fillOpacity ?? styleData['fill-opacity'] ?? '1'
+    // );
+    const color = override?.fillColor ?? styleData['fill-color'];
+    const strokeColor = styleData['fill-outline-color'] ?? '#ffffff';
+    return {
+      'circle-color': color,
+      'circle-opacity': 1,
+      'circle-radius': 8,
+      'circle-stroke-width': 2,
+      'circle-stroke-color': strokeColor,
+      'circle-stroke-opacity': 1,
+    };
+  }
+
   private styleOverrideFor(layer: BaseLayer): BaseLayerStyleOverride | null {
     const o = this.styleOverride;
     return o && (!o.appliesTo || o.appliesTo(layer)) ? o : null;
@@ -164,16 +177,42 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     this.enableBaseLayerHover$.pipe(take(1)).subscribe((paintingEnabled) => {
       if (paintingEnabled) {
         const layerName = layerType + layer.id;
-        const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
+        let queryGeometry:
+          | maplibregl.PointLike
+          | [maplibregl.PointLike, maplibregl.PointLike];
+        if (layerType.includes('circle')) {
+          // Use a Bounding Box for points
+          const radius = 10;
+          queryGeometry = [
+            [event.point.x - radius, event.point.y - radius],
+            [event.point.x + radius, event.point.y + radius],
+          ];
+        } else {
+          queryGeometry = event.point;
+        }
+        const features = this.mapLibreMap.queryRenderedFeatures(queryGeometry, {
           layers: [layerName],
         });
+
+        // const features = this.mapLibreMap.queryRenderedFeatures(queryGeometry);
+
+        // TODO: for regular features
         if (features.length > 0) {
-          const tooltipInfo: BaseLayerTooltipData = {
-            content: this.createTooltipContent(layer, features[0]) ?? '',
-            longLat: event.lngLat,
-          };
-          this.setTooltipData(tooltipInfo);
-          this.paintHover(features[0]);
+          if (layerType.includes('circle')) {
+            const tooltipInfo: BaseLayerTooltipData = {
+              content: this.getMillTooltipData(features[0]),
+              longLat: event.lngLat,
+            };
+            this.setTooltipData(tooltipInfo);
+            this.paintHover(features[0]);
+          } else {
+            const tooltipInfo: BaseLayerTooltipData = {
+              content: this.createTooltipContent(layer, features[0]) ?? '',
+              longLat: event.lngLat,
+            };
+            this.setTooltipData(tooltipInfo);
+            this.paintHover(features[0]);
+          }
         }
       } else {
         this.hoverOutLayer();
@@ -208,6 +247,26 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     return layer.metadata?.modules?.map?.tooltip_format ?? null;
   }
 
+  //TODO: this is a PoC placeholder for getting mill data for tooltips:
+  // We will still need to set the tooltip_format on the layer itself
+  getMillTooltipData(feature: MapGeoJSONFeature): string {
+    const props = feature.properties;
+    const delim = '\n\r';
+    return (
+      'Name: ' +
+      props['millname'] +
+      delim +
+      'Type: ' +
+      props['milltype'] +
+      delim +
+      'Species: ' +
+      props['species'] +
+      delim +
+      'End Use: ' +
+      props['enduse']
+    );
+  }
+
   private createTooltipContent(
     layer: BaseLayer,
     feature: MapGeoJSONFeature
@@ -234,77 +293,6 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
       this.changeDetectorRef.markForCheck();
     });
   }
-
-  // Point-related helpers...maybe move to a separate component?
-public testData: any = {
-  type: 'FeatureCollection',
-  features: [
-    {
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [-122.4194, 37.7749] }, // SF
-      properties: { status: 'open' }
-    },
-    {
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [-117.1611, 32.7157] }, // SD
-      properties: { status: 'closed' }
-    }
-  ]
-};
-
-  public readonly testPointLayout: SymbolLayout = {
-  'icon-image': [
-    'match',
-    ['get', 'status'],
-    'open', 'icon-open',
-    'closed', 'icon-closed',
-    'icon-default'
-  ] as any, // 'as any' is a must for 4.5.0 expressions
-  'icon-size': 0.6,
-  'icon-anchor': 'top'
-};
-
-public testLayout: SymbolLayout = {
-  // 'icon-image': [
-  //   'match',
-  //   ['get', 'status'],
-  //   'open', 'icon-open',
-  //   'closed', 'icon-closed',
-  //   'coming_soon', 'icon-soon',
-  //   'icon-default' // Fallback
-  // ] as any,
-  'icon-image':'marker',
-  'icon-size': 0.8,
-  'icon-allow-overlap': true
-};
-
-
-  getPointLayout(layer: any) : SymbolLayout {
-  return {
-    'icon-image': [
-      'match',  // pick specific icon
-      ['get', 'status'],
-      'open', 'icon-open',
-      'closed', 'icon-closed',
-      'coming_soon', 'icon-soon',
-      'icon-default'
-    ],
-
-    'icon-size': 0.6,
-    'icon-anchor': 'bottom', // Keeps the "point" of the pin on the coordinate
-
-    'icon-allow-overlap': true, // Automatically hide icons that touch
-    'icon-ignore-placement': false,
-    };
-}
-
-  onMouseLeave() {
-
-  }
-
-  onMouseEnter() {}
-
-  handlePointClick(e: MapMouseEvent) {}
 
   private removeHover() {
     if (this.hoveredFeature) {
