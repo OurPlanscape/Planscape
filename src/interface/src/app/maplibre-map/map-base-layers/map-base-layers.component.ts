@@ -181,7 +181,7 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
           | maplibregl.PointLike
           | [maplibregl.PointLike, maplibregl.PointLike];
         if (layerType.includes('circle')) {
-          // Use a Bounding Box for points
+          // Use a Bounding Box for points, as a hover margin
           const radius = 10;
           queryGeometry = [
             [event.point.x - radius, event.point.y - radius],
@@ -193,26 +193,13 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
         const features = this.mapLibreMap.queryRenderedFeatures(queryGeometry, {
           layers: [layerName],
         });
-
-        // const features = this.mapLibreMap.queryRenderedFeatures(queryGeometry);
-
-        // TODO: for regular features
         if (features.length > 0) {
-          if (layerType.includes('circle')) {
-            const tooltipInfo: BaseLayerTooltipData = {
-              content: this.getMillTooltipData(features[0]),
-              longLat: event.lngLat,
-            };
-            this.setTooltipData(tooltipInfo);
-            this.paintHover(features[0]);
-          } else {
-            const tooltipInfo: BaseLayerTooltipData = {
-              content: this.createTooltipContent(layer, features[0]) ?? '',
-              longLat: event.lngLat,
-            };
-            this.setTooltipData(tooltipInfo);
-            this.paintHover(features[0]);
-          }
+          const tooltipInfo: BaseLayerTooltipData = {
+            content: this.createTooltipContent(layer, features[0]) ?? '',
+            longLat: event.lngLat,
+          };
+          this.setTooltipData(tooltipInfo);
+          this.paintHover(features[0]);
         }
       } else {
         this.hoverOutLayer();
@@ -245,26 +232,6 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
 
   private getTooltipTemplate(layer: BaseLayer): string | null {
     return layer.metadata?.modules?.map?.tooltip_format ?? null;
-  }
-
-  //TODO: this is a PoC placeholder for getting mill data for tooltips:
-  // We will still need to set the tooltip_format on the layer itself
-  getMillTooltipData(feature: MapGeoJSONFeature): string {
-    const props = feature.properties;
-    const delim = '\n\r';
-    return (
-      'Name: ' +
-      props['millname'] +
-      delim +
-      'Type: ' +
-      props['milltype'] +
-      delim +
-      'Species: ' +
-      props['species'] +
-      delim +
-      'End Use: ' +
-      props['enduse']
-    );
   }
 
   private createTooltipContent(
