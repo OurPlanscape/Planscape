@@ -9,10 +9,7 @@
         setTooltipData($event)
       "></app-map-arcgis-vector-layer>
   </ng-container>
-  <ng-container
-    *ngIf="
-      layer.map_service_type === 'VECTORTILES' && layer.geometry !== 'POINT'
-    ">
+  <ng-container *ngIf="layer.map_service_type === 'VECTORTILES'">
     <mgl-vector-source
       [id]="'source_' + layer.id"
       [tiles]="[layer.map_url]"

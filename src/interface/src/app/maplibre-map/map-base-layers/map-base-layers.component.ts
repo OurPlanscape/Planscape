@@ -102,10 +102,6 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setupMapListeners();
-
-    //enable debugging:
-    // this.mapLibreMap.showTileBoundaries = true; // Shows the grid of tiles
-    // this.mapLibreMap.showCollisionBoxes = true; // Shows the hitboxes for labels/symbols
   }
 
   private setupMapListeners() {
