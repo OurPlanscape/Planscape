@@ -15,8 +15,7 @@
     <ng-container formArrayName="weights">
       <div
         *ngFor="let group of weights.controls; let i = index"
-        [formGroupName]="i"
-        class="weight-row">
+        [formGroupName]="i">
         <sg-input-field
           [label]="group.controls.name.value"
           supportMessage="Range: 1 - 100"
@@ -27,11 +26,12 @@
             sgInput
             type="text"
             inputmode="numeric"
+            maxlength="3"
             placeholder="X (multiplier)"
             formControlName="value"
             (input)="onWeightInput($event, i)" />
 
-          <div class="weight-steppers">
+          <ng-container contentRight>
             <button
               sg-button
               variant="icon-form-button"
@@ -48,7 +48,7 @@
               type="button"
               [disabled]="group.controls.value.value <= 1"
               (click)="decrement(i)"></button>
-          </div>
+          </ng-container>
         </sg-input-field>
       </div>
     </ng-container>

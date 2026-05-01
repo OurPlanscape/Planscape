@@ -51,6 +51,22 @@
   color: $color-md-gray;
 }
 
+
+.flex-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.content-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:empty {
+    display: none;
+  }
+}
+
 :host {
   mat-icon {
     color: currentColor;
