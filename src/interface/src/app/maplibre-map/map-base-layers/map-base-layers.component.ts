@@ -146,6 +146,24 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     );
   }
 
+  circlePaint(layer: BaseLayer): any {
+    const override = this.styleOverrideFor(layer);
+    const styleData = layer.styles[0].data;
+    const opacity = parseFloat(
+      override?.fillOpacity ?? styleData['fill-opacity'] ?? '1'
+    );
+    const color = override?.fillColor ?? styleData['fill-color'];
+    const strokeColor = styleData['fill-outline-color'] ?? '#ffffff';
+    return {
+      'circle-color': color,
+      'circle-opacity': opacity,
+      'circle-radius': 8,
+      'circle-stroke-width': 2,
+      'circle-stroke-color': strokeColor,
+      'circle-stroke-opacity': 1,
+    };
+  }
+
   private styleOverrideFor(layer: BaseLayer): BaseLayerStyleOverride | null {
     const o = this.styleOverride;
     return o && (!o.appliesTo || o.appliesTo(layer)) ? o : null;
@@ -155,7 +173,20 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     this.enableBaseLayerHover$.pipe(take(1)).subscribe((paintingEnabled) => {
       if (paintingEnabled) {
         const layerName = layerType + layer.id;
-        const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
+        let queryGeometry:
+          | maplibregl.PointLike
+          | [maplibregl.PointLike, maplibregl.PointLike];
+        if (layerType.includes('circle')) {
+          // Use a Bounding Box for points, as a hover margin
+          const radius = 10;
+          queryGeometry = [
+            [event.point.x - radius, event.point.y - radius],
+            [event.point.x + radius, event.point.y + radius],
+          ];
+        } else {
+          queryGeometry = event.point;
+        }
+        const features = this.mapLibreMap.queryRenderedFeatures(queryGeometry, {
           layers: [layerName],
         });
         if (features.length > 0) {
