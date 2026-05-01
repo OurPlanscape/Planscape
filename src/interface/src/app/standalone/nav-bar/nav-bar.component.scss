@@ -46,6 +46,10 @@
 .current-page {
   @include top-level-label();
   color: $color-md-gray;
+
+  &.in-flow {
+    color: $color-black;
+  }
 }
 
 @media print {

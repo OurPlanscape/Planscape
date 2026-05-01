@@ -9,7 +9,7 @@
       [routerLink]="breadCrumb.backUrl"
       [queryParams]="params"
       queryParamsHandling="merge"></button>
-    <div class="current-page">
+    <div class="current-page" [class.in-flow]="breadCrumb.inFlow">
       {{ breadCrumb.label }}
     </div>
   </section>
