@@ -1,0 +1,14 @@
+.weight-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  sg-input-field {
+    flex: 1;
+  }
+}
+
+.weight-steppers {
+  display: flex;
+  gap: 4px;
+}

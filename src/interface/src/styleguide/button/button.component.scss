@@ -129,6 +129,38 @@
     }
   }
 
+  &.icon-form-button {
+    height: 40px;
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 4px;
+    background-color: $color-white;
+    border: 1px solid $color-text-gray;
+    color: $color-standard-blue;
+
+    .mat-icon {
+      width: 24px;
+      height: 24px;
+      font-size: 24px;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: $color-lighter-gray;
+    }
+
+    &:active:not(:disabled) {
+      background-color: $color-lighter-gray;
+    }
+
+    &:disabled {
+      background-color: $color-lighter-gray; // f6
+      border-color: $color-soft-gray; //e1
+      color: $color-text-gray; //89
+      cursor: default;
+    }
+  }
+
   &.link-button {
     background-color: transparent;
     color: $color-standard-blue;

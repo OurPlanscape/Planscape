@@ -18,6 +18,8 @@ import { finalize, map, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeaturesModule } from '@features/features.module';
 import { FeatureService } from '@features/feature.service';
+import { PriorityWeightingComponent } from '@scenario-creation/priority-weighting/priority-weighting.component';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -34,6 +36,8 @@ const MAX_SELECTABLE_LAYERS = 2;
     ReactiveFormsModule,
     FeaturesModule,
     ButtonComponent,
+    PriorityWeightingComponent,
+    OverlayModule,
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
@@ -51,6 +55,8 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   uiLoading = false;
 
+  weightingPanelOpen = false;
+
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
 
   hasMoreThanOneSelected$ = this.selectionCount$.pipe(
@@ -58,6 +64,10 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
   );
 
   selectedItems$ = this.dataLayersStateService.selectedDataLayers$;
+
+  weightingItems$ = this.selectedItems$.pipe(
+    map((layers) => layers.map((l) => ({ name: l.name, value: 1 })))
+  );
 
   maxLayers = MAX_SELECTABLE_LAYERS;
 

@@ -1,0 +1,56 @@
+<sg-modal
+  title="Edit Priority Objective Weighting"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="apply()"
+  (clickedSecondary)="clickSecondary()"
+  secondaryButtonText="Reset to default"
+  primaryButtonText="Apply Weighting"
+  width="small">
+  <form [formGroup]="weightForm" modalBodyContent class="modal-body">
+    <sg-banner type="info">
+      Weights change how treatment areas are ranked. Increasing weight makes one
+      objective more influential than the other.
+    </sg-banner>
+
+    <ng-container formArrayName="weights">
+      <div
+        *ngFor="let group of weights.controls; let i = index"
+        [formGroupName]="i"
+        class="weight-row">
+        <sg-input-field
+          [label]="group.controls.name.value"
+          supportMessage="Range: 1 - 100"
+          [error]="
+            group.controls.value.invalid && group.controls.value.touched
+          ">
+          <input
+            sgInput
+            type="text"
+            inputmode="numeric"
+            placeholder="X (multiplier)"
+            formControlName="value"
+            (input)="onWeightInput($event, i)" />
+
+          <div class="weight-steppers">
+            <button
+              sg-button
+              variant="icon-form-button"
+              icon="keyboard_arrow_up"
+              [outlined]="true"
+              type="button"
+              [disabled]="group.controls.value.value >= 100"
+              (click)="increment(i)"></button>
+            <button
+              sg-button
+              variant="icon-form-button"
+              icon="keyboard_arrow_down"
+              [outlined]="true"
+              type="button"
+              [disabled]="group.controls.value.value <= 1"
+              (click)="decrement(i)"></button>
+          </div>
+        </sg-input-field>
+      </div>
+    </ng-container>
+  </form>
+</sg-modal>
