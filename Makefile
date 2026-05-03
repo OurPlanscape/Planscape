@@ -174,6 +174,12 @@ docker-logs-deps:
 docker-shell:
 	./src/planscape/bin/run.sh bash
 
+# Export the OpenAPI schema to src/interface/api-schema.yaml for offline
+# orval generation. Run this after backend serializer/view changes, then
+# `cd src/interface && npm run generate:api` to refresh the generated client.
+export-schema:
+	./src/planscape/bin/run.sh uv run python manage.py spectacular --file /app/src/interface/api-schema.yaml
+
 docker-makemigrations:
 	./src/planscape/bin/run.sh uv run python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
 	find . -type d -name migrations -exec sudo chown -R $(USER): {} +

@@ -1,8 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { take } from 'rxjs/operators';
 import { BaseLayersStateService } from './base-layers.state.service';
-import { MockProvider } from 'ng-mocks';
-import { DataLayersService } from '@services/data-layers.service';
 import { BaseLayer } from '@types';
 
 describe('BaseLayersStateService', () => {
@@ -16,7 +14,7 @@ describe('BaseLayersStateService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [BaseLayersStateService, MockProvider(DataLayersService)],
+      providers: [BaseLayersStateService],
     });
 
     service = TestBed.inject(BaseLayersStateService);

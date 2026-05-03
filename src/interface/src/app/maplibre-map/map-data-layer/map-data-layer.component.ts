@@ -41,10 +41,10 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
       .subscribe((data) => {
         if (data) {
           this.cogUrl = `cog://${data.url}`;
-          const colorFn = generateColorFunction(data.layer?.styles[0].data);
+          const colorFn = generateColorFunction(data.layer.styles[0].data);
           setColorFunction(data.url, colorFn);
           this.tileSize =
-            data.layer.info.blockxsize ??
+            data.layer.info?.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
         } else {

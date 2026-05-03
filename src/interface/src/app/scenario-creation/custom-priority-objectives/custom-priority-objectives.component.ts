@@ -11,7 +11,8 @@ import {
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { DataLayer, ScenarioDraftConfiguration } from '@types';
+import { ScenarioDraftConfiguration } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
 import { finalize, take } from 'rxjs';
@@ -39,7 +40,7 @@ const MAX_SELECTABLE_LAYERS = 2;
 })
 export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDraftConfiguration> {
   form = new FormGroup({
-    dataLayers: new FormControl<DataLayer[]>(
+    dataLayers: new FormControl<BrowseDataLayer[]>(
       [],
       [Validators.required, Validators.minLength(1)]
     ),
@@ -62,7 +63,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.selectedDataLayers$
       .pipe(untilDestroyed(this))
-      .subscribe((datalayers: DataLayer[]) => {
+      .subscribe((datalayers: BrowseDataLayer[]) => {
         this.form.patchValue({
           dataLayers: datalayers,
         });

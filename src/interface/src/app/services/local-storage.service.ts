@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
 import { RedirectData } from './redirect.service';
-import { BaseLayer, BaseMapType, DataLayer, Extent } from '@types';
+import { BaseLayer, BaseMapType, Extent } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
@@ -134,7 +135,7 @@ export class MultiMapsStorageService extends BaseLocalStorageService<{
   baseMap?: BaseMapType;
   extent?: Extent;
   baseLayers?: BaseLayer[] | null;
-  dataLayers?: Record<number, DataLayer | null>;
+  dataLayers?: Record<number, BrowseDataLayer | null>;
   selectedMapId?: number | null;
 }> {
   static readonly storageKey = 'multiMapsOptions';
@@ -148,7 +149,7 @@ export class MultiMapsStorageService extends BaseLocalStorageService<{
     baseMap?: BaseMapType;
     extent?: Extent;
     baseLayers?: BaseLayer[] | null;
-    dataLayers?: Record<number, DataLayer | null>;
+    dataLayers?: Record<number, BrowseDataLayer | null>;
     selectedMapId?: number | null;
   } {
     return isObject(value);

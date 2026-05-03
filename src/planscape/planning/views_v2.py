@@ -73,6 +73,7 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(tags=["planning-areas"])
 @extend_schema_view(
     list=extend_schema(description="List Planning Area."),
     retrieve=extend_schema(
@@ -484,6 +485,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
 
 # TODO: migrate this to an action inside the planning area viewset
+@extend_schema(tags=["planning-areas"])
 @extend_schema_view(
     list=extend_schema(description="List creators of Planning Areas."),
     retrieve=extend_schema(description="Retrieve the creator of a Planning Areas."),
@@ -518,6 +520,7 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     }
 
 
+@extend_schema(tags=["treatment-goals"])
 @extend_schema_view(
     list=extend_schema(description="List Treatment Goals."),
     retrieve=extend_schema(description="Detail Treatment Goal."),

@@ -6,7 +6,7 @@ import { map, shareReplay, switchMap } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { TreeNode } from '@data-layers/data-layers/tree-node';
-import { DataLayer } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -76,7 +76,7 @@ export class DataLayerTreeComponent {
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
   @ViewChild('treeContainer', { static: false }) treeContainer!: ElementRef;
 
-  selectDataLayer(dataLayer: DataLayer) {
+  selectDataLayer(dataLayer: BrowseDataLayer) {
     this.dataLayersStateService.selectDataLayer(dataLayer);
   }
 
@@ -121,16 +121,16 @@ export class DataLayerTreeComponent {
     setTimeout(() => this.scrollToSelectedNode(), 0);
   }
 
-  isDatalayerSelected(layer: DataLayer) {
+  isDatalayerSelected(layer: BrowseDataLayer) {
     return this.dataLayersStateService.isSelectedLayer(layer);
   }
 
-  isUnselectable(layer: DataLayer) {
+  isUnselectable(layer: BrowseDataLayer) {
     return this.dataLayersStateService.isLayerUnselectable(layer);
   }
 
   getTooltipText(
-    layer: DataLayer,
+    layer: BrowseDataLayer,
     isSelectionCompleted: boolean | null
   ): string {
     if (!this.isDatalayerSelected(layer)) {
@@ -145,7 +145,7 @@ export class DataLayerTreeComponent {
     return '';
   }
 
-  toggleDataLayerSelection(dl: DataLayer) {
+  toggleDataLayerSelection(dl: BrowseDataLayer) {
     this.dataLayersStateService.toggleLayerAdition(dl);
   }
 

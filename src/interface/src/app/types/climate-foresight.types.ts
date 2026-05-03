@@ -1,4 +1,4 @@
-import { DataLayer } from './data-sets';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 
 export type ClimateForesightRunStatus = 'draft' | 'running' | 'done';
 

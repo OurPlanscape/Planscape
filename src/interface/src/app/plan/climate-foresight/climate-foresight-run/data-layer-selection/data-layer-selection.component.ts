@@ -19,7 +19,8 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { ButtonComponent, SectionComponent } from '@styleguide';
-import { Plan, ClimateForesightRun, DataLayer } from '@types';
+import { Plan, ClimateForesightRun } from '@types';
+import { BrowseDataLayer, DataLayer } from '@api/planscapeAPI.schemas';
 import { ClimateForesightService } from '@services';
 import { StepDirective } from '@styleguide/steps/step.component';
 import { MapConfigService } from '@maplibre-map/map-config.service';
@@ -60,12 +61,12 @@ export class DataLayerSelectionComponent
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() complete = new EventEmitter<any>();
 
-  selectedDataLayers!: DataLayer[];
+  selectedDataLayers!: BrowseDataLayer[];
 
   maxDataLayers = MAX_CLIMATE_DATALAYERS;
 
   form = new FormGroup({
-    dataLayers: new FormControl<DataLayer[]>(
+    dataLayers: new FormControl<BrowseDataLayer[]>(
       [],
       [Validators.required, Validators.minLength(1)]
     ),
@@ -127,7 +128,7 @@ export class DataLayerSelectionComponent
     this.isBrowserOpen = !this.isBrowserOpen;
   }
 
-  removeDataLayer(layer: DataLayer): void {
+  removeDataLayer(layer: BrowseDataLayer): void {
     this.dataLayersState.removeSelectedLayer(layer);
   }
 

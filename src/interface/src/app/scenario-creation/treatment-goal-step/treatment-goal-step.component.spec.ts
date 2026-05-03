@@ -5,7 +5,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 
 import { TreatmentGoalStepComponent } from './treatment-goal-step.component';
-import { TreatmentGoalsService } from '@services';
+import { TreatmentGoalsService } from '@api/treatment-goals/treatment-goals.service';
 import { NewScenarioState } from '../new-scenario.state';
 
 describe('TreatmentGoalStepComponent', () => {
@@ -21,7 +21,7 @@ describe('TreatmentGoalStepComponent', () => {
       ],
       providers: [
         MockProvider(TreatmentGoalsService, {
-          getTreatmentGoals: () => of([]),
+          treatmentGoalsList: () => of([]) as any,
         }),
         MockProvider(NewScenarioState, {
           scenarioConfig$: of({}),

@@ -15,7 +15,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { ButtonComponent, PanelComponent, SectionComponent } from '@styleguide';
-import { Plan, ClimateForesightRun, DataLayer } from '@types';
+import { Plan, ClimateForesightRun, Metadata } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { ClimateForesightService } from '@services';
 import { StepDirective } from '@styleguide/steps/step.component';
 import { interval, Subject } from 'rxjs';
@@ -360,8 +361,7 @@ export class AssignFavorabilityComponent
   }
 
   get currentLayerStats() {
-    if (!this.currentLayer) return null;
-    return this.currentLayer.info?.stats?.[0] || null;
+    return this.currentLayer?.info?.stats?.[0] ?? null;
   }
 
   getUnitsFromLayer(): string {
@@ -369,7 +369,8 @@ export class AssignFavorabilityComponent
       return '--';
     }
 
-    const units = this.currentLayer.metadata?.['metadata']?.[
+    const metadata = this.currentLayer.metadata as Metadata | null;
+    const units = metadata?.['metadata']?.[
       'identification'
     ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
 

@@ -4,10 +4,10 @@ import { Observable } from 'rxjs';
 import {
   ClimateForesightRun,
   CreateClimateForesightRunPayload,
-  DataLayer,
   GeoPackageDownloadResponse,
   Pillar,
 } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { environment } from '@env/environment';
 
 @Injectable({

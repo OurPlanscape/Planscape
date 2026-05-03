@@ -3,7 +3,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { DataLayer } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 
 @Component({
   selector: 'app-data-layer-name',
@@ -19,7 +19,7 @@ export class DataLayerNameComponent {
 
   viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
-  goToViewedLayer(layer: DataLayer) {
+  goToViewedLayer(layer: BrowseDataLayer) {
     this.dataLayersStateService.goToSelectedLayer(layer);
   }
 

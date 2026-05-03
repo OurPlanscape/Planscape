@@ -1,16 +1,18 @@
 import { Component, Inject } from '@angular/core';
 
-import { FormMessageType, Invite, INVITE_ROLE, Plan, User } from '@types';
+import { FormMessageType, Plan, User } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
-import { AuthService, InvitesService } from '@services';
+import { AuthService } from '@services';
+import { InvitesService } from '@api/invites/invites.service';
+import { RoleEnum, UserObjectRole } from '@api/planscapeAPI.schemas';
 import { filter, map, tap } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
-  Viewer: 'Viewer',
-  Collaborator: 'Collaborator',
-  Owner: 'Owner',
+const Roles: Record<RoleEnum, RoleEnum> = {
+  Viewer: RoleEnum.Viewer,
+  Collaborator: RoleEnum.Collaborator,
+  Owner: RoleEnum.Owner,
 };
 
 @Component({
@@ -39,7 +41,7 @@ export class SharePlanDialogComponent {
   isLoading = true;
 
   invites$ = this.inviteService
-    .getInvites(this.data.plan.id)
+    .invitesList('planningarea', this.data.plan.id)
     .pipe(tap((_) => (this.isLoading = false)));
 
   fullname$ = this.authService.loggedInUser$.pipe(
@@ -52,9 +54,9 @@ export class SharePlanDialogComponent {
     map((user) => user.id != this.data.plan.user)
   );
 
-  roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];
+  roles: RoleEnum[] = Object.keys(Roles) as RoleEnum[];
 
-  selectedRole = this.roles[0] as INVITE_ROLE;
+  selectedRole = this.roles[0] as RoleEnum;
 
   addEmail(email: string): void {
     this.emails.push(email);
@@ -75,12 +77,12 @@ export class SharePlanDialogComponent {
   invite() {
     this.submitting = true;
     this.inviteService
-      .inviteUsers(
-        this.emails,
-        this.selectedRole,
-        this.data.plan.id,
-        this.message
-      )
+      .invitesCreate({
+        emails: this.emails,
+        role: this.selectedRole,
+        object_pk: this.data.plan.id,
+        message: this.message || null,
+      })
       .subscribe({
         next: (result) => {
           this.showSnackbar('Users invited');
@@ -104,28 +106,34 @@ export class SharePlanDialogComponent {
     this.emails = [];
   }
 
-  changeRole(invite: Invite, newRole: INVITE_ROLE) {
+  changeRole(invite: UserObjectRole, newRole: RoleEnum) {
     this.selectedRole = Roles[newRole];
-    this.inviteService.changeRole(invite.id, newRole).subscribe({
-      next: () => {
-        invite.role = newRole;
-        this.showSnackbar('Access Updated');
-      },
-      error: () => {
-        this.showSnackbar(
-          `There was an error trying to update the role of ${invite.email}. Please try again.`
-        );
-      },
-    });
+    this.inviteService
+      .invitesPartialUpdate(invite.id, { role: newRole })
+      .subscribe({
+        next: () => {
+          invite.role = newRole;
+          this.showSnackbar('Access Updated');
+        },
+        error: () => {
+          this.showSnackbar(
+            `There was an error trying to update the role of ${invite.email}. Please try again.`
+          );
+        },
+      });
   }
 
-  changeInvitationsRole(role: INVITE_ROLE) {
+  changeInvitationsRole(role: RoleEnum) {
     this.selectedRole = Roles[role];
   }
 
-  resendCode(invite: Invite) {
+  resendCode(invite: UserObjectRole) {
     this.inviteService
-      .inviteUsers([invite.email], this.selectedRole, this.data.plan.id)
+      .invitesCreate({
+        emails: [invite.email],
+        role: this.selectedRole,
+        object_pk: this.data.plan.id,
+      })
       .subscribe({
         next: (result) => {
           this.showSnackbar(`Email sent to ${invite.email}`);
@@ -140,12 +148,12 @@ export class SharePlanDialogComponent {
 
   reloadInvites() {
     this.invites$ = this.inviteService
-      .getInvites(this.data.plan.id)
+      .invitesList('planningarea', this.data.plan.id)
       .pipe(tap((_) => (this.isLoading = false)));
   }
 
-  removeAccess(invite: Invite) {
-    this.inviteService.deleteInvite(invite.id).subscribe({
+  removeAccess(invite: UserObjectRole) {
+    this.inviteService.invitesDestroy(invite.id).subscribe({
       next: () => {
         this.showSnackbar(`Removed  ${invite.email}`);
         this.reloadInvites();

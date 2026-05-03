@@ -498,6 +498,10 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Planscape is a project that allows regional planners to determine the best locations & interventions to the landscape based on hard data.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/planscape-backend",
+    "PREPROCESSING_HOOKS": [
+        "planscape.spectacular_hooks.exclude_internal_paths",
+    ],
 }
 
 BACKUPS_PATH = config("BACKUPS_PATH", "/mnt/backups")

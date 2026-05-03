@@ -42,7 +42,7 @@ import { MapLayerColorLegendComponent } from '@maplibre-map/map-layer-color-lege
 import { MapBoundaryLayerComponent } from '@maplibre-map/map-boundary-layer/map-boundary-layer.component';
 import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
 import { PlanState } from '@plan/plan.state';
-import { DataLayer } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '@map/map.constants';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
@@ -330,7 +330,7 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
     }
   }
 
-  goToSelectedLayer(layer: DataLayer) {
+  goToSelectedLayer(layer: BrowseDataLayer) {
     this.multiMapConfigState.setSelectedMap(this.mapNumber);
     this.dataLayersStateService.goToSelectedLayer(layer);
   }
@@ -338,7 +338,7 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 
-  saveSelectedLayerOnStorage(layer: DataLayer | null) {
+  saveSelectedLayerOnStorage(layer: BrowseDataLayer | null) {
     const existingStorage = this.multimapStorage.getItem();
     if (existingStorage?.dataLayers) {
       existingStorage.dataLayers[this.mapNumber] = layer;

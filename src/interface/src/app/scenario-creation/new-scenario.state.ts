@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
-import { DataLayersService, ScenarioService } from '@services';
+import { ScenarioService } from '@services';
 import {
   BaseLayer,
   Constraint,
-  DataLayer,
   ScenarioConfig,
   ScenarioDraftConfiguration,
   ScenarioV3Config,
 } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
 import {
   BehaviorSubject,
   catchError,
@@ -64,8 +65,8 @@ export class NewScenarioState {
     switchMap((ids: number[]) =>
       ids.length === 0
         ? of<DataLayer[]>([])
-        : this.dataLayersService.getDataLayersByIds(ids).pipe(
-            map((layers) => layers ?? ([] as DataLayer[])),
+        : this.datalayersService.datalayersList({ id__in: ids }).pipe(
+            map((response) => response.results ?? []),
             catchError((error) => {
               console.error('Error fetching data layers:', error);
               return of<DataLayer[]>([]);
@@ -84,8 +85,8 @@ export class NewScenarioState {
     switchMap((ids: number[]) =>
       ids.length === 0
         ? of<DataLayer[]>([])
-        : this.dataLayersService.getDataLayersByIds(ids).pipe(
-            map((layers) => layers ?? ([] as DataLayer[])),
+        : this.datalayersService.datalayersList({ id__in: ids }).pipe(
+            map((response) => response.results ?? []),
             catchError((error) => {
               console.error('Error fetching data layers:', error);
               return of<DataLayer[]>([]);
@@ -192,7 +193,7 @@ export class NewScenarioState {
     private router: Router,
     private snackbar: MatSnackBar,
     private forsysService: ForsysService,
-    private dataLayersService: DataLayersService
+    private datalayersService: DatalayersService
   ) {
     this.forsysService.forsysData$.subscribe((forsys) => {
       this.slopeId = forsys.thresholds.slope.id;

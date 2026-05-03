@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { DataLayer, DataLayerSearchResult } from '@types';
+import { DataLayerSearchResult } from '@types';
+import { BrowseDataLayer } from '@api/planscapeAPI.schemas';
 import { ButtonComponent, HighlighterDirective } from '@styleguide';
 import { MatRadioModule } from '@angular/material/radio';
 import { DataLayersStateService } from '../data-layers.state.service';
@@ -57,12 +58,12 @@ export class DataSetComponent {
     )
   );
 
-  isUnselectable(layer: DataLayer) {
+  isUnselectable(layer: BrowseDataLayer) {
     return this.dataLayersStateService.isLayerUnselectable(layer);
   }
 
   getTooltipText(
-    layer: DataLayer,
+    layer: BrowseDataLayer,
     isSelectionCompleted: boolean | null
   ): string {
     if (!this.isDatalayerSelected(layer)) {
@@ -79,15 +80,15 @@ export class DataSetComponent {
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
-  selectDataLayer(dataLayer: DataLayer) {
+  selectDataLayer(dataLayer: BrowseDataLayer) {
     this.dataLayersStateService.selectDataLayer(dataLayer);
   }
 
-  isDatalayerSelected(layer: DataLayer) {
+  isDatalayerSelected(layer: BrowseDataLayer) {
     return this.dataLayersStateService.isSelectedLayer(layer);
   }
 
-  toggleDataLayerSelection(dl: DataLayer) {
+  toggleDataLayerSelection(dl: BrowseDataLayer) {
     this.dataLayersStateService.toggleLayerAdition(dl);
   }
 }

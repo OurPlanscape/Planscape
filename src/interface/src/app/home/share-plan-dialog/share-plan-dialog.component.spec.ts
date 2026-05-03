@@ -4,7 +4,9 @@ import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { AuthService, InvitesService } from '@services';
+import { AuthService } from '@services';
+import { InvitesService } from '@api/invites/invites.service';
+import { RoleEnum } from '@api/planscapeAPI.schemas';
 import { BehaviorSubject, of } from 'rxjs';
 import { Plan, User } from '@types';
 import { ChipInputComponent } from '@home/chip-input/chip-input.component';
@@ -22,8 +24,14 @@ describe('SharePlanDialogComponent', () => {
     id: 2,
     inviter: 2,
     object_pk: 3,
-    role: 'owner',
+    content_type: 1,
+    role: RoleEnum.Owner,
     email: 'some@asd.com',
+    collaborator: 0,
+    collaborator_name: '',
+    permissions: '',
+    created_at: null,
+    updated_at: '',
   };
 
   beforeEach(async () => {
@@ -49,10 +57,7 @@ describe('SharePlanDialogComponent', () => {
             lastName: 'Smith',
           }),
         }),
-        MockProvider(InvitesService, {
-          getInvites: () => of([]),
-          inviteUsers: () => of(mockInvite),
-        }),
+        MockProvider(InvitesService),
         {
           provide: MAT_DIALOG_DATA,
           useValue: {
@@ -62,6 +67,9 @@ describe('SharePlanDialogComponent', () => {
       ],
     }).compileComponents();
 
+    spyOn(TestBed.inject(InvitesService), 'invitesList').and.returnValue(
+      of([]) as any
+    );
     fixture = TestBed.createComponent(SharePlanDialogComponent);
     component = fixture.componentInstance;
     component.isLoading = false;
@@ -98,59 +106,60 @@ describe('SharePlanDialogComponent', () => {
   describe('invite users', () => {
     it('should call inviteService with corresponding data', () => {
       component.emails = ['john@planscape.com', 'jane@planscape.com'];
-      component.selectedRole = 'Owner';
+      component.selectedRole = RoleEnum.Owner;
       component.message = 'Test message';
 
       const service = TestBed.inject(InvitesService);
-      spyOn(service, 'inviteUsers').and.callThrough();
+      spyOn(service, 'invitesCreate').and.returnValue(of({}) as any);
 
       component.invite();
       fixture.detectChanges();
 
-      expect(service.inviteUsers).toHaveBeenCalledWith(
-        component.emails,
-        component.selectedRole,
-        MOCK_PLAN.id,
-        component.message
-      );
+      expect(service.invitesCreate).toHaveBeenCalledWith({
+        emails: component.emails,
+        role: component.selectedRole,
+        object_pk: MOCK_PLAN.id,
+        message: component.message || null,
+      });
     });
   });
 
   describe('changeRole ', () => {
     it('should call inviteService with corresponding data', () => {
       const service = TestBed.inject(InvitesService);
-      spyOn(service, 'changeRole').and.returnValue(of(mockInvite));
-
-      component.changeRole(mockInvite, 'Collaborator');
-      fixture.detectChanges();
-      expect(service.changeRole).toHaveBeenCalledWith(
-        mockInvite.id,
-        'Collaborator'
+      spyOn(service, 'invitesPartialUpdate').and.returnValue(
+        of(mockInvite) as any
       );
+
+      component.changeRole(mockInvite, RoleEnum.Collaborator);
+      fixture.detectChanges();
+      expect(service.invitesPartialUpdate).toHaveBeenCalledWith(mockInvite.id, {
+        role: RoleEnum.Collaborator,
+      });
     });
   });
 
   describe('changeInvitationsRole', () => {
     it('should change the role for the invites', () => {
-      component.selectedRole = 'Viewer';
-      component.changeInvitationsRole('Owner');
-      expect(component.selectedRole).toBe('Owner');
+      component.selectedRole = RoleEnum.Viewer;
+      component.changeInvitationsRole(RoleEnum.Owner);
+      expect(component.selectedRole).toBe(RoleEnum.Owner);
     });
   });
 
   describe('resendCode', () => {
     it('should call invite service with corresponding data', () => {
       const service = TestBed.inject(InvitesService);
-      spyOn(service, 'inviteUsers').and.callThrough();
+      spyOn(service, 'invitesCreate').and.returnValue(of({}) as any);
 
-      component.selectedRole = 'Owner';
+      component.selectedRole = RoleEnum.Owner;
       component.resendCode(mockInvite);
       fixture.detectChanges();
-      expect(service.inviteUsers).toHaveBeenCalledWith(
-        [mockInvite.email],
-        component.selectedRole,
-        MOCK_PLAN.id
-      );
+      expect(service.invitesCreate).toHaveBeenCalledWith({
+        emails: [mockInvite.email],
+        role: component.selectedRole,
+        object_pk: MOCK_PLAN.id,
+      });
     });
   });
 });

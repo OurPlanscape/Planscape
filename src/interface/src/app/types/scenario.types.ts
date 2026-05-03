@@ -154,18 +154,6 @@ export interface UsageType {
   datalayer: string;
 }
 
-// Backend scenario goal metadata.
-export interface ScenarioGoal {
-  id: number;
-  name: string;
-  description: string;
-  priorities: string[];
-  category: string;
-  category_text: string;
-  group: string;
-  group_text: string;
-}
-
 // Backend constraint definition (thresholds for stands).
 export interface Constraint {
   datalayer: number;

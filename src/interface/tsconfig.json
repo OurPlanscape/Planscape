@@ -10,6 +10,12 @@
       "@app/*": [
         "src/app/*"
       ],
+      "@api": [
+        "src/generated/api"
+      ],
+      "@api/*": [
+        "src/generated/api/*"
+      ],
       "@account": [
         "src/app/account"
       ],
@@ -164,6 +170,7 @@
     "importHelpers": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "noUnusedLocals": true,
     "target": "ES2022",
     "module": "es2020",

@@ -103,7 +103,7 @@ services:
       - db
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db/postgres
-    command: --config /usr/src/app/martin.yaml
+    command: --config /app/martin.yaml
     volumes:
       - .:/app
 volumes:

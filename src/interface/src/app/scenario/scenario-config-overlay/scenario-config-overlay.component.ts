@@ -5,15 +5,23 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { STAND_OPTIONS } from '@plan/plan-helpers';
-import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+} from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { DataLayer, PLANNING_APPROACH_LABELS, ScenarioV3Config } from '@types';
+import { PLANNING_APPROACH_LABELS, ScenarioV3Config } from '@types';
 import {
   isCustomScenario,
   isPlanningApproachSubUnits,
 } from '../scenario-helper';
-import { DataLayersService } from '@services';
+import { DatalayersService } from '@api/datalayers/datalayers.service';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureService } from '@features/feature.service';
 import { filter } from 'rxjs/operators';
@@ -36,7 +44,7 @@ import { filter } from 'rxjs/operators';
 export class ScenarioConfigOverlayComponent implements OnDestroy {
   private scenarioState = inject(ScenarioState);
   private forsysService = inject(ForsysService);
-  private dataLayersService = inject(DataLayersService);
+  private datalayersService = inject(DatalayersService);
   private featureService = inject(FeatureService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
@@ -98,31 +106,34 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     map((scenario) => isCustomScenario(scenario.type))
   );
 
+  private fetchLayersByIds(ids: number[]) {
+    if (!ids || ids.length === 0) {
+      return of<DataLayer[]>([]);
+    }
+    return this.datalayersService
+      .datalayersList({ id__in: ids })
+      .pipe(map((response) => response.results ?? []));
+  }
+
   priorityObjectives$ = this.currentScenario$.pipe(
     switchMap((s) =>
-      this.dataLayersService.getDataLayersByIds(
-        s.configuration?.priority_objectives ?? []
-      )
+      this.fetchLayersByIds(s.configuration?.priority_objectives ?? [])
     ),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    map((layers) => layers.map((dl) => dl.name).join(', ')),
     shareReplay(1)
   );
 
   cobenefits$ = this.currentScenario$.pipe(
-    switchMap((s) =>
-      this.dataLayersService.getDataLayersByIds(
-        s.configuration?.cobenefits ?? []
-      )
-    ),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    switchMap((s) => this.fetchLayersByIds(s.configuration?.cobenefits ?? [])),
+    map((layers) => layers.map((dl) => dl.name).join(', ')),
     shareReplay(1)
   );
 
   subUnitLayerName$ = this.currentScenario$.pipe(
     map((s) => s.configuration?.sub_units_layer),
     filter((id): id is number => id !== undefined),
-    switchMap((id) => this.dataLayersService.getDataLayersByIds([id])),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    switchMap((id) => this.fetchLayersByIds([id])),
+    map((layers) => layers.map((dl) => dl.name).join(', ')),
     shareReplay(1)
   );
 

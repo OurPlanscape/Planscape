@@ -6,7 +6,7 @@ import { ButtonComponent, SectionComponent } from '@styleguide';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ClimateForesightService } from '@services';
 import { BehaviorSubject } from 'rxjs';
-import { DataLayer } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 
 describe('AssignPillarsComponent', () => {
   let component: AssignPillarsComponent;

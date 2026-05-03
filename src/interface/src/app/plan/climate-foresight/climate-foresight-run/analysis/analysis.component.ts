@@ -11,11 +11,8 @@ import {
   OpacitySliderComponent,
   SectionComponent,
 } from '@styleguide';
-import {
-  ClimateForesightRun,
-  DataLayer,
-  GeoPackageDownloadStatus,
-} from '@types';
+import { ClimateForesightRun, GeoPackageDownloadStatus } from '@types';
+import { DataLayer } from '@api/planscapeAPI.schemas';
 import { MapConfigState } from '@maplibre-map/map-config.state';
 import { ClimateForesightService } from '@services';
 import { MapConfigService } from '@maplibre-map/map-config.service';
@@ -179,14 +176,16 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ run, input_layers }) => {
           this.run = run;
-          this.inputLayers = input_layers.map((layer) => ({
-            datalayer: layer,
-            id: String(layer.id),
-            name: layer.name,
-            datalayerId: layer.id,
-            type: layer.type,
-            group: 'primary',
-          })) as ResultsLayer[];
+          this.inputLayers = input_layers.map(
+            (layer): ResultsLayer => ({
+              datalayer: layer,
+              id: String(layer.id),
+              name: layer.name,
+              datalayerId: layer.id,
+              type: 'continuous',
+              group: 'primary',
+            })
+          );
           this.buildClimateLayers();
           this.breadcrumbService.breadcrumb$
             .pipe(take(1))
