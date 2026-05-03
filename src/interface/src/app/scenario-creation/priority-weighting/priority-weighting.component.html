@@ -17,6 +17,7 @@
         *ngFor="let group of weights.controls; let i = index"
         [formGroupName]="i">
         <sg-input-field
+          size="full"
           [label]="group.controls.name.value"
           supportMessage="Range: 1 - 100"
           [error]="

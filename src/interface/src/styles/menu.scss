@@ -1,6 +1,10 @@
 @import "mixins";
 @import "colors";
 
+.weighting-menu-panel.mat-mdc-menu-panel {
+  max-width: 500px;
+}
+
 .dropdown-menu {
 
   .mat-menu-content:not(:empty) {

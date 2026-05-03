@@ -104,36 +104,24 @@
           Priority Objective Weighting
 
           <button
-            cdkOverlayOrigin
-            #weightingTrigger="cdkOverlayOrigin"
             sg-button
             variant="icon-only"
             icon="edit"
             [outlined]="true"
             class="weighting-info-edit"
-            (click)="weightingPanelOpen = !weightingPanelOpen"></button>
+            [matMenuTriggerFor]="weightingMenu"></button>
 
-          <ng-template
-            cdkConnectedOverlay
-            [cdkConnectedOverlayOrigin]="weightingTrigger"
-            [cdkConnectedOverlayOpen]="weightingPanelOpen"
-            [cdkConnectedOverlayHasBackdrop]="true"
-            cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
-            [cdkConnectedOverlayPush]="true"
-            [cdkConnectedOverlayViewportMargin]="8"
-            [cdkConnectedOverlayPositions]="[
-              {
-                originX: 'end',
-                originY: 'top',
-                overlayX: 'start',
-                overlayY: 'top',
-                offsetX: 8,
-              },
-            ]"
-            (backdropClick)="weightingPanelOpen = false">
-            <app-priority-weighting
-              [items]="(weightingItems$ | async) ?? []"></app-priority-weighting>
-          </ng-template>
+          <mat-menu
+            #weightingMenu="matMenu"
+            xPosition="after"
+            yPosition="below"
+            class="weighting-menu-panel">
+            <div (click)="$event.stopPropagation()">
+              <app-priority-weighting
+                [items]="(weightingItems$ | async) ?? []"
+                (closed)="closeWeightingMenu()"></app-priority-weighting>
+            </div>
+          </mat-menu>
         </div>
 
         <div

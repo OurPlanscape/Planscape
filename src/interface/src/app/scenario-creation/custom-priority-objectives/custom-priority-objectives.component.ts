@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ButtonComponent, SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
@@ -19,7 +19,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeaturesModule } from '@features/features.module';
 import { FeatureService } from '@features/feature.service';
 import { PriorityWeightingComponent } from '@scenario-creation/priority-weighting/priority-weighting.component';
-import { OverlayModule } from '@angular/cdk/overlay';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -37,7 +37,7 @@ const MAX_SELECTABLE_LAYERS = 2;
     FeaturesModule,
     ButtonComponent,
     PriorityWeightingComponent,
-    OverlayModule,
+    MatMenuModule,
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
@@ -46,6 +46,8 @@ const MAX_SELECTABLE_LAYERS = 2;
   styleUrl: './custom-priority-objectives.component.scss',
 })
 export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDraftConfiguration> {
+  @ViewChild(MatMenuTrigger) weightingMenuTrigger?: MatMenuTrigger;
+
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -54,8 +56,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
   });
 
   uiLoading = false;
-
-  weightingPanelOpen = false;
 
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
 
@@ -91,6 +91,10 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   handleRemoveItem(layer: any) {
     this.dataLayersStateService.removeSelectedLayer(layer);
+  }
+
+  closeWeightingMenu() {
+    this.weightingMenuTrigger?.closeMenu();
   }
 
   getData() {
