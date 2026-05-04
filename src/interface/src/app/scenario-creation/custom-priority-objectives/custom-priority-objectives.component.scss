@@ -90,3 +90,7 @@
   position: relative;
   left: 8px;
 }
+
+::ng-deep .weighting-menu-panel .mat-mdc-menu-content {
+  padding: 0;
+}

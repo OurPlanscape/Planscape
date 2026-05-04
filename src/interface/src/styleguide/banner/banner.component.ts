@@ -28,6 +28,8 @@ export class BannerComponent {
    */
   @Input() dismissible = false;
 
+  @Input() iconPosition: 'top' | 'center' = 'center';
+
   /**
    * the emitter of the dismiss action
    */
@@ -61,5 +63,10 @@ export class BannerComponent {
   @HostBinding('class.success')
   get isSuccess() {
     return this.type === 'success';
+  }
+
+  @HostBinding('class.top')
+  get iconTop() {
+    return this.iconPosition === 'top';
   }
 }

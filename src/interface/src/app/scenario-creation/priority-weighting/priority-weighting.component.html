@@ -7,23 +7,24 @@
   primaryButtonText="Apply Weighting"
   width="small">
   <form [formGroup]="weightForm" modalBodyContent class="modal-body">
-    <sg-banner type="info">
+    <sg-banner type="info" iconPosition="top">
       Weights change how treatment areas are ranked. Increasing weight makes one
       objective more influential than the other.
     </sg-banner>
 
     <ng-container formArrayName="weights">
       <div
+        class="weight-field"
         *ngFor="let group of weights.controls; let i = index"
         [formGroupName]="i">
         <sg-input-field
           size="full"
           [label]="group.controls.name.value"
           supportMessage="Range: 1 - 100"
-          [error]="
-            group.controls.value.invalid && group.controls.value.touched
-          ">
+          [error]="group.controls.value.invalid && group.controls.value.touched"
+          suffix="X (multiplier)">
           <input
+            required
             sgInput
             type="text"
             inputmode="numeric"
