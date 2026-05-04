@@ -16,6 +16,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
 import { finalize, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FeaturesModule } from '@features/features.module';
+import { FeatureService } from '@features/feature.service';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -30,6 +32,7 @@ const MAX_SELECTABLE_LAYERS = 2;
     MatProgressSpinnerModule,
     SectionComponent,
     ReactiveFormsModule,
+    FeaturesModule,
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
@@ -55,7 +58,8 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private newScenarioState: NewScenarioState
+    private newScenarioState: NewScenarioState,
+    private featureService: FeatureService
   ) {
     super();
 
@@ -110,5 +114,9 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
   override beforeStepExit(): void {
     this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
+  }
+
+  get weightingFlagOn() {
+    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
   }
 }
