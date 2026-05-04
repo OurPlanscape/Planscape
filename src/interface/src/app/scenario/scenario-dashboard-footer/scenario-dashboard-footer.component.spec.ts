@@ -9,6 +9,7 @@ import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-
 import { ButtonComponent } from '@styleguide';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
+import { MOCK_SCENARIO } from '@app/services/mocks';
 
 describe('ScenarioDashboardFooterComponent', () => {
   let component: ScenarioDashboardFooterComponent;
@@ -32,6 +33,7 @@ describe('ScenarioDashboardFooterComponent', () => {
 
     fixture = TestBed.createComponent(ScenarioDashboardFooterComponent);
     component = fixture.componentInstance;
+    component.scenario = MOCK_SCENARIO;
     fixture.detectChanges();
   });
 
