@@ -1,32 +1,42 @@
 <div class="heading">
-  <div class="title">{{ title }}</div>
-  <div class="name">{{ subtitle }}</div>
+  <div class="title" *ngIf="title">{{ title }}</div>
+  <div class="name" *ngIf="subtitle">{{ subtitle }}</div>
 </div>
 <div class="details">
-  <div class="detail-line" *ngIf="creator">
-    <div class="detail-icon">
-      <mat-icon class="material-symbols-outlined">person_outline</mat-icon>
+  <mat-spinner diameter="20" *ngIf="loading" class="card-spinner"></mat-spinner>
+  <ng-container *ngIf="!loading">
+    <div class="detail-line" *ngIf="planning_area_name">
+      <div class="detail-icon">
+        <mat-icon class="material-symbols-outlined">activity_zone</mat-icon>
+      </div>
+      Planning area: {{ planning_area_name }}
     </div>
-    Creator: {{ creator }}
-  </div>
-  <div class="detail-line" *ngIf="acres">
-    <div class="detail-icon">
-      <mat-icon class="material-symbols-outlined">crop_landscape</mat-icon>
+    <div class="detail-line" *ngIf="creator">
+      <div class="detail-icon">
+        <mat-icon class="material-symbols-outlined">person_outline</mat-icon>
+      </div>
+      Creator: {{ creator }}
     </div>
-    Acres: {{ acres | number: '1.0-0' }}
-  </div>
-  <div class="detail-line" *ngIf="created_at">
-    <div class="detail-icon">
-      <mat-icon class="material-symbols-outlined">calendar_month</mat-icon>
+    <div class="detail-line" *ngIf="acres">
+      <div class="detail-icon">
+        <mat-icon class="material-symbols-outlined">crop_landscape</mat-icon>
+      </div>
+      Acres: {{ acres | number: '1.0-0' }}
     </div>
-    Created Date: {{ created_at | date: 'mediumDate' }}
-  </div>
+    <div class="detail-line" *ngIf="created_at">
+      <div class="detail-icon">
+        <mat-icon class="material-symbols-outlined">calendar_month</mat-icon>
+      </div>
+      Created Date: {{ created_at | date: 'mediumDate' }}
+    </div>
 
-  <!-- Dynamic list -->
-  <div class="detail-line" *ngFor="let d of details">
-    <div class="detail-icon">
-      <mat-icon class="material-symbols-outlined">{{ d.icon }}</mat-icon>
+    <!-- Dynamic list -->
+    <div class="detail-line" *ngFor="let d of details">
+      <div class="detail-icon">
+        <mat-icon class="material-symbols-outlined">{{ d.icon }}</mat-icon>
+      </div>
+      {{ d.label }}: {{ d.value }}
     </div>
-    {{ d.label }}: {{ d.value }}
-  </div>
+    <ng-content></ng-content>
+  </ng-container>
 </div>

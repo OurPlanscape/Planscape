@@ -52,6 +52,7 @@ PLANSCAPE_APPS = [
     "stands",
     "users",
     "utils",
+    "workspaces",
 ]
 INSTALLED_APPS = [
     "allauth",
@@ -467,6 +468,8 @@ CELERY_TASK_ROUTES = {
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
+CATALOG_BACKUP_CRON = config("CATALOG_BACKUP_CRON", default=None)
+CATALOG_RESTORE_CRON = config("CATALOG_RESTORE_CRON", default=None)
 
 TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
 

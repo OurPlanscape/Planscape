@@ -14,11 +14,11 @@ import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { PlanningAreaNotesService } from '@services';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
-import { NavBarComponent } from '@shared';
 import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MockDeclaration } from 'ng-mocks';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 describe('PlanComponent', () => {
   let router: Router;

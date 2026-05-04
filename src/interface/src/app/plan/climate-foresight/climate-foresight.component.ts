@@ -43,6 +43,7 @@ import {
   canDeleteClimateAnalysis,
   canRunClimateAnalysis,
 } from '../permissions';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
@@ -67,6 +68,7 @@ const POLLING_INTERVAL = 5000; // 5 seconds
     SectionComponent,
     DecimalPipe,
     ToolInfoCardComponent,
+    NavBarComponent,
   ],
   templateUrl: './climate-foresight.component.html',
   styleUrls: ['./climate-foresight.component.scss'],

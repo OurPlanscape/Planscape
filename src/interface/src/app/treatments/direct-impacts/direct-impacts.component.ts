@@ -23,6 +23,7 @@ import { MetricFiltersComponent } from '@treatments/metric-filters/metric-filter
 import { ImpactsMetric } from '../metrics';
 
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { ChangeOverTimeChartService } from '@treatments/change-over-time-chart/change-over-time-chart.service';
 import { StandDataChartComponent } from '@treatments/stand-data-chart/stand-data-chart.component';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -43,6 +44,7 @@ import { TreatmentSummaryButtonComponent } from '@treatments/treatment-summary-b
 import { ScenarioState } from '@scenario/scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 @UntilDestroy()
 @Component({
@@ -70,9 +72,11 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     DecimalPipe,
     TreatmentFilterComponent,
     TreatmentSummaryButtonComponent,
+    NavBarComponent,
   ],
   providers: [
     DirectImpactsStateService,
+    ChangeOverTimeChartService,
     TreatmentsState,
     SelectedStandsState,
     TreatedStandsState,
@@ -104,9 +108,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private directImpactsStateService: DirectImpactsStateService,
+    private changeOverTimeChartService: ChangeOverTimeChartService,
     private fileSaverService: FileSaverService,
     private dialog: MatDialog,
-    private injector: Injector, // Angular's injector for passing shared services
+    private injector: Injector,
     private scenarioState: ScenarioState,
     private breadcrumbService: BreadcrumbService
   ) {
@@ -182,6 +187,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       return `(Forested Stand)`;
     } else return `(Non-forested Stand)`;
   }
+
+  hasChartData$ = this.changeOverTimeChartService.hasChartData$;
 
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))

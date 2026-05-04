@@ -124,6 +124,66 @@ describe('buildPathTree', () => {
     expect(node2!.item!.id).toEqual(102);
   });
 
+  it('should sort top-level categories and leaves alphabetically', () => {
+    const items: DataLayer[] = [
+      { id: 1, name: 'Zebra Layer', path: [] } as unknown as DataLayer,
+      { id: 2, name: 'Alpha Layer', path: [] } as unknown as DataLayer,
+      { id: 3, name: 'Mango Layer', path: [] } as unknown as DataLayer,
+    ];
+
+    const result = buildPathTree(items);
+
+    expect(result.map((n) => n.name)).toEqual([
+      'Alpha Layer',
+      'Mango Layer',
+      'Zebra Layer',
+    ]);
+  });
+
+  it('should sort categories at the top level alphabetically', () => {
+    const items: DataLayer[] = [
+      { id: 1, name: 'Item', path: ['Zebra'] } as DataLayer,
+      { id: 2, name: 'Item', path: ['Alpha'] } as DataLayer,
+      { id: 3, name: 'Item', path: ['Mango'] } as DataLayer,
+    ];
+
+    const result = buildPathTree(items);
+
+    expect(result.map((n) => n.name)).toEqual(['Alpha', 'Mango', 'Zebra']);
+  });
+
+  it('should sort children within a category alphabetically', () => {
+    const items: DataLayer[] = [
+      { id: 1, name: 'Zebra', path: ['Cat'] } as DataLayer,
+      { id: 2, name: 'Alpha', path: ['Cat'] } as DataLayer,
+      { id: 3, name: 'Mango', path: ['Cat'] } as DataLayer,
+    ];
+
+    const result = buildPathTree(items);
+
+    const cat = result[0];
+    expect(cat.name).toEqual('Cat');
+    expect(cat.children!.map((n) => n.name)).toEqual([
+      'Alpha',
+      'Mango',
+      'Zebra',
+    ]);
+  });
+
+  it('should sort recursively at every depth', () => {
+    const items: DataLayer[] = [
+      { id: 1, name: 'Z-leaf', path: ['B-cat', 'Z-sub'] } as DataLayer,
+      { id: 2, name: 'A-leaf', path: ['B-cat', 'A-sub'] } as DataLayer,
+      { id: 3, name: 'leaf', path: ['A-cat', 'sub'] } as DataLayer,
+    ];
+
+    const result = buildPathTree(items);
+
+    expect(result.map((n) => n.name)).toEqual(['A-cat', 'B-cat']);
+    const bCat = result.find((n) => n.name === 'B-cat')!;
+    expect(bCat.children!.map((n) => n.name)).toEqual(['A-sub', 'Z-sub']);
+  });
+
   it('should handle a single item with a single-level path', () => {
     const items: DataLayer[] = [
       {

@@ -1,5 +1,6 @@
 from climate_foresight.routers import router as climate_foresight_router
 from datasets.admin_routers import router as datasets_admin_router
+from workspaces.admin_routers import router as workspaces_admin_router
 from datasets.routers import router as datasets_router
 from django.urls import include, path
 from impacts.routers import router as impacts_router
@@ -26,5 +27,11 @@ urlpatterns = [
     path(
         "admin/",
         include((datasets_admin_router.urls, "datasets"), namespace="admin-datasets"),
+    ),
+    path(
+        "admin/",
+        include(
+            (workspaces_admin_router.urls, "workspaces"), namespace="admin-workspaces"
+        ),
     ),
 ]

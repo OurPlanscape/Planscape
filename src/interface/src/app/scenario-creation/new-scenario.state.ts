@@ -14,6 +14,7 @@ import {
   combineLatest,
   EMPTY,
   filter,
+  finalize,
   map,
   mapTo,
   merge,
@@ -22,10 +23,9 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  tap,
 } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
@@ -122,12 +122,11 @@ export class NewScenarioState {
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([_, step]) => step?.refreshAvailableStands ?? false),
-    tap(() => {
-      this.setLoading(false);
-    }),
-    tap(() => this.setLoading(true)),
-    switchMap(([_, step, standSize, excludedAreas, constraints]) =>
-      this.scenarioService
+    switchMap(([_, step, standSize, excludedAreas, constraints]) => {
+      // Inside the project fn so it runs after switchMap cancels the previous inner (and its
+      // finalize fires) — a tap() before switchMap would be overridden by that finalize.
+      this.setLoading(true);
+      return this.scenarioService
         .getExcludedStands(
           this.scenarioId,
           standSize,
@@ -135,18 +134,13 @@ export class NewScenarioState {
           step?.includeConstraints ? constraints : undefined
         )
         .pipe(
-          tap(() => this.setLoading(false)),
           catchError(() => {
-            this.snackbar.open(
-              '[Error] Cannot load map data',
-              'Dismiss',
-              SNACK_ERROR_CONFIG
-            );
-            this.setLoading(false);
+            this.showMapError();
             return EMPTY;
-          })
-        )
-    ),
+          }),
+          finalize(() => this.setLoading(false))
+        );
+    }),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
@@ -190,9 +184,12 @@ export class NewScenarioState {
   private slopeId = 0;
   private distanceToRoadsId = 0;
 
+  private readonly planId = this.route.snapshot.data['planId'];
+
   constructor(
     private scenarioService: ScenarioService,
     private route: ActivatedRoute,
+    private router: Router,
     private snackbar: MatSnackBar,
     private forsysService: ForsysService,
     private dataLayersService: DataLayersService
@@ -252,5 +249,18 @@ export class NewScenarioState {
 
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
+  }
+
+  showMapError() {
+    this.snackbar.open(
+      'There was a problem loading your scenario.\n Try editing your draft again or create a new scenario.',
+      'Dismiss',
+      {
+        ...SNACK_ERROR_CONFIG,
+        panelClass: ['snackbar-error', 'snackbar-error-multiline'],
+      }
+    );
+    this.setDraftFinished(true);
+    this.router.navigate(['/plan', this.planId]);
   }
 }

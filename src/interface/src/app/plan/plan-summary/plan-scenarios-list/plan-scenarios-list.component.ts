@@ -32,6 +32,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { PlanState } from '@plan/plan.state';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FeatureService } from '@app/features/feature.service';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -67,7 +68,8 @@ export class PlanScenariosListComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState
+    private planState: PlanState,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -180,13 +182,25 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
+    // Update when SCENARIO_DASHBOARD be released
+    if (
+      this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS') &&
+      clickedScenario.scenario_result &&
+      ['FAILURE', 'PANIC', 'SUCCESS'].includes(
+        clickedScenario.scenario_result.status
+      )
+    ) {
+      this.router.navigate(['scenario', clickedScenario.id, 'dashboard'], {
+        relativeTo: this.route,
+      });
+    } else {
+      this.router.navigate(['scenario', clickedScenario.id], {
+        relativeTo: this.route,
+      });
+    }
     this.breadcrumbService.updateBreadCrumb({
       label: 'Planning Area Overview',
       backUrl: getPlanPath(clickedScenario.planning_area),
-    });
-
-    this.router.navigate(['scenario', clickedScenario.id], {
-      relativeTo: this.route,
     });
   }
 
@@ -212,7 +226,7 @@ export class PlanScenariosListComponent implements OnInit {
 
   createNewTreatmentPlan(scenarioId: string): void {
     this.treatmentsService
-      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .createTreatmentPlan(Number(scenarioId), { name: 'New Treatment Plan' })
       .subscribe({
         next: (result) => {
           this.router.navigate(

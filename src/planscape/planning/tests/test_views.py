@@ -128,8 +128,6 @@ class ListPlanningAreaTest(APITestCase):
             user=self.user,
             notes="",
         )
-        self.planning_area1.scenario_count = 3
-        self.planning_area1.save(update_fields=["updated_at", "scenario_count"])
         self.scenario3_1 = ScenarioFactory.create(
             planning_area=self.planning_area3,
             name="test pa3 scenario1",
@@ -137,8 +135,6 @@ class ListPlanningAreaTest(APITestCase):
             user=self.user,
             notes="",
         )
-        self.planning_area3.scenario_count = 1
-        self.planning_area3.save(update_fields=["updated_at", "scenario_count"])
         self.scenario4_1 = ScenarioFactory.create(
             planning_area=self.planning_area4,
             name="test pa4 scenario1 ",
@@ -160,8 +156,6 @@ class ListPlanningAreaTest(APITestCase):
             user=self.user,
             notes="",
         )
-        self.planning_area4.scenario_count = 3
-        self.planning_area4.save(update_fields=["updated_at", "scenario_count"])
         self.user2 = UserFactory.create(username="otherowner")
         self.geometry = {
             "type": "MultiPolygon",

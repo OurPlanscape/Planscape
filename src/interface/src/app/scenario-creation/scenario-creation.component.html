@@ -63,10 +63,8 @@
         <sg-step>
           <app-treatment-target
             *ngIf="!subUnitsPrioritized"></app-treatment-target>
-          <app-planning-approach-treatment-target
-            *ngIf="
-              subUnitsPrioritized
-            "></app-planning-approach-treatment-target>
+          <app-sub-units-treatment-target
+            *ngIf="subUnitsPrioritized"></app-sub-units-treatment-target>
         </sg-step>
       </ng-container>
       <!-- Custom Scenarios steps-->
@@ -93,10 +91,8 @@
         <sg-step>
           <app-treatment-target
             *ngIf="!subUnitsPrioritized"></app-treatment-target>
-          <app-planning-approach-treatment-target
-            *ngIf="
-              subUnitsPrioritized
-            "></app-planning-approach-treatment-target>
+          <app-sub-units-treatment-target
+            *ngIf="subUnitsPrioritized"></app-sub-units-treatment-target>
         </sg-step>
       </ng-template>
     </sg-steps>

@@ -1885,8 +1885,11 @@ class SubUnitsDetailsTest(APITestCase):
         self.other_user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(user=self.user)
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        self.sub_units_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
 
-        self.scenario.configuration = {"sub_units_layer": 1}
+        self.scenario.configuration = {"sub_units_layer": self.sub_units_layer.pk}
         self.scenario.save()
 
     @mock.patch(

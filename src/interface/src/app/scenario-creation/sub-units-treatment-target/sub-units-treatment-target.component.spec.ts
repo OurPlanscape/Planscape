@@ -6,15 +6,15 @@ import {
 import { NgxMaskModule } from 'ngx-mask';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
-import { PlanningApproachTreatmentTargetComponent } from './planning-approach-treatment-target.component';
+import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target.component';
 import { ScenarioService } from '@app/services';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, FormGroup } from '@angular/forms';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 
-describe('PlanningApproachTreatmentTargetComponent', () => {
-  let component: PlanningApproachTreatmentTargetComponent;
-  let fixture: ComponentFixture<PlanningApproachTreatmentTargetComponent>;
+describe('SubUnitsTreatmentTargetComponent', () => {
+  let component: SubUnitsTreatmentTargetComponent;
+  let fixture: ComponentFixture<SubUnitsTreatmentTargetComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -22,7 +22,7 @@ describe('PlanningApproachTreatmentTargetComponent', () => {
         NoopAnimationsModule,
         BrowserAnimationsModule,
         NgxMaskModule.forRoot(),
-        PlanningApproachTreatmentTargetComponent,
+        SubUnitsTreatmentTargetComponent,
       ],
       providers: [
         MockProvider(NewScenarioState, {
@@ -38,7 +38,7 @@ describe('PlanningApproachTreatmentTargetComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PlanningApproachTreatmentTargetComponent);
+    fixture = TestBed.createComponent(SubUnitsTreatmentTargetComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

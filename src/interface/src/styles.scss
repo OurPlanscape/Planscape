@@ -53,12 +53,16 @@ body.no-scroll-bounce {
 }
 
 .snackbar-error {
-  background: $color-error;
+  --mat-snack-bar-button-color: #{$color-main-yellow};
 
   button {
     color: $color-white;
   }
 
+}
+
+.snackbar-error-multiline {
+  white-space: pre-line;
 }
 
 .snackbar-debug-error {

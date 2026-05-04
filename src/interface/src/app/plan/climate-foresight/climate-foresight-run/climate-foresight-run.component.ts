@@ -45,6 +45,7 @@ import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-d
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import * as Sentry from '@sentry/browser';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 export interface PillarDragAndDrop extends Pillar {
   isOpen: boolean;
@@ -72,6 +73,7 @@ type SaveStepData = {
     AssignPillarsComponent,
     AssignFavorabilityComponent,
     CdkDropListGroup,
+    NavBarComponent,
   ],
   templateUrl: './climate-foresight-run.component.html',
   styleUrls: ['./climate-foresight-run.component.scss'],

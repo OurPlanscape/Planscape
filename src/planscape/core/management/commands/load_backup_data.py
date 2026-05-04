@@ -7,6 +7,7 @@ from datasets.tasks import datalayer_uploaded
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from core.mattermost import post_to_mattermost
 
 
 class Command(BaseCommand):
@@ -161,6 +162,11 @@ class Command(BaseCommand):
                     f"Triggered post-upload process for {ready_vector_layers.count()} Datalayers type=VECTOR and status=READY."
                 )
             )
+            post_to_mattermost(
+                f"planscape-{settings.ENV} :white_check_mark: Catalog data restore completed successfully"
+            )
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
-            self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
+            post_to_mattermost(
+                f"planscape-{settings.ENV} :x: Catalog data restore failed: {e}"
+            )

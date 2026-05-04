@@ -37,7 +37,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @UntilDestroy()
 @Component({
-  selector: 'app-planning-approach-treatment-target',
+  selector: 'app-sub-units-treatment-target',
   standalone: true,
   imports: [
     CommonModule,
@@ -55,13 +55,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   providers: [
     {
       provide: StepDirective,
-      useExisting: PlanningApproachTreatmentTargetComponent,
+      useExisting: SubUnitsTreatmentTargetComponent,
     },
   ],
-  templateUrl: './planning-approach-treatment-target.component.html',
-  styleUrl: './planning-approach-treatment-target.component.scss',
+  templateUrl: './sub-units-treatment-target.component.html',
+  styleUrl: './sub-units-treatment-target.component.scss',
 })
-export class PlanningApproachTreatmentTargetComponent extends StepDirective<ScenarioDraftConfiguration> {
+export class SubUnitsTreatmentTargetComponent extends StepDirective<ScenarioDraftConfiguration> {
   minAcreage: number = 0;
   form!: FormGroup;
   subUnitDetails: SubUnitsDetail | null = null;
@@ -105,7 +105,7 @@ export class PlanningApproachTreatmentTargetComponent extends StepDirective<Scen
             Validators.min(1),
           ]),
           // sub_units_target_value: false = Percentage / true = Number of acres
-          sub_units_fixed_target: new FormControl<boolean>(true, [
+          sub_units_fixed_target: new FormControl<boolean>(false, [
             Validators.required,
           ]),
           // Percentage (when sub_units_fixed_target is false) or number of acres (when sub_units_fixed_target is true)

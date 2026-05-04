@@ -32,9 +32,11 @@ describe('TreatmentsService', () => {
     const scenarioId = 1;
     const name = 'Plan A';
 
-    service.createTreatmentPlan(scenarioId, name).subscribe((response) => {
-      expect(response).toEqual(dummyResponse as TreatmentPlan);
-    });
+    service
+      .createTreatmentPlan(scenarioId, { name: name })
+      .subscribe((response) => {
+        expect(response).toEqual(dummyResponse as TreatmentPlan);
+      });
 
     const req = httpMock.expectOne(service.baseUrl);
     expect(req.request.method).toBe('POST');

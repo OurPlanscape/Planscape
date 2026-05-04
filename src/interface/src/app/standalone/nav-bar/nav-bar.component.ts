@@ -1,16 +1,20 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
-import { Params } from '@angular/router';
+import { Params, RouterModule } from '@angular/router';
 import { filter, lastValueFrom, map, take } from 'rxjs';
 import { canViewCollaborators } from '@plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { ButtonComponent, SectionComponent } from '@styleguide';
+import { CommonModule } from '@angular/common';
 
 @Component({
+  standalone: true,
   selector: 'app-nav-bar',
+  imports: [CommonModule, ButtonComponent, RouterModule, SectionComponent],
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss'],
 })

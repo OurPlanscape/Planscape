@@ -16,8 +16,12 @@ describe('NavBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LegacyMaterialModule, RouterTestingModule, ButtonComponent],
-      declarations: [NavBarComponent],
+      imports: [
+        NavBarComponent,
+        LegacyMaterialModule,
+        RouterTestingModule,
+        ButtonComponent,
+      ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         {

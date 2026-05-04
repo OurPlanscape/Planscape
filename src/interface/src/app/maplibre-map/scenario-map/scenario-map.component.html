@@ -23,7 +23,8 @@
   [dragRotate]="false"
   [fitBoundsOptions]="{ padding: { top: 70, bottom: 40, left: 20, right: 20 } }"
   [fitBounds]="bounds"
-  (mapLoad)="mapLoaded($event)">
+  (mapLoad)="mapLoaded($event)"
+  (mapError)="onMapError($event)">
   <app-map-zoom-control
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"

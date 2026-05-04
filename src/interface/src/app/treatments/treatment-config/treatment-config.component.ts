@@ -40,6 +40,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
 import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 @UntilDestroy()
 @Component({
@@ -62,6 +64,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     MatProgressSpinnerModule,
     OverlayLoaderComponent,
     MatTooltipModule,
+    NavBarComponent,
   ],
   providers: [
     TreatmentsState,
@@ -69,6 +72,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     TreatedStandsState,
     MapConfigState,
     TreatmentToPDFService,
+    DirectImpactsStateService,
   ],
   templateUrl: './treatment-config.component.html',
   styleUrl: './treatment-config.component.scss',

@@ -37,7 +37,7 @@ from planning.models import (
 )
 from planning.services import (
     build_run_configuration,
-    calculate_and_update_rx_leverage,
+    calculate_and_update_scenario_result,
     create_metrics_task,
     export_to_geopackage,
     get_acreage,
@@ -401,7 +401,7 @@ def async_scenario_post_processing(scenario_id):
 
     try:
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
-            calculate_and_update_rx_leverage(scenario)
+            calculate_and_update_scenario_result(scenario)
     except Exception:
         scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
     else:

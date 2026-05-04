@@ -43,6 +43,7 @@ import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/p
 import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list/scenarios-empty-list.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -93,6 +94,7 @@ import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard
     ScenariosEmptyListComponent,
     OverlayLoaderComponent,
     DashboardLayoutComponent,
+    NavBarComponent,
   ],
 })
 export class PlanModule {}

@@ -2,6 +2,7 @@ import logging
 
 from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
+from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
@@ -14,7 +15,6 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from datasets.models import DataLayer
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
@@ -104,7 +104,6 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "name",
         "region_name",
         "latest_updated",
-        "scenario_count",
         "updated_at",
         "user",
     ]
@@ -316,12 +315,18 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     @action(methods=["POST"], detail=False)
     def upload_shapefiles(self, request, pk=None, *args, **kwargs):
+        from planscape.exceptions import InvalidGeometry
+        from rest_framework.exceptions import ValidationError as DRFValidationError
+
         serializer = UploadedScenarioDataSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_scenario = create_scenario_from_upload(
-            validated_data=serializer.validated_data,
-            user=request.user,
-        )
+        try:
+            new_scenario = create_scenario_from_upload(
+                validated_data=serializer.validated_data,
+                user=request.user,
+            )
+        except (InvalidGeometry, ValueError) as e:
+            raise DRFValidationError({"global": [str(e)]})
         out_serializer = ScenarioAndProjectAreasSerializer(instance=new_scenario)
         return Response(
             out_serializer.data,
@@ -329,7 +334,12 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
     @extend_schema(description="Update Scenario's configuration.")
-    @action(methods=["patch"], detail=True, url_path="configuration", serializer_class=UpsertConfigurationV2Serializer)
+    @action(
+        methods=["patch"],
+        detail=True,
+        url_path="configuration",
+        serializer_class=UpsertConfigurationV2Serializer,
+    )
     def patch_configuration(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = UpsertConfigurationV2Serializer(
@@ -419,31 +429,48 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 location=OpenApiParameter.QUERY,
                 required=False,
                 description="Absolute value or relative percent of project area sum.",
-            )
+            ),
         ],
     )
     @action(methods=["GET"], detail=True, url_path="sub_units_details")
     def get_sub_units_details(self, request, pk=None):
         scenario = self.get_object()
-        query_params_serializer = SubUnitsDetailsParamsSerializer(data=request.query_params)
+        query_params_serializer = SubUnitsDetailsParamsSerializer(
+            data=request.query_params
+        )
         query_params_serializer.is_valid(raise_exception=True)
 
-        datalayer_pk = query_params_serializer.validated_data.get("sub_units_layer") or scenario.configuration.get("sub_units_layer")
+        datalayer_pk = query_params_serializer.validated_data.get(
+            "sub_units_layer"
+        ) or scenario.configuration.get("sub_units_layer")
         if not datalayer_pk:
-            return Response({"errors": "Sub-Unit layer not selected."}, status=status.HTTP_412_PRECONDITION_FAILED)
-        
-        sub_units_fixed_target = query_params_serializer.validated_data.get("sub_units_fixed_target")
-        sub_units_target_value = query_params_serializer.validated_data.get("sub_units_target_value")
+            return Response(
+                {"errors": "Sub-Unit layer not selected."},
+                status=status.HTTP_412_PRECONDITION_FAILED,
+            )
+
+        sub_units_fixed_target = query_params_serializer.validated_data.get(
+            "sub_units_fixed_target"
+        )
+        sub_units_target_value = query_params_serializer.validated_data.get(
+            "sub_units_target_value"
+        )
 
         datalayer = DataLayer.objects.get(pk=datalayer_pk)
         stand_size = scenario.get_stand_size()
-        details = get_sub_units_details(scenario, stand_size, datalayer, sub_units_fixed_target, sub_units_target_value)
+        details = get_sub_units_details(
+            scenario,
+            stand_size,
+            datalayer,
+            sub_units_fixed_target,
+            sub_units_target_value,
+        )
         if not details:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         return Response(details, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer)
     def available_stands(self, request, pk=None):
         scenario = self.get_object()
         serializer = GetAvailableStandsSerializer(data=request.data)
@@ -454,6 +481,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_200_OK,
         )
+
 
 # TODO: migrate this to an action inside the planning area viewset
 @extend_schema_view(

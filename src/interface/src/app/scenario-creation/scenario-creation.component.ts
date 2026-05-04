@@ -71,7 +71,8 @@ import { MapModuleService } from '@services/map-module.service';
 import { PlanState } from '@plan/plan.state';
 import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-step/treatment-goal-step.component';
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
-import { PlanningApproachTreatmentTargetComponent } from './planning-approach-treatment-target/planning-approach-treatment-target.component';
+import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/sub-units-treatment-target.component';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 @UntilDestroy()
 @Component({
@@ -117,8 +118,9 @@ import { PlanningApproachTreatmentTargetComponent } from './planning-approach-tr
     CustomCobenefitsComponent,
     TreatmentGoalStepComponent,
     Step1WithOverviewComponent,
-    PlanningApproachTreatmentTargetComponent,
+    SubUnitsTreatmentTargetComponent,
     FeaturesModule,
+    NavBarComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',

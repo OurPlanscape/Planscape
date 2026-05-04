@@ -30,7 +30,12 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import get_acreage, get_min_project_area, planning_area_covers, union_geojson
+from planning.services import (
+    get_acreage,
+    get_min_project_area,
+    planning_area_covers,
+    union_geojson,
+)
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
@@ -86,7 +91,6 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "name",
             "notes",
             "region_name",
-            "scenario_count",
             "capabilities",
             "latest_updated",
             "created_at",
@@ -200,7 +204,6 @@ class PlanningAreaSerializer(
             "name",
             "notes",
             "region_name",
-            "scenario_count",
             "capabilities",
             "latest_updated",
             "created_at",
@@ -306,18 +309,29 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
         scenario = instance.scenario
 
         request = self.context.get("request")
-        number_of_features = request.query_params.get("number_of_features") if request else None
+        number_of_features = (
+            request.query_params.get("number_of_features") if request else None
+        )
 
         if number_of_features is not None:
             try:
                 number_of_features = int(number_of_features)
                 features = features[:number_of_features]
             except ValueError:
-                if number_of_features.lower() != "all" and \
-                    scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
-                    features = features[:settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS]
-        elif scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
-            features = features[:settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS]
+                if (
+                    number_of_features.lower() != "all"
+                    and scenario.planning_approach
+                    == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+                ):
+                    features = features[
+                        : settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS
+                    ]
+        elif (
+            scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        ):
+            features = features[
+                : settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS
+            ]
 
         for feature in features:
             feature["properties"].pop("text_geometry", None)
@@ -469,6 +483,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
+
 class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
         source="excluded_areas_ids",
@@ -552,19 +567,31 @@ class TargetsSerializer(serializers.Serializer):
 
         if sub_units_fixed_target is not None:
             if sub_units_target_value is None:
-                raise serializers.ValidationError("`sub_units_target_value` cannot be null.")
+                raise serializers.ValidationError(
+                    "`sub_units_target_value` cannot be null."
+                )
 
             if sub_units_target_value <= 0:
-                raise serializers.ValidationError("`sub_units_target_value` cannot be zero or lower.")
-            
+                raise serializers.ValidationError(
+                    "`sub_units_target_value` cannot be zero or lower."
+                )
+
             if sub_units_fixed_target is False and sub_units_target_value > 100:
-                raise serializers.ValidationError("`sub_units_target_value` cannot be bigger than 100 percent.")
-            
+                raise serializers.ValidationError(
+                    "`sub_units_target_value` cannot be bigger than 100 percent."
+                )
+
             if sub_units_fixed_target is True:
                 instance = self.parent.parent.instance
-                stand_area = get_min_project_area(scenario=instance) if instance else settings.MIN_AREA_PROJECT_LARGE
+                stand_area = (
+                    get_min_project_area(scenario=instance)
+                    if instance
+                    else settings.MIN_AREA_PROJECT_LARGE
+                )
                 if sub_units_target_value < stand_area:
-                    raise serializers.ValidationError("`sub_units_target_value` cannot be smaller than 1 Stand.")
+                    raise serializers.ValidationError(
+                        "`sub_units_target_value` cannot be smaller than 1 Stand."
+                    )
 
         return super().validate(attrs)
 
@@ -688,7 +715,9 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         required=False,
     )
     sub_units_layer = serializers.PrimaryKeyRelatedField(
-        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR, status=DataLayerStatus.READY).all(),
+        queryset=DataLayer.objects.filter(
+            type=DataLayerType.VECTOR, status=DataLayerStatus.READY
+        ).all(),
         required=False,
         help_text="Vector Layer ID that contains Sub Units.",
     )
@@ -782,7 +811,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         choices=ScenarioPlanningApproach.choices,
         required=False,
         allow_null=True,
-        help_text="Scenario's Planning Approach."
+        help_text="Scenario's Planning Approach.",
     )
     tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
     treatment_goal = TreatmentGoalSimpleSerializer(
@@ -1028,7 +1057,7 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         choices=ScenarioPlanningApproach.choices,
         required=False,
         allow_null=True,
-        help_text="Scenario's Planning Approach."
+        help_text="Scenario's Planning Approach.",
     )
 
     treatment_goal = serializers.PrimaryKeyRelatedField(
@@ -1053,11 +1082,13 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             incoming = validated_data["configuration"]
             cfg.update(incoming)
             instance.configuration = cfg
-        
+
         if "planning_approach" in validated_data:
             instance.planning_approach = validated_data["planning_approach"]
 
-        instance.save(update_fields=["treatment_goal", "configuration", "planning_approach"])
+        instance.save(
+            update_fields=["treatment_goal", "configuration", "planning_approach"]
+        )
         instance.refresh_from_db()
         serializer = ScenarioV3Serializer(instance)
         return serializer.data
@@ -1328,7 +1359,7 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 
         if not self._is_inside_planning_area(geometry, planning_area_id, stand_size):
             raise serializers.ValidationError(
-                "The uploaded geometry is not within the selected planning area."
+                {"global": ["The uploaded geometry is not within the selected planning area."]}
             )
         return attrs
 
@@ -1355,7 +1386,10 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         return geojson_serializer.validated_data
 
     def _is_inside_planning_area(self, geometry, planning_area_id, stand_size) -> bool:
-        uploaded_geos = union_geojson(geometry)
+        try:
+            uploaded_geos = union_geojson(geometry)
+        except ValueError as e:
+            raise serializers.ValidationError({"global": [str(e)]})
         try:
             planning_area = PlanningArea.objects.get(pk=planning_area_id)
         except PlanningArea.DoesNotExist:
@@ -1390,7 +1424,11 @@ class GetAvailableStandsSerializer(serializers.Serializer):
         child=ConstraintSerializer(),
         required=False,
     )
-
+    sub_unit = serializers.PrimaryKeyRelatedField(
+        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR, status=DataLayerStatus.READY).all(),
+        required=False,
+        help_text="Vector Layer ID that contains Sub Units.",
+    )
 
 class UnavailableStandsSerializer(serializers.Serializer):
     by_inclusions = serializers.ListField(child=serializers.IntegerField())

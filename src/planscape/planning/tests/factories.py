@@ -6,24 +6,24 @@ from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.db import connection
+from planscape.tests.factories import UserFactory
 
 from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
     ScenarioOrigin,
-    ScenarioType,
     ScenarioPostProcessingStatus,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
+    ScenarioType,
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
     TreatmentGoalUsageType,
     TreatmentGoalUsesDataLayer,
 )
-from planscape.tests.factories import UserFactory
 
 
 class PlanningAreaFactory(factory.django.DjangoModelFactory):
@@ -39,8 +39,6 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
     )
 
     name = factory.Sequence(lambda n: "planning area %s" % n)
-
-    scenario_count = 0
 
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
@@ -204,7 +202,7 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
     def with_priority_objectives(self, create, extracted, **kwargs):
         if not create:
             return
-        
+
         if extracted:
             ids = []
             for datalayer in extracted:
@@ -218,7 +216,7 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
     def with_cobenefits(self, create, extracted, **kwargs):
         if not create:
             return
-        
+
         if extracted:
             ids = []
             for datalayer in extracted:
@@ -277,7 +275,8 @@ class ScenarioResultFactory(factory.django.DjangoModelFactory):
                     "treatment_rank": i,
                     "weightedPriority": 12345.987,
                 },
-            } for i in range(10)
+            }
+            for i in range(10)
         ],
     }
 
@@ -285,7 +284,7 @@ class ScenarioResultFactory(factory.django.DjangoModelFactory):
     def with_multiple_features(self, create, extracted, **kwargs):
         if not create:
             return
-        
+
         if extracted:
             result = {
                 "type": "FeatureCollection",
@@ -293,7 +292,10 @@ class ScenarioResultFactory(factory.django.DjangoModelFactory):
                     {
                         "type": "Feature",
                         "geometry": {
-                            "crs": {"type": "name", "properties": {"name": "EPSG:4269"}},
+                            "crs": {
+                                "type": "name",
+                                "properties": {"name": "EPSG:4269"},
+                            },
                             "type": "Polygon",
                             "coordinates": [
                                 [
@@ -329,7 +331,8 @@ class ScenarioResultFactory(factory.django.DjangoModelFactory):
                             "treatment_rank": i,
                             "weightedPriority": 12345.987,
                         },
-                    } for i in range(extracted)
+                    }
+                    for i in range(extracted)
                 ],
             }
             self.result = result

@@ -51,7 +51,7 @@ export function parseResultsToProjectAreas(
     return {
       rank: props.treatment_rank,
       acres: props.area_acres,
-      percentTotal: props.pct_area,
+      percentTreatableArea: props.pct_treatable_area,
       estimatedCost: props.total_cost,
       score: props.weightedPriority,
       rxLeverage: props.rx_leverage,
@@ -66,13 +66,13 @@ export function parseResultsToTotals(
     (acc, value) => {
       acc.acres += value.acres;
       acc.estimatedCost += value.estimatedCost;
-      acc.percentTotal += value.percentTotal;
+      acc.percentTreatableArea += value.percentTreatableArea;
       acc.rxLeverage += value.rxLeverage;
       return acc;
     },
     {
       acres: 0,
-      percentTotal: 0,
+      percentTreatableArea: 0,
       estimatedCost: 0,
       rxLeverage: 0,
     }

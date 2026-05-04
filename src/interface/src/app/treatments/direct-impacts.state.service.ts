@@ -5,17 +5,17 @@ import { PrescriptionAction } from './prescriptions';
 import { TreatmentProjectArea } from '@types';
 import { Injectable } from '@angular/core';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class DirectImpactsStateService {
+  constructor() {}
+
   private _reportMetrics$ = new BehaviorSubject<
     Record<ImpactsMetricSlot, Metric>
   >({
-    blue: METRICS[0],
-    purple: METRICS[1],
-    orange: METRICS[2],
-    green: METRICS[3],
+    blue: METRICS[13], // Total Carbon
+    purple: METRICS[9], // Quadratic Mean Diameter
+    orange: METRICS[8], // Probability of Torching
+    green: METRICS[7], // Potential Smoke
   });
 
   public reportMetrics$ = this._reportMetrics$.asObservable();
@@ -27,6 +27,7 @@ export class DirectImpactsStateService {
     []
   );
   public filteredTreatmentTypes$ = this._filteredTreatmentTypes$.asObservable();
+
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
@@ -38,11 +39,8 @@ export class DirectImpactsStateService {
   private _standsTxSourceLoaded$ = new BehaviorSubject(false);
   public standsTxSourceLoaded$ = this._standsTxSourceLoaded$.asObservable();
 
-  constructor() {}
-
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
-    // Clean the Treatment type selection if the project area changed
     this.setFilteredTreatmentTypes([]);
   }
 

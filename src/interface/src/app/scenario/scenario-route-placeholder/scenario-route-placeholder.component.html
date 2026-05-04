@@ -38,7 +38,6 @@
 
         <ng-template #createScenario>
           <!-- Displaying scenario view if canViewScenarioCreation$ --if not, means canViewScenarioCreation didn't emit yet and we should display loading-->
-
           <app-view-scenario
             *ngIf="
               (canViewScenarioCreation$ | async) === false;

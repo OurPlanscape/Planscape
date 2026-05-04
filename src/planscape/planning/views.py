@@ -55,7 +55,6 @@ def list_planning_areas(request: Request) -> Response:
 
     Returns: A list of planning areas in JSON form.  Each planning area JSON will also include
         two metadata fields:
-      scenario_count: number of scenarios for the planning area returned.
       latest_updated: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
         PlanningArea updated_at if no scenarios
 

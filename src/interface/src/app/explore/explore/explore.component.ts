@@ -22,6 +22,7 @@ import { getPlanPath } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 
 enum SidebarTabs {
   DATA_LAYERS,
@@ -48,6 +49,7 @@ enum SidebarTabs {
     CommonModule,
     BaseLayersComponent,
     MapSelectorComponent,
+    NavBarComponent,
   ],
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',

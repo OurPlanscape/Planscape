@@ -90,19 +90,3 @@
   flex-direction: column;
   gap: 16px;
 }
-
-.plan-scenarios-column {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  background-color: $color-light-gray;
-  justify-content: center;
-  box-sizing: border-box;
-
-  border-radius: 8px;
-  border: 1px solid $color-soft-gray;
-  background-color: $color-white;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
-}
