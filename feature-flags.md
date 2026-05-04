@@ -14,3 +14,5 @@ The name and value of the flag will be shared by frontend and backend.
 `PLANNING_APPROACH` : Allows planning approach where users can prioritize sub-units during scenario workflow
 
 `SCENARIO_DASHBOARDS` : Enables new dashboards for scenarios, project areas and treatment effects
+
+`PRIORITY_OBJECTIVE_WEIGHTING`: Enables Priority objective weighting
