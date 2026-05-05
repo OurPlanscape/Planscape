@@ -1,15 +1,67 @@
+<ng-template #tooltipContent>
+  <ng-container *ngIf="!weightingFlagOn">
+    <b>What are Priority Objectives?</b>
+    <p>
+      These are the main outcomes you want ForSys to focus on when identifying
+      areas for treatment — like source exposure, wildfire hazard potential, or
+      total live tree carbon.
+    </p>
+
+    <b>What happens if you select only one priority objective?</b>
+    <p>
+      If you select 1 objective, ForSys will prioritize areas with the highest
+      value for that single objective.
+    </p>
+    <b>What happens if you select two priority objectives?</b>
+    <p>
+      If you select 2 objectives, ForSys scores each stand relative to others
+      for the selected metrics and combines those scores. Metrics with more
+      stands with high relative values will have a stronger influence on the
+      overall result.
+    </p>
+  </ng-container>
+  <ng-container *ngIf="weightingFlagOn">
+    <b>What are Priority Objectives?</b>
+    <p>
+      These are the main outcomes you want ForSys to focus on when identifying
+      areas for treatment — like source exposure, wildfire hazard potential, or
+      total live tree carbon.
+    </p>
+
+    <b>What happens if you select only one priority objective?</b>
+    <p>
+      If you select 1 objective, ForSys will prioritize areas with the highest
+      value for that single objective.
+    </p>
+
+    <b>What happens if you select two priority objectives?</b>
+    <p>
+      If you select 2 objectives, ForSys scores each stand relative to others
+      for the selected metrics and combines those scores. Metrics with more
+      stands with high relative values will have a stronger influence on the
+      overall result.
+    </p>
+
+    <b>Can I adjust the weighting for Priority Objectives?</b>
+    <p>
+      By default, both objectives are equally weighted (1x:1x). You can adjust
+      the weighting to give one objective more influence over the results (e.g.,
+      2x:1x).
+    </p>
+  </ng-container>
+</ng-template>
+
 <sg-section
   headline="Select Priority Objectives"
   class="priority-selection"
+  [ngClass]="{ 'with-gap': !weightingFlagOn }"
   [required]="true"
-  tooltipContent="<b>What are Priority Objectives?</b>
-  These are the main outcomes you want ForSys to focus on when identifying areas for treatment — like source exposure, wildfire hazard potential, or total live tree carbon.
-
-  <b>What happens if you select only one priority objective?</b>
-If you select 1 objective, ForSys will prioritize areas with the highest value for that single objective.  
-
-  <b>What happens if you select two priority objectives?</b>
-If you select 2 objectives, ForSys scores each stand relative to others for the selected metrics and combines those scores. Metrics with more stands with high relative values will have a stronger influence on the overall result.
+  [tooltipTemplate]="tooltipContent"
+  tooltipSize="medium"
+  [headlineHint]="
+    weightingFlagOn
+      ? (selectionCount$ | async) + '/' + maxLayers + ' Selected'
+      : ''
   ">
   <form [formGroup]="form">
     <div class="padding-section">
@@ -26,16 +78,21 @@ If you select 2 objectives, ForSys scores each stand relative to others for the 
           Select 1 or {{ maxLayers }} Priority Objectives to guide where ForSys
           will focus treatments.
         </p>
-        <p>
+
+        <p *appFeatureFlag="'PRIORITY_OBJECTIVE_WEIGHTING'; hide: true">
           ForSys scores each stand relative to others for the selected metrics
           and combines those scores. Metrics with more stands with high relative
           values will have a stronger influence on the overall result.
         </p>
       </div>
       <mat-spinner diameter="20" *ngIf="uiLoading"></mat-spinner>
-      <div *ngIf="!uiLoading">
-        {{ selectionCount$ | async }}/{{ maxLayers }} Selected
-      </div>
+      <ng-container
+        *appFeatureFlag="'PRIORITY_OBJECTIVE_WEIGHTING'; hide: true">
+        <div *ngIf="!uiLoading">
+          {{ selectionCount$ | async }}/{{ maxLayers }} Selected
+        </div>
+      </ng-container>
+
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>

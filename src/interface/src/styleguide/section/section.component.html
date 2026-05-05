@@ -7,12 +7,13 @@
     <div class="title-txt">
       {{ headline }}<span class="required" *ngIf="required"> *</span>
     </div>
+    <div class="headline-hint" *ngIf="headlineHint">{{ headlineHint }}</div>
     <sg-popover
       *ngIf="tooltipContent || tooltipTemplate"
       class="popover-right"
       [content]="tooltipTemplate ? null : tooltipContent"
       [icon]="tooltipIcon"
-      size="lg">
+      [panelSize]="tooltipSize">
       <ng-container
         *ngIf="tooltipTemplate"
         [ngTemplateOutlet]="tooltipTemplate"></ng-container>

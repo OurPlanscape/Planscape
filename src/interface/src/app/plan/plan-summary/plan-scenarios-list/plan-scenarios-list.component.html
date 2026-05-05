@@ -1,6 +1,6 @@
 @if (activeScenarios.length === 0) {
   @if (loading) {
-    <div *ngIf="loading">
+    <div *ngIf="loading" class="loading-row">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
   } @else {
