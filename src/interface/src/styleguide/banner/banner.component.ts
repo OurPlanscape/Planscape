@@ -31,6 +31,11 @@ export class BannerComponent {
   @Input() iconPosition: 'top' | 'center' = 'center';
 
   /**
+   * custom icon, overrides icon provided by type.
+   */
+  @Input() customIcon = '';
+
+  /**
    * the emitter of the dismiss action
    */
   @Output() dismiss = new EventEmitter();

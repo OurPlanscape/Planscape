@@ -1,7 +1,10 @@
 .weight-field {
   margin-top: 16px;
 
-  ::ng-deep .label {
-    font-size: 14px;
+  ::ng-deep {
+    .label, .suffix {
+      font-size: 14px;
+    }
+
   }
 }

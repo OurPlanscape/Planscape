@@ -57,3 +57,10 @@ export const Top: Story = {
 `,
   }),
 };
+
+export const Custom: Story = {
+  args: {
+    type: 'info',
+    customIcon: 'priority_high',
+  },
+};
