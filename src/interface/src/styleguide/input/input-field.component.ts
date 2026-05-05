@@ -24,7 +24,12 @@ export type ShowSupportMessage = 'always' | 'on-error' | false;
 @Component({
   selector: 'sg-input-field',
   standalone: true,
-  imports: [MatIconModule, MatProgressSpinnerModule, CommonModule],
+  imports: [
+    MatIconModule,
+    MatProgressSpinnerModule,
+    CommonModule,
+    InputDirective,
+  ],
   templateUrl: './input-field.component.html',
   styleUrl: './input-field.component.scss',
 })
