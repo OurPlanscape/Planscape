@@ -240,6 +240,37 @@ class AsyncPreForsysProcessTest(TestCase):
             {"PRIORITY", "SECONDARY_METRIC"},
         )
 
+    def test_async_pre_forsys_process_custom_scenario_with_weight(self):
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
+        configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "priorities": [{"datalayer": priority.id, "weight": 2}],
+            "cobenefits": [cobenefit.id],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration=configuration,
+        )
+
+        async_pre_forsys_process(scenario.pk)
+
+        scenario.refresh_from_db()
+        self.assertIsNotNone(scenario.forsys_input)
+
+        datalayers = scenario.forsys_input["datalayers"]
+        self.assertEqual(len(datalayers), 2)
+        self.assertEqual(
+            {datalayer["id"] for datalayer in datalayers},
+            {priority.id, cobenefit.id},
+        )
+        self.assertEqual(
+            {datalayer["usage_type"] for datalayer in datalayers},
+            {"PRIORITY", "SECONDARY_METRIC"},
+        )
+
     @override_settings(FEATURE_FLAGS=["PLANNING_APPROACH"])
     def test_async_pre_forsys_process_sub_units(self):
         stands = self.planning_area.get_stands(self.scenario.get_stand_size())
