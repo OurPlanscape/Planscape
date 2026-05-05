@@ -557,8 +557,12 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
-    priorities = cfg.get("priorities") or []
-    priority_objectives = [priority.get("datalayer") for priority in priorities]
+    if "priorities" in cfg.keys():
+        priorities = cfg.get("priorities") or []
+        priority_objectives = [priority.get("datalayer") for priority in priorities]
+    else:
+        priority_objectives = cfg.get("priority_objectives") or []
+        priorities = [{"datalayer": p, "weight": 1} for p in priority_objectives]
     cobenefits = cfg.get("cobenefits") or []
     sub_units_layer_id = cfg.get("sub_units_layer")
     custom_datalayer_ids = set([*priority_objectives, *cobenefits])
@@ -594,7 +598,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         )
 
     for priority in priorities:
-        datalayer = DataLayer.objects.get(pk=priority.get("datalyer"))
+        datalayer = DataLayer.objects.get(pk=priority.get("datalayer"))
         datalayers.append(
             {
                 "id": datalayer.id,
