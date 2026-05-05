@@ -193,29 +193,6 @@ export const WithContentRight: Story = {
   }),
 };
 
-/**
- * `contentRight` accepts any element. Here it's a single ghost-style button
- * to demonstrate trailing actions other than steppers.
- */
-export const WithContentRightAction: Story = {
-  args: {
-    label: 'Search dataset',
-    supportMessage: '',
-    placeholder: 'Type to filter',
-    error: false,
-    disabled: false,
-    leadingIcon: 'search',
-  },
-  render: ({ placeholder, ...args }) => ({
-    props: args,
-    template: `
-    <sg-input-field ${argsToTemplate(args)}>
-      <input sgInput placeholder='${placeholder}' [disabled]='${args.disabled}'>
-      <button sg-button contentRight variant='ghost' icon='tune'>Filters</button>
-    </sg-input-field>`,
-  }),
-};
-
 export const WithLabelsRequired: Story = {
   args: {
     error: false,

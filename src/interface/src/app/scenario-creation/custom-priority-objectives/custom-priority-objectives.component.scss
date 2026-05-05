@@ -93,6 +93,10 @@
   left: 8px;
 }
 
-::ng-deep .weighting-menu-panel .mat-mdc-menu-content {
-  padding: 0;
+::ng-deep .weighting-menu-panel.mat-mdc-menu-panel {
+  max-width: 500px;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
 }
