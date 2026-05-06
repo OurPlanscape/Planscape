@@ -90,3 +90,10 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.scenario-list-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}

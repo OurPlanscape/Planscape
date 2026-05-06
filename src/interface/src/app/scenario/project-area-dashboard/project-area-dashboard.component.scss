@@ -20,23 +20,15 @@
   margin: 0;
 }
 
-.scenario-tools-card {
+.project-area-tools-card {
   gap: 4px;
 }
 
-.scenario-dashboard-layout {
+.project-area-dashboard-layout {
   background-color: $color-light-gray;
 }
 
-.right-column-card {
+.project-area-column {
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  min-height: 0;
-  flex: 1;
-}
-
-.right-column-content {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
 }

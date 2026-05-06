@@ -42,3 +42,25 @@ export const Warning: Story = {
     type: 'warning',
   },
 };
+
+export const Top: Story = {
+  args: {
+    type: 'info',
+    iconPosition: 'top',
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div style='width: 300px;'>
+<sg-banner ${argsToTemplate(args)}>A very long notification or message where
+ we show more than one line and the text wraps.</sg-banner>
+</div>
+`,
+  }),
+};
+
+export const Custom: Story = {
+  args: {
+    type: 'info',
+    customIcon: 'priority_high',
+  },
+};

@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { SectionComponent, StepDirective } from '@styleguide';
+import { Component, ViewChild } from '@angular/core';
+import { ButtonComponent, SectionComponent, StepDirective } from '@styleguide';
 import { CommonModule } from '@angular/common';
 import {
   FormControl,
@@ -14,8 +14,12 @@ import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioDraftConfiguration } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
-import { finalize, take } from 'rxjs';
+import { finalize, map, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FeaturesModule } from '@features/features.module';
+import { FeatureService } from '@features/feature.service';
+import { PriorityWeightingComponent } from '@scenario-creation/priority-weighting/priority-weighting.component';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 
 const MAX_SELECTABLE_LAYERS = 2;
 
@@ -30,6 +34,10 @@ const MAX_SELECTABLE_LAYERS = 2;
     MatProgressSpinnerModule,
     SectionComponent,
     ReactiveFormsModule,
+    FeaturesModule,
+    ButtonComponent,
+    PriorityWeightingComponent,
+    MatMenuModule,
   ],
   providers: [
     { provide: StepDirective, useExisting: CustomPriorityObjectivesComponent },
@@ -38,6 +46,8 @@ const MAX_SELECTABLE_LAYERS = 2;
   styleUrl: './custom-priority-objectives.component.scss',
 })
 export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDraftConfiguration> {
+  @ViewChild(MatMenuTrigger) weightingMenuTrigger?: MatMenuTrigger;
+
   form = new FormGroup({
     dataLayers: new FormControl<DataLayer[]>(
       [],
@@ -49,13 +59,22 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   selectionCount$ = this.dataLayersStateService.selectedLayersCount$;
 
+  hasMoreThanOneSelected$ = this.selectionCount$.pipe(
+    map((count) => count > 1)
+  );
+
   selectedItems$ = this.dataLayersStateService.selectedDataLayers$;
+
+  weightingItems$ = this.selectedItems$.pipe(
+    map((layers) => layers.map((l) => ({ name: l.name, value: 1 })))
+  );
 
   maxLayers = MAX_SELECTABLE_LAYERS;
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private newScenarioState: NewScenarioState
+    private newScenarioState: NewScenarioState,
+    private featureService: FeatureService
   ) {
     super();
 
@@ -72,6 +91,10 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   handleRemoveItem(layer: any) {
     this.dataLayersStateService.removeSelectedLayer(layer);
+  }
+
+  closeWeightingMenu() {
+    this.weightingMenuTrigger?.closeMenu();
   }
 
   getData() {
@@ -110,5 +133,9 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
   override beforeStepExit(): void {
     this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
+  }
+
+  get weightingFlagOn() {
+    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
   }
 }
