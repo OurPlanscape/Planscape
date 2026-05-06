@@ -16,12 +16,14 @@ from datasets.models import (
     MapServiceChoices,
     StorageTypeChoices,
     Style,
+    VisibilityOptions,
 )
 from datasets.styles import (
     get_default_raster_style,
     get_default_vector_style,
     get_raster_style,
 )
+from workspaces.models import Workspace
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -163,8 +165,13 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         )
 
 
-class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
+class CreateDatasetSerializer(serializers.ModelSerializer[Dataset]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    workspace_id = serializers.PrimaryKeyRelatedField(
+        queryset=Workspace.objects.all(),
+        source="workspace",
+        write_only=True,
+    )
 
     class Meta:
         model = Dataset
@@ -172,10 +179,26 @@ class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
             "id",
             "created_by",
             "organization",
+            "workspace_id",
             "name",
             "visibility",
             "version",
             "modules",
+        )
+
+
+class UpdateDatasetSerializer(serializers.ModelSerializer[Dataset]):
+    name = serializers.CharField(required=False)
+    visibility = serializers.ChoiceField(
+        choices=VisibilityOptions.choices,
+        required=False,
+    )
+
+    class Meta:
+        model = Dataset
+        fields = (
+            "name",
+            "visibility",
         )
 
 
