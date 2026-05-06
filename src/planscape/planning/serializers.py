@@ -596,7 +596,7 @@ class TargetsSerializer(serializers.Serializer):
         return super().validate(attrs)
 
 class WeighedPriorityObjectiveField(serializers.Serializer):
-    id = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+    datalayer = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
     weight = serializers.IntegerField()
 
     def validate_weight(self, value):
