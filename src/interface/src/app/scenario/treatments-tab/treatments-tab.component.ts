@@ -78,12 +78,14 @@ export class TreatmentsTabComponent implements OnInit {
       route.push('impacts');
       this.breadcrumbService.updateBreadCrumb({
         label: 'Direct Treatment Impacts: ' + treatment.name,
+        blackText: true,
         backUrl: this.router.url,
       });
     } else {
       this.breadcrumbService.updateBreadCrumb({
         label: 'Treatment Plan',
         backUrl: this.router.url,
+        blackText: true,
         icon: 'close',
       });
     }

@@ -5,7 +5,7 @@ export interface BreadCrumb {
   label: string;
   backUrl: string;
   icon?: string;
-  inFlow?: boolean
+  blackText?: boolean
 }
 
 @Injectable({

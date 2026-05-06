@@ -186,6 +186,7 @@ export class ClimateForesightRunComponent implements OnInit {
                   label: `Climate Foresight: ${run.name}`,
                   backUrl: `/plan/${this.currentPlan?.id}/climate-foresight`,
                   icon: 'close',
+                  blackText: true,
                 });
               }
             });

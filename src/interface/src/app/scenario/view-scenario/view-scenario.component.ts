@@ -136,12 +136,16 @@ export class ViewScenarioComponent {
             this.breadcrumbService.updateBreadCrumb({
               label: s.name,
               backUrl: `${getPlanPath(this.planId)}/scenario/${this.scenarioId}/dashboard`,
+              icon: 'close',
+              blackText: true
             });
           } else {
             // Remove this block once SCENARIO_DASHBOARDS be released
             this.breadcrumbService.updateBreadCrumb({
-              label: 'Planning Area Overview',
+              label: s.name,
               backUrl: getPlanPath(this.planId),
+              icon: 'close',
+              blackText: true
             });
           }
           return this.shouldPoll(s) ? this.startPolling() : EMPTY;
