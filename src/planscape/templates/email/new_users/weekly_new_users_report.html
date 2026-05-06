@@ -1,0 +1,49 @@
+<p>Hello,</p>
+
+<p>Here is the weekly new user signup report for the last 7 days.</p>
+
+<table role="presentation" cellspacing="0" cellpadding="6" border="0" style="border-collapse: collapse; margin-bottom: 16px;">
+  <tr>
+    <td><strong>Window start:</strong></td>
+    <td>{{ start }}</td>
+  </tr>
+  <tr>
+    <td><strong>Window end:</strong></td>
+    <td>{{ end }}</td>
+  </tr>
+  <tr>
+    <td><strong>Total new users:</strong></td>
+    <td>{{ count }}</td>
+  </tr>
+</table>
+
+{% if users %}
+<table role="presentation" cellspacing="0" cellpadding="8" border="1" style="border-collapse: collapse; width: 100%; max-width: 800px;">
+  <thead>
+    <tr>
+      <th align="left">Name</th>
+      <th align="left">Email</th>
+      <th align="left">Date joined</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <td>{{ user.full_name|default:"-" }}</td>
+      <td>
+        {% if user.email %}
+          <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+        {% else %}
+          (no email)
+        {% endif %}
+      </td>
+      <td>{{ user.date_joined }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No new users signed up during this period.</p>
+{% endif %}
+
+<p style="margin-top: 16px;">— Planscape</p>
