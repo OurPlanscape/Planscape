@@ -10,6 +10,7 @@ from datasets.serializers import (
     BrowseDataLayerSerializer,
     CategoryEmbbedSerializer,
     CategorySerializer,
+    CreateDatasetSerializer,
     CreateDataLayerSerializer,
     CreateStyleSerializer,
     DataLayerMetadataSerializer,
@@ -21,6 +22,7 @@ from datasets.tests.factories import (
     DatasetFactory,
     OrganizationFactory,
 )
+from workspaces.tests.factories import UserAccessWorkspaceFactory, WorkspaceFactory
 
 
 class CategorySerializerTest(TestCase):
@@ -70,6 +72,44 @@ class DatasetSerializerTest(TestCase):
         self.assertEqual(data["organization"]["name"], dataset.organization.name)
         self.assertEqual(data["visibility"], dataset.visibility)
         self.assertIn("modules", data)
+
+
+class CreateDatasetSerializerTest(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory.create()
+        self.user = User.objects.create_user(username="testuser", password="testpass")
+        self.request = APIRequestFactory().request()
+        self.request.user = self.user
+
+    def _payload(self, workspace):
+        return {
+            "organization": self.organization.pk,
+            "workspace_id": workspace.pk,
+            "name": "Test Dataset",
+        }
+
+    def test_accepts_workspace_available_to_request_user(self):
+        workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(user=self.user, workspace=workspace)
+
+        serializer = CreateDatasetSerializer(
+            data=self._payload(workspace),
+            context={"request": self.request},
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.validated_data["workspace"], workspace)
+
+    def test_rejects_workspace_unavailable_to_request_user(self):
+        workspace = WorkspaceFactory.create()
+
+        serializer = CreateDatasetSerializer(
+            data=self._payload(workspace),
+            context={"request": self.request},
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("workspace_id", serializer.errors)
 
 
 class DataLayerSerializerTest(TestCase):

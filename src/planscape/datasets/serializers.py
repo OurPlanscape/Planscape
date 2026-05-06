@@ -26,6 +26,14 @@ from datasets.styles import (
 from workspaces.models import Workspace
 
 
+def get_available_workspaces_for_request(request: Any):
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return Workspace.objects.none()
+
+    return Workspace.objects.filter(user_access__user=user).distinct()
+
+
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
     class Meta:
         model = Organization
@@ -168,10 +176,16 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 class CreateDatasetSerializer(serializers.ModelSerializer[Dataset]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
     workspace_id = serializers.PrimaryKeyRelatedField(
-        queryset=Workspace.objects.all(),
+        queryset=Workspace.objects.none(),
         source="workspace",
         write_only=True,
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["workspace_id"].queryset = get_available_workspaces_for_request(
+            self.context.get("request"),
+        )
 
     class Meta:
         model = Dataset
