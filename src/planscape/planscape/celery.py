@@ -34,6 +34,7 @@ def get_catalog_restore_schedule() -> dict[str, dict]:
         }
     }
 
+
 beat_schedule = {
     "trigger-scenario-post-processing": {
         "task": "planning.tasks.trigger_scenario_post_processing",
@@ -46,6 +47,10 @@ beat_schedule = {
     "trigger-scenario-ready-emails": {
         "task": "planning.tasks.trigger_scenario_ready_emails",
         "schedule": 10.0,
+    },
+    "send-weekly-new-users-report": {
+        "task": "planning.tasks.send_weekly_new_users_report",
+        "schedule": crontab(day_of_week="monday", hour=13, minute=0),
     },
 }
 

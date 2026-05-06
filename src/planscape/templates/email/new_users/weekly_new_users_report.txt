@@ -1,0 +1,19 @@
+Weekly New User Signup Report
+
+Here is the weekly new user signup report for the last 7 days.
+
+Window start: {{ start }}
+Window end: {{ end }}
+Total new users: {{ count }}
+
+{% if users %}
+Name | Email | Date joined
+----------------------------------------
+{% for user in users %}
+{{ user.full_name|default:"-" }} | {{ user.email|default:"(no email)" }} | {{ user.date_joined }}
+{% endfor %}
+{% else %}
+No new users signed up during this period.
+{% endif %}
+
+— Planscape

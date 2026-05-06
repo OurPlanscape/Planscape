@@ -429,6 +429,9 @@ CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
+    "planning.tasks.send_weekly_new_users_report": {
+        "queue": "default",
+    },
     "planning.tasks.*": {
         "queue": "forsys",
     },
