@@ -16,12 +16,22 @@ from datasets.models import (
     MapServiceChoices,
     StorageTypeChoices,
     Style,
+    VisibilityOptions,
 )
 from datasets.styles import (
     get_default_raster_style,
     get_default_vector_style,
     get_raster_style,
 )
+from workspaces.models import Workspace
+
+
+def get_available_workspaces_for_request(request: Any):
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return Workspace.objects.none()
+
+    return Workspace.objects.filter(user_access__user=user).distinct()
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -163,8 +173,19 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         )
 
 
-class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
+class CreateDatasetSerializer(serializers.ModelSerializer[Dataset]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    workspace_id = serializers.PrimaryKeyRelatedField(
+        queryset=Workspace.objects.none(),
+        source="workspace",
+        write_only=True,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["workspace_id"].queryset = get_available_workspaces_for_request(
+            self.context.get("request"),
+        )
 
     class Meta:
         model = Dataset
@@ -172,10 +193,26 @@ class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
             "id",
             "created_by",
             "organization",
+            "workspace_id",
             "name",
             "visibility",
             "version",
             "modules",
+        )
+
+
+class UpdateDatasetSerializer(serializers.ModelSerializer[Dataset]):
+    name = serializers.CharField(required=False)
+    visibility = serializers.ChoiceField(
+        choices=VisibilityOptions.choices,
+        required=False,
+    )
+
+    class Meta:
+        model = Dataset
+        fields = (
+            "name",
+            "visibility",
         )
 
 
