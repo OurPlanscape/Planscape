@@ -10,6 +10,7 @@ export type ButtonVariant =
   | 'negative'
   | 'positive'
   | 'icon-only'
+  | 'icon-form-button'
   | 'link';
 
 @Component({
@@ -69,6 +70,11 @@ export class ButtonComponent {
   @HostBinding('class.icon-button')
   get isVariantIconOnly() {
     return this.variant === 'icon-only';
+  }
+
+  @HostBinding('class.icon-form-button')
+  get isVariantIconFormButton() {
+    return this.variant === 'icon-form-button';
   }
 
   @HostBinding('class.link-button')

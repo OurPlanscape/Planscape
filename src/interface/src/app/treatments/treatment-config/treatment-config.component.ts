@@ -41,6 +41,7 @@ import { AnalyticsService } from '@services/analytics.service';
 import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 @UntilDestroy()
 @Component({
@@ -71,6 +72,7 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
     TreatedStandsState,
     MapConfigState,
     TreatmentToPDFService,
+    DirectImpactsStateService,
   ],
   templateUrl: './treatment-config.component.html',
   styleUrl: './treatment-config.component.scss',

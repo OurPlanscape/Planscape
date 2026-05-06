@@ -21,4 +21,6 @@ export class PopoverComponent {
   @Input() iconColor: 'default' | 'black' = 'default';
   // We can pass either the content string or use the <ng-content>
   @Input() content: string | null = null;
+
+  @Input() panelSize: 'small' | 'medium' = 'small';
 }

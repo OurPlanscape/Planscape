@@ -28,6 +28,7 @@ describe('CustomPriorityObjectivesComponent', () => {
         MockProvider(DataLayersStateService, {
           viewedDataLayer$: of(null),
           selectedDataLayers$: of([]),
+          selectedLayersCount$: of(0),
           searchTerm$: of(''),
           selectedDataSet$: of(null),
           dataTree$: of(null),
