@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { InputDirective } from './input.directive';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 export type ShowSupportMessage = 'always' | 'on-error' | false;
 
 /**
@@ -94,6 +95,8 @@ export class InputFieldComponent implements AfterContentInit {
 
   @Input() label = '';
 
+  @Input() height: 'regular' | 'small' = 'regular';
+
   @HostBinding('class.error')
   get hasError() {
     return this.error;
@@ -110,7 +113,7 @@ export class InputFieldComponent implements AfterContentInit {
   }
 
   @HostBinding('class.full')
-  get isSmall() {
+  get isFull() {
     return this.size === 'full';
   }
 

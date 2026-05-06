@@ -49,3 +49,54 @@
     overflow-y: visible;
   }
 }
+
+.weighting-info {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  padding: 16px;
+  gap: 8px;
+
+  border-radius: 4px;
+  border: 1px solid var(--Neutral-Soft-gray, #E1E1E1);
+  background: var(--Neutral-White, #FFF);
+
+  /* shadow-md */
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
+}
+
+.weighting-info-title {
+  padding-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 22px;
+  font-weight: 600;
+}
+
+.weighting-info-item {
+  color: var(--Neutral-Md-Gray, #767575);
+  display: flex;
+  justify-content: space-between;
+}
+
+.weighting-info-weight {
+  color: black;
+  font-weight: bold;
+  padding-left: 8px;
+}
+
+.weighting-info-edit {
+  color: $color-standard-blue;
+  position: relative;
+  left: 8px;
+}
+
+::ng-deep .weighting-menu-panel.mat-mdc-menu-panel {
+  max-width: 500px;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}
