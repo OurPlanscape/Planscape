@@ -8,7 +8,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from planscape.tests.factories import UserFactory
-from workspaces.tests.factories import WorkspaceFactory
+from workspaces.tests.factories import UserAccessWorkspaceFactory, WorkspaceFactory
 
 User = get_user_model()
 
@@ -95,6 +95,7 @@ class TestAdminDatasetViewSet(APITestCase):
         self.normal = UserFactory.create()
         self.org = OrganizationFactory.create(created_by=self.admin)
         self.workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(user=self.admin, workspace=self.workspace)
 
     def test_list_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
@@ -148,7 +149,7 @@ class TestAdminDatasetViewSet(APITestCase):
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 400)
-        self.assertIn("workspace_id", response.json())
+        self.assertIn("workspace_id", response.json()["errors"])
 
     def test_update_by_admin_user_updates_name_and_visibility(self):
         self.client.force_authenticate(user=self.admin)
