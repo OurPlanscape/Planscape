@@ -34,7 +34,9 @@ class TestAdminWorkspaceViewSetPermissions(APITestCase):
     def test_create_by_normal_user_returns_403(self):
         self.client.force_authenticate(user=self.normal)
         response = self.client.post(
-            reverse(LIST_URL), data={"name": "Test", "visibility": "PRIVATE"}, format="json"
+            reverse(LIST_URL),
+            data={"name": "Test", "visibility": "PRIVATE"},
+            format="json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -114,6 +116,25 @@ class TestAdminWorkspaceViewSetList(APITestCase):
         ids = [r["id"] for r in response.json()["results"]]
         self.assertEqual(ids.count(workspace.pk), 1)
 
+    def test_list_includes_counts(self):
+        workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PUBLIC)
+        DatasetFactory.create_batch(2, workspace=workspace)
+        StyleFactory.create_batch(3, workspace=workspace)
+        UserAccessWorkspaceFactory.create_batch(4, workspace=workspace)
+
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(LIST_URL))
+
+        result = next(r for r in response.json()["results"] if r["id"] == workspace.pk)
+        self.assertEqual(
+            result["counts"],
+            {
+                "datasets": 2,
+                "styles": 3,
+                "users": 4,
+            },
+        )
+
 
 class TestAdminWorkspaceViewSetCreate(APITestCase):
     def setUp(self):
@@ -166,6 +187,25 @@ class TestAdminWorkspaceViewSetRetrieve(APITestCase):
         response = self.client.get(reverse(DETAIL_URL, args=[workspace.pk]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["id"], workspace.pk)
+
+    def test_retrieve_includes_counts(self):
+        workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PUBLIC)
+        DatasetFactory.create_batch(2, workspace=workspace)
+        StyleFactory.create_batch(3, workspace=workspace)
+        UserAccessWorkspaceFactory.create_batch(4, workspace=workspace)
+
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(reverse(DETAIL_URL, args=[workspace.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["counts"],
+            {
+                "datasets": 2,
+                "styles": 3,
+                "users": 4,
+            },
+        )
 
     def test_retrieve_inaccessible_private_workspace_returns_404(self):
         workspace = WorkspaceFactory.create(visibility=VisibilityOptions.PRIVATE)
