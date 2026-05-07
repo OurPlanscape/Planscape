@@ -8,8 +8,8 @@ def create_initial_entry(apps, schema_editor):
     date_str = "2026-04-01 00:00:00"
     date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
     RestoreBackTrack.objects.create(
-        filename="initial",
-        created_at=date_obj,
+        file_name="initial",
+        started_at=date_obj,
         finished_at=date_obj,
         status="SUCCESS"
     )
