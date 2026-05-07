@@ -592,6 +592,13 @@ def async_send_email_large_planning_area(planning_area_id: int) -> None:
 
 @app.task()
 def send_weekly_new_users_report() -> None:
+    if not settings.WEEKLY_NEW_USERS_REPORT_ENABLED:
+        log.info(
+            "Skipping weekly new users report because WEEKLY_NEW_USERS_REPORT_ENABLED is disabled for ENV=%s.",
+            settings.ENV,
+        )
+        return
+
     end = timezone.now()
     start = end - timedelta(days=7)
 
@@ -603,6 +610,7 @@ def send_weekly_new_users_report() -> None:
         "start": start,
         "end": end,
         "count": users.count(),
+        "environment": settings.ENV,
         "users": [
             {
                 "email": (user.email or "").strip(),
@@ -613,7 +621,7 @@ def send_weekly_new_users_report() -> None:
         ],
     }
 
-    subject = "Weekly New User Signup Report"
+    subject = f"[{settings.ENV}] Weekly New User Signup Report"
     txt = render_to_string("email/new_users/weekly_new_users_report.txt", context)
     html = render_to_string("email/new_users/weekly_new_users_report.html", context)
 
@@ -626,8 +634,9 @@ def send_weekly_new_users_report() -> None:
     )
 
     log.info(
-        "Sent weekly new users report to %s for %s to %s (%s users).",
+        "Sent weekly new users report to %s for ENV=%s from %s to %s (%s users).",
         settings.SUPPORT_EMAIL,
+        settings.ENV,
         start.isoformat(),
         end.isoformat(),
         context["count"],
