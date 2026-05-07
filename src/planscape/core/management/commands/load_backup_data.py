@@ -2,12 +2,17 @@ import os
 import shutil
 import subprocess
 
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType, Dataset, Style, Category
+from planning.models import TreatmentGoal
+from organizations.models import Organization
 from datasets.tasks import datalayer_uploaded
+from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from core.mattermost import post_to_mattermost
+
+from core.models import RestoreBackTrack, RestoreBackTrackStatus
 
 
 class Command(BaseCommand):
@@ -108,8 +113,22 @@ class Command(BaseCommand):
                 "!!  Error: Backup file and source env does not match. !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
+        
+        try:
+            last_restore = RestoreBackTrack.objects.filter(status=RestoreBackTrackStatus.SUCCESS).order_by("started_at__desc").get()
+            last_restore_date = last_restore.started_at
+            self.stdout.write(f"Last restored happend on {last_restore_date}. Records created after that will be deleted.")
+        except RestoreBackTrack.DoesNotExist:
+            raise SystemError(
+                "\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                "!!  Error: Could not find the last successful restore !!\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+            )
 
         try:
+            
+
             # Sync buckets
             subprocess.call(
                 [
@@ -138,6 +157,25 @@ class Command(BaseCommand):
                     f"/tmp/{filename}",
                 ]
             )
+            
+            with transaction.atomic():
+                count = TreatmentGoal.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count} TreatmentGoal(s) created after last restore.")
+
+                count = Category.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count} Category(s) created after last restore.")
+
+                count = Style.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count} Style(s) created after last restore.")
+
+                count = DataLayer.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count} DataLayer(s) created after last restore.")
+
+                count = Dataset.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count} Dataset(s) created after last restore.")
+
+                count = Organization.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count} Organization(s) created after last restore.")
 
             # Load data to DB
             self.stdout.write(f"Loading data from `/tmp/{filename}`")
