@@ -118,7 +118,7 @@ export interface ScenarioV3Config {
   stand_size: STAND_SIZE;
   includes: number[];
   priority_objectives?: number[]; // TODO: ensure this matches up with backend field
-  priorities?: { datalayer: number; weight: number }[];
+  priorities?: ScenarioPriority[];
   cobenefits?: number[]; // TODO: ensure this matches up with backend field
   constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
   treatment_goal: number;
@@ -172,4 +172,9 @@ export interface Constraint {
   datalayer: number;
   operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
   value: number; // be supports string
+}
+
+export interface ScenarioPriority {
+  datalayer: number;
+  weight: number;
 }
