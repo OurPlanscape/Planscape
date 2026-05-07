@@ -1,7 +1,8 @@
-Weekly New User Signup Report
+[{{ environment }}] Weekly New User Signup Report
 
 Here is the weekly new user signup report for the last 7 days.
 
+Environment: {{ environment }}
 Window start: {{ start }}
 Window end: {{ end }}
 Total new users: {{ count }}

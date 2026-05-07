@@ -48,11 +48,13 @@ beat_schedule = {
         "task": "planning.tasks.trigger_scenario_ready_emails",
         "schedule": 10.0,
     },
-    "send-weekly-new-users-report": {
+}
+
+if settings.WEEKLY_NEW_USERS_REPORT_ENABLED:
+    beat_schedule["send-weekly-new-users-report"] = {
         "task": "planning.tasks.send_weekly_new_users_report",
         "schedule": crontab(day_of_week="monday", hour=13, minute=0),
-    },
-}
+    }
 
 beat_schedule.update(get_catalog_backup_schedule())
 beat_schedule.update(get_catalog_restore_schedule())
