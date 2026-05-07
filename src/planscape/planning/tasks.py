@@ -602,9 +602,7 @@ def send_weekly_new_users_report() -> None:
     end = timezone.now()
     start = end - timedelta(days=7)
 
-    users = User.objects.filter(date_joined__gte=start, date_joined__lt=end).order_by(
-        "date_joined", "id"
-    )
+    users = User.objects.filter(date_joined__gte=start).order_by("date_joined", "id")
 
     context = {
         "start": start,
