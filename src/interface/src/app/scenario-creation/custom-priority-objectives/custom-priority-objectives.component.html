@@ -119,16 +119,17 @@
             <div (click)="$event.stopPropagation()">
               <app-priority-weighting
                 [items]="(weightingItems$ | async) ?? []"
+                (applied)="onWeightsApplied($event)"
                 (closed)="closeWeightingMenu()"></app-priority-weighting>
             </div>
           </mat-menu>
         </div>
 
         <div
-          *ngFor="let item of (selectedItems$ | async) ?? []"
+          *ngFor="let item of (selectedItemsWithWeights$ | async) ?? []"
           class="weighting-info-item">
           <div>{{ item.name }}</div>
-          <div class="weighting-info-weight">1x</div>
+          <div class="weighting-info-weight">{{ item.weight }}x</div>
         </div>
       </div>
     </div>

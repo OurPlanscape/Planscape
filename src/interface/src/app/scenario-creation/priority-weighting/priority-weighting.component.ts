@@ -23,11 +23,18 @@ import {
 import { NgForOf } from '@angular/common';
 
 interface WeightedItem {
+  id: number;
   name: string;
   value: number;
 }
 
+export interface AppliedWeight {
+  id: number;
+  value: number;
+}
+
 type WeightFormGroup = FormGroup<{
+  id: FormControl<number>;
   name: FormControl<string>;
   value: FormControl<number>;
 }>;
@@ -56,6 +63,7 @@ export class PriorityWeightingComponent<T extends WeightedItem>
   @Input() items: T[] = [];
 
   @Output() closed = new EventEmitter<void>();
+  @Output() applied = new EventEmitter<AppliedWeight[]>();
 
   weightForm = new FormGroup({
     weights: new FormArray<WeightFormGroup>([]),
@@ -76,6 +84,7 @@ export class PriorityWeightingComponent<T extends WeightedItem>
     this.items.forEach((item) => {
       this.weights.push(
         new FormGroup({
+          id: new FormControl(item.id, { nonNullable: true }),
           name: new FormControl(item.name, { nonNullable: true }),
           value: new FormControl(item.value, {
             nonNullable: true,
@@ -118,9 +127,21 @@ export class PriorityWeightingComponent<T extends WeightedItem>
     this.closed.emit();
   }
   apply() {
+    if (this.weightForm.invalid) {
+      return;
+    }
+    const updates: AppliedWeight[] = this.weights.controls.map((g) => ({
+      id: g.controls.id.value,
+      value: g.controls.value.value,
+    }));
+    this.applied.emit(updates);
     this.closed.emit();
   }
   clickSecondary() {
-    this.buildWeights();
+    this.weights.controls.forEach((group) => {
+      const ctrl = group.controls.value;
+      ctrl.setValue(MIN_WEIGHT);
+      ctrl.markAsDirty();
+    });
   }
 }
