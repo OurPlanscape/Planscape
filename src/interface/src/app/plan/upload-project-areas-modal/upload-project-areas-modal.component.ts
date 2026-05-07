@@ -88,8 +88,13 @@ export class UploadProjectAreasModalComponent {
   ) {
     this.uploadProjectsForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
-      standSize: this.fb.control('MEDIUM', [Validators.required]),
     });
+    if (this.showStandSize()) {
+      this.uploadProjectsForm.addControl(
+        'standSize',
+        this.fb.control('MEDIUM', [Validators.required])
+      );
+    }
   }
 
   handleFileEvent(file: File | undefined): void {
