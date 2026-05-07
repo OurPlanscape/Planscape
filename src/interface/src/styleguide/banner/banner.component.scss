@@ -4,11 +4,17 @@
 :host {
   display: flex;
   border-radius: 4px;
-
   padding: 14px;
   gap: 8px;
   align-items: center;
   box-sizing: border-box;
+
+
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+
 
   &.info {
     background-color: $color-soft-light-blue;
@@ -30,6 +36,10 @@
     color: $color-brand-green;
   }
 
+  &.top {
+    align-items: flex-start;
+  }
+
 }
 
 .icon {
@@ -44,4 +54,5 @@
   color: $color-black;
   cursor: pointer;
 }
+
 

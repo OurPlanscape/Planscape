@@ -127,6 +127,9 @@ export function convertOldConfigurationToV3Payload(
   if (formData.priority_objectives) {
     config.priority_objectives = formData.priority_objectives;
   }
+  if (formData.priorities) {
+    config.priorities = formData.priorities;
+  }
 
   // Custom Scenarios - co-benefits
   if (formData.cobenefits) {
@@ -207,8 +210,10 @@ export function sanitizePayloadForScenarioType(
   const { type } = scenario;
   const currentConfig = payload.configuration ?? {};
   const hasObjectives =
-    Array.isArray(currentConfig.priority_objectives) &&
-    currentConfig.priority_objectives.length > 0;
+    (Array.isArray(currentConfig.priority_objectives) &&
+      currentConfig.priority_objectives.length > 0) ||
+    (Array.isArray(currentConfig.priorities) &&
+      currentConfig.priorities.length > 0);
   const hasGoal =
     payload.treatment_goal !== undefined && payload.treatment_goal !== null;
   let finalConfig = stripEmptyConfigurations(currentConfig);

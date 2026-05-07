@@ -28,6 +28,13 @@ export class BannerComponent {
    */
   @Input() dismissible = false;
 
+  @Input() iconPosition: 'top' | 'center' = 'center';
+
+  /**
+   * custom icon, overrides icon provided by type.
+   */
+  @Input() customIcon = '';
+
   /**
    * the emitter of the dismiss action
    */
@@ -61,5 +68,10 @@ export class BannerComponent {
   @HostBinding('class.success')
   get isSuccess() {
     return this.type === 'success';
+  }
+
+  @HostBinding('class.top')
+  get iconTop() {
+    return this.iconPosition === 'top';
   }
 }

@@ -105,6 +105,20 @@ export const Icon: Story = {
   }),
 };
 
+export const IconFormButton: Story = {
+  args: {
+    variant: 'icon-form-button',
+    icon: 'keyboard_arrow_up',
+  },
+  render: ({ content, ...args }) => ({
+    props: args,
+    template: `<section class='flex'>
+<button sg-button ${argsToTemplate(args)}></button>
+<button sg-button ${argsToTemplate(args)} disabled></button>
+</section>`,
+  }),
+};
+
 export const Loading: Story = {
   args: {
     variant: 'ghost',

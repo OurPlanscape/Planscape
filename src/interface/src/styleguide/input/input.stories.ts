@@ -7,6 +7,7 @@ import {
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { InputDirective } from './input.directive';
 import { InputFieldComponent } from './input-field.component';
+import { ButtonComponent } from '../button/button.component';
 
 type InputAndCustomArgs = InputFieldComponent & { placeholder: string };
 
@@ -39,7 +40,7 @@ const meta: Meta<InputAndCustomArgs> = {
     applicationConfig({
       providers: [provideAnimations()],
     }),
-    moduleMetadata({ imports: [InputDirective] }),
+    moduleMetadata({ imports: [InputDirective, ButtonComponent] }),
   ],
   render: ({ placeholder, ...args }) => ({
     props: args,
@@ -164,6 +165,32 @@ export const WithLabels: Story = {
     size: 'full',
     label: 'Enter your name',
   },
+};
+
+/**
+ * Project arbitrary content to the right of the input wrapper using the
+ * `contentRight` selector. Useful for stepper buttons, action menus, or any
+ * trailing controls that should sit *outside* the input border.
+ */
+export const WithContentRight: Story = {
+  args: {
+    label: 'Source Exposure',
+    supportMessage: 'Range: 1 - 100',
+    placeholder: 'X (multiplier)',
+    error: false,
+    disabled: false,
+  },
+  render: ({ placeholder, ...args }) => ({
+    props: args,
+    template: `
+    <sg-input-field ${argsToTemplate(args)}>
+      <input sgInput inputmode='numeric' placeholder='${placeholder}' [disabled]='${args.disabled}'>
+      <ng-container contentRight>
+        <button sg-button variant='icon-form-button' icon='keyboard_arrow_up'></button>
+        <button sg-button variant='icon-form-button' icon='keyboard_arrow_down'></button>
+      </ng-container>
+    </sg-input-field>`,
+  }),
 };
 
 export const WithLabelsRequired: Story = {

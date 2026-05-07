@@ -96,6 +96,42 @@
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
+
+      <div
+        *ngIf="weightingFlagOn && (hasMoreThanOneSelected$ | async)"
+        class="weighting-info">
+        <div class="weighting-info-title">
+          Priority Objective Weighting
+
+          <button
+            sg-button
+            variant="icon-only"
+            icon="edit"
+            [outlined]="true"
+            class="weighting-info-edit"
+            [matMenuTriggerFor]="weightingMenu"></button>
+
+          <mat-menu
+            #weightingMenu="matMenu"
+            xPosition="after"
+            yPosition="below"
+            class="weighting-menu-panel">
+            <div (click)="$event.stopPropagation()">
+              <app-priority-weighting
+                [items]="(weightingItems$ | async) ?? []"
+                (applied)="onWeightsApplied($event)"
+                (closed)="closeWeightingMenu()"></app-priority-weighting>
+            </div>
+          </mat-menu>
+        </div>
+
+        <div
+          *ngFor="let item of (selectedItemsWithWeights$ | async) ?? []"
+          class="weighting-info-item">
+          <div>{{ item.name }}</div>
+          <div class="weighting-info-weight">{{ item.weight }}x</div>
+        </div>
+      </div>
     </div>
     <section class="datalayers-section">
       <app-data-layers

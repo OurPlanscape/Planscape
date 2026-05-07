@@ -1,10 +1,12 @@
 import logging
+from datetime import timedelta
 
 import rasterio
 from celery import chord, group
 from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import MultiPolygon
 from django.core.mail import send_mail
@@ -45,6 +47,8 @@ from planning.services import (
 )
 
 log = logging.getLogger(__name__)
+
+User = get_user_model()
 
 
 @app.task()
@@ -289,7 +293,7 @@ def async_pre_forsys_process(scenario_id: int) -> None:
     run_config = build_run_configuration(scenario)
 
     variables = run_config["variables"]
-    
+
     forsys_input = {
         "stand_ids": stand_ids,
         "datalayers": run_config["datalayers"],
@@ -389,7 +393,7 @@ def trigger_scenario_post_processing():
     scenarios = Scenario.objects.filter(
         result_status__in=(ScenarioResultStatus.SUCCESS, ScenarioResultStatus.FAILURE),
         post_process_status=ScenarioPostProcessingStatus.PENDING,
-    ).values_list("id", flat=True) 
+    ).values_list("id", flat=True)
     log.info(f"Found {scenarios.count()} scenarios pending post_processing.")
     for scenario in scenarios:
         async_scenario_post_processing.delay(scenario)
@@ -406,7 +410,7 @@ def async_scenario_post_processing(scenario_id):
         scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
     else:
         scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
-    
+
     scenario.save(update_fields=["post_process_status"])
 
 
@@ -584,3 +588,54 @@ def async_send_email_large_planning_area(planning_area_id: int) -> None:
             "Failed sending oversize planning area alert.",
             extra={"planning_area_id": planning_area_id},
         )
+
+
+@app.task()
+def send_weekly_new_users_report() -> None:
+    if not settings.WEEKLY_NEW_USERS_REPORT_ENABLED:
+        log.info(
+            "Skipping weekly new users report because WEEKLY_NEW_USERS_REPORT_ENABLED is disabled for ENV=%s.",
+            settings.ENV,
+        )
+        return
+
+    end = timezone.now()
+    start = end - timedelta(days=7)
+
+    users = User.objects.filter(date_joined__gte=start).order_by("date_joined", "id")
+
+    context = {
+        "start": start,
+        "end": end,
+        "count": users.count(),
+        "environment": settings.ENV,
+        "users": [
+            {
+                "email": (user.email or "").strip(),
+                "full_name": user.get_full_name().strip(),
+                "date_joined": user.date_joined,
+            }
+            for user in users
+        ],
+    }
+
+    subject = f"[{settings.ENV}] Weekly New User Signup Report"
+    txt = render_to_string("email/new_users/weekly_new_users_report.txt", context)
+    html = render_to_string("email/new_users/weekly_new_users_report.html", context)
+
+    send_mail(
+        subject=subject,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[settings.SUPPORT_EMAIL],
+        message=txt,
+        html_message=html,
+    )
+
+    log.info(
+        "Sent weekly new users report to %s for ENV=%s from %s to %s (%s users).",
+        settings.SUPPORT_EMAIL,
+        settings.ENV,
+        start.isoformat(),
+        end.isoformat(),
+        context["count"],
+    )
