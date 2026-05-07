@@ -137,7 +137,7 @@ export class ViewScenarioComponent {
               label: s.name,
               backUrl: `${getPlanPath(this.planId)}/scenario/${this.scenarioId}/dashboard`,
               icon: 'close',
-              blackText: true
+              blackText: true,
             });
           } else {
             // Remove this block once SCENARIO_DASHBOARDS be released
@@ -145,7 +145,7 @@ export class ViewScenarioComponent {
               label: s.name,
               backUrl: getPlanPath(this.planId),
               icon: 'close',
-              blackText: true
+              blackText: true,
             });
           }
           return this.shouldPoll(s) ? this.startPolling() : EMPTY;
