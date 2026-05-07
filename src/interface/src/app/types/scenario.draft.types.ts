@@ -23,6 +23,7 @@ export interface ScenarioDraftConfiguration extends ScenarioConfigPayload {
   name: string;
   planning_area: number;
   priority_objectives?: number[];
+  priorities: { datalayer: number; weight: number }[];
   cobenefits?: number[];
   planning_approach: PLANNING_APPROACH;
   sub_units_layer?: number;
