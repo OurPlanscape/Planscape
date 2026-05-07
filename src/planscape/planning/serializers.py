@@ -596,7 +596,7 @@ class TargetsSerializer(serializers.Serializer):
         return super().validate(attrs)
 
 class WeighedPriorityObjectiveField(serializers.Serializer):
-    datalayer = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+    datalayer = serializers.IntegerField()
     weight = serializers.IntegerField()
 
     def validate_weight(self, value):
@@ -604,6 +604,10 @@ class WeighedPriorityObjectiveField(serializers.Serializer):
             raise serializers.ValidationError("Invalid priority objective weight.")
         
         return value
+
+
+class UpsertWeighedPriorityObjectiveField(WeighedPriorityObjectiveField):
+    datalayer = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
 
 
 class ConfigurationV3Serializer(serializers.Serializer):
@@ -727,7 +731,7 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         required=False,
     )
     priorities = serializers.ListField(
-        child=WeighedPriorityObjectiveField(),
+        child=UpsertWeighedPriorityObjectiveField(),
         allow_empty=True,
         min_length=1,
         max_length=2,
