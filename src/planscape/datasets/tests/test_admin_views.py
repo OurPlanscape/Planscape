@@ -8,6 +8,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from planscape.tests.factories import UserFactory
+from workspaces.tests.factories import UserAccessWorkspaceFactory, WorkspaceFactory
 
 User = get_user_model()
 
@@ -93,6 +94,8 @@ class TestAdminDatasetViewSet(APITestCase):
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
         self.org = OrganizationFactory.create(created_by=self.admin)
+        self.workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(user=self.admin, workspace=self.workspace)
 
     def test_list_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
@@ -124,9 +127,63 @@ class TestAdminDatasetViewSet(APITestCase):
             "name": "my dataset",
             "visibility": "PUBLIC",
             "organization": self.org.pk,
+            "workspace_id": self.workspace.pk,
             "original_name": "foo.tif",
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)
         self.assertIn("modules", response.json())
         self.assertEqual(1, Dataset.objects.filter(created_by=self.admin).count())
+        self.assertEqual(
+            self.workspace,
+            Dataset.objects.get(created_by=self.admin).workspace,
+        )
+
+    def test_create_by_admin_user_without_workspace_id_fails(self):
+        self.client.force_authenticate(user=self.admin)
+        url = reverse("api:admin-datasets:datasets-list")
+        data = {
+            "name": "my dataset",
+            "visibility": "PUBLIC",
+            "organization": self.org.pk,
+        }
+        response = self.client.post(url, data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("workspace_id", response.json()["errors"])
+
+    def test_update_by_admin_user_updates_name_and_visibility(self):
+        self.client.force_authenticate(user=self.admin)
+        dataset = DatasetFactory.create(
+            organization=self.org,
+            workspace=self.workspace,
+        )
+        url = reverse("api:admin-datasets:datasets-detail", args=[dataset.pk])
+        data = {
+            "name": "updated dataset",
+            "visibility": "PRIVATE",
+        }
+        response = self.client.patch(url, data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        dataset.refresh_from_db()
+        self.assertEqual(dataset.name, "updated dataset")
+        self.assertEqual(dataset.visibility, "PRIVATE")
+
+    def test_update_by_admin_user_does_not_update_workspace(self):
+        self.client.force_authenticate(user=self.admin)
+        other_workspace = WorkspaceFactory.create()
+        dataset = DatasetFactory.create(
+            organization=self.org,
+            workspace=self.workspace,
+        )
+        url = reverse("api:admin-datasets:datasets-detail", args=[dataset.pk])
+        data = {
+            "name": "updated dataset",
+            "workspace_id": other_workspace.pk,
+        }
+        response = self.client.patch(url, data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        dataset.refresh_from_db()
+        self.assertEqual(dataset.name, "updated dataset")
+        self.assertEqual(dataset.workspace, self.workspace)

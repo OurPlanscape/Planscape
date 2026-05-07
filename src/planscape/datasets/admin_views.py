@@ -3,7 +3,12 @@ import logging
 from core.serializers import MultiSerializerMixin
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -24,6 +29,7 @@ from datasets.serializers import (
     DatasetSerializer,
     StyleCreatedSerializer,
     StyleSerializer,
+    UpdateDatasetSerializer,
 )
 from datasets.services import (
     assign_style,
@@ -41,6 +47,7 @@ class AdminDatasetViewSet(
     RetrieveModelMixin,
     MultiSerializerMixin,
     CreateModelMixin,
+    UpdateModelMixin,
     GenericViewSet,
 ):
     queryset = Dataset.objects.all()
@@ -50,6 +57,8 @@ class AdminDatasetViewSet(
         "list": DatasetSerializer,
         "create": CreateDatasetSerializer,
         "retrieve": DatasetSerializer,
+        "update": UpdateDatasetSerializer,
+        "partial_update": UpdateDatasetSerializer,
     }
     pagination_class = LimitOffsetPagination
 
