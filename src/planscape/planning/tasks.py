@@ -335,7 +335,10 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
         datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
     elif scenario_type == ScenarioType.CUSTOM:
         configuration = getattr(scenario, "configuration", {}) or {}
-        priority_ids = configuration.get("priority_objectives") or []
+        if configuration.get("priorities"): 
+            priority_ids = [p["datalayer"] for p in configuration.get("priorities")]
+        else:
+            priority_ids = configuration.get("priority_objectives") or []
         cobenefit_ids = configuration.get("cobenefits") or []
         datalayers = DataLayer.objects.filter(
             pk__in=[*priority_ids, *cobenefit_ids],

@@ -356,6 +356,33 @@ class PrepareScenariosForForsysTest(TestCase):
 
     @mock.patch("planning.tasks.group")
     @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_custom_uses_config_datalayers_with_weight_priority(
+        self, mock_chord, mock_group
+    ):
+        mock_group.side_effect = lambda tasks: tasks
+        mock_chord.return_value = mock.Mock(
+            on_error=mock.Mock(), apply_async=mock.Mock()
+        )
+        mock_chord.return_value.on_error.return_value = mock_chord.return_value
+
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "priorities": [{"datalayer": priority.id, "weight": 1}],
+                "cobenefits": [cobenefit.id],
+            },
+        )
+
+        prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        mock_chord.assert_called_once()
+
+    @mock.patch("planning.tasks.group")
+    @mock.patch("planning.tasks.chord")
     def test_prepare_scenario_preset_uses_treatment_goal_datalayers(
         self, mock_chord, mock_group
     ):
