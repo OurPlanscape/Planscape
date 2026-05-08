@@ -708,9 +708,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
             errors.append("Scenario has no Treatment Goal assigned.")
 
     else:  # Scenario.type == ScenarioType.CUSTOM
-        if not cfg.get("priority_objectives"):
+        if not cfg.get("priority_objectives") and not cfg.get("priorities"):
             errors.append(
-                "Configuration field `priority_objectives` is required for Custom Scenarios."
+                "Configuration field `priority_objectives` or `priorities` is required for Custom Scenarios."
             )
 
     # Scenario checks by its `planning_apporach`
