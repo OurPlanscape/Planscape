@@ -36,11 +36,16 @@ RUN wget https://github.com/OSGeo/gdal/archive/refs/tags/v${GDAL_VERSION}.tar.gz
     cmake --build . --target install && \
     rm -rf gdal-${GDAL_VERSION} v${GDAL_VERSION}.tar.gz
 
-RUN mkdir -p /app
+ENV UV_PROJECT_ENVIRONMENT=/opt/virtualenvs/
+ENV UV_LINK_MODE=copy
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
+
+RUN mkdir -p /app /opt/virtualenvs /opt/uv-python
 WORKDIR /app
 
 COPY pyproject.toml uv.lock /app/
-RUN uv sync --locked --no-install-project --dev
+RUN uv sync --locked --no-install-project --dev \
+    && chmod -R a+rX /opt/virtualenvs /opt/uv-python
 
 COPY . /app
 
