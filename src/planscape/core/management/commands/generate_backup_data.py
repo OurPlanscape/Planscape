@@ -12,7 +12,6 @@ import shutil
 from core.mattermost import post_to_mattermost
 
 
-
 class Command(BaseCommand):
     help = "Generates backup data by pushing it into json file to be loaded in another env."
 
