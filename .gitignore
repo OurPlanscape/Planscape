@@ -190,5 +190,8 @@ compiled-static/
 planscape.sock
 .ruff_cache
 
+# Claude Code per-user settings (project-level shared settings.json stays tracked)
+.claude/settings.local.json
+
 # R files used to convert to Python
 R/
