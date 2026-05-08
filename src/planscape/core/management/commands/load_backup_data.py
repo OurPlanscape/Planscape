@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 
+from datetime import datetime
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType, Dataset, Style, Category
 from planning.models import TreatmentGoal
 from organizations.models import Organization
@@ -125,10 +126,14 @@ class Command(BaseCommand):
                 "!!  Error: Could not find the last successful restore !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
-
+        
+        
+        now = datetime.now()
+        current_run = RestoreBackTrack.objects.create(
+            started_at=now,
+            file_name=filename
+        )
         try:
-            
-
             # Sync buckets
             subprocess.call(
                 [
@@ -204,8 +209,14 @@ class Command(BaseCommand):
             post_to_mattermost(
                 f"planscape-{settings.ENV} :white_check_mark: Catalog data restore completed successfully"
             )
+            current_run.finished_at = datetime.now()
+            current_run.status = RestoreBackTrackStatus.SUCCESS
+            current_run.save()
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
             post_to_mattermost(
                 f"planscape-{settings.ENV} :x: Catalog data restore failed: {e}"
             )
+            current_run.finished_at = datetime.now()
+            current_run.status = RestoreBackTrackStatus.FAILED
+            current_run.save()
