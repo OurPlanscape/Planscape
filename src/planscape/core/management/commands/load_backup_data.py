@@ -158,24 +158,25 @@ class Command(BaseCommand):
                 ]
             )
             
-            with transaction.atomic():
-                count = TreatmentGoal.objects.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count} TreatmentGoal(s) created after last restore.")
+            if settings.DELETE_ENTRIES_AFTER_LAST_RESTORE:
+                with transaction.atomic():
+                    count = TreatmentGoal.objects.filter(created_at__gte=last_restore_date).delete()
+                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
 
-                count = Category.objects.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count} Category(s) created after last restore.")
+                    count = Category.objects.filter(created_at__gte=last_restore_date).delete()
+                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
 
-                count = Style.objects.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count} Style(s) created after last restore.")
+                    count = Style.objects.filter(created_at__gte=last_restore_date).delete()
+                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Style(s) created after last restore.")
 
-                count = DataLayer.objects.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count} DataLayer(s) created after last restore.")
+                    count = DataLayer.objects.filter(created_at__gte=last_restore_date).delete()
+                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
 
-                count = Dataset.objects.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count} Dataset(s) created after last restore.")
+                    count = Dataset.objects.filter(created_at__gte=last_restore_date).delete()
+                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Dataset(s) created after last restore.")
 
-                count = Organization.objects.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count} Organization(s) created after last restore.")
+                    count = Organization.objects.filter(created_at__gte=last_restore_date).delete()
+                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Organization(s) created after last restore.")
 
             # Load data to DB
             self.stdout.write(f"Loading data from `/tmp/{filename}`")
