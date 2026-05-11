@@ -198,6 +198,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
                 this.breadcrumbService.updateBreadCrumb({
                   label: `New Climate Foresight Analysis: ${run.name}`,
                   backUrl: `/plan/${this.planId}/climate-foresight`,
+                  blackText: true,
                   icon: 'close',
                 });
               }

@@ -1,5 +1,5 @@
 from core.serializers import MultiSerializerMixin
-from django.db.models import Q
+from django.db.models import Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -53,9 +53,17 @@ class AdminWorkspaceViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        return Workspace.objects.filter(
-            Q(visibility=VisibilityOptions.PUBLIC) | Q(user_access__user=user)
-        ).distinct()
+        return (
+            Workspace.objects.filter(
+                Q(visibility=VisibilityOptions.PUBLIC) | Q(user_access__user=user)
+            )
+            .annotate(
+                datasets_count=Count("datasets", distinct=True),
+                styles_count=Count("styles", distinct=True),
+                users_count=Count("user_access", distinct=True),
+            )
+            .distinct()
+        )
 
     @extend_schema(
         description="List datasets belonging to this workspace.",
