@@ -144,6 +144,7 @@ export class PlanningAreaMenuComponent {
     this.breadcrumbService.updateBreadCrumb({
       label: 'Map Viewer: ' + this.plan.name,
       backUrl: '/',
+      blackText: true,
     });
   }
 }
