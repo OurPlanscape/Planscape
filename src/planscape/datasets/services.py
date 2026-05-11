@@ -39,6 +39,7 @@ from gis.rasters import get_estimated_mask as get_estimated_mask_raster
 from modules.base import get_module
 from organizations.models import Organization
 from planning.models import TreatmentGoalUsageType
+from workspaces.models import Workspace
 
 from planscape.openpanel import track_openpanel
 
@@ -140,6 +141,7 @@ def geometry_from_info(
 def create_dataset(
     name: str,
     organization: Organization,
+    workspace: Workspace,
     created_by: User,
     description: Optional[str] = None,
     visibility: VisibilityOptions = VisibilityOptions.PUBLIC,
@@ -149,6 +151,7 @@ def create_dataset(
     dataset = Dataset.objects.create(
         name=name,
         organization=organization,
+        workspace=workspace,
         created_by=created_by,
         description=description,
         visibility=visibility,

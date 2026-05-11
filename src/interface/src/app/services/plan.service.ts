@@ -12,6 +12,13 @@ import { GeoJsonObject } from 'geojson';
 import { environment } from '@env/environment';
 import { Params } from '@angular/router';
 
+export type ScenarioUploadOptions = {
+  shape: GeoJsonObject;
+  scenarioName: string;
+  standSize?: string;
+  planId: string;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -84,19 +91,14 @@ export class PlanService {
   }
 
   //TODO: This might be better in its own Service file
-  uploadGeometryForNewScenario(
-    shape: GeoJsonObject,
-    scenarioName: string,
-    standSize: string,
-    planId: string
-  ) {
+  uploadGeometryForNewScenario(opts: ScenarioUploadOptions) {
     return this.http.post(
       environment.backend_endpoint.concat('/v2/scenarios/upload_shapefiles/'),
       {
-        geometry: shape,
-        name: scenarioName,
-        stand_size: standSize,
-        planning_area: planId,
+        geometry: opts.shape,
+        name: opts.scenarioName,
+        planning_area: opts.planId,
+        ...(opts.standSize && { stand_size: opts.standSize }),
       },
       {
         withCredentials: true,
