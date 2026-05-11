@@ -8,6 +8,11 @@ import {
   ScenarioDraftConfiguration,
   ScenarioV3Config,
 } from '@types';
+
+export interface PriorityWithLayer {
+  layer: DataLayer;
+  weight: number;
+}
 import {
   BehaviorSubject,
   catchError,
@@ -72,6 +77,44 @@ export class NewScenarioState {
             })
           )
     ),
+    shareReplay(1)
+  );
+
+  public prioritiesDetails$ = this.scenarioConfig$.pipe(
+    map((config) => {
+      const draft = config as Partial<ScenarioDraftConfiguration>;
+      if (draft.priorities && draft.priorities.length > 0) {
+        return draft.priorities;
+      }
+      // Backwards compatibility: drafts saved before weighting only have
+      // `priority_objectives` (ids). Treat each as weight 1.
+      return (draft.priority_objectives ?? []).map((id) => ({
+        datalayer: id,
+        weight: 1,
+      }));
+    }),
+    distinctUntilChanged(
+      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+    ),
+    switchMap((priorities) => {
+      if (priorities.length === 0) {
+        return of<PriorityWithLayer[]>([]);
+      }
+      const ids = priorities.map((p) => p.datalayer);
+      return this.dataLayersService.getDataLayersByIds(ids).pipe(
+        map((layers) => {
+          const byId = new Map((layers ?? []).map((l) => [l.id, l]));
+          return priorities.flatMap((p) => {
+            const layer = byId.get(p.datalayer);
+            return layer ? [{ layer, weight: p.weight }] : [];
+          });
+        }),
+        catchError((error) => {
+          console.error('Error fetching data layers:', error);
+          return of<PriorityWithLayer[]>([]);
+        })
+      );
+    }),
     shareReplay(1)
   );
 

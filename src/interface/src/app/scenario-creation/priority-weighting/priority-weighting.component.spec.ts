@@ -5,6 +5,7 @@ import { SimpleChange } from '@angular/core';
 import { PriorityWeightingComponent } from './priority-weighting.component';
 
 interface TestItem {
+  id: number;
   name: string;
   value: number;
 }
@@ -41,8 +42,8 @@ describe('PriorityWeightingComponent', () => {
   describe('ngOnChanges / buildWeights', () => {
     it('builds a FormGroup per item with name and value', () => {
       setItems([
-        { name: 'Source Exposure', value: 1 },
-        { name: 'Wildfire Hazard', value: 5 },
+        { id: 1, name: 'Source Exposure', value: 1 },
+        { id: 2, name: 'Wildfire Hazard', value: 5 },
       ]);
 
       expect(component.weights.length).toBe(2);
@@ -57,12 +58,12 @@ describe('PriorityWeightingComponent', () => {
     });
 
     it('rebuilds (clears) weights when items input changes', () => {
-      setItems([{ name: 'A', value: 1 }]);
+      setItems([{ id: 1, name: 'A', value: 1 }]);
       expect(component.weights.length).toBe(1);
 
       setItems([
-        { name: 'B', value: 2 },
-        { name: 'C', value: 3 },
+        { id: 2, name: 'B', value: 2 },
+        { id: 3, name: 'C', value: 3 },
       ]);
       expect(component.weights.length).toBe(2);
       expect(component.weights.at(0).controls.name.value).toBe('B');
@@ -71,7 +72,7 @@ describe('PriorityWeightingComponent', () => {
 
   describe('value validators', () => {
     beforeEach(() => {
-      setItems([{ name: 'A', value: 1 }]);
+      setItems([{ id: 1, name: 'A', value: 1 }]);
     });
 
     it('is invalid below the minimum (1)', () => {
@@ -97,7 +98,7 @@ describe('PriorityWeightingComponent', () => {
 
   describe('increment', () => {
     beforeEach(() => {
-      setItems([{ name: 'A', value: 5 }]);
+      setItems([{ id: 1, name: 'A', value: 5 }]);
     });
 
     it('increases the value by 1 and marks dirty', () => {
@@ -116,7 +117,7 @@ describe('PriorityWeightingComponent', () => {
 
   describe('decrement', () => {
     beforeEach(() => {
-      setItems([{ name: 'A', value: 5 }]);
+      setItems([{ id: 1, name: 'A', value: 5 }]);
     });
 
     it('decreases the value by 1 and marks dirty', () => {
@@ -135,7 +136,7 @@ describe('PriorityWeightingComponent', () => {
 
   describe('onWeightInput', () => {
     beforeEach(() => {
-      setItems([{ name: 'A', value: 1 }]);
+      setItems([{ id: 1, name: 'A', value: 1 }]);
     });
 
     it('strips non-digit characters and writes the parsed number', () => {
@@ -161,10 +162,10 @@ describe('PriorityWeightingComponent', () => {
   });
 
   describe('clickSecondary (Reset to default)', () => {
-    it('restores the original item values, discarding edits', () => {
+    it('resets every weight to the default of 1, discarding edits', () => {
       setItems([
-        { name: 'A', value: 1 },
-        { name: 'B', value: 2 },
+        { id: 1, name: 'A', value: 3 },
+        { id: 2, name: 'B', value: 5 },
       ]);
       component.weights.at(0).controls.value.setValue(75);
       component.weights.at(1).controls.value.setValue(99);
@@ -172,7 +173,9 @@ describe('PriorityWeightingComponent', () => {
       component.clickSecondary();
 
       expect(component.weights.at(0).controls.value.value).toBe(1);
-      expect(component.weights.at(1).controls.value.value).toBe(2);
+      expect(component.weights.at(1).controls.value.value).toBe(1);
+      expect(component.weights.at(0).controls.value.dirty).toBe(true);
+      expect(component.weights.at(1).controls.value.dirty).toBe(true);
     });
   });
 
@@ -185,10 +188,42 @@ describe('PriorityWeightingComponent', () => {
     });
 
     it('apply emits closed', () => {
+      setItems([{ id: 1, name: 'A', value: 1 }]);
       const spy = jasmine.createSpy('closed');
       component.closed.subscribe(spy);
       component.apply();
       expect(spy).toHaveBeenCalled();
+    });
+
+    it('apply emits applied with current weights', () => {
+      setItems([
+        { id: 10, name: 'A', value: 1 },
+        { id: 20, name: 'B', value: 2 },
+      ]);
+      component.weights.at(0).controls.value.setValue(7);
+
+      const spy = jasmine.createSpy('applied');
+      component.applied.subscribe(spy);
+      component.apply();
+
+      expect(spy).toHaveBeenCalledWith([
+        { id: 10, value: 7 },
+        { id: 20, value: 2 },
+      ]);
+    });
+
+    it('apply does not emit when form is invalid', () => {
+      setItems([{ id: 1, name: 'A', value: 1 }]);
+      component.weights.at(0).controls.value.setValue(0);
+
+      const appliedSpy = jasmine.createSpy('applied');
+      const closedSpy = jasmine.createSpy('closed');
+      component.applied.subscribe(appliedSpy);
+      component.closed.subscribe(closedSpy);
+      component.apply();
+
+      expect(appliedSpy).not.toHaveBeenCalled();
+      expect(closedSpy).not.toHaveBeenCalled();
     });
   });
 });

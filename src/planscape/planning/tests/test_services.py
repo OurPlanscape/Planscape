@@ -1013,6 +1013,7 @@ class ValidateScenarioConfigurationTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create(with_stands=True)
         self.treatment_goal = TreatmentGoalFactory.create()
+        self.datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             treatment_goal=self.treatment_goal,
@@ -1100,15 +1101,29 @@ class ValidateScenarioConfigurationTest(TestCase):
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Scenario has no Treatment Goal assigned.", errors)
 
-    def test_missing_priority_objectives(self):
+    def test_missing_priority_objectives_and_priorities(self):
         self.scenario.configuration = {"priority_objectives": []}
         self.scenario.type = ScenarioType.CUSTOM
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn(
-            "Configuration field `priority_objectives` is required for Custom Scenarios.",
+            "Configuration field `priority_objectives` or `priorities` is required for Custom Scenarios.",
             errors,
         )
+
+    def test_valid_configuration_with_priorities(self):
+        self.scenario.configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "targets": {"max_area": 9999, "max_project_count": 2},
+            "priorities": [{"datalayer": self.datalayer.pk, "weight": 1}]
+            }
+        self.scenario.type = ScenarioType.CUSTOM
+        self.scenario.save()
+        with mock.patch(
+            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+        ):
+            errors = validate_scenario_configuration(self.scenario)
+            self.assertEqual(errors, [])
 
     def test_missing_sub_units_layer(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
