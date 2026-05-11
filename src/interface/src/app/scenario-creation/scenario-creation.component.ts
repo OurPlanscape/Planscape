@@ -244,6 +244,7 @@ export class ScenarioCreationComponent implements OnInit {
         this.breadcrumbService.updateBreadCrumb({
           label: `New Scenario: ${scenario.name}`,
           backUrl: getPlanPath(this.planId),
+          blackText: true,
           icon: 'close',
         });
         // Mapping the backend object to the frontend configuration
