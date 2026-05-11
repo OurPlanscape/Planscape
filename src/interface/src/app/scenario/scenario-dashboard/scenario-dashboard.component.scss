@@ -39,4 +39,16 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  padding: 16px;
+}
+
+.results-header {
+  @include h4();
+}
+
+.map-container {
+  height: 330px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
 }
