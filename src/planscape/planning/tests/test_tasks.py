@@ -270,6 +270,10 @@ class AsyncPreForsysProcessTest(TestCase):
             {datalayer["usage_type"] for datalayer in datalayers},
             {"PRIORITY", "SECONDARY_METRIC"},
         )
+        self.assertEqual(
+            {datalayer.get("weight") for datalayer in datalayers},
+            {2, None}
+        )
 
     @override_settings(FEATURE_FLAGS=["PLANNING_APPROACH"])
     def test_async_pre_forsys_process_sub_units(self):
