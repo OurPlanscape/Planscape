@@ -190,9 +190,18 @@ export class PlanScenariosListComponent implements OnInit {
         clickedScenario.scenario_result.status
       )
     ) {
-      this.router.navigate(['scenario', clickedScenario.id, 'dashboard'], {
-        relativeTo: this.route,
-      });
+      if (clickedScenario.origin === 'USER') {
+        this.router.navigate(
+          ['scenario', clickedScenario.id, 'projdashboard'],
+          {
+            relativeTo: this.route,
+          }
+        );
+      } else {
+        this.router.navigate(['scenario', clickedScenario.id, 'dashboard'], {
+          relativeTo: this.route,
+        });
+      }
     } else {
       this.router.navigate(['scenario', clickedScenario.id], {
         relativeTo: this.route,

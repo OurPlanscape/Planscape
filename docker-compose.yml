@@ -80,7 +80,7 @@ services:
       - redis
       - celery_worker
     volumes:
-      - .:/usr/src/app
+      - .:/app
   db:
     image: postgis/postgis:15-3.4
     environment:
@@ -103,7 +103,7 @@ services:
       - db
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db/postgres
-    command: --config /usr/src/app/martin.yaml
+    command: --config /app/martin.yaml
     volumes:
       - .:/app
 volumes:
