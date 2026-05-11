@@ -557,7 +557,7 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
-    if "priorities" in cfg.keys():
+    if cfg.get("priorities"):
         priorities = cfg.get("priorities") or []
         priority_objectives = [priority.get("datalayer") for priority in priorities]
     else:
