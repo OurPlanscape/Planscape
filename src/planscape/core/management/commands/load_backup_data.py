@@ -119,7 +119,7 @@ class Command(BaseCommand):
             last_restore = RestoreBackTrack.objects.filter(status=RestoreBackTrackStatus.SUCCESS).order_by("started_at__desc").first()
             last_restore_date = last_restore.started_at
             self.stdout.write(f"Last restored happend on {last_restore_date}. Records created after that will be deleted.")
-        except RestoreBackTrack.DoesNotExist:
+        except Exception:
             raise SystemError(
                 "\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
