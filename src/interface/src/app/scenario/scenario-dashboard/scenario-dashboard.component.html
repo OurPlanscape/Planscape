@@ -40,7 +40,25 @@
     </div>
     <div right-column class="right-column-card">
       <div class="right-column-content">
-        <p>Right column placeholder</p>
+        <ng-container *ngIf="currentScenario$ | async as scenario">
+          <p class="results-header">Scenario Results</p>
+          <div class="map-container">
+            <app-scenario-minimal-map></app-scenario-minimal-map>
+          </div>
+          <sg-section
+            headline="Project Areas"
+            [isCollapsible]="true"
+            [defaultExpanded]="true"
+            tooltipContent="Placeholder"
+            class="project-areas">
+            <app-project-areas
+              *ngIf="projectAreas$ | async as projectAreas"
+              [areas]="projectAreas"
+              [showRxLeverage]="
+                isPlanningApproachSubUnits(scenario)
+              "></app-project-areas>
+          </sg-section>
+        </ng-container>
       </div>
 
       <app-scenario-dashboard-footer

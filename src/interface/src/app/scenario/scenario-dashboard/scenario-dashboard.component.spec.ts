@@ -9,6 +9,8 @@ import { DetailsCardComponent } from '@styleguide/details-card/details-card.comp
 import { ScenarioState } from '../scenario.state';
 import { PlanState } from '@app/plan/plan.state';
 import { ActivatedRoute } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
+import { MOCK_SCENARIO } from '@app/services/mocks';
 
 describe('ScenarioDashboardComponent', () => {
   let component: ScenarioDashboardComponent;
@@ -27,7 +29,9 @@ describe('ScenarioDashboardComponent', () => {
         ),
       ],
       providers: [
-        MockProvider(ScenarioState),
+        MockProvider(ScenarioState, {
+          currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
+        }),
         MockProvider(PlanState),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },
       ],
