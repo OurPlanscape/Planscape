@@ -163,24 +163,46 @@ class Command(BaseCommand):
                 ]
             )
             
-            if settings.DELETE_ENTRIES_AFTER_LAST_RESTORE:
-                with transaction.atomic():
-                    count = TreatmentGoal.objects.filter(updated_at__gte=last_restore_date).delete()
+            with transaction.atomic():
+                qs = TreatmentGoal.objects.filter(updated_at__gte=last_restore_date)
+                while qs.exists():
+                    ids = qs.values_list("pk", flat=True)[:10]
+                    count = TreatmentGoal.objects.filter(pk__in=ids).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
 
-                    count = Category.objects.filter(updated_at__gte=last_restore_date).delete()
+            with transaction.atomic():
+                qs = Category.objects.filter(updated_at__gte=last_restore_date)
+                while qs.exists():
+                    ids = qs.values_list("pk", flat=True)[:10]
+                    count = Category.objects.filter(pk__in=ids).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
 
-                    count = Style.objects.filter(updated_at__gte=last_restore_date).delete()
+            with transaction.atomic():
+                qs = Style.objects.filter(updated_at__gte=last_restore_date)
+                while qs.exists():
+                    ids = qs.values_list("pk", flat=True)[:10]
+                    count = Style.objects.filter(pk__in=ids).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Style(s) created after last restore.")
 
-                    count = DataLayer.objects.filter(updated_at__gte=last_restore_date).delete()
+            with transaction.atomic():
+                qs = DataLayer.objects.filter(updated_at__gte=last_restore_date)
+                while qs.exists():
+                    ids = qs.values_list("pk", flat=True)[:10]
+                    count = DataLayer.objects.filter(pk__in=ids).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
 
-                    count = Dataset.objects.filter(updated_at__gte=last_restore_date).delete()
+            with transaction.atomic():
+                qs = Dataset.objects.filter(updated_at__gte=last_restore_date)
+                while qs.exists():
+                    ids = qs.values_list("pk", flat=True)[:10]
+                    count = Dataset.objects.filter(pk__in=ids).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Dataset(s) created after last restore.")
 
-                    count = Organization.objects.filter(updated_at__gte=last_restore_date).delete()
+            with transaction.atomic():
+                qs = Organization.objects.filter(updated_at__gte=last_restore_date)
+                while qs.exists():
+                    ids = qs.values_list("pk", flat=True)[:10]
+                    count = Organization.objects.filter(pk__in=ids).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Organization(s) created after last restore.")
 
             # Load data to DB
