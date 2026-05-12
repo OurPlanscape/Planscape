@@ -7,7 +7,7 @@ from datasets.models import DataLayer, DataLayerStatus, DataLayerType, Dataset, 
 from planning.models import TreatmentGoal
 from organizations.models import Organization
 from datasets.tasks import datalayer_uploaded
-from django.db import transaction
+from django.db import transaction, connection
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -186,9 +186,12 @@ class Command(BaseCommand):
 
             with transaction.atomic():
                 qs = DataLayer.objects.filter(updated_at__gte=last_restore_date)
-                while qs.exists():
-                    ids = qs.values_list("pk", flat=True)[:10]
-                    count = DataLayer.objects.filter(pk__in=ids).delete()
+                for datalayer in qs:
+                    if datalayer.type == DataLayerType.VECTOR:
+                        table = datalayer.table
+                        with connection.cursor() as cursor:
+                            cursor.execute(f"DROP TABLE IF EXISTS {table};")
+                    count = datalayer.delete(hard_delete=True)
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
 
             with transaction.atomic():
