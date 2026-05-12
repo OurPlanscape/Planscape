@@ -8,7 +8,12 @@ import { STAND_OPTIONS } from '@plan/plan-helpers';
 import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { DataLayer, PLANNING_APPROACH_LABELS, ScenarioV3Config } from '@types';
+import {
+  DataLayer,
+  PLANNING_APPROACH_LABELS,
+  ScenarioPriority,
+  ScenarioV3Config,
+} from '@types';
 import {
   isCustomScenario,
   isPlanningApproachSubUnits,
@@ -99,12 +104,29 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   );
 
   priorityObjectives$ = this.currentScenario$.pipe(
-    switchMap((s) =>
-      this.dataLayersService.getDataLayersByIds(
-        s.configuration?.priority_objectives ?? []
-      )
-    ),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    switchMap((s) => {
+      const config = s.configuration as ScenarioV3Config | undefined;
+      const priorities: ScenarioPriority[] =
+        config?.priorities && config.priorities.length > 0
+          ? config.priorities
+          : (config?.priority_objectives ?? []).map((datalayer) => ({
+              datalayer,
+              weight: 1,
+            }));
+      return this.dataLayersService
+        .getDataLayersByIds(priorities.map((p) => p.datalayer))
+        .pipe(
+          map((d: DataLayer[]) => {
+            const nameById = new Map(d.map((dl) => [dl.id, dl.name]));
+            return priorities
+              .map((p) => ({
+                name: nameById.get(p.datalayer),
+                weight: p.weight,
+              }))
+              .filter((p): p is { name: string; weight: number } => !!p.name);
+          })
+        );
+    }),
     shareReplay(1)
   );
 
@@ -136,5 +158,9 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
 
   get isPlanningApproachEnabled() {
     return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
+  }
+
+  get weightingFlagOn() {
+    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
   }
 }
