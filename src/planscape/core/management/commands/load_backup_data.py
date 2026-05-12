@@ -165,22 +165,22 @@ class Command(BaseCommand):
             
             if settings.DELETE_ENTRIES_AFTER_LAST_RESTORE:
                 with transaction.atomic():
-                    count = TreatmentGoal.objects.filter(created_at__gte=last_restore_date).delete()
+                    count = TreatmentGoal.objects.filter(updated_at__gte=last_restore_date).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
 
-                    count = Category.objects.filter(created_at__gte=last_restore_date).delete()
+                    count = Category.objects.filter(updated_at__gte=last_restore_date).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
 
-                    count = Style.objects.filter(created_at__gte=last_restore_date).delete()
+                    count = Style.objects.filter(updated_at__gte=last_restore_date).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Style(s) created after last restore.")
 
-                    count = DataLayer.objects.filter(created_at__gte=last_restore_date).delete()
+                    count = DataLayer.objects.filter(updated_at__gte=last_restore_date).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
 
-                    count = Dataset.objects.filter(created_at__gte=last_restore_date).delete()
+                    count = Dataset.objects.filter(updated_at__gte=last_restore_date).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Dataset(s) created after last restore.")
 
-                    count = Organization.objects.filter(created_at__gte=last_restore_date).delete()
+                    count = Organization.objects.filter(updated_at__gte=last_restore_date).delete()
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to Organization(s) created after last restore.")
 
             # Load data to DB
