@@ -1,11 +1,11 @@
 from urllib.parse import urlencode
 
-from django.urls import reverse
-from rest_framework.test import APITestCase
-
 from datasets.models import VisibilityOptions
 from datasets.tests.factories import DatasetFactory, StyleFactory
+from django.urls import reverse
 from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase
+
 from workspaces.models import UserAccessWorkspace, WorkspaceRole
 from workspaces.tests.factories import UserAccessWorkspaceFactory, WorkspaceFactory
 
@@ -303,7 +303,17 @@ class TestAdminWorkspaceDatasetsAction(APITestCase):
         self.client.force_authenticate(user=self.admin)
         response = self.client.get(reverse(DATASETS_URL, args=[self.workspace.pk]))
         item = response.json()[0]
-        self.assertSetEqual({"id", "name", "visibility"}, set(item.keys()))
+        self.assertSetEqual(
+            {
+                "id",
+                "name",
+                "workspace_id",
+                "modules",
+                "organization",
+                "visibility",
+            },
+            set(item.keys()),
+        )
 
 
 class TestAdminWorkspaceStylesAction(APITestCase):
