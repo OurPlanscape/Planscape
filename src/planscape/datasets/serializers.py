@@ -6,6 +6,7 @@ from core.loaders import get_python_object
 from organizations.models import Organization
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
+from workspaces.models import Workspace
 
 from datasets.models import (
     Category,
@@ -23,7 +24,6 @@ from datasets.styles import (
     get_default_vector_style,
     get_raster_style,
 )
-from workspaces.models import Workspace
 
 
 def get_available_workspaces_for_request(request: Any):
@@ -211,8 +211,12 @@ class UpdateDatasetSerializer(serializers.ModelSerializer[Dataset]):
     class Meta:
         model = Dataset
         fields = (
+            "organization",
+            "workspace_id",
             "name",
             "visibility",
+            "version",
+            "modules",
         )
 
 

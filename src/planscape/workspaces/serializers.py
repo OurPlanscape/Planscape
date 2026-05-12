@@ -1,6 +1,6 @@
+from datasets.models import Dataset, Style
 from rest_framework import serializers
 
-from datasets.models import Dataset, Style
 from workspaces.models import UserAccessWorkspace, Workspace
 
 
@@ -54,7 +54,15 @@ class UpdateWorkspaceSerializer(serializers.ModelSerializer):
 class WorkspaceDatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ["id", "name", "visibility"]
+        fields = [
+            "id",
+            "organization",
+            "workspace_id",
+            "name",
+            "visibility",
+            "version",
+            "modules",
+        ]
 
 
 class WorkspaceStyleSerializer(serializers.ModelSerializer):
