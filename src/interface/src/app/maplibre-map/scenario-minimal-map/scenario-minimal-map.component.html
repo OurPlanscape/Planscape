@@ -1,0 +1,42 @@
+<mgl-map
+  *ngIf="bounds$ | async as bounds"
+  [style]="(baseLayerUrl$ | async) || ''"
+  [transformRequest]="transformRequest"
+  [maxZoom]="maxZoom"
+  [minZoom]="minZoom"
+  [dragRotate]="false"
+  [fitBoundsOptions]="{ padding: { top: 70, bottom: 40, left: 20, right: 20 } }"
+  [fitBounds]="bounds"
+  (mapLoad)="mapLoaded($event)"
+  (mapError)="onMapError($event)">
+  <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
+  <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
+
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
+  <ng-container *ngIf="showProjectAreas$ | async">
+    <app-map-project-areas
+      *ngIf="projectAreaCount$ | async as projectAreasCount"
+      [projectAreasCount]="projectAreasCount"
+      [showHoveredProjectAreas]="false"
+      [mapLibreMap]="mapLibreMap"
+      [labelField]="'rank'"
+      [planningApproach]="
+        (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+      ">
+    </app-map-project-areas>
+  </ng-container>
+</mgl-map>
+
+<div
+  class="loader"
+  [class.visible]="loading$ | async"
+  [attr.aria-hidden]="
+    (loading$ | async) === false || (loading$ | async) === null
+  ">
+  <mat-spinner diameter="32"></mat-spinner>
+</div>
