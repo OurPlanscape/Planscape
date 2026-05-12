@@ -1002,7 +1002,15 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     def get_usage_types(self, scenario: Scenario) -> List[dict]:
         if scenario.type == ScenarioType.CUSTOM:
             cfg = scenario.configuration or {}
-            priority_ids = cfg.get("priority_objectives") or []
+            priorities = cfg.get("priorities") or []
+            if priorities:
+                priority_ids = [
+                    p.get("datalayer")
+                    for p in priorities
+                    if isinstance(p, dict) and p.get("datalayer") is not None
+                ]
+            else:
+                priority_ids = cfg.get("priority_objectives") or []
             cobenefit_ids = cfg.get("cobenefits") or []
             ids = [*priority_ids, *cobenefit_ids]
             if not ids:
