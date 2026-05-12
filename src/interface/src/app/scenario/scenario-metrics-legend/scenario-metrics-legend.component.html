@@ -6,7 +6,14 @@
     class="chart-legend-selection"
     (change)="handleCheckboxChange($event)">
     <div class="legend-line">
-      <div class="legend-name">{{ metric }}</div>
+      <div class="legend-name">
+        {{ metric }}
+        <span
+          *ngIf="weightingFlagOn && priorities.length > 1"
+          class="priority-weight">
+          ({{ priorityWeights[metric] ?? 1 }}x)
+        </span>
+      </div>
       <div
         class="legend-color"
         [style.backgroundColor]="assignedColors[metric]"></div>

@@ -153,6 +153,7 @@ export interface FeatureCollection extends GeoJSON.FeatureCollection {
 export interface UsageType {
   usage_type: string;
   datalayer: string;
+  weight?: number;
 }
 
 // Backend scenario goal metadata.

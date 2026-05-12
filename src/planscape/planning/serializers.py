@@ -1004,13 +1004,16 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             cfg = scenario.configuration or {}
             priorities = cfg.get("priorities") or []
             if priorities:
-                priority_ids = [
-                    p.get("datalayer")
+                priority_entries = [
+                    (p.get("datalayer"), p.get("weight", 1))
                     for p in priorities
                     if isinstance(p, dict) and p.get("datalayer") is not None
                 ]
             else:
-                priority_ids = cfg.get("priority_objectives") or []
+                priority_entries = [
+                    (pid, 1) for pid in (cfg.get("priority_objectives") or [])
+                ]
+            priority_ids = [pid for pid, _ in priority_entries]
             cobenefit_ids = cfg.get("cobenefits") or []
             ids = [*priority_ids, *cobenefit_ids]
             if not ids:
@@ -1018,9 +1021,13 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             names = dict(DataLayer.objects.filter(pk__in=ids).values_list("id", "name"))
             return [
                 *(
-                    {"usage_type": TreatmentGoalUsageType.PRIORITY, "datalayer": name}
-                    for name in (names.get(i) for i in priority_ids)
-                    if name
+                    {
+                        "usage_type": TreatmentGoalUsageType.PRIORITY,
+                        "datalayer": names[pid],
+                        "weight": weight,
+                    }
+                    for pid, weight in priority_entries
+                    if names.get(pid)
                 ),
                 *(
                     {
