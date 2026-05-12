@@ -215,6 +215,7 @@ class AsyncPreForsysProcessTest(TestCase):
         configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "priority_objectives": [priority.id],
+            "priorities": [],
             "cobenefits": [cobenefit.id],
         }
         scenario = ScenarioFactory.create(
@@ -239,12 +240,17 @@ class AsyncPreForsysProcessTest(TestCase):
             {datalayer["usage_type"] for datalayer in datalayers},
             {"PRIORITY", "SECONDARY_METRIC"},
         )
+        self.assertEqual(
+            {datalayer.get("weight") for datalayer in datalayers},
+            {1, None}
+        )
 
     def test_async_pre_forsys_process_custom_scenario_with_weight(self):
         priority = DataLayerFactory.create(type=DataLayerType.RASTER)
         cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
         configuration = {
             "stand_size": StandSizeChoices.LARGE,
+            "priority_objectives": [],
             "priorities": [{"datalayer": priority.id, "weight": 2}],
             "cobenefits": [cobenefit.id],
         }
@@ -269,6 +275,10 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(
             {datalayer["usage_type"] for datalayer in datalayers},
             {"PRIORITY", "SECONDARY_METRIC"},
+        )
+        self.assertEqual(
+            {datalayer.get("weight") for datalayer in datalayers},
+            {2, None}
         )
 
     @override_settings(FEATURE_FLAGS=["PLANNING_APPROACH"])

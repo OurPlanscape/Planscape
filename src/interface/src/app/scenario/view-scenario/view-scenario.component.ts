@@ -188,6 +188,7 @@ export class ViewScenarioComponent {
             defaultName: suggestedName,
             fromClone: true,
             scenario: scenario,
+            type: scenario.type,
           },
         });
       });
