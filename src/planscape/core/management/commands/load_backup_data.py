@@ -189,8 +189,10 @@ class Command(BaseCommand):
                 for datalayer in qs:
                     if datalayer.type == DataLayerType.VECTOR:
                         table = datalayer.table
+                        t_app, t_uuid = table.split(".")
                         with connection.cursor() as cursor:
-                            cursor.execute(f"DROP TABLE IF EXISTS {table};")
+                            query = f'DROP TABLE IF EXISTS {t_app}."{t_uuid}"'
+                            cursor.execute(query)
                     count = datalayer.delete(hard_delete=True)
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
 
