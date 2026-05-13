@@ -42,9 +42,9 @@
           <mat-spinner
             diameter="20"
             *ngIf="(priorityObjectives$ | async) === null"></mat-spinner>
-          <div *ngFor="let p of priorityObjectives$ | async">
+          <div *ngFor="let p of priorityObjectives$ | async; let count = count">
             {{ p.name }}
-            <span *ngIf="weightingFlagOn" class="priority-weight">
+            <span *ngIf="weightingFlagOn && count > 1" class="priority-weight">
               ({{ p.weight }}x)
             </span>
           </div>
