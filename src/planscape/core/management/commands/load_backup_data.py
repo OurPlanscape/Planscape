@@ -187,10 +187,11 @@ class Command(BaseCommand):
             with transaction.atomic():
                 qs = DataLayer.objects.filter(updated_at__gte=last_restore_date)
                 for datalayer in qs:
-                    if datalayer.type == DataLayerType.VECTOR:
+                    if datalayer.table:
                         table = datalayer.table
+                        table_split = table.split(".")
                         with connection.cursor() as cursor:
-                            cursor.execute(f"DROP TABLE IF EXISTS {table};")
+                            cursor.execute(f"DROP TABLE IF EXISTS '{table_split[0]}'.'{table_split[1]}';")
                     count = datalayer.delete(hard_delete=True)
                     self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
 
