@@ -6,7 +6,7 @@ import { catchError, map, of } from 'rxjs';
 
 export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
-  const scenarioService = inject(ScenarioService); // Access your actual service
+  const scenarioService = inject(ScenarioService);
 
   const id = Number(route.paramMap.get('scenarioId')!);
 
@@ -43,8 +43,8 @@ export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
       return true;
     }),
     catchError(() => {
-      // Redirect to error page if scenarioId doesn't exist
-      return of(router.createUrlTree(['/404']));
+      // if scenarioId doesn't exist
+      return of(router.createUrlTree(['/']));
     })
   );
 };
