@@ -154,6 +154,11 @@ export class ViewScenarioComponent {
       .subscribe();
   }
 
+  isScenarioDashboardEnabled()
+  {
+    return this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS');
+  }
+
   private startPolling() {
     return interval(POLLING_INTERVAL).pipe(
       tap(() => {
