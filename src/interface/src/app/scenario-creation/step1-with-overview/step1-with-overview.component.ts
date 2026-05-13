@@ -18,8 +18,6 @@ import {
 } from '@scenario/scenario.constants';
 import { STAND_SIZE } from '@plan/plan-helpers';
 import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
-import { FeatureService } from '@features/feature.service';
-import { NgIf } from '@angular/common';
 
 type Step1WithOverviewForm = FormGroup<{
   stand_size: FormControl<STAND_SIZE | null>;
@@ -34,7 +32,6 @@ type Step1WithOverviewForm = FormGroup<{
     ProcessOverviewComponent,
     StandSizeSelectorComponent,
     PlanningApproachComponent,
-    NgIf,
   ],
   templateUrl: './step1-with-overview.component.html',
   styleUrl: './step1-with-overview.component.scss',
@@ -45,7 +42,10 @@ type Step1WithOverviewForm = FormGroup<{
 export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfiguration> {
   readonly form: Step1WithOverviewForm = new FormGroup({
     stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
-    planning_approach: new FormControl<PLANNING_APPROACH | null>(null),
+    planning_approach: new FormControl<PLANNING_APPROACH | null>(
+      null,
+      Validators.required
+    ),
   });
 
   @Input() isCustomScenario = false;
@@ -56,32 +56,12 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
       : SCENARIO_OVERVIEW_STEPS;
   }
 
-  constructor(private featureService: FeatureService) {
+  constructor() {
     super();
-    this.configureConditionalValidators();
   }
 
   getData() {
     const { stand_size, planning_approach } = this.form.value;
-    return this.isPlanningApproachEnabled
-      ? { stand_size, planning_approach }
-      : { stand_size };
-  }
-
-  get isPlanningApproachEnabled() {
-    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
-  }
-
-  /**
-   * This method can be removed completely once the 'PLANNING_APPROACH' feature is fully implemented.
-   */
-  private configureConditionalValidators(): void {
-    const { planning_approach } = this.form.controls;
-    if (this.isPlanningApproachEnabled) {
-      planning_approach.addValidators(Validators.required);
-    } else {
-      planning_approach.clearValidators();
-    }
-    planning_approach.updateValueAndValidity({ emitEvent: false });
+    return { stand_size, planning_approach };
   }
 }

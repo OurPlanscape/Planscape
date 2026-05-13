@@ -13,8 +13,7 @@
             ' acres)'
         }}
       </dd>
-      <ng-container
-        *ngIf="isPlanningApproachEnabled && scenario.planning_approach">
+      <ng-container *ngIf="scenario.planning_approach">
         <dt>Planning Approach:</dt>
         <dd>
           {{ planningApproachLabels[scenario.planning_approach] }}
