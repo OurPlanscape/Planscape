@@ -26,7 +26,7 @@ export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
           planId,
           'project-area',
           id,
-          'projdashboard',
+          'dashboard',
         ]);
         return rediroute;
       }

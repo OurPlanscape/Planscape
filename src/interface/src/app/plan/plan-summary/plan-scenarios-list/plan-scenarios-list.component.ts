@@ -192,7 +192,7 @@ export class PlanScenariosListComponent implements OnInit {
     ) {
       if (clickedScenario.origin === 'USER') {
         this.router.navigate(
-          ['scenario', clickedScenario.id, 'projdashboard'],
+          ['project-area', clickedScenario.id, 'dashboard'],
           {
             relativeTo: this.route,
           }
