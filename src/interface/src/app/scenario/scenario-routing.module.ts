@@ -8,6 +8,7 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
 import { ScenarioDashboardComponent } from './scenario-dashboard/scenario-dashboard.component';
 import { createFeatureGuard } from '@app/features/feature.guard';
 import { ProjectAreaDashboardComponent } from '@app/scenario/project-area-dashboard/project-area-dashboard.component';
+import { scenarioTypeRedirectGuard } from '@app/services/scenario-type.guard';
 
 const routes: Routes = [
   {
@@ -23,7 +24,10 @@ const routes: Routes = [
     component: ScenarioDashboardComponent,
     title: 'Scenario Dashboard',
     canDeactivate: [canDeactivateGuard],
-    canActivate: [createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' })],
+    canActivate: [
+      createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' }),
+      scenarioTypeRedirectGuard,
+    ],
     resolve: {
       scenarioId: scenarioLoaderResolver,
       dataLayerInit: resetDatalayerResolver,
@@ -34,7 +38,10 @@ const routes: Routes = [
     component: ProjectAreaDashboardComponent,
     title: 'Project Area Dashboard',
     canDeactivate: [canDeactivateGuard],
-    canActivate: [createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' })],
+    canActivate: [
+      createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' }),
+      scenarioTypeRedirectGuard,
+    ],
     resolve: {
       scenarioId: scenarioLoaderResolver,
       dataLayerInit: resetDatalayerResolver,
