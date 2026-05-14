@@ -702,6 +702,20 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
 
+    # Expensive validations below
+    try:
+        available_stand_ids = get_available_stand_ids(
+            scenario=scenario,
+            stand_size=stand_size or StandSizeChoices.LARGE,
+            excludes=excluded_areas,
+        )
+        available_count = len(available_stand_ids)
+    except Exception as exc:
+        errors.append(f"Failed to compute available stands: {exc}")
+    else:
+        if available_count == 0:
+            errors.append("No stands are available with the current configuration.")
+
     # Scenario checks by its `type`
     if scenario.type == ScenarioType.PRESET:
         if not scenario.treatment_goal:
@@ -778,27 +792,10 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         if max_project_count is None:
             errors.append("Configuration field `max_project_count` is required.")
 
-        else:
-            # Expensive validations below
-            try:
-                available_stand_ids = get_available_stand_ids(
-                    scenario=scenario,
-                    stand_size=stand_size,
-                    excludes=excluded_areas,
-                )
-                available_count = len(available_stand_ids)
-            except Exception as exc:
-                errors.append(f"Failed to compute available stands: {exc}")
-                return errors
-
-            if available_count == 0:
-                errors.append("No stands are available with the current configuration.")
-                return errors
-
-            if max_project_count > available_count:
-                errors.append(
-                    f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
-                )
+        elif max_project_count > available_count:
+            errors.append(
+                f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
+            )
 
     return errors
 
