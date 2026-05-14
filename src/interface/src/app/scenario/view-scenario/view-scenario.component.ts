@@ -154,8 +154,7 @@ export class ViewScenarioComponent {
       .subscribe();
   }
 
-  isScenarioDashboardEnabled()
-  {
+  isScenarioDashboardEnabled() {
     return this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS');
   }
 
