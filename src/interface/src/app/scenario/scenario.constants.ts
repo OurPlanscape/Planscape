@@ -100,15 +100,6 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     hasMap: true,
   },
   {
-    label: 'Include Areas',
-    description: 'Include and exclude specific areas based on your plan.',
-    icon: '/assets/svg/icons/overview/co-benefits.svg',
-    includeConstraints: false,
-    includeExcludedAreas: false,
-    refreshAvailableStands: true,
-    hasMap: true,
-  },
-  {
     label: 'Exclude Areas',
     description: 'Include and exclude specific areas based on your plan.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',

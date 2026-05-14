@@ -22,14 +22,21 @@
     </ng-container>
 
     <dt>Source</dt>
+
     <dd>
-      <a
-        *ngIf="getSource() as source; else noSource"
-        [href]="source.url"
-        target="_blank">
-        {{ source.name }}
-      </a>
-      <ng-template #noSource>--</ng-template>
+      <div
+        *ngIf="getRichSource() as richSource; else normalSource"
+        [innerHTML]="richSource"></div>
+
+      <ng-template #normalSource>
+        <a
+          *ngIf="getSourceDownload() as source; else noSource"
+          [href]="source.url"
+          target="_blank">
+          {{ source.name }}
+        </a>
+        <ng-template #noSource>--</ng-template>
+      </ng-template>
     </dd>
 
     <ng-container *ngIf="showAllData">

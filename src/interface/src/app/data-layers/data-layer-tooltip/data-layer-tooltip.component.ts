@@ -54,7 +54,13 @@ export class DataLayerTooltipComponent implements OnInit {
     );
   }
 
-  getSource() {
+  // html `source` field: takes precedence over download
+  getRichSource() {
+    return this.layer.metadata?.['metadata']?.['distribution']?.['source'];
+  }
+
+  // download link (no rich text, just shows button)
+  getSourceDownload() {
     return this.layer.metadata?.['metadata']?.['distribution']?.['download'];
   }
 
