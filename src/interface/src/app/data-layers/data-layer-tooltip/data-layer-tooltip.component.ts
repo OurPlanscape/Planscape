@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { DataLayer } from '@types';
+import { BaseLayer, DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
 import { DataLayersService } from '@services/data-layers.service';
 import { Observable, shareReplay, take } from 'rxjs';
@@ -26,7 +26,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   styleUrl: './data-layer-tooltip.component.scss',
 })
 export class DataLayerTooltipComponent implements OnInit {
-  @Input() layer!: DataLayer;
+  @Input() layer!: DataLayer | BaseLayer;
+  @Input() showAllData = true;
 
   downloadLink$: Observable<string> | null = null;
   loadingLink = false;

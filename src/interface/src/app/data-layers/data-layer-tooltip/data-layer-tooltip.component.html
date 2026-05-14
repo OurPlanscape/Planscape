@@ -1,23 +1,25 @@
 <h3 class="header">Layer info</h3>
 <div class="content">
   <dl>
-    <dt>Layer Name</dt>
-    <dd>{{ layer.name || '--' }}</dd>
+    <ng-container *ngIf="showAllData">
+      <dt>Layer Name</dt>
+      <dd>{{ layer.name || '--' }}</dd>
 
-    <dt>Value Range</dt>
-    <dd>
-      @if (hasMinMax()) {
-        {{ this.layer.info.stats[0].min | number: '1.0-0' }} -
-        {{ this.layer.info.stats[0].max | number: '1.0-0' }}
-      } @else {
-        --
-      }
-    </dd>
+      <dt>Value Range</dt>
+      <dd>
+        @if (hasMinMax()) {
+          {{ this.layer.info.stats[0].min | number: '1.0-0' }} -
+          {{ this.layer.info.stats[0].max | number: '1.0-0' }}
+        } @else {
+          --
+        }
+      </dd>
 
-    <dt>Units</dt>
-    <dd>
-      {{ getUnits() }}
-    </dd>
+      <dt>Units</dt>
+      <dd>
+        {{ getUnits() }}
+      </dd>
+    </ng-container>
 
     <dt>Source</dt>
     <dd>
@@ -30,13 +32,15 @@
       <ng-template #noSource>--</ng-template>
     </dd>
 
-    <dt>Vintage</dt>
-    <dd>
-      {{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}
-    </dd>
+    <ng-container *ngIf="showAllData">
+      <dt>Vintage</dt>
+      <dd>
+        {{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}
+      </dd>
+    </ng-container>
   </dl>
 </div>
-<div class="footer">
+<div class="footer" *ngIf="showAllData">
   <button
     class="download-link"
     *ngIf="loadingLink"
