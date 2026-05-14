@@ -148,6 +148,7 @@ const routes: Routes = [
           import('@scenario/scenario.module').then((m) => m.ScenarioModule),
       },
       {
+        // effectively an alias to /plan/:planId/scenario
         path: 'plan/:planId/project-area',
         resolve: { planId: planLoaderResolver },
         loadChildren: () =>

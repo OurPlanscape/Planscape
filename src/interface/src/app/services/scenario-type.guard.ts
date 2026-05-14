@@ -21,25 +21,24 @@ export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
       const planId = route.paramMap.get('planId') || scenario.planning_area;
 
       if (isProjectArea(scenario) && !isOnProjectRoute) {
-        const rediroute = router.createUrlTree([
+        return router.createUrlTree([
           'plan',
           planId,
           'project-area',
           id,
           'dashboard',
         ]);
-        return rediroute;
       }
       if (!isProjectArea(scenario) && isOnProjectRoute) {
-        const rediroute = router.createUrlTree([
+        return router.createUrlTree([
           'plan',
           planId,
           'scenario',
           id,
           'dashboard',
         ]);
-        return rediroute;
       }
+      // just proceed - no need to change anything
       return true;
     }),
     catchError(() => {
