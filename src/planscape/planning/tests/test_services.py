@@ -1055,7 +1055,8 @@ class ValidateScenarioConfigurationTest(TestCase):
             metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
         )
 
-    def test_missing_stand_size(self):
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3])
+    def test_missing_stand_size(self, get_available_stand_ids_mock):
         self.scenario.configuration = {
             "targets": {"max_area": 500, "max_project_count": 2}
         }
@@ -1090,40 +1091,39 @@ class ValidateScenarioConfigurationTest(TestCase):
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Configuration field `max_project_count` is required.", errors)
 
-    def test_zero_available_stands(self):
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[])
+    def test_zero_available_stands(self, get_available_stand_ids_mock):
         # Mocking that available_stands is zero
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 2},
             "excluded_areas_ids": [],
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[]):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertIn(
-                "No stands are available with the current configuration.", errors
-            )
+        
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn(
+            "No stands are available with the current configuration.", errors
+        )
+        get_available_stand_ids_mock.assert_called_once()
 
-    def test_insufficient_available_stands(self):
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2])
+    def test_insufficient_available_stands(self, get_available_stand_ids_mock):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 99},
         }
-        with mock.patch(
-            "planning.services.get_available_stand_ids", return_value=[1, 2]
-        ):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertIn("Not enough stands are available", " ".join(errors))
-
-    def test_valid_configuration(self):
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Not enough stands are available", " ".join(errors))
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_valid_configuration(self, get_available_stand_ids_mock):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
         }
-        with mock.patch(
-            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-        ):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertEqual(errors, [])
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertEqual(errors, [])
 
     def test_missing_treatment_goal(self):
         self.scenario.treatment_goal = None
@@ -1142,7 +1142,10 @@ class ValidateScenarioConfigurationTest(TestCase):
             errors,
         )
 
-    def test_valid_configuration_with_priorities(self):
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_valid_configuration_with_priorities(self, get_available_stand_ids):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
@@ -1150,11 +1153,8 @@ class ValidateScenarioConfigurationTest(TestCase):
             }
         self.scenario.type = ScenarioType.CUSTOM
         self.scenario.save()
-        with mock.patch(
-            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-        ):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertEqual(errors, [])
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertEqual(errors, [])
 
     def test_missing_sub_units_layer(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1210,7 +1210,10 @@ class ValidateScenarioConfigurationTest(TestCase):
             errors,
         )
 
-    def test_sub_units_target_value_expected_percentage(self):
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_sub_units_target_value_expected_percentage(self, get_available_stand_ids_mock):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
@@ -1253,7 +1256,12 @@ class ValidateScenarioConfigurationTest(TestCase):
         "planning.services.get_sub_units_details",
         return_value={"avg": 1000, "max": 1500, "min": 500},
     )
-    def test_sub_units_target_value_expected_acreage(self, mock_sub_units_details):
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_sub_units_target_value_expected_acreage(
+        self, mock_sub_units_details, get_available_stand_ids_mock
+    ):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
