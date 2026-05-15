@@ -198,6 +198,8 @@ class CreateDatasetSerializer(serializers.ModelSerializer[Dataset]):
             "visibility",
             "version",
             "modules",
+            "selection_type",
+            "preferred_display_type",
         )
 
 
@@ -217,6 +219,8 @@ class UpdateDatasetSerializer(serializers.ModelSerializer[Dataset]):
             "visibility",
             "version",
             "modules",
+            "selection_type",
+            "preferred_display_type",
         )
 
 
