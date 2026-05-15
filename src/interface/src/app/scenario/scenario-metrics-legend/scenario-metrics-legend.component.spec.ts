@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioResult } from '@types';
 import { ScenarioMetricsLegendComponent } from './scenario-metrics-legend.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MockProvider } from 'ng-mocks';
+import { FeatureService } from '@features/feature.service';
 
 describe('ScenarioMetricsLegendComponent', () => {
   let component: ScenarioMetricsLegendComponent;
@@ -32,6 +34,7 @@ describe('ScenarioMetricsLegendComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, ScenarioMetricsLegendComponent],
+      providers: [MockProvider(FeatureService)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioMetricsLegendComponent);

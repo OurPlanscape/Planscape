@@ -3,11 +3,8 @@ import shutil
 import subprocess
 
 from datetime import datetime
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType, Dataset, Style, Category
-from planning.models import TreatmentGoal
-from organizations.models import Organization
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from datasets.tasks import datalayer_uploaded
-from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -162,49 +159,6 @@ class Command(BaseCommand):
                     f"/tmp/{filename}",
                 ]
             )
-            
-            with transaction.atomic():
-                qs = TreatmentGoal.objects.filter(updated_at__gte=last_restore_date)
-                while qs.exists():
-                    ids = qs.values_list("pk", flat=True)[:10]
-                    count = TreatmentGoal.objects.filter(pk__in=ids).delete()
-                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
-
-            with transaction.atomic():
-                qs = Category.objects.filter(updated_at__gte=last_restore_date)
-                while qs.exists():
-                    ids = qs.values_list("pk", flat=True)[:10]
-                    count = Category.objects.filter(pk__in=ids).delete()
-                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
-
-            with transaction.atomic():
-                qs = Style.objects.filter(updated_at__gte=last_restore_date)
-                while qs.exists():
-                    ids = qs.values_list("pk", flat=True)[:10]
-                    count = Style.objects.filter(pk__in=ids).delete()
-                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Style(s) created after last restore.")
-
-            with transaction.atomic():
-                qs = DataLayer.objects.filter(updated_at__gte=last_restore_date)
-                while qs.exists():
-                    ids = qs.values_list("pk", flat=True)[:10]
-                    count = DataLayer.objects.filter(pk__in=ids).delete()
-                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
-
-            with transaction.atomic():
-                qs = Dataset.objects.filter(updated_at__gte=last_restore_date)
-                while qs.exists():
-                    ids = qs.values_list("pk", flat=True)[:10]
-                    count = Dataset.objects.filter(pk__in=ids).delete()
-                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Dataset(s) created after last restore.")
-
-            with transaction.atomic():
-                qs = Organization.objects.filter(updated_at__gte=last_restore_date)
-                while qs.exists():
-                    ids = qs.values_list("pk", flat=True)[:10]
-                    count = Organization.objects.filter(pk__in=ids).delete()
-                    self.stdout.write(f"Deleted {count[1]} entry(ies) related to Organization(s) created after last restore.")
-
             # Load data to DB
             self.stdout.write(f"Loading data from `/tmp/{filename}`")
             call_command(

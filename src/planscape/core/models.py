@@ -43,6 +43,7 @@ class DeletedAtMixin(models.Model):
         """
         hard_delete = kwargs.get("hard_delete", False)
         if hard_delete:
+            kwargs.pop("hard_delete")
             return super().delete(*args, **kwargs)
         else:
             try:

@@ -59,8 +59,20 @@ class DataLayerModelTest(TestCase):
         deleted_datalayer = DataLayerFactory.create(name="Deleted Layer")
 
         self.assertEqual(DataLayer.objects.all().count(), 4)
+        self.assertEqual(DataLayer.dead_or_alive.all().count(), 4)
 
         deleted_datalayer.delete()
 
         self.assertEqual(DataLayer.objects.all().count(), 3)
+        self.assertEqual(DataLayer.dead_or_alive.all().count(), 4)
 
+    def test_hard_delete(self):
+        datalayer = DataLayerFactory.create()
+
+        self.assertEqual(DataLayer.objects.all().count(), 4)
+        self.assertEqual(DataLayer.dead_or_alive.all().count(), 4)
+
+        datalayer.delete(hard_delete=True)
+
+        self.assertEqual(DataLayer.objects.all().count(), 3)
+        self.assertEqual(DataLayer.dead_or_alive.all().count(), 3)
