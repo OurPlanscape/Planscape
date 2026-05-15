@@ -267,6 +267,10 @@ class TreatmentGoalGroup(models.TextChoices):
         "Risk-Based Strategic Planning",
     )
     TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
+    WEST_MONO_BASIN_RESILIENCE = (
+        "WEST_MONO_BASIN_RESILIENCE",
+        "West Mono Basin Resilience",
+    )
     WILDFIRE_RISK_TO_COMMUTIES = (
         "WILDFIRE_RISK_TO_COMMUTIES",
         "Wildfire Risk to Communities",
