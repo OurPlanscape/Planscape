@@ -10,10 +10,10 @@ import {
   TooltipItem,
 } from 'chart.js';
 import {
+  chartTooltipBaseConfig,
   getChartBorderDash,
   getChartFontConfig,
   getDarkGridConfig,
-  chartTooltipBaseConfig,
 } from '@app/chart-helper';
 import { ChartComponent } from '@styleguide';
 import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
@@ -64,7 +64,6 @@ export class CumulativeAttainmentChartComponent implements OnInit {
       },
       y: {
         beginAtZero: true,
-        min: -10,
         title: {
           display: false,
         },
@@ -87,6 +86,8 @@ export class CumulativeAttainmentChartComponent implements OnInit {
     plugins: {
       tooltip: {
         ...chartTooltipBaseConfig(),
+        // dont show the tooltip on the 0,0 entry
+        filter: (item) => item.dataIndex !== 0,
         callbacks: {
           title: () => '',
           label: (context: TooltipItem<'line'>) => context.dataset.label ?? '',
@@ -112,10 +113,11 @@ export class CumulativeAttainmentChartComponent implements OnInit {
 
   ngOnInit(): void {
     const d = processCumulativeAttainment(this.scenarioResult.result.features);
-    this.allData.labels = d.area.map((data) => Math.round(data));
+    this.allData.labels = [0, ...d.area.map((data) => Math.round(data))];
     this.allData.datasets = d.datasets.map((data) => {
       return {
         ...data,
+        data: [0, ...data.data],
         ...this.colorForLabel(data.label),
         pointRadius: 0, // Hides the circles
       };
