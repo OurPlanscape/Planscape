@@ -1130,48 +1130,49 @@ def export_scenario_stand_outputs_to_geopackage(
                 properties[pcp_field] = stand_inputs.get(stand_id, {}).get(pcp_field)
             scenario_outputs[stand_id] = properties
 
-    features = []
-    for stand_id, properties in scenario_outputs.items():
-        geometry = properties.pop("WKT", None)
-        if geometry:
-            feature = {
-                "geometry": geometry,
-                "properties": properties,
-            }
-            features.append(feature)
-        else:
-            logger.warning(
-                "Stand %s in scenario %s has no geometry. Skipping.",
-                stand_id,
-                scenario.pk,
+    if scenario_outputs:
+        features = []
+        for stand_id, properties in scenario_outputs.items():
+            geometry = properties.pop("WKT", None)
+            if geometry:
+                feature = {
+                    "geometry": geometry,
+                    "properties": properties,
+                }
+                features.append(feature)
+            else:
+                logger.warning(
+                    "Stand %s in scenario %s has no geometry. Skipping.",
+                    stand_id,
+                    scenario.pk,
+                )
+
+        properties = features[0].get("properties", {})
+        field_type_pairs = list(map(map_property_for_numeric_export, properties.items()))
+        schema = {
+            "geometry": "MultiPolygon",
+            "properties": field_type_pairs,
+        }
+
+        crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+        try:
+            with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+                with fiona.open(
+                    geopackage_path,
+                    "w",
+                    layer="stand_outputs",
+                    crs=crs,
+                    driver="GPKG",
+                    schema=schema,
+                    allow_unsupported_drivers=True,
+                ) as out:
+                    for feature in features:
+                        out.write(feature)
+        except Exception as e:
+            logger.exception(
+                "Error exporting scenario %s outputs to geopackage: %s", scenario.pk, e
             )
-
-    properties = features[0].get("properties", {})
-    field_type_pairs = list(map(map_property_for_numeric_export, properties.items()))
-    schema = {
-        "geometry": "MultiPolygon",
-        "properties": field_type_pairs,
-    }
-
-    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
-    try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
-            with fiona.open(
-                geopackage_path,
-                "w",
-                layer="stand_outputs",
-                crs=crs,
-                driver="GPKG",
-                schema=schema,
-                allow_unsupported_drivers=True,
-            ) as out:
-                for feature in features:
-                    out.write(feature)
-    except Exception as e:
-        logger.exception(
-            "Error exporting scenario %s outputs to geopackage: %s", scenario.pk, e
-        )
-        raise e
+            raise e
 
 
 def export_scenario_inputs_to_geopackage(
@@ -1231,40 +1232,41 @@ def export_scenario_inputs_to_geopackage(
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_inputs[stand_id] = properties
 
-    stand_id = next(iter(scenario_inputs))
-    feature = scenario_inputs[stand_id].copy()
-    feature.pop("WKT", None)  # Remove WKT if present
-    field_type_pairs = list(map(map_property_for_numeric_export, feature.items()))
-    schema = {
-        "geometry": "MultiPolygon",
-        "properties": field_type_pairs,
-    }
-    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
-    try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
-            with fiona.open(
-                geopackage_path,
-                "w",
-                layer="stand_inputs",
-                crs=crs,
-                driver="GPKG",
-                schema=schema,
-                allow_unsupported_drivers=True,
-            ) as out:
-                for stand_id, feature in scenario_inputs.items():
-                    copyed_feature = feature.copy()
-                    geometry = copyed_feature.pop("WKT", None)
-                    copyed_feature = {
-                        "properties": copyed_feature,
-                        "geometry": geometry,
-                    }
-                    out.write(copyed_feature)
+    if scenario_inputs:
+        stand_id = next(iter(scenario_inputs))
+        feature = scenario_inputs[stand_id].copy()
+        feature.pop("WKT", None)  # Remove WKT if present
+        field_type_pairs = list(map(map_property_for_numeric_export, feature.items()))
+        schema = {
+            "geometry": "MultiPolygon",
+            "properties": field_type_pairs,
+        }
+        crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+        try:
+            with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+                with fiona.open(
+                    geopackage_path,
+                    "w",
+                    layer="stand_inputs",
+                    crs=crs,
+                    driver="GPKG",
+                    schema=schema,
+                    allow_unsupported_drivers=True,
+                ) as out:
+                    for stand_id, feature in scenario_inputs.items():
+                        copyed_feature = feature.copy()
+                        geometry = copyed_feature.pop("WKT", None)
+                        copyed_feature = {
+                            "properties": copyed_feature,
+                            "geometry": geometry,
+                        }
+                        out.write(copyed_feature)
 
-    except Exception as e:
-        logger.exception(
-            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
-        )
-        raise e
+        except Exception as e:
+            logger.exception(
+                "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+            )
+            raise e
     return scenario_inputs
 
 

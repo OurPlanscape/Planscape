@@ -727,6 +727,37 @@ class TestExportToGeopackage(TestCase):
             feature = next(iter(src))
             self.assertIsNone(feature["properties"]["area_acres"])
 
+    def test_export_stand_outputs_to_geopackage_no_stands_input(self):
+        rows = [
+            [
+                "stand_id",
+                "proj_id",
+                "DoTreat",
+                "selected",
+                "ETrt_YR",
+                "area_acres",
+                f"datalayer_{self.datalayers[0].pk}",
+                "weightedPriority",
+                "Pr_1_priority",
+            ]
+        ]
+        with open(self.preset_scenario_outputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(rows)
+
+        stand_inputs = export_scenario_inputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+        )
+        stand_inputs = export_scenario_stand_outputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+            stand_inputs,
+        )
+
+        layers = fiona.listlayers(self.preset_scenario_output_path)
+        self.assertNotIn("stand_outputs", layers)
+
     def tearDown(self) -> None:
         self.preset_scenario_output_path.unlink(missing_ok=True)
         self.custom_scenario_output_path.unlink(missing_ok=True)
