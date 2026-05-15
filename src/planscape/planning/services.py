@@ -1122,9 +1122,12 @@ def export_scenario_stand_outputs_to_geopackage(
             geometry = stand_inputs.get(stand_id, {}).get("WKT")
             properties["WKT"] = geometry
             properties["stand_size"] = stand_size
-            pcp_fields = [key for key in stand_inputs.get(stand_id, {}) if key.lower().endswith("_pcp")]
-            for pcp_field in pcp_fields:
-                properties[pcp_field] = stand_inputs.get(stand_id, {}).get(pcp_field)
+            fields_from_inputs = [
+                key for key in stand_inputs.get(stand_id, {}) 
+                if key.lower().endswith("_pcp") or key.lower().endswith("_weighting")
+            ]
+            for inputed_field in fields_from_inputs:
+                properties[inputed_field] = stand_inputs.get(stand_id, {}).get(inputed_field)
             scenario_outputs[stand_id] = properties
 
     if scenario_outputs:
@@ -1175,6 +1178,27 @@ def export_scenario_stand_outputs_to_geopackage(
 def export_scenario_inputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> Dict[int, Dict]:
+    configuration = scenario.configuration
+    tx_goal = scenario.treatment_goal
+    if tx_goal:
+        weighted_datalayers = []
+        for usage in tx_goal.datalayer_usages.filter(usage_type=TreatmentGoalUsageType.PRIORITY):
+            item = {
+                "datalayer": usage.datalayer.id,
+                "name": usage.datalayer.name,
+                "weight": usage.weight,
+            }
+            weighted_datalayers.append(item)
+    else:
+        if configuration.get("priorities"):
+            weighted_datalayers = configuration.get("priorities")
+        else:
+            weighted_datalayers = [{"datalayer": p, "weight": 1} for p in configuration.get("priority_objectives") or []]
+
+        for wd in weighted_datalayers:
+            datalayer = DataLayer.objects.get(pk=wd.get("datalayer"))
+            wd["name"] = datalayer.name
+
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
     scenario_inputs = dict()
@@ -1226,6 +1250,9 @@ def export_scenario_inputs_to_geopackage(
                         prop_key = sanitize_shp_field_name(prop_key)
                         properties[prop_key] = f
             properties["stand_size"] = stand_size
+            for wd in weighted_datalayers:
+                wd_key = sanitize_shp_field_name(f"{wd.get('name')}_weighting")
+                properties[wd_key] = float(wd.get("weight")) # type: ignore
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_inputs[stand_id] = properties
 
