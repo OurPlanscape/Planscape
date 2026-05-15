@@ -62,6 +62,8 @@ class WorkspaceDatasetSerializer(serializers.ModelSerializer):
             "visibility",
             "version",
             "modules",
+            "selection_type",
+            "preferred_display_type",
         ]
 
 
