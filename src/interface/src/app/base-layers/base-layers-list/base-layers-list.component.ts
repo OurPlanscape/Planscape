@@ -22,6 +22,9 @@ import { DataLayersService } from '@services';
 import { catchError, map, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
+import { ButtonComponent } from '@styleguide';
+import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-base-layers-list',
@@ -33,6 +36,9 @@ import { MAP_MODULE_NAME } from '@services/map-module.token';
     MatRadioModule,
     MatCheckboxModule,
     MatProgressSpinnerModule,
+    ButtonComponent,
+    DataLayerTooltipComponent,
+    MatMenuModule,
   ],
   templateUrl: './base-layers-list.component.html',
   styleUrl: './base-layers-list.component.scss',
