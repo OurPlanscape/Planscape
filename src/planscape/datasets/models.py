@@ -61,9 +61,11 @@ class DatasetQuerySet(models.QuerySet):
     def by_outline_intersects(self, geometry: GEOSGeometry) -> models.QuerySet:
         return self.all().filter(datalayers__outline__intersects=geometry)
 
+
 class DatasetManager(models.Manager):
     def get_queryset(self):
         return DatasetQuerySet(self.model, using=self._db).filter(deleted_at=None)
+
 
 class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
@@ -503,7 +505,7 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_public_url(self) -> Optional[str]:
         if not self.url:
             return None
-        
+
         if feature_enabled("INTERNAL_RASTER_PROXY"):
             base_url = get_base_url(settings.ENV)
             path_url = self.url.split("/datalayers/")[-1]
