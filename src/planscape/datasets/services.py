@@ -146,6 +146,8 @@ def create_dataset(
     description: Optional[str] = None,
     visibility: VisibilityOptions = VisibilityOptions.PUBLIC,
     version: Optional[str] = None,
+    selection_type: Optional[str] = None,
+    preferred_display_type: Optional[str] = None,
     **kwargs,
 ) -> Dataset:
     dataset = Dataset.objects.create(
@@ -156,6 +158,8 @@ def create_dataset(
         description=description,
         visibility=visibility,
         version=version,
+        selection_type=selection_type,
+        preferred_display_type=preferred_display_type,
     )
     invalidate_model(Dataset)
     track_openpanel(
