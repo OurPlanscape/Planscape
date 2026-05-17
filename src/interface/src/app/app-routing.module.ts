@@ -19,6 +19,8 @@ import {
   planResetResolver,
 } from '@resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
+import { numberResolver } from './resolvers/number.resolver';
+import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
 
 const routes: Routes = [
   {
@@ -148,15 +150,23 @@ const routes: Routes = [
       },
       {
         path: 'plan/:planId/scenario/:scenarioId/treatment',
+        pathMatch: 'full',
         canActivate: [AuthGuard],
         resolve: {
           planInit: planLoaderResolver,
           scenarioInit: scenarioLoaderResolver,
         },
-        loadChildren: () =>
-          import('@treatments/treatments.module').then(
-            (m) => m.TreatmentsModule
-          ),
+        component: TreatmentEffectsHomeComponent, 
+      },
+      {
+        path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
+        canActivate: [AuthGuard],
+        resolve: {
+          planInit: planLoaderResolver,
+          treatmentId: numberResolver('treatmentId', ''),
+          scenarioInit: scenarioLoaderResolver,
+        },
+        loadChildren: () => import('@treatments/treatments.module').then((m) => m.TreatmentsModule),
       },
       {
         path: 'account',
@@ -192,4 +202,4 @@ export class PlanscapeTitleStrategy extends TitleStrategy {
     },
   ],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }
