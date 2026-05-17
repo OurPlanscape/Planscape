@@ -35,3 +35,9 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'Run Scenario' }).click();
   await page.getByRole('button', { name: 'Close' }).click();
 });
+
+
+/// TODO: test various validations
+// test various behaviors, like adding/removing tags
+// test that map elements appear and can be removed
+//...
