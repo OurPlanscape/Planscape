@@ -1,0 +1,37 @@
+import { test, expect } from '@playwright/test';
+
+test('test', async ({ page }) => {
+  await page.getByRole('button', { name: 'New Scenario' }).click();
+  await page.getByRole('menuitem', { name: 'Choose Treatment Goal Start' }).click();
+  await page.getByRole('textbox').fill('Treatment Goal Test');
+  await page.getByText('Cancel Get Started').click();
+  await page.getByRole('button', { name: 'Get Started' }).click();
+  await page.getByText('Optimize Project Areas Would').click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+  await page.getByText('Stand size is required').click();
+  await page.getByRole('combobox', { name: 'Stand Size' }).locator('span').click();
+  await page.getByRole('option', { name: 'Medium (100 acres)' }).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+  await page.getByText('Prioritize Areas with High Expected Tree Volume Loss from Wildfire').click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+  await page.getByRole('button').nth(3).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+  await page.getByRole('spinbutton', { name: 'Max Slope' }).click();
+  await page.getByRole('spinbutton', { name: 'Max Slope' }).fill('10');
+  await page.getByRole('spinbutton', { name: 'Max Slope' }).press('Tab');
+  await page.getByRole('textbox', { name: 'Max Distance From Roads' }).fill('10');
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+  await page.getByRole('textbox', { name: 'Min:' }).click();
+  await page.getByRole('textbox', { name: 'Min:' }).fill('1001');
+  await page.locator('#mat-input-5').click();
+  await page.locator('#mat-input-5').fill('84');
+  await page.getByRole('button', { name: 'Save & Run Scenario' }).click();
+  await page.getByRole('button', { name: 'Save & Run Scenario' }).click();
+  await page.locator('#mat-input-5').click();
+  await page.locator('#mat-input-5').press('ArrowRight');
+  await page.locator('#mat-input-5').press('ArrowRight');
+  await page.locator('#mat-input-5').fill('8');
+  await page.getByRole('button', { name: 'Save & Run Scenario' }).click();
+  await page.getByRole('button', { name: 'Run Scenario' }).click();
+  await page.getByRole('button', { name: 'Close' }).click();
+});
