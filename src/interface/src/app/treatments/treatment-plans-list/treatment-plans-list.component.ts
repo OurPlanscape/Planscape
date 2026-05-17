@@ -88,10 +88,10 @@ export class TreatmentPlansListComponent {
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
   goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
-    const route = ['treatment', treatment.id];
+    const route = ['.', treatment.id];
 
     if (status === 'SUCCESS') {
       route.push('impacts');
@@ -206,7 +206,9 @@ export class TreatmentPlansListComponent {
       .pipe(take(1))
       .subscribe((args) => {
         if (args) {
-          this.createTreatmentPlan(args);
+          this.createTreatmentPlan({
+            name: args.treatmentName,
+          });
         }
       });
   }
