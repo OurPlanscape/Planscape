@@ -36,7 +36,7 @@ export class TreatmentEffectsHomeComponent {
   ) {
     this.breadcrumbService.updateBreadCrumb({
       label: 'Scenario Dashboard ',
-      backUrl: '../..',
+      backUrl: '../dashboard',
     });
   }
 
