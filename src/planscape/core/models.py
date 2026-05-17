@@ -43,6 +43,7 @@ class DeletedAtMixin(models.Model):
         """
         hard_delete = kwargs.get("hard_delete", False)
         if hard_delete:
+            kwargs.pop("hard_delete")
             return super().delete(*args, **kwargs)
         else:
             try:
@@ -63,3 +64,35 @@ class UUIDMixin(models.Model):
 
     class Meta(TypedModelMeta):
         abstract = True
+
+
+class RestoreBackTrackStatus(models.TextChoices):
+    RUNNING = "RUNNING", "Running"
+    SUCCESS = "SUCCESS", "Success"
+    FAILED = "FAILED", "Failed"
+
+
+class RestoreBackTrack(models.Model):
+    file_name = models.CharField(
+        max_length=255, help_text="Restore file name."
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=RestoreBackTrackStatus.choices,
+        default=RestoreBackTrackStatus.RUNNING,
+        help_text="Status of Back Track.",
+    )
+
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "file_name",
+                    "started_at",
+                ],
+                name="unique_backtrack_execution",
+            )
+        ]

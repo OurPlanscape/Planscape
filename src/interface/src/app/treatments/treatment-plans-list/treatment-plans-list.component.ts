@@ -98,11 +98,13 @@ export class TreatmentPlansListComponent {
       this.breadcrumbService.updateBreadCrumb({
         label: 'Direct Treatment Impacts: ' + treatment.name,
         backUrl: this.router.url,
+        blackText: true,
       });
     } else {
       this.breadcrumbService.updateBreadCrumb({
         label: 'Treatment Plan: ' + treatment.name,
         backUrl: this.router.url,
+        blackText: true,
         icon: 'close',
       });
     }

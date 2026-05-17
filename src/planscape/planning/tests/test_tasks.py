@@ -215,6 +215,7 @@ class AsyncPreForsysProcessTest(TestCase):
         configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "priority_objectives": [priority.id],
+            "priorities": [],
             "cobenefits": [cobenefit.id],
         }
         scenario = ScenarioFactory.create(
@@ -238,6 +239,46 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(
             {datalayer["usage_type"] for datalayer in datalayers},
             {"PRIORITY", "SECONDARY_METRIC"},
+        )
+        self.assertEqual(
+            {datalayer.get("weight") for datalayer in datalayers},
+            {1, None}
+        )
+
+    def test_async_pre_forsys_process_custom_scenario_with_weight(self):
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
+        configuration = {
+            "stand_size": StandSizeChoices.LARGE,
+            "priority_objectives": [],
+            "priorities": [{"datalayer": priority.id, "weight": 2}],
+            "cobenefits": [cobenefit.id],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration=configuration,
+        )
+
+        async_pre_forsys_process(scenario.pk)
+
+        scenario.refresh_from_db()
+        self.assertIsNotNone(scenario.forsys_input)
+
+        datalayers = scenario.forsys_input["datalayers"]
+        self.assertEqual(len(datalayers), 2)
+        self.assertEqual(
+            {datalayer["id"] for datalayer in datalayers},
+            {priority.id, cobenefit.id},
+        )
+        self.assertEqual(
+            {datalayer["usage_type"] for datalayer in datalayers},
+            {"PRIORITY", "SECONDARY_METRIC"},
+        )
+        self.assertEqual(
+            {datalayer.get("weight") for datalayer in datalayers},
+            {2, None}
         )
 
     @override_settings(FEATURE_FLAGS=["PLANNING_APPROACH"])
@@ -315,6 +356,33 @@ class PrepareScenariosForForsysTest(TestCase):
             type=ScenarioType.CUSTOM,
             configuration={
                 "priority_objectives": [priority.id],
+                "cobenefits": [cobenefit.id],
+            },
+        )
+
+        prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        mock_chord.assert_called_once()
+
+    @mock.patch("planning.tasks.group")
+    @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_custom_uses_config_datalayers_with_weight_priority(
+        self, mock_chord, mock_group
+    ):
+        mock_group.side_effect = lambda tasks: tasks
+        mock_chord.return_value = mock.Mock(
+            on_error=mock.Mock(), apply_async=mock.Mock()
+        )
+        mock_chord.return_value.on_error.return_value = mock_chord.return_value
+
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "priorities": [{"datalayer": priority.id, "weight": 1}],
                 "cobenefits": [cobenefit.id],
             },
         )

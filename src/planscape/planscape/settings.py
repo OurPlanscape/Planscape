@@ -429,6 +429,9 @@ CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
+    "planning.tasks.send_weekly_new_users_report": {
+        "queue": "default",
+    },
     "planning.tasks.*": {
         "queue": "forsys",
     },
@@ -480,6 +483,9 @@ CRONJOBS = [
 
 REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_EMAIL)
 
+WEEKLY_NEW_USERS_REPORT_ENABLED = config(
+    "WEEKLY_NEW_USERS_REPORT_ENABLED", default=False, cast=bool
+)
 
 AREA_SRID = 5070
 # Global hex grid origin (EPSG:5070) used to align ALL dynamic stands
@@ -597,4 +603,8 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = config(
 
 RETURNING_USER_THRESHOLD_DAYS = config(
     "RETURNING_USER_THRESHOLD_DAYS", default=30, cast=int
+)
+
+DELETE_ENTRIES_AFTER_LAST_RESTORE = config(
+    "DELETE_ENTRIES_AFTER_LAST_RESTORE", default=False, cast=bool
 )

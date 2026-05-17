@@ -3,19 +3,86 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.db import connection
 from django.test import TestCase, override_settings
 from organizations.tests.factories import OrganizationFactory
 
-from datasets.models import Category, DataLayer, DataLayerStatus, DataLayerType
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    Dataset,
+    GeometryType,
+    PreferredDisplayType,
+    SelectionTypeOptions,
+    VisibilityOptions,
+)
 from datasets.services import (
+    create_dataset,
     create_datalayer,
     create_upload_url_for_org,
     find_anything,
     get_bucket_url,
     get_object_name,
     get_storage_url,
+    get_table_mask,
 )
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
+from workspaces.tests.factories import WorkspaceFactory
+
+
+class TestCreateDataset(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory.create()
+        self.user = self.organization.created_by
+        self.workspace = WorkspaceFactory.create()
+
+    def _create(self, **kwargs):
+        return create_dataset(
+            name="Test Dataset",
+            organization=self.organization,
+            workspace=self.workspace,
+            created_by=self.user,
+            **kwargs,
+        )
+
+    def test_creates_dataset(self):
+        dataset = self._create()
+        self.assertIsInstance(dataset, Dataset)
+        self.assertEqual(Dataset.objects.filter(pk=dataset.pk).count(), 1)
+
+    def test_persists_name_and_organization(self):
+        dataset = self._create()
+        self.assertEqual(dataset.name, "Test Dataset")
+        self.assertEqual(dataset.organization, self.organization)
+        self.assertEqual(dataset.created_by, self.user)
+
+    def test_persists_selection_type(self):
+        dataset = self._create(selection_type=SelectionTypeOptions.SINGLE)
+        dataset.refresh_from_db()
+        self.assertEqual(dataset.selection_type, SelectionTypeOptions.SINGLE)
+
+    def test_persists_preferred_display_type(self):
+        dataset = self._create(
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+        )
+        dataset.refresh_from_db()
+        self.assertEqual(
+            dataset.preferred_display_type, PreferredDisplayType.MAIN_DATALAYERS
+        )
+
+    def test_selection_type_defaults_to_none(self):
+        dataset = self._create()
+        self.assertIsNone(dataset.selection_type)
+
+    def test_preferred_display_type_defaults_to_none(self):
+        dataset = self._create()
+        self.assertIsNone(dataset.preferred_display_type)
+
+    def test_default_visibility_is_public(self):
+        dataset = self._create()
+        self.assertEqual(dataset.visibility, VisibilityOptions.PUBLIC)
 
 
 class TestGetObjectName(TestCase):
@@ -161,6 +228,91 @@ class TestCreateDataLayer(TestCase):
                 original_name="foo.tif",
             )
             self.assertEqual(0, DataLayer.objects.all().count())
+
+
+class TestGetTableMask(TestCase):
+    def create_datastore_table(self, geometry_type, geometries):
+        table_name = f"test_table_mask_{uuid4().hex}"
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""
+                CREATE TABLE datastore.{table_name} (
+                    id serial PRIMARY KEY,
+                    geometry geometry({geometry_type}, 4269)
+                );
+                """
+            )
+            for geometry in geometries:
+                cursor.execute(
+                    f"""
+                    INSERT INTO datastore.{table_name} (geometry)
+                    VALUES (ST_GeomFromText(%s, 4269));
+                    """,
+                    [geometry],
+                )
+        self.addCleanup(self.drop_datastore_table, table_name)
+        return f"datastore.{table_name}"
+
+    def drop_datastore_table(self, table_name):
+        with connection.cursor() as cursor:
+            cursor.execute(f"DROP TABLE IF EXISTS datastore.{table_name};")
+
+    def test_get_table_mask_returns_envelope_union_for_polygon_layer(self):
+        table = self.create_datastore_table(
+            "Polygon",
+            [
+                "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
+                "POLYGON ((2 2, 3 2, 3 3, 2 3, 2 2))",
+            ],
+        )
+        datalayer = DataLayerFactory(
+            table=table,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+
+        result = get_table_mask(datalayer)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.geom_type, "MultiPolygon")
+
+    def test_get_table_mask_returns_convex_hull_for_point_layer(self):
+        table = self.create_datastore_table(
+            "Point",
+            [
+                "POINT (0 0)",
+                "POINT (1 0)",
+                "POINT (0 1)",
+            ],
+        )
+        datalayer = DataLayerFactory(
+            table=table,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POINT,
+        )
+
+        result = get_table_mask(datalayer)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.geom_type, "MultiPolygon")
+
+    def test_get_table_mask_returns_none_for_non_polygonal_point_hull(self):
+        table = self.create_datastore_table(
+            "Point",
+            [
+                "POINT (0 0)",
+                "POINT (1 1)",
+            ],
+        )
+        datalayer = DataLayerFactory(
+            table=table,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POINT,
+        )
+
+        result = get_table_mask(datalayer)
+
+        self.assertIsNone(result)
 
 
 class TestSearch(TestCase):

@@ -6,14 +6,15 @@
       [class.current]="isStepCurrent(i)"
       [class.future]="getStepState(i) === 'future'"
       [class.clickable]="isStepClickable(i)"
-      (click)="onStepClick(i)">
+      (click)="onStepClick(i)"
+      [title]="step.label">
       <div class="step-indicator">
         <div class="step-circle">
           <mat-icon
             *ngIf="isStepCompleted(i) && !isStepCurrent(i)"
             class="checkmark"
-            >check</mat-icon
-          >
+            >check
+          </mat-icon>
           <span
             *ngIf="!isStepCompleted(i) || isStepCurrent(i)"
             class="step-number"

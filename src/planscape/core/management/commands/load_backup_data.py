@@ -2,12 +2,15 @@ import os
 import shutil
 import subprocess
 
+from datetime import datetime
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from datasets.tasks import datalayer_uploaded
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from core.mattermost import post_to_mattermost
+
+from core.models import RestoreBackTrack, RestoreBackTrackStatus
 
 
 class Command(BaseCommand):
@@ -108,7 +111,25 @@ class Command(BaseCommand):
                 "!!  Error: Backup file and source env does not match. !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
-
+        
+        try:
+            last_restore = RestoreBackTrack.objects.filter(status=RestoreBackTrackStatus.SUCCESS).order_by("-started_at").first()
+            last_restore_date = last_restore.started_at
+            self.stdout.write(f"Last restored happend on {last_restore_date}. Records created after that will be deleted.")
+        except Exception:
+            raise SystemError(
+                "\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                "!!  Error: Could not find the last successful restore !!\n"
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+            )
+        
+        
+        now = datetime.now()
+        current_run = RestoreBackTrack.objects.create(
+            started_at=now,
+            file_name=filename
+        )
         try:
             # Sync buckets
             subprocess.call(
@@ -138,7 +159,6 @@ class Command(BaseCommand):
                     f"/tmp/{filename}",
                 ]
             )
-
             # Load data to DB
             self.stdout.write(f"Loading data from `/tmp/{filename}`")
             call_command(
@@ -165,8 +185,14 @@ class Command(BaseCommand):
             post_to_mattermost(
                 f"planscape-{settings.ENV} :white_check_mark: Catalog data restore completed successfully"
             )
+            current_run.finished_at = datetime.now()
+            current_run.status = RestoreBackTrackStatus.SUCCESS
+            current_run.save()
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
             post_to_mattermost(
                 f"planscape-{settings.ENV} :x: Catalog data restore failed: {e}"
             )
+            current_run.finished_at = datetime.now()
+            current_run.status = RestoreBackTrackStatus.FAILED
+            current_run.save()

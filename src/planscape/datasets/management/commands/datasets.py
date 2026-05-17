@@ -13,6 +13,7 @@ class Command(PlanscapeCommand):
         list_parser = subp.add_parser("list")
         create_parser = subp.add_parser("create")
         create_parser.add_argument("name", type=str)
+        create_parser.add_argument("workspace_id", type=int)
         create_parser.add_argument(
             "-p",
             "--public",
@@ -41,6 +42,7 @@ class Command(PlanscapeCommand):
     def create(
         self,
         name: str,
+        workspace_id: int,
         public: bool,
         org: int,
         version: Optional[str],
@@ -54,6 +56,7 @@ class Command(PlanscapeCommand):
             "visibility": "PUBLIC" if public else "PRIVATE",
             "version": version,
             "organization": org,
+            "workspace_id": workspace_id,
         }
         response = requests.post(
             url,

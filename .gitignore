@@ -190,5 +190,11 @@ compiled-static/
 planscape.sock
 .ruff_cache
 
+# Claude Code per-user settings (project-level shared settings.json stays tracked)
+.claude/settings.local.json
+
+# Celery beat runtime state
+src/planscape/celerybeat-schedule.db
+
 # R files used to convert to Python
 R/

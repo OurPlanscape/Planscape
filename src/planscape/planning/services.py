@@ -244,7 +244,8 @@ def create_config(
     constraints: List[Dict[str, Any]],
     included_areas: DataLayerList,
     excluded_areas: DataLayerList,
-    priorities: DataLayerList,
+    priority_objectives: DataLayerList,
+    priorities: List[Dict[str, Any]],
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
     planning_approach: Optional[ScenarioPlanningApproach] = None,
@@ -258,7 +259,14 @@ def create_config(
     config["constraints"] = [{**c, "datalayer": c["datalayer"].pk} for c in constraints]
     config["included_areas_ids"] = [area.pk for area in included_areas]
     config["excluded_areas_ids"] = [area.pk for area in excluded_areas]
-    config["priority_objectives"] = [priority.pk for priority in priorities]
+
+    if priorities:
+        config["priority_objectives"] = [p["datalayer"].pk for p in priorities]
+        config["priorities"] = [{**p, "datalayer": p["datalayer"].pk} for p in priorities]
+    else:
+        # TODO: priority_objectives to be replaced by priorities
+        config["priority_objectives"] = [priority.pk for priority in priority_objectives]
+        config["priorities"] = [{"weight": 1, "datalayer": priority.pk} for priority in priority_objectives]
     config["cobenefits"] = [benefit.pk for benefit in cobenefits]
     if seed is not None:
         config["seed"] = seed
@@ -549,7 +557,12 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
-    priority_objectives = cfg.get("priority_objectives") or []
+    if cfg.get("priorities"):
+        priorities = cfg.get("priorities") or []
+        priority_objectives = [priority.get("datalayer") for priority in priorities]
+    else:
+        priority_objectives = cfg.get("priority_objectives") or []
+        priorities = [{"datalayer": p, "weight": 1} for p in priority_objectives]
     cobenefits = cfg.get("cobenefits") or []
     sub_units_layer_id = cfg.get("sub_units_layer")
     custom_datalayer_ids = set([*priority_objectives, *cobenefits])
@@ -584,24 +597,19 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
             }
         )
 
-    # custom scenario datalayers
-    # TODO: support weights for custom scenario priorities/cobenefits (currently defaults to 1.0)
-    if priority_objectives:
-        priority_objectives = DataLayer.objects.filter(pk__in=priority_objectives)
-        datalayers.extend(
-            [
-                {
-                    "id": priority.id,
-                    "name": priority.name,
-                    "metric": get_datalayer_metric(priority),
-                    "type": priority.type,
-                    "geometry_type": priority.geometry_type,
-                    "threshold": custom_thresholds.get(priority.id),
-                    "usage_type": TreatmentGoalUsageType.PRIORITY,
-                    "weight": 1,
-                }
-                for priority in priority_objectives
-            ]
+    for priority in priorities:
+        datalayer = DataLayer.objects.get(pk=priority.get("datalayer"))
+        datalayers.append(
+            {
+                "id": datalayer.id,
+                "name": datalayer.name,
+                "metric": get_datalayer_metric(datalayer),
+                "type": datalayer.type,
+                "geometry_type": datalayer.geometry_type,
+                "threshold": custom_thresholds.get(datalayer.id),
+                "usage_type": TreatmentGoalUsageType.PRIORITY,
+                "weight": priority.get("weight"),
+            }
         )
 
     if cobenefits:
@@ -694,15 +702,29 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
 
+    # Expensive validations below
+    try:
+        available_stand_ids = get_available_stand_ids(
+            scenario=scenario,
+            stand_size=stand_size or StandSizeChoices.LARGE,
+            excludes=excluded_areas,
+        )
+        available_count = len(available_stand_ids)
+    except Exception as exc:
+        errors.append(f"Failed to compute available stands: {exc}")
+    else:
+        if available_count == 0:
+            errors.append("No stands are available with the current configuration.")
+
     # Scenario checks by its `type`
     if scenario.type == ScenarioType.PRESET:
         if not scenario.treatment_goal:
             errors.append("Scenario has no Treatment Goal assigned.")
 
     else:  # Scenario.type == ScenarioType.CUSTOM
-        if not cfg.get("priority_objectives"):
+        if not cfg.get("priority_objectives") and not cfg.get("priorities"):
             errors.append(
-                "Configuration field `priority_objectives` is required for Custom Scenarios."
+                "Configuration field `priority_objectives` or `priorities` is required for Custom Scenarios."
             )
 
     # Scenario checks by its `planning_apporach`
@@ -770,27 +792,10 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         if max_project_count is None:
             errors.append("Configuration field `max_project_count` is required.")
 
-        else:
-            # Expensive validations below
-            try:
-                available_stand_ids = get_available_stand_ids(
-                    scenario=scenario,
-                    stand_size=stand_size,
-                    excludes=excluded_areas,
-                )
-                available_count = len(available_stand_ids)
-            except Exception as exc:
-                errors.append(f"Failed to compute available stands: {exc}")
-                return errors
-
-            if available_count == 0:
-                errors.append("No stands are available with the current configuration.")
-                return errors
-
-            if max_project_count > available_count:
-                errors.append(
-                    f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
-                )
+        elif max_project_count > available_count:
+            errors.append(
+                f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
+            )
 
     return errors
 
@@ -1117,58 +1122,83 @@ def export_scenario_stand_outputs_to_geopackage(
             geometry = stand_inputs.get(stand_id, {}).get("WKT")
             properties["WKT"] = geometry
             properties["stand_size"] = stand_size
-            pcp_fields = [key for key in stand_inputs.get(stand_id, {}) if key.lower().endswith("_pcp")]
-            for pcp_field in pcp_fields:
-                properties[pcp_field] = stand_inputs.get(stand_id, {}).get(pcp_field)
+            fields_from_inputs = [
+                key for key in stand_inputs.get(stand_id, {}) 
+                if key.lower().endswith("_pcp") or key.lower().endswith("_weighting")
+            ]
+            for inputed_field in fields_from_inputs:
+                properties[inputed_field] = stand_inputs.get(stand_id, {}).get(inputed_field)
             scenario_outputs[stand_id] = properties
 
-    features = []
-    for stand_id, properties in scenario_outputs.items():
-        geometry = properties.pop("WKT", None)
-        if geometry:
-            feature = {
-                "geometry": geometry,
-                "properties": properties,
-            }
-            features.append(feature)
-        else:
-            logger.warning(
-                "Stand %s in scenario %s has no geometry. Skipping.",
-                stand_id,
-                scenario.pk,
+    if scenario_outputs:
+        features = []
+        for stand_id, properties in scenario_outputs.items():
+            geometry = properties.pop("WKT", None)
+            if geometry:
+                feature = {
+                    "geometry": geometry,
+                    "properties": properties,
+                }
+                features.append(feature)
+            else:
+                logger.warning(
+                    "Stand %s in scenario %s has no geometry. Skipping.",
+                    stand_id,
+                    scenario.pk,
+                )
+
+        properties = features[0].get("properties", {})
+        field_type_pairs = list(map(map_property_for_numeric_export, properties.items()))
+        schema = {
+            "geometry": "MultiPolygon",
+            "properties": field_type_pairs,
+        }
+
+        crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+        try:
+            with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+                with fiona.open(
+                    geopackage_path,
+                    "w",
+                    layer="stand_outputs",
+                    crs=crs,
+                    driver="GPKG",
+                    schema=schema,
+                    allow_unsupported_drivers=True,
+                ) as out:
+                    for feature in features:
+                        out.write(feature)
+        except Exception as e:
+            logger.exception(
+                "Error exporting scenario %s outputs to geopackage: %s", scenario.pk, e
             )
-
-    properties = features[0].get("properties", {})
-    field_type_pairs = list(map(map_property_for_numeric_export, properties.items()))
-    schema = {
-        "geometry": "MultiPolygon",
-        "properties": field_type_pairs,
-    }
-
-    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
-    try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
-            with fiona.open(
-                geopackage_path,
-                "w",
-                layer="stand_outputs",
-                crs=crs,
-                driver="GPKG",
-                schema=schema,
-                allow_unsupported_drivers=True,
-            ) as out:
-                for feature in features:
-                    out.write(feature)
-    except Exception as e:
-        logger.exception(
-            "Error exporting scenario %s outputs to geopackage: %s", scenario.pk, e
-        )
-        raise e
+            raise e
 
 
 def export_scenario_inputs_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> Dict[int, Dict]:
+    configuration = scenario.configuration
+    tx_goal = scenario.treatment_goal
+    if tx_goal:
+        weighted_datalayers = []
+        for usage in tx_goal.datalayer_usages.filter(usage_type=TreatmentGoalUsageType.PRIORITY):
+            item = {
+                "datalayer": usage.datalayer.id,
+                "name": usage.datalayer.name,
+                "weight": usage.weight,
+            }
+            weighted_datalayers.append(item)
+    else:
+        if configuration.get("priorities"):
+            weighted_datalayers = configuration.get("priorities")
+        else:
+            weighted_datalayers = [{"datalayer": p, "weight": 1} for p in configuration.get("priority_objectives") or []]
+
+        for wd in weighted_datalayers:
+            datalayer = DataLayer.objects.get(pk=wd.get("datalayer"))
+            wd["name"] = datalayer.name
+
     forsys_folder = scenario.get_forsys_folder()
     inputs_file = forsys_folder / "inputs.csv"
     scenario_inputs = dict()
@@ -1220,43 +1250,47 @@ def export_scenario_inputs_to_geopackage(
                         prop_key = sanitize_shp_field_name(prop_key)
                         properties[prop_key] = f
             properties["stand_size"] = stand_size
+            for wd in weighted_datalayers:
+                wd_key = sanitize_shp_field_name(f"{wd.get('name')}_weighting")
+                properties[wd_key] = float(wd.get("weight")) # type: ignore
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_inputs[stand_id] = properties
 
-    stand_id = next(iter(scenario_inputs))
-    feature = scenario_inputs[stand_id].copy()
-    feature.pop("WKT", None)  # Remove WKT if present
-    field_type_pairs = list(map(map_property_for_numeric_export, feature.items()))
-    schema = {
-        "geometry": "MultiPolygon",
-        "properties": field_type_pairs,
-    }
-    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
-    try:
-        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
-            with fiona.open(
-                geopackage_path,
-                "w",
-                layer="stand_inputs",
-                crs=crs,
-                driver="GPKG",
-                schema=schema,
-                allow_unsupported_drivers=True,
-            ) as out:
-                for stand_id, feature in scenario_inputs.items():
-                    copyed_feature = feature.copy()
-                    geometry = copyed_feature.pop("WKT", None)
-                    copyed_feature = {
-                        "properties": copyed_feature,
-                        "geometry": geometry,
-                    }
-                    out.write(copyed_feature)
+    if scenario_inputs:
+        stand_id = next(iter(scenario_inputs))
+        feature = scenario_inputs[stand_id].copy()
+        feature.pop("WKT", None)  # Remove WKT if present
+        field_type_pairs = list(map(map_property_for_numeric_export, feature.items()))
+        schema = {
+            "geometry": "MultiPolygon",
+            "properties": field_type_pairs,
+        }
+        crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+        try:
+            with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+                with fiona.open(
+                    geopackage_path,
+                    "w",
+                    layer="stand_inputs",
+                    crs=crs,
+                    driver="GPKG",
+                    schema=schema,
+                    allow_unsupported_drivers=True,
+                ) as out:
+                    for stand_id, feature in scenario_inputs.items():
+                        copyed_feature = feature.copy()
+                        geometry = copyed_feature.pop("WKT", None)
+                        copyed_feature = {
+                            "properties": copyed_feature,
+                            "geometry": geometry,
+                        }
+                        out.write(copyed_feature)
 
-    except Exception as e:
-        logger.exception(
-            "Error exporting scenario %s to geopackage: %s", scenario.pk, e
-        )
-        raise e
+        except Exception as e:
+            logger.exception(
+                "Error exporting scenario %s to geopackage: %s", scenario.pk, e
+            )
+            raise e
     return scenario_inputs
 
 

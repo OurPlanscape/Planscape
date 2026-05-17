@@ -13,8 +13,7 @@
             ' acres)'
         }}
       </dd>
-      <ng-container
-        *ngIf="isPlanningApproachEnabled && scenario.planning_approach">
+      <ng-container *ngIf="scenario.planning_approach">
         <dt>Planning Approach:</dt>
         <dd>
           {{ planningApproachLabels[scenario.planning_approach] }}
@@ -43,8 +42,14 @@
           <mat-spinner
             diameter="20"
             *ngIf="(priorityObjectives$ | async) === null"></mat-spinner>
-          {{ priorityObjectives$ | async }}
+          <div *ngFor="let p of priorityObjectives$ | async; let count = count">
+            {{ p.name }}
+            <span *ngIf="weightingFlagOn && count > 1" class="priority-weight">
+              ({{ p.weight }}x)
+            </span>
+          </div>
         </dd>
+
         <dt>Co-Benefits:</dt>
         <dd>
           <mat-spinner

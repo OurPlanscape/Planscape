@@ -742,7 +742,130 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(
             data.get("usage_types"),
             [
-                {"usage_type": "PRIORITY", "datalayer": "Priority Layer"},
+                {
+                    "usage_type": "PRIORITY",
+                    "datalayer": "Priority Layer",
+                    "weight": 1,
+                },
+                {"usage_type": "SECONDARY_METRIC", "datalayer": "Cobenefit Layer"},
+            ],
+        )
+
+    def test_detail_scenario_v3_custom_usage_types_with_weight(self):
+        priority = DataLayerFactory(name="Priority Layer")
+        cobenefit = DataLayerFactory(name="Cobenefit Layer")
+        v3_config = {
+            "targets": {
+                "max_area": 5000.0,
+                "max_project_count": 5,
+                "estimated_cost": 100.0,
+            },
+            "priorities": [{"datalayer": priority.pk, "weight": 1}],
+            "priority_objectives": [priority.pk],
+            "cobenefits": [cobenefit.pk],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            configuration=v3_config,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+        )
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-detail", args=[scenario.pk]),
+            format="json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            data.get("usage_types"),
+            [
+                {
+                    "usage_type": "PRIORITY",
+                    "datalayer": "Priority Layer",
+                    "weight": 1,
+                },
+                {"usage_type": "SECONDARY_METRIC", "datalayer": "Cobenefit Layer"},
+            ],
+        )
+
+    def test_detail_scenario_v3_custom_usage_types_priorities_only(self):
+        priority = DataLayerFactory(name="Priority Layer")
+        cobenefit = DataLayerFactory(name="Cobenefit Layer")
+        v3_config = {
+            "targets": {
+                "max_area": 5000.0,
+                "max_project_count": 5,
+                "estimated_cost": 100.0,
+            },
+            "priorities": [{"datalayer": priority.pk, "weight": 1}],
+            "cobenefits": [cobenefit.pk],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            configuration=v3_config,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+        )
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-detail", args=[scenario.pk]),
+            format="json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            data.get("usage_types"),
+            [
+                {
+                    "usage_type": "PRIORITY",
+                    "datalayer": "Priority Layer",
+                    "weight": 1,
+                },
+                {"usage_type": "SECONDARY_METRIC", "datalayer": "Cobenefit Layer"},
+            ],
+        )
+
+    def test_detail_scenario_v3_custom_usage_types_multiple_weighted_priorities(self):
+        priority_a = DataLayerFactory(name="Priority A")
+        priority_b = DataLayerFactory(name="Priority B")
+        cobenefit = DataLayerFactory(name="Cobenefit Layer")
+        v3_config = {
+            "targets": {
+                "max_area": 5000.0,
+                "max_project_count": 5,
+                "estimated_cost": 100.0,
+            },
+            "priorities": [
+                {"datalayer": priority_a.pk, "weight": 3},
+                {"datalayer": priority_b.pk, "weight": 2},
+            ],
+            "cobenefits": [cobenefit.pk],
+        }
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            configuration=v3_config,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+        )
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-detail", args=[scenario.pk]),
+            format="json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            data.get("usage_types"),
+            [
+                {"usage_type": "PRIORITY", "datalayer": "Priority A", "weight": 3},
+                {"usage_type": "PRIORITY", "datalayer": "Priority B", "weight": 2},
                 {"usage_type": "SECONDARY_METRIC", "datalayer": "Cobenefit Layer"},
             ],
         )

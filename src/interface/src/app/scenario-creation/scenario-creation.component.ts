@@ -62,7 +62,6 @@ import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.co
 import { ScenarioSummaryComponent } from '@scenario-creation/scenario-summary/scenario-summary.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-priority-objectives/custom-priority-objectives.component';
-import { FeatureService } from '@features/feature.service';
 import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
@@ -211,7 +210,6 @@ export class ScenarioCreationComponent implements OnInit {
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private treatmentGoalsService: TreatmentGoalsService,
-    private featureService: FeatureService,
     private mapModuleService: MapModuleService,
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService,
@@ -244,6 +242,7 @@ export class ScenarioCreationComponent implements OnInit {
         this.breadcrumbService.updateBreadCrumb({
           label: `New Scenario: ${scenario.name}`,
           backUrl: getPlanPath(this.planId),
+          blackText: true,
           icon: 'close',
         });
         // Mapping the backend object to the frontend configuration
@@ -388,10 +387,6 @@ export class ScenarioCreationComponent implements OnInit {
     return isCustomScenario(type);
   }
 
-  isPlanningApproachEnabled() {
-    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
-  }
-
   private rebuildNavSteps() {
     const baseSteps = isCustomScenario(this.config.type!)
       ? this.customSteps
@@ -403,7 +398,6 @@ export class ScenarioCreationComponent implements OnInit {
 
   get subUnitsPrioritized() {
     return (
-      this.isPlanningApproachEnabled() &&
       this.config.planning_approach &&
       isPlanningApproachSubUnits(this.config.planning_approach)
     );

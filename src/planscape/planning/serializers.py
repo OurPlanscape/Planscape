@@ -595,6 +595,20 @@ class TargetsSerializer(serializers.Serializer):
 
         return super().validate(attrs)
 
+class WeighedPriorityObjectiveField(serializers.Serializer):
+    datalayer = serializers.IntegerField()
+    weight = serializers.IntegerField()
+
+    def validate_weight(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("Invalid priority objective weight.")
+        
+        return value
+
+
+class UpsertWeighedPriorityObjectiveField(WeighedPriorityObjectiveField):
+    datalayer = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+
 
 class ConfigurationV3Serializer(serializers.Serializer):
     stand_size = serializers.ChoiceField(
@@ -626,6 +640,14 @@ class ConfigurationV3Serializer(serializers.Serializer):
 
     priority_objectives = serializers.ListField(
         child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=1,
+        max_length=2,
+        required=False,
+    )
+
+    priorities = serializers.ListField(
+        child=WeighedPriorityObjectiveField(),
         allow_empty=True,
         min_length=1,
         max_length=2,
@@ -700,8 +722,16 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         allow_empty=True,
         required=False,
     )
+    # TODO: deprecate this field (replaced by priorities)
     priority_objectives = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        allow_empty=True,
+        min_length=1,
+        max_length=2,
+        required=False,
+    )
+    priorities = serializers.ListField(
+        child=UpsertWeighedPriorityObjectiveField(),
         allow_empty=True,
         min_length=1,
         max_length=2,
@@ -972,7 +1002,18 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     def get_usage_types(self, scenario: Scenario) -> List[dict]:
         if scenario.type == ScenarioType.CUSTOM:
             cfg = scenario.configuration or {}
-            priority_ids = cfg.get("priority_objectives") or []
+            priorities = cfg.get("priorities") or []
+            if priorities:
+                priority_entries = [
+                    (p.get("datalayer"), p.get("weight", 1))
+                    for p in priorities
+                    if isinstance(p, dict) and p.get("datalayer") is not None
+                ]
+            else:
+                priority_entries = [
+                    (pid, 1) for pid in (cfg.get("priority_objectives") or [])
+                ]
+            priority_ids = [pid for pid, _ in priority_entries]
             cobenefit_ids = cfg.get("cobenefits") or []
             ids = [*priority_ids, *cobenefit_ids]
             if not ids:
@@ -980,9 +1021,13 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             names = dict(DataLayer.objects.filter(pk__in=ids).values_list("id", "name"))
             return [
                 *(
-                    {"usage_type": TreatmentGoalUsageType.PRIORITY, "datalayer": name}
-                    for name in (names.get(i) for i in priority_ids)
-                    if name
+                    {
+                        "usage_type": TreatmentGoalUsageType.PRIORITY,
+                        "datalayer": names[pid],
+                        "weight": weight,
+                    }
+                    for pid, weight in priority_entries
+                    if names.get(pid)
                 ),
                 *(
                     {

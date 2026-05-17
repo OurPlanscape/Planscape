@@ -1,14 +1,39 @@
+from datasets.models import Dataset, Style
 from rest_framework import serializers
 
-from datasets.models import Dataset, Style
 from workspaces.models import UserAccessWorkspace, Workspace
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
+    counts = serializers.SerializerMethodField()
+
     class Meta:
         model = Workspace
-        fields = ["id", "name", "visibility", "created_at", "updated_at", "deleted_at"]
-        read_only_fields = ["id", "created_at", "updated_at", "deleted_at"]
+        fields = [
+            "id",
+            "name",
+            "visibility",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+            "counts",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "deleted_at", "counts"]
+
+    def get_counts(self, obj):
+        datasets_count = getattr(obj, "datasets_count", None)
+        styles_count = getattr(obj, "styles_count", None)
+        users_count = getattr(obj, "users_count", None)
+
+        return {
+            "datasets": datasets_count
+            if datasets_count is not None
+            else obj.datasets.count(),
+            "styles": styles_count if styles_count is not None else obj.styles.count(),
+            "users": users_count
+            if users_count is not None
+            else obj.user_access.count(),
+        }
 
 
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
@@ -29,7 +54,17 @@ class UpdateWorkspaceSerializer(serializers.ModelSerializer):
 class WorkspaceDatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ["id", "name", "visibility"]
+        fields = [
+            "id",
+            "organization",
+            "workspace_id",
+            "name",
+            "visibility",
+            "version",
+            "modules",
+            "selection_type",
+            "preferred_display_type",
+        ]
 
 
 class WorkspaceStyleSerializer(serializers.ModelSerializer):

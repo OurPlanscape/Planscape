@@ -1,3 +1,8 @@
+from datasets.models import DataLayer, Dataset, Style, Category
+from planning.models import TreatmentGoal
+from organizations.models import Organization
+from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -35,6 +40,28 @@ class Command(BaseCommand):
         output_path = os.path.join(backups_dir, output_filename)
 
         try:
+            with transaction.atomic():
+                User = get_user_model()
+                admin = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+
+                count = TreatmentGoal.objects.exclude(created_by=admin).update(created_by=admin)
+                self.stdout.write(f"Updated {count} TreatmentGoal(s) by setting admin as creator.")
+
+                count = Category.objects.exclude(created_by=admin).update(created_by=admin)
+                self.stdout.write(f"Deleted {count} Category(s) by setting admin as creator.")
+
+                count = Style.objects.exclude(created_by=admin).update(created_by=admin)
+                self.stdout.write(f"Deleted {count} Style(s) by setting admin as creator.")
+
+                count = DataLayer.objects.exclude(created_by=admin).update(created_by=admin)
+                self.stdout.write(f"Deleted {count} DataLayer(s) by setting admin as creator.")
+
+                count = Dataset.objects.exclude(created_by=admin).update(created_by=admin)
+                self.stdout.write(f"Deleted {count} Dataset(s) by setting admin as creator.")
+
+                count = Organization.objects.exclude(created_by=admin).update(created_by=admin)
+                self.stdout.write(f"Deleted {count} Organization(s) by setting admin as creator.")
+
             with open(output_path, "w", encoding="utf-8") as output_file:
                 call_command(
                     "dumpdata",
@@ -43,7 +70,9 @@ class Command(BaseCommand):
                     "datasets.Category",
                     "datasets.Style",
                     "datasets.DataLayer",
+                    "datasets.DataLayerHasStyle",
                     "planning.TreatmentGoal",
+                    "planning.TreatmentGoalUsesDataLayer",
                     "--indent",
                     "4",
                     stdout=output_file,

@@ -39,6 +39,7 @@ from gis.rasters import get_estimated_mask as get_estimated_mask_raster
 from modules.base import get_module
 from organizations.models import Organization
 from planning.models import TreatmentGoalUsageType
+from workspaces.models import Workspace
 
 from planscape.openpanel import track_openpanel
 
@@ -140,19 +141,25 @@ def geometry_from_info(
 def create_dataset(
     name: str,
     organization: Organization,
+    workspace: Workspace,
     created_by: User,
     description: Optional[str] = None,
     visibility: VisibilityOptions = VisibilityOptions.PUBLIC,
     version: Optional[str] = None,
+    selection_type: Optional[str] = None,
+    preferred_display_type: Optional[str] = None,
     **kwargs,
 ) -> Dataset:
     dataset = Dataset.objects.create(
         name=name,
         organization=organization,
+        workspace=workspace,
         created_by=created_by,
         description=description,
         visibility=visibility,
         version=version,
+        selection_type=selection_type,
+        preferred_display_type=preferred_display_type,
     )
     invalidate_model(Dataset)
     track_openpanel(
@@ -566,25 +573,48 @@ def get_datalayer_by_module_atribute(
 
 def get_table_mask(datalayer: DataLayer) -> Optional[GEOSGeometry]:
     """
-    Given a datalayer, returns the UNION of all geometries bounding boxes.
+    Given a datalayer, returns a polygonal mask for all table geometries.
     """
+    geometry_type = datalayer.geometry_type
+    if geometry_type in {None, GeometryType.NO_GEOM}:
+        return None
+
     srid = 4269  # hardcoded as we only import stuff in 4269
     schema, table = datalayer.table.split(".")
     with connection.cursor() as cursor:
-        query = f"""SELECT
-ST_AsText(
-    ST_UnaryUnion(
-        ST_Collect(
-            ST_Envelope(geometry)
+        if geometry_type in {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
+            query = f"""SELECT
+    ST_AsText(
+        ST_UnaryUnion(
+            ST_Collect(
+                ST_Envelope(geometry)
+            )
         )
-    )
-) as geometry
+    ) as geometry
 FROM "{schema}"."{table}"
 WHERE geometry IS NOT NULL;
 """
+        else:
+            # ConvexHull can return POINT or LINESTRING for sparse point/line layers;
+            # only area masks are valid here, and ST_Multi normalizes POLYGON output.
+            query = f"""SELECT
+    ST_AsText(
+        CASE
+            WHEN GeometryType(mask) IN ('POLYGON', 'MULTIPOLYGON')
+                THEN ST_Multi(mask)
+            ELSE NULL
+        END
+    ) as geometry
+FROM (
+    SELECT
+        ST_ConvexHull(ST_Collect(geometry)) AS mask
+    FROM "{schema}"."{table}"
+    WHERE geometry IS NOT NULL
+) masks;
+"""
         cursor.execute(query)
         row = cursor.fetchone()
-        if row:
+        if row and row[0]:
             return GEOSGeometry(row[0], srid=srid)
 
         return None

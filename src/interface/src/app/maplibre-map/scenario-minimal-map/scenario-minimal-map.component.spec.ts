@@ -1,0 +1,67 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { ScenarioMinimalMapComponent } from './scenario-minimal-map.component';
+import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
+import { MapConfigState } from '../map-config.state';
+import { AuthService, ScenarioService } from '@services';
+import { ModuleService } from '@app/services/module.service';
+import { ActivatedRoute } from '@angular/router';
+import { PlanState } from '@plan/plan.state';
+import { Observable, of } from 'rxjs';
+import { Scenario } from '@types';
+import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-name.component';
+import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-layer.component';
+import { MapConfigService } from '../map-config.service';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
+
+describe('ScenarioMapComponent', () => {
+  let component: ScenarioMinimalMapComponent;
+  let fixture: ComponentFixture<ScenarioMinimalMapComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ScenarioMinimalMapComponent],
+      providers: [
+        MockProvider(PlanState, {
+          planningAreaGeometry$: of({} as any),
+        }),
+        MockProvider(ActivatedRoute, {
+          children: [],
+        }),
+        MockProvider(ScenarioService, {
+          getScenario: (): Observable<Scenario> =>
+            of({
+              scenario_result: {
+                result: {
+                  features: [] as any,
+                },
+              },
+            } as Scenario),
+        }),
+        MockProvider(NewScenarioState, {
+          currentStep$: of(null),
+          scenarioConfig$: of({}),
+          selectedSubUnitLayer$: of(null),
+          loading$: of(false),
+        }),
+        MockProviders(
+          MapConfigState,
+          AuthService,
+          MapConfigService,
+          ModuleService
+        ),
+      ],
+      declarations: [
+        MockDeclarations(DataLayerNameComponent, MapDataLayerComponent),
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ScenarioMinimalMapComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

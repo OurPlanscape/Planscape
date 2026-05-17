@@ -7,10 +7,29 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 import { ScenarioState } from '../scenario.state';
 import { PlanState } from '@app/plan/plan.state';
-import { OverlayLoaderComponent, TileButtonComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  OverlayLoaderComponent,
+  SectionComponent,
+  TileButtonComponent,
+} from '@styleguide';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
-import { getPlanPath } from '@app/plan/plan-helpers';
+import {
+  getPlanPath,
+  parseResultsToProjectAreas,
+} from '@app/plan/plan-helpers';
 import { ActivatedRoute } from '@angular/router';
+import { ScenarioDownloadFooterComponent } from '../scenario-download-footer/scenario-download-footer.component';
+import { MatMenuModule } from '@angular/material/menu';
+import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
+import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
+import { ScenarioDashboardFooterComponent } from '../scenario-dashboard-footer/scenario-dashboard-footer.component';
+import { isPlanningApproachSubUnits } from '../scenario-helper';
+import { Scenario } from '@app/types';
+import { ProjectAreasComponent } from '@app/plan/project-areas/project-areas.component';
+import { map } from 'rxjs';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { ScenarioMinimalMapComponent } from '@app/maplibre-map/scenario-minimal-map/scenario-minimal-map.component';
 
 @UntilDestroy()
 @Component({
@@ -24,9 +43,19 @@ import { ActivatedRoute } from '@angular/router';
     DetailsCardComponent,
     TileButtonComponent,
     OverlayLoaderComponent,
+    ScenarioDownloadFooterComponent,
+    ButtonComponent,
+    MatMenuModule,
+    ScenarioConfigOverlayComponent,
+    LegacyScenarioConfigOverlayComponent,
+    ScenarioDashboardFooterComponent,
+    ProjectAreasComponent,
+    SectionComponent,
+    ScenarioMinimalMapComponent,
   ],
   templateUrl: './scenario-dashboard.component.html',
   styleUrl: './scenario-dashboard.component.scss',
+  providers: [NewScenarioState],
 })
 export class ScenarioDashboardComponent implements OnInit {
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -34,6 +63,16 @@ export class ScenarioDashboardComponent implements OnInit {
   loadingPlan$ = this.planState.isPlanLoading$;
   loadingScenario$ = this.scenarioState.isScenarioLoading$;
   planId = this.route.parent?.snapshot.data['planId'];
+  displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
+  projectAreas$ = this.currentScenario$.pipe(
+    map((scenario) => {
+      if (!scenario.scenario_result) {
+        return null;
+      }
+
+      return parseResultsToProjectAreas(scenario.scenario_result);
+    })
+  );
 
   scenarioDashboardTools = [
     {
@@ -66,5 +105,11 @@ export class ScenarioDashboardComponent implements OnInit {
       label: 'Planning Area Overview',
       backUrl: getPlanPath(this.planId),
     });
+  }
+
+  isPlanningApproachSubUnits(scenario: Scenario) {
+    return isPlanningApproachSubUnits(
+      scenario.planning_approach || 'OPTIMIZE_PROJECT_AREAS'
+    );
   }
 }
