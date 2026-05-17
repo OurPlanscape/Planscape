@@ -40,8 +40,8 @@ export class ReviewTreatmentPlanDialogComponent {
     private treatmentsState: TreatmentsState,
     private router: Router,
     private route: ActivatedRoute,
-    private featureService: FeatureService,
-  ) { }
+    private featureService: FeatureService
+  ) {}
 
   projectAreas$: Observable<
     {
@@ -120,7 +120,6 @@ export class ReviewTreatmentPlanDialogComponent {
         this.dialogRef.close();
         if (this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS')) {
           this.router.navigate(['..'], { relativeTo: this.route });
-
         } else {
           this.router.navigate(['../..'], { relativeTo: this.route });
         }
@@ -136,7 +135,6 @@ export class ReviewTreatmentPlanDialogComponent {
           })
           .afterClosed()
           .subscribe((confirm) => {
-
             if (confirm) {
               this.router.navigate(['../../../..'], { relativeTo: this.route });
             }

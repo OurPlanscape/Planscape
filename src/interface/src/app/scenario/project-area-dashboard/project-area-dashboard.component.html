@@ -41,7 +41,8 @@
             [backgroundColor]="tool.backgroundColor ?? ''"
             [title]="tool.title"
             size="lg"
-            [disabled]="!tool.enabled">
+            [disabled]="!tool.enabled"
+            (tileClick)="onToolClick(tool.id)">
           </sg-tile-button>
         </div>
       </sg-details-card>

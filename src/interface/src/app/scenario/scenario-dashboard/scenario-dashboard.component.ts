@@ -99,7 +99,7 @@ export class ScenarioDashboardComponent implements OnInit {
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit(): void {

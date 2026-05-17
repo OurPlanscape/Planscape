@@ -88,7 +88,7 @@ export class TreatmentPlansListComponent {
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog
-  ) { }
+  ) {}
 
   goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
     const route = ['.', treatment.id];

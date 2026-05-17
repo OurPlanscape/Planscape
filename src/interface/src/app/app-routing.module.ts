@@ -156,7 +156,7 @@ const routes: Routes = [
           planInit: planLoaderResolver,
           scenarioInit: scenarioLoaderResolver,
         },
-        component: TreatmentEffectsHomeComponent, 
+        component: TreatmentEffectsHomeComponent,
       },
       {
         path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
@@ -166,7 +166,10 @@ const routes: Routes = [
           treatmentId: numberResolver('treatmentId', ''),
           scenarioInit: scenarioLoaderResolver,
         },
-        loadChildren: () => import('@treatments/treatments.module').then((m) => m.TreatmentsModule),
+        loadChildren: () =>
+          import('@treatments/treatments.module').then(
+            (m) => m.TreatmentsModule
+          ),
       },
       {
         path: 'account',
@@ -202,4 +205,4 @@ export class PlanscapeTitleStrategy extends TitleStrategy {
     },
   ],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

@@ -9,7 +9,7 @@ import { PlanState } from '@app/plan/plan.state';
 import { OverlayLoaderComponent, TileButtonComponent } from '@styleguide';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { getPlanPath } from '@app/plan/plan-helpers';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewerCardComponent } from '@app/plan/map-viewer-card/map-viewer-card.component';
 import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/project-area-coming-soon.component';
 import { ScenarioState } from '../scenario.state';
@@ -41,6 +41,7 @@ export class ProjectAreaDashboardComponent implements OnInit {
 
   dashboardTools = [
     {
+      id: 'treatment-effects',
       backgroundImage: '/assets/svg/treatment-effects.svg',
       backgroundColor: '#dfede6',
       title: 'Treatment Effects',
@@ -61,7 +62,8 @@ export class ProjectAreaDashboardComponent implements OnInit {
     private scenarioState: ScenarioState,
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -69,5 +71,18 @@ export class ProjectAreaDashboardComponent implements OnInit {
       label: 'Planning Area Overview',
       backUrl: getPlanPath(this.planId),
     });
+  }
+
+  onToolClick(toolId: string): void {
+    if (toolId === 'treatment-effects') {
+      const planId = this.route.snapshot.data['planId'];
+      if (planId) {
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Project Area Dashboard',
+          backUrl: `../projdashboard`,
+        });
+        this.router.navigate(['../treatment'], { relativeTo: this.route });
+      }
+    }
   }
 }

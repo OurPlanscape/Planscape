@@ -90,7 +90,7 @@ export class TreatmentsState {
   ]).pipe(
     map(([projectArea, summary, treatmentPlan]) => {
       const path = this.route.snapshot.routeConfig?.path;
-      const navStateObject : BreadCrumb = {
+      const navStateObject: BreadCrumb = {
         label: '',
         backUrl: '',
         icon: 'arrow_back',

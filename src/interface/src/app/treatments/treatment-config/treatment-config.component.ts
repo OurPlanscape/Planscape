@@ -120,7 +120,8 @@ export class TreatmentConfigComponent {
             map((plan) => {
               // if plan is completed redirect to impacts
               if (plan?.status === 'SUCCESS') {
-                this.router.navigate(['impacts'], { relativeTo: this.route });              }
+                this.router.navigate(['impacts'], { relativeTo: this.route });
+              }
             }),
             catchError((error) => {
               this.router.navigate(['/']);
