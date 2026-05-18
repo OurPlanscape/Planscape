@@ -947,7 +947,8 @@ def map_property_for_numeric_export(key_value_pair):
 
 
 def get_schema(
-    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]],
+    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]], 
+    extra_properties: Dict[str, Any] = {}
 ) -> Dict[str, Any]:
     feature = {}
     match geojson:
@@ -958,7 +959,8 @@ def get_schema(
         case list() as features:
             feature = features[0]
 
-    field_type_pairs = list(map(map_property, feature.get("properties", {}).items()))
+    merged_properties = feature.get("properties", {}) | extra_properties 
+    field_type_pairs = list(map(map_property, merged_properties.items()))
     schema = {
         "geometry": feature.get("geometry", {}).get("type", "MultiPolygon")
         or "MultiPolygon",
@@ -1029,6 +1031,14 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
                 new_properties[key] = value
         feature["properties"] = new_properties
     return geojson
+
+
+def get_weighing_from_input(stand_inputs: Dict[int, Dict]):
+    weighting_data = {}
+    if stand_inputs:
+         sample_stand_data = dict(list(stand_inputs.values())[0])
+         weighting_data = {k: v for k, v in sample_stand_data.items() if k.lower().endswith("_weighting")}
+    return weighting_data
 
 
 def export_to_shapefile(scenario: Scenario) -> Path:
@@ -1295,10 +1305,13 @@ def export_scenario_inputs_to_geopackage(
 
 
 def export_scenario_project_areas_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict],
 ) -> None:
     geojson = get_flatten_geojson(scenario)
-    schema = get_schema(geojson)
+
+    weighting_data = get_weighing_from_input(stand_inputs)
+
+    schema = get_schema(geojson, weighting_data)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
@@ -1313,7 +1326,11 @@ def export_scenario_project_areas_outputs_to_geopackage(
             ) as out:
                 for feature in geojson.get("features", []):
                     geometry = to_multi(feature.get("geometry"))
-                    feature = {**feature, "geometry": geometry}
+                    feature["properties"] = {**feature["properties"], **weighting_data}
+                    feature = {
+                        **feature,
+                        "geometry": geometry
+                    }
                     out.write(feature)
     except Exception as e:
         logger.exception(
@@ -1323,7 +1340,7 @@ def export_scenario_project_areas_outputs_to_geopackage(
 
 
 def export_scenario_sub_units_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict],
 ) -> None:
     geojson = get_flatten_geojson(scenario)
 
@@ -1331,7 +1348,10 @@ def export_scenario_sub_units_outputs_to_geopackage(
     schema_geojson = copy.deepcopy(geojson)
     proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
     proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
-    schema = get_schema(schema_geojson)
+
+    weighting_data = get_weighing_from_input(stand_inputs)
+
+    schema = get_schema(schema_geojson, weighting_data)
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
 
@@ -1359,6 +1379,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
                     # rename proj_id to subunit_id on features
                     proj_id = feature["properties"].pop("proj_id")
                     feature["properties"]["subunit_id"] = proj_id
+                    feature["properties"] = {**feature["properties"], **weighting_data}
                     sub_unit = queryset.get(id=proj_id)
                     geometry = sub_unit.geometry.intersection(planning_area.geometry)
                     geom_geojson = json.loads(geometry.geojson)
@@ -1444,9 +1465,9 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
                 scenario.planning_approach
                 == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
             ):
-                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file)
+                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file, stand_inputs)
             else:
-                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file, stand_inputs)
 
             export_scenario_stand_outputs_to_geopackage(
                 scenario, temp_file, stand_inputs

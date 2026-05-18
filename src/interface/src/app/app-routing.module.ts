@@ -21,6 +21,7 @@ import {
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
+import { createFeatureGuard } from './features/feature.guard';
 
 const routes: Routes = [
   {
@@ -124,7 +125,22 @@ const routes: Routes = [
         },
         canActivate: [AuthGuard],
       },
-
+      {
+        path: 'map-viewer/:planId/:scenarioId',
+        title: 'Map Viewer',
+        loadComponent: () =>
+          import('@explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
+        resolve: {
+          planInit: planLoaderResolver,
+          scenarioId: scenarioLoaderResolver,
+        },
+        canActivate: [
+          AuthGuard,
+          createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' }),
+        ],
+      },
       {
         path: 'forsys',
         canActivate: [RedirectGuard],
@@ -149,6 +165,13 @@ const routes: Routes = [
           import('@scenario/scenario.module').then((m) => m.ScenarioModule),
       },
       {
+        // effectively an alias to /plan/:planId/scenario
+        path: 'plan/:planId/project-area',
+        resolve: { planId: planLoaderResolver },
+        loadChildren: () =>
+          import('@scenario/scenario.module').then((m) => m.ScenarioModule),
+      },
+      {
         path: 'plan/:planId/scenario/:scenarioId/treatment',
         pathMatch: 'full',
         canActivate: [AuthGuard],
@@ -159,6 +182,7 @@ const routes: Routes = [
         component: TreatmentEffectsHomeComponent,
       },
       {
+        // follow the route structure of plan, but without nesting modules and components
         path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
         canActivate: [AuthGuard],
         resolve: {

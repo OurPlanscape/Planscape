@@ -48,7 +48,8 @@ class UpdateWorkspaceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Workspace
-        fields = ["name", "visibility"]
+        fields = ["id", "name", "visibility"]
+        read_only_fields = ["id"]
 
 
 class WorkspaceDatasetSerializer(serializers.ModelSerializer):
