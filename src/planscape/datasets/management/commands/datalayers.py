@@ -246,7 +246,7 @@ class Command(PlanscapeCommand):
             type=int,
             default=4,
         )
-        
+
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
         import_parser.set_defaults(func=self.import_from_s3)
