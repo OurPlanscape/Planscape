@@ -1326,9 +1326,9 @@ def export_scenario_project_areas_outputs_to_geopackage(
             ) as out:
                 for feature in geojson.get("features", []):
                     geometry = to_multi(feature.get("geometry"))
+                    feature["properties"] = {**feature["properties"], **weighting_data}
                     feature = {
-                        **feature, 
-                        **weighting_data,
+                        **feature,
                         "geometry": geometry
                     }
                     out.write(feature)
@@ -1379,11 +1379,12 @@ def export_scenario_sub_units_outputs_to_geopackage(
                     # rename proj_id to subunit_id on features
                     proj_id = feature["properties"].pop("proj_id")
                     feature["properties"]["subunit_id"] = proj_id
+                    feature["properties"] = {**feature["properties"], **weighting_data}
                     sub_unit = queryset.get(id=proj_id)
                     geometry = sub_unit.geometry.intersection(planning_area.geometry)
                     geom_geojson = json.loads(geometry.geojson)
                     geometry = to_multi(geom_geojson)
-                    feature = {**feature, **weighting_data, "geometry": geometry}
+                    feature = {**feature, "geometry": geometry}
                     out.write(feature)
     except Exception as e:
         logger.exception(
