@@ -46,6 +46,9 @@ import { DataLayer } from '@types';
 import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '@map/map.constants';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
+import { ActivatedRoute } from '@angular/router';
+import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { ScenarioState } from '@app/scenario/scenario.state';
 
 @UntilDestroy()
 @Component({
@@ -66,6 +69,7 @@ import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
     MapLayerColorLegendComponent,
     MapBoundaryLayerComponent,
     PlanningAreaLayerComponent,
+    MapProjectAreasComponent,
   ],
   providers: [DataLayersStateService],
   templateUrl: './synced-map.component.html',
@@ -79,6 +83,7 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   planId$ = this.planState.currentPlanId$;
+  scenarioId = this.route.snapshot.data['scenarioId'];
 
   /**
    * Observable that indicates whether the user is in 'draw', 'upload', or 'view' modes
@@ -139,6 +144,16 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
     })
   );
 
+  projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => {
+      return scenario.scenario_result?.result?.features.length;
+    })
+  );
+
+  planningApproach$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
+  );
+
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
@@ -149,7 +164,9 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
     private registry: DataLayersRegistryService,
     private planState: PlanState,
     @Inject(MULTIMAP_STORAGE)
-    private readonly multiDataLayerView: boolean
+    private readonly multiDataLayerView: boolean,
+    private route: ActivatedRoute,
+    private scenarioState: ScenarioState
   ) {
     this.mapConfigState.mapInteractionMode$
       .pipe(untilDestroyed(this))

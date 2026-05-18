@@ -155,11 +155,6 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   ngOnDestroy() {
     this.close();
   }
-
-  get isPlanningApproachEnabled() {
-    return this.featureService.isFeatureEnabled('PLANNING_APPROACH');
-  }
-
   get weightingFlagOn() {
     return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
   }

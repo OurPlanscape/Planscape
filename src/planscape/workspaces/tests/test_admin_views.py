@@ -312,6 +312,8 @@ class TestAdminWorkspaceDatasetsAction(APITestCase):
                 "organization",
                 "visibility",
                 "version",
+                "selection_type",
+                "preferred_display_type",
             },
             set(item.keys()),
         )
