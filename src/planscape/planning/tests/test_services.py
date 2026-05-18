@@ -235,6 +235,32 @@ class GetSchemaTest(TestCase):
         self.assertIn("properties", schema)
         self.assertEqual(5, len(schema["properties"]))
 
+    def test_get_schema_with_extra_features(self):
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "properties": {
+                        "foo": "abc",
+                        "bar": 1,
+                        "baz": 1.2,
+                        "now": datetime.now(),
+                        "today": date.today(),
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                    },
+                }
+            ],
+        }
+        extra_properties = {"another": "propertie"}
+        schema = get_schema(geojson, extra_properties)
+        self.assertIsNotNone(schema)
+        self.assertIn("geometry", schema)
+        self.assertIn("properties", schema)
+        self.assertEqual(6, len(schema["properties"]))
+
 
 class TestSanitizeShpFieldName(TestCase):
     def test_replaces_spaces_with_underscores(self):
@@ -727,6 +753,37 @@ class TestExportToGeopackage(TestCase):
             feature = next(iter(src))
             self.assertIsNone(feature["properties"]["area_acres"])
 
+    def test_export_stand_outputs_to_geopackage_no_stands_input(self):
+        rows = [
+            [
+                "stand_id",
+                "proj_id",
+                "DoTreat",
+                "selected",
+                "ETrt_YR",
+                "area_acres",
+                f"datalayer_{self.datalayers[0].pk}",
+                "weightedPriority",
+                "Pr_1_priority",
+            ]
+        ]
+        with open(self.preset_scenario_outputs_file, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(rows)
+
+        stand_inputs = export_scenario_inputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+        )
+        stand_inputs = export_scenario_stand_outputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+            stand_inputs,
+        )
+
+        layers = fiona.listlayers(self.preset_scenario_output_path)
+        self.assertNotIn("stand_outputs", layers)
+
     def tearDown(self) -> None:
         self.preset_scenario_output_path.unlink(missing_ok=True)
         self.custom_scenario_output_path.unlink(missing_ok=True)
@@ -1024,7 +1081,8 @@ class ValidateScenarioConfigurationTest(TestCase):
             metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
         )
 
-    def test_missing_stand_size(self):
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3])
+    def test_missing_stand_size(self, get_available_stand_ids_mock):
         self.scenario.configuration = {
             "targets": {"max_area": 500, "max_project_count": 2}
         }
@@ -1059,40 +1117,39 @@ class ValidateScenarioConfigurationTest(TestCase):
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Configuration field `max_project_count` is required.", errors)
 
-    def test_zero_available_stands(self):
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[])
+    def test_zero_available_stands(self, get_available_stand_ids_mock):
         # Mocking that available_stands is zero
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 2},
             "excluded_areas_ids": [],
         }
-        with mock.patch("planning.services.get_available_stand_ids", return_value=[]):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertIn(
-                "No stands are available with the current configuration.", errors
-            )
+        
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn(
+            "No stands are available with the current configuration.", errors
+        )
+        get_available_stand_ids_mock.assert_called_once()
 
-    def test_insufficient_available_stands(self):
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2])
+    def test_insufficient_available_stands(self, get_available_stand_ids_mock):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 500, "max_project_count": 99},
         }
-        with mock.patch(
-            "planning.services.get_available_stand_ids", return_value=[1, 2]
-        ):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertIn("Not enough stands are available", " ".join(errors))
-
-    def test_valid_configuration(self):
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertIn("Not enough stands are available", " ".join(errors))
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_valid_configuration(self, get_available_stand_ids_mock):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
         }
-        with mock.patch(
-            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-        ):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertEqual(errors, [])
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertEqual(errors, [])
 
     def test_missing_treatment_goal(self):
         self.scenario.treatment_goal = None
@@ -1111,7 +1168,10 @@ class ValidateScenarioConfigurationTest(TestCase):
             errors,
         )
 
-    def test_valid_configuration_with_priorities(self):
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_valid_configuration_with_priorities(self, get_available_stand_ids):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
@@ -1119,11 +1179,8 @@ class ValidateScenarioConfigurationTest(TestCase):
             }
         self.scenario.type = ScenarioType.CUSTOM
         self.scenario.save()
-        with mock.patch(
-            "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-        ):
-            errors = validate_scenario_configuration(self.scenario)
-            self.assertEqual(errors, [])
+        errors = validate_scenario_configuration(self.scenario)
+        self.assertEqual(errors, [])
 
     def test_missing_sub_units_layer(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1179,7 +1236,10 @@ class ValidateScenarioConfigurationTest(TestCase):
             errors,
         )
 
-    def test_sub_units_target_value_expected_percentage(self):
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_sub_units_target_value_expected_percentage(self, get_available_stand_ids_mock):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
@@ -1222,7 +1282,12 @@ class ValidateScenarioConfigurationTest(TestCase):
         "planning.services.get_sub_units_details",
         return_value={"avg": 1000, "max": 1500, "min": 500},
     )
-    def test_sub_units_target_value_expected_acreage(self, mock_sub_units_details):
+    @mock.patch(
+        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
+    )
+    def test_sub_units_target_value_expected_acreage(
+        self, mock_sub_units_details, get_available_stand_ids_mock
+    ):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,

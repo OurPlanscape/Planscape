@@ -162,6 +162,7 @@ class TreatmentGoalUsesDataLayerFactory(factory.django.DjangoModelFactory):
     datalayer = factory.SubFactory(DataLayerFactory)
     usage_type = TreatmentGoalUsageType.PRIORITY
     threshold = None
+    weight = 1
 
 
 class ScenarioFactory(factory.django.DjangoModelFactory):

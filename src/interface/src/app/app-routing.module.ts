@@ -20,6 +20,7 @@ import {
   planResetResolver,
 } from '@resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
+import { createFeatureGuard } from './features/feature.guard';
 
 const routes: Routes = [
   {
@@ -123,7 +124,22 @@ const routes: Routes = [
         },
         canActivate: [AuthGuard],
       },
-
+      {
+        path: 'map-viewer/:planId/:scenarioId',
+        title: 'Map Viewer',
+        loadComponent: () =>
+          import('@explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
+        resolve: {
+          planInit: planLoaderResolver,
+          scenarioId: scenarioLoaderResolver,
+        },
+        canActivate: [
+          AuthGuard,
+          createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' }),
+        ],
+      },
       {
         path: 'forsys',
         canActivate: [RedirectGuard],

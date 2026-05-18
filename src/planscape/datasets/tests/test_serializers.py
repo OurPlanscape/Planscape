@@ -16,6 +16,7 @@ from datasets.serializers import (
     DataLayerMetadataSerializer,
     DataLayerSerializer,
     DatasetSerializer,
+    UpdateDatasetSerializer,
 )
 from datasets.tests.factories import (
     DataLayerFactory,
@@ -110,6 +111,82 @@ class CreateDatasetSerializerTest(TestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertIn("workspace_id", serializer.errors)
+
+    def test_accepts_valid_selection_type(self):
+        workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(user=self.user, workspace=workspace)
+        payload = {**self._payload(workspace), "selection_type": "MULTIPLE"}
+
+        serializer = CreateDatasetSerializer(
+            data=payload, context={"request": self.request}
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_rejects_invalid_selection_type(self):
+        workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(user=self.user, workspace=workspace)
+        payload = {**self._payload(workspace), "selection_type": "INVALID"}
+
+        serializer = CreateDatasetSerializer(
+            data=payload, context={"request": self.request}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("selection_type", serializer.errors)
+
+    def test_accepts_valid_preferred_display_type(self):
+        workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(user=self.user, workspace=workspace)
+        payload = {
+            **self._payload(workspace),
+            "preferred_display_type": "BASE_DATALAYERS",
+        }
+
+        serializer = CreateDatasetSerializer(
+            data=payload, context={"request": self.request}
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_rejects_invalid_preferred_display_type(self):
+        workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(user=self.user, workspace=workspace)
+        payload = {**self._payload(workspace), "preferred_display_type": "INVALID"}
+
+        serializer = CreateDatasetSerializer(
+            data=payload, context={"request": self.request}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("preferred_display_type", serializer.errors)
+
+
+class UpdateDatasetSerializerTest(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory.create()
+
+    def test_accepts_valid_selection_type(self):
+        serializer = UpdateDatasetSerializer(data={"selection_type": "SINGLE"})
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_rejects_invalid_selection_type(self):
+        serializer = UpdateDatasetSerializer(data={"selection_type": "INVALID"})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("selection_type", serializer.errors)
+
+    def test_accepts_valid_preferred_display_type(self):
+        serializer = UpdateDatasetSerializer(
+            data={"preferred_display_type": "MAIN_DATALAYERS"}
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_rejects_invalid_preferred_display_type(self):
+        serializer = UpdateDatasetSerializer(
+            data={"preferred_display_type": "INVALID"}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("preferred_display_type", serializer.errors)
+
+    def test_fields_are_optional(self):
+        serializer = UpdateDatasetSerializer(data={"name": "My Dataset"})
+        self.assertTrue(serializer.is_valid(), serializer.errors)
 
 
 class DataLayerSerializerTest(TestCase):

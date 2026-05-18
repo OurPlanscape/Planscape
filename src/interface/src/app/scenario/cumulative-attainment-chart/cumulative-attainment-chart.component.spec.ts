@@ -46,7 +46,9 @@ describe('CumulativeAttainmentChartComponent', () => {
   });
 
   it('should process input data and initialize chart data', () => {
-    expect(component.allData.labels.length).toBe(2);
+    // 2 features + the prepended (0,0) starting point
+    expect(component.allData.labels.length).toBe(3);
+    expect(component.allData.labels[0]).toBe(0);
   });
 
   it('should apply correct colors from colorForLabel()', () => {

@@ -8,6 +8,7 @@ import {
 } from '@angular/material/checkbox';
 import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -31,8 +32,16 @@ export class ScenarioMetricsLegendComponent implements OnInit {
 
   priorities: string[] = [];
   cobenefits: string[] = [];
+  priorityWeights: { [name: string]: number } = {};
 
-  constructor(private chartService: ScenarioResultsChartsService) {}
+  constructor(
+    private chartService: ScenarioResultsChartsService,
+    private featureService: FeatureService
+  ) {}
+
+  get weightingFlagOn() {
+    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
+  }
 
   ngOnInit() {
     this.assignedColors = this.chartService.getAssignedColors();
@@ -59,11 +68,16 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   divideMetricsIntoUsageTypes() {
     this.priorities = [];
     this.cobenefits = [];
-    const priorityLayers = this.usageTypes
+    this.priorityWeights = {};
+    const priorityLayers = new Set<string>();
+    this.usageTypes
       ?.filter((ut) => ut.usage_type === 'PRIORITY')
-      .map((m) => m.datalayer);
+      .forEach((ut) => {
+        priorityLayers.add(ut.datalayer);
+        this.priorityWeights[ut.datalayer] = ut.weight ?? 1;
+      });
     this.metrics.forEach((m: string) => {
-      if (priorityLayers?.includes(m)) {
+      if (priorityLayers.has(m)) {
         this.priorities.push(m);
       } else {
         this.cobenefits.push(m);
