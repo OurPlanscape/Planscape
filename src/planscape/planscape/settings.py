@@ -475,7 +475,7 @@ CATALOG_BACKUP_CRON = config("CATALOG_BACKUP_CRON", default=None)
 CATALOG_RESTORE_CRON = config("CATALOG_RESTORE_CRON", default=None)
 FORISK_MILLS_CRON = config("FORISK_MILLS_CRON", default=None)
 FORISK_MILLS_DATASET_NAME = config(
-    "FORISK_MILLS_DATASET_NAME", default="Forisk Mills"
+    "FORISK_MILLS_DATASET_NAME", default="Mills & Other Biomass Facilities"
 )
 FORISK_MILLS_SUB_KEY = config(
     "FORISK_MILLS_SUB_KEY",
