@@ -2,6 +2,10 @@
 @import 'colors';
 @import 'media';
 
+:host {
+        width: 100%;
+}
+
 .card-link {
     text-decoration: none;
     color: black;

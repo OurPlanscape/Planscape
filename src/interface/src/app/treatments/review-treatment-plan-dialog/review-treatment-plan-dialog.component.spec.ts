@@ -7,6 +7,7 @@ import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { MOCK_SUMMARY } from '../mocks';
+import { FEATURES_JSON } from '@app/features/features-config';
 
 describe('ReviewTreatmentPlanDialogComponent', () => {
   let component: ReviewTreatmentPlanDialogComponent;
@@ -16,6 +17,7 @@ describe('ReviewTreatmentPlanDialogComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ReviewTreatmentPlanDialogComponent, RouterTestingModule],
       providers: [
+        { provide: FEATURES_JSON, useValue: { valid: true } },
         { provide: MatDialogRef, useValue: {} },
         MockProvider(TreatmentsState, {
           summary$: of(MOCK_SUMMARY),

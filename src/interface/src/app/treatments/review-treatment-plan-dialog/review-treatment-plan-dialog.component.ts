@@ -13,6 +13,7 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { TreatmentSummary } from '@types';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FeatureService } from '@app/features/feature.service';
 
 @Component({
   selector: 'app-review-treatment-plan-dialog',
@@ -38,7 +39,8 @@ export class ReviewTreatmentPlanDialogComponent {
     private dialog: MatDialog,
     private treatmentsState: TreatmentsState,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private featureService: FeatureService
   ) {}
 
   projectAreas$: Observable<
@@ -116,7 +118,11 @@ export class ReviewTreatmentPlanDialogComponent {
       },
       next: () => {
         this.dialogRef.close();
-        this.router.navigate(['../..'], { relativeTo: this.route });
+        if (this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS')) {
+          this.router.navigate(['..'], { relativeTo: this.route });
+        } else {
+          this.router.navigate(['../..'], { relativeTo: this.route });
+        }
         this.dialog
           .open<PendingDialogComponent, DialogData>(PendingDialogComponent, {
             data: {

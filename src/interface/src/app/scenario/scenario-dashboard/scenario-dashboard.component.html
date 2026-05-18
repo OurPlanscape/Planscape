@@ -33,7 +33,8 @@
             [title]="tool.title"
             size="lg"
             [subtitle]="tool.subtitle"
-            [disabled]="!tool.enabled">
+            [disabled]="!tool.enabled"
+            (tileClick)="onToolClick(tool.id)">
           </sg-tile-button>
         </div>
       </sg-details-card>

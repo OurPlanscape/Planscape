@@ -21,6 +21,7 @@ const routes: Routes = [
           showMapProjectAreas: true,
         },
       },
+
       { path: 'project-area', redirectTo: '', pathMatch: 'full' },
       {
         path: 'project-area/:projectAreaId',
