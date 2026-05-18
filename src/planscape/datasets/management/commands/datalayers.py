@@ -29,11 +29,7 @@ from modules.base import MODULE_HANDLERS
 from requests import Response
 from requests.exceptions import JSONDecodeError
 
-from datasets.models import (
-    DataLayer,
-    DataLayerType,
-    MapServiceChoices,
-)
+from datasets.models import DataLayer, DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
