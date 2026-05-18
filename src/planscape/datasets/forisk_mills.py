@@ -1,11 +1,34 @@
 import json
 import logging
 import ssl
-from pathlib import Path
 from typing import Any, Dict, Optional
+from uuid import uuid4
 
 import requests
+from core.gcs import get_bucket_and_key as get_gcs_bucket_and_key
+from core.gcs import is_gcs_file
+from core.s3 import get_bucket_and_key as get_s3_bucket_and_key
+from core.s3 import get_s3_client, is_s3_file
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from google.cloud import storage
 from requests.adapters import HTTPAdapter
+
+from datasets.models import (
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    Dataset,
+    MapServiceChoices,
+    StorageTypeChoices,
+    VisibilityOptions,
+)
+from datasets.services import geometry_from_info, get_storage_url
+from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
+from gis.io import detect_mimetype
+from organizations.models import Organization
+from workspaces.models import Workspace
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +40,7 @@ FORISK_LAYER_NAMES = {
 FORISK_PROPERTY_RENAMES = {
     "Recycled%": "recycledpercent",
 }
+FORISK_MILLS_MIMETYPE = "application/geo+json"
 
 
 class TLS13Adapter(HTTPAdapter):
@@ -52,7 +76,10 @@ def fetch_forisk_feature_collection(
         timeout=timeout,
     )
     response.raise_for_status()
-    payload = response.json()
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise ValueError("Expected a JSON response from Forisk.") from exc
 
     if payload.get("type") != "FeatureCollection":
         raise ValueError("Expected a GeoJSON FeatureCollection from Forisk.")
@@ -62,13 +89,10 @@ def fetch_forisk_feature_collection(
     return payload
 
 
-def write_forisk_mill_files(
+def split_forisk_mill_collections(
     feature_collection: Dict[str, Any],
-    output_dir: Path,
-) -> Dict[str, Path]:
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_files = {}
+) -> Dict[str, Dict[str, Any]]:
+    collections = {}
     for status, layer_name in FORISK_LAYER_NAMES.items():
         features = []
         for feature in feature_collection["features"]:
@@ -91,28 +115,164 @@ def write_forisk_mill_files(
             **feature_collection,
             "features": features,
         }
-        output_file = output_dir / f"{layer_name.lower().replace(' ', '_')}.geojson"
-        output_file.write_text(json.dumps(status_collection), encoding="utf-8")
-        output_files[layer_name] = output_file
+        collections[layer_name] = status_collection
 
-    return output_files
+    return collections
 
 
-def refresh_forisk_mill_files(
+def fetch_forisk_mill_collections(
     sub_key: str,
     user_key: str,
     api_url: str,
-    output_dir: Path,
     timeout: int = 120,
-) -> Dict[str, Path]:
+) -> Dict[str, Dict[str, Any]]:
     feature_collection = fetch_forisk_feature_collection(
         sub_key=sub_key,
         user_key=user_key,
         api_url=api_url,
         timeout=timeout,
     )
-    output_files = write_forisk_mill_files(
+    return split_forisk_mill_collections(
         feature_collection=feature_collection,
-        output_dir=output_dir,
     )
-    return output_files
+
+
+def get_or_create_forisk_dataset(
+    dataset_name: str,
+    organization_id: int,
+) -> Dataset:
+    user_model = get_user_model()
+    created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+    workspace, _created = Workspace.objects.get_or_create(
+        name="Default",
+        visibility=VisibilityOptions.PUBLIC,
+    )
+    dataset, _created = Dataset.objects.get_or_create(
+        name=dataset_name,
+        organization_id=organization_id,
+        defaults={
+            "created_by": created_by,
+            "workspace": workspace,
+            "visibility": VisibilityOptions.PUBLIC,
+        },
+    )
+    return dataset
+
+
+def upload_geojson_to_storage(
+    storage_url: str,
+    feature_collection: Dict[str, Any],
+) -> None:
+    data = json.dumps(feature_collection)
+    if is_s3_file(storage_url):
+        bucket, object_name = get_s3_bucket_and_key(storage_url)
+        get_s3_client().put_object(
+            Bucket=bucket,
+            Key=object_name,
+            Body=data.encode("utf-8"),
+            ContentType=FORISK_MILLS_MIMETYPE,
+        )
+        return
+
+    if is_gcs_file(storage_url):
+        bucket_name, object_name = get_gcs_bucket_and_key(storage_url)
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(object_name)
+        blob.upload_from_string(data, content_type=FORISK_MILLS_MIMETYPE)
+        return
+
+    raise ValueError(f"Unsupported datalayer storage URL: {storage_url}")
+
+
+def replace_forisk_mill_datalayer(
+    dataset: Dataset,
+    organization: Organization,
+    name: str,
+    feature_collection: Dict[str, Any],
+) -> DataLayer:
+    from datasets.tasks import datalayer_uploaded
+
+    user_model = get_user_model()
+    created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+    original_name = f"{name.lower().replace(' ', '_')}.geojson"
+    uuid = str(uuid4())
+    storage_url = get_storage_url(
+        organization_id=organization.pk,
+        uuid=uuid,
+        original_name=original_name,
+        mimetype=FORISK_MILLS_MIMETYPE,
+    )
+
+    upload_geojson_to_storage(
+        storage_url=storage_url,
+        feature_collection=feature_collection,
+    )
+
+    vsi_input_file = with_vsi_prefix(storage_url)
+    layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
+    mimetype = detect_mimetype(input_file=vsi_input_file) or FORISK_MILLS_MIMETYPE
+    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+
+    DataLayer.objects.filter(dataset=dataset, name=name).update(
+        deleted_at=timezone.now()
+    )
+    storage_type = (
+        StorageTypeChoices.DATABASE
+        if layer_type == DataLayerType.VECTOR
+        else StorageTypeChoices.FILESYSTEM
+    )
+    datalayer = DataLayer.objects.create(
+        name=name,
+        uuid=uuid,
+        dataset=dataset,
+        organization=organization,
+        workspace=dataset.workspace,
+        created_by=created_by,
+        original_name=original_name,
+        url=storage_url,
+        type=layer_type,
+        storage_type=storage_type,
+        geometry_type=geometry_type,
+        geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
+        info=layer_info,
+        mimetype=mimetype,
+        metadata={},
+        map_service_type=MapServiceChoices.VECTORTILES,
+        status=DataLayerStatus.PENDING,
+    )
+
+    datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
+    return datalayer
+
+
+def refresh_forisk_mill_layers(
+    organization_id: int,
+    dataset_name: str,
+    sub_key: str,
+    user_key: str,
+    api_url: str,
+    timeout: int = 120,
+) -> Dict[str, str]:
+    organization = Organization.objects.get(pk=organization_id)
+    dataset = get_or_create_forisk_dataset(
+        dataset_name=dataset_name,
+        organization_id=organization_id,
+    )
+    collections = fetch_forisk_mill_collections(
+        sub_key=sub_key,
+        user_key=user_key,
+        api_url=api_url,
+        timeout=timeout,
+    )
+    refreshed_layers = {}
+    for layer_name, feature_collection in collections.items():
+        logger.info("Refreshing Forisk mill layer %s", layer_name)
+        datalayer = replace_forisk_mill_datalayer(
+            dataset=dataset,
+            organization=organization,
+            name=layer_name,
+            feature_collection=feature_collection,
+        )
+        refreshed_layers[layer_name] = datalayer.url
+    return refreshed_layers

@@ -1,16 +1,13 @@
-import json
-import tempfile
-from pathlib import Path
 from unittest.mock import Mock, patch
 
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase
 
 from datasets.forisk_mills import (
     fetch_forisk_feature_collection,
-    refresh_forisk_mill_files,
-    write_forisk_mill_files,
+    fetch_forisk_mill_collections,
+    replace_forisk_mill_datalayer,
+    split_forisk_mill_collections,
 )
-from datasets.management.commands.datalayers import Command
 
 
 class ForiskMillsTest(SimpleTestCase):
@@ -51,6 +48,21 @@ class ForiskMillsTest(SimpleTestCase):
                 session=session,
             )
 
+    def test_fetch_rejects_non_json_response(self):
+        response = Mock()
+        response.json.side_effect = ValueError("not json")
+        response.raise_for_status.return_value = None
+        session = Mock()
+        session.get.return_value = response
+
+        with self.assertRaisesMessage(ValueError, "Expected a JSON response"):
+            fetch_forisk_feature_collection(
+                sub_key="subkey",
+                user_key="userkey",
+                api_url="https://example.test/forisk",
+                session=session,
+            )
+
     def test_fetch_passes_forisk_credentials(self):
         response = Mock()
         response.json.return_value = self.feature_collection
@@ -69,34 +81,30 @@ class ForiskMillsTest(SimpleTestCase):
         self.assertEqual(request_kwargs["params"]["SubKey"], "subkey")
         self.assertEqual(request_kwargs["params"]["Userkey"], "userkey")
 
-    def test_write_forisk_mill_files_splits_and_normalizes_files(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_files = write_forisk_mill_files(
-                feature_collection=self.feature_collection,
-                output_dir=Path(tmpdir),
-            )
+    def test_split_forisk_mill_collections_splits_and_normalizes_features(self):
+        collections = split_forisk_mill_collections(
+            feature_collection=self.feature_collection,
+        )
 
-            self.assertEqual(
-                set(output_files.keys()),
-                {"Open Mills", "Closed Mills", "Announced Mills"},
-            )
-            open_data = json.loads(output_files["Open Mills"].read_text())
-            self.assertEqual(len(open_data["features"]), 1)
-            self.assertIn("recycledpercent", open_data["features"][0]["properties"])
-            self.assertNotIn("Recycled%", open_data["features"][0]["properties"])
+        self.assertEqual(
+            set(collections.keys()),
+            {"Open Mills", "Closed Mills", "Announced Mills"},
+        )
+        open_data = collections["Open Mills"]
+        self.assertEqual(len(open_data["features"]), 1)
+        self.assertIn("recycledpercent", open_data["features"][0]["properties"])
+        self.assertNotIn("Recycled%", open_data["features"][0]["properties"])
 
     @patch("datasets.forisk_mills.fetch_forisk_feature_collection")
-    def test_refresh_forisk_mill_files_fetches_and_writes_files(self, fetch_mock):
+    def test_fetch_forisk_mill_collections_fetches_and_splits(self, fetch_mock):
         fetch_mock.return_value = self.feature_collection
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_files = refresh_forisk_mill_files(
-                sub_key="subkey",
-                user_key="userkey",
-                api_url="https://example.test/forisk",
-                output_dir=Path(tmpdir),
-                timeout=10,
-            )
+        collections = fetch_forisk_mill_collections(
+            sub_key="subkey",
+            user_key="userkey",
+            api_url="https://example.test/forisk",
+            timeout=10,
+        )
 
         fetch_mock.assert_called_once_with(
             sub_key="subkey",
@@ -105,60 +113,84 @@ class ForiskMillsTest(SimpleTestCase):
             timeout=10,
         )
         self.assertEqual(
-            set(output_files.keys()),
+            set(collections.keys()),
             {"Open Mills", "Closed Mills", "Announced Mills"},
         )
 
-    @override_settings(
-        FORISK_MILLS_DATASET_NAME="Forisk Mills",
-        FORISK_MILLS_SUB_KEY="subkey",
-        FORISK_MILLS_USER_KEY="userkey",
-        FORISK_MILLS_API_URL="https://example.test/forisk",
-        FORISK_MILLS_TIMEOUT=10,
-        BACKUPS_PATH="/tmp",
-    )
-    @patch("datasets.management.commands.datalayers.Dataset")
-    @patch("datasets.management.commands.datalayers.DataLayer")
-    @patch("datasets.forisk_mills.refresh_forisk_mill_files")
-    def test_datalayers_command_refreshes_forisk_files_as_datalayers(
+    @patch("datasets.tasks.datalayer_uploaded")
+    @patch("datasets.forisk_mills.upload_geojson_to_storage")
+    @patch("datasets.forisk_mills.geometry_from_info")
+    @patch("datasets.forisk_mills.get_storage_url")
+    @patch("datasets.forisk_mills.fetch_geometry_type")
+    @patch("datasets.forisk_mills.detect_mimetype")
+    @patch("datasets.forisk_mills.get_layer_info")
+    @patch("datasets.forisk_mills.get_user_model")
+    @patch("datasets.forisk_mills.DataLayer")
+    def test_replace_forisk_mill_datalayer_deletes_and_recreates(
         self,
-        refresh_files_mock,
-        datalayer_mock,
-        dataset_mock,
+        datalayer_model_mock,
+        get_user_model_mock,
+        get_layer_info_mock,
+        detect_mimetype_mock,
+        fetch_geometry_type_mock,
+        get_storage_url_mock,
+        geometry_from_info_mock,
+        upload_geojson_mock,
+        datalayer_uploaded_mock,
     ):
-        refresh_files_mock.return_value = {
-            "Open Mills": Path("/tmp/open_mills.geojson"),
-            "Closed Mills": Path("/tmp/closed_mills.geojson"),
-        }
-        dataset_mock.objects.get.return_value = Mock(id=1061)
-        command = Command()
-        command._create_datalayer = Mock(return_value={"ok": True})
+        dataset = Mock(workspace=Mock())
+        organization = Mock(pk=1)
+        created_by = Mock()
+        created_datalayer = Mock(pk=123)
+        get_user_model_mock.return_value.objects.get.return_value = created_by
+        get_layer_info_mock.return_value = ("VECTOR", {"layer": {"count": 1}})
+        detect_mimetype_mock.return_value = "application/geo+json"
+        fetch_geometry_type_mock.return_value = "POINT"
+        get_storage_url_mock.return_value = "gs://bucket/open_mills.geojson"
+        geometry = Mock()
+        geometry_from_info_mock.return_value = geometry
+        datalayer_model_mock.objects.create.return_value = created_datalayer
+        feature_collection = {"type": "FeatureCollection", "features": []}
 
-        command.refresh_forisk_mills(
-            token="token",
-            org=1,
-            env="catalog",
-        )
-
-        dataset_mock.objects.get.assert_called_once_with(
-            name="Forisk Mills",
-            organization_id=1,
-        )
-        refresh_files_mock.assert_called_once_with(
-            sub_key="subkey",
-            user_key="userkey",
-            api_url="https://example.test/forisk",
-            output_dir=Path("/tmp/forisk_mills"),
-            timeout=10,
-        )
-        self.assertEqual(datalayer_mock.objects.filter.call_count, 2)
-        command._create_datalayer.assert_any_call(
+        result = replace_forisk_mill_datalayer(
+            dataset=dataset,
+            organization=organization,
             name="Open Mills",
-            dataset=1061,
-            input_file="/tmp/open_mills.geojson",
-            skip_existing=False,
-            map_service_type="VECTORTILES",
-            token="token",
-            org=1,
-            env="catalog",
+            feature_collection=feature_collection,
         )
+
+        datalayer_model_mock.objects.filter.assert_called_once_with(
+            dataset=dataset,
+            name="Open Mills",
+        )
+        datalayer_model_mock.objects.filter.return_value.update.assert_called_once()
+        upload_geojson_mock.assert_called_once_with(
+            storage_url="gs://bucket/open_mills.geojson",
+            feature_collection=feature_collection,
+        )
+        datalayer_model_mock.objects.create.assert_called_once()
+        create_kwargs = datalayer_model_mock.objects.create.call_args.kwargs
+        self.assertTrue(create_kwargs.pop("uuid"))
+        self.assertEqual(
+            create_kwargs,
+            {
+                "name": "Open Mills",
+                "dataset": dataset,
+                "organization": organization,
+                "workspace": dataset.workspace,
+                "created_by": created_by,
+                "original_name": "open_mills.geojson",
+                "url": "gs://bucket/open_mills.geojson",
+                "type": "VECTOR",
+                "storage_type": "DATABASE",
+                "geometry_type": "POINT",
+                "geometry": geometry,
+                "info": {"layer": {"count": 1}},
+                "mimetype": "application/geo+json",
+                "metadata": {},
+                "map_service_type": "VECTORTILES",
+                "status": "PENDING",
+            },
+        )
+        datalayer_uploaded_mock.delay.assert_called_once_with(123, status="READY")
+        self.assertEqual(result, created_datalayer)
