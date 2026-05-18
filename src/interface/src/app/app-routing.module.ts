@@ -164,6 +164,13 @@ const routes: Routes = [
           import('@scenario/scenario.module').then((m) => m.ScenarioModule),
       },
       {
+        // effectively an alias to /plan/:planId/scenario
+        path: 'plan/:planId/project-area',
+        resolve: { planId: planLoaderResolver },
+        loadChildren: () =>
+          import('@scenario/scenario.module').then((m) => m.ScenarioModule),
+      },
+      {
         // follow the route structure of plan, but without nesting modules and components
         path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
         canActivate: [AuthGuard],

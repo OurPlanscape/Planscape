@@ -1,0 +1,6 @@
+<app-project-area-dashboard *ngIf="inProjectArea; else scenarioDash">
+</app-project-area-dashboard>
+
+<ng-template #scenarioDash>
+  <app-scenario-dashboard></app-scenario-dashboard>
+</ng-template>
