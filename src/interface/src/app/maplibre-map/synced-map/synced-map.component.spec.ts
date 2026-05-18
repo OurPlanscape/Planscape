@@ -11,8 +11,10 @@ import { PlanState } from '@plan/plan.state';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
-import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
+import { MOCK_GEOMETRY, MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import { ScenarioState } from '@app/scenario/scenario.state';
 
 describe('SyncedMapComponent', () => {
   let component: SyncedMapComponent;
@@ -47,6 +49,12 @@ describe('SyncedMapComponent', () => {
           currentPlan$: of(MOCK_PLAN),
           currentPlanId$: of(123),
           planningAreaGeometry$: of(MOCK_GEOMETRY),
+        }),
+        MockProvider(ActivatedRoute, {
+          snapshot: { data: { planId: 24 } } as any,
+        }),
+        MockProvider(ScenarioState, {
+          currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
         }),
       ],
     }).compileComponents();

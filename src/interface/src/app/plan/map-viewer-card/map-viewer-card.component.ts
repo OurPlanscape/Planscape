@@ -11,7 +11,7 @@ import {
   getBoundsFromGeometry,
 } from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@app/services';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FrontendConstants } from '@app/map/map.constants';
 import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
 import { PlanState } from '../plan.state';
@@ -42,7 +42,6 @@ export class MapViewerCardComponent {
 
   mapLibreMap!: MapLibreMap;
   baseLayerUrl = baseMapStyles['terrain'];
-  currentPlan$ = this.planState.currentPlan$;
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
@@ -61,11 +60,16 @@ export class MapViewerCardComponent {
     maxZoom: FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM,
   };
 
+  scenarioId = this.route.snapshot.data['scenarioId'];
+  planId = this.route.snapshot.data['planId'];
+
   constructor(
     private mapConfigState: MapConfigState,
     private mapConfigService: MapConfigService,
     private planState: PlanState,
-    private authService: AuthService
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.mapConfigService.initialize();
     this.mapConfigState.setShowMapControls(false);
@@ -77,6 +81,15 @@ export class MapViewerCardComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  // If we have scenarioId we want to display project areas on explore, if not we just navigate to explore/plan
+  navigateToExplore() {
+    this.router.navigate(
+      this.scenarioId
+        ? ['/map-viewer', this.planId, this.scenarioId]
+        : ['/map-viewer', this.planId]
+    );
+  }
 
   @HostBinding('class.tall')
   get isTall() {
