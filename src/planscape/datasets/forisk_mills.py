@@ -5,12 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import requests
-from django.conf import settings
-from django.core.management import call_command
-from django.utils import timezone
 from requests.adapters import HTTPAdapter
-
-from datasets.models import DataLayer
 
 logger = logging.getLogger(__name__)
 
@@ -103,35 +98,7 @@ def write_forisk_mill_files(
     return output_files
 
 
-def ingest_forisk_mill_file(
-    dataset_id: int,
-    name: str,
-    input_file: Path,
-) -> None:
-    DataLayer.objects.filter(dataset_id=dataset_id, name=name).update(
-        deleted_at=timezone.now()
-    )
-    if not settings.FORISK_MILLS_PLANSCAPE_EMAIL:
-        raise ValueError("FORISK_MILLS_PLANSCAPE_EMAIL is required.")
-    if not settings.FORISK_MILLS_PLANSCAPE_PASSWORD:
-        raise ValueError("FORISK_MILLS_PLANSCAPE_PASSWORD is required.")
-
-    call_command(
-        "datalayers",
-        "create",
-        name,
-        input_file=str(input_file),
-        dataset=dataset_id,
-        map_service_type="VECTORTILES",
-        email=settings.FORISK_MILLS_PLANSCAPE_EMAIL,
-        password=settings.FORISK_MILLS_PLANSCAPE_PASSWORD,
-        org=settings.FORISK_MILLS_PLANSCAPE_ORG,
-        env=settings.FORISK_MILLS_PLANSCAPE_ENV,
-    )
-
-
-def refresh_forisk_mill_layers(
-    dataset_id: int,
+def refresh_forisk_mill_files(
     sub_key: str,
     user_key: str,
     api_url: str,
@@ -148,11 +115,4 @@ def refresh_forisk_mill_layers(
         feature_collection=feature_collection,
         output_dir=output_dir,
     )
-    for layer_name, input_file in output_files.items():
-        logger.info("Ingesting Forisk mill layer %s from %s", layer_name, input_file)
-        ingest_forisk_mill_file(
-            dataset_id=dataset_id,
-            name=layer_name,
-            input_file=input_file,
-        )
     return output_files

@@ -15,7 +15,9 @@ from core.gcs import upload_file_via_api as upload_to_gcs
 from core.pprint import pprint
 from core.s3 import is_s3_file, list_files
 from core.s3 import upload_file_via_api as upload_to_s3
+from django.conf import settings
 from django.core.management.base import CommandParser
+from django.utils import timezone
 from gis.core import (
     fetch_datalayer_type,
     fetch_geometry_type,
@@ -29,7 +31,7 @@ from modules.base import MODULE_HANDLERS
 from requests import Response
 from requests.exceptions import JSONDecodeError
 
-from datasets.models import DataLayer, DataLayerType, MapServiceChoices
+from datasets.models import DataLayer, DataLayerType, Dataset, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
@@ -129,6 +131,7 @@ class Command(PlanscapeCommand):
         create_parser = subp.add_parser("create")
         import_parser = subp.add_parser("import")
         report_parser = subp.add_parser("report")
+        refresh_forisk_mills_parser = subp.add_parser("refresh-forisk-mills")
         apply_style_parser = subp.add_parser("apply-style")
         apply_style_parser.add_argument(
             "--datalayer", type=int, required=True, default=None
@@ -246,11 +249,11 @@ class Command(PlanscapeCommand):
             type=int,
             default=4,
         )
-
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
         import_parser.set_defaults(func=self.import_from_s3)
         report_parser.set_defaults(func=self.report)
+        refresh_forisk_mills_parser.set_defaults(func=self.refresh_forisk_mills)
         apply_style_parser.set_defaults(func=self.apply_style)
 
     def report(self, **kwargs) -> None:
@@ -621,6 +624,49 @@ class Command(PlanscapeCommand):
                 fn,
                 s3_files,
             )
+
+    def refresh_forisk_mills(
+        self,
+        **kwargs,
+    ) -> None:
+        from datasets.forisk_mills import refresh_forisk_mill_files
+
+        dataset_id = self._resolve_dataset_id(
+            dataset_name=settings.FORISK_MILLS_DATASET_NAME,
+            org=kwargs.get("org"),
+        )
+        output_files = refresh_forisk_mill_files(
+            sub_key=settings.FORISK_MILLS_SUB_KEY,
+            user_key=settings.FORISK_MILLS_USER_KEY,
+            api_url=settings.FORISK_MILLS_API_URL,
+            output_dir=Path(settings.BACKUPS_PATH) / "forisk_mills",
+            timeout=settings.FORISK_MILLS_TIMEOUT,
+        )
+        for layer_name, input_file in output_files.items():
+            self.stdout.write(f"Refreshing Forisk mill layer {layer_name}")
+            DataLayer.objects.filter(dataset_id=dataset_id, name=layer_name).update(
+                deleted_at=timezone.now()
+            )
+            pprint(
+                self._create_datalayer(
+                    name=layer_name,
+                    dataset=dataset_id,
+                    input_file=str(input_file),
+                    skip_existing=False,
+                    map_service_type=MapServiceChoices.VECTORTILES.name,
+                    **kwargs,
+                )
+            )
+
+    def _resolve_dataset_id(
+        self,
+        dataset_name: str,
+        org: int | None,
+    ) -> int:
+        filters: Dict[str, Any] = {"name": dataset_name}
+        if org:
+            filters["organization_id"] = org
+        return Dataset.objects.get(**filters).id
 
     def _change_datalayer_status_request(
         self,
