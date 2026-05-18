@@ -125,18 +125,18 @@ def refresh_forisk_mill_layers_task() -> None:
         logger.warning("FORISK_MILLS_DATASET_NAME is not configured; skipping refresh.")
         return
     if (
-        not settings.FORISK_MILLS_PLANSCAPE_EMAIL
-        or not settings.FORISK_MILLS_PLANSCAPE_PASSWORD
+        not settings.DEFAULT_ADMIN_EMAIL
+        or not settings.ADMIN_PASSWORD
     ):
-        logger.warning("Forisk mill Planscape ingest credentials are not configured.")
+        logger.warning("Admin credentials are not configured; skipping Forisk refresh.")
         return
 
     try:
         call_command(
             "datalayers",
             "refresh-forisk-mills",
-            email=settings.FORISK_MILLS_PLANSCAPE_EMAIL,
-            password=settings.FORISK_MILLS_PLANSCAPE_PASSWORD,
+            email=settings.DEFAULT_ADMIN_EMAIL,
+            password=settings.ADMIN_PASSWORD,
             org=settings.FORISK_MILLS_PLANSCAPE_ORG,
             env=settings.FORISK_MILLS_PLANSCAPE_ENV,
         )
