@@ -23,10 +23,7 @@
     </app-map-project-areas>
   </ng-container>
 </mgl-map>
-<div
-  *ngIf="currentPlan$ | async as plan"
-  class="overlay-navigation"
-  [routerLink]="['/map-viewer', plan?.id]">
+<div *ngIf="planId" class="overlay-navigation" (click)="navigateToExplore()">
   <div class="label">Map Viewer</div>
   <mat-icon>chevron_right</mat-icon>
 </div>
