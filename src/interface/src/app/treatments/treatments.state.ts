@@ -29,6 +29,7 @@ import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
 import { BreadCrumb } from '@app/services/breadcrumb.service';
+import { FeatureService } from '@app/features/feature.service';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -41,7 +42,8 @@ export class TreatmentsState {
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
-    private directImpactsState: DirectImpactsStateService
+    private directImpactsState: DirectImpactsStateService,
+    private featureService: FeatureService
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -111,7 +113,11 @@ export class TreatmentsState {
       ) {
         // if we are currently viewing Treatment Impacts results
         navStateObject.label = `Treatment Effects Analysis: ${treatmentPlan.name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment/`;
+        if (this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS')) {
+          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment/`;
+        } else {
+          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
+        }
         navStateObject.icon = 'close';
         navStateObject.blackText = true;
       } else if (
@@ -121,7 +127,11 @@ export class TreatmentsState {
         treatmentPlan.status !== 'SUCCESS'
       ) {
         navStateObject.label = `Treatment Effects: ${treatmentPlan.name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment`;
+        if (this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS')) {
+          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment`;
+        } else {
+          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
+        }
         navStateObject.icon = 'close';
         navStateObject.blackText = true;
       }
