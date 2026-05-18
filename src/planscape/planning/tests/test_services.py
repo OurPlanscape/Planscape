@@ -235,6 +235,32 @@ class GetSchemaTest(TestCase):
         self.assertIn("properties", schema)
         self.assertEqual(5, len(schema["properties"]))
 
+    def test_get_schema_with_extra_features(self):
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "properties": {
+                        "foo": "abc",
+                        "bar": 1,
+                        "baz": 1.2,
+                        "now": datetime.now(),
+                        "today": date.today(),
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                    },
+                }
+            ],
+        }
+        extra_properties = {"another": "propertie"}
+        schema = get_schema(geojson, extra_properties)
+        self.assertIsNotNone(schema)
+        self.assertIn("geometry", schema)
+        self.assertIn("properties", schema)
+        self.assertEqual(6, len(schema["properties"]))
+
 
 class TestSanitizeShpFieldName(TestCase):
     def test_replaces_spaces_with_underscores(self):
