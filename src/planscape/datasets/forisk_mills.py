@@ -11,7 +11,6 @@ from core.s3 import get_bucket_and_key as get_s3_bucket_and_key
 from core.s3 import get_s3_client, is_s3_file
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from google.cloud import storage
 from requests.adapters import HTTPAdapter
 
@@ -214,9 +213,7 @@ def replace_forisk_mill_datalayer(
     mimetype = detect_mimetype(input_file=vsi_input_file) or FORISK_MILLS_MIMETYPE
     geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
 
-    DataLayer.objects.filter(dataset=dataset, name=name).update(
-        deleted_at=timezone.now()
-    )
+    DataLayer.dead_or_alive.filter(dataset=dataset, name=name).delete()
     storage_type = (
         StorageTypeChoices.DATABASE
         if layer_type == DataLayerType.VECTOR

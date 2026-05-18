@@ -159,11 +159,11 @@ class ForiskMillsTest(SimpleTestCase):
             feature_collection=feature_collection,
         )
 
-        datalayer_model_mock.objects.filter.assert_called_once_with(
+        datalayer_model_mock.dead_or_alive.filter.assert_called_once_with(
             dataset=dataset,
             name="Open Mills",
         )
-        datalayer_model_mock.objects.filter.return_value.update.assert_called_once()
+        datalayer_model_mock.dead_or_alive.filter.return_value.delete.assert_called_once()
         upload_geojson_mock.assert_called_once_with(
             storage_url="gs://bucket/open_mills.geojson",
             feature_collection=feature_collection,
