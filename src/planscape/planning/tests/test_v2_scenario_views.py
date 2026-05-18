@@ -1406,6 +1406,31 @@ class PatchScenarioConfigurationTest(APITestCase):
             ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value,
         )
 
+    def test_patch_scenario_approach_clean_sub_units_layer_when_set_planning_approach(self):
+        scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+            configuration={"sub_units_layer": 1},
+            treatment_goal=None,
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {
+            "configuration": {"stand_size": "SMALL"},
+            "planning_approach": ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS.value,
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data.get("planning_approach"),
+            ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS.value,
+        )
+        self.assertIsNone(
+            response.data.get("sub_units_layer")
+        )
+
     def test_patch_sub_units(self):
         scenario = ScenarioFactory.create(
             user=self.user,

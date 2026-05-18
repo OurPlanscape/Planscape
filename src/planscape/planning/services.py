@@ -272,6 +272,8 @@ def create_config(
         config["seed"] = seed
     if planning_approach is not None:
         config["planning_approach"] = planning_approach
+        if planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS:
+            config["sub_units_layer"] = None
     if sub_units_layer is not None:
         config["sub_units_layer"] = sub_units_layer
 
