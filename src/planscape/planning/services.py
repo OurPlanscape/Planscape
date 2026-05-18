@@ -947,7 +947,8 @@ def map_property_for_numeric_export(key_value_pair):
 
 
 def get_schema(
-    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]], extra_properties: Dict[str, Any] | None = None
+    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]], 
+    extra_properties: Dict[str, Any] = {}
 ) -> Dict[str, Any]:
     feature = {}
     match geojson:
