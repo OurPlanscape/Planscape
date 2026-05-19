@@ -1,6 +1,7 @@
 import json
 import logging
 import ssl
+from copy import deepcopy
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
@@ -14,8 +15,8 @@ from requests.adapters import HTTPAdapter
 
 from datasets.models import (
     DataLayer,
+    DataLayerHasStyle,
     DataLayerStatus,
-    DataLayerType,
     Dataset,
     MapServiceChoices,
     StorageTypeChoices,
@@ -200,7 +201,19 @@ def replace_forisk_mill_datalayer(
     mimetype = detect_mimetype(input_file=vsi_input_file) or FORISK_MILLS_MIMETYPE
     geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
 
-    DataLayer.dead_or_alive.filter(dataset=dataset, name=name).delete()
+    existing_layers = DataLayer.dead_or_alive.filter(dataset=dataset, name=name)
+    existing_datalayer = existing_layers.filter(deleted_at=None).first()
+    if existing_datalayer is not None:
+        metadata = deepcopy(existing_datalayer.metadata) or {}
+        style_associations = [
+            (association.style_id, association.default)
+            for association in existing_datalayer.rel_styles.all()
+        ]
+    else:
+        metadata = {}
+        style_associations = []
+
+    existing_layers.delete()
     storage_type = StorageTypeChoices.DATABASE
     datalayer = DataLayer.objects.create(
         name=name,
@@ -217,9 +230,19 @@ def replace_forisk_mill_datalayer(
         geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
         info=layer_info,
         mimetype=mimetype,
-        metadata={},
+        metadata=metadata,
         map_service_type=MapServiceChoices.VECTORTILES,
         status=DataLayerStatus.PENDING,
+    )
+    DataLayerHasStyle.objects.bulk_create(
+        [
+            DataLayerHasStyle(
+                datalayer=datalayer,
+                style_id=style_id,
+                default=default,
+            )
+            for style_id, default in style_associations
+        ]
     )
 
     datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)

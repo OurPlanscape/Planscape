@@ -125,10 +125,12 @@ class ForiskMillsTest(SimpleTestCase):
     @patch("datasets.forisk_mills.detect_mimetype")
     @patch("datasets.forisk_mills.get_layer_info")
     @patch("datasets.forisk_mills.get_user_model")
+    @patch("datasets.forisk_mills.DataLayerHasStyle")
     @patch("datasets.forisk_mills.DataLayer")
     def test_replace_forisk_mill_datalayer_deletes_and_recreates(
         self,
         datalayer_model_mock,
+        datalayer_has_style_mock,
         get_user_model_mock,
         get_layer_info_mock,
         detect_mimetype_mock,
@@ -150,6 +152,8 @@ class ForiskMillsTest(SimpleTestCase):
         geometry = Mock()
         geometry_from_info_mock.return_value = geometry
         datalayer_model_mock.objects.create.return_value = created_datalayer
+        existing_layers = datalayer_model_mock.dead_or_alive.filter.return_value
+        existing_layers.filter.return_value.first.return_value = None
         feature_collection = {"type": "FeatureCollection", "features": []}
 
         result = replace_forisk_mill_datalayer(
@@ -163,7 +167,10 @@ class ForiskMillsTest(SimpleTestCase):
             dataset=dataset,
             name="Open Mills",
         )
-        datalayer_model_mock.dead_or_alive.filter.return_value.delete.assert_called_once()
+        existing_layers.filter.assert_called_once_with(
+            deleted_at=None,
+        )
+        existing_layers.delete.assert_called_once()
         upload_geojson_mock.assert_called_once_with(
             storage_url="gs://bucket/open_mills.geojson",
             feature_collection=feature_collection,
@@ -192,5 +199,77 @@ class ForiskMillsTest(SimpleTestCase):
                 "status": "PENDING",
             },
         )
+        datalayer_has_style_mock.objects.bulk_create.assert_called_once_with([])
         datalayer_uploaded_mock.delay.assert_called_once_with(123, status="READY")
         self.assertEqual(result, created_datalayer)
+
+    @patch("datasets.tasks.datalayer_uploaded")
+    @patch("datasets.forisk_mills.upload_geojson_to_storage")
+    @patch("datasets.forisk_mills.geometry_from_info")
+    @patch("datasets.forisk_mills.get_storage_url")
+    @patch("datasets.forisk_mills.fetch_geometry_type")
+    @patch("datasets.forisk_mills.detect_mimetype")
+    @patch("datasets.forisk_mills.get_layer_info")
+    @patch("datasets.forisk_mills.get_user_model")
+    @patch("datasets.forisk_mills.DataLayerHasStyle")
+    @patch("datasets.forisk_mills.DataLayer")
+    def test_replace_forisk_mill_datalayer_preserves_metadata_and_styles(
+        self,
+        datalayer_model_mock,
+        datalayer_has_style_mock,
+        get_user_model_mock,
+        get_layer_info_mock,
+        detect_mimetype_mock,
+        fetch_geometry_type_mock,
+        get_storage_url_mock,
+        geometry_from_info_mock,
+        upload_geojson_mock,
+        datalayer_uploaded_mock,
+    ):
+        dataset = Mock(workspace=Mock())
+        organization = Mock(pk=1)
+        created_by = Mock()
+        created_datalayer = Mock(pk=123)
+        existing_datalayer = Mock(
+            metadata={"modules": {"forisk": {"enabled": True}}},
+        )
+        first_association = Mock(style_id=11, default=True)
+        second_association = Mock(style_id=22, default=False)
+        existing_datalayer.rel_styles.all.return_value = [
+            first_association,
+            second_association,
+        ]
+        get_user_model_mock.return_value.objects.get.return_value = created_by
+        get_layer_info_mock.return_value = ("VECTOR", {"layer": {"count": 1}})
+        detect_mimetype_mock.return_value = "application/geo+json"
+        fetch_geometry_type_mock.return_value = "POINT"
+        get_storage_url_mock.return_value = "gs://bucket/open_mills.geojson"
+        geometry_from_info_mock.return_value = Mock()
+        datalayer_model_mock.objects.create.return_value = created_datalayer
+        existing_layers = datalayer_model_mock.dead_or_alive.filter.return_value
+        existing_layers.filter.return_value.first.return_value = existing_datalayer
+
+        replace_forisk_mill_datalayer(
+            dataset=dataset,
+            organization=organization,
+            name="Open Mills",
+            feature_collection={"type": "FeatureCollection", "features": []},
+        )
+
+        self.assertEqual(
+            datalayer_model_mock.objects.create.call_args.kwargs["metadata"],
+            {"modules": {"forisk": {"enabled": True}}},
+        )
+        datalayer_has_style_mock.objects.bulk_create.assert_called_once()
+        style_rows = datalayer_has_style_mock.objects.bulk_create.call_args.args[0]
+        self.assertEqual(len(style_rows), 2)
+        datalayer_has_style_mock.assert_any_call(
+            datalayer=created_datalayer,
+            style_id=11,
+            default=True,
+        )
+        datalayer_has_style_mock.assert_any_call(
+            datalayer=created_datalayer,
+            style_id=22,
+            default=False,
+        )
