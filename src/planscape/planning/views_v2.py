@@ -4,6 +4,7 @@ from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -224,11 +225,17 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        draft_status = Q(result_status=ScenarioResultStatus.DRAFT) | Q(
+            results__status=ScenarioResultStatus.DRAFT
+        )
+
         qs = (
             Scenario.objects.list_by_user(user=user)
+            .filter(Q(user=user) | ~draft_status)
             .select_related(
                 "planning_area",
                 "user",
+                "results",
             )
             .prefetch_related("project_areas")
         )
@@ -472,7 +479,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         return Response(details, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer)
+    @action(
+        methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer
+    )
     def available_stands(self, request, pk=None):
         scenario = self.get_object()
         serializer = GetAvailableStandsSerializer(data=request.data)
