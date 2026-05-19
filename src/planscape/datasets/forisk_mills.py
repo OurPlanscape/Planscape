@@ -7,8 +7,6 @@ from uuid import uuid4
 import requests
 from core.gcs import get_bucket_and_key as get_gcs_bucket_and_key
 from core.gcs import is_gcs_file
-from core.s3 import get_bucket_and_key as get_s3_bucket_and_key
-from core.s3 import get_s3_client, is_s3_file
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from google.cloud import storage
@@ -162,26 +160,15 @@ def upload_geojson_to_storage(
     storage_url: str,
     feature_collection: Dict[str, Any],
 ) -> None:
+    if not is_gcs_file(storage_url):
+        raise ValueError(f"Unsupported datalayer storage URL: {storage_url}")
+
     data = json.dumps(feature_collection)
-    if is_s3_file(storage_url):
-        bucket, object_name = get_s3_bucket_and_key(storage_url)
-        get_s3_client().put_object(
-            Bucket=bucket,
-            Key=object_name,
-            Body=data.encode("utf-8"),
-            ContentType=FORISK_MILLS_MIMETYPE,
-        )
-        return
-
-    if is_gcs_file(storage_url):
-        bucket_name, object_name = get_gcs_bucket_and_key(storage_url)
-        client = storage.Client()
-        bucket = client.bucket(bucket_name)
-        blob = bucket.blob(object_name)
-        blob.upload_from_string(data, content_type=FORISK_MILLS_MIMETYPE)
-        return
-
-    raise ValueError(f"Unsupported datalayer storage URL: {storage_url}")
+    bucket_name, object_name = get_gcs_bucket_and_key(storage_url)
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(object_name)
+    blob.upload_from_string(data, content_type=FORISK_MILLS_MIMETYPE)
 
 
 def replace_forisk_mill_datalayer(
@@ -214,11 +201,7 @@ def replace_forisk_mill_datalayer(
     geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
 
     DataLayer.dead_or_alive.filter(dataset=dataset, name=name).delete()
-    storage_type = (
-        StorageTypeChoices.DATABASE
-        if layer_type == DataLayerType.VECTOR
-        else StorageTypeChoices.FILESYSTEM
-    )
+    storage_type = StorageTypeChoices.DATABASE
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
