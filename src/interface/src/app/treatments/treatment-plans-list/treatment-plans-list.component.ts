@@ -2,10 +2,7 @@ import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
-import {
-  ButtonComponent,
-  // TreatmentEffectsCardComponent -- TODO: add when available
-} from '@styleguide';
+import { ButtonComponent, TreatmentPlanCardComponent } from '@styleguide';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
 import {
@@ -43,7 +40,7 @@ import { AnalyticsService } from '@app/services/analytics.service';
     MatProgressSpinnerModule,
     NgIf,
     NgFor,
-    // TreatmentEffectsCardComponent,
+    TreatmentPlanCardComponent,
   ],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
@@ -94,7 +91,7 @@ export class TreatmentPlansListComponent {
   ) {}
 
   goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
-    const route = ['treatment', treatment.id];
+    const route = ['.', treatment.id];
 
     if (status === 'SUCCESS') {
       route.push('impacts');
@@ -209,7 +206,9 @@ export class TreatmentPlansListComponent {
       .pipe(take(1))
       .subscribe((args) => {
         if (args) {
-          this.createTreatmentPlan(args);
+          this.createTreatmentPlan({
+            name: args.treatmentName,
+          });
         }
       });
   }

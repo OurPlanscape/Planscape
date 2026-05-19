@@ -12,9 +12,14 @@ from datasets.models import (
     DataLayer,
     DataLayerStatus,
     DataLayerType,
+    Dataset,
     GeometryType,
+    PreferredDisplayType,
+    SelectionTypeOptions,
+    VisibilityOptions,
 )
 from datasets.services import (
+    create_dataset,
     create_datalayer,
     create_upload_url_for_org,
     find_anything,
@@ -24,6 +29,60 @@ from datasets.services import (
     get_table_mask,
 )
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
+from workspaces.tests.factories import WorkspaceFactory
+
+
+class TestCreateDataset(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory.create()
+        self.user = self.organization.created_by
+        self.workspace = WorkspaceFactory.create()
+
+    def _create(self, **kwargs):
+        return create_dataset(
+            name="Test Dataset",
+            organization=self.organization,
+            workspace=self.workspace,
+            created_by=self.user,
+            **kwargs,
+        )
+
+    def test_creates_dataset(self):
+        dataset = self._create()
+        self.assertIsInstance(dataset, Dataset)
+        self.assertEqual(Dataset.objects.filter(pk=dataset.pk).count(), 1)
+
+    def test_persists_name_and_organization(self):
+        dataset = self._create()
+        self.assertEqual(dataset.name, "Test Dataset")
+        self.assertEqual(dataset.organization, self.organization)
+        self.assertEqual(dataset.created_by, self.user)
+
+    def test_persists_selection_type(self):
+        dataset = self._create(selection_type=SelectionTypeOptions.SINGLE)
+        dataset.refresh_from_db()
+        self.assertEqual(dataset.selection_type, SelectionTypeOptions.SINGLE)
+
+    def test_persists_preferred_display_type(self):
+        dataset = self._create(
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+        )
+        dataset.refresh_from_db()
+        self.assertEqual(
+            dataset.preferred_display_type, PreferredDisplayType.MAIN_DATALAYERS
+        )
+
+    def test_selection_type_defaults_to_none(self):
+        dataset = self._create()
+        self.assertIsNone(dataset.selection_type)
+
+    def test_preferred_display_type_defaults_to_none(self):
+        dataset = self._create()
+        self.assertIsNone(dataset.preferred_display_type)
+
+    def test_default_visibility_is_public(self):
+        dataset = self._create()
+        self.assertEqual(dataset.visibility, VisibilityOptions.PUBLIC)
 
 
 class TestGetObjectName(TestCase):

@@ -213,6 +213,7 @@ class UpdateDatasetSerializer(serializers.ModelSerializer[Dataset]):
     class Meta:
         model = Dataset
         fields = (
+            "id",
             "organization",
             "workspace_id",
             "name",
@@ -222,6 +223,7 @@ class UpdateDatasetSerializer(serializers.ModelSerializer[Dataset]):
             "selection_type",
             "preferred_display_type",
         )
+        read_only_fields = ("id",)
 
 
 class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):

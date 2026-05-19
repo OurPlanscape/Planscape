@@ -18,7 +18,7 @@ import {
   getPlanPath,
   parseResultsToProjectAreas,
 } from '@app/plan/plan-helpers';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ScenarioDownloadFooterComponent } from '../scenario-download-footer/scenario-download-footer.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
@@ -76,6 +76,7 @@ export class ScenarioDashboardComponent implements OnInit {
 
   scenarioDashboardTools = [
     {
+      id: 'treatment-effects',
       backgroundImage: '/assets/svg/treatment-effects.svg',
       backgroundColor: '#dfede6',
       title: 'Treatment Effects',
@@ -97,7 +98,8 @@ export class ScenarioDashboardComponent implements OnInit {
     private scenarioState: ScenarioState,
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -111,5 +113,18 @@ export class ScenarioDashboardComponent implements OnInit {
     return isPlanningApproachSubUnits(
       scenario.planning_approach || 'OPTIMIZE_PROJECT_AREAS'
     );
+  }
+
+  onToolClick(toolId: string): void {
+    if (toolId === 'treatment-effects') {
+      const planId = this.route.snapshot.data['planId'];
+      if (planId) {
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Scenario Dashboard',
+          backUrl: `../dashboard`,
+        });
+        this.router.navigate(['../treatment'], { relativeTo: this.route });
+      }
+    }
   }
 }

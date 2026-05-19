@@ -34,7 +34,7 @@
       <app-base-layers class="white-background"></app-base-layers>
     </mat-tab>
     <mat-tab
-      *ngIf="showTreatmentTab$ | async"
+      *ngIf="!isScenarioDashboardEnabled() && (showTreatmentTab$ | async)"
       [disabled]="!scenarioCanHaveTreatmentPlans(scenario)">
       <ng-template mat-tab-label>
         <span
@@ -55,7 +55,9 @@
   <app-new-treatment-footer
     [scenarioId]="scenarioId || undefined"
     *ngIf="
-      onTreatmentsTab && (showTreatmentFooter$ | async)
+      !isScenarioDashboardEnabled() &&
+      onTreatmentsTab &&
+      (showTreatmentFooter$ | async)
     "></app-new-treatment-footer>
 
   <app-scenario-download-footer
