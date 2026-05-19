@@ -8,11 +8,6 @@ import {
   ScenarioDraftConfiguration,
   ScenarioV3Config,
 } from '@types';
-
-export interface PriorityWithLayer {
-  layer: DataLayer;
-  weight: number;
-}
 import {
   BehaviorSubject,
   catchError,
@@ -35,6 +30,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
+
+export interface PriorityWithLayer {
+  layer: DataLayer;
+  weight: number;
+}
 
 @Injectable()
 export class NewScenarioState {
@@ -161,11 +161,12 @@ export class NewScenarioState {
     this.standSize$,
     this.excludedAreas$,
     this.constraints$,
+    this._selectedSubUnitLayer$,
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([_, step]) => step?.refreshAvailableStands ?? false),
-    switchMap(([_, step, standSize, excludedAreas, constraints]) => {
+    switchMap(([_, step, standSize, excludedAreas, constraints, subUnits]) => {
       // Inside the project fn so it runs after switchMap cancels the previous inner (and its
       // finalize fires) — a tap() before switchMap would be overridden by that finalize.
       this.setLoading(true);
@@ -174,7 +175,8 @@ export class NewScenarioState {
           this.scenarioId,
           standSize,
           step?.includeExcludedAreas ? excludedAreas : undefined,
-          step?.includeConstraints ? constraints : undefined
+          step?.includeConstraints ? constraints : undefined,
+          step?.includeSubUnits ? subUnits?.id : undefined
         )
         .pipe(
           catchError(() => {
