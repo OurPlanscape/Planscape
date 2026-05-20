@@ -1,12 +1,14 @@
 import json
 import os
 import shutil
+import tempfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.conf import settings
 from django.db import close_old_connections
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
+from google.cloud import storage
 
 from datasets.models import (
     Category,
@@ -36,6 +38,14 @@ class Command(BaseCommand):
             type=int,
             default=8,
             help="Number of parallel workers for vector post-processing. Default: 8.",
+        )
+        parser.add_argument(
+            "--backup-url",
+            default="gs://planscape-backups/20260416_203907_catalog_backup.json",
+            help=(
+                "Authenticated GCS URL for the latest catalog backup. "
+                "Only gs:// URLs are supported."
+            ),
         )
 
     def sanitize_backup_fixture(self, file_path: str) -> None:
@@ -74,25 +84,25 @@ class Command(BaseCommand):
         Dataset.objects.all().delete()
         Organization.objects.all().delete()
 
-        backups_dir = os.path.join(settings.BACKUPS_PATH)
-        if not os.path.exists(backups_dir):
-            raise CommandError("BACKUPS_PATH is not configured or the directory does not exist.")
+        backup_url = kwargs.get("backup_url")
 
-        backup_file = os.path.join(backups_dir, "latest_catalog_backup.json")
-        if not os.path.exists(backup_file):
-            raise CommandError(
-                f"Latest catalog backup not found at {backup_file}."
+        tmp_backup_fd, tmp_backup = tempfile.mkstemp(suffix=".json")
+        os.close(tmp_backup_fd)
+        try:
+            self.stdout.write(f"Downloading catalog backup from {backup_url}...")
+            self.download_backup_fixture(backup_url, tmp_backup)
+
+            self.stdout.write(
+                "Sanitizing latest backup fixture: setting created_by=1 and removing datalayer.table values."
             )
+            self.sanitize_backup_fixture(tmp_backup)
 
-        tmp_backup = "/tmp/latest_catalog_backup.json"
-        shutil.copy(backup_file, tmp_backup)
-
-        self.stdout.write(
-            "Sanitizing latest backup fixture: setting created_by=1 and removing datalayer.table values."
-        )
-        self.sanitize_backup_fixture(tmp_backup)
-
-        call_command("loaddata", tmp_backup)
+            call_command("loaddata", tmp_backup)
+        finally:
+            try:
+                os.remove(tmp_backup)
+            except OSError:
+                pass
 
         if kwargs["skip_post_process"]:
             self.stdout.write(
@@ -165,6 +175,17 @@ class Command(BaseCommand):
                     f"Finished mock data load and rebuilt {layer_count} vector datastore tables."
                 )
             )
+
+    def download_backup_fixture(self, backup_url: str, destination_path: str) -> None:
+        if not backup_url.startswith("gs://"):
+            raise CommandError("Unsupported backup URL format. Use gs:// only.")
+
+        path = backup_url[len("gs://") :]
+        bucket_name, blob_name = path.split("/", 1)
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        blob.download_to_filename(destination_path)
 
     def process_vector_layer(self, datalayer_id: int):
         close_old_connections()
