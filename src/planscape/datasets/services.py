@@ -458,6 +458,7 @@ def find_anything(
     type: DataLayerType,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
+    user: Optional[User] = None,
     **kwargs,
 ) -> Dict[str, SearchResult]:
     """
@@ -473,7 +474,7 @@ def find_anything(
         )
         dataset_ids = [
             d.pk
-            for d in mod.get_datasets()
+            for d in mod.get_datasets(user=user)
             if d.preferred_display_type == preferred_display_type
         ]
     else:

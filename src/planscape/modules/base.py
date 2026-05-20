@@ -2,6 +2,7 @@ import json
 from typing import Any, Dict, List, Optional, Type, Union
 
 from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
 from planning.models import (
@@ -43,15 +44,19 @@ class BaseModule:
     def get_configuration(self, **kwargs) -> Dict[str, Any]:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
-    def get_datasets(self, geometry: Optional[GEOSGeometry] = None, **kwargs) -> QuerySet[Dataset]:
+    def get_datasets(
+            self, 
+            geometry: Optional[GEOSGeometry] = None, 
+            user: Optional[User] = None, 
+            **kwargs
+        ) -> QuerySet[Dataset]:
         queryset = Dataset.objects.all()
         if geometry:
             queryset = queryset.by_outline_intersects(geometry=geometry)
         
-        return queryset.filter(
+        return queryset.all().accessible_by(user).filter(
             modules__contains=[self.name],
             preferred_display_type__isnull=False,
-            visibility=VisibilityOptions.PUBLIC,
         ).select_related("organization").distinct()
 
     def _get_main_datasets(self, **kwargs):
@@ -129,7 +134,12 @@ class ImpactsModule(BaseModule):
             and runnable.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         )
 
-    def get_datasets(self, **kwargs):
+    def get_datasets(
+            self, 
+            geometry: Optional[GEOSGeometry] = None, 
+            user: Optional[User] = None, 
+            **kwargs
+        ) -> QuerySet[Dataset]:
         return Dataset.objects.none()
 
 
@@ -145,12 +155,17 @@ class MapModule(BaseModule):
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         return True
 
-    def get_datasets(self, geometry: Optional[GEOSGeometry] = None, **kwargs) -> QuerySet[Dataset]:
+    def get_datasets(
+            self, 
+            geometry: Optional[GEOSGeometry] = None, 
+            user: Optional[User] = None, 
+            **kwargs
+        ) -> QuerySet[Dataset]:
         queryset = Dataset.objects.all()
         if geometry:
             queryset = queryset.by_outline_intersects(geometry=geometry)
         
-        return queryset.filter(
+        return queryset.all().accessible_by(user).filter(
             Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
             | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
         ).select_related("organization").distinct()
@@ -177,12 +192,17 @@ class ClimateForesightModule(BaseModule):
         scenario_geometry = runnable.planning_area.geometry
         return self.future_climate_coverage.contains(scenario_geometry)
 
-    def get_datasets(self, geometry: Optional[GEOSGeometry] = None, **kwargs) -> QuerySet[Dataset]:
+    def get_datasets(
+            self, 
+            geometry: Optional[GEOSGeometry] = None, 
+            user: Optional[User] = None, 
+            **kwargs
+        ) -> QuerySet[Dataset]:
         queryset = Dataset.objects.all()
         if geometry:
             queryset = queryset.by_outline_intersects(geometry=geometry)
 
-        return queryset.filter(
+        return queryset.all().accessible_by(user).filter(
             Q(modules__contains=[self.name])
             & (
                 Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
