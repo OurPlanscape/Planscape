@@ -282,9 +282,9 @@ class DataLayerQuerySet(models.QuerySet):
         query = {"modules": {"forsys": {"capabilities": [capability]}}}
         return self.all().filter(metadata__contains=query)
     
-    def accessible_by(self, user):
-        self.all().select_related("datalayer")
-
+    def accessible_by(self, user) -> models.QuerySet:
+        accessible_datasets_ids = Dataset.objects.all().accessible_by(user).values_list("id", flat=True)
+        return self.all().filter(dataset_id__in=accessible_datasets_ids) 
 
 class DataLayerManager(models.Manager):
     def get_queryset(self):

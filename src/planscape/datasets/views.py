@@ -145,13 +145,15 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # by organization visibility too, so we return the public ones
         # PLUS all the datalayers accessible by the organization
 
+        user = self.request.user if self.request else None
+
         if self.action == "urls":
-            return DataLayer.objects.filter(
+            return DataLayer.objects.all().accessible_by(user).filter(
                 Q(dataset__visibility=VisibilityOptions.PUBLIC)
                 | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
             )
 
-        queryset = DataLayer.objects.filter(
+        queryset = DataLayer.objects.all().accessible_by(user).filter(
             dataset__visibility=VisibilityOptions.PUBLIC,
         )
 
