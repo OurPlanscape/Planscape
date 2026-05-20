@@ -52,7 +52,6 @@ export class ProjectAreaDashboardComponent implements OnInit {
       id: 'coming-soon',
       backgroundImage: '/assets/svg/lock.svg',
       title: 'Coming Soon',
-      subtitle: '',
       featureFlag: '',
       enabled: false,
     },
