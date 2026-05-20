@@ -210,6 +210,46 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(1, data.get("count"))
         self.assertIsInstance(data.get("results")[0].get("styles"), list)
 
+    def test_datalayers_list_private_as_staff_user(self):
+        self.client.force_authenticate(user=self.admin)
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+
+        for i in range(2):
+            DataLayerFactory.create(
+                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+            )
+
+        for i in range(3):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"public R {i}", type=DataLayerType.RASTER
+            )
+
+        url = reverse("api:datasets:datalayers-list")
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data.get("results")), 5)
+
+    def test_datalayers_list_private_as_normal_user(self):
+        self.client.force_authenticate(user=self.normal)
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+
+        for i in range(2):
+            DataLayerFactory.create(
+                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+            )
+
+        for i in range(3):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"public R {i}", type=DataLayerType.RASTER
+            )
+
+        url = reverse("api:datasets:datalayers-list")
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data.get("results")), 3)
+
     def test_find_anything(self):
         self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(

@@ -154,9 +154,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
                 | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
             )
 
-        queryset = DataLayer.objects.all().accessible_by(user).filter(
-            dataset__visibility=VisibilityOptions.PUBLIC,
-        )
+        queryset = DataLayer.objects.all().accessible_by(user)
 
         if self.action == "list" and (
             search_query := self.request.query_params.get("search")
