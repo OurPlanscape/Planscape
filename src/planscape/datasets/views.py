@@ -44,7 +44,8 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # PLUS all the datasets accessible by the organization
         filters = {"visibility": VisibilityOptions.PUBLIC}
 
-        return Dataset.objects.filter(**filters).select_related(
+        user = self.request.user if self.request else None
+        return Dataset.objects.all().accessible_by(user).filter(**filters).select_related(
             "organization", "created_by"
         )
 
