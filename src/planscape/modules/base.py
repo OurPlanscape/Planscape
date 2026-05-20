@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional, Type, Union
 
-from datasets.models import DataLayer, Dataset, PreferredDisplayType, VisibilityOptions
+from datasets.models import DataLayer, Dataset, PreferredDisplayType
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
