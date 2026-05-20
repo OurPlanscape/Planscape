@@ -16,7 +16,7 @@ export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
 
   return scenarioService.getScenario(id).pipe(
     map((scenario: Scenario) => {
-      const isOnProjectRoute = state.url.includes('/project-area');
+      const isOnProjectRoute = state.url.includes('pa-dashboard');
 
       const planId = route.paramMap.get('planId') || scenario.planning_area;
 
@@ -24,9 +24,9 @@ export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
         return router.createUrlTree([
           'plan',
           planId,
-          'project-area',
+          'scenario',
           id,
-          'dashboard',
+          'pa-dashboard',
         ]);
       }
       if (!isProjectArea(scenario) && isOnProjectRoute) {

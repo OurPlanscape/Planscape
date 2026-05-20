@@ -17,6 +17,6 @@ export class DashboardSwitcherComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    this.inProjectArea = this.router.url.includes('/project-area');
+    this.inProjectArea = this.router.url.includes('pa-dashboard');
   }
 }
