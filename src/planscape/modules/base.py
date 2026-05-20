@@ -224,8 +224,9 @@ class PrioritizeSubUnitsModule(BaseModule):
         return PrioritizeSubUnitsModuleSerializer
     
     def _get_options(self, **kwargs):
+        user = kwargs.get("user")
         options = super()._get_options(**kwargs)
-        sub_units_layers = DataLayer.objects.all().by_meta_module(self.name)
+        sub_units_layers = DataLayer.objects.all().accessible_by(user).by_meta_module(self.name)
         return {
             **options,
             "sub_units": list(sub_units_layers)
