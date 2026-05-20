@@ -281,6 +281,9 @@ class DataLayerQuerySet(models.QuerySet):
     def by_meta_capability(self, capability: str):
         query = {"modules": {"forsys": {"capabilities": [capability]}}}
         return self.all().filter(metadata__contains=query)
+    
+    def accessible_by(self, user):
+        self.all().select_related("datalayer")
 
 
 class DataLayerManager(models.Manager):

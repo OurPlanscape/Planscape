@@ -15,10 +15,14 @@ from planning.models import ScenarioPlanningApproach
 class MapModuleTest(TestCase):
     def test_returns_options_correctly(self):
         DatasetFactory.create(
-            name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+            name="base1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
         )
         DatasetFactory.create(
-            name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+            name="main1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
 
         module = get_module("map")
@@ -50,14 +54,18 @@ class MapModuleTest(TestCase):
         geos_geometry = GEOSGeometry(json.dumps(geometry))
 
         base1 = DatasetFactory.create(
-            name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+            name="base1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         )
         DataLayerFactory.create(
             dataset=base1,
             outline=geos_geometry,
         )
         main1 = DatasetFactory.create(
-            name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+            name="main1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
         DataLayerFactory.create(
             dataset=main1,
@@ -93,14 +101,18 @@ class MapModuleTest(TestCase):
         geos_geometry = GEOSGeometry(json.dumps(geometry))
 
         base1 = DatasetFactory.create(
-            name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+            name="base1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
         )
         DataLayerFactory.create(
             dataset=base1,
             outline=None,
         )
         main1 = DatasetFactory.create(
-            name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+            name="main1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
         DataLayerFactory.create(
             dataset=main1,
