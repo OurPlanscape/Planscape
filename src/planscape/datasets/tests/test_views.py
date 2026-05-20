@@ -39,7 +39,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_filter_by_name_exact_returns_record(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         datalayer = DataLayerFactory.create(
             dataset=self.dataset, type=DataLayerType.RASTER
         )
@@ -54,7 +54,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
     def test_filter_by_name_icontains_returns_record(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         datalayer = DataLayerFactory.create(
             dataset=self.dataset, type=DataLayerType.RASTER
         )
@@ -69,7 +69,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
     def test_filter_by_full_text_search_datalayer_name(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         datalayer = DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
@@ -91,7 +91,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
     def test_filter_by_full_text_search_datalayer_name_multiple_return(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
@@ -108,7 +108,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(10, data.get("count"))
 
     def test_filter_by_full_text_search_dataset_name(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
@@ -129,7 +129,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(21, data.get("count"))
 
     def test_filter_by_full_text_search_organization_name(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
@@ -177,9 +177,9 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
 
     def test_get_dataset_with_style(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         style = StyleFactory.create(
-            created_by=self.admin, organization=self.organization
+            created_by=self.normal, organization=self.organization
         )
         datalayer = DataLayerFactory.create(
             dataset=self.dataset,
@@ -194,7 +194,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(style.pk, data.get("results")[0].get("styles")[0].get("id"))
 
     def test_styles_shape_is_array_for_id_in_filter(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         datalayer = DataLayerFactory.create(
             dataset=self.dataset,
             type=DataLayerType.VECTOR,
@@ -211,7 +211,7 @@ class TestDataLayerViewSet(APITestCase):
         self.assertIsInstance(data.get("results")[0].get("styles"), list)
 
     def test_find_anything(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
@@ -239,7 +239,7 @@ class TestDataLayerViewSet(APITestCase):
             self.assertEqual("RASTER", row["data"]["type"])
 
     def test_find_anything_type_vector_returns_vectors(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         for i in range(3):
             DataLayerFactory.create(
                 dataset=self.dataset, name=f"vefoo {i}", type=DataLayerType.VECTOR
@@ -257,6 +257,39 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(3, data.get("count"))
         for row in data["results"]:
             self.assertEqual("VECTOR", row["data"]["type"])
+
+    def test_find_anything_private_as_staff_user(self):
+        self.client.force_authenticate(user=self.admin)
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+
+        for i in range(5):
+            DataLayerFactory.create(
+                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+            )
+
+        params = {"term": "priv", "type": "RASTER"}
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
+        resp = self.client.get(url)
+        data = resp.json()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(5, data.get("count"))
+        
+
+    def test_find_anything_private_as_normal_user(self):
+        self.client.force_authenticate(user=self.normal)
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+
+        for i in range(5):
+            DataLayerFactory.create(
+                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+            )
+
+        params = {"term": "priv", "type": "RASTER"}
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
+        resp = self.client.get(url)
+        data = resp.json()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(0, data.get("count"))
 
 
 class TestDatasetViewSet(APITestCase):
