@@ -1,87 +1,57 @@
 import { test, expect } from '@playwright/test';
-import { Geometry } from 'geojson';
+import { geomYosemite } from '../../../fixtures/test-geometries';
+import { createPlanningArea, deletePlanningArea } from '../../../helpers/api-client';
+import { PlanningAreaPage } from '../../../pages/planningarea.page';
 
-// Near Yosemite - TODO: move to a fixture
-const test_geom : Geometry = {
-		"coordinates": [
-			[
-				[
-					[
-						-119.65779327,
-						37.710779973
-					],
-					[
-						-119.710478955,
-						37.712069036
-					],
-					[
-						-119.793037924,
-						37.612315309
-					],
-					[
-						-119.631178844,
-						37.575734048
-					],
-					[
-						-119.531239053,
-						37.666938478
-					],
-					[
-						-119.65779327,
-						37.710779973
-					]
-				]
-			]
-		],
-		"type": "MultiPolygon"
-	}
-
-
-const PLANNING_AREA_URL = 'planscape-backend/v2/planningareas/'
 
 let planId: number | null = null;
 
-  // 1. SETUP: Create a planning area record via API
-  test.beforeAll(async ({ request }) => {
-    const response = await request.post(PLANNING_AREA_URL, {
-      data: { name: `Test Plan - ${Date.now()}`, geometry: test_geom  } // Unique name using timestamp
-    });
-    expect(response.ok()).toBeTruthy();
+test.beforeAll(async ({ request }) => {
+  const testName = `Test Plan - ${Date.now()}`;
+  const response = await createPlanningArea(request, testName, geomYosemite);
+  const plan = await response.json();
+  planId = plan.id;
+});
 
-    const plan = await response.json();
-    console.log('we have a plan?', plan);
-    planId = plan.id;
-  });
+test.afterAll(async ({ request }) => {
+  if (planId) {
+    await deletePlanningArea(request, planId);
+  }
+});
 
-  // 2. TEARDOWN: Delete the planning area record via API (Runs even if tests fail)
-  test.afterAll(async ({ request }) => {
-    if (planId) {
-      const response = await request.delete(PLANNING_AREA_URL + '/' + planId);
-      expect(response.ok()).toBeTruthy();
-    }
-  });
+test('user can create a scenario for optimizing project areas', async ({ page }) => {
 
-
-  test('user can create a scenario', async ({ page }) => {
-
-    // create a planning area
-    await page.goto('/plan/' + planId);
+  // go to the newly created Planning Area
+  if(!planId) {
+    throw new Error('A planning area does not exist for the scenario test.');
+  }
+  const planPage = new PlanningAreaPage(page);
+  await planPage.goto(planId);
 
   const newScenarioName = `New test scenario - ${Date.now()}`;
+  await page
+  .locator('sg-action-card[title="Choose Treatment Goal"]')
+  .getByText('add New Scenario')
+  .click({ timeout: 60000 });
 
-
-    // create scenario
-
-  await page.getByText('add New Scenario').first().click();
-  await page.getByRole('textbox').click();
-  await page.getByRole('textbox').fill('new scenario');
+  // create scenario
+  await page.getByRole('textbox').fill(newScenarioName);
+  
+  // scenario has a name
   await page.getByRole('button', { name: 'Get Started' }).click();
   await page.getByText('Optimize Project Areas Would').click();
   await page.getByRole('combobox', { name: 'Stand Size' }).locator('span').click();
   await page.getByRole('option', { name: 'Medium (100 acres)' }).click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
+
+
   await page.getByText('Prioritize Areas with High Expected Tree Volume Loss from Wildfire').click();
+  // TODO: expect that the item exists
+  // TODO: expect that the chip appears when we add this
+
   await page.getByRole('button', { name: 'Save & Continue' }).click();
+
+
   await page.getByRole('button').nth(3).click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
@@ -93,4 +63,12 @@ let planId: number | null = null;
   await page.getByRole('button', { name: 'Run Scenario' }).click();
   await page.getByRole('button', { name: 'Close' }).click();
   await expect(page.locator('button')).toBeVisible();
+
+
+  // TODO: remove the new scenario via the UI and scenario name
+  await planPage.goto(planId);
+  await page.locator(`sg-scenario-card[ng-reflect-name="${newScenarioName}"]`).getByRole('button', { name: 'More scenario options' }).click({ timeout: 60000 });
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Delete' }).click();
+
 });

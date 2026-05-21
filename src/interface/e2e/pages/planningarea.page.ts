@@ -6,7 +6,7 @@ export class PlanningAreaPage {
   }
 
   async goto(planId: number) {
-    await this.page.goto('/login');
+    await this.page.goto(`/plan/${planId}`);
   }
 
 }
