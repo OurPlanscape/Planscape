@@ -418,7 +418,7 @@ class TestExportToGeopackage(TestCase):
             name="s2",
             user=self.user,
             type=ScenarioType.CUSTOM,
-            with_priority_objectives=self.datalayers[:2],
+            with_legacy_priority_objectives=self.datalayers[:2],
             with_cobenefits=self.datalayers[2:],
         )
         data = {
@@ -1599,7 +1599,7 @@ class CalculateAndUpdateScenarioResult(TestCase):
     def test_scenario_type_custom(self):
         scenario = ScenarioFactory(
             type=ScenarioType.CUSTOM, 
-            with_priority_objectives=self.datalayers,
+            with_legacy_priority_objectives=self.datalayers,
             forsys_input={"stand_ids": [1, 2, 3, 4]},
         )
         scenario_result = ScenarioResultFactory.create(scenario=scenario)
