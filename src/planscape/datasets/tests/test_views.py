@@ -314,7 +314,6 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(5, data.get("count"))
         
-
     def test_find_anything_private_as_normal_user(self):
         self.client.force_authenticate(user=self.normal)
         private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
@@ -361,7 +360,7 @@ class TestDatasetViewSet(APITestCase):
         self.assertIn(dataset.pk, ids)
 
     def test_get_by_user_succeeds(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
         url = reverse("api:datasets:datasets-list")
         response = self.client.get(url, format="json")
@@ -374,7 +373,7 @@ class TestDatasetViewSet(APITestCase):
         self.assertIn("modules", dataset_row)
 
     def test_browses_datalayers(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
         datalayer = DataLayerFactory.create(dataset=dataset)
         url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
@@ -384,7 +383,7 @@ class TestDatasetViewSet(APITestCase):
         self.assertEqual(datalayer.pk, data[0].get("id"))
 
     def test_browses_datalayers__filter_by_name_exact(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
         datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
         query_params = {"name": datalayer.name}
@@ -395,7 +394,7 @@ class TestDatasetViewSet(APITestCase):
         self.assertEqual(datalayer.pk, data[0].get("id"))
 
     def test_browses_datalayers__filter_by_name_icontains(self):
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.normal)
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
         datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
         query_params = {"name": "owl"}
@@ -408,24 +407,38 @@ class TestDatasetViewSet(APITestCase):
 
 class TestPublicAccess(APITestCase):
     def setUp(self) -> None:
-        self.dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
-        self.datalayer = DataLayerFactory.create(dataset=self.dataset)
+        self.public_dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        self.public_datalayer = DataLayerFactory.create(dataset=self.public_dataset)
+
+        self.private_dataset = DatasetFactory.create(visibility=VisibilityOptions.PRIVATE)
+        self.private_datalayer = DataLayerFactory.create(dataset=self.private_dataset)
 
     def test_datasets_list_is_public(self):
         url = reverse("api:datasets:datasets-list")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.data.get("results")), 1)
 
     def test_all_public_endpoints_are_readable(self):
         urls = [
-            reverse("api:datasets:datasets-browse", kwargs={"pk": self.dataset.pk}),
+            reverse("api:datasets:datasets-browse", kwargs={"pk": self.public_dataset.pk}),
             f"{reverse('api:datasets:datalayers-find-anything')}?term=x&type=RASTER",
-            reverse("api:datasets:datalayers-urls", kwargs={"pk": self.datalayer.pk}),
+            reverse("api:datasets:datalayers-urls", kwargs={"pk": self.public_datalayer.pk}),
         ]
         for url in urls:
             with self.subTest(url=url):
                 resp = self.client.get(url)
                 self.assertEqual(resp.status_code, 200)
+
+    def test_private_endpoints_are_not_visible(self):
+        urls = [
+            reverse("api:datasets:datasets-browse", kwargs={"pk": self.private_dataset.pk}),
+            reverse("api:datasets:datalayers-urls", kwargs={"pk": self.private_datalayer.pk}),
+        ]
+        for url in urls:
+            with self.subTest(url=url):
+                resp = self.client.get(url)
+                self.assertEqual(resp.status_code, 404)
 
     def test_write_still_requires_authentication(self):
         url = reverse("api:datasets:datasets-list")
