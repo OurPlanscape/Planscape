@@ -1022,12 +1022,12 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
             if isinstance(value, dict):
                 for k, v in value.items():
                     if isinstance(v, float):
-                        v = truncate_result(v, quantize=".001")
+                        v = truncate_result(v, quantize=".000001")
                     flat_key = sanitize_shp_field_name(f"{prop}_{k}")
                     new_properties[flat_key] = v
             else:
                 if isinstance(value, float):
-                    value = truncate_result(value, quantize=".001")
+                    value = truncate_result(value, quantize=".000001")
                 key = dl_lookup.get(prop, prop)
                 key = sanitize_shp_field_name(key)
                 new_properties[key] = value
@@ -1110,7 +1110,7 @@ def export_scenario_stand_outputs_to_geopackage(
                         try:
                             f = float(value)
                             if math.isfinite(f):
-                                f = truncate_result(f, quantize=".001")
+                                f = truncate_result(f, quantize=".000001")
                             else:
                                 logger.warning(
                                     "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
@@ -1241,7 +1241,7 @@ def export_scenario_inputs_to_geopackage(
                         try:
                             f = float(value)
                             if math.isfinite(f):
-                                f = truncate_result(f, quantize=".001")
+                                f = truncate_result(f, quantize=".000001")
                             else:
                                 logger.warning(
                                     "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
