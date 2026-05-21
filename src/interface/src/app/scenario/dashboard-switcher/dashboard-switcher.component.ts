@@ -1,22 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { ScenarioDashboardComponent } from '../scenario-dashboard/scenario-dashboard.component';
 import { ProjectAreaDashboardComponent } from '../project-area-dashboard/project-area-dashboard.component';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { ScenarioState } from '../scenario.state';
 
 @Component({
   selector: 'app-dashboard-switcher',
   templateUrl: 'dashboard-switcher.component.html',
   standalone: true,
 
-  imports: [NgIf, ProjectAreaDashboardComponent, ScenarioDashboardComponent],
+  imports: [AsyncPipe, NgIf, ProjectAreaDashboardComponent, ScenarioDashboardComponent],
 })
-export class DashboardSwitcherComponent implements OnInit {
-  inProjectArea = false;
+export class DashboardSwitcherComponent {
+  isProjectArea = false;
+  currentScenario$ = this.scenarioState.currentScenario$
 
-  constructor(private router: Router) {}
-
-  ngOnInit() {
-    this.inProjectArea = this.router.url.includes('pa-dashboard');
-  }
+  constructor(private scenarioState: ScenarioState) { }
 }

@@ -1,12 +1,12 @@
 import { CanActivateFn, Router } from '@angular/router';
-import { ScenarioService } from './scenario.service';
 import { Scenario } from '@app/types';
 import { inject } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
+import { ScenarioState } from '@app/scenario/scenario.state';
 
 export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
-  const scenarioService = inject(ScenarioService);
+  const scenarioState = inject(ScenarioState);
 
   const id = Number(route.paramMap.get('scenarioId')!);
 
@@ -14,7 +14,7 @@ export const scenarioTypeRedirectGuard: CanActivateFn = (route, state) => {
     return record.origin === 'USER';
   }
 
-  return scenarioService.getScenario(id).pipe(
+  return scenarioState.currentScenario$.pipe(
     map((scenario: Scenario) => {
       const isOnProjectRoute = state.url.includes('pa-dashboard');
 
