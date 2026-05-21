@@ -1479,8 +1479,17 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
         if zip_file.exists():
             zip_file.unlink()
+        forsys_inputs_file = scenario.get_forsys_folder() / f"{scenario.uuid}.json"
         with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(temp_file, arcname=temp_file.name)
+            if forsys_inputs_file.exists():
+                zipf.write(forsys_inputs_file, arcname=forsys_inputs_file.name)
+            else:
+                logger.warning(
+                    "Forsys inputs file not found for scenario %s at %s",
+                    scenario.pk,
+                    forsys_inputs_file,
+                )
 
         upload_file_via_cli(
             object_name=geopackage_path.replace(
