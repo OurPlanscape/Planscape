@@ -87,7 +87,7 @@ test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) =
   await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click();
 
-  // Confirm that a scenario was created
+  // Confirm that the scenario was created
   await planPage.goto(planId);
   await expect(page.locator(`sg-scenario-card`)).toContainText(newScenarioName);
 

@@ -45,7 +45,7 @@ test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) =
   await page.locator('sg-file-upload input[type="file"]').setInputFiles(SCENARIO_SHAPEFILE);
   await page.getByRole('button', { name: 'Create' }).click();
 
-  // TODO: confirm the new scenario via the UI and scenario name
+  // Confirm the new scenario via the UI and scenario name
   await planPage.goto(planId);
   await expect(page.locator(`sg-scenario-card`)).toContainText(newScenarioName);
 
