@@ -46,49 +46,34 @@ test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) =
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
 
-  // Select Goal
+  // Step 1. Select Priority Objectives
   await page.locator('app-data-set').filter({ hasText: 'California Landscape' }).click();
   await page.locator('.icon').first().click();
   await page.locator('.data-layer-cat > .mat-nested-tree-node > .mat-tree-node > .icon').click();
   await page.getByRole('button').nth(4).click();
   await expect(page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke')).toBeVisible();
   await page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke').click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('textbox', { name: 'Min:' }).click();
-  await page.getByRole('textbox', { name: 'Min:' }).fill('100');
-  await page.getByRole('textbox', { name: 'Min:' }).press('Tab');
-  await page.locator('#mat-input-5').fill('10');
-  await page.getByRole('button', { name: 'Save & Run Scenario' }).click();
-  await page.getByRole('button', { name: 'Run Scenario' }).click();
-  await page.getByRole('button', { name: 'Close' }).click();
 
-
-  // Step 1. Select Treatment Goal
   await page.getByText('Prioritize Areas with High Expected Tree Volume Loss from Wildfire').click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
-
-  // Step 2. Select Areas to Exclude
+  // Step 2. Select Co-Benefits
   await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
-  const selectionButton = await page.getByRole('button').nth(3);
-  // TODO: expect that this button is now a '-' 
-  selectionButton.click();
+  await page.locator('app-data-set').filter({ hasText: 'LANDFIRE 2024' }).click();
+  await page.locator('.icon').first().click();
+  await page.locator('.data-layer-cat > .mat-nested-tree-node > .mat-tree-node > .icon').click();
+  await page.getByText('Forest Canopy Base Height').click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
+  // Step 3. Select Areas to Exclude
+  await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
+  await page.getByRole('button').nth(3).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
 
-  // Step 3. Stand Level Constraints (slope, roads)
+  // Step 4. Stand Level Constraints (slope, roads)
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
   // Step 4. Apply Treatment Target
-  // TODO: assert that the acres per project area validation works for this scenario
-  // await page.getByRole('textbox', { name: 'Min:' }).fill('1');
-  // await page.getByLabel('Apply Treatment Target *info').locator('div').filter({ hasText: 'Select the Treatment Targets' }).click();
-  // await expect(page.locator('form')).toContainText('Target acres per project area must be');
-
   await page.getByRole('textbox', { name: 'Min:' }).fill('100');
   await page.getByRole('textbox', { name: 'Min:' }).press('Tab');
   await page.locator('#mat-input-3').fill('10');
@@ -102,12 +87,8 @@ test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) =
   await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click();
 
-
-  // // TODO: remove the new scenario via the UI and scenario name
+  // Confirm that a scenario was created
   await planPage.goto(planId);
-  await page.locator(`sg-scenario-card[ng-reflect-name="${newScenarioName}"]`).getByRole('button', { name: 'More scenario options' }).click({ timeout: 60000 });
-  await expect(page.locator(`sg-scenario-card[ng-reflect-name="${newScenarioName}"]`));
-  // await page.getByRole('menuitem', { name: 'Delete' }).click();
-  // await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(page.locator(`sg-scenario-card`)).toContainText(newScenarioName);
 
 });

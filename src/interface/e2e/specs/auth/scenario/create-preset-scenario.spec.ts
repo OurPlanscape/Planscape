@@ -56,16 +56,11 @@ test('user can create a Preset Scenario', {tag: ['@smoke'] }, async ({ page }) =
   selectionButton.click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
-
   // Step 3. Stand Level Constraints (slope, roads)
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
   // Step 4. Apply Treatment Target
   // TODO: assert that the acres per project area validation works for this scenario
-  // await page.getByRole('textbox', { name: 'Min:' }).fill('1');
-  // await page.getByLabel('Apply Treatment Target *info').locator('div').filter({ hasText: 'Select the Treatment Targets' }).click();
-  // await expect(page.locator('form')).toContainText('Target acres per project area must be');
-
   await page.getByRole('textbox', { name: 'Min:' }).fill('100');
   await page.getByRole('textbox', { name: 'Min:' }).press('Tab');
   await page.locator('#mat-input-3').fill('10');
@@ -79,12 +74,8 @@ test('user can create a Preset Scenario', {tag: ['@smoke'] }, async ({ page }) =
   await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click();
 
-
-  // // TODO: remove the new scenario via the UI and scenario name
+  // Confirm that a scenario was created
   await planPage.goto(planId);
-  await page.locator(`sg-scenario-card[ng-reflect-name="${newScenarioName}"]`).getByRole('button', { name: 'More scenario options' }).click({ timeout: 60000 });
-  await expect(page.locator(`sg-scenario-card[ng-reflect-name="${newScenarioName}"]`));
-  // await page.getByRole('menuitem', { name: 'Delete' }).click();
-  // await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(page.locator(`sg-scenario-card`)).toContainText(newScenarioName);
 
 });
