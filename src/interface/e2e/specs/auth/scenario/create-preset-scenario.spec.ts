@@ -19,7 +19,7 @@ test.afterAll(async ({ request }) => {
   }
 });
 
-test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) => {
+test('user can create a Preset Scenario', {tag: ['@smoke'] }, async ({ page }) => {
 
   // go to the newly created Planning Area
   if(!planId) {
@@ -30,42 +30,19 @@ test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) =
 
   const newScenarioName = `New test scenario - ${Date.now()}`;
   await page
-  .locator('sg-action-card[title="Create Custom Scenario"]')
+  .locator('sg-action-card[title="Choose Treatment Goal"]')
   .getByText('add New Scenario')
   .click({ timeout: 60000 });
 
   // create scenario
   await page.getByRole('textbox').fill(newScenarioName);
   
-
   // scenario has a name
   await page.getByRole('button', { name: 'Get Started' }).click();
   await page.getByText('Optimize Project Areas Would').click();
   await page.getByRole('combobox', { name: 'Stand Size' }).locator('span').click();
   await page.getByRole('option', { name: 'Medium (100 acres)' }).click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
-
-
-  // Select Goal
-  await page.locator('app-data-set').filter({ hasText: 'California Landscape' }).click();
-  await page.locator('.icon').first().click();
-  await page.locator('.data-layer-cat > .mat-nested-tree-node > .mat-tree-node > .icon').click();
-  await page.getByRole('button').nth(4).click();
-  await expect(page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke')).toBeVisible();
-  await page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke').click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
-  await page.getByRole('textbox', { name: 'Min:' }).click();
-  await page.getByRole('textbox', { name: 'Min:' }).fill('100');
-  await page.getByRole('textbox', { name: 'Min:' }).press('Tab');
-  await page.locator('#mat-input-5').fill('10');
-  await page.getByRole('button', { name: 'Save & Run Scenario' }).click();
-  await page.getByRole('button', { name: 'Run Scenario' }).click();
-  await page.getByRole('button', { name: 'Close' }).click();
-
 
   // Step 1. Select Treatment Goal
   await page.getByText('Prioritize Areas with High Expected Tree Volume Loss from Wildfire').click();

@@ -51,7 +51,6 @@ export async function createPlanningArea(api: APIRequestContext, testName: strin
   if (!res.ok()) {
     throw new Error(`Plan creation failed: ${res.status()} ${await res.text()}`);
   }
-  console.log('apparently created a plan:', res);
   return res;
 }
 
@@ -61,6 +60,6 @@ export async function deletePlanningArea(api: APIRequestContext, planId: number)
   if (!res.ok()) {
     throw new Error(`Plan deletion failed: ${res.status()} ${await res.text()}`);
   }
-  console.log('apparently deeleted a plan:', res);
+  console.log('Deleted a plan:', res);
   return res;
 }

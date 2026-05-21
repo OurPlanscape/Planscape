@@ -178,7 +178,7 @@ export class UploadProjectAreasModalComponent {
   }
 
   showStandSize() {
-    return !this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS');
+    return this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS');
   }
 
   uploadData() {
