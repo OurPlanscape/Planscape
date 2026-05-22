@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  NgZone,
   OnDestroy,
   ViewChild,
 } from '@angular/core';
@@ -36,47 +37,76 @@ export class FundingReportComponent implements AfterViewInit, OnDestroy {
 
   activeId = this.sections[0].id;
 
-  private observer?: IntersectionObserver;
-  private suppressObserverUntil = 0;
+  private suppressUntil = 0;
+  private pendingScrollFrame: number | null = null;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
+  ) {}
 
   ngAfterViewInit(): void {
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        if (Date.now() < this.suppressObserverUntil) return;
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            this.activeId = (entry.target as HTMLElement).id;
-            this.cdr.markForCheck();
-          }
-        }
-      },
-      {
-        root: this.scrollContainer.nativeElement,
-        rootMargin: '0px 0px -80% 0px',
-        threshold: 0,
-      }
-    );
-
-    for (const s of this.sections) {
-      const el = document.getElementById(s.id);
-      if (el) this.observer.observe(el);
-    }
+    this.zone.runOutsideAngular(() => {
+      this.scrollContainer.nativeElement.addEventListener(
+        'scroll',
+        this.onScroll,
+        { passive: true }
+      );
+    });
+    this.updateActiveNav();
   }
 
   ngOnDestroy(): void {
-    this.observer?.disconnect();
+    this.scrollContainer?.nativeElement.removeEventListener(
+      'scroll',
+      this.onScroll
+    );
+    if (this.pendingScrollFrame !== null)
+      cancelAnimationFrame(this.pendingScrollFrame);
   }
 
   scrollTo(event: Event, id: string): void {
     event.preventDefault();
     this.activeId = id;
-    // suppress observer updates briefly so smooth-scroll's transit through
-    // intermediate sections doesn't flicker the active tab
-    this.suppressObserverUntil = Date.now() + 700;
+    // mute scrollspy until smooth-scroll settles so it doesn't flicker
+    // through intermediate sections
+    this.suppressUntil = Date.now() + 700;
     document
       .getElementById(id)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  private onScroll = (): void => {
+    if (this.pendingScrollFrame !== null) return;
+    this.pendingScrollFrame = requestAnimationFrame(() => {
+      this.pendingScrollFrame = null;
+      if (Date.now() < this.suppressUntil) return;
+      this.updateActiveNav();
+    });
+  };
+
+  private updateActiveNav(): void {
+    const containerTop =
+      this.scrollContainer.nativeElement.getBoundingClientRect().top;
+    // 80px is the height of the header approximately
+    const activeLineY = containerTop + 80;
+
+    let next = this.sections[0].id;
+    for (const s of this.sections) {
+      const el = document.getElementById(s.id);
+      if (!el) continue;
+      if (el.getBoundingClientRect().top <= activeLineY) {
+        next = s.id;
+      } else {
+        break;
+      }
+    }
+
+    if (next !== this.activeId) {
+      this.zone.run(() => {
+        this.activeId = next;
+        this.cdr.markForCheck();
+      });
+    }
   }
 }
