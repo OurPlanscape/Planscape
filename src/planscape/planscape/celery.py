@@ -35,6 +35,18 @@ def get_catalog_restore_schedule() -> dict[str, dict]:
     }
 
 
+def get_forisk_mills_schedule() -> dict[str, dict]:
+    if not settings.FORISK_MILLS_CRON:
+        return {}
+
+    return {
+        "refresh-forisk-mill-layers": {
+            "task": "datasets.tasks.refresh_forisk_mill_layers_task",
+            "schedule": crontab.from_string(settings.FORISK_MILLS_CRON),
+        }
+    }
+
+
 beat_schedule = {
     "trigger-scenario-post-processing": {
         "task": "planning.tasks.trigger_scenario_post_processing",
@@ -58,5 +70,6 @@ if settings.WEEKLY_NEW_USERS_REPORT_ENABLED:
 
 beat_schedule.update(get_catalog_backup_schedule())
 beat_schedule.update(get_catalog_restore_schedule())
+beat_schedule.update(get_forisk_mills_schedule())
 
 app.conf.beat_schedule = beat_schedule

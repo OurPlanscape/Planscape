@@ -1,6 +1,7 @@
 import logging
 
 from core.gcs import get_gcs_hash, is_gcs_file, update_file_cache_control
+from core.mattermost import post_to_mattermost
 from core.s3 import get_s3_hash, is_s3_file
 from django.conf import settings
 from django.db import connection
@@ -107,6 +108,42 @@ def calculate_datalayer_outline(datalayer_id: int) -> None:
             "Failed to calculate outline for datalayer %s",
             datalayer_id,
         )
+
+
+@app.task()
+def refresh_forisk_mill_layers_task() -> None:
+    from django.conf import settings
+
+    from datasets.forisk_mills import refresh_forisk_mill_layers
+
+    if not settings.FORISK_MILLS_SUB_KEY or not settings.FORISK_MILLS_USER_KEY:
+        logger.warning("Forisk mill credentials are not configured; skipping refresh.")
+        return
+    if not settings.FORISK_MILLS_API_URL:
+        logger.warning("FORISK_MILLS_API_URL is not configured; skipping refresh.")
+        return
+
+    try:
+        output_files = refresh_forisk_mill_layers(
+            organization_id=settings.FORISK_MILLS_PLANSCAPE_ORG_ID,
+            dataset_name=settings.FORISK_MILLS_DATASET_NAME,
+            sub_key=settings.FORISK_MILLS_SUB_KEY,
+            user_key=settings.FORISK_MILLS_USER_KEY,
+            api_url=settings.FORISK_MILLS_API_URL,
+            timeout=settings.FORISK_MILLS_TIMEOUT,
+        )
+        refreshed_layers = ", ".join(output_files.keys())
+        logger.info("Refreshed Forisk mill layers: %s", refreshed_layers)
+        post_to_mattermost(
+            f"planscape-{settings.ENV} :white_check_mark: "
+            f"Forisk mill layers refreshed successfully: {refreshed_layers}"
+        )
+    except Exception as exc:
+        logger.exception("Forisk mill layer refresh failed.")
+        post_to_mattermost(
+            f"planscape-{settings.ENV} :x: Forisk mill layer refresh failed: {exc}"
+        )
+        raise
 
 
 def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
