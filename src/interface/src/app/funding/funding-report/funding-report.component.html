@@ -1,0 +1,62 @@
+<nav mat-tab-nav-bar [tabPanel]="tabPanel" class="funding-report-tabs">
+  <a
+    mat-tab-link
+    *ngFor="let s of sections"
+    [active]="activeId === s.id"
+    [href]="'#' + s.id"
+    (click)="scrollTo($event, s.id)">
+    {{ s.label }}
+  </a>
+</nav>
+<mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+
+<div class="report-sections" #scrollContainer>
+  <section id="map" class="report-section">
+    <!-- TODO: map -->
+    <div class="map-container"></div>
+  </section>
+
+  <sg-section
+    id="carbon"
+    class="report-section"
+    headline="Carbon"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    Carbon Reports go here
+  </sg-section>
+
+  <sg-section
+    id="wildfire"
+    class="report-section"
+    headline="Wildfire Risk"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    Wildfire Risk Reports go here
+  </sg-section>
+
+  <sg-section
+    id="water"
+    class="report-section"
+    headline="Water"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    Water Reports go here
+  </sg-section>
+
+  <sg-section
+    id="biomass"
+    class="report-section"
+    headline="Biomass"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    Biomass Reports go here
+  </sg-section>
+</div>
+
+<div class="report-footer">
+  <button sg-button icon="share">Share</button>
+  <button sg-button icon="download">Download</button>
+  <button sg-button icon="open_in_full" variant="primary">
+    Open Full View
+  </button>
+</div>

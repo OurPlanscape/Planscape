@@ -1,0 +1,47 @@
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.funding-report-tabs {
+  width: 100%;
+  background: $color-white;
+  flex: 0 0 auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid $color-soft-gray;
+}
+
+.report-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 16px;
+}
+
+.report-section {
+  scroll-margin-top: 16px;
+}
+
+.map-container {
+  height: 330px;
+  border-radius: 8px;
+  background-color: $color-soft-gray;
+  border: 1px solid $color-light-purple;
+}
+
+.report-footer {
+  border-top: 2px solid $color-soft-gray;
+  padding: 16px;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: end;
+  gap: 8px;
+}

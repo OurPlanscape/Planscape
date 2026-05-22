@@ -8,7 +8,6 @@ import { DetailsCardComponent } from '@styleguide/details-card/details-card.comp
 import { ScenarioState } from '../scenario.state';
 import { PlanState } from '@app/plan/plan.state';
 import {
-  ButtonComponent,
   OverlayLoaderComponent,
   SectionComponent,
   TileButtonComponent,
@@ -19,10 +18,7 @@ import {
   parseResultsToProjectAreas,
 } from '@app/plan/plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ScenarioDownloadFooterComponent } from '../scenario-download-footer/scenario-download-footer.component';
 import { MatMenuModule } from '@angular/material/menu';
-import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
-import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
 import { ScenarioDashboardFooterComponent } from '../scenario-dashboard-footer/scenario-dashboard-footer.component';
 import {
   isPlanningApproachSubUnits,
@@ -37,6 +33,7 @@ import { ScenarioFailureComponent } from '../scenario-failure/scenario-failure.c
 import { ScenarioService } from '@app/services';
 import { ScenarioSetupModalComponent } from '../scenario-setup-modal/scenario-setup-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -50,11 +47,7 @@ import { MatDialog } from '@angular/material/dialog';
     DetailsCardComponent,
     TileButtonComponent,
     OverlayLoaderComponent,
-    ScenarioDownloadFooterComponent,
-    ButtonComponent,
     MatMenuModule,
-    ScenarioConfigOverlayComponent,
-    LegacyScenarioConfigOverlayComponent,
     ScenarioDashboardFooterComponent,
     ProjectAreasComponent,
     SectionComponent,
@@ -82,21 +75,13 @@ export class ScenarioDashboardComponent implements OnInit {
     })
   );
 
-  scenarioDashboardTools = [
-    {
-      id: 'treatment-effects',
-      backgroundImage: '/assets/svg/treatment-effects.svg',
-      backgroundColor: '#dfede6',
-      title: 'Treatment Effects',
-      enabled: true,
-    },
-    {
-      id: 'coming-soon',
-      backgroundImage: '/assets/svg/lock.svg',
-      title: 'Coming Soon',
-      enabled: false,
-    },
-  ];
+  scenarioDashboardTools: {
+    id: string;
+    backgroundImage: string;
+    backgroundColor?: string;
+    title: string;
+    enabled: boolean;
+  }[] = [];
 
   isLoadingDialog = false;
 
@@ -107,7 +92,8 @@ export class ScenarioDashboardComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private scenarioService: ScenarioService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -115,6 +101,30 @@ export class ScenarioDashboardComponent implements OnInit {
       label: 'Planning Area Overview',
       backUrl: getPlanPath(this.planId),
     });
+
+    this.scenarioDashboardTools = [
+      {
+        id: 'treatment-effects',
+        backgroundImage: '/assets/svg/treatment-effects.svg',
+        backgroundColor: '#dfede6',
+        title: 'Treatment Effects',
+        enabled: true,
+      },
+      this.featureService.isFeatureEnabled('FUNDING_REPORTS')
+        ? {
+            id: 'funding-opportunity-report',
+            backgroundImage: '/assets/svg/funding.svg',
+            backgroundColor: '#dfede6',
+            title: 'Funding Opportunity Report',
+            enabled: true,
+          }
+        : {
+            id: 'coming-soon',
+            backgroundImage: '/assets/svg/lock.svg',
+            title: 'Coming Soon',
+            enabled: false,
+          },
+    ];
   }
 
   isPlanningApproachSubUnits(scenario: Scenario) {
@@ -132,6 +142,16 @@ export class ScenarioDashboardComponent implements OnInit {
           backUrl: `../dashboard`,
         });
         this.router.navigate(['../treatment'], { relativeTo: this.route });
+      }
+    }
+    if (toolId === 'funding-opportunity-report') {
+      const planId = this.route.snapshot.data['planId'];
+      if (planId) {
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Scenario Dashboard',
+          backUrl: `../dashboard`,
+        });
+        this.router.navigate(['../funding'], { relativeTo: this.route });
       }
     }
   }

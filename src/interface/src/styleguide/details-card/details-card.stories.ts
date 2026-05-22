@@ -1,5 +1,5 @@
-import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
-import { DetailsCardComponent, CardDetails } from './details-card.component';
+import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
+import { CardDetails, DetailsCardComponent } from './details-card.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const mockDetails: CardDetails[] = [
@@ -31,7 +31,7 @@ const meta: Meta<DetailsCardComponent> = {
     }),
   ],
   args: {
-    title: 'Plan Details',
+    cardTitle: 'Plan Details',
     subtitle: 'Forest Restoration Plan',
     details: mockDetails,
   },

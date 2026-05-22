@@ -1,0 +1,72 @@
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  flex: 1 0 0;
+  padding: 16px;
+  text-align: center;
+  max-width: 712px;
+  margin: 0 auto;
+}
+
+.analyses {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+}
+
+.analysis-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  color: $color-dark-gray;
+
+  &::before {
+    content: '';
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: $color-brand-soft-green;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 36px 36px;
+  }
+
+  &--carbon::before {
+    background-image: url('/assets/svg/carbon.svg');
+  }
+
+  &--wildfire::before {
+    background-image: url('/assets/svg/wildfire-risk.svg');
+  }
+
+  &--water::before {
+    background-image: url('/assets/svg/water.svg');
+  }
+
+  &--biomass::before {
+    background-image: url('/assets/svg/biomass.svg');
+  }
+}
+
+.empty-state-title {
+  color: $color-black;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 32px;
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  color: $color-dark-gray;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 26px;
+}
