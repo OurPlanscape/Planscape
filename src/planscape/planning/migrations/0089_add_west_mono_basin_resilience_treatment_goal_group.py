@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                     ("PYROLOGIX", "Pyrologix"),
                     ("RISK_BASED_STRATEGIC_PLANNING", "Risk-Based Strategic Planning"),
                     ("TREEMAP_FVS_2020", "TreeMap FVS 2020"),
-                    ("WEST_MONO_BASIN_RESILIENCE", "West Mono Basin Resilience"),
+                    ("INYO_PLANNING", "Inyo Planning"),
                     ("WILDFIRE_RISK_TO_COMMUTIES", "Wildfire Risk to Communities"),
                 ],
                 help_text="Treatment Goal group.",
