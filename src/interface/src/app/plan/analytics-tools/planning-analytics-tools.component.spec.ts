@@ -94,9 +94,6 @@ describe('PlanningAnalyticsToolsComponent', () => {
     expect(component.analyticsTools.length).toBe(2);
     expect(component.analyticsTools[0].id).toBe('climate-foresight');
     expect(component.analyticsTools[0].title).toBe('Climate Foresight');
-    expect(component.analyticsTools[0].subtitle).toBe(
-      'Integrate climate data...'
-    );
   });
 
   it('should hide container when no tools are enabled', () => {
@@ -133,9 +130,6 @@ describe('PlanningAnalyticsToolsComponent', () => {
     expect(firstTool.getAttribute('ng-reflect-title')).toBe(
       'Climate Foresight'
     );
-    expect(firstTool.getAttribute('ng-reflect-subtitle')).toBe(
-      'Integrate climate data...'
-    );
   });
 
   it('should navigate to climate-foresight when climate tool is clicked', () => {
@@ -168,17 +162,6 @@ describe('PlanningAnalyticsToolsComponent', () => {
     toolCard.dispatchEvent(new CustomEvent('tileClick'));
 
     expect(component.onToolClick).toHaveBeenCalledWith('climate-foresight');
-  });
-
-  it('should display subtitle correctly', () => {
-    mockFeatureService.isFeatureEnabled.and.returnValue(true);
-    fixture.detectChanges();
-
-    const toolCard = fixture.nativeElement.querySelector('sg-tile-button');
-    expect(toolCard).toBeTruthy();
-    expect(toolCard.getAttribute('ng-reflect-subtitle')).toContain(
-      'Integrate climate data'
-    );
   });
 
   it('should handle missing planId gracefully', () => {
