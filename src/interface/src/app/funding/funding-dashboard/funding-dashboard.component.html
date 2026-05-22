@@ -46,27 +46,23 @@
     </div>
   </div>
   <div right-column class="right-column">
-    <section class="empty-state">
-      <div class="analyses">
-        <div class="analysis-item analysis-item--carbon">Carbon</div>
-        <div class="analysis-item analysis-item--wildfire">Wildfire Risk</div>
-        <div class="analysis-item analysis-item--water">Water</div>
-        <div class="analysis-item analysis-item--biomass">Biomass</div>
+    <app-funding-empty-state
+      *ngIf="(report$ | async) === null; else reportView"
+      (generateReport)="generateReport()">
+    </app-funding-empty-state>
+    <ng-template #reportView>
+      <div class="generating-report" *ngIf="isGenerating$ | async">
+        <mat-spinner diameter="36"></mat-spinner>
+        <section>
+          <div class="generating-title">Funding Report is being generated</div>
+          <div class="generating-text">
+            You’ll be notified when it’s ready by email, the completed report
+            can be viewed here.
+          </div>
+        </section>
       </div>
-      <div>
-        <div class="empty-state-title">
-          Funding Opportunity Report: Share outcomes that matter
-        </div>
-        <div class="empty-state-description">
-          Generate a comprehensive report that translates scenario results into
-          standardized metrics, helping you communicate impact, align with
-          funders, and support investment decisions.
-        </div>
-      </div>
-
-      <button sg-button icon="assignment" variant="primary">
-        Generate Report
-      </button>
-    </section>
+      <!-- TODO: funding report  -->
+      <app-funding-report *ngIf="hasOutput$ | async"></app-funding-report>
+    </ng-template>
   </div>
 </sg-dashboard-layout>

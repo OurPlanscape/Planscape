@@ -52,7 +52,7 @@
 
 
   a {
-    
+
     flex: 1;
     display: flex;
     padding: 8px;
@@ -88,85 +88,39 @@
   height: 100%;
 }
 
-.empty-state {
-  display: flex;
+.generating-report {
+  text-align: center;
   flex-direction: column;
-  justify-content: center;
+  flex: 1;
+  display: flex;
   align-items: center;
+  padding: 24px;
   gap: 24px;
-  flex: 1 0 0;
-  padding: 16px;
-  text-align: center;
-  max-width: 712px;
-  margin: 0 auto;
-}
 
-.analyses {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-}
-
-.analysis-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-
-  color: $color-dark-gray;
-
-
-  &::before {
-    content: '';
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background-color: $color-brand-soft-green;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 36px 36px;
-  }
-
-  &--carbon::before {
-    background-image: url('/assets/svg/carbon.svg');
-  }
-
-  &--wildfire::before {
-    background-image: url('/assets/svg/wildfire-risk.svg');
-  }
-
-  &--water::before {
-    background-image: url('/assets/svg/water.svg');
-  }
-
-  &--biomass::before {
-    background-image: url('/assets/svg/biomass.svg');
+  section {
+    max-width: 416px;
   }
 }
 
-.empty-state-title {
+.generating-title {
+  margin-bottom: 4px;
   color: var(--Neutral-Black, #000);
-  font-feature-settings: 'liga' off, 'clig' off;
-
-  /* Header/H4 */
-  font-family: "Public Sans";
   font-size: 18px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 32px; /* 177.778% */
-  margin-bottom: 8px;
+  line-height: 32px;
 }
 
-.empty-state-description {
+.generating-text {
   color: var(--Neutral-Dark-gray, #4A4A4A);
   text-align: center;
-  font-feature-settings: 'liga' off, 'clig' off;
-
-  /* Paragraph/Regular */
-  font-family: "Public Sans";
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: 26px; /* 162.5% */
+}
+
+
+app-funding-report {
+  flex: 1;
+  align-self: stretch;
 }
