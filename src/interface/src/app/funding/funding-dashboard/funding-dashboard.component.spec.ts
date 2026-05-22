@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { FundingDashboardComponent } from 'src/app/funding/funding-dashboard/funding-dashboard.component';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { FundingDashboardComponent } from '@app/funding/funding-dashboard/funding-dashboard.component';
+import { MockProvider } from 'ng-mocks';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 describe('FundingDashboardComponent', () => {
   let component: FundingDashboardComponent;
@@ -8,7 +11,12 @@ describe('FundingDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FundingDashboardComponent],
+      imports: [
+        FundingDashboardComponent,
+        NoopAnimationsModule,
+        HttpClientTestingModule,
+      ],
+      providers: [MockProvider(BreadcrumbService)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FundingDashboardComponent);

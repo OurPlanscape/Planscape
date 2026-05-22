@@ -45,7 +45,7 @@ export class FundingDashboardComponent implements OnInit {
 
   generateReport() {
     this.report$.next({ status: 'generating' });
-    // simulate
+    // simulate generating report
     setTimeout(() => {
       this.report$.next({ status: 'success' });
     }, 1000);

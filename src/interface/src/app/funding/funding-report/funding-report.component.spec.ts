@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { FundingReportComponent } from './funding-report.component';
 
@@ -8,10 +9,9 @@ describe('FundingReportComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FundingReportComponent]
-    })
-    .compileComponents();
-    
+      imports: [FundingReportComponent, NoopAnimationsModule],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(FundingReportComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
