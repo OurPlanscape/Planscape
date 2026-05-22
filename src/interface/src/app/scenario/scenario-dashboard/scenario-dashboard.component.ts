@@ -80,16 +80,12 @@ export class ScenarioDashboardComponent implements OnInit {
       backgroundImage: '/assets/svg/treatment-effects.svg',
       backgroundColor: '#dfede6',
       title: 'Treatment Effects',
-      subtitle: 'The Treatment Effects module aims t...',
-      featureFlag: '',
       enabled: true,
     },
     {
       id: 'coming-soon',
       backgroundImage: '/assets/svg/lock.svg',
       title: 'Coming Soon',
-      subtitle: '',
-      featureFlag: '',
       enabled: false,
     },
   ];

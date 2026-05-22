@@ -536,6 +536,8 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         if self.type == DataLayerType.RASTER:
             return self.get_public_url()
         if self.table and self.storage_type == StorageTypeChoices.DATABASE:
+            if settings.ENV == "local":
+                return "http://localhost:3000/dynamic/{z}/{x}/{y}?layer=" + str(self.id)
             base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
             return base + "/tiles/dynamic/{z}/{x}/{y}?layer=" + str(self.id)
 
