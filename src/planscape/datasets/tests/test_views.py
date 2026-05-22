@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 
 from datasets.models import DataLayer, DataLayerType, VisibilityOptions
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
+from workspaces.tests.factories import WorkspaceFactory
 
 User = get_user_model()
 
@@ -250,6 +251,54 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(data.get("results")), 3)
 
+    def test_datalayers_list_workpace_related(self):
+        collaborator = UserFactory.create()
+        viewer = UserFactory.create()
+        shared_workspace = WorkspaceFactory.create(
+            owner=self.normal,
+            collaborators=[collaborator],
+            viewers=[viewer],
+        )
+        shared_dataset = DatasetFactory(
+            visibility=VisibilityOptions.PRIVATE,
+            workspace=shared_workspace,
+        )
+
+        hidden_workspace = WorkspaceFactory.create(
+            owner=self.normal
+        )
+        hidden_dataset = DatasetFactory(
+            visibility=VisibilityOptions.PRIVATE,
+            workspace=hidden_workspace,
+        )
+
+        for i in range(5):
+            DataLayerFactory.create(
+                dataset=shared_dataset, 
+                name=f"shared private R {i}", 
+                type=DataLayerType.RASTER,
+                workspace=shared_workspace
+            )
+            DataLayerFactory.create(
+                dataset=hidden_dataset, 
+                name=f"hidden private R {i}", 
+                type=DataLayerType.RASTER,
+                workspace=hidden_workspace
+            )
+
+        for test in [
+            {"user": self.normal, "expected_result": 10},
+            {"user": collaborator, "expected_result": 5},
+            {"user": viewer, "expected_result": 5},
+        ]:
+            self.client.force_authenticate(user=test.get("user"))
+            url = reverse("api:datasets:datalayers-list")
+            response = self.client.get(url)
+            data = response.json()
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(data.get("results")), test.get("expected_result"))
+
+
     def test_find_anything(self):
         self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
@@ -329,6 +378,54 @@ class TestDataLayerViewSet(APITestCase):
         data = resp.json()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(0, data.get("count"))
+
+    def test_find_anything_workpace_related(self):
+        collaborator = UserFactory.create()
+        viewer = UserFactory.create()
+        shared_workspace = WorkspaceFactory.create(
+            owner=self.normal,
+            collaborators=[collaborator],
+            viewers=[viewer],
+        )
+        shared_dataset = DatasetFactory(
+            visibility=VisibilityOptions.PRIVATE,
+            workspace=shared_workspace,
+        )
+
+        hidden_workspace = WorkspaceFactory.create(
+            owner=self.normal
+        )
+        hidden_dataset = DatasetFactory(
+            visibility=VisibilityOptions.PRIVATE,
+            workspace=hidden_workspace,
+        )
+
+        for i in range(5):
+            DataLayerFactory.create(
+                dataset=shared_dataset, 
+                name=f"shared private R {i}", 
+                type=DataLayerType.RASTER,
+                workspace=shared_workspace
+            )
+            DataLayerFactory.create(
+                dataset=hidden_dataset, 
+                name=f"hidden private R {i}", 
+                type=DataLayerType.RASTER,
+                workspace=hidden_workspace
+            )
+
+        for test in [
+            {"user": self.normal, "expected_result": 10},
+            {"user": collaborator, "expected_result": 5},
+            {"user": viewer, "expected_result": 5},
+        ]:
+            self.client.force_authenticate(user=test.get("user"))
+            params = {"term": "priv", "type": "RASTER"}
+            url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
+            resp = self.client.get(url)
+            data = resp.json()
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data.get("count"), test.get("expected_result"))
 
 
 class TestDatasetViewSet(APITestCase):
