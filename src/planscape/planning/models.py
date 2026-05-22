@@ -582,7 +582,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         if self.type == ScenarioType.CUSTOM:
-            priority_objectives = self.configuration.get("priority_objectives", [])
+            if self.configuration.get("priorities"):
+                priority_objectives = [
+                    p.get("datalayer") for p in self.configuration.get("priorities")
+                ]
+            else:
+                priority_objectives = self.configuration.get("priority_objectives", [])
             cobenefits = self.configuration.get("cobenefits", [])
             datalayer_ids = priority_objectives + cobenefits
             datalayers = DataLayer.objects.filter(id__in=datalayer_ids).filter(

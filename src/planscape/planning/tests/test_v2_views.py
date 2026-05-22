@@ -18,6 +18,7 @@ from planning.models import (
     PlanningArea,
     RegionChoices,
     ScenarioResult,
+    ScenarioResultStatus,
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
@@ -1149,7 +1150,9 @@ class CreateScenariosFromUpload(APITestCase):
     def test_invalid_geometry_returns_400_with_global_error(self, mock_create):
         from planscape.exceptions import InvalidGeometry
 
-        mock_create.side_effect = InvalidGeometry("Geometry is invalid and cannot be processed.")
+        mock_create.side_effect = InvalidGeometry(
+            "Geometry is invalid and cannot be processed."
+        )
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.riverside),
@@ -1170,7 +1173,9 @@ class CreateScenariosFromUpload(APITestCase):
 
     @mock.patch("planning.views_v2.create_scenario_from_upload")
     def test_oversize_planning_area_returns_400_with_global_error(self, mock_create):
-        mock_create.side_effect = ValueError("Planning area is oversize; scenarios are disabled.")
+        mock_create.side_effect = ValueError(
+            "Planning area is oversize; scenarios are disabled."
+        )
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.riverside),
@@ -1352,3 +1357,73 @@ class TreatmentGoalViewSetTest(APITestCase):
         treatment_goals = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(treatment_goals), 1)
+
+
+class ListScenarioDraftVisibilityTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory.create()
+        self.collaborator = UserFactory.create()
+
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            collaborators=[self.collaborator],
+        )
+
+        self.creator_draft = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.creator,
+            name="Creator draft",
+        )
+        ScenarioResult.objects.update_or_create(
+            scenario=self.creator_draft,
+            defaults={"status": ScenarioResultStatus.DRAFT},
+        )
+
+        self.collaborator_draft = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.collaborator,
+            name="Collaborator draft",
+        )
+        ScenarioResult.objects.update_or_create(
+            scenario=self.collaborator_draft,
+            defaults={"status": ScenarioResultStatus.DRAFT},
+        )
+
+        self.completed_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.creator,
+            name="Completed scenario",
+        )
+        ScenarioResult.objects.update_or_create(
+            scenario=self.completed_scenario,
+            defaults={"status": ScenarioResultStatus.SUCCESS},
+        )
+
+    def get_scenario_ids_for_user(self, user):
+        self.client.force_authenticate(user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-list"),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        results = (
+            data["results"] if isinstance(data, dict) and "results" in data else data
+        )
+        return {scenario["id"] for scenario in results}
+
+    def test_creator_only_sees_their_own_draft_scenarios(self):
+        scenario_ids = self.get_scenario_ids_for_user(self.creator)
+
+        self.assertIn(self.creator_draft.id, scenario_ids)
+        self.assertIn(self.completed_scenario.id, scenario_ids)
+        self.assertNotIn(self.collaborator_draft.id, scenario_ids)
+
+    def test_collaborator_only_sees_their_own_draft_scenarios(self):
+        scenario_ids = self.get_scenario_ids_for_user(self.collaborator)
+
+        self.assertIn(self.collaborator_draft.id, scenario_ids)
+        self.assertIn(self.completed_scenario.id, scenario_ids)
+        self.assertNotIn(self.creator_draft.id, scenario_ids)
