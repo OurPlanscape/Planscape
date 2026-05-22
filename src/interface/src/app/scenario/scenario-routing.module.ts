@@ -22,9 +22,7 @@ const routes: Routes = [
     component: DashboardSwitcherComponent,
     title: 'Scenario Dashboard',
     canDeactivate: [canDeactivateGuard],
-    canActivate: [
-      createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' }),
-    ],
+    canActivate: [createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' })],
     resolve: {
       scenarioId: scenarioLoaderResolver,
       dataLayerInit: resetDatalayerResolver,

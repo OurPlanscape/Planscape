@@ -9,11 +9,16 @@ import { ScenarioState } from '../scenario.state';
   templateUrl: 'dashboard-switcher.component.html',
   standalone: true,
 
-  imports: [AsyncPipe, NgIf, ProjectAreaDashboardComponent, ScenarioDashboardComponent],
+  imports: [
+    AsyncPipe,
+    NgIf,
+    ProjectAreaDashboardComponent,
+    ScenarioDashboardComponent,
+  ],
 })
 export class DashboardSwitcherComponent {
   isProjectArea = false;
-  currentScenario$ = this.scenarioState.currentScenario$
+  currentScenario$ = this.scenarioState.currentScenario$;
 
-  constructor(private scenarioState: ScenarioState) { }
+  constructor(private scenarioState: ScenarioState) {}
 }
