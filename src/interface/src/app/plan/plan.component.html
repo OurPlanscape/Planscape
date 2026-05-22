@@ -13,7 +13,7 @@
     <div left-column class="plan-overview-column">
       <ng-container *ngIf="currentPlan$ | async as plan">
         <sg-details-card
-          title="Planning Area Overview"
+          cardTitle="Planning Area Overview"
           [creator]="plan.creator"
           [acres]="plan.area_acres"
           [created_at]="plan.created_at"

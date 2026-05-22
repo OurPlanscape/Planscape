@@ -13,6 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewerCardComponent } from '@app/plan/map-viewer-card/map-viewer-card.component';
 import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/project-area-coming-soon.component';
 import { ScenarioState } from '../scenario.state';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -39,28 +40,21 @@ export class ProjectAreaDashboardComponent implements OnInit {
   currentScenario$ = this.scenarioState.currentScenario$;
   planId = this.route.parent?.snapshot.data['planId'];
 
-  dashboardTools = [
-    {
-      id: 'treatment-effects',
-      backgroundImage: '/assets/svg/treatment-effects.svg',
-      backgroundColor: '#dfede6',
-      title: 'Treatment Effects',
-      enabled: true,
-    },
-    {
-      id: 'coming-soon',
-      backgroundImage: '/assets/svg/lock.svg',
-      title: 'Coming Soon',
-      enabled: false,
-    },
-  ];
+  dashboardTools: {
+    id: string;
+    backgroundImage: string;
+    backgroundColor?: string;
+    title: string;
+    enabled: boolean;
+  }[] = [];
 
   constructor(
     private scenarioState: ScenarioState,
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +62,30 @@ export class ProjectAreaDashboardComponent implements OnInit {
       label: 'Planning Area Overview',
       backUrl: getPlanPath(this.planId),
     });
+
+    this.dashboardTools = [
+      {
+        id: 'treatment-effects',
+        backgroundImage: '/assets/svg/treatment-effects.svg',
+        backgroundColor: '#dfede6',
+        title: 'Treatment Effects',
+        enabled: true,
+      },
+      this.featureService.isFeatureEnabled('FUNDING_REPORTS')
+        ? {
+            id: 'funding-opportunity-report',
+            backgroundImage: '/assets/svg/funding.svg',
+            backgroundColor: '#dfede6',
+            title: 'Funding Opportunity Report',
+            enabled: true,
+          }
+        : {
+            id: 'coming-soon',
+            backgroundImage: '/assets/svg/lock.svg',
+            title: 'Coming Soon',
+            enabled: false,
+          },
+    ];
   }
 
   onToolClick(toolId: string): void {
@@ -79,6 +97,16 @@ export class ProjectAreaDashboardComponent implements OnInit {
           backUrl: `../projdashboard`,
         });
         this.router.navigate(['../treatment'], { relativeTo: this.route });
+      }
+    }
+    if (toolId === 'funding-opportunity-report') {
+      const planId = this.route.snapshot.data['planId'];
+      if (planId) {
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Project Area Dashboard',
+          backUrl: `../projdashboard`,
+        });
+        this.router.navigate(['../funding'], { relativeTo: this.route });
       }
     }
   }

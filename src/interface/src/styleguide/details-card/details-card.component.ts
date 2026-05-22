@@ -29,7 +29,7 @@ export class DetailsCardComponent {
   @Input() created_at: string = '';
   @Input() planning_area_name: string = '';
 
-  @Input() title: string = '';
+  @Input() cardTitle: string = '';
   @Input() subtitle: string = '';
   @Input() details: CardDetails[] | null = [];
 

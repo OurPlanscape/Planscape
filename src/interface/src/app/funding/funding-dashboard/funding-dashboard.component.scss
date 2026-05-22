@@ -1,0 +1,172 @@
+@import 'variables';
+@import 'colors';
+@import 'mixins';
+
+
+.banner {
+  display: flex;
+  height: 226px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background: linear-gradient(87deg, $color-brand-green -3.31%, #28848C 97.61%);
+  color: $color-white;
+  font-feature-settings: 'liga' off, 'clig' off;
+  font-size: 26px;
+  line-height: 28px;
+  font-weight: 700;
+  gap: 16px;
+  padding: 16px;
+}
+
+.left-column {
+  display: flex;
+  gap: 24px;
+  flex-direction: column;
+
+
+  background: $color-white;
+  border: 1px solid $color-fields-gray;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
+}
+
+.credits {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  img {
+    width: 94px;
+  }
+}
+
+.partners {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+
+
+  a {
+    
+    flex: 1;
+    display: flex;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 4px;
+    border: 1px solid $color-brand-soft-green;
+    background: $color-brand-soft-green;
+    height: 73px;
+    box-sizing: border-box;
+  }
+
+  img {
+    max-width: 138px;
+  }
+}
+
+.description {
+  color: $color-dark-gray;
+  text-align: justify;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 26px; /* 162.5% */
+}
+
+// Right column
+
+.right-column {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  flex: 1 0 0;
+  padding: 16px;
+  text-align: center;
+  max-width: 712px;
+  margin: 0 auto;
+}
+
+.analyses {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+}
+
+.analysis-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+
+  color: $color-dark-gray;
+
+
+  &::before {
+    content: '';
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: $color-brand-soft-green;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 36px 36px;
+  }
+
+  &--carbon::before {
+    background-image: url('/assets/svg/carbon.svg');
+  }
+
+  &--wildfire::before {
+    background-image: url('/assets/svg/wildfire-risk.svg');
+  }
+
+  &--water::before {
+    background-image: url('/assets/svg/water.svg');
+  }
+
+  &--biomass::before {
+    background-image: url('/assets/svg/biomass.svg');
+  }
+}
+
+.empty-state-title {
+  color: var(--Neutral-Black, #000);
+  font-feature-settings: 'liga' off, 'clig' off;
+
+  /* Header/H4 */
+  font-family: "Public Sans";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px; /* 177.778% */
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  color: var(--Neutral-Dark-gray, #4A4A4A);
+  text-align: center;
+  font-feature-settings: 'liga' off, 'clig' off;
+
+  /* Paragraph/Regular */
+  font-family: "Public Sans";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 26px; /* 162.5% */
+}

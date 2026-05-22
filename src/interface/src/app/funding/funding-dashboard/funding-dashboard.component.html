@@ -1,0 +1,72 @@
+<sg-dashboard-layout
+  layoutVariant="disable-right-scroll"
+  class="project-area-dashboard-layout">
+  <div header>
+    <!-- NavBar -->
+    <app-nav-bar area="SCENARIO"></app-nav-bar>
+  </div>
+  <div left-column class="left-column">
+    <div class="banner">
+      <img src="assets/svg/funding-white.svg" /> Funding Opportunity Report
+    </div>
+
+    <div>
+      <div class="credits">
+        Developed by
+        <img
+          src="assets/svg/icons/planscape-color-logo-w-text.svg"
+          alt="Planscape" />
+        in partnership with:
+      </div>
+      <section class="partners">
+        <a
+          href="https://www.blueforest.org/"
+          title="Blue Forest"
+          target="_blank"
+          ><img src="/assets/png/blue-forest.png" alt="Blue Forest"
+        /></a>
+        <a
+          href="https://thefreshwatertrust.org/"
+          title="The Freshwater Trust"
+          target="_blank">
+          <img
+            src="assets/png/freshwater-trust.png"
+            alt="The Freshwater Trust" />
+        </a>
+      </section>
+    </div>
+
+    <div class="description">
+      The Funding Report module aims to help you communicate the funding
+      opportunity of their scenarios by translating treatment outcomes into
+      standardized metrics. Through this auto-generated report, you can present
+      the carbon, biomass, wildfire risk, and water benefits of proposed
+      treatments to conservation finance partners and funders, supporting
+      project alignment, portfolio building, and investment decision-making.
+    </div>
+  </div>
+  <div right-column class="right-column">
+    <section class="empty-state">
+      <div class="analyses">
+        <div class="analysis-item analysis-item--carbon">Carbon</div>
+        <div class="analysis-item analysis-item--wildfire">Wildfire Risk</div>
+        <div class="analysis-item analysis-item--water">Water</div>
+        <div class="analysis-item analysis-item--biomass">Biomass</div>
+      </div>
+      <div>
+        <div class="empty-state-title">
+          Funding Opportunity Report: Share outcomes that matter
+        </div>
+        <div class="empty-state-description">
+          Generate a comprehensive report that translates scenario results into
+          standardized metrics, helping you communicate impact, align with
+          funders, and support investment decisions.
+        </div>
+      </div>
+
+      <button sg-button icon="assignment" variant="primary">
+        Generate Report
+      </button>
+    </section>
+  </div>
+</sg-dashboard-layout>
