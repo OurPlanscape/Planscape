@@ -1,6 +1,6 @@
 <sg-modal
   class="upload-scenario-modal"
-  title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
+  title="Upload Project Areas to &ldquo;{{ data.planning_area_name }}&rdquo;"
   primaryButtonText="Create"
   [primaryButtonDisabled]="!canSubmit()"
   secondaryButtonText="Cancel"
@@ -26,7 +26,7 @@
 
       <div class="field-row">
         <div class="field-label-required">
-          Scenario name
+          Name
           <div class="required-star">*</div>
         </div>
         <sg-input-field
@@ -40,7 +40,7 @@
           <input
             sgInput
             cdkFocusInitial
-            placeholder="Scenario name"
+            placeholder="Name"
             name="scenarioName"
             formControlName="scenarioName"
             class="scenario-name-field" />

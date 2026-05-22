@@ -6,7 +6,6 @@ import { ScenarioComponent } from './scenario.component';
 import { canDeactivateGuard } from '@services/can-deactivate.guard';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { createFeatureGuard } from '@app/features/feature.guard';
-import { scenarioTypeRedirectGuard } from '@app/services/scenario-type.guard';
 import { DashboardSwitcherComponent } from './dashboard-switcher/dashboard-switcher.component';
 
 const routes: Routes = [
@@ -23,10 +22,7 @@ const routes: Routes = [
     component: DashboardSwitcherComponent,
     title: 'Scenario Dashboard',
     canDeactivate: [canDeactivateGuard],
-    canActivate: [
-      createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' }),
-      scenarioTypeRedirectGuard,
-    ],
+    canActivate: [createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' })],
     resolve: {
       scenarioId: scenarioLoaderResolver,
       dataLayerInit: resetDatalayerResolver,
