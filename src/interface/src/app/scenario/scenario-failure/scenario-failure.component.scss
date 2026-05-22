@@ -1,10 +1,10 @@
-@import "colors";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
 
 :host {
   display: block;
   margin: 0;
-  padding-top: 24px
+  padding-top: 24px;
 }
 
 section {
@@ -15,9 +15,9 @@ section {
 }
 
 h4 {
-    @include h4();
-    display: flex;
-    gap: 8px;
+  @include h4();
+  display: flex;
+  gap: 8px;
 }
 
 .button-left {
@@ -37,7 +37,6 @@ ul {
 li {
   @include small-input-label();
   color: $color-md-gray;
-
 }
 
 li::marker {
@@ -72,3 +71,8 @@ b {
   --mdc-circular-progress-active-indicator-color: $color-white;
 }
 
+.dashboard {
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
+}
