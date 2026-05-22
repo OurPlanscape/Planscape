@@ -65,6 +65,7 @@ class DatasetQuerySet(models.QuerySet):
         q = Q(visibility=VisibilityOptions.PUBLIC)
         if user and user.is_authenticated:
             q |= Q(created_by=user)
+            q |= Q(workspace__user_access__user=user)
             if user.is_staff or user.is_superuser:
                 q |= Q(visibility=VisibilityOptions.PRIVATE)
         return self.filter(q).distinct()
