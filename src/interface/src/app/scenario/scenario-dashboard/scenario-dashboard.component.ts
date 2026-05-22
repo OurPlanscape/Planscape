@@ -24,12 +24,19 @@ import { MatMenuModule } from '@angular/material/menu';
 import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
 import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
 import { ScenarioDashboardFooterComponent } from '../scenario-dashboard-footer/scenario-dashboard-footer.component';
-import { isPlanningApproachSubUnits } from '../scenario-helper';
+import {
+  isPlanningApproachSubUnits,
+  suggestUniqueName,
+} from '../scenario-helper';
 import { Scenario } from '@app/types';
 import { ProjectAreasComponent } from '@app/plan/project-areas/project-areas.component';
-import { map } from 'rxjs';
+import { catchError, map, of, take } from 'rxjs';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { ScenarioMinimalMapComponent } from '@app/maplibre-map/scenario-minimal-map/scenario-minimal-map.component';
+import { ScenarioFailureComponent } from '../scenario-failure/scenario-failure.component';
+import { ScenarioService } from '@app/services';
+import { ScenarioSetupModalComponent } from '../scenario-setup-modal/scenario-setup-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @UntilDestroy()
 @Component({
@@ -52,6 +59,7 @@ import { ScenarioMinimalMapComponent } from '@app/maplibre-map/scenario-minimal-
     ProjectAreasComponent,
     SectionComponent,
     ScenarioMinimalMapComponent,
+    ScenarioFailureComponent,
   ],
   templateUrl: './scenario-dashboard.component.html',
   styleUrl: './scenario-dashboard.component.scss',
@@ -90,12 +98,16 @@ export class ScenarioDashboardComponent implements OnInit {
     },
   ];
 
+  isLoadingDialog = false;
+
   constructor(
     private scenarioState: ScenarioState,
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private scenarioService: ScenarioService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -122,5 +134,44 @@ export class ScenarioDashboardComponent implements OnInit {
         this.router.navigate(['../treatment'], { relativeTo: this.route });
       }
     }
+  }
+
+  scenarioHasFailed(scenario: Scenario) {
+    const status = scenario.scenario_result?.status;
+    return status === 'FAILURE' || status === 'PANIC' || status === 'TIMED_OUT';
+  }
+
+  scenarioStatus(scenario: Scenario) {
+    return scenario.scenario_result?.status || 'PENDING';
+  }
+
+  handleTryAgain(scenario: Scenario) {
+    this.isLoadingDialog = true;
+    this.scenarioService
+      .getScenariosForPlan(this.planId)
+      .pipe(
+        take(1),
+        map((scenarios) => scenarios.map((s) => s.name)),
+        catchError((error) => {
+          return of([]);
+        })
+      )
+      .subscribe((existingNames: string[]) => {
+        const suggestedName =
+          existingNames.length > 0
+            ? suggestUniqueName(scenario.name, existingNames)
+            : '';
+        this.isLoadingDialog = false;
+        this.dialog.open(ScenarioSetupModalComponent, {
+          maxWidth: '560px',
+          data: {
+            planId: this.planId,
+            defaultName: suggestedName,
+            fromClone: true,
+            scenario: scenario,
+            type: scenario.type,
+          },
+        });
+      });
   }
 }
