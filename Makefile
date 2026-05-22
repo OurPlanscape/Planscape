@@ -184,8 +184,7 @@ docker-migrate:
 
 # Reset relevant tables and load development fixture data
 load-dev-data:
-	./src/planscape/bin/run.sh uv run python manage.py reset_dev_data
-	./src/planscape/bin/run.sh uv run python manage.py loaddata datasets/fixtures/datasets.json planning/fixtures/planning_treatment_goals.json
+	./src/planscape/bin/run.sh uv run python manage.py mock_dev_data
 
 dev:
 	make -j2 dev-frontend dev-backend

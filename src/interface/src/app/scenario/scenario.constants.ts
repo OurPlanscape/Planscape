@@ -1,14 +1,15 @@
 export const SUB_UNIT_LAYER_COLOR = '#356A72'; // $color-brand-teal
 
 export interface ScenarioStepConfig {
-  label: string; // label for this step
-  description: string; // description for this step
-  icon: string; // icon for this step
-  includeConstraints: boolean; // if this step should include Constraints when fetching available stands
-  includeExcludedAreas: boolean; // if this step should include ExcludedAreas when fetching available stands
-  refreshAvailableStands: boolean; // if this step needs to refresh available stands
-  hasMap: boolean; // if this step shows the map
-  showSubUnitToggle?: boolean; // defaults to true; set false to hide the sub-unit toggle
+  label: string; // label for the step
+  description: string; // description for the step
+  icon: string; // icon for the step
+  includeSubUnits?: boolean; // if the step should include sub units when fetching available stands
+  includeConstraints: boolean; // if the step should include Constraints when fetching available stands
+  includeExcludedAreas: boolean; // if the step should include ExcludedAreas when fetching available stands
+  refreshAvailableStands: boolean; // if the step needs to refresh available stands
+  hasMap: boolean; // if the step shows the map
+  showSubUnitToggle?: boolean; // defaults to true; set false to hide the sub unit toggle
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
@@ -20,6 +21,7 @@ export const SUB_UNITS_STEP: ScenarioStepConfig = {
   refreshAvailableStands: true,
   hasMap: true,
   showSubUnitToggle: false,
+  includeSubUnits: true,
 };
 
 export const exitModalData = (scenarioName: string) => ({
