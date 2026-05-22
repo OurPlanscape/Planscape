@@ -17,6 +17,7 @@
       [matChipInputFor]="chipList"
       [matChipInputAddOnBlur]="true"
       (matChipInputTokenEnd)="addIfValid($event)"
+      (paste)="onPaste($event)"
       [matChipInputSeparatorKeyCodes]="[13, 32]" />
   </mat-chip-grid>
 </mat-form-field>
