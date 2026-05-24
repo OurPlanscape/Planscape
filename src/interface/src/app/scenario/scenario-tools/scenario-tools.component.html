@@ -1,0 +1,9 @@
+<sg-tile-button
+  *ngFor="let tool of scenarioDashboardTools"
+  [backgroundImage]="tool.backgroundImage"
+  [backgroundColor]="tool.backgroundColor ?? ''"
+  [title]="tool.title"
+  size="lg"
+  [disabled]="!tool.enabled"
+  (tileClick)="onToolClick(tool.id)">
+</sg-tile-button>

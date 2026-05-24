@@ -35,15 +35,8 @@
         </p>
         <!--Tools-->
         <div class="tools">
-          <sg-tile-button
-            *ngFor="let tool of dashboardTools"
-            [backgroundImage]="tool.backgroundImage"
-            [backgroundColor]="tool.backgroundColor ?? ''"
-            [title]="tool.title"
-            size="lg"
-            [disabled]="!tool.enabled"
-            (tileClick)="onToolClick(tool.id)">
-          </sg-tile-button>
+          <app-scenario-tools
+            (toolClicked)="onToolClick($event)"></app-scenario-tools>
         </div>
       </sg-details-card>
     </div>
