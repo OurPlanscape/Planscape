@@ -5,6 +5,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  color: $color-dark-gray;
 }
 
 .funding-report-tabs {
@@ -44,4 +45,136 @@
   flex: 0 0 auto;
   justify-content: end;
   gap: 8px;
+}
+
+
+h5 {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 15px;
+  text-transform: uppercase;
+  margin: 8px 0 12px;
+  color: $color-black;
+}
+
+.chart-subtitle {
+  color: $color-md-gray;
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+
+.summary-card {
+  background: $color-lighter-gray;
+  border: 1px solid $color-fields-gray;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.summary-label {
+  color: $color-md-gray;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 20px;
+}
+
+.summary-tooltip-icon {
+  color: $color-standard-blue;
+}
+
+.summary-value {
+  color: $color-brand-teal;
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 32px; /* 123.077% */
+}
+
+.stat-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stat-card {
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.stat-label {
+  color: $color-md-gray;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #000;
+}
+
+.stat-unit {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.biomass-intro {
+  color: $color-md-gray;
+  margin: 0 0 16px;
+}
+
+.biomass-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #E1E1E1;
+
+  th,
+  td {
+    border: 1px solid $color-soft-gray;
+    padding: 16px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  thead th, tbody th {
+    background: $color-lighter-gray;
+    font-weight: 600;
+  }
+
+
+  tbody td {
+    background: $color-white;
+  }
+}
+
+
+.top-section-divider {
+  border-top: 1px solid $color-soft-gray;
+  padding-top: 24px;
+}
+
+.report-section ::ng-deep .mat-expansion-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.report-section ::ng-deep sg-chart .canvas-wrapper {
+  height: 312px;
+}
+
+
+.burn-probability-banner {
+  margin: 16px 0;
 }
