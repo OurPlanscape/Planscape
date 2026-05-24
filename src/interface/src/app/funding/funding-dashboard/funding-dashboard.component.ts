@@ -7,6 +7,7 @@ import { BehaviorSubject, map } from 'rxjs';
 import { FundingEmptyStateComponent } from '../funding-empty-state/funding-empty-state.component';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { FundingReportComponent } from '@app/funding/funding-report/funding-report.component';
+import { ToolInfoCardComponent } from '@styleguide';
 
 // placeholder type
 interface Report {
@@ -23,6 +24,7 @@ interface Report {
     FundingEmptyStateComponent,
     LegacyMaterialModule,
     FundingReportComponent,
+    ToolInfoCardComponent,
   ],
   templateUrl: './funding-dashboard.component.html',
   styleUrl: './funding-dashboard.component.scss',
@@ -35,6 +37,19 @@ export class FundingDashboardComponent implements OnInit {
 
   isGenerating$ = this.report$.pipe(map((r) => r?.status === 'generating'));
   hasOutput$ = this.report$.pipe(map((r) => r?.status === 'success'));
+
+  readonly partners = [
+    {
+      name: 'Blue Forest',
+      logo: '/assets/png/blue-forest.png',
+      url: 'https://www.blueforest.org/',
+    },
+    {
+      name: 'The Freshwater Trust',
+      logo: '/assets/png/freshwater-trust.png',
+      url: 'https://thefreshwatertrust.org/',
+    },
+  ];
 
   ngOnInit() {
     this.breadcrumbService.updateBreadCrumb({

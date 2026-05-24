@@ -6,44 +6,21 @@
     <app-nav-bar area="SCENARIO"></app-nav-bar>
   </div>
   <div left-column class="left-column">
-    <div class="banner">
-      <img src="assets/svg/funding-white.svg" /> Funding Opportunity Report
-    </div>
-
-    <div>
-      <div class="credits">
-        Developed by
-        <img
-          src="assets/svg/icons/planscape-color-logo-w-text.svg"
-          alt="Planscape" />
-        in partnership with:
-      </div>
-      <section class="partners">
-        <a
-          href="https://www.blueforest.org/"
-          title="Blue Forest"
-          target="_blank"
-          ><img src="/assets/png/blue-forest.png" alt="Blue Forest"
-        /></a>
-        <a
-          href="https://thefreshwatertrust.org/"
-          title="The Freshwater Trust"
-          target="_blank">
-          <img
-            src="assets/png/freshwater-trust.png"
-            alt="The Freshwater Trust" />
-        </a>
-      </section>
-    </div>
-
-    <div class="description">
-      The Funding Report module aims to help you communicate the funding
+    <sg-tool-info-card
+      theme="dark"
+      cardTitle="Funding Opportunity Report"
+      mainImagePath="assets/svg/funding-white.svg"
+      creditImagePath="assets/svg/icons/planscape-color-logo-w-text.svg"
+      creditImageAlt="Planscape"
+      creditText="in partnership with:"
+      [showTooltipButton]="false"
+      description="The Funding Report module aims to help you communicate the funding
       opportunity of their scenarios by translating treatment outcomes into
       standardized metrics. Through this auto-generated report, you can present
       the carbon, biomass, wildfire risk, and water benefits of proposed
       treatments to conservation finance partners and funders, supporting
-      project alignment, portfolio building, and investment decision-making.
-    </div>
+      project alignment, portfolio building, and investment decision-making."
+      [partners]="partners"></sg-tool-info-card>
   </div>
   <div right-column class="right-column">
     <app-funding-empty-state
