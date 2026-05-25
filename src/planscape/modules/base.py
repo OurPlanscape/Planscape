@@ -16,6 +16,7 @@ from planning.models import (
 from modules.serializers import (
     BaseModuleSerializer,
     ForsysModuleSerializer,
+    FundingReportModuleSerializer,
     MapModuleSerializer,
     PrioritizeSubUnitsModuleSerializer,
 )
@@ -211,6 +212,28 @@ class ClimateForesightModule(BaseModule):
         ).select_related("organization").distinct()
 
 
+class FundingReportModule(BaseModule):
+    name = "funding_report"
+
+    def _get_coverage_polygon(self):
+        with open("../assets/funding_report_coverage.geojson") as fp:
+            data = json.loads(fp.read())
+            return GEOSGeometry(json.dumps(data.get("geometry")))
+
+    def __init__(self):
+        self.coverage = self._get_coverage_polygon()
+
+    def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
+        return self.coverage.contains(runnable.geometry)
+
+    def _can_run_scenario(self, runnable: Scenario) -> bool:
+        scenario_geometry = runnable.planning_area.geometry
+        return self.coverage.contains(scenario_geometry)
+
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return FundingReportModuleSerializer
+
+
 class PrioritizeSubUnitsModule(BaseModule):
     name = "prioritize_sub_units"
 
@@ -261,4 +284,5 @@ MODULE_HANDLERS = {
     "map": MapModule(),
     "climate_foresight": ClimateForesightModule(),
     "prioritize_sub_units": PrioritizeSubUnitsModule(),
+    "funding_report": FundingReportModule(),
 }

@@ -1458,7 +1458,7 @@ class TriggerScenarioTest(TestCase):
 
         self.assertEqual(
             self.scenario.capabilities,
-            ["FORSYS", "IMPACTS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"],
+            ["FORSYS", "IMPACTS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"],
         )
 
     def test_compute_scenario_capability_before_run__prioritize_sub_units(self):
@@ -1470,7 +1470,7 @@ class TriggerScenarioTest(TestCase):
 
         self.assertEqual(
             self.scenario.capabilities,
-            ["FORSYS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"],
+            ["FORSYS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"],
         )
 
 

@@ -43,6 +43,7 @@ PLANSCAPE_APPS = [
     "core",
     "datasets",
     "datastore",
+    "funding_report",
     "impacts",
     "martin",
     "modules",
