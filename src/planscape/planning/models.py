@@ -271,8 +271,8 @@ class TreatmentGoalGroup(models.TextChoices):
         "INYO_PLANNING",
         "Inyo Planning",
     )
-    WILDFIRE_RISK_TO_COMMUTIES = (
-        "WILDFIRE_RISK_TO_COMMUTIES",
+    WILDFIRE_RISK_TO_COMMUNITIES = (
+        "WILDFIRE_RISK_TO_COMMUNITIES",
         "Wildfire Risk to Communities",
     )
 
