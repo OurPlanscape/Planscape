@@ -40,7 +40,7 @@ class ForsysModuleTest(TestCase):
         self.assertFalse(module.can_run(scenario))
 
     def test_cannot_run_scenario_with_empty_configuration(self):
-        scenario = ScenarioFactory.create(
+        scenario = ScenarioFactory.build(
             planning_area=self.planning_area,
             configuration=None,
         )
