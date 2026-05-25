@@ -88,3 +88,11 @@ class MapModuleSerializer(BaseModuleSerializer):
 
 class PrioritizeSubUnitsModuleSerializer(BaseModuleSerializer):
     options = PrioritizeSubUnitsOptionsSerializer()
+
+
+class FundingReportOptionsSerializer(BaseModuleOptionsSerializer):
+    pass
+
+
+class FundingReportModuleSerializer(BaseModuleSerializer):
+    options = FundingReportOptionsSerializer()
