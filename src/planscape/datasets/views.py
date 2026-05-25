@@ -39,12 +39,8 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     }
 
     def get_queryset(self):
-        # TODO: afterwards we need to implement the filtering
-        # by organization visibility too, so we return the public ones
-        # PLUS all the datasets accessible by the organization
-        filters = {"visibility": VisibilityOptions.PUBLIC}
-
-        return Dataset.objects.filter(**filters).select_related(
+        user = self.request.user if self.request else None
+        return Dataset.objects.all().accessible_by(user).select_related(
             "organization", "created_by"
         )
 
@@ -124,7 +120,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         serializer = FindAnythingSerializer(data=params)
         serializer.is_valid(raise_exception=True)
 
-        results = find_anything(**serializer.validated_data)
+        results = find_anything(user=request.user, **serializer.validated_data)
         search_results = list(results.values())
         page = self.paginate_queryset(search_results)  # type: ignore
         if page is not None:
@@ -145,15 +141,15 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # by organization visibility too, so we return the public ones
         # PLUS all the datalayers accessible by the organization
 
+        user = self.request.user if self.request else None
+
         if self.action == "urls":
-            return DataLayer.objects.filter(
+            return DataLayer.objects.all().accessible_by(user).filter(
                 Q(dataset__visibility=VisibilityOptions.PUBLIC)
                 | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
             )
 
-        queryset = DataLayer.objects.filter(
-            dataset__visibility=VisibilityOptions.PUBLIC,
-        )
+        queryset = DataLayer.objects.all().accessible_by(user)
 
         if self.action == "list" and (
             search_query := self.request.query_params.get("search")

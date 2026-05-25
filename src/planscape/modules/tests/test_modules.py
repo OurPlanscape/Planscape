@@ -9,16 +9,21 @@ from django.contrib.gis.geos import GEOSGeometry
 
 from modules.base import get_module
 
+from planscape.tests.factories import UserFactory
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planning.models import ScenarioPlanningApproach
 
 class MapModuleTest(TestCase):
     def test_returns_options_correctly(self):
         DatasetFactory.create(
-            name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+            name="base1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
         )
         DatasetFactory.create(
-            name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+            name="main1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
 
         module = get_module("map")
@@ -50,14 +55,18 @@ class MapModuleTest(TestCase):
         geos_geometry = GEOSGeometry(json.dumps(geometry))
 
         base1 = DatasetFactory.create(
-            name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+            name="base1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
         )
         DataLayerFactory.create(
             dataset=base1,
             outline=geos_geometry,
         )
         main1 = DatasetFactory.create(
-            name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+            name="main1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
         DataLayerFactory.create(
             dataset=main1,
@@ -93,14 +102,18 @@ class MapModuleTest(TestCase):
         geos_geometry = GEOSGeometry(json.dumps(geometry))
 
         base1 = DatasetFactory.create(
-            name="base1", preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+            name="base1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
         )
         DataLayerFactory.create(
             dataset=base1,
             outline=None,
         )
         main1 = DatasetFactory.create(
-            name="main1", preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+            name="main1", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
         DataLayerFactory.create(
             dataset=main1,
@@ -128,6 +141,72 @@ class MapModuleTest(TestCase):
         self.assertGreaterEqual(len(base), 0)
 
 
+    def test_returns_private_dataset_for_staff_users(self):
+        DatasetFactory.create(
+            name="base-private", 
+            visibility=VisibilityOptions.PRIVATE,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+        )
+        DatasetFactory.create(
+            name="base-public", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS
+        )
+        DatasetFactory.create(
+            name="main-private", 
+            visibility=VisibilityOptions.PRIVATE,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+        )
+        DatasetFactory.create(
+            name="main-public", 
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
+        )
+        staff_user = UserFactory.create(is_staff=True)
+        standard_user = UserFactory.create(is_staff=False)
+
+        module = get_module("map")
+
+        # staff user
+        configuration: Dict[str, Any] = module.get_configuration(user=staff_user)
+        self.assertIn("name", configuration)
+        self.assertIn("options", configuration)
+
+        options: Dict[str, Any] = configuration["options"]
+
+        self.assertIn("datasets", options)
+
+        datasets: Dict[str, Any] = options["datasets"]
+
+        self.assertIn("main_datasets", datasets)
+        self.assertIn("base_datasets", datasets)
+
+        main = datasets["main_datasets"]
+        base = datasets["base_datasets"]
+
+        self.assertGreaterEqual(len(main), 2)
+        self.assertGreaterEqual(len(base), 2)
+
+        # standard user
+        configuration: Dict[str, Any] = module.get_configuration(user=standard_user)
+        self.assertIn("name", configuration)
+        self.assertIn("options", configuration)
+
+        options: Dict[str, Any] = configuration["options"]
+
+        self.assertIn("datasets", options)
+
+        datasets: Dict[str, Any] = options["datasets"]
+
+        self.assertIn("main_datasets", datasets)
+        self.assertIn("base_datasets", datasets)
+
+        main = datasets["main_datasets"]
+        base = datasets["base_datasets"]
+
+        self.assertGreaterEqual(len(main), 1)
+        self.assertGreaterEqual(len(base), 1)
+
 
 class PrioritizeSubUnitsModuleTest(TestCase):
     def test_returns_options_correctly(self):
@@ -147,6 +226,88 @@ class PrioritizeSubUnitsModuleTest(TestCase):
 
         module = get_module("prioritize_sub_units")
         configuration: Dict[str, Any] = module.get_configuration()
+        self.assertIn("name", configuration)
+        self.assertIn("options", configuration)
+
+        options: Dict[str, Any] = configuration["options"]
+
+        self.assertIn("datasets", options)
+        self.assertIn("sub_units", options)
+
+        datasets: Dict[str, Any] = options["datasets"]
+        sub_units = options["sub_units"]
+
+        self.assertIn("main_datasets", datasets)
+        self.assertIn("base_datasets", datasets)
+        
+
+        main = datasets["main_datasets"]
+        base = datasets["base_datasets"]
+
+        self.assertEqual(len(main), 1)
+        self.assertEqual(len(base), 1)
+        self.assertEqual(len(sub_units), 1)
+
+
+    def test_returns_private_dataset_for_staff_users(self):
+        private_base_dataset = DatasetFactory.create(
+            name="base-private",
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS, 
+            visibility=VisibilityOptions.PRIVATE,
+            modules=["prioritize_sub_units"],
+        )
+        public_base_dataset = DatasetFactory.create(
+            name="base-public",
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS, 
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["prioritize_sub_units"],
+        )
+        DatasetFactory.create(
+            name="main-private", 
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS, 
+            visibility=VisibilityOptions.PRIVATE, 
+            modules=["prioritize_sub_units"],
+        )
+        DatasetFactory.create(
+            name="main-public", 
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS, 
+            visibility=VisibilityOptions.PUBLIC, 
+            modules=["prioritize_sub_units"],
+        )
+        DataLayerFactory.create(dataset=private_base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
+        DataLayerFactory.create(dataset=public_base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
+
+        staff_user = UserFactory.create(is_staff=True)
+        standard_user = UserFactory.create(is_staff=False)
+
+        module = get_module("prioritize_sub_units")
+
+        # staff user
+        configuration: Dict[str, Any] = module.get_configuration(user=staff_user)
+        self.assertIn("name", configuration)
+        self.assertIn("options", configuration)
+
+        options: Dict[str, Any] = configuration["options"]
+
+        self.assertIn("datasets", options)
+        self.assertIn("sub_units", options)
+
+        datasets: Dict[str, Any] = options["datasets"]
+        sub_units = options["sub_units"]
+
+        self.assertIn("main_datasets", datasets)
+        self.assertIn("base_datasets", datasets)
+        
+
+        main = datasets["main_datasets"]
+        base = datasets["base_datasets"]
+
+        self.assertEqual(len(main), 2)
+        self.assertEqual(len(base), 2)
+        self.assertEqual(len(sub_units), 2)
+
+        # standard user
+        configuration: Dict[str, Any] = module.get_configuration(user=standard_user)
         self.assertIn("name", configuration)
         self.assertIn("options", configuration)
 

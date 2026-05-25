@@ -13,6 +13,30 @@ class WorkspaceFactory(factory.django.DjangoModelFactory):
     visibility = VisibilityOptions.PRIVATE
 
 
+    @factory.post_generation
+    def owner(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        UserAccessWorkspaceFactory.create(user=extracted, workspace=self, role=WorkspaceRole.OWNER)
+        return extracted
+
+    @factory.post_generation
+    def collaborators(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        for collaborator in extracted:
+            UserAccessWorkspaceFactory.create(user=collaborator, workspace=self, role=WorkspaceRole.COLLABORATOR)
+        return extracted
+
+    @factory.post_generation
+    def viewers(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        for viewer in extracted:
+            UserAccessWorkspaceFactory.create(user=viewer, workspace=self, role=WorkspaceRole.VIEWER)
+        return extracted
+    
+
 class UserAccessWorkspaceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserAccessWorkspace

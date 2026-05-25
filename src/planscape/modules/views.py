@@ -23,7 +23,7 @@ class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         my_module = self.get_object()
-        payload = my_module.get_configuration()
+        payload = my_module.get_configuration(user=request.user)
         SerializerClass = my_module.get_serializer_class()
         serializer = SerializerClass(instance=payload)
         return Response(serializer.data)
@@ -43,7 +43,7 @@ class ModuleViewSet(RetrieveModelMixin, GenericViewSet):
         input_serializer.is_valid(raise_exception=True)
         geometry = input_serializer.validated_data.get("geometry")
 
-        payload = my_module.get_configuration(geometry=geometry)
+        payload = my_module.get_configuration(geometry=geometry, user=request.user)
         SerializerClass = my_module.get_serializer_class()
         serializer = SerializerClass(instance=payload)
         return Response(serializer.data)

@@ -333,6 +333,7 @@ class MapURLTests(TestCase):
         base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
         return base + "/tiles/dynamic/{z}/{x}/{y}?layer=" + str(layer.id)
 
+    @override_settings(ENV="dev")
     def test_get_map_url_logic(self):
         raster = DataLayerFactory(type=DataLayerType.RASTER)
         self.assertEqual(raster.get_map_url(), raster.get_public_url())
@@ -356,6 +357,7 @@ class MapURLTests(TestCase):
             "http://localhost:3000/dynamic/{z}/{x}/{y}?layer=" + str(vector.id),
         )
 
+    @override_settings(ENV="dev")
     def test_map_url_present_in_serializers(self):
         vector = DataLayerFactory(
             type=DataLayerType.VECTOR,
@@ -365,6 +367,7 @@ class MapURLTests(TestCase):
         for Serializer in (DataLayerSerializer, BrowseDataLayerSerializer):
             self.assertIn("map_url", Serializer(vector).data)
 
+    @override_settings(ENV="dev")
     def test_map_url_none_when_no_table(self):
         layer = DataLayerFactory(type=DataLayerType.VECTOR, table=None)
         self.assertIsNone(layer.get_map_url())

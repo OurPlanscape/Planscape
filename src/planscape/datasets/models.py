@@ -19,7 +19,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, URLValidator
-from django.db.models import Manager
+from django.db.models import Manager, Q
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node
@@ -60,6 +60,15 @@ class PreferredDisplayType(models.TextChoices):
 class DatasetQuerySet(models.QuerySet):
     def by_outline_intersects(self, geometry: GEOSGeometry) -> models.QuerySet:
         return self.all().filter(datalayers__outline__intersects=geometry)
+    
+    def accessible_by(self, user) -> models.QuerySet:
+        q = Q(visibility=VisibilityOptions.PUBLIC)
+        if user and user.is_authenticated:
+            q |= Q(created_by=user)
+            q |= Q(workspace__user_access__user=user)
+            if user.is_staff or user.is_superuser:
+                q |= Q(visibility=VisibilityOptions.PRIVATE)
+        return self.filter(q).distinct()
 
 
 class DatasetManager(models.Manager):
@@ -273,7 +282,10 @@ class DataLayerQuerySet(models.QuerySet):
     def by_meta_capability(self, capability: str):
         query = {"modules": {"forsys": {"capabilities": [capability]}}}
         return self.all().filter(metadata__contains=query)
-
+    
+    def accessible_by(self, user) -> models.QuerySet:
+        accessible_datasets_ids = Dataset.objects.all().accessible_by(user).values_list("id", flat=True)
+        return self.all().filter(dataset_id__in=accessible_datasets_ids) 
 
 class DataLayerManager(models.Manager):
     def get_queryset(self):
