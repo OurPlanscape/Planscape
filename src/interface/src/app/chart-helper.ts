@@ -231,10 +231,10 @@ export function getProjectAreaLabelsFromFeatures(
 }
 
 export const PERCENTAGE_BAR_COLORS = {
-  blue: '#4A90E2',
-  purple: '#8E5CD9',
-  orange: '#E27A3F',
-  yellow: '#E2B23F',
+  blue: '#1E88E5',
+  purple: '#8E24AA',
+  orange: '#E37137',
+  yellow: '#F3B23E',
 } as const;
 
 export type PercentageBarColor = keyof typeof PERCENTAGE_BAR_COLORS;
@@ -249,8 +249,7 @@ export const buildPercentageBarData = (
     {
       data: values,
       backgroundColor: PERCENTAGE_BAR_COLORS[color],
-      barPercentage: 0.5,
-      categoryPercentage: 0.6,
+      barThickness: 40,
     },
   ],
 });
@@ -306,7 +305,7 @@ export const getPercentageChartOptions = (
         color: '#fff',
         anchor: 'center',
         align: 'center',
-        font: { ...(baseFont as any), size: 11 },
+        font: { ...(baseFont as any), size: 11, weight: 'normal' },
         formatter: (value: number) =>
           value % 1 === 0 ? value.toString() : value.toFixed(1),
       },
