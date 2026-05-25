@@ -1673,7 +1673,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             user=self.user, geometry=eastwide_geom
         )
         self.tg_conus = TreatmentGoalFactory.create(
-            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
+            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUNITIES
         )
         self.treatment_goal = TreatmentGoalFactory.create(
             group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
