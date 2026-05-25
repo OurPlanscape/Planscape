@@ -13,6 +13,40 @@ from planscape.tests.factories import UserFactory
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planning.models import ScenarioPlanningApproach
 
+
+class ForsysModuleTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create()
+        return super().setUp()
+
+    def test_can_run_planning_area(self):
+        module = get_module("forsys")
+        self.assertTrue(module.can_run(self.planning_area))
+
+    def test_can_run_scenario_with_stand_size(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={"stand_size": "LARGE"},
+        )
+        module = get_module("forsys")
+        self.assertTrue(module.can_run(scenario))
+
+    def test_cannot_run_scenario_without_stand_size(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={},
+        )
+        module = get_module("forsys")
+        self.assertFalse(module.can_run(scenario))
+
+    def test_cannot_run_scenario_with_empty_configuration(self):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration=None,
+        )
+        module = get_module("forsys")
+        self.assertFalse(module.can_run(scenario))
+
 class MapModuleTest(TestCase):
     def test_returns_options_correctly(self):
         DatasetFactory.create(

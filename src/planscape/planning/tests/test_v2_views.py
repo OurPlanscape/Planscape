@@ -1146,6 +1146,21 @@ class CreateScenariosFromUpload(APITestCase):
         }
         self.assertEqual(response.json(), expected_error)
 
+    def test_create_without_stand_size(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "no stand size scenario",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse("api:planning:scenarios-upload-shapefiles"),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["origin"], "USER")
+
     @mock.patch("planning.views_v2.create_scenario_from_upload")
     def test_invalid_geometry_returns_400_with_global_error(self, mock_create):
         from planscape.exceptions import InvalidGeometry
