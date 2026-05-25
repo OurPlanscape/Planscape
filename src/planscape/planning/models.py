@@ -277,6 +277,14 @@ class TreatmentGoalGroup(models.TextChoices):
     )
 
 
+class TreatmentGoalManager(AliveObjectsManager):
+    def accessible_by(self, user: User) -> QuerySet:
+        qs = super().get_queryset()
+        if user and user.is_authenticated and (user.is_staff or user.is_superuser):
+            return qs
+        return qs.filter(active=True)
+
+
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
@@ -328,6 +336,8 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
+
+    objects: TreatmentGoalManager = TreatmentGoalManager()
 
     @cached_property
     def active_datalayers(self) -> Collection[DataLayer]:
