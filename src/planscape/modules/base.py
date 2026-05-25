@@ -89,7 +89,7 @@ class ForsysModule(BaseModule):
         return True
 
     def _can_run_scenario(self, runnable: Scenario) -> bool:
-        return True
+        return bool((runnable.configuration or {}).get("stand_size"))
 
     def _get_options(self, **kwargs):
         options = super()._get_options(**kwargs)

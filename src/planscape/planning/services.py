@@ -421,7 +421,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,
-        configuration={"stand_size": validated_data["stand_size"]},
+        configuration={k: v for k, v in {"stand_size": validated_data.get("stand_size")}.items() if v is not None},
         origin=ScenarioOrigin.USER,
     )
     scenario.capabilities = compute_scenario_capabilities(scenario)
