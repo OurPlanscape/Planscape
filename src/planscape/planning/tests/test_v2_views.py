@@ -1213,7 +1213,6 @@ class CreateScenariosFromUpload(APITestCase):
 class TreatmentGoalViewSetTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
-        self.client.force_authenticate(self.user)
         # Create two overlapping polygons
         self.mpoly1 = GEOSGeometry(
             "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
@@ -1277,6 +1276,7 @@ class TreatmentGoalViewSetTest(APITestCase):
         )
         self.inactive_treatment_goal = TreatmentGoalFactory.create(
             active=False,
+            geometry=self.mpoly1,
             group=ca_group,
         )
         self.usage1 = TreatmentGoalUsesDataLayer.objects.create(
@@ -1291,6 +1291,7 @@ class TreatmentGoalViewSetTest(APITestCase):
         )
 
     def test_list_treatment_goals(self):
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("api:planning:treatment-goals-list"),
             content_type="application/json",
@@ -1322,7 +1323,20 @@ class TreatmentGoalViewSetTest(APITestCase):
             ],
         )
 
+    def test_list_inactive_treatment_goals_as_staff(self):
+        staff_user = UserFactory.create(is_staff=True)
+        self.client.force_authenticate(staff_user)
+        response = self.client.get(
+            reverse("api:planning:treatment-goals-list"),
+            content_type="application/json",
+        )
+        treatment_goals = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(treatment_goals), 12)
+
+
     def test_detail_treatment_goal(self):
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse(
                 "api:planning:treatment-goals-detail",
@@ -1346,6 +1360,7 @@ class TreatmentGoalViewSetTest(APITestCase):
         )
 
     def test_detail_inactive_treatment_goal(self):
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse(
                 "api:planning:treatment-goals-detail",
@@ -1356,7 +1371,23 @@ class TreatmentGoalViewSetTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_detail_inactive_treatment_goal_as_staff(self):
+        staff_user = UserFactory.create(is_staff=True)
+        self.client.force_authenticate(staff_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail",
+                args=[self.inactive_treatment_goal.id],
+            ),
+            content_type="application/json",
+        )
+
+        treatment_goal = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(treatment_goal["id"], self.inactive_treatment_goal.id)
+
     def test_list_treatment_goals_with_filter(self):
+        self.client.force_authenticate(self.user)
         intersection = self.poly1.intersection(self.poly2).buffer(-0.00001)
         planning_area = PlanningAreaFactory.create(
             user=self.user, geometry=MultiPolygon([intersection])
