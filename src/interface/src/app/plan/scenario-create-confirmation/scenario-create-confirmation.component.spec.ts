@@ -4,6 +4,7 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import { FEATURES_JSON } from '@app/features/features-config';
 import { ScenarioCreateConfirmationComponent } from './scenario-create-confirmation.component';
 
 describe('ScenarioCreateConfirmationComponent', () => {
@@ -15,6 +16,7 @@ describe('ScenarioCreateConfirmationComponent', () => {
       imports: [ScenarioCreateConfirmationComponent, MatDialogModule],
       declarations: [],
       providers: [
+        { provide: FEATURES_JSON, useValue: { valid: true } },
         { provide: MatDialogRef, useValue: {} },
         { provide: MAT_DIALOG_DATA, useValue: {} },
       ],
