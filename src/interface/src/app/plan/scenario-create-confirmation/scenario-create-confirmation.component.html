@@ -1,17 +1,36 @@
-<sg-modal
-  title=""
-  [shortHeader]="true"
-  [showBorders]="false"
-  [centerFooter]="true"
-  primaryButtonText="Proceed To Treatment Plan"
-  (clickedPrimary)="goToTreatmentPlans()"
-  (clickedSecondary)="closeModal()"
-  (clickedClose)="closeModal()">
-  <div modalBodyContent>
-    <sg-modal-confirmation-dialog
-      infoType="success"
-      headline="&ldquo;{{ scenarioName }}&rdquo; was successfully uploaded"
-      message="You can now create a new treatment plan for your project areas or close this modal.">
-    </sg-modal-confirmation-dialog>
-  </div>
-</sg-modal>
+@if (isDashboardEnabled) {
+  <sg-modal
+    title=""
+    [shortHeader]="true"
+    [showBorders]="false"
+    [centerFooter]="true"
+    primaryButtonText="Close"
+    (clickedPrimary)="closeModal()"
+    [hasSecondaryButton]="false">
+    <div modalBodyContent>
+      <sg-modal-confirmation-dialog
+        infoType="success"
+        headline="&ldquo;{{ scenarioName }}&rdquo; was successfully uploaded"
+        message="You can now view and plan on your project areas.">
+      </sg-modal-confirmation-dialog>
+    </div>
+  </sg-modal>
+} @else {
+  <sg-modal
+    title=""
+    [shortHeader]="true"
+    [showBorders]="false"
+    [centerFooter]="true"
+    primaryButtonText="Proceed To Treatment Plan"
+    (clickedPrimary)="goToTreatmentPlans()"
+    (clickedSecondary)="closeModal()"
+    (clickedClose)="closeModal()">
+    <div modalBodyContent>
+      <sg-modal-confirmation-dialog
+        infoType="success"
+        headline="&ldquo;{{ scenarioName }}&rdquo; was successfully uploaded"
+        message="You can now create a new treatment plan for your project areas or close this modal.">
+      </sg-modal-confirmation-dialog>
+    </div>
+  </sg-modal>
+}
