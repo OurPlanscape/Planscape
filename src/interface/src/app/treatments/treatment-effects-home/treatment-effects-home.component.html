@@ -16,10 +16,11 @@
   <div
     right-column
     class="right-side"
-    *ngIf="scenarioId$ | async as scenarioId">
+    *ngIf="currentScenario$ | async as scenario">
     <app-treatment-plans-list
       *ngIf="currentPlan$ | async as currentPlan"
-      [scenarioId]="scenarioId"
+      [scenarioId]="scenario.id"
+      [isProjectArea]="scenario.origin === 'USER'"
       [planningArea]="currentPlan">
     </app-treatment-plans-list>
   </div>

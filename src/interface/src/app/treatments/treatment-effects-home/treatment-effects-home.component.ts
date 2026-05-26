@@ -25,8 +25,7 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
   styleUrl: './treatment-effects-home.component.scss',
 })
 export class TreatmentEffectsHomeComponent {
-  scenarioId$ = this.scenarioState.currentScenarioId$;
-
+  currentScenario$ = this.scenarioState.currentScenario$;
   currentPlan$ = this.planState.currentPlan$;
 
   constructor(
