@@ -2,13 +2,12 @@ import os
 import shutil
 import subprocess
 
-from datetime import datetime
-
 from datasets.tasks import datalayer_uploaded
 from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from core.mattermost import post_to_mattermost
 
 from core.models import RestoreBackTrack, RestoreBackTrackStatus
@@ -144,7 +143,7 @@ class Command(BaseCommand):
             )
         
         
-        now = datetime.now()
+        now = timezone.now()
         current_run = RestoreBackTrack.objects.create(
             started_at=now,
             file_name=filename
@@ -246,7 +245,7 @@ class Command(BaseCommand):
             post_to_mattermost(
                 f"planscape-{settings.ENV} :white_check_mark: Catalog data restore completed successfully"
             )
-            current_run.finished_at = datetime.now()
+            current_run.finished_at = timezone.now()
             current_run.status = RestoreBackTrackStatus.SUCCESS
             current_run.save()
         except Exception as e:
@@ -254,6 +253,6 @@ class Command(BaseCommand):
             post_to_mattermost(
                 f"planscape-{settings.ENV} :x: Catalog data restore failed: {e}"
             )
-            current_run.finished_at = datetime.now()
+            current_run.finished_at = timezone.now()
             current_run.status = RestoreBackTrackStatus.FAILED
             current_run.save()
