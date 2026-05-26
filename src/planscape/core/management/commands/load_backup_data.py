@@ -45,6 +45,12 @@ class Command(BaseCommand):
             action="store_true",
             help="Skip confirmation prompt.",
         )
+        parser.add_argument(
+            "--batch-size",
+            default=500,
+            help="Batch size for batched deletion.",
+            type=int,
+        )
 
     def handle(self, **options):
         source_env = options.get("source_env", "production")
@@ -157,6 +163,7 @@ class Command(BaseCommand):
                 ]
             )
 
+            batch_size = options.get("batch_size", 500)
             with transaction.atomic():
 
                 datalayers = DataLayer.objects.filter(created_at__gte=last_restore_date)
@@ -166,7 +173,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"Found {stand_metrics.count()} to be deleted.")
 
                 while stand_metrics.exists():
-                    ids = stand_metrics.values_list("id", flat=True)[:200]
+                    ids = stand_metrics.values_list("id", flat=True)[:batch_size]
                     count = StandMetric.objects.filter(id__in=ids).delete()
                     self.stdout.write(f"Deleted batch of {count[1]} entry(ies) related to StandMetric.")
 
