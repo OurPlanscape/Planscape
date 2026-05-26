@@ -1449,7 +1449,10 @@ class TriggerScenarioTest(TestCase):
         self.planning_area = PlanningAreaFactory(
             geometry=GEOSGeometry(json.dumps(geometry))
         )
-        self.scenario = ScenarioFactory(planning_area=self.planning_area)
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            configuration={"stand_size": "LARGE"},
+        )
 
     def test_compute_scenario_capability_before_run(self):
         trigger_scenario_run(self.scenario, self.scenario.user)

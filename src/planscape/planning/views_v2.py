@@ -56,6 +56,7 @@ from planning.serializers import (
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
+from modules.base import compute_scenario_capabilities
 from planning.services import (
     create_config,
     create_planning_area,
@@ -355,6 +356,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        instance.refresh_from_db()
+        instance.capabilities = compute_scenario_capabilities(instance)
+        instance.save(update_fields=["capabilities"])
         response_serializer = ScenarioV2Serializer(instance)
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
@@ -389,6 +393,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 updated_config[key] = incoming_config.get(key)
             serializer.validated_data["configuration"] = updated_config
         self.perform_update(serializer)
+        instance.refresh_from_db()
+        instance.capabilities = compute_scenario_capabilities(instance)
+        instance.save(update_fields=["capabilities"])
         response_serializer = ScenarioV3Serializer(instance)
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
@@ -540,10 +547,14 @@ class TreatmentGoalViewSet(
     A viewset for viewing and editing TreatmentGoal instances.
     """
 
-    queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
     filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
+
+    def get_queryset(self):
+        user = self.request.user if self.request else None
+        qs = TreatmentGoal.objects.accessible_by(user)
+        return qs
