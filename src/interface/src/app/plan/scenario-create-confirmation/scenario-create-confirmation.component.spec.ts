@@ -4,8 +4,9 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { FEATURES_JSON } from '@app/features/features-config';
+import { FeatureService } from '@features/feature.service';
 import { ScenarioCreateConfirmationComponent } from './scenario-create-confirmation.component';
+import { MockProvider } from 'ng-mocks';
 
 describe('ScenarioCreateConfirmationComponent', () => {
   let component: ScenarioCreateConfirmationComponent;
@@ -16,7 +17,7 @@ describe('ScenarioCreateConfirmationComponent', () => {
       imports: [ScenarioCreateConfirmationComponent, MatDialogModule],
       declarations: [],
       providers: [
-        { provide: FEATURES_JSON, useValue: { valid: true } },
+        MockProvider(FeatureService),
         { provide: MatDialogRef, useValue: {} },
         { provide: MAT_DIALOG_DATA, useValue: {} },
       ],
