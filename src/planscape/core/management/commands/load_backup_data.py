@@ -3,14 +3,27 @@ import shutil
 import subprocess
 
 from datetime import datetime
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
+
 from datasets.tasks import datalayer_uploaded
+from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from core.mattermost import post_to_mattermost
 
 from core.models import RestoreBackTrack, RestoreBackTrackStatus
+from datasets.models import (
+    DataLayer, 
+    DataLayerStatus, 
+    DataLayerType, 
+    Dataset, 
+    Category, 
+    DataLayerHasStyle,
+    Style,
+)
+from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
+from stands.models import StandMetric
+from organizations.models import Organization
 
 
 class Command(BaseCommand):
@@ -19,12 +32,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--file-name",
-            default="latest_catalog_backup.json",
-            help="Load data from specific file. Default: `latest_catalog_backup.json`",
+            default="latest_production_backup.json",
+            help="Load data from specific file. Default: `latest_production_backup.json`",
         )
         parser.add_argument(
             "--source-env",
-            default="catalog",
+            default="production",
             help="Source which data will be copied from.",
         )
         parser.add_argument(
@@ -34,7 +47,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, **options):
-        source_env = options.get("source_env", "catalog")
+        source_env = options.get("source_env", "production")
         force = options.get("force", False)
         self.stdout.write(
             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
@@ -76,12 +89,12 @@ class Command(BaseCommand):
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
 
-        if settings.ENV == "catalog":
+        if settings.ENV == "production":
             raise SystemExit(
                 "\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                "!! DANGER: This command cannot be runned in catalog.       !!\n"
-                "!! It loads all dataset app data from catalog's json file. !!\n"
+                "!! DANGER: This command cannot be runned in production.       !!\n"
+                "!! It loads all dataset app data from production's json file. !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
 
@@ -94,7 +107,7 @@ class Command(BaseCommand):
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
 
-        filename = options.get("file_name", "latest_catalog_backup.json")
+        filename = options.get("file_name", "latest_production_backup.json")
         file_path = os.path.join(backups_dir, filename)
         if not os.path.exists(file_path):
             raise SystemError(
@@ -143,6 +156,47 @@ class Command(BaseCommand):
                     "--recursive",
                 ]
             )
+
+            with transaction.atomic():
+
+                datalayers = DataLayer.objects.filter(created_at__gte=last_restore_date)
+
+                # Stand metrics batch deletion
+                stand_metrics = StandMetric.objects.filter(datalayer__in=datalayers)
+                self.stdout.write(f"Found {stand_metrics.count()} to be deleted.")
+
+                while stand_metrics.exists():
+                    ids = stand_metrics.values_list("id", flat=True)[:200]
+                    count = StandMetric.objects.filter(id__in=ids).delete()
+                    self.stdout.write(f"Deleted batch of {count[1]} entry(ies) related to StandMetric.")
+
+
+                # N-N relational tables deletion by `updated_at`
+                count = TreatmentGoalUsesDataLayer.objects.filter(updated_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoalUsesDataLayer updated after last restore.")
+
+                count = DataLayerHasStyle.objects.filter(updated_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayerHasStyle updated after last restore.")
+
+
+                # Other tables deletion by `created_at`
+                count = TreatmentGoal.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
+
+                count = Category.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
+
+                count = Style.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Style(s) created after last restore.")
+
+                count = datalayers.delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
+
+                count = Dataset.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Dataset(s) created after last restore.")
+
+                count = Organization.objects.filter(created_at__gte=last_restore_date).delete()
+                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Organization(s) created after last restore.")
 
             # Copy to tmp folder and rename all `url` fields
             self.stdout.write(f"Copying file from {file_path} to /tmp/{filename}.")
