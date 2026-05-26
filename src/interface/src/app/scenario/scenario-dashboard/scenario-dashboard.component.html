@@ -20,7 +20,7 @@
       <!-- Dashboard tools: We display the tools just if our status didn't fail -->
       <ng-container *ngIf="currentScenario$ | async as scenario">
         <sg-details-card
-          title="Project Area Tools"
+          cardTitle="Project Area Tools"
           class="scenario-tools-card"
           *ngIf="!scenarioHasFailed(scenario)">
           <!--Subtitle-->
@@ -29,17 +29,8 @@
             project area tools.
           </p>
           <!--Tools-->
-          <div class="tools">
-            <sg-tile-button
-              *ngFor="let tool of scenarioDashboardTools"
-              [backgroundImage]="tool.backgroundImage"
-              [backgroundColor]="tool.backgroundColor ?? ''"
-              [title]="tool.title"
-              size="lg"
-              [disabled]="!tool.enabled"
-              (tileClick)="onToolClick(tool.id)">
-            </sg-tile-button>
-          </div>
+          <app-scenario-tools
+            (toolClicked)="onToolClick($event)"></app-scenario-tools>
         </sg-details-card>
       </ng-container>
     </div>
