@@ -22,7 +22,38 @@
     headline="Carbon"
     [isCollapsible]="true"
     [defaultExpanded]="true">
-    Carbon Reports go here
+    <div>
+      <h5>Unhealthy Smoke Production</h5>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="smokeChart$ | async as chart"
+        class="no-margin"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
+    <div class="top-section-divider">
+      <h5>Standing Aboveground Live Tree Carbon</h5>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="treeCarbonChart$ | async as chart"
+        class="no-margin"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">
+        Potential Forecasted Mitigation Units (FMU) Produced
+        <button
+          sg-button
+          variant="icon-only"
+          icon="info"
+          [outlined]="true"
+          class="summary-tooltip-icon"></button>
+      </div>
+      <div class="summary-value">12</div>
+    </div>
   </sg-section>
 
   <sg-section
@@ -31,7 +62,33 @@
     headline="Wildfire Risk"
     [isCollapsible]="true"
     [defaultExpanded]="true">
-    Wildfire Risk Reports go here
+    <div>Metrics reflect outcomes within forested land only.</div>
+
+    <div>
+      <h5>Flame Length</h5>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="flameLengthChart$ | async as chart"
+        class="no-margin"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
+    <div class="top-section-divider">
+      <h5>Burn Probability</h5>
+      <sg-banner class="burn-probability-banner" customIcon="priority_high"
+        >Please note that burn probability data is calculated for the entire
+        planning boundary, encompassing both treated and untreated areas. Unlike
+        other sections of this report, these results are not filtered by your
+        project area selection.
+      </sg-banner>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="burnProbChart$ | async as chart"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
   </sg-section>
 
   <sg-section
@@ -40,7 +97,22 @@
     headline="Water"
     [isCollapsible]="true"
     [defaultExpanded]="true">
-    Water Reports go here
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-label">
+          Percent of Area with Significant Increase in Water Availability
+        </div>
+        <div class="stat-value">18<span class="stat-unit">%</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          Area with Significant Increase in Water Availability
+        </div>
+        <div class="stat-value">
+          118,400<span class="stat-unit">acres</span>
+        </div>
+      </div>
+    </div>
   </sg-section>
 
   <sg-section
@@ -49,7 +121,32 @@
     headline="Biomass"
     [isCollapsible]="true"
     [defaultExpanded]="true">
-    Biomass Reports go here
+    <div>
+      <p class="biomass-intro">
+        The table shows estimated available biomass with no treatment.
+      </p>
+      <table class="biomass-table">
+        <thead>
+          <tr>
+            <th>Tree Class</th>
+            <th>Hardwood</th>
+            <th>Softwood</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Merchantable Volume (bf/ac)</th>
+            <td>145</td>
+            <td>110</td>
+          </tr>
+          <tr>
+            <th scope="row">Non-Merchantable Volume (ft³/ac)</th>
+            <td>74</td>
+            <td>72</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </sg-section>
 </div>
 

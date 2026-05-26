@@ -230,6 +230,128 @@ export function getProjectAreaLabelsFromFeatures(
   return result.length < 5 ? ['1', '2', '3', '4', '5'] : result;
 }
 
+export const PERCENTAGE_BAR_COLORS = {
+  blue: '#1E88E5',
+  purple: '#8E24AA',
+  orange: '#E37137',
+  yellow: '#F3B23E',
+} as const;
+
+export type PercentageBarColor = keyof typeof PERCENTAGE_BAR_COLORS;
+
+export const buildPercentageBarData = (
+  labels: (string | number)[],
+  values: number[],
+  color: PercentageBarColor
+): ChartConfiguration<'bar'>['data'] => ({
+  labels,
+  datasets: [
+    {
+      data: values,
+      backgroundColor: PERCENTAGE_BAR_COLORS[color],
+      barThickness: 40,
+    },
+  ],
+});
+
+/**
+ * Compute Y-axis range for a percentage bar chart.
+ * - All non-negative values: `[0, max(50, ceil(max/50)*50)]`
+ * - Otherwise: symmetric `±max(50, ceil(absMax/50)*50)`
+ */
+export const computePercentageYRange = (
+  values: number[]
+): { min: number; max: number; stepSize: number } => {
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const allNonNegative = min >= 0;
+
+  let yMin: number;
+  let yMax: number;
+  if (allNonNegative) {
+    yMin = 0;
+    yMax = Math.max(50, Math.ceil(max / 50) * 50);
+  } else {
+    const absMax = Math.max(Math.abs(min), Math.abs(max));
+    const bound = Math.max(50, Math.ceil(absMax / 50) * 50);
+    yMin = -bound;
+    yMax = bound;
+  }
+
+  const range = yMax - yMin;
+  const stepSize =
+    range <= 100 ? 25 : range <= 200 ? 50 : Math.ceil(range / 4 / 50) * 50;
+
+  return { min: yMin, max: yMax, stepSize };
+};
+
+export const getPercentageChartOptions = (
+  xAxisLabel = '',
+  values?: number[]
+): ChartConfiguration<'bar'>['options'] => {
+  const range = values
+    ? computePercentageYRange(values)
+    : { min: -50, max: 50, stepSize: 25 };
+
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { left: 0, right: 0, top: 0, bottom: 0 },
+    },
+    plugins: {
+      tooltip: { enabled: false },
+      datalabels: {
+        color: '#fff',
+        anchor: 'center',
+        align: 'center',
+        font: { ...(baseFont as any), size: 11, weight: 'normal' },
+        formatter: (value: number) =>
+          value % 1 === 0 ? value.toString() : value.toFixed(1),
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: !!xAxisLabel,
+          text: xAxisLabel,
+          align: 'start',
+          color: '#898989',
+          font: baseFont as any,
+          padding: { top: 0 },
+        },
+        grid: {
+          display: false,
+          drawBorder: false,
+          drawTicks: false,
+        } as any,
+        ticks: {
+          color: '#4A4A4A',
+          font: baseFont as any,
+          padding: 16,
+        },
+      },
+      y: {
+        min: range.min,
+        max: range.max,
+        grid: {
+          drawBorder: false,
+          drawTicks: false,
+          color: '#979797',
+          borderDash: getChartBorderDash(),
+        } as any,
+        ticks: {
+          color: '#4A4A4A',
+          font: baseFont as any,
+          stepSize: range.stepSize,
+          padding: 8,
+          callback: (value: any) => `${value}%`,
+        },
+      },
+    },
+  };
+};
+
 export function getDarkGridConfig() {
   return {
     borderColor: 'black',

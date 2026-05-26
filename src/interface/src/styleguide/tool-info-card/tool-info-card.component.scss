@@ -3,66 +3,101 @@
 @import 'mixins';
 
 :host {
-
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    background: $color-white;
-    border: 1px solid $color-fields-gray;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: $color-white;
+  border: 1px solid $color-fields-gray;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
 .tool-title {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border-radius: 8px;
+  height: 226px;
+  border: 1px solid $color-soft-gray;
+  padding: 16px;
+  box-sizing: border-box;
 
-    border-radius: 8px;
-    border: 1px solid $color-soft-gray;
+  &.light {
     background: $color-brand-soft-green;
-    height: 220px;
+  }
 
-    h2 {
-        @include h2();
-        margin: 0;
-    }
+  &.dark {
+    background: linear-gradient(87deg, $color-brand-green -3.31%, #28848C 97.61%);
+    color: $color-white;
+  }
+
+  h2 {
+    @include h2();
+    margin: 0;
+  }
 }
 
 .credit-icon {
-    height: 20px;
-    width: auto;
+  height: 18px;
+  width: auto;
 }
 
 .tool-metadata {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  .developed-by {
     display: flex;
     flex-direction: row;
+    gap: 8px;
     align-items: center;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    @include small-input-label();
+  }
 
-    .developed-by {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        align-items: center;
-
-        @include small-input-label();
-    }
-
-    .info-button {
-        color: $color-standard-blue;
-    }
+  .info-button {
+    color: $color-standard-blue;
+  }
 }
 
 .tool-description {
-    p {
-        @include standard-label();
-        font-weight: 400;
-        color: $color-dark-gray;
-        margin: 0;
-    }
+  p {
+    @include standard-label();
+    font-weight: 400;
+    color: $color-dark-gray;
+    margin: 0;
+    text-align: justify;
+  }
+}
+
+.partners {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+
+
+  a {
+    flex: 1;
+    display: flex;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 4px;
+    border: 1px solid $color-brand-soft-green;
+    background: $color-brand-soft-green;
+    height: 73px;
+    box-sizing: border-box;
+  }
+
+  img {
+    max-width: 138px;
+  }
 }

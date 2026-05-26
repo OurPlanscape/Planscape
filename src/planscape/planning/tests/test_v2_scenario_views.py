@@ -1576,6 +1576,35 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_patch_draft_with_stand_size_adds_forsys_capability(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"stand_size": "LARGE"}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("FORSYS", response.data.get("capabilities", []))
+
+    def test_patch_draft_without_stand_size_excludes_forsys_capability(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"targets": {"max_area": 100}}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn("FORSYS", response.data.get("capabilities", []))
+
+
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
         westwide_geom = MultiPolygon(
@@ -1644,7 +1673,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             user=self.user, geometry=eastwide_geom
         )
         self.tg_conus = TreatmentGoalFactory.create(
-            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
+            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUNITIES
         )
         self.treatment_goal = TreatmentGoalFactory.create(
             group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS

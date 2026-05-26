@@ -7,11 +7,7 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 import { ScenarioState } from '../scenario.state';
 import { PlanState } from '@app/plan/plan.state';
-import {
-  OverlayLoaderComponent,
-  SectionComponent,
-  TileButtonComponent,
-} from '@styleguide';
+import { OverlayLoaderComponent, SectionComponent } from '@styleguide';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import {
   getPlanPath,
@@ -33,7 +29,7 @@ import { ScenarioFailureComponent } from '../scenario-failure/scenario-failure.c
 import { ScenarioService } from '@app/services';
 import { ScenarioSetupModalComponent } from '../scenario-setup-modal/scenario-setup-modal.component';
 import { MatDialog } from '@angular/material/dialog';
-import { FeatureService } from '@features/feature.service';
+import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
 
 @UntilDestroy()
 @Component({
@@ -45,7 +41,6 @@ import { FeatureService } from '@features/feature.service';
     DashboardLayoutComponent,
     NavBarComponent,
     DetailsCardComponent,
-    TileButtonComponent,
     OverlayLoaderComponent,
     MatMenuModule,
     ScenarioDashboardFooterComponent,
@@ -53,6 +48,7 @@ import { FeatureService } from '@features/feature.service';
     SectionComponent,
     ScenarioMinimalMapComponent,
     ScenarioFailureComponent,
+    ScenarioToolsComponent,
   ],
   templateUrl: './scenario-dashboard.component.html',
   styleUrl: './scenario-dashboard.component.scss',
@@ -75,14 +71,6 @@ export class ScenarioDashboardComponent implements OnInit {
     })
   );
 
-  scenarioDashboardTools: {
-    id: string;
-    backgroundImage: string;
-    backgroundColor?: string;
-    title: string;
-    enabled: boolean;
-  }[] = [];
-
   isLoadingDialog = false;
 
   constructor(
@@ -92,8 +80,7 @@ export class ScenarioDashboardComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private scenarioService: ScenarioService,
-    private dialog: MatDialog,
-    private featureService: FeatureService
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -101,30 +88,6 @@ export class ScenarioDashboardComponent implements OnInit {
       label: 'Planning Area Overview',
       backUrl: getPlanPath(this.planId),
     });
-
-    this.scenarioDashboardTools = [
-      {
-        id: 'treatment-effects',
-        backgroundImage: '/assets/svg/treatment-effects.svg',
-        backgroundColor: '#dfede6',
-        title: 'Treatment Effects',
-        enabled: true,
-      },
-      this.featureService.isFeatureEnabled('FUNDING_REPORTS')
-        ? {
-            id: 'funding-opportunity-report',
-            backgroundImage: '/assets/svg/funding.svg',
-            backgroundColor: '#dfede6',
-            title: 'Funding Opportunity Report',
-            enabled: true,
-          }
-        : {
-            id: 'coming-soon',
-            backgroundImage: '/assets/svg/lock.svg',
-            title: 'Coming Soon',
-            enabled: false,
-          },
-    ];
   }
 
   isPlanningApproachSubUnits(scenario: Scenario) {
@@ -133,26 +96,14 @@ export class ScenarioDashboardComponent implements OnInit {
     );
   }
 
-  onToolClick(toolId: string): void {
-    if (toolId === 'treatment-effects') {
-      const planId = this.route.snapshot.data['planId'];
-      if (planId) {
-        this.breadcrumbService.updateBreadCrumb({
-          label: 'Scenario Dashboard',
-          backUrl: `../dashboard`,
-        });
-        this.router.navigate(['../treatment'], { relativeTo: this.route });
-      }
-    }
-    if (toolId === 'funding-opportunity-report') {
-      const planId = this.route.snapshot.data['planId'];
-      if (planId) {
-        this.breadcrumbService.updateBreadCrumb({
-          label: 'Scenario Dashboard',
-          backUrl: `../dashboard`,
-        });
-        this.router.navigate(['../funding'], { relativeTo: this.route });
-      }
+  onToolClick(route: string): void {
+    const planId = this.route.snapshot.data['planId'];
+    if (planId) {
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Scenario Dashboard',
+        backUrl: `../dashboard`,
+      });
+      this.router.navigate([route], { relativeTo: this.route });
     }
   }
 

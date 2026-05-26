@@ -6,10 +6,38 @@ import {
   ElementRef,
   NgZone,
   OnDestroy,
+  OnInit,
   ViewChild,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ButtonComponent, SectionComponent } from '@styleguide';
+import {
+  BannerComponent,
+  ButtonComponent,
+  ChartComponent,
+  SectionComponent,
+} from '@styleguide';
+import { Chart, ChartData, ChartOptions } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { map, Observable, of } from 'rxjs';
+import {
+  buildPercentageBarData,
+  getPercentageChartOptions,
+  PercentageBarColor,
+} from '@app/chart-helper';
+
+interface ChartConfig {
+  data: ChartData<'bar'>;
+  options: ChartOptions<'bar'>;
+}
+
+interface ChartValues {
+  smoke: number[];
+  treeCarbon: number[];
+  flameLength: number[];
+  burnProb: number[];
+}
 
 interface ReportSection {
   id: string;
@@ -19,11 +47,22 @@ interface ReportSection {
 @Component({
   selector: 'app-funding-report',
   standalone: true,
-  imports: [CommonModule, MatTabsModule, SectionComponent, ButtonComponent],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTabsModule,
+    SectionComponent,
+    ButtonComponent,
+    ChartComponent,
+    BannerComponent,
+  ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
-export class FundingReportComponent implements AfterViewInit, OnDestroy {
+export class FundingReportComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   @ViewChild('scrollContainer', { static: true })
   scrollContainer!: ElementRef<HTMLElement>;
 
@@ -45,6 +84,10 @@ export class FundingReportComponent implements AfterViewInit, OnDestroy {
     private zone: NgZone
   ) {}
 
+  ngOnInit(): void {
+    Chart.register(ChartDataLabels);
+  }
+
   ngAfterViewInit(): void {
     this.zone.runOutsideAngular(() => {
       this.scrollContainer.nativeElement.addEventListener(
@@ -63,6 +106,7 @@ export class FundingReportComponent implements AfterViewInit, OnDestroy {
     );
     if (this.pendingScrollFrame !== null)
       cancelAnimationFrame(this.pendingScrollFrame);
+    Chart.unregister(ChartDataLabels);
   }
 
   scrollTo(event: Event, id: string): void {
@@ -108,5 +152,33 @@ export class FundingReportComponent implements AfterViewInit, OnDestroy {
         this.cdr.markForCheck();
       });
     }
+  }
+
+  private readonly labels = [0, 5, 10, 15, 20];
+  private readonly xAxisLabel = 'Years Since Treatment';
+
+  // simulating an async source — swap for a real data service later
+  readonly chartValues$: Observable<ChartValues> = of({
+    smoke: [-48, -23, -22, -18, -12],
+    treeCarbon: [-50, -45, -28, -25, -15],
+    flameLength: [71, 58, 32, 16, 14],
+    burnProb: [70, 30, 25, 20, 16],
+  });
+
+  readonly smokeChart$ = this.buildChart$('smoke', 'blue');
+  readonly treeCarbonChart$ = this.buildChart$('treeCarbon', 'purple');
+  readonly flameLengthChart$ = this.buildChart$('flameLength', 'orange');
+  readonly burnProbChart$ = this.buildChart$('burnProb', 'yellow');
+
+  private buildChart$(
+    key: keyof ChartValues,
+    color: PercentageBarColor
+  ): Observable<ChartConfig> {
+    return this.chartValues$.pipe(
+      map((values) => ({
+        data: buildPercentageBarData(this.labels, values[key], color),
+        options: getPercentageChartOptions(this.xAxisLabel, values[key])!,
+      }))
+    );
   }
 }
