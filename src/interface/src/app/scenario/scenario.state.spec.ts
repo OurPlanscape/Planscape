@@ -151,6 +151,31 @@ describe('ScenarioState', () => {
     }, 0);
   });
 
+  it('does not refetch when the same scenario id is selected again', () => {
+    scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+    const sub = scenarioState.currentScenarioResource$.subscribe();
+
+    // e.g. navigating between a scenario's sub-routes, each re-running the
+    // loader resolver, should not trigger a new request.
+    scenarioState.setScenarioId(1);
+    scenarioState.setScenarioId(1);
+
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledTimes(1);
+    sub.unsubscribe();
+  });
+
+  it('refetches when a different scenario id is selected', () => {
+    scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+    const sub = scenarioState.currentScenarioResource$.subscribe();
+
+    scenarioState.setScenarioId(1);
+    scenarioState.setScenarioId(2);
+
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledTimes(2);
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledWith(2);
+    sub.unsubscribe();
+  });
+
   describe('currentSubUnitsLayerId', () => {
     it('should return null when no scenario is loaded', () => {
       expect(scenarioState.currentSubUnitsLayerId).toBeNull();

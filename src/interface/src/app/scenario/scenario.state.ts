@@ -13,6 +13,7 @@ import {
   catchError,
   combineLatest,
   concat,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -42,7 +43,13 @@ export class ScenarioState {
 
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
-    this._currentScenarioId$.pipe(filter((id): id is number => !!id)),
+    this._currentScenarioId$.pipe(
+      filter((id): id is number => !!id),
+      // Re-selecting the same scenario id (e.g. navigating between its
+      // sub-routes, which all re-run scenarioLoaderResolver) shouldn't refetch.
+      // Explicit refreshes still work via the _reloadScenario$ arm below.
+      distinctUntilChanged()
+    ),
     this._reloadScenario$,
   ]).pipe(
     switchMap(([id]) =>
