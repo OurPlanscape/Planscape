@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ScenarioService } from '@services';
 import {
   AvailableStands,
+  Capabilities,
   LoadedResult,
   Resource,
   Scenario,
@@ -93,6 +94,12 @@ export class ScenarioState {
   get currentSubUnitsLayerId(): number | null {
     return this._currentSubUnitsLayerId();
   }
+
+  public scenarioCapabilities$: Observable<Capabilities[]> =
+    this.currentScenario$.pipe(
+      map((scenario) => scenario.capabilities ?? []),
+      shareReplay(1)
+    );
 
   /**
    * Observable that maps only to loading status.
