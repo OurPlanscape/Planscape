@@ -1,6 +1,8 @@
 <sg-modal
-  title="New Treatment Plan"
-  primaryButtonText="Get Started"
+  [title]="
+    this.data.mode === 'new' ? 'New Treatment Plan' : 'Rename Treatment Plan'
+  "
+  [primaryButtonText]="this.data.mode === 'new' ? 'Get Started' : 'Save'"
   [showClose]="false"
   secondaryButtonText="Cancel"
   [primaryButtonDisabled]="submitting || treatmentForm.invalid"

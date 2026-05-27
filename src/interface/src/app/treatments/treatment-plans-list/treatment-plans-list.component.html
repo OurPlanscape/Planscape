@@ -89,8 +89,10 @@
           [createdAt]="tx.created_at"
           [creator]="tx.creator_name"
           [userCanDelete]="userCanDelete()"
+          [userCanEdit]="userCanEdit()"
           [userCanDuplicate]="userCanDuplicate()"
           (view)="goToTreatment(tx, tx.status)"
+          (rename)="renameTreatment(tx)"
           (delete)="openDeleteDialog(tx)"
           (duplicate)="duplicateTreatment(tx)"></sg-treatment-plan-card>
       }
