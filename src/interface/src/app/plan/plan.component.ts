@@ -14,6 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { PlanState } from './plan.state';
+import { ScenarioState } from '@scenario/scenario.state';
 import { canAddScenario } from './permissions';
 import {
   planningAreaMetricsAreReady,
@@ -46,8 +47,12 @@ export class PlanComponent implements OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState
+    private planState: PlanState,
+    private scenarioState: ScenarioState
   ) {
+    // reset scenario id if any
+    this.scenarioState.resetScenarioId();
+
     this.loadingPlan = true;
     if (this.planId === null) {
       this.planNotFound = true;

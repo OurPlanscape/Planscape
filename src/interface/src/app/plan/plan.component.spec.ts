@@ -14,6 +14,7 @@ import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { PlanningAreaNotesService } from '@services';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
+import { ScenarioState } from '@scenario/scenario.state';
 import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -132,6 +133,17 @@ describe('PlanComponent', () => {
     fixture.detectChanges();
 
     expect(component).toBeTruthy();
+  });
+
+  it('resets the current scenario id on construction', () => {
+    const scenarioState = TestBed.inject(ScenarioState);
+    const resetSpy = spyOn(scenarioState, 'resetScenarioId');
+
+    const fixture = create();
+    (fixture.componentInstance as any).plan = fakePlan;
+    fixture.detectChanges();
+
+    expect(resetSpy).toHaveBeenCalled();
   });
 
   it('backToOverview navigates back to overview', () => {
