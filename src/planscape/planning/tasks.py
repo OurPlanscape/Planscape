@@ -300,13 +300,12 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         "variables": variables,
     }
 
-    if feature_enabled("PLANNING_APPROACH"):
-        forsys_input.update(
-            {
-                "run_with_patchmax": run_config["run_with_patchmax"],
-                "projects_data": run_config["projects_data"],
-            }
-        )
+    forsys_input.update(
+        {
+            "run_with_patchmax": run_config["run_with_patchmax"],
+            "projects_data": run_config["projects_data"],
+        }
+    )
 
     with transaction.atomic():
         scenario = Scenario.objects.select_for_update().get(id=scenario_id)

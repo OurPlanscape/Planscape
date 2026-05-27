@@ -178,8 +178,7 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(variables["min_area_project"], 494)
         self.assertEqual(variables["max_area_project"], 4000)
     
-    @override_settings(FEATURE_FLAGS=["PLANNING_APPROACH"])
-    def test_async_pre_forsys_process__ff_planning_approach_enabled(self):
+    def test_async_pre_forsys_process__prioritize_subunits(self):
         async_pre_forsys_process(self.scenario.pk)
 
         self.scenario.refresh_from_db()
@@ -281,7 +280,6 @@ class AsyncPreForsysProcessTest(TestCase):
             {2, None}
         )
 
-    @override_settings(FEATURE_FLAGS=["PLANNING_APPROACH"])
     def test_async_pre_forsys_process_sub_units(self):
         stands = self.planning_area.get_stands(self.scenario.get_stand_size())
         stand_ids = [stand.pk for stand in stands]
