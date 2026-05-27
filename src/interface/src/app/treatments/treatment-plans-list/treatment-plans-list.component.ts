@@ -49,6 +49,7 @@ export class TreatmentPlansListComponent {
   sortSelection$ = new BehaviorSubject<string>('-created_at');
   loading$ = new BehaviorSubject<boolean>(false);
   @Input() scenarioId!: number;
+  @Input() isProjectArea: boolean = false;
   @Input() planningArea!: Plan;
   manualRefresh$ = new BehaviorSubject<void>(undefined);
 
@@ -201,13 +202,16 @@ export class TreatmentPlansListComponent {
       'New Treatment Plan'
     );
     this.dialog
-      .open(CreateTreatmentDialogComponent)
+      .open(CreateTreatmentDialogComponent, {
+        data: { requestStandSize: this.isProjectArea },
+      })
       .afterClosed()
       .pipe(take(1))
       .subscribe((args) => {
         if (args) {
           this.createTreatmentPlan({
             name: args.treatmentName,
+            standSize: args.standSize,
           });
         }
       });
