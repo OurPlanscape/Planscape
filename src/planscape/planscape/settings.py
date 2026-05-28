@@ -19,6 +19,12 @@ django_stubs_ext.monkeypatch()
 TESTING_MODE = "test" in sys.argv
 LOGLEVEL = config("LOGLEVEL", default="INFO", cast=str)
 
+if TESTING_MODE:
+    import warnings
+
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    warnings.filterwarnings("ignore", category=UserWarning)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -219,7 +225,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
     ],
-    "DEFAULT_PAGINATION_CLASS": None,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 50,
     "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format without microseconds
     "DATETIME_INPUT_FORMATS": [
@@ -344,6 +350,7 @@ LOGGING = {
             "level": LOGLEVEL,
             "formatter": "verbose",
             "class": "logging.StreamHandler",
+            "filters": ["testing"],
         },
     },
     "root": {

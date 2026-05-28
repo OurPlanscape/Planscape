@@ -153,7 +153,7 @@ docker-build:
 		docker compose build ; \
 	fi
 docker-test:
-	./src/planscape/bin/run.sh uv run python manage.py test $(TEST)
+	./src/planscape/bin/run.sh uv run pytest $(TEST)
 
 docker-run: docker-build
 	docker compose up

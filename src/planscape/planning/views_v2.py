@@ -10,7 +10,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from planscape.serializers import BaseErrorMessageSerializer
-from rest_framework import mixins, pagination, permissions, status, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
@@ -136,7 +136,6 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "update": UpdatePlanningAreaSerializer,
         "partial_update": UpdatePlanningAreaSerializer,
     }
-    pagination_class = pagination.LimitOffsetPagination
     filterset_class = PlanningAreaFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -220,6 +219,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     queryset = Scenario.objects.none()
     permission_classes = [ScenarioViewPermission]
+    pagination_class = None
     ordering_fields = [
         "name",
         "created_at",
@@ -668,6 +668,7 @@ class TreatmentGoalViewSet(
     """
     A viewset for viewing and editing TreatmentGoal instances.
     """
+    pagination_class = None
 
     serializer_class = TreatmentGoalSerializer
     filterset_class = TreatmentGoalFilter

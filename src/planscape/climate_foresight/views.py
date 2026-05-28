@@ -43,6 +43,7 @@ log = logging.getLogger(__name__)
 class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     """ViewSet for ClimateForesightRun CRUD operations."""
 
+    pagination_class = None
     permission_classes = [ClimateForesightViewPermission]
     filterset_class = ClimateForesightRunFilterSet
 
@@ -283,6 +284,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
 class ClimateForesightPillarViewSet(viewsets.ModelViewSet):
     """ViewSet for ClimateForesightPillar CRUD operations."""
 
+    pagination_class = None
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ClimateForesightPillarSerializer
     filterset_class = ClimateForesightPillarFilterSet
