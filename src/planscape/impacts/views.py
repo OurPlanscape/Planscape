@@ -201,7 +201,7 @@ class TreatmentPlanViewSet(
         treatment_plan = self.get_object()
         if treatment_plan.get_project_areas_stands().count() == 0:
             log.warning(
-                f"User requested to run treatment plan {treatment_plan.pk} that has no stands."
+                f"User requested to run treatment plan {treatment_plan.pk} that has no stand."
             )
             return response.Response(
                 {"detail": "You can't run a treatment plan without any stand."},
