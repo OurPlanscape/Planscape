@@ -125,7 +125,7 @@ exclude = 'migrations'
 line-length = 88
 
 [tool.pytest.ini_options]
-addopts = "--cov --cov-append --cov-report term-missing --envfile .test.env --no-cov-on-fail --no-header --disable-warnings -rf --durations=5 --no-migrations"
+addopts = "--cov --cov-append --cov-report term-missing --envfile .test.env --no-cov-on-fail --no-header --disable-warnings -rf --durations=5"
 DJANGO_SETTINGS_MODULE = "planscape.settings"
 python_files = "tests.py test_*.py *_tests.py"
 
