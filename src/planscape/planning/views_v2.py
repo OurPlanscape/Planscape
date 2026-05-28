@@ -3,6 +3,7 @@ import logging
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
@@ -54,6 +55,9 @@ from planning.serializers import (
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
+from funding_report.models import FundingOpportunityReport
+from funding_report.serializers import FundingOpportunityReportSerializer
+from funding_report.tasks import run_funding_opportunity_report
 from modules.base import compute_scenario_capabilities
 from planning.services import (
     create_config,
@@ -399,6 +403,24 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
+
+    @action(methods=["post"], detail=True, url_path="run-report")
+    def run_report(self, request, pk=None):
+        scenario = self.get_object()
+        report, _ = FundingOpportunityReport.objects.get_or_create(
+            scenario=scenario,
+            defaults={"created_by": request.user},
+        )
+        run_funding_opportunity_report.delay(report.pk)
+        serializer = FundingOpportunityReportSerializer(instance=report)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    @action(methods=["get"], detail=True, url_path="get-report")
+    def get_report(self, request, pk=None):
+        scenario = self.get_object()
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+        serializer = FundingOpportunityReportSerializer(instance=report)
+        return Response(serializer.data)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
     @action(methods=["post"], detail=True, url_path="run")

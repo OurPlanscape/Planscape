@@ -12,7 +12,7 @@ from funding_report.models import (
 )
 
 
-class RunFundingOpportunityReportTest(APITestCase):
+class RunReportTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(user=self.user)
@@ -20,10 +20,10 @@ class RunFundingOpportunityReportTest(APITestCase):
             user=self.user,
             planning_area=self.planning_area,
         )
-        self.url = reverse("api:funding_report:funding-opportunity-reports-run")
+        self.url = reverse("api:planning:scenarios-run-report", args=[self.scenario.pk])
 
-    @mock.patch("funding_report.views.run_funding_opportunity_report")
-    def test_run_creates_report_and_returns_202(self, task_mock):
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_creates_report_and_returns_202(self, task_mock):
         self.client.force_authenticate(self.user)
         response = self.client.post(
             self.url, {"scenario": self.scenario.pk}, format="json"
@@ -36,8 +36,8 @@ class RunFundingOpportunityReportTest(APITestCase):
         self.assertEqual(report.created_by, self.user)
         task_mock.delay.assert_called_once_with(report.pk)
 
-    @mock.patch("funding_report.views.run_funding_opportunity_report")
-    def test_run_reuses_existing_report(self, task_mock):
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_reuses_existing_report(self, task_mock):
         existing = FundingOpportunityReport.objects.create(
             scenario=self.scenario,
             created_by=self.user,
@@ -57,8 +57,8 @@ class RunFundingOpportunityReportTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    @mock.patch("funding_report.views.run_funding_opportunity_report")
-    def test_run_with_nonexistent_scenario_returns_404(self, task_mock):
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_response_contains_expected_fields(self, task_mock):
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, {"scenario": 999999}, format="json")
 
@@ -82,7 +82,7 @@ class RunFundingOpportunityReportTest(APITestCase):
         self.assertEqual(data["status"], FundingOpportunityReportStatus.PENDING)
 
 
-class RetrieveFundingOpportunityReportTest(APITestCase):
+class GetReportTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(user=self.user)
@@ -90,26 +90,36 @@ class RetrieveFundingOpportunityReportTest(APITestCase):
             user=self.user,
             planning_area=self.planning_area,
         )
-        self.report = FundingOpportunityReport.objects.create(
+        self.url = reverse("api:planning:scenarios-get-report", args=[self.scenario.pk])
+
+    def _create_report(self, report_status=FundingOpportunityReportStatus.PENDING):
+        return FundingOpportunityReport.objects.create(
             scenario=self.scenario,
             created_by=self.user,
-        )
-        self.url = reverse(
-            "api:funding_report:funding-opportunity-reports-detail",
-            args=[self.report.pk],
+            status=report_status,
         )
 
-    def test_retrieve_returns_report(self):
+    def test_get_report_returns_report(self):
+        self._create_report()
         self.client.force_authenticate(self.user)
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(data["id"], self.report.pk)
         self.assertEqual(data["scenario"], self.scenario.pk)
-        self.assertEqual(data["status"], FundingOpportunityReportStatus.PENDING)
 
-    def test_retrieve_response_contains_expected_fields(self):
+    def test_get_report_reflects_current_status(self):
+        self._create_report(FundingOpportunityReportStatus.RUNNING)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json()["status"], FundingOpportunityReportStatus.RUNNING
+        )
+
+    def test_get_report_response_contains_expected_fields(self):
+        self._create_report()
         self.client.force_authenticate(self.user)
         response = self.client.get(self.url)
 
@@ -122,15 +132,12 @@ class RetrieveFundingOpportunityReportTest(APITestCase):
         self.assertIn("updated_at", data)
         self.assertIn("created_by", data)
 
-    def test_retrieve_requires_authentication(self):
+    def test_get_report_requires_authentication(self):
+        self._create_report()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_retrieve_nonexistent_returns_404(self):
+    def test_get_report_with_no_report_returns_404(self):
         self.client.force_authenticate(self.user)
-        url = reverse(
-            "api:funding_report:funding-opportunity-reports-detail",
-            args=[999999],
-        )
-        response = self.client.get(url)
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
