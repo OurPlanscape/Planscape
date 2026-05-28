@@ -1,5 +1,5 @@
 <sg-tile-button
-  *ngFor="let tool of scenarioDashboardTools"
+  *ngFor="let tool of scenarioDashboardTools$ | async"
   [backgroundImage]="tool.backgroundImage"
   [backgroundColor]="tool.backgroundColor ?? ''"
   [title]="tool.title"
