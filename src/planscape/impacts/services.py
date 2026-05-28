@@ -271,7 +271,7 @@ def generate_summary(
             "action": p["action"],
             "stand_count": p["stand_count"],
             "area_acres": p["stand_count"] * stand_area,
-            "area_percent": (p["stand_count"] / total_stands) * 100,
+            "area_percent": ((p["stand_count"] / total_stands) * 100) if total_stands else None,
         }
         for p in prescriptions_qs
     ]
