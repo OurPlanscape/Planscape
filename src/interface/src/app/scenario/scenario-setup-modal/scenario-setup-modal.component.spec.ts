@@ -59,4 +59,23 @@ describe('ScenarioSetupModalComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('carries over the planning approach when cloning a scenario', () => {
+    const oldScenario = {
+      id: 1,
+      version: 'V3',
+      type: 'PRESET',
+      planning_approach: 'PRIORITIZE_SUB_UNITS',
+      treatment_goal: { id: '5', name: 'goal' },
+      configuration: { stand_size: 'LARGE' },
+    } as any;
+    const newScenario = { id: 2, type: 'PRESET', planning_area: 10 } as any;
+
+    const payload = (component as any).buildClonedPayload(
+      oldScenario,
+      newScenario
+    );
+
+    expect(payload.planning_approach).toBe('PRIORITIZE_SUB_UNITS');
+  });
 });
