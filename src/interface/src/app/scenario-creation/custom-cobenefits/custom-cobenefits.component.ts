@@ -93,9 +93,13 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfig
     // ensure that priority_objective layers are unselectable
     this.dataLayersStateService.clearUnselectableLayers();
     this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
-      if (config.priority_objectives) {
+      const draft = config as Partial<ScenarioDraftConfiguration>;
+      const priorityIds = this.weightingFlagOn
+        ? (draft.priorities ?? []).map((p) => p.datalayer)
+        : draft.priority_objectives;
+      if (priorityIds && priorityIds.length > 0) {
         this.dataLayersStateService.setUnselectableLayers(
-          config.priority_objectives,
+          priorityIds,
           'PRIORITY_OBJECTIVE'
         );
       }

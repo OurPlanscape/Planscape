@@ -190,6 +190,32 @@ describe('ScenarioState', () => {
     sub.unsubscribe();
   });
 
+  describe('scenarioCapabilities$', () => {
+    it('emits the loaded scenario capabilities', (done) => {
+      const scenarioWithCaps: Scenario = {
+        ...mockScenario,
+        capabilities: ['FUNDING_REPORT'],
+      };
+      scenarioServiceSpy.getScenario.and.returnValue(of(scenarioWithCaps));
+      scenarioState.setScenarioId(1);
+
+      scenarioState.scenarioCapabilities$.subscribe((capabilities) => {
+        expect(capabilities).toEqual(['FUNDING_REPORT']);
+        done();
+      });
+    });
+
+    it('emits an empty array when the scenario has no capabilities', (done) => {
+      scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+      scenarioState.setScenarioId(1);
+
+      scenarioState.scenarioCapabilities$.subscribe((capabilities) => {
+        expect(capabilities).toEqual([]);
+        done();
+      });
+    });
+  });
+
   describe('currentSubUnitsLayerId', () => {
     it('should return null when no scenario is loaded', () => {
       expect(scenarioState.currentSubUnitsLayerId).toBeNull();

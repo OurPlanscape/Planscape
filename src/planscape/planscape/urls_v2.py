@@ -3,6 +3,7 @@ from datasets.admin_routers import router as datasets_admin_router
 from workspaces.admin_routers import router as workspaces_admin_router
 from datasets.routers import router as datasets_router
 from django.urls import include, path
+from funding_report.routers import router as funding_report_router
 from impacts.routers import router as impacts_router
 from modules.routers import router as modules_router
 from planning.routers import router as planning_router
@@ -17,6 +18,13 @@ urlpatterns = [
     path("", include((core_router.urls, "core"), namespace="core")),
     path("", include((datasets_router.urls, "datasets"), namespace="datasets")),
     path("", include((modules_router.urls, "modules"), namespace="modules")),
+    path(
+        "",
+        include(
+            (funding_report_router.urls, "funding_report"),
+            namespace="funding_report",
+        ),
+    ),
     path(
         "",
         include(
