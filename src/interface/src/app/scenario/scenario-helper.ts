@@ -1,5 +1,6 @@
 import { isNumber } from '@turf/helpers';
 import {
+  Capabilities,
   Constraint,
   PLANNING_APPROACH,
   Scenario,
@@ -52,6 +53,18 @@ export function scenarioCanHaveTreatmentPlans(
     return true;
   }
   return false;
+}
+
+/**
+ * Whether a scenario exposes a given capability. Capabilities are returned by
+ * the backend on the scenario and gate scenario-specific tools (e.g. the
+ * funding opportunity report requires `FUNDING_REPORT`).
+ */
+export function scenarioHasCapability(
+  scenario: Scenario | undefined,
+  capability: Capabilities
+): boolean {
+  return !!scenario?.capabilities?.includes(capability);
 }
 
 // TODO this needs to be refactored.

@@ -21,7 +21,11 @@ export type GeoPackageStatus =
   | 'FAILED'
   | null;
 
-export type Capabilities = 'IMPACTS' | 'FORSYS' | 'CLIMATE_FORESIGHT';
+export type Capabilities =
+  | 'IMPACTS'
+  | 'FORSYS'
+  | 'CLIMATE_FORESIGHT'
+  | 'FUNDING_REPORT';
 
 export type PLANNING_APPROACH =
   | 'PRIORITIZE_SUB_UNITS'
