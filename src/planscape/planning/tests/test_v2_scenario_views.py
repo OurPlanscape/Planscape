@@ -1907,7 +1907,7 @@ class RunScenarioEndpointTest(APITestCase):
         )
         trigger_mock.assert_not_called()
 
-    def test_run_skips_default_planning_approach_when_flag_on(self):
+    def test_run_skips_default_planning_approach(self):
         self.scenario.planning_approach = None
         self.scenario.save(update_fields=["planning_approach"])
         self.client.force_authenticate(self.user)
