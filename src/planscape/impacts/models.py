@@ -87,6 +87,8 @@ class TreatmentPlan(
         geometry = self.scenario.project_areas.all().aggregate(
             geometry=UnionOp("geometry")
         )["geometry"]
+        if not geometry:
+            return Stand.objects.none()
         return Stand.objects.within_polygon(geometry, self.get_stand_size())
 
     class Meta(TypedModelMeta):

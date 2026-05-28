@@ -581,6 +581,8 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             geometry=UnionOp("geometry")
         )["geometry"]
         size = stand_size or self.get_stand_size()
+        if not project_areas_geometry:
+            return Stand.objects.none()
         return Stand.objects.within_polygon(project_areas_geometry, size)
 
     def get_geopackage_url(self) -> Optional[str]:

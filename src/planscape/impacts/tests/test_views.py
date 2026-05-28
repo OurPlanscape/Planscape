@@ -45,9 +45,10 @@ class TxPlanViewSetTest(APITestCase):
         self.owner = UserFactory.create()
         self.collab_user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner, owners=[self.owner], collaborators=[self.collab_user]
+            user=self.owner, owners=[self.owner], collaborators=[self.collab_user], with_stands=True,
         )
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        ProjectAreaFactory.create(scenario=self.scenario, geometry=self.planning_area.geometry)
 
         Permissions.objects.get_or_create(role=Role.OWNER, permission="run_tx")
 
@@ -152,6 +153,24 @@ class TxPlanViewSetTest(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(async_task.called)
+
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_returns_412(self, async_task):
+        self.client.force_authenticate(user=self.scenario.user)
+        planning_area = PlanningAreaFactory.create(
+            user=self.owner, with_stands=True,
+        )
+        scenario = ScenarioFactory.create(planning_area=planning_area)
+        treatment_plan = TreatmentPlanFactory.create(scenario=scenario)
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_412_PRECONDITION_FAILED)
         self.assertFalse(async_task.called)
 
     @mock.patch(
