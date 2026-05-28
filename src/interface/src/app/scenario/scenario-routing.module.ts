@@ -8,6 +8,7 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
 import { createFeatureGuard } from '@app/features/feature.guard';
 import { DashboardSwitcherComponent } from './dashboard-switcher/dashboard-switcher.component';
 import { FundingDashboardComponent } from '@app/funding/funding-dashboard/funding-dashboard.component';
+import { FullReportViewComponent } from '@app/funding/full-report-view/full-report-view.component';
 
 const routes: Routes = [
   {
@@ -32,7 +33,18 @@ const routes: Routes = [
   {
     path: ':scenarioId/funding',
     component: FundingDashboardComponent,
-    title: 'Scenario Dashboard',
+    title: 'Funding Dashboard',
+    canDeactivate: [canDeactivateGuard],
+    canActivate: [createFeatureGuard({ featureName: 'FUNDING_REPORTS' })],
+    resolve: {
+      scenarioId: scenarioLoaderResolver,
+      dataLayerInit: resetDatalayerResolver,
+    },
+  },
+  {
+    path: ':scenarioId/funding/fullview', // TODO: nested or no?
+    component: FullReportViewComponent,
+    title: 'Funding Report',
     canDeactivate: [canDeactivateGuard],
     canActivate: [createFeatureGuard({ featureName: 'FUNDING_REPORTS' })],
     resolve: {

@@ -1,0 +1,74 @@
+@import 'colors';
+@import "media";
+@import "variables";
+
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+
+
+  @include on-small() {
+    overflow: initial;
+    flex-direction: column-reverse;
+    height: initial;
+  }
+
+}
+
+.full-report-sidebar {
+  width: $scenario-sidebar-width;
+  max-width: $scenario-sidebar-width;
+  
+  background-color: $color-soft-purple;
+  box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+
+  @include on-small() {
+    width: 100%;
+  }
+
+  &:not(.full-screen-steps) {
+    @include on-small() {
+      height: initial;
+      max-width: initial;
+    }
+
+  }
+
+  &.full-screen-steps {
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+
+
+  }
+
+  &.pre-step {
+    ::ng-deep .step {
+      padding: 0;
+      overflow: hidden;
+      @include on-small() {
+        overflow: initial;
+      }
+    }
+  }
+}
+
+
+app-funding-report-map {
+  flex: 1;
+  min-width: $scenario-sidebar-width;
+
+
+  @include on-small() {
+    height: 400px;
+    flex: initial;
+  }
+}
