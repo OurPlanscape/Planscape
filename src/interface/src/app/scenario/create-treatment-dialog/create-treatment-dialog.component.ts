@@ -20,7 +20,7 @@ import {
 
 interface DialogData {
   requestStandSize: boolean;
-  mode: 'new' | 'rename';
+  mode: 'NEW' | 'RENAME';
 }
 
 @Component({
@@ -52,7 +52,7 @@ export class CreateTreatmentDialogComponent {
     private dialogRef: MatDialogRef<CreateTreatmentDialogComponent>,
     @Inject(MAT_DIALOG_DATA) injectedData: Partial<DialogData>
   ) {
-    const { requestStandSize = false, mode = 'new' } = injectedData || {};
+    const { requestStandSize = false, mode = 'NEW' } = injectedData || {};
     this.data = { requestStandSize, mode };
   }
 

@@ -237,7 +237,7 @@ export class TreatmentPlansListComponent {
       this.dialog.open(CreateTreatmentDialogComponent, {
         data: {
           requestStandSize: false,
-          mode: 'rename',
+          mode: 'RENAME',
         },
       });
     dialogRef
