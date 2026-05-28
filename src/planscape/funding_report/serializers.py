@@ -10,8 +10,3 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class FundingOpportunityReportStatusSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FundingOpportunityReport
-        fields = ["id", "scenario", "status"]
-        read_only_fields = fields

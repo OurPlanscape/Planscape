@@ -71,7 +71,7 @@ class RunFundingOpportunityReportTest(APITestCase):
         self.assertEqual(data["status"], FundingOpportunityReportStatus.PENDING)
 
 
-class GetStatusFundingOpportunityReportTest(APITestCase):
+class RetrieveFundingOpportunityReportTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(user=self.user)
@@ -79,71 +79,47 @@ class GetStatusFundingOpportunityReportTest(APITestCase):
             user=self.user,
             planning_area=self.planning_area,
         )
-        self.url = reverse("api:funding_report:funding-opportunity-reports-get-status")
-
-    def _create_report(self, report_status=FundingOpportunityReportStatus.PENDING):
-        return FundingOpportunityReport.objects.create(
+        self.report = FundingOpportunityReport.objects.create(
             scenario=self.scenario,
             created_by=self.user,
-            status=report_status,
+        )
+        self.url = reverse(
+            "api:funding_report:funding-opportunity-reports-detail",
+            args=[self.report.pk],
         )
 
-    def test_get_status_returns_pending(self):
-        self._create_report(FundingOpportunityReportStatus.PENDING)
+    def test_retrieve_returns_report(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(self.url, {"scenario": self.scenario.pk})
+        response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["status"], FundingOpportunityReportStatus.PENDING)
+        data = response.json()
+        self.assertEqual(data["id"], self.report.pk)
+        self.assertEqual(data["scenario"], self.scenario.pk)
+        self.assertEqual(data["status"], FundingOpportunityReportStatus.PENDING)
 
-    def test_get_status_returns_running(self):
-        self._create_report(FundingOpportunityReportStatus.RUNNING)
+    def test_retrieve_response_contains_expected_fields(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(self.url, {"scenario": self.scenario.pk})
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["status"], FundingOpportunityReportStatus.RUNNING)
-
-    def test_get_status_returns_success(self):
-        self._create_report(FundingOpportunityReportStatus.SUCCESS)
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.url, {"scenario": self.scenario.pk})
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["status"], FundingOpportunityReportStatus.SUCCESS)
-
-    def test_get_status_returns_failed(self):
-        self._create_report(FundingOpportunityReportStatus.FAILED)
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.url, {"scenario": self.scenario.pk})
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["status"], FundingOpportunityReportStatus.FAILED)
-
-    def test_get_status_response_contains_expected_fields(self):
-        self._create_report()
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.url, {"scenario": self.scenario.pk})
+        response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertIn("id", data)
         self.assertIn("scenario", data)
         self.assertIn("status", data)
-        self.assertNotIn("created_at", data)
-        self.assertNotIn("updated_at", data)
+        self.assertIn("created_at", data)
+        self.assertIn("updated_at", data)
+        self.assertIn("created_by", data)
 
-    def test_get_status_requires_authentication(self):
-        self._create_report()
-        response = self.client.get(self.url, {"scenario": self.scenario.pk})
+    def test_retrieve_requires_authentication(self):
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_get_status_with_nonexistent_scenario_returns_404(self):
+    def test_retrieve_nonexistent_returns_404(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(self.url, {"scenario": 999999})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_get_status_with_no_report_returns_404(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.url, {"scenario": self.scenario.pk})
+        url = reverse(
+            "api:funding_report:funding-opportunity-reports-detail",
+            args=[999999],
+        )
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
