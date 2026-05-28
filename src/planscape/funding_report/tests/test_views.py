@@ -25,9 +25,7 @@ class RunReportTest(APITestCase):
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_creates_report_and_returns_202(self, task_mock):
         self.client.force_authenticate(self.user)
-        response = self.client.post(
-            self.url, {"scenario": self.scenario.pk}, format="json"
-        )
+        response = self.client.post(self.url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(FundingOpportunityReport.objects.count(), 1)
@@ -43,34 +41,20 @@ class RunReportTest(APITestCase):
             created_by=self.user,
         )
         self.client.force_authenticate(self.user)
-        response = self.client.post(
-            self.url, {"scenario": self.scenario.pk}, format="json"
-        )
+        response = self.client.post(self.url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(FundingOpportunityReport.objects.count(), 1)
         task_mock.delay.assert_called_once_with(existing.pk)
 
-    def test_run_requires_authentication(self):
-        response = self.client.post(
-            self.url, {"scenario": self.scenario.pk}, format="json"
-        )
+    def test_run_report_requires_authentication(self):
+        response = self.client.post(self.url, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_response_contains_expected_fields(self, task_mock):
         self.client.force_authenticate(self.user)
-        response = self.client.post(self.url, {"scenario": 999999}, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        task_mock.delay.assert_not_called()
-
-    @mock.patch("funding_report.views.run_funding_opportunity_report")
-    def test_run_response_contains_expected_fields(self, task_mock):
-        self.client.force_authenticate(self.user)
-        response = self.client.post(
-            self.url, {"scenario": self.scenario.pk}, format="json"
-        )
+        response = self.client.post(self.url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         data = response.json()
