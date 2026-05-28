@@ -14,13 +14,17 @@
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #menu="matMenu" class="more-treatment-menu">
-          <button mat-menu-item (click)="view.emit()" [disabled]="isDisabled">
-            <mat-icon class="material-symbols-outlined"
-              >file_open_outlined</mat-icon
-            >
-            <span>Open</span>
+          <button
+            mat-menu-item
+            class="action-button"
+            [disabled]="!userCanEdit"
+            (click)="rename.emit()"
+            [disabled]="isDisabled">
+            <mat-icon class="material-symbols-outlined">edit</mat-icon>
+            <span>Rename</span>
           </button>
           <button
+            class="action-button"
             mat-menu-item
             (click)="duplicate.emit()"
             [disabled]="!userCanDuplicate">
@@ -31,7 +35,7 @@
           </button>
           <button
             mat-menu-item
-            class="delete"
+            class="action-button delete"
             [disabled]="!userCanDelete"
             (click)="delete.emit()">
             <mat-icon class="material-symbols-outlined"

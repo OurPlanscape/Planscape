@@ -8,12 +8,17 @@ import { TreatmentsService } from '@app/services/treatments.service';
 import {
   canCloneTreatmentPlan,
   canDeleteTreatmentPlan,
+  canEditTreatmentPlan,
   userCanAddTreatmentPlan,
 } from '@app/plan/permissions';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@app/shared';
+import {
+  SNACK_BOTTOM_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
+} from '@app/shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
 import {
@@ -124,6 +129,12 @@ export class TreatmentPlansListComponent {
     );
   }
 
+  userCanEdit(): boolean {
+    return (
+      this.planningArea !== null && canEditTreatmentPlan(this.planningArea)
+    );
+  }
+
   userCanDuplicate(): boolean {
     return (
       this.planningArea !== null && canCloneTreatmentPlan(this.planningArea)
@@ -214,6 +225,43 @@ export class TreatmentPlansListComponent {
             standSize: args.standSize,
           });
         }
+      });
+  }
+
+  renameTreatment(treatment: TreatmentPlan) {
+    if (!canEditTreatmentPlan(this.planningArea)) {
+      return;
+    }
+
+    const dialogRef: MatDialogRef<CreateTreatmentDialogComponent> =
+      this.dialog.open(CreateTreatmentDialogComponent, {
+        data: {
+          requestStandSize: false,
+          mode: 'RENAME',
+        },
+      });
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((newName) => {
+        this.treatmentsService
+          .updateTreatmentPlan(treatment.id, { name: newName })
+          .subscribe({
+            next: () => {
+              this.matSnackBar.open(
+                `Treatment Plan name has been updated`,
+                'Dismiss',
+                SNACK_BOTTOM_NOTICE_CONFIG
+              );
+            },
+            error: () => {
+              this.matSnackBar.open(
+                `Treatment Plan could not be updated`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
       });
   }
 

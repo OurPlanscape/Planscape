@@ -39,10 +39,12 @@ export class TreatmentPlanCardComponent {
 
   @Input() userCanDelete: boolean = false;
   @Input() userCanDuplicate: boolean = false;
+  @Input() userCanEdit: boolean = false;
 
   @Input() treatmentLink: string = '';
 
   @Output() view = new EventEmitter();
+  @Output() rename = new EventEmitter();
   @Output() duplicate = new EventEmitter();
   @Output() delete = new EventEmitter();
 
