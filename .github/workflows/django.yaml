@@ -87,12 +87,13 @@ jobs:
           CELERY_BROKER_URL: redis://localhost:6379/0
           CACHEOPS_REDIS: redis://localhost:6379/0
         run: |
-          touch .test.env
-          echo SECRET_KEY="$SECRET_KEY" >> .test.env
-          echo AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" >> .test.env
-          echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" >> .test.env
-          echo AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION" >> .test.env
-          echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .test.env
-          echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .test.env
+          touch .env
+          echo SECRET_KEY="$SECRET_KEY" >> .env
+          echo AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" >> .env
+          echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" >> .env
+          echo AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION" >> .env
+          echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .env
+          echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .env
           cd src/planscape
+          touch .test.env
           uv run pytest
