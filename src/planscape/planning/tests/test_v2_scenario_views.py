@@ -1916,7 +1916,6 @@ class RunScenarioEndpointTest(APITestCase):
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ),
             mock.patch("planning.views_v2.trigger_scenario_run"),
-            mock.patch("planning.views_v2.feature_enabled", return_value=True),
         ):
             response = self.client.post(self.url, format="json")
 
