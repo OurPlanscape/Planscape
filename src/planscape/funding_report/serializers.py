@@ -8,5 +8,3 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
         model = FundingOpportunityReport
         fields = ["id", "scenario", "created_by", "created_at", "updated_at", "status"]
         read_only_fields = fields
-
-
