@@ -57,7 +57,7 @@ export class CreateTreatmentDialogComponent {
   }
 
   async submit() {
-    if (this.data.mode === 'rename') {
+    if (this.data.mode === 'RENAME') {
       const treatmentName =
         this.treatmentForm.get('treatmentName')?.value || '';
 
