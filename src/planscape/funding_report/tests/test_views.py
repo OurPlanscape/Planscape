@@ -1,12 +1,15 @@
 from unittest import mock
 
 from django.urls import reverse
+from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
+from planscape.tests.factories import UserFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from funding_report.models import FundingOpportunityReport, FundingOpportunityReportStatus
-from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
-from planscape.tests.factories import UserFactory
+from funding_report.models import (
+    FundingOpportunityReport,
+    FundingOpportunityReportStatus,
+)
 
 
 class RunFundingOpportunityReportTest(APITestCase):
@@ -22,7 +25,9 @@ class RunFundingOpportunityReportTest(APITestCase):
     @mock.patch("funding_report.views.run_funding_opportunity_report")
     def test_run_creates_report_and_returns_202(self, task_mock):
         self.client.force_authenticate(self.user)
-        response = self.client.post(self.url, {"scenario": self.scenario.pk}, format="json")
+        response = self.client.post(
+            self.url, {"scenario": self.scenario.pk}, format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(FundingOpportunityReport.objects.count(), 1)
@@ -38,14 +43,18 @@ class RunFundingOpportunityReportTest(APITestCase):
             created_by=self.user,
         )
         self.client.force_authenticate(self.user)
-        response = self.client.post(self.url, {"scenario": self.scenario.pk}, format="json")
+        response = self.client.post(
+            self.url, {"scenario": self.scenario.pk}, format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(FundingOpportunityReport.objects.count(), 1)
         task_mock.delay.assert_called_once_with(existing.pk)
 
     def test_run_requires_authentication(self):
-        response = self.client.post(self.url, {"scenario": self.scenario.pk}, format="json")
+        response = self.client.post(
+            self.url, {"scenario": self.scenario.pk}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     @mock.patch("funding_report.views.run_funding_opportunity_report")
@@ -59,7 +68,9 @@ class RunFundingOpportunityReportTest(APITestCase):
     @mock.patch("funding_report.views.run_funding_opportunity_report")
     def test_run_response_contains_expected_fields(self, task_mock):
         self.client.force_authenticate(self.user)
-        response = self.client.post(self.url, {"scenario": self.scenario.pk}, format="json")
+        response = self.client.post(
+            self.url, {"scenario": self.scenario.pk}, format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         data = response.json()
