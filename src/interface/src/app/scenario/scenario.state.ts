@@ -45,8 +45,11 @@ export class ScenarioState {
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
     this._currentScenarioId$.pipe(
-      filter((id): id is number => !!id),
-      distinctUntilChanged()
+      // distinctUntilChanged must run before the filter so the null emitted by
+      // resetScenarioId() is observed; otherwise navigating away and back to the
+      // same scenario looks like a consecutive duplicate and never reloads.
+      distinctUntilChanged(),
+      filter((id): id is number => !!id)
     ),
     this._reloadScenario$,
   ]).pipe(

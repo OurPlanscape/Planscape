@@ -164,6 +164,20 @@ describe('ScenarioState', () => {
     sub.unsubscribe();
   });
 
+  it('refetches the same scenario after resetScenarioId is called', () => {
+    scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+    const sub = scenarioState.currentScenarioResource$.subscribe();
+
+    // e.g. opening a scenario, going back to the planning area (which resets
+    // the id), then reopening the same scenario should load it again.
+    scenarioState.setScenarioId(1);
+    scenarioState.resetScenarioId();
+    scenarioState.setScenarioId(1);
+
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledTimes(2);
+    sub.unsubscribe();
+  });
+
   it('refetches when a different scenario id is selected', () => {
     scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
     const sub = scenarioState.currentScenarioResource$.subscribe();

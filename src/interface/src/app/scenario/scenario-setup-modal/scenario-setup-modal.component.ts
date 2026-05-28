@@ -196,6 +196,10 @@ export class ScenarioSetupModalComponent implements OnInit {
       payload.treatment_goal = Number(oldScenario.treatment_goal?.id);
     }
 
+    if (oldScenario.planning_approach) {
+      payload.planning_approach = oldScenario.planning_approach;
+    }
+
     return sanitizePayloadForScenarioType(newScenario, payload);
   }
 
