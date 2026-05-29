@@ -1,85 +1,79 @@
-<ng-container *ngIf="treatments$ | async as treatments">
-  @if (treatments.length === 0) {
-    @if (loading$ | async) {
-      <mat-spinner diameter="40"></mat-spinner>
-    } @else {
-      <div class="no-plans-view">
-        <div class="create-plans-block" *ngIf="userCanAddTreatmentPlan()">
-          <div class="icon-row">
-            <mat-icon class="material-symbols-outlined no-plans-icon">
-              analytics
-            </mat-icon>
-          </div>
-          <div class="title">No Treatment Plans Yet</div>
-          <div class="awaiting-blurb">
-            Get started by creating a new treatment plan.
-          </div>
-          <button
-            sg-button
-            variant="primary"
-            icon="add"
-            class="new-treatment"
-            [disabled]="creatingTreatment"
-            (click)="openNewTreatmentDialog()">
-            New Treatment Plan
-          </button>
-        </div>
-        <div class="awaiting-block" *ngIf="!userCanAddTreatmentPlan()">
-          <div class="icon-row">
-            <mat-icon class="material-symbols-outlined no-plans-icon">
-              document_search
-            </mat-icon>
-          </div>
-          <div class="title">Awaiting Treatment Plans</div>
-          <div class="awaiting-blurb">
-            Once an Editor or Owner create a treatment plan, it will be
-            available to view. To create treatment plans, please contact the
-            planning area owner to request Editor permissions.
-          </div>
-        </div>
-      </div>
-    }
-  } @else {
-    <div
-      class="treatments-list-header"
-      *ngIf="sortSelection$ | async as sortSelection">
-      <h4 class="header-left">Treatment Effects</h4>
-      <div class="header-right">
-        <button
-          class="sort-header"
-          sg-button
-          (click)="handleSortChange()"
-          variant="text">
-          <mat-icon class="material-symbols-outlined">
-            {{
-              sortSelection === '-created_at'
-                ? 'arrow_downward_alt'
-                : 'arrow_upward_alt'
-            }}
+@if (loading$ | async) {
+  <mat-spinner diameter="40"></mat-spinner>
+} @else {
+  <ng-container *ngIf="treatments$ | async as treatments">
+    <div *ngIf="treatments.length === 0" class="no-plans-view">
+      <div class="create-plans-block" *ngIf="userCanAddTreatmentPlan()">
+        <div class="icon-row">
+          <mat-icon class="material-symbols-outlined no-plans-icon">
+            analytics
           </mat-icon>
-          <span>Date Created</span>
+        </div>
+        <div class="title">No Treatment Plans Yet</div>
+        <div class="awaiting-blurb">
+          Get started by creating a new treatment plan.
+        </div>
+        <button
+          sg-button
+          variant="primary"
+          icon="add"
+          class="new-treatment"
+          [disabled]="creatingTreatment"
+          (click)="openNewTreatmentDialog()">
+          New Treatment Plan
         </button>
-        <div class="button-section">
-          <button
-            *ngIf="userCanAddTreatmentPlan()"
-            sg-button
-            variant="primary"
-            icon="add"
-            class="new-treatment"
-            [disabled]="creatingTreatment"
-            (click)="openNewTreatmentDialog()">
-            New Treatment Plan
-          </button>
+      </div>
+      <div class="awaiting-block" *ngIf="!userCanAddTreatmentPlan()">
+        <div class="icon-row">
+          <mat-icon class="material-symbols-outlined no-plans-icon">
+            document_search
+          </mat-icon>
+        </div>
+        <div class="title">Awaiting Treatment Plans</div>
+        <div class="awaiting-blurb">
+          Once an Editor or Owner create a treatment plan, it will be available
+          to view. To create treatment plans, please contact the planning area
+          owner to request Editor permissions.
         </div>
       </div>
     </div>
 
-    <div class="treatment-cards-wrapper">
-      @if (loading$ | async) {
-        <div class="list-spinner">
-          <mat-spinner diameter="40"></mat-spinner>
+    <ng-container *ngIf="treatments.length > 0">
+      <div
+        class="treatments-list-header"
+        *ngIf="sortSelection$ | async as sortSelection">
+        <h4 class="header-left">Treatment Effects</h4>
+        <div class="header-right">
+          <button
+            class="sort-header"
+            sg-button
+            (click)="handleSortChange()"
+            variant="text">
+            <mat-icon class="material-symbols-outlined">
+              {{
+                sortSelection === '-created_at'
+                  ? 'arrow_downward_alt'
+                  : 'arrow_upward_alt'
+              }}
+            </mat-icon>
+            <span>Date Created</span>
+          </button>
+          <div class="button-section">
+            <button
+              *ngIf="userCanAddTreatmentPlan()"
+              sg-button
+              variant="primary"
+              icon="add"
+              class="new-treatment"
+              [disabled]="creatingTreatment"
+              (click)="openNewTreatmentDialog()">
+              New Treatment Plan
+            </button>
+          </div>
         </div>
-      } @else {
+      </div>
+
+      <div class="treatment-cards-wrapper">
         <sg-treatment-plan-card
           class="in-list"
           [treatmentLink]="tx.id.toString()"
@@ -95,7 +89,7 @@
           (rename)="renameTreatment(tx)"
           (delete)="openDeleteDialog(tx)"
           (duplicate)="duplicateTreatment(tx)"></sg-treatment-plan-card>
-      }
-    </div>
-  }
-</ng-container>
+      </div>
+    </ng-container>
+  </ng-container>
+}
