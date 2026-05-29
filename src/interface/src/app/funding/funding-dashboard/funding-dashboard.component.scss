@@ -2,17 +2,6 @@
 @import 'colors';
 @import 'mixins';
 
-.left-column {
-  display: flex;
-  gap: 24px;
-  flex-direction: column;
-  background: $color-white;
-  border: 1px solid $color-fields-gray;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.2);
-}
-
 
 // Right column
 
@@ -20,6 +9,7 @@
   display: flex;
   align-items: center;
   height: 100%;
+  flex-direction: column;
 }
 
 .generating-report {
@@ -30,6 +20,7 @@
   align-items: center;
   padding: 24px;
   gap: 24px;
+  justify-content: center;
 
   section {
     max-width: 416px;
@@ -53,6 +44,37 @@
   line-height: 26px; /* 162.5% */
 }
 
+.generating-error {
+  align-self: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  h4 {
+    color: var(--Neutral-Black, #000);
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px;
+  }
+}
+
+.generating-error-card {
+  padding: 16px;
+}
+
+.generating-error-footer {
+  border-top: 2px solid $color-soft-gray;
+  padding: 16px;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: end;
+  gap: 8px;
+  margin-top: auto;
+}
+
 
 app-funding-report {
   flex: 1;
@@ -63,3 +85,8 @@ app-funding-report {
 sg-dashboard-layout {
   background: $color-lighter-gray;
 }
+
+.spinner {
+  margin: auto;
+}
+
