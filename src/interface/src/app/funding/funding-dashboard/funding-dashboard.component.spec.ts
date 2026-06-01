@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { FundingDashboardComponent } from '@app/funding/funding-dashboard/funding-dashboard.component';
@@ -8,12 +11,14 @@ import { MockProvider } from 'ng-mocks';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioState } from '@scenario/scenario.state';
 import { Capabilities, Scenario } from '@types';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('FundingDashboardComponent', () => {
   let component: FundingDashboardComponent;
   let fixture: ComponentFixture<FundingDashboardComponent>;
   let mockRouter: jasmine.SpyObj<Router>;
   let currentScenario$: BehaviorSubject<Scenario>;
+  let currentScenarioId$: BehaviorSubject<number | null>;
   let activatedRoute: ActivatedRoute;
 
   function makeScenario(id: number, capabilities: Capabilities[]): Scenario {
@@ -34,6 +39,7 @@ describe('FundingDashboardComponent', () => {
   async function setup(scenario: Scenario, routeScenarioId = '123') {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     currentScenario$ = new BehaviorSubject<Scenario>(scenario);
+    currentScenarioId$ = new BehaviorSubject<number | null>(scenario.id);
     activatedRoute = {
       snapshot: {
         paramMap: convertToParamMap({ scenarioId: routeScenarioId }),
@@ -50,7 +56,10 @@ describe('FundingDashboardComponent', () => {
         MockProvider(BreadcrumbService),
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: activatedRoute },
-        { provide: ScenarioState, useValue: { currentScenario$ } },
+        {
+          provide: ScenarioState,
+          useValue: { currentScenario$, currentScenarioId$ },
+        },
       ],
     }).compileComponents();
 
@@ -83,6 +92,26 @@ describe('FundingDashboardComponent', () => {
 
     // The route's scenario (no capability) finishes loading.
     currentScenario$.next(makeScenario(123, ['IMPACTS']));
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['../dashboard'], {
+      relativeTo: activatedRoute,
+    });
+  });
+
+  it('shows a snackbar and redirects when starting the report fails', async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    const httpMock = TestBed.inject(HttpTestingController);
+    // The component resolves MatSnackBar from its own element injector.
+    const snackbar = fixture.debugElement.injector.get(MatSnackBar);
+    const snackSpy = spyOn(snackbar, 'open');
+    mockRouter.navigate.calls.reset();
+
+    component.generateReport();
+
+    httpMock
+      .expectOne((req) => req.url.endsWith('v2/scenarios/123/run-report/'))
+      .flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(snackSpy).toHaveBeenCalled();
     expect(mockRouter.navigate).toHaveBeenCalledWith(['../dashboard'], {
       relativeTo: activatedRoute,
     });

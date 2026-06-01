@@ -34,15 +34,17 @@ export class ScenarioToolsComponent {
   ) {}
 
   private buildTools(capabilities: Capabilities[]): ScenarioTool[] {
-    const tools: ScenarioTool[] = [
-      {
+    const tools: ScenarioTool[] = [];
+
+    // if the scenario does not have a subunits planning approach
+    if (capabilities.includes('IMPACTS'))
+      tools.push({
         id: 'treatment-effects',
         backgroundImage: '/assets/svg/treatment-effects.svg',
         backgroundColor: '#dfede6',
         title: 'Treatment Effects',
         enabled: true,
-      },
-    ];
+      });
 
     if (!this.featureService.isFeatureEnabled('FUNDING_REPORTS')) {
       // coming soon if feature flag is off
