@@ -1,44 +1,41 @@
-<ng-container *ngIf="treatments$ | async as treatments">
+@if (treatments$ | async; as treatments) {
   @if (treatments.length === 0) {
-    @if (loading$ | async) {
-      <mat-spinner diameter="40"></mat-spinner>
-    } @else {
-      <div class="no-plans-view">
-        <div class="create-plans-block" *ngIf="userCanAddTreatmentPlan()">
-          <div class="icon-row">
-            <mat-icon class="material-symbols-outlined no-plans-icon">
-              analytics
-            </mat-icon>
-          </div>
-          <div class="title">No Treatment Plans Yet</div>
-          <div class="awaiting-blurb">
-            Get started by creating a new treatment plan.
-          </div>
-          <button
-            sg-button
-            variant="primary"
-            icon="add"
-            class="new-treatment"
-            [disabled]="creatingTreatment"
-            (click)="openNewTreatmentDialog()">
-            New Treatment Plan
-          </button>
+    <div class="no-plans-view">
+      <div class="create-plans-block" *ngIf="userCanAddTreatmentPlan()">
+        <div class="icon-row">
+          <mat-icon class="material-symbols-outlined no-plans-icon">
+            analytics
+          </mat-icon>
         </div>
-        <div class="awaiting-block" *ngIf="!userCanAddTreatmentPlan()">
-          <div class="icon-row">
-            <mat-icon class="material-symbols-outlined no-plans-icon">
-              document_search
-            </mat-icon>
-          </div>
-          <div class="title">Awaiting Treatment Plans</div>
-          <div class="awaiting-blurb">
-            Once an Editor or Owner create a treatment plan, it will be
-            available to view. To create treatment plans, please contact the
-            planning area owner to request Editor permissions.
-          </div>
+        <div class="title">No Treatment Plans Yet</div>
+        <div class="awaiting-blurb">
+          Get started by creating a new treatment plan.
+        </div>
+        <button
+          sg-button
+          variant="primary"
+          icon="add"
+          class="new-treatment"
+          [disabled]="creatingTreatment"
+          (click)="openNewTreatmentDialog()">
+          New Treatment Plan
+        </button>
+      </div>
+
+      <div class="awaiting-block" *ngIf="!userCanAddTreatmentPlan()">
+        <div class="icon-row">
+          <mat-icon class="material-symbols-outlined no-plans-icon">
+            document_search
+          </mat-icon>
+        </div>
+        <div class="title">Awaiting Treatment Plans</div>
+        <div class="awaiting-blurb">
+          Once an Editor or Owner create a treatment plan, it will be available
+          to view. To create treatment plans, please contact the planning area
+          owner to request Editor permissions.
         </div>
       </div>
-    }
+    </div>
   } @else {
     <div
       class="treatments-list-header"
@@ -98,4 +95,6 @@
       }
     </div>
   }
-</ng-container>
+} @else {
+  <mat-spinner diameter="40"></mat-spinner>
+}
