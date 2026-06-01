@@ -26,6 +26,7 @@ import {
   combineLatest,
   exhaustMap,
   shareReplay,
+  startWith,
   switchMap,
   take,
   tap,
@@ -71,6 +72,7 @@ export class TreatmentPlansListComponent {
       )
     ),
     tap(() => this.loading$.next(false)),
+    startWith(null),
     shareReplay(1)
   );
 
