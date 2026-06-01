@@ -1,0 +1,9 @@
+<h4>
+  <mat-icon [class]="cardType"
+    >{{ cardType === 'error' ? 'error' : 'warning' }}
+  </mat-icon>
+  {{ cardTitle }}
+</h4>
+<div class="content">
+  <ng-content></ng-content>
+</div>

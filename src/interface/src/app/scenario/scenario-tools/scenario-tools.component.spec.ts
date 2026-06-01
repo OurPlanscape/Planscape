@@ -60,14 +60,14 @@ describe('ScenarioToolsComponent', () => {
     );
   });
 
-  it('always shows the treatment effects tool', () => {
-    setup(true, ['FUNDING_REPORT']);
+  it('shows the treatment effects tool if the scenario has IMPACTS enabled', () => {
+    setup(true, ['IMPACTS']);
     expect(toolIds()).toContain('treatment-effects');
   });
 
   it('shows the coming-soon tile when the feature is off (regardless of capability)', () => {
     setup(false, ['FUNDING_REPORT']);
-    expect(toolIds()).toEqual(['treatment-effects', 'coming-soon']);
+    expect(toolIds()).toEqual(['coming-soon']);
 
     const comingSoon = tools().find((t) => t.id === 'coming-soon');
     expect(comingSoon?.enabled).toBeFalse();
@@ -75,10 +75,7 @@ describe('ScenarioToolsComponent', () => {
 
   it('shows the funding report tile when the feature is on and the scenario has the capability', () => {
     setup(true, ['FUNDING_REPORT']);
-    expect(toolIds()).toEqual([
-      'treatment-effects',
-      'funding-opportunity-report',
-    ]);
+    expect(toolIds()).toContain('funding-opportunity-report');
 
     const funding = tools().find((t) => t.id === 'funding-opportunity-report');
     expect(funding?.enabled).toBeTrue();
@@ -89,22 +86,22 @@ describe('ScenarioToolsComponent', () => {
     expect(toolIds()).toEqual(['treatment-effects']);
   });
 
-  it('hides the funding tile when the feature is on and there are no capabilities', () => {
+  it('hides the all tiles when the feature is on and there are no capabilities', () => {
     setup(true, []);
-    expect(toolIds()).toEqual(['treatment-effects']);
+    expect(toolIds()).toEqual([]);
   });
 
   it('reflects the capabilities of the current scenario as it changes', () => {
-    setup(true, []);
+    setup(true, ['IMPACTS']);
     expect(toolIds()).toEqual(['treatment-effects']);
 
     scenarioCapabilities$.next(['FUNDING_REPORT']);
 
-    expect(toolIds()).toContain('funding-opportunity-report');
+    expect(toolIds()).toEqual(['funding-opportunity-report']);
   });
 
   it('emits the treatment route when the treatment tool is clicked', () => {
-    setup(true, ['FUNDING_REPORT']);
+    setup(true, ['IMPACTS', 'FUNDING_REPORT']);
     const emitted: string[] = [];
     component.toolClicked.subscribe((route) => emitted.push(route));
 
