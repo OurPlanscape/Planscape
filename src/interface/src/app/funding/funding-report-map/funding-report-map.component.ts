@@ -9,7 +9,10 @@ import {
   LayerComponent,
   MapComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
+import {
+  addRequestHeaders,
+  getBoundsFromGeometry,
+} from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -23,21 +26,22 @@ import { PlanState } from '@app/plan/plan.state';
 @Component({
   selector: 'app-funding-report-map',
   standalone: true,
-  imports: [AsyncPipe, ControlComponent,
+  imports: [
+    AsyncPipe,
+    ControlComponent,
     LayerComponent,
     MapBaseLayersComponent,
     MapDataLayerComponent,
     MapComponent,
     MatProgressSpinnerModule,
     MapZoomControlComponent,
-    MapNavbarComponent, OpacitySliderComponent],
+    MapNavbarComponent,
+    OpacitySliderComponent,
+  ],
   templateUrl: './funding-report-map.component.html',
-  styleUrl: './funding-report-map.component.scss'
+  styleUrl: './funding-report-map.component.scss',
 })
 export class FundingReportMapComponent {
-
-
-
   mapLibreMap!: MapLibreMap;
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
   /**
@@ -52,23 +56,17 @@ export class FundingReportMapComponent {
     })
   );
 
-
   //Funding Report dependencies
   loading$ = new BehaviorSubject<boolean>(false);
 
-
   // TODO: use separate instance of mapconfigstate?
-  constructor(private mapConfigState: MapConfigState,
+  constructor(
+    private mapConfigState: MapConfigState,
     private authService: AuthService,
-        private planState: PlanState,
-    
-  ) {
-
-  }
-
+    private planState: PlanState
+  ) {}
 
   opacity$ = this.mapConfigState.opacity$;
-
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
@@ -77,7 +75,6 @@ export class FundingReportMapComponent {
   handleOpacityChange(opacity: number) {
     this.mapConfigState.setOpacity(opacity);
   }
-
 
   onMapError(event: ErrorEvent & EventData) {
     const status = (event.error as any)?.status;
@@ -88,6 +85,4 @@ export class FundingReportMapComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
-
-
 }

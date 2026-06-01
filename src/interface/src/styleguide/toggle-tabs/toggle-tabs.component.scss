@@ -1,0 +1,17 @@
+/* 1. Style the default, unselected buttons */
+mat-button-toggle {
+  background-color: #f5f5f5; /* Light grey for unselected */
+  color: #333333;
+  border: none !important;    /* Removes the default borders if desired */
+}
+
+/* 2. Style the selected button using a distinct background color */
+.mat-button-toggle-checked {
+  background-color: #007bff !important; /* Your chosen "selected" color */
+  color: #ffffff !important;            /* Text color for contrast */
+}
+
+/* Optional: Smooth out the transition between states */
+mat-button-toggle {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}

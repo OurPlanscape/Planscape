@@ -1,9 +1,57 @@
 <app-nav-bar></app-nav-bar>
 <!--New scenario ui flow-->
-<ng-container >
+<ng-container>
   <section class="container">
-    <div class="full-report-sidebar">SOME LEFT SIDE STUFF</div>
-    <app-funding-report-map></app-funding-report-map>
+    <div class="full-report-sidebar">
+      <div class="section-row toggle-row">
+        <div class="toggle-container">
+          <mat-button-toggle-group class="toggle-tabs">
+            <mat-button-toggle value="report" color="primary">
+              <mat-icon>analytics_outline</mat-icon>
+              Report</mat-button-toggle
+            >
+            <mat-button-toggle value="data_Layer">
+              <mat-icon>layers_outline</mat-icon>
+              Data Layers</mat-button-toggle
+            >
+          </mat-button-toggle-group>
+        </div>
+      </div>
+      <div class="section-row">
+        Introduction
+        <div>
+          Presented below are the results of our land management modeling, which
+          apply the maximum permissible treatments according to protected area
+          status and vegetation type. These values highlight the difference
+          between max allowable treatments and a "no-treatment" baseline. Learn
+          More
+        </div>
+      </div>
+      <div class="section-row">
+        <div class="view-outcomes-section">Viewing Outcomes For</div>
 
+        <mat-tab-group
+          class="side-tabs"
+          [(selectedIndex)]="tabIndex"
+          (selectedIndexChange)="onTabIndexChange($event)"
+          mat-stretch-tabs="false"
+          mat-align-tabs="start">
+          <mat-tab label="Carbon">
+            <div>great</div>
+          </mat-tab>
+          <mat-tab label="Wildfire Risk">
+            <div>ok</div>
+          </mat-tab>
+          <mat-tab label="Water">
+            <div>ok</div>
+          </mat-tab>
+          <mat-tab label="Biomass">
+            <div>ok</div>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+    </div>
+
+    <app-funding-report-map></app-funding-report-map>
   </section>
 </ng-container>
