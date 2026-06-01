@@ -1,6 +1,19 @@
 @import 'colors';
 @import 'mixins';
 
+// The interactive tooltip's menu panel is attached at the body level (outside
+// this component), so it must be targeted globally. mat-menu supplies the
+// elevation/animation; we only need to drop its default content padding so the
+// projected modal sits flush.
+::ng-deep .sg-section-tooltip-panel.mat-mdc-menu-panel {
+  // Let the projected modal's own width drive size (default cap is 280px).
+  max-width: none;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}
+
 :host {
   display: block;
 

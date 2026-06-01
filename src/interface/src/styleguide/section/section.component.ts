@@ -1,6 +1,6 @@
-import { Component, Input, TemplateRef } from '@angular/core';
+import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { NgClass, NgIf, NgTemplateOutlet } from '@angular/common';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
@@ -41,6 +41,23 @@ export class SectionComponent {
 
   @Input() tooltipIcon: 'help' | 'info' = 'info';
   @Input() tooltipSize: 'small' | 'medium' = 'small';
+
+  /**
+   * When true, the tooltip opens as an interactive, modal-like panel anchored
+   * to the icon, instead of the read-only `sg-popover`. It's backed by the same
+   * `mat-menu` (so it animates and is elevated), but clicks inside it don't
+   * close it — it only closes when the projected content calls the `close`
+   * function exposed on the template context
+   * (e.g. `<ng-template #tpl let-close="close">`). Requires `tooltipTemplate`.
+   */
+  @Input() tooltipInteractive = false;
+
+  @ViewChild('interactiveTrigger') interactiveTrigger?: MatMenuTrigger;
+
+  /** Passed to the projected template so its content can dismiss the panel. */
+  closeTooltip = () => {
+    this.interactiveTrigger?.closeMenu();
+  };
 
   stopPropagation(e: Event) {
     e.stopPropagation();

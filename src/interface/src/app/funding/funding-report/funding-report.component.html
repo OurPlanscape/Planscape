@@ -10,6 +10,20 @@
 </nav>
 <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
 
+<ng-template #tooltipContent let-close="close">
+  <sg-modal
+    title="tooltip title"
+    width="xsmall"
+    (clickedClose)="close()"
+    (clickedPrimary)="close()"
+    (clickedSecondary)="close()">
+    <div modalBodyContent>
+      Example of a tooltip displayed like a modal (close button, actions etc) but
+      in place (not like...full page modal)
+    </div>
+  </sg-modal>
+</ng-template>
+
 <div class="report-sections" #scrollContainer>
   <section id="map" class="report-section">
     <!-- TODO: map -->
@@ -20,6 +34,9 @@
     id="carbon"
     class="report-section"
     headline="Carbon"
+    tooltipSize="medium"
+    [tooltipTemplate]="tooltipContent"
+    [tooltipInteractive]="true"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div>

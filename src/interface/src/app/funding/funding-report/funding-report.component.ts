@@ -16,6 +16,7 @@ import {
   BannerComponent,
   ButtonComponent,
   ChartComponent,
+  ModalComponent,
   SectionComponent,
 } from '@styleguide';
 import { Chart, ChartData, ChartOptions } from 'chart.js';
@@ -56,6 +57,7 @@ interface ReportSection {
     ButtonComponent,
     ChartComponent,
     BannerComponent,
+    ModalComponent,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
