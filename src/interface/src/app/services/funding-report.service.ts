@@ -13,7 +13,8 @@ export class FundingReportService {
   getReport(scenarioId: number): Observable<FundingReport | null> {
     return this.http
       .get<FundingReport>(
-        environment.backend_endpoint + `v2/scenarios/${scenarioId}/get-report/`,
+        environment.backend_endpoint +
+          `/v2/scenarios/${scenarioId}/get-report/`,
         {
           withCredentials: true,
         }
@@ -28,7 +29,7 @@ export class FundingReportService {
 
   generateReport(scenarioId: number) {
     return this.http.post<FundingReport>(
-      environment.backend_endpoint + `v2/scenarios/${scenarioId}/run-report/`,
+      environment.backend_endpoint + `/v2/scenarios/${scenarioId}/run-report/`,
       {
         withCredentials: true,
       }
