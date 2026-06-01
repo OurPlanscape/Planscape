@@ -26,6 +26,7 @@ import {
   combineLatest,
   exhaustMap,
   shareReplay,
+  startWith,
   switchMap,
   take,
   tap,
@@ -59,6 +60,7 @@ export class TreatmentPlansListComponent {
   manualRefresh$ = new BehaviorSubject<void>(undefined);
 
   treatments$ = combineLatest([this.sortSelection$, this.manualRefresh$]).pipe(
+    tap(() => this.loading$.next(true)),
     // Every time sort or manual trigger changes...
     switchMap(([sort]) =>
       // ...restart the interval...
@@ -70,6 +72,7 @@ export class TreatmentPlansListComponent {
       )
     ),
     tap(() => this.loading$.next(false)),
+    startWith(null),
     shareReplay(1)
   );
 

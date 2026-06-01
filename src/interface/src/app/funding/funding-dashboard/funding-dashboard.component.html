@@ -23,11 +23,17 @@
       [partners]="partners"></sg-tool-info-card>
   </div>
   <div right-column class="right-column">
-    <app-funding-empty-state
-      *ngIf="(report$ | async) === null; else reportView"
-      (generateReport)="generateReport()">
-    </app-funding-empty-state>
-    <ng-template #reportView>
+    <mat-spinner
+      class="spinner"
+      *ngIf="loading$ | async; else loadedView"
+      diameter="36"></mat-spinner>
+
+    <ng-template #loadedView>
+      <app-funding-empty-state
+        *ngIf="showEmptyState$ | async"
+        (generateReport)="generateReport()">
+      </app-funding-empty-state>
+      <!-- Generating report-->
       <div class="generating-report" *ngIf="isGenerating$ | async">
         <mat-spinner diameter="36"></mat-spinner>
         <section>
@@ -38,7 +44,29 @@
           </div>
         </section>
       </div>
-      <!-- TODO: other states, errors, etc.  -->
+      <!-- Error -->
+      <div *ngIf="hasError$ | async" class="generating-error">
+        <div class="generating-error-card">
+          <h4>Report</h4>
+          <sg-message-card
+            cardType="error"
+            cardTitle="There was an error generating your report">
+            Sorry, we are unable to generate your report. Please try again.
+          </sg-message-card>
+        </div>
+
+        <div class="generating-error-footer">
+          <a sg-button [href]="SUPPORT_URL" target="_blank">Submit Feedback</a>
+          <button
+            sg-button
+            icon="assignment"
+            variant="primary"
+            (click)="generateReport()">
+            Retry Report Generation
+          </button>
+        </div>
+      </div>
+
       <app-funding-report *ngIf="hasOutput$ | async"></app-funding-report>
     </ng-template>
   </div>

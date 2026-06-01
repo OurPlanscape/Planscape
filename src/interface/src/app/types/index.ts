@@ -11,3 +11,4 @@ export * from './scenario.types';
 export * from './treatment.types';
 export * from './user.types';
 export * from './scenario.draft.types';
+export * from './funding-report';
