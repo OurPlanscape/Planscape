@@ -8,7 +8,7 @@
       redirectToNewPlan($event)
     "></app-treatment-navbar-menu>
 </app-nav-bar>
-<section class="treatment">
+<section class="treatment" *ngIf="!loading">
   <div class="left-side">
     <router-outlet></router-outlet>
   </div>
