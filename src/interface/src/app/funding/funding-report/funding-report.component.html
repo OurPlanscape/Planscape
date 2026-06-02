@@ -12,14 +12,15 @@
 
 <ng-template #tooltipContent let-close="close">
   <sg-modal
-    title="tooltip title"
+    [title]="tooltipName"
     width="xsmall"
     (clickedClose)="close()"
     (clickedPrimary)="close()"
     (clickedSecondary)="close()">
     <div modalBodyContent>
-      Example of a tooltip displayed like a modal (close button, actions etc) but
-      in place (not like...full page modal)
+      Tooltip for: {{ tooltipName }}<br />
+      Example of a tooltip displayed like a modal (close button, actions etc)
+      but in place (not like...full page modal)
     </div>
   </sg-modal>
 </ng-template>
@@ -37,6 +38,7 @@
     tooltipSize="medium"
     [tooltipTemplate]="tooltipContent"
     [tooltipInteractive]="true"
+    (tooltipClicked)="tooltipName = 'carbon'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div>
@@ -112,6 +114,9 @@
     id="water"
     class="report-section"
     headline="Water"
+    [tooltipTemplate]="tooltipContent"
+    [tooltipInteractive]="true"
+    (tooltipClicked)="tooltipName = 'water'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div class="stat-cards">
@@ -136,6 +141,9 @@
     id="biomass"
     class="report-section"
     headline="Biomass"
+    [tooltipTemplate]="tooltipContent"
+    [tooltipInteractive]="true"
+    (tooltipClicked)="tooltipName = 'biomass'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div>

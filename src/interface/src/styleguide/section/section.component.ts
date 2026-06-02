@@ -1,4 +1,11 @@
-import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { NgClass, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -51,6 +58,13 @@ export class SectionComponent {
    * (e.g. `<ng-template #tpl let-close="close">`). Requires `tooltipTemplate`.
    */
   @Input() tooltipInteractive = false;
+
+  /**
+   * Emitted when the tooltip icon is clicked in interactive mode. Useful for
+   * populating/lazy-loading the tooltip content right before the panel opens,
+   * so a shared template can be reused across sections.
+   */
+  @Output() tooltipClicked = new EventEmitter<void>();
 
   @ViewChild('interactiveTrigger') interactiveTrigger?: MatMenuTrigger;
 

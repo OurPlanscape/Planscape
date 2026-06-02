@@ -34,7 +34,7 @@
         [outlined]="true"
         class="popover-right"
         #interactiveTrigger="matMenuTrigger"
-        (click)="stopPropagation($event)"
+        (click)="stopPropagation($event); tooltipClicked.emit()"
         [matMenuTriggerFor]="interactiveMenu"></button>
 
       <mat-menu
