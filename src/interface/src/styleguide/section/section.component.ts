@@ -4,10 +4,8 @@ import {
   Input,
   Output,
   TemplateRef,
-  ViewChild,
 } from '@angular/core';
 import { NgClass, NgIf, NgTemplateOutlet } from '@angular/common';
-import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
@@ -24,7 +22,6 @@ import { ButtonComponent } from '@styleguide/button/button.component';
   imports: [
     NgIf,
     NgTemplateOutlet,
-    MatMenuModule,
     MatButtonModule,
     MatExpansionModule,
     PopoverComponent,
@@ -65,17 +62,6 @@ export class SectionComponent {
    * so a shared template can be reused across sections.
    */
   @Output() tooltipClicked = new EventEmitter<void>();
-
-  @ViewChild('interactiveTrigger') interactiveTrigger?: MatMenuTrigger;
-
-  /** Passed to the projected template so its content can dismiss the panel. */
-  closeTooltip = () => {
-    this.interactiveTrigger?.closeMenu();
-  };
-
-  stopPropagation(e: Event) {
-    e.stopPropagation();
-  }
 
   navigateToLink() {
     if (this.tooltipLink) {

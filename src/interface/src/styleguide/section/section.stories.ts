@@ -135,10 +135,9 @@ export const WithHint: Story = {
 
 /**
  * With `tooltipInteractive`, the tooltip opens as a modal-like panel anchored to
- * the icon. It's backed by the same mat-menu (so it animates and is elevated),
- * but clicks inside don't close it — it only closes when the projected content
- * calls the `close` function exposed on the template context. Requires
- * `tooltipTemplate`.
+ * the icon. It's delegated to `sg-popover`'s modal mode (so it animates and is
+ * elevated), but clicks inside don't close it — it only closes when the template
+ * calls the `close` function exposed on its context. Requires `tooltipTemplate`.
  */
 export const InteractiveTooltip: Story = {
   render: () => ({
@@ -179,4 +178,44 @@ export const InteractiveWithoutTemplateFallsBack: Story = {
     tooltipContent:
       'Interactive mode needs a template — with only string content the section falls back to the read-only popover.',
   },
+};
+
+/**
+ * `tooltipClicked` fires when the interactive icon is clicked (before the panel
+ * opens), so several sections can share ONE template and just set which content
+ * to show. Both sections below reuse the same template; the modal reflects the
+ * section you clicked.
+ */
+export const InteractiveSharedTemplate: Story = {
+  render: () => ({
+    props: { activeName: '' },
+    template: `
+      <ng-template #tip let-close="close">
+        <sg-modal
+          [title]="activeName"
+          width="xsmall"
+          (clickedClose)="close()"
+          (clickedPrimary)="close()"
+          (clickedSecondary)="close()">
+          <div modalBodyContent>Showing info for: {{ activeName }}</div>
+        </sg-modal>
+      </ng-template>
+
+      <sg-section
+        headline="Carbon"
+        [tooltipTemplate]="tip"
+        [tooltipInteractive]="true"
+        (tooltipClicked)="activeName = 'Carbon'">
+        Carbon section body.
+      </sg-section>
+
+      <sg-section
+        headline="Water"
+        [tooltipTemplate]="tip"
+        [tooltipInteractive]="true"
+        (tooltipClicked)="activeName = 'Water'">
+        Water section body.
+      </sg-section>
+    `,
+  }),
 };

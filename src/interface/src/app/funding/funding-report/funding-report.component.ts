@@ -17,6 +17,7 @@ import {
   ButtonComponent,
   ChartComponent,
   ModalComponent,
+  PopoverComponent,
   SectionComponent,
 } from '@styleguide';
 import { Chart, ChartData, ChartOptions } from 'chart.js';
@@ -58,6 +59,7 @@ interface ReportSection {
     ChartComponent,
     BannerComponent,
     ModalComponent,
+    PopoverComponent,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',

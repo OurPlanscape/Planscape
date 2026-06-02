@@ -25,30 +25,14 @@
         [ngTemplateOutlet]="tooltipTemplate"></ng-container>
     </sg-popover>
 
-    <!-- Interactive, modal-like tooltip: mat-menu, but clicks inside don't close -->
-    <ng-container *ngIf="tooltipTemplate && tooltipInteractive">
-      <button
-        sg-button
-        variant="icon-only"
-        [icon]="tooltipIcon"
-        [outlined]="true"
-        class="popover-right"
-        #interactiveTrigger="matMenuTrigger"
-        (click)="stopPropagation($event); tooltipClicked.emit()"
-        [matMenuTriggerFor]="interactiveMenu"></button>
-
-      <mat-menu
-        #interactiveMenu="matMenu"
-        xPosition="before"
-        yPosition="below"
-        class="sg-section-tooltip-panel">
-        <div (click)="$event.stopPropagation()">
-          <ng-container
-            [ngTemplateOutlet]="tooltipTemplate"
-            [ngTemplateOutletContext]="{ close: closeTooltip }"></ng-container>
-        </div>
-      </mat-menu>
-    </ng-container>
+    <!-- Interactive, modal-like tooltip: delegated to sg-popover's modal mode -->
+    <sg-popover
+      *ngIf="tooltipTemplate && tooltipInteractive"
+      [modal]="true"
+      class="popover-right"
+      [icon]="tooltipIcon"
+      [contentTemplate]="tooltipTemplate"
+      (opened)="tooltipClicked.emit()"></sg-popover>
     <button
       *ngIf="tooltipLink"
       sg-button

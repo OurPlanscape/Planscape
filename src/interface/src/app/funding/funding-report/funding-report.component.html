@@ -13,15 +13,15 @@
 <ng-template #tooltipContent let-close="close">
   <sg-modal
     [title]="tooltipName"
-    width="xsmall"
+    width="small"
+    [hasSecondaryButton]="false"
+    [hasLinkButton]="true"
+    primaryButtonText="Learn Mode"
+    linkButtonText="Download Dataset"
+    linkButtonIcon="download"
     (clickedClose)="close()"
-    (clickedPrimary)="close()"
-    (clickedSecondary)="close()">
-    <div modalBodyContent>
-      Tooltip for: {{ tooltipName }}<br />
-      Example of a tooltip displayed like a modal (close button, actions etc)
-      but in place (not like...full page modal)
-    </div>
+    (clickedPrimary)="close()">
+    <div modalBodyContent>Tooltip for: {{ tooltipName }}<br /></div>
   </sg-modal>
 </ng-template>
 
@@ -38,7 +38,7 @@
     tooltipSize="medium"
     [tooltipTemplate]="tooltipContent"
     [tooltipInteractive]="true"
-    (tooltipClicked)="tooltipName = 'carbon'"
+    (tooltipClicked)="tooltipName = 'Carbon'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div>
@@ -84,7 +84,14 @@
     <div>Metrics reflect outcomes within forested land only.</div>
 
     <div>
-      <h5>Flame Length</h5>
+      <h5>
+        Flame Length
+        <sg-popover
+          [modal]="true"
+          icon="info"
+          [contentTemplate]="tooltipContent"
+          (opened)="tooltipName = 'Flame Length'"></sg-popover>
+      </h5>
       <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
       <sg-chart
         *ngIf="flameLengthChart$ | async as chart"
@@ -94,7 +101,14 @@
         type="bar"></sg-chart>
     </div>
     <div class="top-section-divider">
-      <h5>Burn Probability</h5>
+      <h5>
+        Burn Probability
+        <sg-popover
+          [modal]="true"
+          icon="info"
+          [contentTemplate]="tooltipContent"
+          (opened)="tooltipName = 'Burn Probability'"></sg-popover>
+      </h5>
       <sg-banner class="burn-probability-banner" customIcon="priority_high"
         >Please note that burn probability data is calculated for the entire
         planning boundary, encompassing both treated and untreated areas. Unlike
@@ -116,7 +130,7 @@
     headline="Water"
     [tooltipTemplate]="tooltipContent"
     [tooltipInteractive]="true"
-    (tooltipClicked)="tooltipName = 'water'"
+    (tooltipClicked)="tooltipName = 'Water'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div class="stat-cards">
@@ -143,7 +157,7 @@
     headline="Biomass"
     [tooltipTemplate]="tooltipContent"
     [tooltipInteractive]="true"
-    (tooltipClicked)="tooltipName = 'biomass'"
+    (tooltipClicked)="tooltipName = 'Biomass'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div>

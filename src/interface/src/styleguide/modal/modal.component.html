@@ -36,6 +36,20 @@
   class="footer"
   *ngIf="hasFooter"
   [ngClass]="{ centered: centerFooter }">
+  <!-- Optional far-left link/text button (e.g. "Download Dataset"). Distinct
+       from the secondary action: different placement and a text-only style. -->
+  <button
+    *ngIf="hasLinkButton"
+    sg-button
+    type="button"
+    class="link-button-slot"
+    [variant]="linkButtonVariant"
+    [icon]="linkButtonIcon || ''"
+    [outlined]="true"
+    (click)="handleLinkButton()">
+    {{ linkButtonText }}
+  </button>
+
   <button
     *ngIf="hasSecondaryButton"
     sg-button
