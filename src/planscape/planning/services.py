@@ -243,7 +243,6 @@ def create_config(
     constraints: List[Dict[str, Any]],
     included_areas: DataLayerList,
     excluded_areas: DataLayerList,
-    priority_objectives: DataLayerList,
     priorities: List[Dict[str, Any]],
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
@@ -259,13 +258,7 @@ def create_config(
     config["included_areas_ids"] = [area.pk for area in included_areas]
     config["excluded_areas_ids"] = [area.pk for area in excluded_areas]
 
-    if priorities:
-        config["priority_objectives"] = [p["datalayer"].pk for p in priorities]
-        config["priorities"] = [{**p, "datalayer": p["datalayer"].pk} for p in priorities]
-    else:
-        # TODO: priority_objectives to be replaced by priorities
-        config["priority_objectives"] = [priority.pk for priority in priority_objectives]
-        config["priorities"] = [{"weight": 1, "datalayer": priority.pk} for priority in priority_objectives]
+    config["priorities"] = [{**p, "datalayer": p["datalayer"].pk} for p in priorities]
     config["cobenefits"] = [benefit.pk for benefit in cobenefits]
     if seed is not None:
         config["seed"] = seed
@@ -558,15 +551,11 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
-    if cfg.get("priorities"):
-        priorities = cfg.get("priorities") or []
-        priority_objectives = [priority.get("datalayer") for priority in priorities]
-    else:
-        priority_objectives = cfg.get("priority_objectives") or []
-        priorities = [{"datalayer": p, "weight": 1} for p in priority_objectives]
+    priorities = cfg.get("priorities") or []
+    priorities_datalayers = [priority.get("datalayer") for priority in priorities]
     cobenefits = cfg.get("cobenefits") or []
     sub_units_layer_id = cfg.get("sub_units_layer")
-    custom_datalayer_ids = set([*priority_objectives, *cobenefits])
+    custom_datalayer_ids = set([*priorities_datalayers, *cobenefits])
     custom_thresholds = {}
 
     for constraint in constraints:
@@ -723,9 +712,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
             errors.append("Scenario has no Treatment Goal assigned.")
 
     else:  # Scenario.type == ScenarioType.CUSTOM
-        if not cfg.get("priority_objectives") and not cfg.get("priorities"):
+        if not cfg.get("priorities"):
             errors.append(
-                "Configuration field `priority_objectives` or `priorities` is required for Custom Scenarios."
+                "Configuration field `priorities` is required for Custom Scenarios."
             )
 
     # Scenario checks by its `planning_apporach`
@@ -1201,10 +1190,7 @@ def export_scenario_inputs_to_geopackage(
             }
             weighted_datalayers.append(item)
     else:
-        if configuration.get("priorities"):
-            weighted_datalayers = configuration.get("priorities")
-        else:
-            weighted_datalayers = [{"datalayer": p, "weight": 1} for p in configuration.get("priority_objectives") or []]
+        weighted_datalayers = configuration.get("priorities")
 
         for wd in weighted_datalayers:
             datalayer = DataLayer.objects.get(pk=wd.get("datalayer"))
@@ -1897,7 +1883,7 @@ def calculate_and_update_scenario_result(scenario: Scenario):
 def calculate_and_update_rx_leverage(scenario: Scenario, features: List) -> List:
     if scenario.type == ScenarioType.CUSTOM:
         cfg = scenario.configuration or {}
-        priority_ids = cfg.get("priority_objectives")
+        priority_ids = [p["datalayer"] for p in cfg.get("priorities", [])]
         names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
     else:
         names = scenario.treatment_goal.datalayer_usages.filter(

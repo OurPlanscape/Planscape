@@ -126,6 +126,12 @@
   gap: 8px;
   flex-shrink: 0;
 
+  // Far-left link button: pushes the action buttons to the right.
+  .link-button-slot {
+    margin-right: auto;
+    margin-left: -6px;
+  }
+
   &.centered {
     justify-content: center;
     gap: 8px;

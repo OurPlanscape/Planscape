@@ -721,7 +721,7 @@ class ScenarioDetailTest(APITestCase):
                 "max_project_count": 5,
                 "estimated_cost": 100.0,
             },
-            "priority_objectives": [priority.pk],
+            "priorities": [{"datalayer": priority.id, "weight": 1}],
             "cobenefits": [cobenefit.pk],
         }
         scenario = ScenarioFactory.create(
@@ -761,7 +761,6 @@ class ScenarioDetailTest(APITestCase):
                 "estimated_cost": 100.0,
             },
             "priorities": [{"datalayer": priority.pk, "weight": 1}],
-            "priority_objectives": [priority.pk],
             "cobenefits": [cobenefit.pk],
         }
         scenario = ScenarioFactory.create(
@@ -1348,7 +1347,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_patch_custom_allows_stand_size_without_priority_objectives(self):
+    def test_patch_custom_allows_stand_size_without_priorities(self):
         scenario = ScenarioFactory(
             user=self.user,
             planning_area=self.planning_area,

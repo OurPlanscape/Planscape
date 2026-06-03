@@ -5,17 +5,28 @@
   [outlined]="true"
   class="info-icon"
   [ngClass]="iconColor"
-  (click)="$event.stopPropagation()"
+  (click)="$event.stopPropagation(); opened.emit()"
   [matMenuTriggerFor]="menu"></button>
 
-<mat-menu #menu="matMenu" class="info-popover-menu {{ panelSize }}">
-  <div class="tooltip">
-    <ng-container *ngIf="content; else projected">
-      <div [innerHTML]="content"></div>
-    </ng-container>
+<mat-menu
+  #menu="matMenu"
+  class="info-popover-menu {{ panelSize }} {{ modal ? 'modal' : '' }}">
+  <!-- In modal mode the wrapper drops the tooltip padding and stops clicks from
+       bubbling to mat-menu's close logic, so you can interact without closing. -->
+  <div [class.tooltip]="!modal" (click)="modal && $event.stopPropagation()">
+    <ng-container
+      *ngIf="contentTemplate; else stringOrProjected"
+      [ngTemplateOutlet]="contentTemplate"
+      [ngTemplateOutletContext]="{ close: close }"></ng-container>
 
-    <ng-template #projected>
-      <ng-content></ng-content>
+    <ng-template #stringOrProjected>
+      <ng-container *ngIf="content && !modal; else projected">
+        <div [innerHTML]="content"></div>
+      </ng-container>
+
+      <ng-template #projected>
+        <ng-content></ng-content>
+      </ng-template>
     </ng-template>
   </div>
 </mat-menu>
