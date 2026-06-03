@@ -12,11 +12,12 @@
       <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
         leadingIcon
       }}</mat-icon>
-      <div class="label-box">{{ menuLabel }}{{ selectionText }}</div>
+      <div class="label-box" *ngIf="selectedItems.length === 0 && noOptionsLabel">{{ noOptionsLabel }}</div>
+      <div class="label-box" *ngIf="selectedItems.length">{{ menuLabel }}{{ selectionText }}</div>
     </div>
     <div class="right-items-box">
       <div *ngIf="hasSelections()" class="more-items-box">
-        <div class="selected-count-chip">
+        <div *ngIf="showCountChip" class="selected-count-chip">
           {{ selectedItems.length }}
         </div>
       </div>

@@ -120,6 +120,7 @@ export const DoubleDigitSelections: Story = {
 export const LongOptionList: Story = {
   args: {
     selectedItems: ['Jack Young', 'Katherine Wilson'],
+    noOptionsLabel: 'Empty',
     menuLabel: 'Creator',
     menuItems: [
       'Amelia Rose',
@@ -182,6 +183,7 @@ export const LongOptionList: Story = {
 interface Thing {
   id: number;
   name: string;
+  shortName?: string;
 }
 
 type GenericStory = StoryObj<FilterDropdownComponent<Thing>>;
@@ -207,6 +209,33 @@ export const GenericItems: GenericStory = {
       { id: 14, name: 'Noah Garcia' },
       { id: 15, name: 'Olivia Harris' },
       { id: 16, name: 'Owen Lewis' },
+    ],
+  },
+};
+
+export const ItemsWithShortLabel: GenericStory = {
+  args: {
+    menuLabel: 'Region',
+    displayField: 'name',
+    shortLabel: 'shortName',
+    showCountChip: false,
+    menuItems: [
+      { id: 1, name: 'Amelia Rose', shortName: 'AR' },
+      { id: 2, name: 'Benjamin Walker', shortName: 'BW' },
+      { id: 3, name: 'Charlotte Lee',  shortName: 'CL' },
+      { id: 4, name: 'David Anderson',  shortName: 'DA' },
+      { id: 5, name: 'Evelyn Wright',  shortName: 'EW' },
+      { id: 6, name: 'Felix Thompson',  shortName: 'FT' },
+      { id: 7, name: 'Grace Miller',  shortName: 'GM' },
+      { id: 8, name: 'Henry Jackson',  shortName: 'HJ' },
+      { id: 9, name: 'Isabella Clark',  shortName: 'IC' },
+      { id: 10, name: 'Jack Young',  shortName: 'JY' },
+      { id: 11, name: 'Katherine Wilson',  shortName: 'KW' },
+      { id: 12, name: 'Liam Moore',  shortName: 'LM' },
+      { id: 13, name: 'Mia Brown',  shortName: 'MB' },
+      { id: 14, name: 'Noah Garcia',  shortName: 'NG' },
+      { id: 15, name: 'Olivia Harris',  shortName: 'OH' },
+      { id: 16, name: 'Owen Lewis',  shortName: 'OL' },
     ],
   },
 };

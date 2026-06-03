@@ -47,10 +47,18 @@ export class FilterDropdownComponent<T> implements OnInit {
    */
   @Input() hasSearch = true;
   @Input() disabled = false;
+  /** 
+   * Whether to display the count chip in the label
+   */
+  @Input() showCountChip = true;
   /**
    * The label text displayed for the menu
    */
   @Input() menuLabel!: string;
+  /**
+   * The label text displayed for the menu, if nothing is selected
+   */
+  @Input() noOptionsLabel?: string;
   /**
    * Items displayed in the menu, an object of any type
    */
@@ -58,9 +66,14 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   /**
    * The display field for the menu items. Optional, used if the
-   * provided menuItems is not already a string.
+   * provided menuItems is not a simple string.
    */
   @Input() displayField?: keyof T;
+   /**
+   * The object attribute value shown in the dropdown for selected menu items, if specified.
+   * Optional, used if set, and if the provided menuItems is not a simple string.
+   */
+  @Input() shortLabel?: keyof T;
   /**
    * Dynamically set the width from the consumer
    */
@@ -123,9 +136,18 @@ export class FilterDropdownComponent<T> implements OnInit {
   get selectionText(): string {
     if (this.selectedItems.length > 0) {
       const displayedSelections = this.selectedItems.map((item) => {
-        return this.displayField && typeof item !== 'string'
-          ? item[this.displayField]
-          : item;
+
+        // we select values following this precendence:
+
+        //if there's a shortLabel attribute set, we choose that field 
+        if (this.shortLabel && typeof item !== 'string' ) {
+          return item[this.shortLabel]
+        // if there's a displayField attribute set, we fallback to that
+        }else if (this.displayField && typeof item !== 'string'){
+          return item[this.displayField]
+        }else { // otherwise we just consider this a string and return the string
+          return item;
+        }
       });
       return `: ${displayedSelections.join(', ')}`;
     }
