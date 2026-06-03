@@ -279,7 +279,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             constraints=[],
             included_areas=[],
             excluded_areas=[],
-            priority_objectives=[],
             priorities=[],
             cobenefits=[],
         )
@@ -383,7 +382,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 constraints=configuration_data.get("constraints") or [],
                 included_areas=configuration_data.get("included_areas_ids") or [],
                 excluded_areas=configuration_data.get("excluded_areas_ids") or [],
-                priority_objectives=configuration_data.get("priority_objectives") or [],
                 priorities=configuration_data.get("priorities") or [],
                 cobenefits=configuration_data.get("cobenefits") or [],
                 seed=configuration_data.get("seed"),

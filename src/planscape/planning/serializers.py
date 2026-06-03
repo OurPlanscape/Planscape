@@ -638,14 +638,6 @@ class ConfigurationV3Serializer(serializers.Serializer):
         required=False,
     )
 
-    priority_objectives = serializers.ListField(
-        child=serializers.IntegerField(),
-        allow_empty=True,
-        min_length=1,
-        max_length=2,
-        required=False,
-    )
-
     priorities = serializers.ListField(
         child=WeighedPriorityObjectiveField(),
         allow_empty=True,
@@ -684,7 +676,6 @@ class ConfigurationV3Serializer(serializers.Serializer):
             "included_areas",
             "excluded_areas",
             "constraints",
-            "priority_objectives",
             "cobenefits",
         ]:
             if field not in data or data[field] is None:
@@ -720,14 +711,6 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
     constraints = serializers.ListField(
         child=ConstraintSerializer(),
         allow_empty=True,
-        required=False,
-    )
-    # TODO: deprecate this field (replaced by priorities)
-    priority_objectives = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
-        allow_empty=True,
-        min_length=1,
-        max_length=2,
         required=False,
     )
     priorities = serializers.ListField(
@@ -1003,16 +986,11 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
         if scenario.type == ScenarioType.CUSTOM:
             cfg = scenario.configuration or {}
             priorities = cfg.get("priorities") or []
-            if priorities:
-                priority_entries = [
-                    (p.get("datalayer"), p.get("weight", 1))
-                    for p in priorities
-                    if isinstance(p, dict) and p.get("datalayer") is not None
-                ]
-            else:
-                priority_entries = [
-                    (pid, 1) for pid in (cfg.get("priority_objectives") or [])
-                ]
+            priority_entries = [
+                (p.get("datalayer"), p.get("weight", 1))
+                for p in priorities
+                if isinstance(p, dict) and p.get("datalayer") is not None
+            ]
             priority_ids = [pid for pid, _ in priority_entries]
             cobenefit_ids = cfg.get("cobenefits") or []
             ids = [*priority_ids, *cobenefit_ids]
