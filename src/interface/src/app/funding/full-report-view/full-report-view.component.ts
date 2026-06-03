@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
-import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
+// import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -13,17 +13,22 @@ import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
+import { ButtonComponent, FilterDropdownComponent } from '@styleguide';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-full-report-view',
   standalone: true,
   imports: [
-    FundingReportMapComponent,
+    ButtonComponent,
+    FilterDropdownComponent,
+    // FundingReportMapComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatSelectModule,
     NavBarComponent,
     MatTabsModule,
+    NgIf,
     ToggleTabsComponent,
   ],
   templateUrl: './full-report-view.component.html',
@@ -35,6 +40,10 @@ export class FullReportViewComponent {
     { name: 'Data Layers', value: 'data_layers', icon: 'layers_outline' },
   ];
 
+  outcomeViewOptions = ['Project Area 1', 'Project Area 2', 'Project Area 3'];
+
+  currentView: string = 'report';
+
   constructor(private breadcumbService: BreadcrumbService) {
     const newBreadCrumb: BreadCrumb = {
       label: 'Funding Opportunity Report',
@@ -44,7 +53,12 @@ export class FullReportViewComponent {
     };
     this.breadcumbService.updateBreadCrumb(newBreadCrumb);
   }
-  tabIndex = 1;
+
+  handleToggleSelection(selection: string) {
+    this.currentView = selection;
+  }
+
   /* report tabs things */
+  tabIndex = 1;
   onTabIndexChange(tabSelected: number) {}
 }

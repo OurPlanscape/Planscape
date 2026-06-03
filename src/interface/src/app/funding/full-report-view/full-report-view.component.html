@@ -6,54 +6,70 @@
       <div class="section-row toggle-row">
         <sg-toggle-tabs
           [buttons]="tabButtons"
-          defaultSelection="report"></sg-toggle-tabs>
+          defaultSelection="report"
+          (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
       </div>
-      <div class="section-row">
-        <div class="section-title">Introduction</div>
-        <div class="section-text">
-          Presented below are the results of our land management modeling, which
-          apply the maximum permissible treatments according to protected area
-          status and vegetation type. These values highlight the difference
-          between max allowable treatments and a "no-treatment" baseline.
-          <a>Learn More</a>
+      <div class="report-view" *ngIf="currentView === 'report'">
+        <div class="section-row">
+          <div class="section-title">Introduction</div>
+          <div class="section-text">
+            Presented below are the results of our land management modeling,
+            which apply the maximum permissible treatments according to
+            protected area status and vegetation type. These values highlight
+            the difference between max allowable treatments and a "no-treatment"
+            baseline.
+            <a>Learn More</a>
+          </div>
+        </div>
+        <div class="section-row outcomes-row">
+          <div class="view-outcomes-box">
+            <div>Viewing Outcomes For</div>
+            <sg-filter-dropdown
+              [hasSearch]="false"
+              [menuItems]="outcomeViewOptions"
+              menuLabel="All Project Areas"></sg-filter-dropdown>
+          </div>
+
+          <mat-tab-group
+            class="side-tabs report-tabs"
+            [(selectedIndex)]="tabIndex"
+            (selectedIndexChange)="onTabIndexChange($event)"
+            mat-stretch-tabs="true"
+            mat-align-tabs="start">
+            <mat-tab label="Carbon">
+              <div class="report-details">
+                <div class="report-placeholder">Carbon Report Placeholder</div>
+              </div>
+            </mat-tab>
+            <mat-tab label="Wildfire Risk">
+              <div class="report-details">
+                <div class="report-placeholder">
+                  Wildfire Risk Report Placeholder
+                </div>
+              </div>
+            </mat-tab>
+            <mat-tab label="Water">
+              <div class="report-details">
+                <div class="report-placeholder">Water Report Placeholder</div>
+              </div>
+            </mat-tab>
+            <mat-tab label="Biomass">
+              <div class="report-details">
+                <div class="report-placeholder">Biomass Report Placeholder</div>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+
+        <div class="report-footer">
+          <button sg-button icon="share_outlined">Share</button>
+          <!-- TODO: split button? what are the options here? -->
+          <button sg-button icon="download">Download</button>
         </div>
       </div>
-      <div class="section-row outcomes-row">
-        <div class="view-outcomes-box">
-          <div>Viewing Outcomes For</div>
-          <!-- TODO - sort out the options here-->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-select value="All Project Areas">
-              <mat-option value="1">All Project Areas</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <mat-tab-group
-        class="side-tabs report-tabs"
-        [(selectedIndex)]="tabIndex"
-        (selectedIndexChange)="onTabIndexChange($event)"
-        mat-stretch-tabs="true"
-        mat-align-tabs="start">
-        <mat-tab label="Carbon">
-          <div>great</div>
-        </mat-tab>
-        <mat-tab label="Wildfire Risk">
-          <div>ok</div>
-        </mat-tab>
-        <mat-tab label="Water">
-          <div>ok</div>
-        </mat-tab>
-        <mat-tab label="Biomass">
-          <div>ok</div>
-        </mat-tab>
-      </mat-tab-group>
-
-      <!-- Bottom buttons - split this into another component-->
-      <div class="buttons-footer"></div>
     </div>
 
-    <app-funding-report-map></app-funding-report-map>
+    <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
+    <!-- TODO: funding map -->
   </section>
 </ng-container>

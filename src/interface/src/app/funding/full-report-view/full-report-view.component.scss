@@ -27,6 +27,7 @@
 
   background-color: $color-soft-purple;
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+  overflow-y: auto;
 
   @include on-small() {
     width: 100%;
@@ -74,7 +75,6 @@ app-funding-report-map {
   flex-direction: column;
   border-bottom: 1px $color-soft-gray solid;
 
-
   .section-title {
     @include top-level-label();
     text-transform: uppercase;
@@ -84,17 +84,20 @@ app-funding-report-map {
   .section-text {
     @include small-input-label();
   }
-
 }
 
 .toggle-row {
   height: 52px;
   align-items: center;
+  position: sticky;
+  top: 0;
 }
 
 .outcomes-row {
   padding: 0;
-
+  position: sticky;
+  top: 101px;
+  max-height: calc(1200px - 102px);
 
   .view-outcomes-box {
     background-color: $color-soft-white;
@@ -106,68 +109,26 @@ app-funding-report-map {
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
-
   }
-
 }
 
-
-/* toggle button styles */
-
-.toggle-container {
-  background-color: white;
-  padding: 4px;
-  width: 100%;
-  border-radius: 4px;
-  border: 1px $color-soft-gray solid;
+.tabs-row {
+  padding: 0;
+  position: sticky;
+  top: 218px; /* TODO: use vars here */
 }
 
-mat-button-toggle-group {
-  display: flex;
-  gap: 2px;
-  border: none !important;
-  box-shadow: none;
-  flex-direction: row;
-  justify-content: space-evenly;
-  gap: 2px;
+.report-details {
+  background-color: $color-light-gray;
+  padding: 16px;
+
+  .report-placeholder {
+    height: 900px;
+    border: 1px grey solid;
+  }
 }
 
-mat-button-toggle {
-  flex-grow: 1;
-  --mdc-button-toggle-unselected-background-color: #f5f5f5;
-  --mdc-button-toggle-unselected-label-text-color: #333333;
-
-  --mat-standard-button-toggle-selected-state-background-color: #064bba;
-  --mat-standard-button-toggle-selected-state-text-color: white;
-  --mat-focus-indicator-border-radius: 4px;
-
-  --mdc-button-toggle-state-layer-color: transparent;
-}
-
-.mat-button-toggle-checked {
-  border-radius: 4px;
-}
-
-.mat-button-toggle-group-appearance-standard {
-  border: none;
-  border-left: none;
-  border-right: none;
-}
-
-
-mat-button-toggle {
-  min-width: 216px;
-}
-
-.toggle-tabs.mat-button-toggle-group-appearance-standard .mat-button-toggle-appearance-standard+.mat-button-toggle-appearance-standard {
-  border-left: none;
-}
-
-mat-button-toggle .mat-button-toggle-button::before {
-  display: none !important;
-}
-
-.buttons-footer {
+.report-footer {
   background-color: $color-white;
   border-top: 1px solid $color-soft-gray;
   padding: 16px 8px;
@@ -181,4 +142,5 @@ mat-button-toggle .mat-button-toggle-button::before {
   align-items: center;
   flex-grow: 0;
   z-index: 500;
+  gap:8px;
 }
