@@ -3,6 +3,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 
 from planning.models import Scenario
 from datasets.models import DataLayer, Dataset
@@ -19,7 +20,12 @@ class Command(BaseCommand):
         """
         Backfills the scenario configuration keys to ensure compatibility with both old and new configurations.
         """
-        for scenario in Scenario.objects.iterator(chunk_size=100):
+
+        scenarios = Scenario.objects.filter(
+            ~Q(configuration__has_key="estimated_cost") | ~Q(configuration__has_key="max_area")
+        )
+
+        for scenario in scenarios.iterator(chunk_size=100):
             configuration = scenario.configuration
             if "estimated_cost" not in configuration:
                 estimated_cost = configuration.get("est_cost", None)
@@ -56,5 +62,28 @@ class Command(BaseCommand):
                 lookup_dict.get(area) for area in legacy_excluded_areas
             ]
             configuration["excluded_areas_ids"] = excluded_areas_ids
+            scenario.configuration = configuration
+            scenario.save(update_fields=["configuration"])
+
+    def _backfill_scenario_priorities(self):
+        """
+        Backfills Scenario's configuration `priority` field with legacy `priority_objectives` and weighting
+        """
+
+        scenarios = scenarios = Scenario.objects.exclude(
+            ~Q(configuration__has_key="priority_objectives") 
+            | Q(configuration__priority_objectives__isnull=True) 
+            | Q(configuration__priority_objectives=[])
+        ).filter(
+            ~Q(configuration__has_key="priorities") 
+            | Q(configuration__priorities__isnull=True) 
+            | Q(configuration__priorities=[])
+        )
+
+        for scenario in scenarios.iterator(chunk_size=100):
+            configuration = scenario.configuration
+            priority_objectives = configuration.get("priority_objectives", [])
+            priority_objectives_datalayers = DataLayer.objects.filter(pk__in=priority_objectives)
+            configuration["priorities"] = [{"weight": 1, "datalayer": priority.pk} for priority in priority_objectives_datalayers]
             scenario.configuration = configuration
             scenario.save(update_fields=["configuration"])
