@@ -8,6 +8,7 @@ import {
   BreadcrumbService,
 } from '@app/services/breadcrumb.service';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-full-report-view',
@@ -16,6 +17,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     FundingReportMapComponent,
     MatButtonToggleModule,
     MatIconModule,
+    MatSelectModule,
     NavBarComponent,
     MatTabsModule,
   ],

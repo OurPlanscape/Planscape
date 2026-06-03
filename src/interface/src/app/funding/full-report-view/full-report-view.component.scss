@@ -1,6 +1,7 @@
 @import 'colors';
 @import 'media';
 @import 'variables';
+@import 'mixins';
 
 :host {
   display: flex;
@@ -48,6 +49,7 @@
     ::ng-deep .step {
       padding: 0;
       overflow: hidden;
+
       @include on-small() {
         overflow: initial;
       }
@@ -66,23 +68,56 @@ app-funding-report-map {
 }
 
 .section-row {
-  padding: 16px;
+  padding: 24px;
   background-color: white;
   display: flex;
   flex-direction: column;
+  border-bottom: 1px $color-soft-gray solid;
 
+
+  .section-title {
+    @include top-level-label();
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .section-text {
+    @include small-input-label();
+  }
 
 }
-  .toggle-row {
-    height: 52px;
+
+.toggle-row {
+  height: 52px;
+  align-items: center;
+}
+
+.outcomes-row {
+  padding: 0;
+
+
+  .view-outcomes-box {
+    background-color: $color-soft-white;
+    margin: 16px;
+    border: 1px $color-soft-gray solid;
+    padding: 16px;
+    @include small-input-label();
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
     align-items: center;
+
   }
+
+}
+
+
 /* toggle button styles */
 
 .toggle-container {
   background-color: white;
   padding: 4px;
-  width: fit-content;
+  width: 100%;
   border-radius: 4px;
   border: 1px $color-soft-gray solid;
 }
@@ -90,11 +125,15 @@ app-funding-report-map {
 mat-button-toggle-group {
   display: flex;
   gap: 2px;
-  border: none !important; /* Removes outer group border */
-  box-shadow: none; /* Removes any default group shadows */
+  border: none !important;
+  box-shadow: none;
+  flex-direction: row;
+  justify-content: space-evenly;
+  gap: 2px;
 }
 
 mat-button-toggle {
+  flex-grow: 1;
   --mdc-button-toggle-unselected-background-color: #f5f5f5;
   --mdc-button-toggle-unselected-label-text-color: #333333;
 
@@ -115,21 +154,31 @@ mat-button-toggle {
   border-right: none;
 }
 
-::ng-deep .mat-button-toggle-appearance-standard {
-  border-left: none;
-  border-right: none;
-}
 
 mat-button-toggle {
   min-width: 216px;
 }
 
-/* TODO: ng-deep this? */
-::ng-deep
-  .mat-button-toggle-group-appearance-standard
-  .mat-button-toggle-appearance-standard {
+.toggle-tabs.mat-button-toggle-group-appearance-standard .mat-button-toggle-appearance-standard+.mat-button-toggle-appearance-standard {
   border-left: none;
 }
+
 mat-button-toggle .mat-button-toggle-button::before {
   display: none !important;
+}
+
+.buttons-footer {
+  background-color: $color-white;
+  border-top: 1px solid $color-soft-gray;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-grow: 0;
+  z-index: 500;
 }
