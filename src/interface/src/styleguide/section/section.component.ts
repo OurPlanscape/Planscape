@@ -47,12 +47,12 @@ export class SectionComponent {
   @Input() tooltipSize: 'small' | 'medium' = 'small';
 
   /**
-   * When true, the tooltip opens as an interactive, modal-like panel anchored
-   * to the icon, instead of the read-only `sg-popover`. It's backed by the same
-   * `mat-menu` (so it animates and is elevated), but clicks inside it don't
-   * close it — it only closes when the projected content calls the `close`
-   * function exposed on the template context
-   * (e.g. `<ng-template #tpl let-close="close">`). Requires `tooltipTemplate`.
+   * When true, the tooltip is delegated to `sg-popover`'s modal mode: it opens
+   * as an interactive, modal-like panel anchored to the icon instead of the
+   * read-only popover. It still animates and is elevated, but clicks inside it
+   * don't close it — it only closes when the template calls the `close` function
+   * exposed on its context (e.g. `<ng-template #tpl let-close="close">`).
+   * Requires `tooltipTemplate`.
    */
   @Input() tooltipInteractive = false;
 

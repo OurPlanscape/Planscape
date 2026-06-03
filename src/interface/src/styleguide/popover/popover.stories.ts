@@ -125,6 +125,31 @@ export const Modal: Story = {
 };
 
 /**
+ * Modal mode doesn't require an `sg-modal` — any interactive content works.
+ * Here it's just plain text and a close button wired to `close()` (grabbed via
+ * `#pop="sgPopover"`). The panel stays open until you dismiss it.
+ */
+export const ModalPlainContent: Story = {
+  render: () => ({
+    template: `
+      <div ${containerStyle}>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="color: black;">Click the icon -> </span>
+          <sg-popover [modal]="true" icon="info" #pop="sgPopover">
+            <div style="padding: 16px; max-width: 240px;">
+              <p style="margin: 0 0 12px;">
+                Just some plain text inside a modal popover — no sg-modal needed.
+              </p>
+              <button sg-button variant="text" (click)="pop.close()">Close</button>
+            </div>
+          </sg-popover>
+        </div>
+      </div>
+    `,
+  }),
+};
+
+/**
  * `contentTemplate` lets several popovers share ONE template instead of
  * repeating it. The template gets a `{ close }` context to dismiss the popover,
  * and `(opened)` fires on click — use it to populate which content to show
