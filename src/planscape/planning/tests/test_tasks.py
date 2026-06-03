@@ -208,48 +208,11 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertTrue(self.scenario.forsys_input.get("run_with_patchmax"))
         self.assertDictEqual(self.scenario.forsys_input.get("projects_data"), {})
 
-    def test_async_pre_forsys_process_custom_scenario(self):
-        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
-        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
-        configuration = {
-            "stand_size": StandSizeChoices.LARGE,
-            "priority_objectives": [priority.id],
-            "priorities": [],
-            "cobenefits": [cobenefit.id],
-        }
-        scenario = ScenarioFactory.create(
-            planning_area=self.planning_area,
-            treatment_goal=None,
-            type=ScenarioType.CUSTOM,
-            configuration=configuration,
-        )
-
-        async_pre_forsys_process(scenario.pk)
-
-        scenario.refresh_from_db()
-        self.assertIsNotNone(scenario.forsys_input)
-
-        datalayers = scenario.forsys_input["datalayers"]
-        self.assertEqual(len(datalayers), 2)
-        self.assertEqual(
-            {datalayer["id"] for datalayer in datalayers},
-            {priority.id, cobenefit.id},
-        )
-        self.assertEqual(
-            {datalayer["usage_type"] for datalayer in datalayers},
-            {"PRIORITY", "SECONDARY_METRIC"},
-        )
-        self.assertEqual(
-            {datalayer.get("weight") for datalayer in datalayers},
-            {1, None}
-        )
-
     def test_async_pre_forsys_process_custom_scenario_with_weight(self):
         priority = DataLayerFactory.create(type=DataLayerType.RASTER)
         cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
         configuration = {
             "stand_size": StandSizeChoices.LARGE,
-            "priority_objectives": [],
             "priorities": [{"datalayer": priority.id, "weight": 2}],
             "cobenefits": [cobenefit.id],
         }
@@ -353,7 +316,7 @@ class PrepareScenariosForForsysTest(TestCase):
             treatment_goal=None,
             type=ScenarioType.CUSTOM,
             configuration={
-                "priority_objectives": [priority.id],
+                "priorities": [{"datalayer": priority.id, "weight": 2}],
                 "cobenefits": [cobenefit.id],
             },
         )
