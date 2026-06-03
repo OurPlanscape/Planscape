@@ -15,6 +15,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> str | None:
         self._backfill_scenario_configuration_keys()
         self._backfill_scenario_excluded_areas()
+        self._backfill_scenario_priorities()
 
     def _backfill_scenario_configuration_keys(self):
         """
