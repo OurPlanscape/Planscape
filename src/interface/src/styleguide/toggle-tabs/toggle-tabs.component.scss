@@ -1,17 +1,50 @@
-/* 1. Style the default, unselected buttons */
-mat-button-toggle {
-  background-color: #f5f5f5; /* Light grey for unselected */
-  color: #333333;
-  border: none !important;    /* Removes the default borders if desired */
+@import 'colors';
+@import 'media';
+@import 'variables';
+@import 'mixins';
+
+:host {
+  display: block; 
+    background-color: white;
+  padding: 4px;
+  width: 100%; /* Careful: if you have borders, ensure box-sizing */
+  box-sizing: border-box; 
+  border-radius: 4px;
+  border: 1px $color-soft-gray solid;
 }
 
-/* 2. Style the selected button using a distinct background color */
+mat-button-toggle-group {
+  display: flex;
+  gap: 2px;
+  box-shadow: none;
+  flex-direction: row;
+  justify-content: space-evenly;
+  gap: 2px;
+  width: 100%;
+}
+
+mat-button-toggle {
+  flex-grow: 1;
+  --mdc-button-toggle-unselected-background-color: #f5f5f5;
+  --mdc-button-toggle-unselected-label-text-color: #333333;
+
+  --mat-standard-button-toggle-selected-state-background-color: #064bba;
+  --mat-standard-button-toggle-selected-state-text-color: white;
+  --mat-focus-indicator-border-radius: 4px;
+
+  --mdc-button-toggle-state-layer-color: transparent;
+}
+
 .mat-button-toggle-checked {
-  background-color: #007bff !important; /* Your chosen "selected" color */
-  color: #ffffff !important;            /* Text color for contrast */
+  border-radius: 4px;
 }
 
-/* Optional: Smooth out the transition between states */
-mat-button-toggle {
-  transition: background-color 0.2s ease, color 0.2s ease;
+.toggle-tabs.mat-button-toggle-group-appearance-standard {
+  border: none;
+  border-left: none;
+  border-right: none;
+}
+
+.toggle-tabs.mat-button-toggle-group-appearance-standard .mat-button-toggle-appearance-standard+.mat-button-toggle-appearance-standard {
+  border-left: none;
 }

@@ -1,5 +1,9 @@
-<mat-button-toggle-group name="favoriteColor" aria-label="Favorite Color">
-  <mat-button-toggle value="red">Red</mat-button-toggle>
-  <mat-button-toggle value="green">Green</mat-button-toggle>
-  <mat-button-toggle value="blue">Blue</mat-button-toggle>
+<mat-button-toggle-group
+  class="toggle-tabs"
+  [value]="defaultSelection"
+  (change)="handleSelection($event)">
+  <mat-button-toggle *ngFor="let btn of buttons" [value]="btn.value">
+    <mat-icon class="material-symbols-outlined">{{ btn.icon }}</mat-icon>
+    {{ btn.name }}</mat-button-toggle
+  >
 </mat-button-toggle-group>

@@ -79,7 +79,7 @@ export class FundingReportMapComponent {
   onMapError(event: ErrorEvent & EventData) {
     const status = (event.error as any)?.status;
     if (status >= 500 && status < 600) {
-      console.log('error');
+      // TODO: handle errors
     }
   }
 

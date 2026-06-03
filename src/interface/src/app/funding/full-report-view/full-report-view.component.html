@@ -4,16 +4,9 @@
   <section class="container">
     <div class="full-report-sidebar">
       <div class="section-row toggle-row">
-        <div class="toggle-container">
-          <mat-button-toggle-group class="toggle-tabs">
-            <mat-button-toggle value="report" color="primary">
-              <mat-icon class="material-symbols-outlined">analytics_outline</mat-icon>
-              Report</mat-button-toggle>
-            <mat-button-toggle value="data_Layer">
-              <mat-icon class="material-symbols-outlined">layers_outline</mat-icon>
-              Data Layers</mat-button-toggle>
-          </mat-button-toggle-group>
-        </div>
+        <sg-toggle-tabs
+          [buttons]="tabButtons"
+          defaultSelection="report"></sg-toggle-tabs>
       </div>
       <div class="section-row">
         <div class="section-title">Introduction</div>
@@ -21,29 +14,28 @@
           Presented below are the results of our land management modeling, which
           apply the maximum permissible treatments according to protected area
           status and vegetation type. These values highlight the difference
-          between max allowable treatments and a "no-treatment" baseline. <a>Learn
-            More</a>
+          between max allowable treatments and a "no-treatment" baseline.
+          <a>Learn More</a>
         </div>
       </div>
       <div class="section-row outcomes-row">
         <div class="view-outcomes-box">
           <div>Viewing Outcomes For</div>
           <!-- TODO - sort out the options here-->
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-
-          <mat-select value="All Project Areas">
-            <mat-option value="1">All Project Areas</mat-option>
-          </mat-select>
-        </mat-form-field>
-        
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-select value="All Project Areas">
+              <mat-option value="1">All Project Areas</mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
-
       </div>
 
-
-
-      <mat-tab-group class="side-tabs report-tabs" [(selectedIndex)]="tabIndex"
-        (selectedIndexChange)="onTabIndexChange($event)" mat-stretch-tabs="true" mat-align-tabs="start">
+      <mat-tab-group
+        class="side-tabs report-tabs"
+        [(selectedIndex)]="tabIndex"
+        (selectedIndexChange)="onTabIndexChange($event)"
+        mat-stretch-tabs="true"
+        mat-align-tabs="start">
         <mat-tab label="Carbon">
           <div>great</div>
         </mat-tab>
@@ -57,14 +49,10 @@
           <div>ok</div>
         </mat-tab>
       </mat-tab-group>
-    
-    
-    <!-- Bottom buttons - split this into another component-->
-     <div class="buttons-footer"></div>
-    
+
+      <!-- Bottom buttons - split this into another component-->
+      <div class="buttons-footer"></div>
     </div>
-
-
 
     <app-funding-report-map></app-funding-report-map>
   </section>
