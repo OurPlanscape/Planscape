@@ -63,8 +63,22 @@
 
         <div class="report-footer">
           <button sg-button icon="share_outlined">Share</button>
-          <!-- TODO: split button? what are the options here? -->
-          <button sg-button icon="download">Download</button>
+          <button
+            sg-button
+            data-id="new-scenario"
+            icon="download"
+            variant="primary"
+            [matMenuTriggerFor]="menu"
+            #trigger="matMenuTrigger">
+            Download Options
+            <mat-icon class="material-symbols-outlined download-options-down"
+              >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+            </mat-icon>
+          </button>
+          <mat-menu #menu="matMenu" class="scenario-options-menu">
+            <button mat-menu-item>Geopackage</button>
+            <button mat-menu-item>PDF</button>
+          </mat-menu>
         </div>
       </div>
     </div>

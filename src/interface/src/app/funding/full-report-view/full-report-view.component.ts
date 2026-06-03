@@ -15,6 +15,7 @@ import {
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
 import { ButtonComponent, FilterDropdownComponent } from '@styleguide';
 import { NgIf } from '@angular/common';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-full-report-view',
@@ -25,6 +26,7 @@ import { NgIf } from '@angular/common';
     // FundingReportMapComponent,
     MatButtonToggleModule,
     MatIconModule,
+    MatMenuModule,
     MatSelectModule,
     NavBarComponent,
     MatTabsModule,
