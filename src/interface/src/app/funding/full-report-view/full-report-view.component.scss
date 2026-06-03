@@ -119,12 +119,14 @@ app-funding-report-map {
 }
 
 .report-details {
-  background-color: $color-light-gray;
+  background-color: $color-soft-purple;
   padding: 16px;
 
   .report-placeholder {
     height: 900px;
-    border: 1px grey solid;
+    border: 1px $color-light-purple solid;
+    background-color: white;
+    border-radius: 2px;
   }
 }
 
