@@ -8,8 +8,14 @@
       {{ headline }}<span class="required" *ngIf="required"> *</span>
     </div>
     <div class="headline-hint" *ngIf="headlineHint">{{ headlineHint }}</div>
+    <!-- Read-only tooltip (default): mat-menu-backed popover.
+         Interactive mode needs a template; without one we fall back here so a
+         content-only tooltip never silently disappears. -->
     <sg-popover
-      *ngIf="tooltipContent || tooltipTemplate"
+      *ngIf="
+        (tooltipContent || tooltipTemplate) &&
+        !(tooltipInteractive && tooltipTemplate)
+      "
       class="popover-right"
       [content]="tooltipTemplate ? null : tooltipContent"
       [icon]="tooltipIcon"
@@ -18,6 +24,15 @@
         *ngIf="tooltipTemplate"
         [ngTemplateOutlet]="tooltipTemplate"></ng-container>
     </sg-popover>
+
+    <!-- Interactive, modal-like tooltip: delegated to sg-popover's modal mode -->
+    <sg-popover
+      *ngIf="tooltipTemplate && tooltipInteractive"
+      [modal]="true"
+      class="popover-right"
+      [icon]="tooltipIcon"
+      [contentTemplate]="tooltipTemplate"
+      (opened)="tooltipClicked.emit()"></sg-popover>
     <button
       *ngIf="tooltipLink"
       sg-button

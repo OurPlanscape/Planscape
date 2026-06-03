@@ -22,6 +22,7 @@ export * from '@styleguide/opacity-slider/opacity-slider.component';
 export * from '@styleguide/overlay-loader/overlay-loader.component';
 export * from '@styleguide/paginator/paginator.component';
 export * from '@styleguide/panel/panel.component';
+export * from '@styleguide/popover/popover.component';
 export * from '@styleguide/project-area-expander/project-area-expander.component';
 export * from '@styleguide/scenario-card/scenario-card.component';
 export * from '@styleguide/search-bar/search-bar.component';

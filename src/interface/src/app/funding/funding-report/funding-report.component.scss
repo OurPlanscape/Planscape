@@ -56,8 +56,11 @@ h5 {
   font-weight: 700;
   line-height: 15px;
   text-transform: uppercase;
-  margin: 8px 0 12px;
+  margin: 8px -8px 12px 0;
   color: $color-black;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .chart-subtitle {

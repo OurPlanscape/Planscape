@@ -16,6 +16,8 @@ import {
   BannerComponent,
   ButtonComponent,
   ChartComponent,
+  ModalComponent,
+  PopoverComponent,
   SectionComponent,
 } from '@styleguide';
 import { Chart, ChartData, ChartOptions } from 'chart.js';
@@ -56,6 +58,8 @@ interface ReportSection {
     ButtonComponent,
     ChartComponent,
     BannerComponent,
+    ModalComponent,
+    PopoverComponent,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
@@ -75,6 +79,9 @@ export class FundingReportComponent
   ];
 
   activeId = this.sections[0].id;
+
+  /** Name of the section whose interactive tooltip was last opened. */
+  tooltipName = '';
 
   private suppressUntil = 0;
   private pendingScrollFrame: number | null = null;

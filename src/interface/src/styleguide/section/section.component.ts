@@ -1,6 +1,11 @@
-import { Component, Input, TemplateRef } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  TemplateRef,
+} from '@angular/core';
 import { NgClass, NgIf, NgTemplateOutlet } from '@angular/common';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
@@ -17,7 +22,6 @@ import { ButtonComponent } from '@styleguide/button/button.component';
   imports: [
     NgIf,
     NgTemplateOutlet,
-    MatMenuModule,
     MatButtonModule,
     MatExpansionModule,
     PopoverComponent,
@@ -42,9 +46,22 @@ export class SectionComponent {
   @Input() tooltipIcon: 'help' | 'info' = 'info';
   @Input() tooltipSize: 'small' | 'medium' = 'small';
 
-  stopPropagation(e: Event) {
-    e.stopPropagation();
-  }
+  /**
+   * When true, the tooltip is delegated to `sg-popover`'s modal mode: it opens
+   * as an interactive, modal-like panel anchored to the icon instead of the
+   * read-only popover. It still animates and is elevated, but clicks inside it
+   * don't close it — it only closes when the template calls the `close` function
+   * exposed on its context (e.g. `<ng-template #tpl let-close="close">`).
+   * Requires `tooltipTemplate`.
+   */
+  @Input() tooltipInteractive = false;
+
+  /**
+   * Emitted when the tooltip icon is clicked in interactive mode. Useful for
+   * populating/lazy-loading the tooltip content right before the panel opens,
+   * so a shared template can be reused across sections.
+   */
+  @Output() tooltipClicked = new EventEmitter<void>();
 
   navigateToLink() {
     if (this.tooltipLink) {
