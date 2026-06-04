@@ -79,7 +79,7 @@ export class FilterDropdownComponent<T> implements OnInit {
    */
   @Input() size: 'small' | 'medium' | 'large' = 'medium';
   /**
-   * Don't style differently when selection items
+   * Don't style differently when we have selected items
    */
   @Input() styleType: 'purple' | 'white' = 'purple';
 
