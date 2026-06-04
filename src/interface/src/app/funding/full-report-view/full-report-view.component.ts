@@ -40,7 +40,12 @@ export class FullReportViewComponent {
     { name: 'Data Layers', value: 'data_layers', icon: 'layers_outline' },
   ];
 
-  outcomeViewOptions = ['Project Area 1', 'Project Area 2', 'Project Area 3'];
+  // TODO: convert project area list to match this format
+  outcomeViewOptions = [
+    { name: 'Project Area 1', shortName: '1' },
+    { name: 'Project Area 2', shortName: '2' },
+    { name: 'Project Area 3', shortName: '3' },
+  ];
 
   currentView: string = 'report';
 

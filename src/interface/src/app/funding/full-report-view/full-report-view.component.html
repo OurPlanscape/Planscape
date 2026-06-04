@@ -26,9 +26,14 @@
             <div>Viewing outcomes for:</div>
             <sg-filter-dropdown
               class="outcome-areas-dropdown"
+              [styleType]="'white'"
               [hasSearch]="false"
+              displayField="name"
+              shortLabel="shortName"
+              noSelectionsLabel="All Project Areas"
               [menuItems]="outcomeViewOptions"
-              menuLabel="All Project Areas"></sg-filter-dropdown>
+              [showCountChip]="false"
+              menuLabel="Project Areas"></sg-filter-dropdown>
           </div>
 
           <mat-tab-group
