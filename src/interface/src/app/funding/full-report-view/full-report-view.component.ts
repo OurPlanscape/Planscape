@@ -61,4 +61,16 @@ export class FullReportViewComponent {
   /* report tabs things */
   tabIndex = 1;
   onTabIndexChange(tabSelected: number) {}
+
+  downloadGeopackage() {
+    // TODO
+  }
+
+  downloadPDF() {
+    // TODO
+  }
+
+  shareReport() {
+    // TODO
+  }
 }

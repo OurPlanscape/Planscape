@@ -100,15 +100,19 @@ app-funding-report-map {
   max-height: calc(1200px - 102px);
 
   .view-outcomes-box {
+    @include small-input-label();
+    display: flex;
+    gap: 4px;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
     background-color: $color-soft-white;
     margin: 16px;
     border: 1px $color-soft-gray solid;
     padding: 16px;
-    @include small-input-label();
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: center;
+  }
+  .outcome-areas-dropdown {
+    flex: 1;
   }
 }
 
@@ -144,7 +148,7 @@ app-funding-report-map {
   align-items: center;
   flex-grow: 0;
   z-index: 500;
-  gap:8px;
+  gap: 8px;
 }
 
 .download-options-down {

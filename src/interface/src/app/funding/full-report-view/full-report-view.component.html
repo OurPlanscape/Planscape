@@ -23,8 +23,9 @@
         </div>
         <div class="section-row outcomes-row">
           <div class="view-outcomes-box">
-            <div>Viewing Outcomes For</div>
+            <div>Viewing outcomes for:</div>
             <sg-filter-dropdown
+              class="outcome-areas-dropdown"
               [hasSearch]="false"
               [menuItems]="outcomeViewOptions"
               menuLabel="All Project Areas"></sg-filter-dropdown>
@@ -62,7 +63,9 @@
         </div>
 
         <div class="report-footer">
-          <button sg-button icon="share_outlined">Share</button>
+          <button sg-button icon="share_outlined" (click)="shareReport()">
+            Share
+          </button>
           <button
             sg-button
             data-id="new-scenario"
@@ -76,8 +79,10 @@
             </mat-icon>
           </button>
           <mat-menu #menu="matMenu" class="scenario-options-menu">
-            <button mat-menu-item>Geopackage</button>
-            <button mat-menu-item>PDF</button>
+            <button mat-menu-item (click)="downloadGeopackage()">
+              Geopackage
+            </button>
+            <button mat-menu-item (click)="downloadPDF()">PDF</button>
           </mat-menu>
         </div>
       </div>
@@ -85,5 +90,6 @@
 
     <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
     <!-- TODO: funding map -->
+    <div>PLACEHOLDER: MAP GOES HERE</div>
   </section>
 </ng-container>

@@ -15,16 +15,16 @@
 
 mat-button-toggle-group {
   display: flex;
+  width: 100%;
   gap: 2px;
   box-shadow: none;
   flex-direction: row;
   justify-content: space-evenly;
-  gap: 2px;
-  width: 100%;
 }
 
 mat-button-toggle {
-  flex-grow: 1;
+  flex: 1;
+  text-align: center;
   --mdc-button-toggle-unselected-background-color: #f5f5f5;
   --mdc-button-toggle-unselected-label-text-color: #333333;
 
