@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
-// import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -23,7 +22,6 @@ import { MatMenuModule } from '@angular/material/menu';
   imports: [
     ButtonComponent,
     FilterDropdownComponent,
-    // FundingReportMapComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,
