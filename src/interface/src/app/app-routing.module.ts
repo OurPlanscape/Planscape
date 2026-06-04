@@ -21,7 +21,6 @@ import {
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
-import { createFeatureGuard } from './features/feature.guard';
 
 const routes: Routes = [
   {
