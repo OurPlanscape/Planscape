@@ -47,7 +47,7 @@ export class FilterDropdownComponent<T> implements OnInit {
    */
   @Input() hasSearch = true;
   @Input() disabled = false;
-  /** 
+  /**
    * Whether to display the count chip in the label
    */
   @Input() showCountChip = true;
@@ -69,7 +69,7 @@ export class FilterDropdownComponent<T> implements OnInit {
    * provided menuItems is not a simple string.
    */
   @Input() displayField?: keyof T;
-   /**
+  /**
    * The object attribute value shown in the dropdown for selected menu items, if specified.
    * Optional, used if set, and if the provided menuItems is not a simple string.
    */
@@ -81,7 +81,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   /**
    * Don't style differently when selection items
    */
-  @Input() unstyledSelections = false;
+  @Input() styleType: 'purple' | 'white' = 'purple';
 
   /**
    * Event that emits when list of selected items changes
@@ -140,16 +140,16 @@ export class FilterDropdownComponent<T> implements OnInit {
   get selectionText(): string {
     if (this.selectedItems.length > 0) {
       const displayedSelections = this.selectedItems.map((item) => {
-
         // we select values following this precendence:
 
-        //if there's a shortLabel attribute set, we choose that field 
-        if (this.shortLabel && typeof item !== 'string' ) {
-          return item[this.shortLabel]
-        // if there's a displayField attribute set, we fallback to that
-        }else if (this.displayField && typeof item !== 'string'){
-          return item[this.displayField]
-        }else { // otherwise we just consider this a string and return the string
+        //if there's a shortLabel attribute set, we choose that field
+        if (this.shortLabel && typeof item !== 'string') {
+          return item[this.shortLabel];
+          // if there's a displayField attribute set, we fallback to that
+        } else if (this.displayField && typeof item !== 'string') {
+          return item[this.displayField];
+        } else {
+          // otherwise we just consider this a string and return the string
           return item;
         }
       });
@@ -216,6 +216,16 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   applyChanges(e: Event) {
     this.confirmedSelection.emit(this.selectedItems);
+  }
+
+  get filterStyles() {
+    return {
+      // If styleType is 'purple' and we have selections, apply 'active-filter-purple'
+      'active-filter': this.styleType === 'purple' && this.hasSelections(),
+
+      // Disabled state remains the same
+      disabled: this.disabled,
+    };
   }
 
   @HostBinding('class.small')

@@ -243,7 +243,7 @@ export const ItemsWithShortNameAndDefaultLabel: GenericStory = {
   args: {
     menuLabel: 'Project Areas',
     hasSearch: false,
-    unstyledSelections: true,
+    styleType: 'white',
     noSelectionsLabel: 'All Project Areas',
     displayField: 'name',
     shortLabel: 'shortName',
@@ -257,7 +257,6 @@ export const ItemsWithShortNameAndDefaultLabel: GenericStory = {
       { id: 1, name: 'Project Area 6', shortName: '6' },
       { id: 1, name: 'Project Area 7', shortName: '7' },
       { id: 1, name: 'Project Area 8', shortName: '8' },
-
     ],
   },
 };
