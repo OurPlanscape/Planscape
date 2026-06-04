@@ -113,11 +113,7 @@ export class TreatmentsState {
       ) {
         // if we are currently viewing Treatment Impacts results
         navStateObject.label = `Treatment Effects Analysis: ${treatmentPlan.name}`;
-        if (this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS')) {
-          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment/`;
-        } else {
-          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
-        }
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment/`;
         navStateObject.icon = 'close';
         navStateObject.blackText = true;
       } else if (
@@ -127,11 +123,7 @@ export class TreatmentsState {
         treatmentPlan.status !== 'SUCCESS'
       ) {
         navStateObject.label = `Treatment Effects: ${treatmentPlan.name}`;
-        if (this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS')) {
-          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment`;
-        } else {
-          navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}`;
-        }
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment`;
         navStateObject.icon = 'close';
         navStateObject.blackText = true;
       }

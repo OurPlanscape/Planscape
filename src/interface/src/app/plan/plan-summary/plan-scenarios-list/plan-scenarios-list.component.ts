@@ -182,18 +182,19 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    // Update when SCENARIO_DASHBOARD be released
     if (
-      this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS') &&
+      // if the scenario has a result and that result is a finished state (failure, panic, success)...
       clickedScenario.scenario_result &&
       ['FAILURE', 'PANIC', 'SUCCESS'].includes(
         clickedScenario.scenario_result.status
       )
     ) {
+      // then we go to the dashboard
       this.router.navigate(['scenario', clickedScenario.id, 'dashboard'], {
         relativeTo: this.route,
       });
     } else {
+      // otherwise we are still working on it, so we go to the non-dashboard route
       this.router.navigate(['scenario', clickedScenario.id], {
         relativeTo: this.route,
       });

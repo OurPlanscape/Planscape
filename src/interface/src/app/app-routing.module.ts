@@ -136,10 +136,7 @@ const routes: Routes = [
           planInit: planLoaderResolver,
           scenarioId: scenarioLoaderResolver,
         },
-        canActivate: [
-          AuthGuard,
-          createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' }),
-        ],
+        canActivate: [AuthGuard],
       },
       {
         path: 'forsys',
