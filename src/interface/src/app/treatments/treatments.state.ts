@@ -29,7 +29,6 @@ import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
 import { BreadCrumb } from '@app/services/breadcrumb.service';
-import { FeatureService } from '@app/features/feature.service';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -42,8 +41,7 @@ export class TreatmentsState {
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
-    private directImpactsState: DirectImpactsStateService,
-    private featureService: FeatureService
+    private directImpactsState: DirectImpactsStateService
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
