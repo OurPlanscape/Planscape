@@ -60,6 +60,8 @@ export class FundingDashboardComponent implements OnInit {
     private snackbar: MatSnackBar
   ) {}
 
+  protected readonly SUPPORT_URL = SUPPORT_URL;
+
   private scenarioId$ = this.scenarioState.currentScenarioId$.pipe(
     filter((id): id is number => id !== null),
     take(1)
@@ -92,7 +94,13 @@ export class FundingDashboardComponent implements OnInit {
       return requested || this.isGenerating(report);
     })
   );
-  hasOutput$ = this.report$.pipe(map((r) => r?.status === 'SUCCESS'));
+  hasOutput$ = this.report$.pipe(
+    map((r) => r?.status === 'SUCCESS' && this.hasResults(r))
+  );
+  /** Report finished successfully but produced no results (e.g. no treatable areas). */
+  hasNoResults$ = this.report$.pipe(
+    map((r) => r?.status === 'SUCCESS' && !this.hasResults(r))
+  );
   hasError$ = this.report$.pipe(map((r) => r?.status === 'FAILED'));
 
   /** Empty state shows only before a report exists and before the user asks. */
@@ -114,6 +122,12 @@ export class FundingDashboardComponent implements OnInit {
 
   private isGenerating(report: FundingReport | null): boolean {
     return report?.status === 'PENDING' || report?.status === 'RUNNING';
+  }
+
+  /** Whether a (successful) report actually carries results to display. */
+  // TODO: refine once the shape of `results` is known.
+  private hasResults(report: FundingReport | null): boolean {
+    return true;
   }
 
   readonly partners = [
@@ -180,6 +194,4 @@ export class FundingDashboardComponent implements OnInit {
         }
       });
   }
-
-  protected readonly SUPPORT_URL = SUPPORT_URL;
 }
