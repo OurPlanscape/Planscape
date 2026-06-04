@@ -4,15 +4,15 @@
   class="dropdown-button"
   [disabled]="disabled"
   (click)="openFilterPanel()"
-  [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
+  [ngClass]="{ 'active-filter': hasSelections() && !unstyledSelections, disabled: disabled }">
   <div class="button-content">
     <div
       class="icon-label-box"
-      [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
+      [ngClass]="{ 'active-filter': hasSelections() && !unstyledSelections, disabled: disabled }">
       <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
         leadingIcon
       }}</mat-icon>
-      <div class="label-box" *ngIf="selectedItems.length === 0 && noOptionsLabel">{{ noOptionsLabel }}</div>
+      <div class="label-box" *ngIf="selectedItems.length === 0 && noSelectionsLabel">{{ noSelectionsLabel }}</div>
       <div class="label-box" *ngIf="selectedItems.length">{{ menuLabel }}{{ selectionText }}</div>
     </div>
     <div class="right-items-box">

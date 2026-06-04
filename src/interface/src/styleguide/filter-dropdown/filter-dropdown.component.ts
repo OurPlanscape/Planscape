@@ -58,7 +58,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   /**
    * The label text displayed for the menu, if nothing is selected
    */
-  @Input() noOptionsLabel?: string;
+  @Input() noSelectionsLabel?: string;
   /**
    * Items displayed in the menu, an object of any type
    */
@@ -78,6 +78,10 @@ export class FilterDropdownComponent<T> implements OnInit {
    * Dynamically set the width from the consumer
    */
   @Input() size: 'small' | 'medium' | 'large' = 'medium';
+  /**
+   * Don't style differently when selection items
+   */
+  @Input() unstyledSelections = false;
 
   /**
    * Event that emits when list of selected items changes
@@ -149,6 +153,11 @@ export class FilterDropdownComponent<T> implements OnInit {
           return item;
         }
       });
+      // and then we sort, if the shortLabel is selected
+      if (this.shortLabel) {
+        displayedSelections.sort();
+      }
+
       return `: ${displayedSelections.join(', ')}`;
     }
     return '';
