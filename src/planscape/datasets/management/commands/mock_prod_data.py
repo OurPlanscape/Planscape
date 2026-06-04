@@ -41,7 +41,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--backup-url",
-            default="gs://planscape-backups/20260416_203907_catalog_backup.json",
+            default="gs://planscape-restore/latest_production_backup.json",
             help=(
                 "Authenticated GCS URL for the catalog backup fixture. "
                 "Only gs:// URLs are supported."
@@ -65,9 +65,19 @@ class Command(BaseCommand):
                 "Backup fixture format is invalid: expected a list of objects."
             )
 
+        treatment_goal_ids = {
+            item.get("pk")
+            for item in data
+            if item.get("model") == "planning.treatmentgoal"
+        }
+        sanitized_data = []
+        skipped_usage_count = 0
+        skipped_treatment_goal_ids = set()
+
         for item in data:
             fields = item.get("fields")
             if not isinstance(fields, dict):
+                sanitized_data.append(item)
                 continue
 
             # Make catalog fixtures loadable against an arbitrary local dev DB.
@@ -77,8 +87,30 @@ class Command(BaseCommand):
             if item.get("model") == "datasets.datalayer" and "table" in fields:
                 fields.pop("table")
 
+            if item.get("model") == "planning.treatmentgoalusesdatalayer":
+                treatment_goal_id = fields.get("treatment_goal")
+                if treatment_goal_id not in treatment_goal_ids:
+                    skipped_usage_count += 1
+                    skipped_treatment_goal_ids.add(treatment_goal_id)
+                    continue
+
+            sanitized_data.append(item)
+
+        if skipped_usage_count:
+            sample_ids = ", ".join(
+                str(pk) for pk in sorted(skipped_treatment_goal_ids)[:10]
+            )
+            self.stdout.write(
+                self.style.WARNING(
+                    "Skipped "
+                    f"{skipped_usage_count} TreatmentGoalUsesDataLayer row(s) "
+                    "with missing TreatmentGoal fixture references"
+                    + (f" (sample treatment_goal ids: {sample_ids})." if sample_ids else ".")
+                )
+            )
+
         with open(file_path, "w", encoding="utf-8") as fh:
-            json.dump(data, fh, indent=2)
+            json.dump(sanitized_data, fh, indent=2)
 
     def handle(self, *args, **kwargs):
         if settings.ENV != "local":
