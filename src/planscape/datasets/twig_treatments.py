@@ -10,6 +10,7 @@ from uuid import uuid4
 import requests
 from core.gcs import get_bucket_and_key as get_gcs_bucket_and_key
 from core.gcs import is_gcs_file
+from core.requests import RequestSessionWrap
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -39,6 +40,10 @@ TWIG_TREATMENT_LAYER_NAMES = {
     "06-10": "Years Since Treatment: 06-10",
     "11-15": "Years Since Treatment: 11-15",
 }
+
+
+def get_request_client(session: Optional[requests.Session] = None):
+    return session or RequestSessionWrap()
 
 
 def get_query_url(api_url: str) -> str:
@@ -103,7 +108,7 @@ def fetch_twig_count(
     timeout: int = 120,
     session: Optional[requests.Session] = None,
 ) -> int:
-    client = session or requests.Session()
+    client = get_request_client(session)
     response = client.get(
         get_query_url(api_url),
         params={
@@ -138,7 +143,7 @@ def fetch_twig_feature_page(
     timeout: int = 120,
     session: Optional[requests.Session] = None,
 ) -> Dict[str, Any]:
-    client = session or requests.Session()
+    client = get_request_client(session)
     response = client.get(
         get_query_url(api_url),
         params={
@@ -179,7 +184,7 @@ def write_twig_feature_collection_to_file(
     page_size: int = 1000,
     session: Optional[requests.Session] = None,
 ) -> int:
-    client = session or requests.Session()
+    client = get_request_client(session)
     expected_count = fetch_twig_count(
         api_url=api_url,
         where_clause=where_clause,
