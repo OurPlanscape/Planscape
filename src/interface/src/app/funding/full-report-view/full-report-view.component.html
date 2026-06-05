@@ -9,87 +9,93 @@
           defaultSelection="report"
           (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
       </div>
-      <div class="report-view" *ngIf="currentView === 'report'">
-        <div class="section-row">
-          <div class="section-title">Introduction</div>
-          <div class="section-text">
-            Presented below are the results of our land management modeling,
-            which apply the maximum permissible treatments according to
-            protected area status and vegetation type. These values highlight
-            the difference between max allowable treatments and a "no-treatment"
-            baseline.
-            <a>Learn More</a>
+      <div class="scroll-section">
+        <div class="report-view" *ngIf="currentView === 'report'">
+          <div class="section-row">
+            <div class="section-title">Introduction</div>
+            <div class="section-text">
+              Presented below are the results of our land management modeling,
+              which apply the maximum permissible treatments according to
+              protected area status and vegetation type. These values highlight
+              the difference between max allowable treatments and a
+              "no-treatment" baseline.
+              <a>Learn More</a>
+            </div>
           </div>
-        </div>
-        <div class="section-row outcomes-row">
-          <div class="view-outcomes-box">
-            <div>Viewing outcomes for:</div>
-            <sg-filter-dropdown
-              class="outcome-areas-dropdown"
-              [styleType]="'white'"
-              [hasSearch]="false"
-              displayField="name"
-              shortLabel="shortName"
-              noSelectionsLabel="All Project Areas"
-              [menuItems]="outcomeViewOptions"
-              [showCountChip]="false"
-              menuLabel="Project Areas"></sg-filter-dropdown>
+          <div class="section-row outcomes-row">
+            <div class="view-outcomes-box">
+              <div>Viewing outcomes for:</div>
+              <sg-filter-dropdown
+                class="outcome-areas-dropdown"
+                [styleType]="'white'"
+                [hasSearch]="false"
+                displayField="name"
+                shortLabel="shortName"
+                noSelectionsLabel="All Project Areas"
+                [menuItems]="outcomeViewOptions"
+                [showCountChip]="false"
+                menuLabel="Project Areas"></sg-filter-dropdown>
+            </div>
           </div>
-
-          <mat-tab-group
-            class="side-tabs report-tabs"
-            [(selectedIndex)]="tabIndex"
-            (selectedIndexChange)="onTabIndexChange($event)"
-            mat-stretch-tabs="true"
-            mat-align-tabs="start">
-            <mat-tab label="Carbon">
-              <div class="report-details">
-                <div class="report-placeholder">Carbon Report Placeholder</div>
-              </div>
-            </mat-tab>
-            <mat-tab label="Wildfire Risk">
-              <div class="report-details">
-                <div class="report-placeholder">
-                  Wildfire Risk Report Placeholder
+          <div class="section-row tabs-row">
+            <mat-tab-group
+              class="side-tabs report-tabs"
+              [(selectedIndex)]="tabIndex"
+              (selectedIndexChange)="onTabIndexChange($event)"
+              mat-stretch-tabs="true"
+              mat-align-tabs="start">
+              <mat-tab label="Carbon">
+                <div class="report-details">
+                  <div class="report-placeholder">
+                    Carbon Report Placeholder
+                  </div>
                 </div>
-              </div>
-            </mat-tab>
-            <mat-tab label="Water">
-              <div class="report-details">
-                <div class="report-placeholder">Water Report Placeholder</div>
-              </div>
-            </mat-tab>
-            <mat-tab label="Biomass">
-              <div class="report-details">
-                <div class="report-placeholder">Biomass Report Placeholder</div>
-              </div>
-            </mat-tab>
-          </mat-tab-group>
+              </mat-tab>
+              <mat-tab label="Wildfire Risk">
+                <div class="report-details">
+                  <div class="report-placeholder">
+                    Wildfire Risk Report Placeholder
+                  </div>
+                </div>
+              </mat-tab>
+              <mat-tab label="Water">
+                <div class="report-details">
+                  <div class="report-placeholder">Water Report Placeholder</div>
+                </div>
+              </mat-tab>
+              <mat-tab label="Biomass">
+                <div class="report-details">
+                  <div class="report-placeholder">
+                    Biomass Report Placeholder
+                  </div>
+                </div>
+              </mat-tab>
+            </mat-tab-group>
+          </div>
         </div>
-
-        <div class="report-footer">
-          <button sg-button icon="share_outlined" (click)="shareReport()">
-            Share
+      </div>
+      <div class="report-footer">
+        <button sg-button icon="share_outlined" (click)="shareReport()">
+          Share
+        </button>
+        <button
+          sg-button
+          data-id="new-scenario"
+          icon="download"
+          variant="primary"
+          [matMenuTriggerFor]="menu"
+          #trigger="matMenuTrigger">
+          Download Options
+          <mat-icon class="material-symbols-outlined download-options-down"
+            >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+          </mat-icon>
+        </button>
+        <mat-menu #menu="matMenu" class="scenario-options-menu">
+          <button mat-menu-item (click)="downloadGeopackage()">
+            Geopackage
           </button>
-          <button
-            sg-button
-            data-id="new-scenario"
-            icon="download"
-            variant="primary"
-            [matMenuTriggerFor]="menu"
-            #trigger="matMenuTrigger">
-            Download Options
-            <mat-icon class="material-symbols-outlined download-options-down"
-              >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
-            </mat-icon>
-          </button>
-          <mat-menu #menu="matMenu" class="scenario-options-menu">
-            <button mat-menu-item (click)="downloadGeopackage()">
-              Geopackage
-            </button>
-            <button mat-menu-item (click)="downloadPDF()">PDF</button>
-          </mat-menu>
-        </div>
+          <button mat-menu-item (click)="downloadPDF()">PDF</button>
+        </mat-menu>
       </div>
     </div>
 

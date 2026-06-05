@@ -134,7 +134,6 @@ export class FundingDashboardComponent implements OnInit {
       label: 'Scenario Dashboard ',
       backUrl: '../dashboard',
     });
-    return;
     this.redirectIfFundingReportUnavailable();
   }
 

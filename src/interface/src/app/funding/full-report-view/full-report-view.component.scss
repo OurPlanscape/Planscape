@@ -22,12 +22,13 @@
 }
 
 .full-report-sidebar {
+  display: flex;
   width: $scenario-sidebar-width;
   max-width: $scenario-sidebar-width;
-
+  flex-direction: column;
+  height: 100%;
   background-color: $color-soft-purple;
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
-  overflow-y: auto;
 
   @include on-small() {
     width: 100%;
@@ -58,6 +59,20 @@
   }
 }
 
+.report-view {
+  display: block;
+  width: 100%;
+}
+
+.scroll-section {
+  overflow-y: auto;
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .section-row {
   padding: 24px;
   background-color: white;
@@ -86,8 +101,10 @@
 .outcomes-row {
   padding: 0;
   position: sticky;
-  top: 101px;
-  max-height: calc(1200px - 102px);
+  top: 0;
+  z-index: 10;
+  background-color: $color-white;
+  border-color: $color-white;
 
   .view-outcomes-box {
     @include small-input-label();
@@ -108,8 +125,6 @@
 
 .tabs-row {
   padding: 0;
-  position: sticky;
-  top: 218px; /* TODO: use vars here */
 }
 
 .report-details {
@@ -144,8 +159,24 @@
 .download-options-down {
   height: 40px;
   line-height: 40px;
-  border-left: 1px solid white;
+  border-left: 1px solid $color-white;
   padding: 0 8px;
   margin-left: 6px;
   margin-right: -12px;
+}
+
+::ng-deep .report-tabs {
+  .mat-mdc-tab-header,
+  .mat-tab-header {
+    position: sticky;
+    top: 107px; // match the outcomes-row height
+    z-index: 100;
+    background-color: $color-white;
+    border-bottom: 1px solid $color-soft-gray;
+  }
+  .mat-mdc-tab-body-wrapper,
+  .mat-tab-body-wrapper {
+    position: relative;
+    z-index: 1;
+  }
 }
