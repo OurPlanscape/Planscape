@@ -8,8 +8,8 @@
           defaultSelection="report"
           (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
       </div>
-      <div class="scroll-section">
-        <div class="report-view" *ngIf="currentView === 'report'">
+      <div class="scroll-section" *ngIf="currentView === 'report'">
+        <div class="report-view">
           <div class="section-row">
             <div class="section-title">Introduction</div>
             <div class="section-text">
@@ -73,7 +73,7 @@
           </div>
         </div>
       </div>
-      <div class="report-footer">
+      <div class="report-footer" *ngIf="currentView === 'report'">
         <button sg-button icon="share_outlined" (click)="shareReport()">
           Share
         </button>
@@ -96,6 +96,8 @@
           <button mat-menu-item (click)="downloadPDF()">PDF</button>
         </mat-menu>
       </div>
+
+      <div class="data-layers-view" *ngIf="currentView !== 'report'"></div>
     </div>
 
     <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
