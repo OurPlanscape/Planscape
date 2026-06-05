@@ -23,9 +23,7 @@ export interface ToggleButtonsConfig {
 /** Displays a series of buttons with one selectable option */
 export class ToggleTabsComponent {
   /** An array of buttons to display, as an object of strings: 
-   {name: string;
-  icon: string;
-  value: string;} */
+   [{name: string; icon: string; value: string;}...] */
   @Input() buttons: ToggleButtonsConfig[] = [];
 
   /** The default selected value or null */

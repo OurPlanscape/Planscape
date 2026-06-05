@@ -4,11 +4,11 @@
 @import 'mixins';
 
 :host {
-  display: block; 
-    background-color: white;
+  display: block;
+  background-color: white;
   padding: 4px;
-  width: 100%; /* Careful: if you have borders, ensure box-sizing */
-  box-sizing: border-box; 
+  width: 100%;
+  box-sizing: border-box;
   border-radius: 4px;
   border: 1px $color-soft-gray solid;
 }
@@ -45,6 +45,8 @@ mat-button-toggle {
   border-right: none;
 }
 
-.toggle-tabs.mat-button-toggle-group-appearance-standard .mat-button-toggle-appearance-standard+.mat-button-toggle-appearance-standard {
+.toggle-tabs.mat-button-toggle-group-appearance-standard
+  .mat-button-toggle-appearance-standard
+  + .mat-button-toggle-appearance-standard {
   border-left: none;
 }

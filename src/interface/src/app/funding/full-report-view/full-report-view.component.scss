@@ -11,7 +11,7 @@
 
 .container {
   display: flex;
-  height: 100%;
+  // height: 100%;
   overflow: hidden;
 
   @include on-small() {
@@ -23,7 +23,7 @@
 
 .full-report-sidebar {
   display: flex;
-  width: $scenario-sidebar-width;
+  width: $scenario-sidebar-width; // TODO: rename this to be more generic?
   max-width: $scenario-sidebar-width;
   flex-direction: column;
   height: 100%;
@@ -70,12 +70,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .section-row {
   padding: 24px;
-  background-color: white;
+  background-color: $color-white;
   display: flex;
   flex-direction: column;
   border-bottom: 1px $color-soft-gray solid;
@@ -92,7 +91,6 @@
 }
 
 .toggle-row {
-  height: 52px;
   align-items: center;
   position: sticky;
   top: 0;
@@ -131,10 +129,11 @@
   background-color: $color-soft-purple;
   padding: 16px;
 
+  /* TODO: replace this with actual report components when available */
   .report-placeholder {
     height: 900px;
     border: 1px $color-light-purple solid;
-    background-color: white;
+    background-color: $color-white;
     border-radius: 2px;
   }
 }
@@ -144,8 +143,6 @@
   border-top: 1px solid $color-soft-gray;
   padding: 16px 8px;
   box-sizing: border-box;
-  position: sticky;
-  bottom: 0;
   width: 100%;
   text-align: right;
   display: flex;
