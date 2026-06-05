@@ -19,7 +19,7 @@ from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
 from fiona.crs import from_epsg
 from gis.core import get_storage_session
-from impacts.calculator import calculate_delta, truncate_result
+from impacts.calculator import truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -47,6 +47,7 @@ from stands.services import (
     calculate_stand_zonal_stats_api,
     get_missing_stand_ids_for_datalayer_from_stand_list,
 )
+from stands.calculator import calculate_delta
 
 from planscape.openpanel import track_openpanel
 

@@ -193,6 +193,13 @@ class Command(PlanscapeCommand):
             type=json.loads,
         )
         create_parser.add_argument(
+            "--funding",
+            required=False,
+            action="store_true",
+            default=False,
+            help="Derive funding report metadata from the input filename.",
+        )
+        create_parser.add_argument(
             "--skip-existing",
             required=False,
             action="store_true",
@@ -457,7 +464,15 @@ class Command(PlanscapeCommand):
     ) -> Optional[Dict[str, Any]]:
         map_service_type = kwargs.pop("map_service_type", None)
         metadata = kwargs.pop("metadata", None)
+        funding = kwargs.pop("funding", False)
         layer_type = kwargs.pop("layer_type", None)
+
+        if funding and not metadata:
+            from funding_report.models import get_funding_report_metadata
+
+            if not input_file and not url:
+                raise ValueError("--funding requires --input-file or --url")
+            metadata = get_funding_report_metadata(input_file or url)
 
         if url and not layer_type:
             raise ValueError("Missing required layer_type when using url.")
