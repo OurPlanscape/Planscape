@@ -97,7 +97,7 @@ class CalculateFundingOpportunityReportTest(TestCase):
         self.assertEqual(stand_result["baseline"], 10)
         self.assertEqual(stand_result["value"], 15)
         self.assertEqual(stand_result["delta"], 0.5)
-        self.assertEqual(stand_result["forested_rate"], 1)
+        self.assertNotIn("forested_rate", stand_result)
 
         project_area_result = next(
             result

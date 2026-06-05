@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from datasets.models import DataLayer, DataLayerType
 from planning.models import ProjectArea
 from stands.calculator import calculate_delta
-from stands.models import Stand, StandMetric, StandSizeChoices, pixels_from_size
+from stands.models import Stand, StandMetric
 
 from funding_report.models import (
     FUNDING_REPORT_ACTION,
@@ -66,7 +66,6 @@ def calculate_stand_results(
     changed_metrics: Dict[int, StandMetric],
     metric: FundingReportMetric,
     year: int,
-    stand_size: str,
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id, baseline_metric in baseline_metrics.items():
@@ -86,7 +85,6 @@ def calculate_stand_results(
                 "baseline": baseline_value,
                 "value": changed_value,
                 "delta": calculate_delta(changed_value, baseline_value),
-                "forested_rate": get_forested_rate(changed_metric, stand_size),
             }
         )
     return results
@@ -120,15 +118,6 @@ def calculate_project_area_results(
         "delta": calculate_delta(changed_sum, baseline_sum),
         "stand_count": len(stand_results),
     }
-
-
-def get_forested_rate(
-    metric: Optional[StandMetric], stand_size: str
-) -> Optional[float]:
-    if not metric:
-        return None
-    count = metric.count if metric.count else 0
-    return float(count) / float(pixels_from_size(StandSizeChoices(stand_size)))
 
 
 def calculate_metric_year_results(
@@ -169,7 +158,6 @@ def calculate_metric_year_results(
         changed_metrics=changed_metrics,
         metric=metric,
         year=year,
-        stand_size=report.scenario.get_stand_size(),
     )
     stand_results_by_id = {result["stand_id"]: result for result in stand_results}
     stand_size = report.scenario.get_stand_size()
