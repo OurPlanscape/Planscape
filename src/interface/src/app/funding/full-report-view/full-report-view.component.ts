@@ -12,15 +12,15 @@ import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
-import { ButtonComponent, FilterDropdownComponent } from '@styleguide';
+import { FilterDropdownComponent } from '@styleguide';
 import { NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
+import { FundingReportComponent } from '@app/funding/funding-report/funding-report.component';
 
 @Component({
   selector: 'app-full-report-view',
   standalone: true,
   imports: [
-    ButtonComponent,
     FilterDropdownComponent,
     MatButtonToggleModule,
     MatIconModule,
@@ -30,6 +30,7 @@ import { MatMenuModule } from '@angular/material/menu';
     MatTabsModule,
     NgIf,
     ToggleTabsComponent,
+    FundingReportComponent,
   ],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',

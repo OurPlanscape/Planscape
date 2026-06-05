@@ -27,7 +27,8 @@
 
   background-color: $color-soft-purple;
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 
   @include on-small() {
     width: 100%;
@@ -79,15 +80,11 @@
 .toggle-row {
   height: 52px;
   align-items: center;
-  position: sticky;
-  top: 0;
 }
 
 .outcomes-row {
   padding: 0;
-  position: sticky;
-  top: 101px;
-  max-height: calc(1200px - 102px);
+
 
   .view-outcomes-box {
     @include small-input-label();
@@ -100,7 +97,10 @@
     margin: 16px;
     border: 1px $color-soft-gray solid;
     padding: 16px;
+    position: sticky;
+    top: 20px;
   }
+
   .outcome-areas-dropdown {
     flex: 1;
   }
@@ -148,4 +148,15 @@
   padding: 0 8px;
   margin-left: 6px;
   margin-right: -12px;
+}
+
+
+.report-view {
+  overflow-y: auto;
+}
+
+
+.report-view ::ng-deep .funding-report-tabs {
+  position: sticky;
+  top: 93px;
 }

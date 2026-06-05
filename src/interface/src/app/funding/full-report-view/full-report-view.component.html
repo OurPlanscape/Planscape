@@ -35,60 +35,7 @@
               [showCountChip]="false"
               menuLabel="Project Areas"></sg-filter-dropdown>
           </div>
-
-          <mat-tab-group
-            class="side-tabs report-tabs"
-            [(selectedIndex)]="tabIndex"
-            (selectedIndexChange)="onTabIndexChange($event)"
-            mat-stretch-tabs="true"
-            mat-align-tabs="start">
-            <mat-tab label="Carbon">
-              <div class="report-details">
-                <div class="report-placeholder">Carbon Report Placeholder</div>
-              </div>
-            </mat-tab>
-            <mat-tab label="Wildfire Risk">
-              <div class="report-details">
-                <div class="report-placeholder">
-                  Wildfire Risk Report Placeholder
-                </div>
-              </div>
-            </mat-tab>
-            <mat-tab label="Water">
-              <div class="report-details">
-                <div class="report-placeholder">Water Report Placeholder</div>
-              </div>
-            </mat-tab>
-            <mat-tab label="Biomass">
-              <div class="report-details">
-                <div class="report-placeholder">Biomass Report Placeholder</div>
-              </div>
-            </mat-tab>
-          </mat-tab-group>
-        </div>
-
-        <div class="report-footer">
-          <button sg-button icon="share_outlined" (click)="shareReport()">
-            Share
-          </button>
-          <button
-            sg-button
-            data-id="new-scenario"
-            icon="download"
-            variant="primary"
-            [matMenuTriggerFor]="menu"
-            #trigger="matMenuTrigger">
-            Download Options
-            <mat-icon class="material-symbols-outlined download-options-down"
-              >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
-            </mat-icon>
-          </button>
-          <mat-menu #menu="matMenu" class="scenario-options-menu">
-            <button mat-menu-item (click)="downloadGeopackage()">
-              Geopackage
-            </button>
-            <button mat-menu-item (click)="downloadPDF()">PDF</button>
-          </mat-menu>
+          <app-funding-report></app-funding-report>
         </div>
       </div>
     </div>
