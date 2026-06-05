@@ -458,6 +458,7 @@ def find_anything(
     type: DataLayerType,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
+    user: Optional[User] = None,
     **kwargs,
 ) -> Dict[str, SearchResult]:
     """
@@ -473,7 +474,7 @@ def find_anything(
         )
         dataset_ids = [
             d.pk
-            for d in mod.get_datasets()
+            for d in mod.get_datasets(user=user)
             if d.preferred_display_type == preferred_display_type
         ]
     else:
@@ -481,23 +482,19 @@ def find_anything(
 
     datalayer_filter: Dict[str, Any] = {
         "name__icontains": term,
-        "dataset__visibility": VisibilityOptions.PUBLIC,
         "status": DataLayerStatus.READY,
         "type": layer_type,
     }
     category_filter: Dict[str, Any] = {
         "category__name__icontains": term,
-        "dataset__visibility": VisibilityOptions.PUBLIC,
         "status": DataLayerStatus.READY,
         "type": layer_type,
     }
     dataset_filter: Dict[str, Any] = {
         "name__icontains": term,
-        "visibility": VisibilityOptions.PUBLIC,
     }
     org_filter: Dict[str, Any] = {
         "organization__name__icontains": term,
-        "visibility": VisibilityOptions.PUBLIC,
     }
 
     if module:
@@ -517,25 +514,25 @@ def find_anything(
     raw_results = [
         [
             dataset_to_search_result(x)
-            for x in Dataset.objects.filter(
+            for x in Dataset.objects.all().accessible_by(user).filter(
                 **org_filter,
             )
         ],
         [
             dataset_to_search_result(x)
-            for x in Dataset.objects.filter(
+            for x in Dataset.objects.all().accessible_by(user).filter(
                 **dataset_filter,
             )
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.filter(
+            for x in DataLayer.objects.all().accessible_by(user).filter(
                 **category_filter,
             )
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.filter(
+            for x in DataLayer.objects.all().accessible_by(user).filter(
                 **datalayer_filter,
             )
         ],

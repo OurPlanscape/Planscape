@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ScenarioDashboardComponent } from './scenario-dashboard.component';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
@@ -11,6 +10,8 @@ import { PlanState } from '@app/plan/plan.state';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { MOCK_SCENARIO } from '@app/services/mocks';
+import { ScenarioService } from '@app/services';
+import { FeatureService } from '@features/feature.service';
 
 describe('ScenarioDashboardComponent', () => {
   let component: ScenarioDashboardComponent;
@@ -33,6 +34,8 @@ describe('ScenarioDashboardComponent', () => {
           currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
         }),
         MockProvider(PlanState),
+        MockProvider(ScenarioService),
+        MockProvider(FeatureService),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },
       ],
     }).compileComponents();

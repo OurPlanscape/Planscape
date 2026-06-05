@@ -6,10 +6,18 @@ $chart-height: 253px;
 :host {
   display: block;
   box-sizing: border-box;
+  min-width: 0;
+
+  &.no-margin {
+    canvas {
+      margin: 0;
+    }
+  }
 }
 
 .chart-container {
   position: relative;
+  min-width: 0;
 }
 
 .y-axis-label {
@@ -26,12 +34,16 @@ $chart-height: 253px;
 }
 
 .canvas-wrapper {
+  position: relative;
   width: 100%;
   height: $chart-height;
+  min-width: 0;
 }
 
 canvas {
   margin-left: 24px;
+  display: block;
+  max-width: 100%;
 }
 
 .x-axis-label {
@@ -41,4 +53,8 @@ canvas {
   padding: 12px 0 0 0;
   color: $color-md-gray;
   user-select: none;
+
+  &:empty {
+    padding: 0;
+  }
 }

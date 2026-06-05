@@ -1,0 +1,198 @@
+<nav mat-tab-nav-bar [tabPanel]="tabPanel" class="funding-report-tabs">
+  <a
+    mat-tab-link
+    *ngFor="let s of sections"
+    [active]="activeId === s.id"
+    [href]="'#' + s.id"
+    (click)="scrollTo($event, s.id)">
+    {{ s.label }}
+  </a>
+</nav>
+<mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+
+<ng-template #tooltipContent let-close="close">
+  <sg-modal
+    [title]="tooltipName"
+    width="small"
+    [hasSecondaryButton]="false"
+    [hasLinkButton]="true"
+    primaryButtonText="Learn Mode"
+    linkButtonText="Download Dataset"
+    linkButtonIcon="download"
+    (clickedClose)="close()"
+    (clickedPrimary)="close()">
+    <div modalBodyContent>Tooltip for: {{ tooltipName }}<br /></div>
+  </sg-modal>
+</ng-template>
+
+<div class="report-sections" #scrollContainer>
+  <section id="map" class="report-section">
+    <!-- TODO: map -->
+    <div class="map-container"></div>
+  </section>
+
+  <sg-section
+    id="carbon"
+    class="report-section"
+    headline="Carbon"
+    tooltipSize="medium"
+    [tooltipTemplate]="tooltipContent"
+    [tooltipInteractive]="true"
+    (tooltipClicked)="tooltipName = 'Carbon'"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    <div>
+      <h5>Unhealthy Smoke Production</h5>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="smokeChart$ | async as chart"
+        class="no-margin"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
+    <div class="top-section-divider">
+      <h5>Standing Aboveground Live Tree Carbon</h5>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="treeCarbonChart$ | async as chart"
+        class="no-margin"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">
+        Potential Forecasted Mitigation Units (FMU) Produced
+        <button
+          sg-button
+          variant="icon-only"
+          icon="info"
+          [outlined]="true"
+          class="summary-tooltip-icon"></button>
+      </div>
+      <div class="summary-value">12</div>
+    </div>
+  </sg-section>
+
+  <sg-section
+    id="wildfire"
+    class="report-section"
+    headline="Wildfire Risk"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    <div>Metrics reflect outcomes within forested land only.</div>
+
+    <div>
+      <h5>
+        Flame Length
+        <sg-popover
+          [modal]="true"
+          icon="info"
+          [contentTemplate]="tooltipContent"
+          (opened)="tooltipName = 'Flame Length'"></sg-popover>
+      </h5>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="flameLengthChart$ | async as chart"
+        class="no-margin"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
+    <div class="top-section-divider">
+      <h5>
+        Burn Probability
+        <sg-popover
+          [modal]="true"
+          icon="info"
+          [contentTemplate]="tooltipContent"
+          (opened)="tooltipName = 'Burn Probability'"></sg-popover>
+      </h5>
+      <sg-banner class="burn-probability-banner" customIcon="priority_high"
+        >Please note that burn probability data is calculated for the entire
+        planning boundary, encompassing both treated and untreated areas. Unlike
+        other sections of this report, these results are not filtered by your
+        project area selection.
+      </sg-banner>
+      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <sg-chart
+        *ngIf="burnProbChart$ | async as chart"
+        [data]="chart.data"
+        [options]="chart.options"
+        type="bar"></sg-chart>
+    </div>
+  </sg-section>
+
+  <sg-section
+    id="water"
+    class="report-section"
+    headline="Water"
+    [tooltipTemplate]="tooltipContent"
+    [tooltipInteractive]="true"
+    (tooltipClicked)="tooltipName = 'Water'"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-label">
+          Percent of Area with Significant Increase in Water Availability
+        </div>
+        <div class="stat-value">18<span class="stat-unit">%</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          Area with Significant Increase in Water Availability
+        </div>
+        <div class="stat-value">
+          118,400<span class="stat-unit">acres</span>
+        </div>
+      </div>
+    </div>
+  </sg-section>
+
+  <sg-section
+    id="biomass"
+    class="report-section"
+    headline="Biomass"
+    [tooltipTemplate]="tooltipContent"
+    [tooltipInteractive]="true"
+    (tooltipClicked)="tooltipName = 'Biomass'"
+    [isCollapsible]="true"
+    [defaultExpanded]="true">
+    <div>
+      <p class="biomass-intro">
+        The table shows estimated available biomass with no treatment.
+      </p>
+      <table class="biomass-table">
+        <thead>
+          <tr>
+            <th>Tree Class</th>
+            <th>Hardwood</th>
+            <th>Softwood</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Merchantable Volume (bf/ac)</th>
+            <td>145</td>
+            <td>110</td>
+          </tr>
+          <tr>
+            <th scope="row">Non-Merchantable Volume (ft³/ac)</th>
+            <td>74</td>
+            <td>72</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </sg-section>
+</div>
+
+<div class="report-footer">
+  <button sg-button icon="share">Share</button>
+  <button sg-button icon="download">Download</button>
+  <button sg-button icon="open_in_full" variant="primary">
+    Open Full View
+  </button>
+</div>

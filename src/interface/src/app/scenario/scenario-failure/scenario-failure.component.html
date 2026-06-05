@@ -1,4 +1,4 @@
-<section>
+<section [class.dashboard]="variant === 'dashboard'">
   <ng-container *ngIf="scenarioState === 'FAILURE'; else generic">
     <h4>
       <mat-icon class="material-symbols-filled warning">warning</mat-icon>
@@ -43,7 +43,7 @@
     <p>Sorry, we were unable to generate your scenario. Please try again.</p>
   </ng-template>
 
-  <div class="actions">
+  <div class="actions" *ngIf="variant === 'default'">
     <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
       Return to Plan Overview
     </a>

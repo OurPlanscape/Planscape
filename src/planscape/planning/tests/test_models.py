@@ -106,7 +106,7 @@ class ScenarioModelTest(TestCase):
     def test_get_raster_datalayers_custom_scenario(self):
         scenario = ScenarioFactory(
             type=ScenarioType.CUSTOM,
-            with_priority_objectives=self.datalayers[:2],
+            with_priorities=self.datalayers[:2],
             with_cobenefits=self.datalayers[2:],
         )
         datalayers = scenario.get_raster_datalayers()

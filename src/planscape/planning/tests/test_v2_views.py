@@ -18,6 +18,7 @@ from planning.models import (
     PlanningArea,
     RegionChoices,
     ScenarioResult,
+    ScenarioResultStatus,
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
@@ -1145,11 +1146,28 @@ class CreateScenariosFromUpload(APITestCase):
         }
         self.assertEqual(response.json(), expected_error)
 
+    def test_create_without_stand_size(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "no stand size scenario",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse("api:planning:scenarios-upload-shapefiles"),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["origin"], "USER")
+
     @mock.patch("planning.views_v2.create_scenario_from_upload")
     def test_invalid_geometry_returns_400_with_global_error(self, mock_create):
         from planscape.exceptions import InvalidGeometry
 
-        mock_create.side_effect = InvalidGeometry("Geometry is invalid and cannot be processed.")
+        mock_create.side_effect = InvalidGeometry(
+            "Geometry is invalid and cannot be processed."
+        )
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.riverside),
@@ -1170,7 +1188,9 @@ class CreateScenariosFromUpload(APITestCase):
 
     @mock.patch("planning.views_v2.create_scenario_from_upload")
     def test_oversize_planning_area_returns_400_with_global_error(self, mock_create):
-        mock_create.side_effect = ValueError("Planning area is oversize; scenarios are disabled.")
+        mock_create.side_effect = ValueError(
+            "Planning area is oversize; scenarios are disabled."
+        )
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.riverside),
@@ -1193,7 +1213,6 @@ class CreateScenariosFromUpload(APITestCase):
 class TreatmentGoalViewSetTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
-        self.client.force_authenticate(self.user)
         # Create two overlapping polygons
         self.mpoly1 = GEOSGeometry(
             "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
@@ -1257,6 +1276,7 @@ class TreatmentGoalViewSetTest(APITestCase):
         )
         self.inactive_treatment_goal = TreatmentGoalFactory.create(
             active=False,
+            geometry=self.mpoly1,
             group=ca_group,
         )
         self.usage1 = TreatmentGoalUsesDataLayer.objects.create(
@@ -1271,6 +1291,7 @@ class TreatmentGoalViewSetTest(APITestCase):
         )
 
     def test_list_treatment_goals(self):
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("api:planning:treatment-goals-list"),
             content_type="application/json",
@@ -1302,7 +1323,20 @@ class TreatmentGoalViewSetTest(APITestCase):
             ],
         )
 
+    def test_list_inactive_treatment_goals_as_staff(self):
+        staff_user = UserFactory.create(is_staff=True)
+        self.client.force_authenticate(staff_user)
+        response = self.client.get(
+            reverse("api:planning:treatment-goals-list"),
+            content_type="application/json",
+        )
+        treatment_goals = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(treatment_goals), 12)
+
+
     def test_detail_treatment_goal(self):
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse(
                 "api:planning:treatment-goals-detail",
@@ -1326,6 +1360,7 @@ class TreatmentGoalViewSetTest(APITestCase):
         )
 
     def test_detail_inactive_treatment_goal(self):
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse(
                 "api:planning:treatment-goals-detail",
@@ -1336,7 +1371,23 @@ class TreatmentGoalViewSetTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_detail_inactive_treatment_goal_as_staff(self):
+        staff_user = UserFactory.create(is_staff=True)
+        self.client.force_authenticate(staff_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail",
+                args=[self.inactive_treatment_goal.id],
+            ),
+            content_type="application/json",
+        )
+
+        treatment_goal = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(treatment_goal["id"], self.inactive_treatment_goal.id)
+
     def test_list_treatment_goals_with_filter(self):
+        self.client.force_authenticate(self.user)
         intersection = self.poly1.intersection(self.poly2).buffer(-0.00001)
         planning_area = PlanningAreaFactory.create(
             user=self.user, geometry=MultiPolygon([intersection])
@@ -1352,3 +1403,73 @@ class TreatmentGoalViewSetTest(APITestCase):
         treatment_goals = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(treatment_goals), 1)
+
+
+class ListScenarioDraftVisibilityTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory.create()
+        self.collaborator = UserFactory.create()
+
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            collaborators=[self.collaborator],
+        )
+
+        self.creator_draft = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.creator,
+            name="Creator draft",
+        )
+        ScenarioResult.objects.update_or_create(
+            scenario=self.creator_draft,
+            defaults={"status": ScenarioResultStatus.DRAFT},
+        )
+
+        self.collaborator_draft = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.collaborator,
+            name="Collaborator draft",
+        )
+        ScenarioResult.objects.update_or_create(
+            scenario=self.collaborator_draft,
+            defaults={"status": ScenarioResultStatus.DRAFT},
+        )
+
+        self.completed_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.creator,
+            name="Completed scenario",
+        )
+        ScenarioResult.objects.update_or_create(
+            scenario=self.completed_scenario,
+            defaults={"status": ScenarioResultStatus.SUCCESS},
+        )
+
+    def get_scenario_ids_for_user(self, user):
+        self.client.force_authenticate(user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-list"),
+            {},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        results = (
+            data["results"] if isinstance(data, dict) and "results" in data else data
+        )
+        return {scenario["id"] for scenario in results}
+
+    def test_creator_only_sees_their_own_draft_scenarios(self):
+        scenario_ids = self.get_scenario_ids_for_user(self.creator)
+
+        self.assertIn(self.creator_draft.id, scenario_ids)
+        self.assertIn(self.completed_scenario.id, scenario_ids)
+        self.assertNotIn(self.collaborator_draft.id, scenario_ids)
+
+    def test_collaborator_only_sees_their_own_draft_scenarios(self):
+        scenario_ids = self.get_scenario_ids_for_user(self.collaborator)
+
+        self.assertIn(self.collaborator_draft.id, scenario_ids)
+        self.assertIn(self.completed_scenario.id, scenario_ids)
+        self.assertNotIn(self.creator_draft.id, scenario_ids)

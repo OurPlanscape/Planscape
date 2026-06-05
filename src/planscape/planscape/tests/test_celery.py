@@ -1,6 +1,10 @@
 from django.test import SimpleTestCase, override_settings
 
-from planscape.celery import get_catalog_backup_schedule, get_catalog_restore_schedule
+from planscape.celery import (
+    get_catalog_backup_schedule,
+    get_catalog_restore_schedule,
+    get_forisk_mills_schedule,
+)
 
 
 class TestCatalogBeatSchedule(SimpleTestCase):
@@ -28,4 +32,17 @@ class TestCatalogBeatSchedule(SimpleTestCase):
         self.assertEqual(
             restore_schedule["load-catalog-backup"]["schedule"]._orig_hour,
             "6",
+        )
+
+    @override_settings(FORISK_MILLS_CRON="30 5 * * *")
+    def test_forisk_mills_schedule_uses_cron_env_var(self):
+        schedule = get_forisk_mills_schedule()
+
+        self.assertEqual(
+            schedule["refresh-forisk-mill-layers"]["task"],
+            "datasets.tasks.refresh_forisk_mill_layers_task",
+        )
+        self.assertEqual(
+            schedule["refresh-forisk-mill-layers"]["schedule"]._orig_minute,
+            "30",
         )

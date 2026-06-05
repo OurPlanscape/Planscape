@@ -2,6 +2,10 @@
 @import 'colors';
 @import 'media';
 
+:host {
+        width: 100%;
+}
+
 .card-link {
     text-decoration: none;
     color: black;
@@ -54,6 +58,7 @@
         border-radius: 50px;
         @include xs-label();
     }
+
 }
 
 .detail-row {
@@ -78,7 +83,7 @@
             @include xs-label();
             color: $color-black;
             line-height: 24px;
-            height: 24px;
+            height: auto;
             text-overflow: ellipsis;
             overflow-x: hidden;
             white-space: nowrap;

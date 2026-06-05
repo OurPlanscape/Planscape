@@ -7,12 +7,6 @@
   gap: 16px;
 }
 
-.tools {
-  display: flex;
-  width: 100%;
-  gap: 16px;
-  flex-wrap: wrap;
-}
 
 .description {
   @include small-paragraph();
@@ -51,4 +45,8 @@
   border-radius: 8px;
   margin-bottom: 16px;
   overflow: hidden;
+}
+
+.error {
+  padding-top: 0;
 }

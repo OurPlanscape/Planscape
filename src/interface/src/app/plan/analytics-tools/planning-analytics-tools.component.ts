@@ -11,8 +11,7 @@ interface AnalyticTool {
   backgroundColor?: string;
   localClass?: string;
   title: string;
-  subtitle: string;
-  featureFlag: string;
+  subtitle?: string;
   enabled: boolean;
 }
 
@@ -51,8 +50,6 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
         backgroundColor: '#dfede6',
         title: 'Climate Foresight',
         localClass: 'climate-foresight',
-        subtitle: 'Integrate climate data...',
-        featureFlag: '',
         enabled: true,
       });
     }
@@ -62,8 +59,6 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
         backgroundImage: '/assets/svg/lock.svg',
         title: 'Coming Soon',
         localClass: 'coming-soon',
-        subtitle: '',
-        featureFlag: '',
         enabled: false,
       });
     }

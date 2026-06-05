@@ -2,21 +2,23 @@ import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
-import {
-  ButtonComponent,
-  // TreatmentEffectsCardComponent -- TODO: add when available
-} from '@styleguide';
+import { ButtonComponent, TreatmentPlanCardComponent } from '@styleguide';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
 import {
   canCloneTreatmentPlan,
   canDeleteTreatmentPlan,
+  canEditTreatmentPlan,
   userCanAddTreatmentPlan,
 } from '@app/plan/permissions';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@app/shared';
+import {
+  SNACK_BOTTOM_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
+} from '@app/shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dialog.component';
 import {
@@ -24,6 +26,7 @@ import {
   combineLatest,
   exhaustMap,
   shareReplay,
+  startWith,
   switchMap,
   take,
   tap,
@@ -43,7 +46,7 @@ import { AnalyticsService } from '@app/services/analytics.service';
     MatProgressSpinnerModule,
     NgIf,
     NgFor,
-    // TreatmentEffectsCardComponent,
+    TreatmentPlanCardComponent,
   ],
   templateUrl: './treatment-plans-list.component.html',
   styleUrl: './treatment-plans-list.component.scss',
@@ -52,10 +55,12 @@ export class TreatmentPlansListComponent {
   sortSelection$ = new BehaviorSubject<string>('-created_at');
   loading$ = new BehaviorSubject<boolean>(false);
   @Input() scenarioId!: number;
+  @Input() isProjectArea: boolean = false;
   @Input() planningArea!: Plan;
   manualRefresh$ = new BehaviorSubject<void>(undefined);
 
   treatments$ = combineLatest([this.sortSelection$, this.manualRefresh$]).pipe(
+    tap(() => this.loading$.next(true)),
     // Every time sort or manual trigger changes...
     switchMap(([sort]) =>
       // ...restart the interval...
@@ -67,6 +72,7 @@ export class TreatmentPlansListComponent {
       )
     ),
     tap(() => this.loading$.next(false)),
+    startWith(null),
     shareReplay(1)
   );
 
@@ -94,7 +100,7 @@ export class TreatmentPlansListComponent {
   ) {}
 
   goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
-    const route = ['treatment', treatment.id];
+    const route = ['.', treatment.id];
 
     if (status === 'SUCCESS') {
       route.push('impacts');
@@ -123,6 +129,12 @@ export class TreatmentPlansListComponent {
   userCanDelete(): boolean {
     return (
       this.planningArea !== null && canDeleteTreatmentPlan(this.planningArea)
+    );
+  }
+
+  userCanEdit(): boolean {
+    return (
+      this.planningArea !== null && canEditTreatmentPlan(this.planningArea)
     );
   }
 
@@ -204,13 +216,55 @@ export class TreatmentPlansListComponent {
       'New Treatment Plan'
     );
     this.dialog
-      .open(CreateTreatmentDialogComponent)
+      .open(CreateTreatmentDialogComponent, {
+        data: { requestStandSize: this.isProjectArea },
+      })
       .afterClosed()
       .pipe(take(1))
       .subscribe((args) => {
         if (args) {
-          this.createTreatmentPlan(args);
+          this.createTreatmentPlan({
+            name: args.treatmentName,
+            standSize: args.standSize,
+          });
         }
+      });
+  }
+
+  renameTreatment(treatment: TreatmentPlan) {
+    if (!canEditTreatmentPlan(this.planningArea)) {
+      return;
+    }
+
+    const dialogRef: MatDialogRef<CreateTreatmentDialogComponent> =
+      this.dialog.open(CreateTreatmentDialogComponent, {
+        data: {
+          requestStandSize: false,
+          mode: 'RENAME',
+        },
+      });
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((newName) => {
+        this.treatmentsService
+          .updateTreatmentPlan(treatment.id, { name: newName })
+          .subscribe({
+            next: () => {
+              this.matSnackBar.open(
+                `Treatment Plan name has been updated`,
+                'Dismiss',
+                SNACK_BOTTOM_NOTICE_CONFIG
+              );
+            },
+            error: () => {
+              this.matSnackBar.open(
+                `Treatment Plan could not be updated`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
       });
   }
 

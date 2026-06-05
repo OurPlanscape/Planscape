@@ -2,6 +2,7 @@ import {
   convertOldConfigurationToV3Payload,
   getGroupedGoals,
   sanitizePayloadForScenarioType,
+  scenarioHasCapability,
   suggestUniqueName,
 } from './scenario-helper';
 import {
@@ -300,6 +301,43 @@ describe('suggestUniqueName', () => {
 
     const nameResult = suggestUniqueName(origName, existingNames);
     expect(nameResult).toEqual("Copy of 'some name' 10");
+  });
+});
+
+describe('scenarioHasCapability', () => {
+  const scenarioWith = (capabilities?: Scenario['capabilities']): Scenario => ({
+    id: 1,
+    name: 'scenario',
+    planning_area: 1,
+    status: 'ACTIVE',
+    type: 'PRESET',
+    user: 1,
+    geopackage_status: 'PENDING',
+    geopackage_url: null,
+    configuration: {},
+    capabilities,
+  });
+
+  it('returns true when the capability is present', () => {
+    expect(
+      scenarioHasCapability(scenarioWith(['FUNDING_REPORT']), 'FUNDING_REPORT')
+    ).toBeTrue();
+  });
+
+  it('returns false when the capability is absent', () => {
+    expect(
+      scenarioHasCapability(scenarioWith(['IMPACTS']), 'FUNDING_REPORT')
+    ).toBeFalse();
+  });
+
+  it('returns false when capabilities is undefined', () => {
+    expect(
+      scenarioHasCapability(scenarioWith(undefined), 'FUNDING_REPORT')
+    ).toBeFalse();
+  });
+
+  it('returns false when the scenario is undefined', () => {
+    expect(scenarioHasCapability(undefined, 'FUNDING_REPORT')).toBeFalse();
   });
 });
 

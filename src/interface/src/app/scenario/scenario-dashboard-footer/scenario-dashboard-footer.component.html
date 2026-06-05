@@ -40,6 +40,7 @@
   </button>
 
   <button
+    *ngIf="!scenarioHasFailed(scenario)"
     sg-button
     variant="primary"
     class="footer-button"
@@ -48,4 +49,26 @@
     (click)="navigateToScenario()">
     Open Full View
   </button>
+
+  <ng-container *ngIf="scenarioHasFailed(scenario)">
+    <button
+      *ngIf="scenario.scenario_result?.status !== 'PANIC'"
+      sg-button
+      variant="primary"
+      class="footer-button"
+      icon="file_copy"
+      [outlined]="true"
+      (click)="copyScenario.emit()">
+      Copy Scenario & Edit
+    </button>
+    <button
+      *ngIf="scenario.scenario_result?.status === 'PANIC'"
+      sg-button
+      variant="primary"
+      class="footer-button"
+      [outlined]="true"
+      (click)="handleFeedback()">
+      Submit Feedback
+    </button>
+  </ng-container>
 </div>

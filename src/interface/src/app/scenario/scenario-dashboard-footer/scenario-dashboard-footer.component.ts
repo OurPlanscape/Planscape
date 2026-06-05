@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FileSaverService, ScenarioService } from '@app/services';
 import { Scenario } from '@app/types';
 import { ButtonComponent } from '@styleguide';
@@ -30,6 +30,7 @@ import { GEO_PACKAGE_LABELS } from '../scenario.constants';
 })
 export class ScenarioDashboardFooterComponent {
   @Input() scenario!: Scenario;
+  @Output() copyScenario = new EventEmitter();
 
   downloadingScenario = false;
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
@@ -94,5 +95,14 @@ export class ScenarioDashboardFooterComponent {
 
   navigateToScenario() {
     this.router.navigate(['../'], { relativeTo: this.route });
+  }
+
+  scenarioHasFailed(scenario: Scenario) {
+    const status = scenario.scenario_result?.status;
+    return status === 'FAILURE' || status === 'PANIC' || status === 'TIMED_OUT';
+  }
+
+  handleFeedback() {
+    window.open('https://www.planscape.org/contact-us/', '_blank');
   }
 }

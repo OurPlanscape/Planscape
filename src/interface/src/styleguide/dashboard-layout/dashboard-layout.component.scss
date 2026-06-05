@@ -4,6 +4,7 @@
 @import 'variables';
 
 $plan-left-min: 300px;
+$layout-max-width: 1600px;
 
 :host {
   display: flex;
@@ -29,7 +30,9 @@ $plan-left-min: 300px;
   display: none;
 }
 
-.layout.normal {
+.layout {
+  max-width: $layout-max-width;
+  margin: 0 auto;
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -37,7 +40,9 @@ $plan-left-min: 300px;
   min-height: 0;
   gap: 8px;
   padding: 0;
+}
 
+.layout.normal {
   overflow: hidden;
 
   .layout-column {
@@ -66,14 +71,6 @@ $plan-left-min: 300px;
 }
 
 .layout.disable-right-scroll {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  flex: 1 1 auto;
-  min-height: 0;
-  gap: 8px;
-  padding: 0;
-
   .layout-column {
     flex: 1 1 0;
     min-width: 0;

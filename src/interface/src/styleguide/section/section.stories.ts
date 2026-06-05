@@ -3,6 +3,7 @@ import { argsToTemplate, moduleMetadata } from '@storybook/angular';
 import { SectionComponent } from './section.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { ModalComponent } from '@styleguide';
 
 const meta: Meta<SectionComponent> = {
   title: 'Components/Section',
@@ -10,7 +11,7 @@ const meta: Meta<SectionComponent> = {
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
-      imports: [BrowserAnimationsModule, MatExpansionModule],
+      imports: [BrowserAnimationsModule, MatExpansionModule, ModalComponent],
     }),
   ],
   render: (args) => ({
@@ -130,4 +131,91 @@ export const WithHint: Story = {
     tooltipContent:
       'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
   },
+};
+
+/**
+ * With `tooltipInteractive`, the tooltip opens as a modal-like panel anchored to
+ * the icon. It's delegated to `sg-popover`'s modal mode (so it animates and is
+ * elevated), but clicks inside don't close it — it only closes when the template
+ * calls the `close` function exposed on its context. Requires `tooltipTemplate`.
+ */
+export const InteractiveTooltip: Story = {
+  render: () => ({
+    template: `
+      <ng-template #tooltipTpl let-close="close">
+        <sg-modal
+          title="Interactive tooltip"
+          width="xsmall"
+          (clickedClose)="close()"
+          (clickedPrimary)="close()"
+          (clickedSecondary)="close()">
+          <div modalBodyContent>
+            This panel opens like a menu but behaves like a modal: it stays open
+            so you can interact with it, and only closes via its own actions
+            (Cancel, Done, or the close button).
+          </div>
+        </sg-modal>
+      </ng-template>
+      <sg-section
+        headline="Carbon"
+        [tooltipTemplate]="tooltipTpl"
+        [tooltipInteractive]="true">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      </sg-section>
+    `,
+  }),
+};
+
+/**
+ * Interactive mode needs a `tooltipTemplate`. If `tooltipInteractive` is set but
+ * only `tooltipContent` (a string) is provided, the section gracefully falls
+ * back to the read-only popover instead of rendering nothing.
+ */
+export const InteractiveWithoutTemplateFallsBack: Story = {
+  args: {
+    headline: 'Carbon',
+    tooltipInteractive: true,
+    tooltipContent:
+      'Interactive mode needs a template — with only string content the section falls back to the read-only popover.',
+  },
+};
+
+/**
+ * `tooltipClicked` fires when the interactive icon is clicked (before the panel
+ * opens), so several sections can share ONE template and just set which content
+ * to show. Both sections below reuse the same template; the modal reflects the
+ * section you clicked.
+ */
+export const InteractiveSharedTemplate: Story = {
+  render: () => ({
+    props: { activeName: '' },
+    template: `
+      <ng-template #tip let-close="close">
+        <sg-modal
+          [title]="activeName"
+          width="xsmall"
+          (clickedClose)="close()"
+          (clickedPrimary)="close()"
+          (clickedSecondary)="close()">
+          <div modalBodyContent>Showing info for: {{ activeName }}</div>
+        </sg-modal>
+      </ng-template>
+
+      <sg-section
+        headline="Carbon"
+        [tooltipTemplate]="tip"
+        [tooltipInteractive]="true"
+        (tooltipClicked)="activeName = 'Carbon'">
+        Carbon section body.
+      </sg-section>
+
+      <sg-section
+        headline="Water"
+        [tooltipTemplate]="tip"
+        [tooltipInteractive]="true"
+        (tooltipClicked)="activeName = 'Water'">
+        Water section body.
+      </sg-section>
+    `,
+  }),
 };

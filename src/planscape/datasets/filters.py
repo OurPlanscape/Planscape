@@ -14,7 +14,7 @@ def get_datasets_for_filter(request: Optional[Request]) -> "QuerySet[Dataset]":
     # TODO: this needs to be tweaked when we create the controls to associate users and
     # organizations. we should retrieve the organization(s) based on the request.user
     # and return all the organizations, so we can filter the datasets here.
-    return Dataset.objects.all()
+    return Dataset.objects.all().accessible_by(request.user).all()
 
 
 def get_styles_for_filter(request: Optional[Request]) -> "QuerySet[Style]":

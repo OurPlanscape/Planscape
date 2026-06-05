@@ -721,7 +721,7 @@ class ScenarioDetailTest(APITestCase):
                 "max_project_count": 5,
                 "estimated_cost": 100.0,
             },
-            "priority_objectives": [priority.pk],
+            "priorities": [{"datalayer": priority.id, "weight": 1}],
             "cobenefits": [cobenefit.pk],
         }
         scenario = ScenarioFactory.create(
@@ -761,7 +761,6 @@ class ScenarioDetailTest(APITestCase):
                 "estimated_cost": 100.0,
             },
             "priorities": [{"datalayer": priority.pk, "weight": 1}],
-            "priority_objectives": [priority.pk],
             "cobenefits": [cobenefit.pk],
         }
         scenario = ScenarioFactory.create(
@@ -1348,7 +1347,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(invalid_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_patch_custom_allows_stand_size_without_priority_objectives(self):
+    def test_patch_custom_allows_stand_size_without_priorities(self):
         scenario = ScenarioFactory(
             user=self.user,
             planning_area=self.planning_area,
@@ -1404,6 +1403,31 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(
             response.data.get("planning_approach"),
             ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value,
+        )
+
+    def test_patch_scenario_approach_clean_sub_units_layer_when_set_planning_approach(self):
+        scenario = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+            configuration={"sub_units_layer": 1},
+            treatment_goal=None,
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {
+            "configuration": {"stand_size": "SMALL"},
+            "planning_approach": ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS.value,
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data.get("planning_approach"),
+            ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS.value,
+        )
+        self.assertIsNone(
+            response.data.get("sub_units_layer")
         )
 
     def test_patch_sub_units(self):
@@ -1551,6 +1575,35 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_patch_draft_with_stand_size_adds_forsys_capability(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"stand_size": "LARGE"}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("FORSYS", response.data.get("capabilities", []))
+
+    def test_patch_draft_without_stand_size_excludes_forsys_capability(self):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+        )
+        url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
+        payload = {"configuration": {"targets": {"max_area": 100}}}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn("FORSYS", response.data.get("capabilities", []))
+
+
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
         westwide_geom = MultiPolygon(
@@ -1619,7 +1672,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
             user=self.user, geometry=eastwide_geom
         )
         self.tg_conus = TreatmentGoalFactory.create(
-            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUTIES
+            group=TreatmentGoalGroup.WILDFIRE_RISK_TO_COMMUNITIES
         )
         self.treatment_goal = TreatmentGoalFactory.create(
             group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
@@ -1657,7 +1710,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
-        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"})
+        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"})
 
     def test_capabilities_present_in_detail_inside_california(self):
         self.scenario2.capabilities = compute_scenario_capabilities(self.scenario2)
@@ -1671,7 +1724,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
         self.assertSetEqual(
-            set(caps), {"MAP", "FORSYS", "IMPACTS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"}
+            set(caps), {"MAP", "FORSYS", "IMPACTS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"}
         )
 
     def test_capabilities_present_in_detail_outside_future_climate(self):
@@ -1853,7 +1906,7 @@ class RunScenarioEndpointTest(APITestCase):
         )
         trigger_mock.assert_not_called()
 
-    def test_run_skips_default_planning_approach_when_flag_on(self):
+    def test_run_skips_default_planning_approach(self):
         self.scenario.planning_approach = None
         self.scenario.save(update_fields=["planning_approach"])
         self.client.force_authenticate(self.user)
@@ -1862,7 +1915,6 @@ class RunScenarioEndpointTest(APITestCase):
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ),
             mock.patch("planning.views_v2.trigger_scenario_run"),
-            mock.patch("planning.views_v2.feature_enabled", return_value=True),
         ):
             response = self.client.post(self.url, format="json")
 

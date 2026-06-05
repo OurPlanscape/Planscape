@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ProjectAreaDashboardComponent } from './project-area-dashboard.component';
 import { ActivatedRoute } from '@angular/router';
+import { MockProvider } from 'ng-mocks';
+import { FeatureService } from '@features/feature.service';
 
 describe('ProjectAreaDashboardComponent', () => {
   let component: ProjectAreaDashboardComponent;
@@ -10,7 +12,10 @@ describe('ProjectAreaDashboardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, ProjectAreaDashboardComponent],
-      providers: [{ provide: ActivatedRoute, useValue: { firstChild: {} } }],
+      providers: [
+        { provide: ActivatedRoute, useValue: { firstChild: {} } },
+        MockProvider(FeatureService),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProjectAreaDashboardComponent);

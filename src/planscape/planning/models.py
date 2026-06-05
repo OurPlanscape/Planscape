@@ -267,10 +267,22 @@ class TreatmentGoalGroup(models.TextChoices):
         "Risk-Based Strategic Planning",
     )
     TREEMAP_FVS_2020 = ("TREEMAP_FVS_2020", "TreeMap FVS 2020")
-    WILDFIRE_RISK_TO_COMMUTIES = (
-        "WILDFIRE_RISK_TO_COMMUTIES",
+    INYO_PLANNING = (
+        "INYO_PLANNING",
+        "Inyo Planning",
+    )
+    WILDFIRE_RISK_TO_COMMUNITIES = (
+        "WILDFIRE_RISK_TO_COMMUNITIES",
         "Wildfire Risk to Communities",
     )
+
+
+class TreatmentGoalManager(AliveObjectsManager):
+    def accessible_by(self, user: User) -> QuerySet:
+        qs = super().get_queryset()
+        if user and user.is_authenticated and (user.is_staff or user.is_superuser):
+            return qs
+        return qs.filter(active=True)
 
 
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
@@ -324,6 +336,8 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
         help_text="Stores the bounding box that represents the union of all available layers. all planning areas must be inside this polygon.",
     )
+
+    objects: TreatmentGoalManager = TreatmentGoalManager()
 
     @cached_property
     def active_datalayers(self) -> Collection[DataLayer]:
@@ -567,6 +581,8 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             geometry=UnionOp("geometry")
         )["geometry"]
         size = stand_size or self.get_stand_size()
+        if not project_areas_geometry:
+            return Stand.objects.none()
         return Stand.objects.within_polygon(project_areas_geometry, size)
 
     def get_geopackage_url(self) -> Optional[str]:
@@ -582,9 +598,11 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         if self.type == ScenarioType.CUSTOM:
-            priority_objectives = self.configuration.get("priority_objectives", [])
+            priorities = [
+                p.get("datalayer") for p in self.configuration.get("priorities")
+            ]
             cobenefits = self.configuration.get("cobenefits", [])
-            datalayer_ids = priority_objectives + cobenefits
+            datalayer_ids = priorities + cobenefits
             datalayers = DataLayer.objects.filter(id__in=datalayer_ids).filter(
                 type=DataLayerType.RASTER
             )

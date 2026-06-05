@@ -8,6 +8,14 @@
     max-width: 417px;
   }
 
+  // Modal mode: let the projected modal drive its own width and sit flush.
+  &.modal {
+    max-width: none;
+
+    .mat-mdc-menu-content {
+      padding: 0;
+    }
+  }
 }
 
 .tooltip {

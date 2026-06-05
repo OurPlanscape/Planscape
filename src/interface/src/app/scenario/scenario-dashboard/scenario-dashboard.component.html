@@ -10,60 +10,70 @@
     </div>
     <div left-column class="plan-overview-column">
       <sg-details-card
-        title="Scenario Dashboard"
+        cardTitle="Scenario Dashboard"
         [subtitle]="(currentScenario$ | async)?.name || ''"
         [creator]="plan.creator"
         [acres]="plan.area_acres"
         [created_at]="plan.created_at"
         [loading]="(loadingScenario$ | async) === true"
         [planning_area_name]="plan?.name || ''"></sg-details-card>
-      <!-- Dashboard tools -->
-      <sg-details-card title="Project Area Tools" class="scenario-tools-card">
-        <!--Subtitle-->
-        <p class="description">
-          Refine your project planning further by using our specialized project
-          area tools.
-        </p>
-        <!--Tools-->
-        <div class="tools">
-          <sg-tile-button
-            *ngFor="let tool of scenarioDashboardTools"
-            [backgroundImage]="tool.backgroundImage"
-            [backgroundColor]="tool.backgroundColor ?? ''"
-            [title]="tool.title"
-            size="lg"
-            [subtitle]="tool.subtitle"
-            [disabled]="!tool.enabled">
-          </sg-tile-button>
-        </div>
-      </sg-details-card>
+      <!-- Dashboard tools: We display the tools just if our status didn't fail -->
+      <ng-container *ngIf="currentScenario$ | async as scenario">
+        <sg-details-card
+          cardTitle="Project Area Tools"
+          class="scenario-tools-card"
+          *ngIf="!scenarioHasFailed(scenario)">
+          <!--Subtitle-->
+          <p class="description">
+            Refine your project planning further by using our specialized
+            project area tools.
+          </p>
+          <!--Tools-->
+          <app-scenario-tools
+            (toolClicked)="onToolClick($event)"></app-scenario-tools>
+        </sg-details-card>
+      </ng-container>
     </div>
     <div right-column class="right-column-card">
       <div class="right-column-content">
         <ng-container *ngIf="currentScenario$ | async as scenario">
           <p class="results-header">Scenario Results</p>
-          <div class="map-container">
-            <app-scenario-minimal-map></app-scenario-minimal-map>
-          </div>
-          <sg-section
-            headline="Project Areas"
-            [isCollapsible]="true"
-            [defaultExpanded]="true"
-            tooltipContent="Placeholder"
-            class="project-areas">
-            <app-project-areas
-              *ngIf="projectAreas$ | async as projectAreas"
-              [areas]="projectAreas"
-              [showRxLeverage]="
-                isPlanningApproachSubUnits(scenario)
-              "></app-project-areas>
-          </sg-section>
+          <!-- We should display map and table just if the scenario hasn't failed-->
+          <ng-container *ngIf="!scenarioHasFailed(scenario); else error">
+            <div class="map-container">
+              <app-scenario-minimal-map></app-scenario-minimal-map>
+            </div>
+            <sg-section
+              headline="Project Areas"
+              [isCollapsible]="true"
+              [defaultExpanded]="true"
+              class="project-areas">
+              <app-project-areas
+                *ngIf="projectAreas$ | async as projectAreas"
+                [areas]="projectAreas"
+                [showRxLeverage]="
+                  isPlanningApproachSubUnits(scenario)
+                "></app-project-areas>
+            </sg-section>
+          </ng-container>
+          <!-- If the scenario has failed we display the error -->
+          <ng-template #error>
+            <app-scenario-failure
+              class="error"
+              [scenarioName]="scenario.name"
+              [scenarioId]="scenario.id"
+              [scenarioState]="scenarioStatus(scenario)"
+              variant="dashboard"></app-scenario-failure>
+          </ng-template>
         </ng-container>
       </div>
 
       <app-scenario-dashboard-footer
         *ngIf="currentScenario$ | async as scenario"
-        [scenario]="scenario"></app-scenario-dashboard-footer>
+        [scenario]="scenario"
+        (copyScenario)="
+          handleTryAgain(scenario)
+        "></app-scenario-dashboard-footer>
     </div>
   </sg-dashboard-layout>
 </ng-container>

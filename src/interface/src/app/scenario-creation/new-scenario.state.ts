@@ -8,11 +8,6 @@ import {
   ScenarioDraftConfiguration,
   ScenarioV3Config,
 } from '@types';
-
-export interface PriorityWithLayer {
-  layer: DataLayer;
-  weight: number;
-}
 import {
   BehaviorSubject,
   catchError,
@@ -35,6 +30,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
+import { FeatureService } from '@features/feature.service';
+
+export interface PriorityWithLayer {
+  layer: DataLayer;
+  weight: number;
+}
 
 @Injectable()
 export class NewScenarioState {
@@ -61,7 +62,16 @@ export class NewScenarioState {
   private baseStandsReady$ = new BehaviorSubject(false);
 
   public priorityObjectivesDetails$ = this.scenarioConfig$.pipe(
-    map((config: ScenarioConfig) => config.priority_objectives),
+    map((config) => {
+      const draft = config as Partial<ScenarioDraftConfiguration>;
+      // When weighting is enabled, ids live in the new `priorities` field;
+      // otherwise read the legacy `priority_objectives` field.
+      return this.featureService.isFeatureEnabled(
+        'PRIORITY_OBJECTIVE_WEIGHTING'
+      )
+        ? (draft.priorities ?? []).map((p) => p.datalayer)
+        : draft.priority_objectives;
+    }),
     map((ids) => (Array.isArray(ids) && ids.length > 0 ? ids : [])),
     distinctUntilChanged(
       (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
@@ -161,11 +171,12 @@ export class NewScenarioState {
     this.standSize$,
     this.excludedAreas$,
     this.constraints$,
+    this._selectedSubUnitLayer$,
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([_, step]) => step?.refreshAvailableStands ?? false),
-    switchMap(([_, step, standSize, excludedAreas, constraints]) => {
+    switchMap(([_, step, standSize, excludedAreas, constraints, subUnits]) => {
       // Inside the project fn so it runs after switchMap cancels the previous inner (and its
       // finalize fires) — a tap() before switchMap would be overridden by that finalize.
       this.setLoading(true);
@@ -174,7 +185,8 @@ export class NewScenarioState {
           this.scenarioId,
           standSize,
           step?.includeExcludedAreas ? excludedAreas : undefined,
-          step?.includeConstraints ? constraints : undefined
+          step?.includeConstraints ? constraints : undefined,
+          step?.includeSubUnits ? subUnits?.id : undefined
         )
         .pipe(
           catchError(() => {
@@ -235,7 +247,8 @@ export class NewScenarioState {
     private router: Router,
     private snackbar: MatSnackBar,
     private forsysService: ForsysService,
-    private dataLayersService: DataLayersService
+    private dataLayersService: DataLayersService,
+    private featureService: FeatureService
   ) {
     this.forsysService.forsysData$.subscribe((forsys) => {
       this.slopeId = forsys.thresholds.slope.id;

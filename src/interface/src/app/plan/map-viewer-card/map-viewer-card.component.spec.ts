@@ -3,8 +3,9 @@ import { MapViewerCardComponent } from './map-viewer-card.component';
 import { Map } from 'maplibre-gl';
 import { AuthService } from '@services';
 import { MapConfigService } from '@maplibre-map/map-config.service';
-import { MockProviders } from 'ng-mocks';
+import { MockProvider, MockProviders } from 'ng-mocks';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ActivatedRoute } from '@angular/router';
 
 describe('MapViewerCardComponent', () => {
   let component: MapViewerCardComponent;
@@ -13,7 +14,12 @@ describe('MapViewerCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, MapViewerCardComponent],
-      providers: [MockProviders(MapConfigService, AuthService)],
+      providers: [
+        MockProviders(MapConfigService, AuthService),
+        MockProvider(ActivatedRoute, {
+          snapshot: { data: { planId: 24 } } as any,
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapViewerCardComponent);

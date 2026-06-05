@@ -1,0 +1,73 @@
+<sg-dashboard-layout
+  layoutVariant="disable-right-scroll"
+  class="project-area-dashboard-layout">
+  <div header>
+    <!-- NavBar -->
+    <app-nav-bar area="SCENARIO"></app-nav-bar>
+  </div>
+  <div left-column class="left-column">
+    <sg-tool-info-card
+      theme="dark"
+      cardTitle="Funding Opportunity Report"
+      mainImagePath="assets/svg/funding-white.svg"
+      creditImagePath="assets/svg/icons/planscape-color-logo-w-text.svg"
+      creditImageAlt="Planscape"
+      creditText="in partnership with:"
+      [showTooltipButton]="false"
+      description="The Funding Report module aims to help you communicate the funding
+      opportunity of their scenarios by translating treatment outcomes into
+      standardized metrics. Through this auto-generated report, you can present
+      the carbon, biomass, wildfire risk, and water benefits of proposed
+      treatments to conservation finance partners and funders, supporting
+      project alignment, portfolio building, and investment decision-making."
+      [partners]="partners"></sg-tool-info-card>
+  </div>
+  <div right-column class="right-column">
+    <mat-spinner
+      class="spinner"
+      *ngIf="loading$ | async; else loadedView"
+      diameter="36"></mat-spinner>
+
+    <ng-template #loadedView>
+      <app-funding-empty-state
+        *ngIf="showEmptyState$ | async"
+        (generateReport)="generateReport()">
+      </app-funding-empty-state>
+      <!-- Generating report-->
+      <div class="generating-report" *ngIf="isGenerating$ | async">
+        <mat-spinner diameter="36"></mat-spinner>
+        <section>
+          <div class="generating-title">Funding Report is being generated</div>
+          <div class="generating-text">
+            You’ll be notified when it’s ready by email, the completed report
+            can be viewed here.
+          </div>
+        </section>
+      </div>
+      <!-- Error -->
+      <div *ngIf="hasError$ | async" class="generating-error">
+        <div class="generating-error-card">
+          <h4>Report</h4>
+          <sg-message-card
+            cardType="error"
+            cardTitle="There was an error generating your report">
+            Sorry, we are unable to generate your report. Please try again.
+          </sg-message-card>
+        </div>
+
+        <div class="generating-error-footer">
+          <a sg-button [href]="SUPPORT_URL" target="_blank">Submit Feedback</a>
+          <button
+            sg-button
+            icon="assignment"
+            variant="primary"
+            (click)="generateReport()">
+            Retry Report Generation
+          </button>
+        </div>
+      </div>
+
+      <app-funding-report *ngIf="hasOutput$ | async"></app-funding-report>
+    </ng-template>
+  </div>
+</sg-dashboard-layout>

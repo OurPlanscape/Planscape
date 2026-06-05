@@ -300,13 +300,12 @@ def async_pre_forsys_process(scenario_id: int) -> None:
         "variables": variables,
     }
 
-    if feature_enabled("PLANNING_APPROACH"):
-        forsys_input.update(
-            {
-                "run_with_patchmax": run_config["run_with_patchmax"],
-                "projects_data": run_config["projects_data"],
-            }
-        )
+    forsys_input.update(
+        {
+            "run_with_patchmax": run_config["run_with_patchmax"],
+            "projects_data": run_config["projects_data"],
+        }
+    )
 
     with transaction.atomic():
         scenario = Scenario.objects.select_for_update().get(id=scenario_id)
@@ -335,10 +334,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
         datalayers = treatment_goal.get_raster_datalayers()  # type: ignore
     elif scenario_type == ScenarioType.CUSTOM:
         configuration = getattr(scenario, "configuration", {}) or {}
-        if configuration.get("priorities"): 
-            priority_ids = [p["datalayer"] for p in configuration.get("priorities")]
-        else:
-            priority_ids = configuration.get("priority_objectives") or []
+        priority_ids = [p["datalayer"] for p in configuration.get("priorities", [])]
         cobenefit_ids = configuration.get("cobenefits") or []
         datalayers = DataLayer.objects.filter(
             pk__in=[*priority_ids, *cobenefit_ids],

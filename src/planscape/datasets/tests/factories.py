@@ -28,6 +28,7 @@ class DatasetFactory(factory.django.DjangoModelFactory):
     visibility = factory.Iterator(VisibilityOptions.values)
     selection_type = factory.Iterator(SelectionTypeOptions.values)
     preferred_display_type = factory.Iterator(PreferredDisplayType.values)
+    workspace = None
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):
@@ -66,6 +67,7 @@ class DataLayerFactory(factory.django.DjangoModelFactory):
     metadata = {}
     url = None
     outline = None
+    workspace = None
 
     @factory.post_generation
     def style(self, create, extracted, **kwargs):

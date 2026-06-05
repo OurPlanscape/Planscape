@@ -199,19 +199,27 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
         if extracted:
             ScenarioResultFactory(scenario=self)
 
+
     @factory.post_generation
-    def with_priority_objectives(self, create, extracted, **kwargs):
+    def with_priorities(self, create, extracted, **kwargs):
         if not create:
             return
 
         if extracted:
-            ids = []
+            priorities = []
             for datalayer in extracted:
-                ids.append(datalayer.pk)
+                priorities.append(
+                    {
+                        "datalayer": datalayer.pk, 
+                        "name": datalayer.name, 
+                        "weight": 1,
+                    }
+                )
 
-            configuration = {"priority_objectives": ids}
+            configuration = {"priorities": priorities}
             merged_config = {**(self.configuration or {}), **configuration}
             self.configuration = merged_config
+    
 
     @factory.post_generation
     def with_cobenefits(self, create, extracted, **kwargs):

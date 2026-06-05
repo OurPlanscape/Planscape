@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ScenarioService } from '@services';
 import {
   AvailableStands,
+  Capabilities,
   LoadedResult,
   Resource,
   Scenario,
@@ -13,6 +14,7 @@ import {
   catchError,
   combineLatest,
   concat,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -42,7 +44,13 @@ export class ScenarioState {
 
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
-    this._currentScenarioId$.pipe(filter((id): id is number => !!id)),
+    this._currentScenarioId$.pipe(
+      // distinctUntilChanged must run before the filter so the null emitted by
+      // resetScenarioId() is observed; otherwise navigating away and back to the
+      // same scenario looks like a consecutive duplicate and never reloads.
+      distinctUntilChanged(),
+      filter((id): id is number => !!id)
+    ),
     this._reloadScenario$,
   ]).pipe(
     switchMap(([id]) =>
@@ -89,6 +97,12 @@ export class ScenarioState {
   get currentSubUnitsLayerId(): number | null {
     return this._currentSubUnitsLayerId();
   }
+
+  public scenarioCapabilities$: Observable<Capabilities[]> =
+    this.currentScenario$.pipe(
+      map((scenario) => scenario.capabilities ?? []),
+      shareReplay(1)
+    );
 
   /**
    * Observable that maps only to loading status.

@@ -48,19 +48,19 @@ class Command(BaseCommand):
                 self.stdout.write(f"Updated {count} TreatmentGoal(s) by setting admin as creator.")
 
                 count = Category.objects.exclude(created_by=admin).update(created_by=admin)
-                self.stdout.write(f"Deleted {count} Category(s) by setting admin as creator.")
+                self.stdout.write(f"Updated {count} Category(s) by setting admin as creator.")
 
                 count = Style.objects.exclude(created_by=admin).update(created_by=admin)
-                self.stdout.write(f"Deleted {count} Style(s) by setting admin as creator.")
+                self.stdout.write(f"Updated {count} Style(s) by setting admin as creator.")
 
                 count = DataLayer.objects.exclude(created_by=admin).update(created_by=admin)
-                self.stdout.write(f"Deleted {count} DataLayer(s) by setting admin as creator.")
+                self.stdout.write(f"Updated {count} DataLayer(s) by setting admin as creator.")
 
                 count = Dataset.objects.exclude(created_by=admin).update(created_by=admin)
-                self.stdout.write(f"Deleted {count} Dataset(s) by setting admin as creator.")
+                self.stdout.write(f"Updated {count} Dataset(s) by setting admin as creator.")
 
                 count = Organization.objects.exclude(created_by=admin).update(created_by=admin)
-                self.stdout.write(f"Deleted {count} Organization(s) by setting admin as creator.")
+                self.stdout.write(f"Updated {count} Organization(s) by setting admin as creator.")
 
             with open(output_path, "w", encoding="utf-8") as output_file:
                 call_command(

@@ -151,6 +151,71 @@ describe('ScenarioState', () => {
     }, 0);
   });
 
+  it('does not refetch when the same scenario id is selected again', () => {
+    scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+    const sub = scenarioState.currentScenarioResource$.subscribe();
+
+    // e.g. navigating between a scenario's sub-routes, each re-running the
+    // loader resolver, should not trigger a new request.
+    scenarioState.setScenarioId(1);
+    scenarioState.setScenarioId(1);
+
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledTimes(1);
+    sub.unsubscribe();
+  });
+
+  it('refetches the same scenario after resetScenarioId is called', () => {
+    scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+    const sub = scenarioState.currentScenarioResource$.subscribe();
+
+    // e.g. opening a scenario, going back to the planning area (which resets
+    // the id), then reopening the same scenario should load it again.
+    scenarioState.setScenarioId(1);
+    scenarioState.resetScenarioId();
+    scenarioState.setScenarioId(1);
+
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledTimes(2);
+    sub.unsubscribe();
+  });
+
+  it('refetches when a different scenario id is selected', () => {
+    scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+    const sub = scenarioState.currentScenarioResource$.subscribe();
+
+    scenarioState.setScenarioId(1);
+    scenarioState.setScenarioId(2);
+
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledTimes(2);
+    expect(scenarioServiceSpy.getScenario).toHaveBeenCalledWith(2);
+    sub.unsubscribe();
+  });
+
+  describe('scenarioCapabilities$', () => {
+    it('emits the loaded scenario capabilities', (done) => {
+      const scenarioWithCaps: Scenario = {
+        ...mockScenario,
+        capabilities: ['FUNDING_REPORT'],
+      };
+      scenarioServiceSpy.getScenario.and.returnValue(of(scenarioWithCaps));
+      scenarioState.setScenarioId(1);
+
+      scenarioState.scenarioCapabilities$.subscribe((capabilities) => {
+        expect(capabilities).toEqual(['FUNDING_REPORT']);
+        done();
+      });
+    });
+
+    it('emits an empty array when the scenario has no capabilities', (done) => {
+      scenarioServiceSpy.getScenario.and.returnValue(of(mockScenario));
+      scenarioState.setScenarioId(1);
+
+      scenarioState.scenarioCapabilities$.subscribe((capabilities) => {
+        expect(capabilities).toEqual([]);
+        done();
+      });
+    });
+  });
+
   describe('currentSubUnitsLayerId', () => {
     it('should return null when no scenario is loaded', () => {
       expect(scenarioState.currentSubUnitsLayerId).toBeNull();

@@ -120,6 +120,24 @@ export class ModalComponent {
   @Input() centerFooter? = false;
 
   /**
+   * Show/hide an optional far-left link/text button in the footer (distinct from
+   * the secondary action — different placement and a text-only style)
+   */
+  @Input() hasLinkButton = false;
+  /**
+   * Text for the optional far-left link button
+   */
+  @Input() linkButtonText?: string;
+  /**
+   * Optional Material icon for the far-left link button (e.g. "download")
+   */
+  @Input() linkButtonIcon?: string;
+  /**
+   * Style variant for the far-left link button
+   */
+  @Input() linkButtonVariant: ButtonVariant = 'text';
+
+  /**
    * If provided, the modal will show a tooltip on the header
    */
   @Input() tooltipContent = '';
@@ -132,6 +150,7 @@ export class ModalComponent {
   @Output() clickedSecondary = new EventEmitter<any>();
   @Output() clickedPrimary = new EventEmitter<any>();
   @Output() clickedClose = new EventEmitter<any>();
+  @Output() clickedLink = new EventEmitter<any>();
 
   constructor() {}
 
@@ -152,6 +171,11 @@ export class ModalComponent {
   /** @ignore */
   handlePrimaryButton(): void {
     this.clickedPrimary.emit();
+  }
+
+  /** @ignore */
+  handleLinkButton(): void {
+    this.clickedLink.emit();
   }
 
   @HostBinding('class.xsmall')

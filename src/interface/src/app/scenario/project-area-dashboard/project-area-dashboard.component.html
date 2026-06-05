@@ -13,7 +13,7 @@
       class="plan-overview-column"
       *ngIf="currentScenario$ | async as scenario">
       <sg-details-card
-        title="Project Area Dashboard"
+        cardTitle="Project Area Dashboard"
         [subtitle]="scenario.name || ''"
         [creator]="plan.creator"
         [acres]="plan.area_acres"
@@ -26,7 +26,7 @@
 
       <!-- Dashboard tools -->
       <sg-details-card
-        title="Project Area Tools"
+        cardTitle="Project Area Tools"
         class="project-area-tools-card">
         <!--Subtitle-->
         <p class="description">
@@ -35,14 +35,8 @@
         </p>
         <!--Tools-->
         <div class="tools">
-          <sg-tile-button
-            *ngFor="let tool of dashboardTools"
-            [backgroundImage]="tool.backgroundImage"
-            [backgroundColor]="tool.backgroundColor ?? ''"
-            [title]="tool.title"
-            size="lg"
-            [disabled]="!tool.enabled">
-          </sg-tile-button>
+          <app-scenario-tools
+            (toolClicked)="onToolClick($event)"></app-scenario-tools>
         </div>
       </sg-details-card>
     </div>

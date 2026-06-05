@@ -235,6 +235,32 @@ class GetSchemaTest(TestCase):
         self.assertIn("properties", schema)
         self.assertEqual(5, len(schema["properties"]))
 
+    def test_get_schema_with_extra_features(self):
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "properties": {
+                        "foo": "abc",
+                        "bar": 1,
+                        "baz": 1.2,
+                        "now": datetime.now(),
+                        "today": date.today(),
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                    },
+                }
+            ],
+        }
+        extra_properties = {"another": "propertie"}
+        schema = get_schema(geojson, extra_properties)
+        self.assertIsNotNone(schema)
+        self.assertIn("geometry", schema)
+        self.assertIn("properties", schema)
+        self.assertEqual(6, len(schema["properties"]))
+
 
 class TestSanitizeShpFieldName(TestCase):
     def test_replaces_spaces_with_underscores(self):
@@ -392,7 +418,7 @@ class TestExportToGeopackage(TestCase):
             name="s2",
             user=self.user,
             type=ScenarioType.CUSTOM,
-            with_priority_objectives=self.datalayers[:2],
+            with_priorities=self.datalayers[:2],
             with_cobenefits=self.datalayers[2:],
         )
         data = {
@@ -1132,13 +1158,13 @@ class ValidateScenarioConfigurationTest(TestCase):
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Scenario has no Treatment Goal assigned.", errors)
 
-    def test_missing_priority_objectives_and_priorities(self):
-        self.scenario.configuration = {"priority_objectives": []}
+    def test_missing_priorities(self):
+        self.scenario.configuration = {"priorities": []}
         self.scenario.type = ScenarioType.CUSTOM
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn(
-            "Configuration field `priority_objectives` or `priorities` is required for Custom Scenarios.",
+            "Configuration field `priorities` is required for Custom Scenarios.",
             errors,
         )
 
@@ -1423,7 +1449,10 @@ class TriggerScenarioTest(TestCase):
         self.planning_area = PlanningAreaFactory(
             geometry=GEOSGeometry(json.dumps(geometry))
         )
-        self.scenario = ScenarioFactory(planning_area=self.planning_area)
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            configuration={"stand_size": "LARGE"},
+        )
 
     def test_compute_scenario_capability_before_run(self):
         trigger_scenario_run(self.scenario, self.scenario.user)
@@ -1432,7 +1461,7 @@ class TriggerScenarioTest(TestCase):
 
         self.assertEqual(
             self.scenario.capabilities,
-            ["FORSYS", "IMPACTS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"],
+            ["FORSYS", "IMPACTS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"],
         )
 
     def test_compute_scenario_capability_before_run__prioritize_sub_units(self):
@@ -1444,7 +1473,7 @@ class TriggerScenarioTest(TestCase):
 
         self.assertEqual(
             self.scenario.capabilities,
-            ["FORSYS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS"],
+            ["FORSYS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"],
         )
 
 
@@ -1573,7 +1602,7 @@ class CalculateAndUpdateScenarioResult(TestCase):
     def test_scenario_type_custom(self):
         scenario = ScenarioFactory(
             type=ScenarioType.CUSTOM, 
-            with_priority_objectives=self.datalayers,
+            with_priorities=self.datalayers,
             forsys_input={"stand_ids": [1, 2, 3, 4]},
         )
         scenario_result = ScenarioResultFactory.create(scenario=scenario)

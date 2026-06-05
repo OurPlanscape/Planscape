@@ -1,9 +1,10 @@
 import logging
 
-from core.flags import feature_enabled
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -26,7 +27,6 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
-    ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
@@ -55,6 +55,10 @@ from planning.serializers import (
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
+from funding_report.models import FundingOpportunityReport
+from funding_report.serializers import FundingOpportunityReportSerializer
+from funding_report.tasks import run_funding_opportunity_report
+from modules.base import compute_scenario_capabilities
 from planning.services import (
     create_config,
     create_planning_area,
@@ -224,11 +228,17 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        draft_status = Q(result_status=ScenarioResultStatus.DRAFT) | Q(
+            results__status=ScenarioResultStatus.DRAFT
+        )
+
         qs = (
             Scenario.objects.list_by_user(user=user)
+            .filter(Q(user=user) | ~draft_status)
             .select_related(
                 "planning_area",
                 "user",
+                "results",
             )
             .prefetch_related("project_areas")
         )
@@ -269,7 +279,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             constraints=[],
             included_areas=[],
             excluded_areas=[],
-            priority_objectives=[],
             priorities=[],
             cobenefits=[],
         )
@@ -348,6 +357,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        instance.refresh_from_db()
+        instance.capabilities = compute_scenario_capabilities(instance)
+        instance.save(update_fields=["capabilities"])
         response_serializer = ScenarioV2Serializer(instance)
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
@@ -370,7 +382,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 constraints=configuration_data.get("constraints") or [],
                 included_areas=configuration_data.get("included_areas_ids") or [],
                 excluded_areas=configuration_data.get("excluded_areas_ids") or [],
-                priority_objectives=configuration_data.get("priority_objectives") or [],
                 priorities=configuration_data.get("priorities") or [],
                 cobenefits=configuration_data.get("cobenefits") or [],
                 seed=configuration_data.get("seed"),
@@ -382,21 +393,37 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 updated_config[key] = incoming_config.get(key)
             serializer.validated_data["configuration"] = updated_config
         self.perform_update(serializer)
+        instance.refresh_from_db()
+        instance.capabilities = compute_scenario_capabilities(instance)
+        instance.save(update_fields=["capabilities"])
         response_serializer = ScenarioV3Serializer(instance)
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
 
+    @action(methods=["post"], detail=True, url_path="run-report")
+    def run_report(self, request, pk=None):
+        scenario = self.get_object()
+        report, _ = FundingOpportunityReport.objects.get_or_create(
+            scenario=scenario,
+            defaults={"created_by": request.user},
+        )
+        run_funding_opportunity_report.delay(report.pk)
+        serializer = FundingOpportunityReportSerializer(instance=report)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    @action(methods=["get"], detail=True, url_path="get-report")
+    def get_report(self, request, pk=None):
+        scenario = self.get_object()
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+        serializer = FundingOpportunityReportSerializer(instance=report)
+        return Response(serializer.data)
+
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
     @action(methods=["post"], detail=True, url_path="run")
     def run(self, request, pk=None):
         scenario = self.get_object()
-
-        # TODO: remove once planning_approach feature flag is on for all users
-        if not feature_enabled("PLANNING_APPROACH") and not scenario.planning_approach:
-            scenario.planning_approach = ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
-            scenario.save(update_fields=["planning_approach"])
 
         errors = validate_scenario_configuration(scenario)
         if errors:
@@ -472,7 +499,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         return Response(details, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer)
+    @action(
+        methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer
+    )
     def available_stands(self, request, pk=None):
         scenario = self.get_object()
         serializer = GetAvailableStandsSerializer(data=request.data)
@@ -531,10 +560,14 @@ class TreatmentGoalViewSet(
     A viewset for viewing and editing TreatmentGoal instances.
     """
 
-    queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
     filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
+
+    def get_queryset(self):
+        user = self.request.user if self.request else None
+        qs = TreatmentGoal.objects.accessible_by(user)
+        return qs

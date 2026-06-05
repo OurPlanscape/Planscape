@@ -6,13 +6,14 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 import { PlanState } from '@app/plan/plan.state';
-import { OverlayLoaderComponent, TileButtonComponent } from '@styleguide';
+import { OverlayLoaderComponent } from '@styleguide';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { getPlanPath } from '@app/plan/plan-helpers';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewerCardComponent } from '@app/plan/map-viewer-card/map-viewer-card.component';
 import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/project-area-coming-soon.component';
 import { ScenarioState } from '../scenario.state';
+import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
 
 @UntilDestroy()
 @Component({
@@ -26,8 +27,8 @@ import { ScenarioState } from '../scenario.state';
     NavBarComponent,
     DetailsCardComponent,
     ProjectAreaComingSoonComponent,
-    TileButtonComponent,
     OverlayLoaderComponent,
+    ScenarioToolsComponent,
   ],
   templateUrl: './project-area-dashboard.component.html',
   styleUrl: './project-area-dashboard.component.scss',
@@ -39,29 +40,20 @@ export class ProjectAreaDashboardComponent implements OnInit {
   currentScenario$ = this.scenarioState.currentScenario$;
   planId = this.route.parent?.snapshot.data['planId'];
 
-  dashboardTools = [
-    {
-      backgroundImage: '/assets/svg/treatment-effects.svg',
-      backgroundColor: '#dfede6',
-      title: 'Treatment Effects',
-      featureFlag: '',
-      enabled: true,
-    },
-    {
-      id: 'coming-soon',
-      backgroundImage: '/assets/svg/lock.svg',
-      title: 'Coming Soon',
-      subtitle: '',
-      featureFlag: '',
-      enabled: false,
-    },
-  ];
+  dashboardTools: {
+    id: string;
+    backgroundImage: string;
+    backgroundColor?: string;
+    title: string;
+    enabled: boolean;
+  }[] = [];
 
   constructor(
     private scenarioState: ScenarioState,
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -69,5 +61,16 @@ export class ProjectAreaDashboardComponent implements OnInit {
       label: 'Planning Area Overview',
       backUrl: getPlanPath(this.planId),
     });
+  }
+
+  onToolClick(route: string): void {
+    const planId = this.route.snapshot.data['planId'];
+    if (planId) {
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Project Area Dashboard',
+        backUrl: `../projdashboard`,
+      });
+      this.router.navigate([route], { relativeTo: this.route });
+    }
   }
 }

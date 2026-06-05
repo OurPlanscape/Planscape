@@ -1,0 +1,9 @@
+<ng-container *ngIf="currentScenario$ | async as scenario">
+  <app-project-area-dashboard
+    *ngIf="scenario.origin === 'USER'; else scenarioDash">
+  </app-project-area-dashboard>
+
+  <ng-template #scenarioDash>
+    <app-scenario-dashboard></app-scenario-dashboard>
+  </ng-template>
+</ng-container>

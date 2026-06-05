@@ -15,7 +15,6 @@ from actstream import action
 from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
@@ -244,7 +243,6 @@ def create_config(
     constraints: List[Dict[str, Any]],
     included_areas: DataLayerList,
     excluded_areas: DataLayerList,
-    priority_objectives: DataLayerList,
     priorities: List[Dict[str, Any]],
     cobenefits: DataLayerList,
     seed: Optional[int] = None,
@@ -260,18 +258,14 @@ def create_config(
     config["included_areas_ids"] = [area.pk for area in included_areas]
     config["excluded_areas_ids"] = [area.pk for area in excluded_areas]
 
-    if priorities:
-        config["priority_objectives"] = [p["datalayer"].pk for p in priorities]
-        config["priorities"] = [{**p, "datalayer": p["datalayer"].pk} for p in priorities]
-    else:
-        # TODO: priority_objectives to be replaced by priorities
-        config["priority_objectives"] = [priority.pk for priority in priority_objectives]
-        config["priorities"] = [{"weight": 1, "datalayer": priority.pk} for priority in priority_objectives]
+    config["priorities"] = [{**p, "datalayer": p["datalayer"].pk} for p in priorities]
     config["cobenefits"] = [benefit.pk for benefit in cobenefits]
     if seed is not None:
         config["seed"] = seed
     if planning_approach is not None:
         config["planning_approach"] = planning_approach
+        if planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS:
+            config["sub_units_layer"] = None
     if sub_units_layer is not None:
         config["sub_units_layer"] = sub_units_layer
 
@@ -419,7 +413,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,
-        configuration={"stand_size": validated_data["stand_size"]},
+        configuration={k: v for k, v in {"stand_size": validated_data.get("stand_size")}.items() if v is not None},
         origin=ScenarioOrigin.USER,
     )
     scenario.capabilities = compute_scenario_capabilities(scenario)
@@ -557,15 +551,11 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
     }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
-    if cfg.get("priorities"):
-        priorities = cfg.get("priorities") or []
-        priority_objectives = [priority.get("datalayer") for priority in priorities]
-    else:
-        priority_objectives = cfg.get("priority_objectives") or []
-        priorities = [{"datalayer": p, "weight": 1} for p in priority_objectives]
+    priorities = cfg.get("priorities") or []
+    priorities_datalayers = [priority.get("datalayer") for priority in priorities]
     cobenefits = cfg.get("cobenefits") or []
     sub_units_layer_id = cfg.get("sub_units_layer")
-    custom_datalayer_ids = set([*priority_objectives, *cobenefits])
+    custom_datalayer_ids = set([*priorities_datalayers, *cobenefits])
     custom_thresholds = {}
 
     for constraint in constraints:
@@ -722,9 +712,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
             errors.append("Scenario has no Treatment Goal assigned.")
 
     else:  # Scenario.type == ScenarioType.CUSTOM
-        if not cfg.get("priority_objectives") and not cfg.get("priorities"):
+        if not cfg.get("priorities"):
             errors.append(
-                "Configuration field `priority_objectives` or `priorities` is required for Custom Scenarios."
+                "Configuration field `priorities` is required for Custom Scenarios."
             )
 
     # Scenario checks by its `planning_apporach`
@@ -947,7 +937,8 @@ def map_property_for_numeric_export(key_value_pair):
 
 
 def get_schema(
-    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]],
+    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]], 
+    extra_properties: Dict[str, Any] = {}
 ) -> Dict[str, Any]:
     feature = {}
     match geojson:
@@ -958,7 +949,8 @@ def get_schema(
         case list() as features:
             feature = features[0]
 
-    field_type_pairs = list(map(map_property, feature.get("properties", {}).items()))
+    merged_properties = feature.get("properties", {}) | extra_properties 
+    field_type_pairs = list(map(map_property, merged_properties.items()))
     schema = {
         "geometry": feature.get("geometry", {}).get("type", "MultiPolygon")
         or "MultiPolygon",
@@ -1018,17 +1010,25 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
             if isinstance(value, dict):
                 for k, v in value.items():
                     if isinstance(v, float):
-                        v = truncate_result(v, quantize=".001")
+                        v = truncate_result(v, quantize=".000001")
                     flat_key = sanitize_shp_field_name(f"{prop}_{k}")
                     new_properties[flat_key] = v
             else:
                 if isinstance(value, float):
-                    value = truncate_result(value, quantize=".001")
+                    value = truncate_result(value, quantize=".000001")
                 key = dl_lookup.get(prop, prop)
                 key = sanitize_shp_field_name(key)
                 new_properties[key] = value
         feature["properties"] = new_properties
     return geojson
+
+
+def get_weighing_from_input(stand_inputs: Dict[int, Dict]):
+    weighting_data = {}
+    if stand_inputs:
+         sample_stand_data = dict(list(stand_inputs.values())[0])
+         weighting_data = {k: v for k, v in sample_stand_data.items() if k.lower().endswith("_weighting")}
+    return weighting_data
 
 
 def export_to_shapefile(scenario: Scenario) -> Path:
@@ -1098,7 +1098,7 @@ def export_scenario_stand_outputs_to_geopackage(
                         try:
                             f = float(value)
                             if math.isfinite(f):
-                                f = truncate_result(f, quantize=".001")
+                                f = truncate_result(f, quantize=".000001")
                             else:
                                 logger.warning(
                                     "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
@@ -1190,10 +1190,7 @@ def export_scenario_inputs_to_geopackage(
             }
             weighted_datalayers.append(item)
     else:
-        if configuration.get("priorities"):
-            weighted_datalayers = configuration.get("priorities")
-        else:
-            weighted_datalayers = [{"datalayer": p, "weight": 1} for p in configuration.get("priority_objectives") or []]
+        weighted_datalayers = configuration.get("priorities")
 
         for wd in weighted_datalayers:
             datalayer = DataLayer.objects.get(pk=wd.get("datalayer"))
@@ -1229,7 +1226,7 @@ def export_scenario_inputs_to_geopackage(
                         try:
                             f = float(value)
                             if math.isfinite(f):
-                                f = truncate_result(f, quantize=".001")
+                                f = truncate_result(f, quantize=".000001")
                             else:
                                 logger.warning(
                                     "Non-finite value %s for key %s in scenario %s. Exporting as NULL.",
@@ -1295,10 +1292,13 @@ def export_scenario_inputs_to_geopackage(
 
 
 def export_scenario_project_areas_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict],
 ) -> None:
     geojson = get_flatten_geojson(scenario)
-    schema = get_schema(geojson)
+
+    weighting_data = get_weighing_from_input(stand_inputs)
+
+    schema = get_schema(geojson, weighting_data)
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
@@ -1313,7 +1313,11 @@ def export_scenario_project_areas_outputs_to_geopackage(
             ) as out:
                 for feature in geojson.get("features", []):
                     geometry = to_multi(feature.get("geometry"))
-                    feature = {**feature, "geometry": geometry}
+                    feature["properties"] = {**feature["properties"], **weighting_data}
+                    feature = {
+                        **feature,
+                        "geometry": geometry
+                    }
                     out.write(feature)
     except Exception as e:
         logger.exception(
@@ -1323,7 +1327,7 @@ def export_scenario_project_areas_outputs_to_geopackage(
 
 
 def export_scenario_sub_units_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path
+    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict],
 ) -> None:
     geojson = get_flatten_geojson(scenario)
 
@@ -1331,7 +1335,10 @@ def export_scenario_sub_units_outputs_to_geopackage(
     schema_geojson = copy.deepcopy(geojson)
     proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
     proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
-    schema = get_schema(schema_geojson)
+
+    weighting_data = get_weighing_from_input(stand_inputs)
+
+    schema = get_schema(schema_geojson, weighting_data)
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
 
@@ -1359,6 +1366,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
                     # rename proj_id to subunit_id on features
                     proj_id = feature["properties"].pop("proj_id")
                     feature["properties"]["subunit_id"] = proj_id
+                    feature["properties"] = {**feature["properties"], **weighting_data}
                     sub_unit = queryset.get(id=proj_id)
                     geometry = sub_unit.geometry.intersection(planning_area.geometry)
                     geom_geojson = json.loads(geometry.geojson)
@@ -1444,9 +1452,9 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
                 scenario.planning_approach
                 == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
             ):
-                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file)
+                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file, stand_inputs)
             else:
-                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file)
+                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file, stand_inputs)
 
             export_scenario_stand_outputs_to_geopackage(
                 scenario, temp_file, stand_inputs
@@ -1456,8 +1464,17 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         zip_file = temp_folder / f"{scenario.uuid}.gpkg.zip"
         if zip_file.exists():
             zip_file.unlink()
+        forsys_inputs_file = scenario.get_forsys_folder() / f"{scenario.uuid}.json"
         with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(temp_file, arcname=temp_file.name)
+            if forsys_inputs_file.exists():
+                zipf.write(forsys_inputs_file, arcname="forsys-inputs.json")
+            else:
+                logger.warning(
+                    "Forsys inputs file not found for scenario %s at %s",
+                    scenario.pk,
+                    forsys_inputs_file,
+                )
 
         upload_file_via_cli(
             object_name=geopackage_path.replace(
@@ -1645,9 +1662,7 @@ def get_available_stands(
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     if (
-        feature_enabled("PLANNING_APPROACH")
-        and feature_enabled("RENDER_SUB_UNITS_FILTERED")
-        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         and sub_unit
     ):
         # Exclude stands that is not included to any sub-unit
@@ -1868,7 +1883,7 @@ def calculate_and_update_scenario_result(scenario: Scenario):
 def calculate_and_update_rx_leverage(scenario: Scenario, features: List) -> List:
     if scenario.type == ScenarioType.CUSTOM:
         cfg = scenario.configuration or {}
-        priority_ids = cfg.get("priority_objectives")
+        priority_ids = [p["datalayer"] for p in cfg.get("priorities", [])]
         names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
     else:
         names = scenario.treatment_goal.datalayer_usages.filter(

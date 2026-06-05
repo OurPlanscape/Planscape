@@ -304,6 +304,43 @@ export const Tooltip: Story = {
   }),
 };
 
+export const WithLinkButton: Story = {
+  args: {
+    title: 'Carbon Info',
+    primaryButtonText: 'Learn More',
+    hasSecondaryButton: false,
+    hasLinkButton: true,
+    linkButtonText: 'Download Dataset',
+    linkButtonIcon: 'download',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+*When to use*: When the footer needs a far-left link/text action (e.g. "Download
+Dataset") alongside the primary CTA.
+
+The link button:
+- Sits at the far left of the footer (pushing the action buttons right)
+- Uses the \`text\` button variant (configurable via \`linkButtonVariant\`)
+- Can show an optional icon via \`linkButtonIcon\`
+- Emits \`clickedLink\` when pressed
+- Is distinct from the secondary action — different placement and style
+      `,
+      },
+    },
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+      <sg-modal ${argsToTemplate(args)}>
+        <div modalBodyContent>Carbon metrics are estimated using the Forest
+        Vegetation Simulator (FVS) with spatially explicit forest conditions from
+        the USFS TreeMap dataset (30 m resolution).</div>
+      </sg-modal><div>`,
+  }),
+};
+
 export const ScrollableContent: Story = {
   args: {
     title: 'A modal that scrolls!',

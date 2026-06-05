@@ -18,6 +18,11 @@ import {
   ModalComponent,
 } from '@styleguide';
 
+interface DialogData {
+  requestStandSize: boolean;
+  mode: 'NEW' | 'RENAME';
+}
+
 @Component({
   selector: 'app-create-treatment-dialog',
   standalone: true,
@@ -36,6 +41,8 @@ import {
 })
 export class CreateTreatmentDialogComponent {
   submitting: boolean = false;
+  data: DialogData;
+
   treatmentForm = new FormGroup({
     treatmentName: new FormControl('', [Validators.required]),
     standSize: new FormControl(''),
@@ -43,27 +50,35 @@ export class CreateTreatmentDialogComponent {
 
   constructor(
     private dialogRef: MatDialogRef<CreateTreatmentDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { requestStandSize: boolean }
+    @Inject(MAT_DIALOG_DATA) injectedData: Partial<DialogData>
   ) {
-    this.data = data || { requestStandSize: false };
+    const { requestStandSize = false, mode = 'NEW' } = injectedData || {};
+    this.data = { requestStandSize, mode };
   }
 
   async submit() {
-    if (this.treatmentForm.valid) {
-      this.submitting = true;
+    if (this.data.mode === 'RENAME') {
       const treatmentName =
         this.treatmentForm.get('treatmentName')?.value || '';
 
-      const standSize = this.treatmentForm.get('standSize')?.value || '';
-      if (this.data.requestStandSize) {
-        this.dialogRef.close({
-          treatmentName,
-          standSize,
-        });
-      } else {
-        this.dialogRef.close({ treatmentName });
+      this.dialogRef.close(treatmentName);
+    } else {
+      if (this.treatmentForm.valid) {
+        this.submitting = true;
+        const treatmentName =
+          this.treatmentForm.get('treatmentName')?.value || '';
+
+        const standSize = this.treatmentForm.get('standSize')?.value || '';
+        if (this.data.requestStandSize) {
+          this.dialogRef.close({
+            treatmentName,
+            standSize,
+          });
+        } else {
+          this.dialogRef.close({ treatmentName });
+        }
+        this.submitting = false;
       }
-      this.submitting = false;
     }
   }
 

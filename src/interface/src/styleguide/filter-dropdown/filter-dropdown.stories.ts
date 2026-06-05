@@ -182,6 +182,7 @@ export const LongOptionList: Story = {
 interface Thing {
   id: number;
   name: string;
+  shortName?: string;
 }
 
 type GenericStory = StoryObj<FilterDropdownComponent<Thing>>;
@@ -207,6 +208,55 @@ export const GenericItems: GenericStory = {
       { id: 14, name: 'Noah Garcia' },
       { id: 15, name: 'Olivia Harris' },
       { id: 16, name: 'Owen Lewis' },
+    ],
+  },
+};
+
+export const ItemsWithShortLabel: GenericStory = {
+  args: {
+    menuLabel: 'Region',
+    displayField: 'name',
+    shortLabel: 'shortName',
+    showCountChip: false,
+    menuItems: [
+      { id: 1, name: 'Amelia Rose', shortName: 'AR' },
+      { id: 2, name: 'Benjamin Walker', shortName: 'BW' },
+      { id: 3, name: 'Charlotte Lee', shortName: 'CL' },
+      { id: 4, name: 'David Anderson', shortName: 'DA' },
+      { id: 5, name: 'Evelyn Wright', shortName: 'EW' },
+      { id: 6, name: 'Felix Thompson', shortName: 'FT' },
+      { id: 7, name: 'Grace Miller', shortName: 'GM' },
+      { id: 8, name: 'Henry Jackson', shortName: 'HJ' },
+      { id: 9, name: 'Isabella Clark', shortName: 'IC' },
+      { id: 10, name: 'Jack Young', shortName: 'JY' },
+      { id: 11, name: 'Katherine Wilson', shortName: 'KW' },
+      { id: 12, name: 'Liam Moore', shortName: 'LM' },
+      { id: 13, name: 'Mia Brown', shortName: 'MB' },
+      { id: 14, name: 'Noah Garcia', shortName: 'NG' },
+      { id: 15, name: 'Olivia Harris', shortName: 'OH' },
+      { id: 16, name: 'Owen Lewis', shortName: 'OL' },
+    ],
+  },
+};
+
+export const ItemsWithShortNameAndDefaultLabel: GenericStory = {
+  args: {
+    menuLabel: 'Project Areas',
+    hasSearch: false,
+    styleType: 'white',
+    noSelectionsLabel: 'All Project Areas',
+    displayField: 'name',
+    shortLabel: 'shortName',
+    showCountChip: false,
+    menuItems: [
+      { id: 1876, name: 'Project Area 1', shortName: '1' },
+      { id: 2341, name: 'Project Area 2', shortName: '2' },
+      { id: 8762, name: 'Project Area 3', shortName: '3' },
+      { id: 5437, name: 'Project Area 4', shortName: '4' },
+      { id: 1121, name: 'Project Area 5', shortName: '5' },
+      { id: 1298, name: 'Project Area 6', shortName: '6' },
+      { id: 1779, name: 'Project Area 7', shortName: '7' },
+      { id: 8764, name: 'Project Area 8', shortName: '8' },
     ],
   },
 };

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from impacts.models import ImpactVariable, TreatmentPrescriptionAction
 from rest_framework.test import APIRequestFactory
 from utils.frontend import get_base_url, get_domain
@@ -333,6 +333,7 @@ class MapURLTests(TestCase):
         base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
         return base + "/tiles/dynamic/{z}/{x}/{y}?layer=" + str(layer.id)
 
+    @override_settings(ENV="dev")
     def test_get_map_url_logic(self):
         raster = DataLayerFactory(type=DataLayerType.RASTER)
         self.assertEqual(raster.get_map_url(), raster.get_public_url())
@@ -344,6 +345,19 @@ class MapURLTests(TestCase):
         )
         self.assertEqual(vector.get_map_url(), self._expected_dynamic_url(vector))
 
+    @override_settings(ENV="local")
+    def test_get_map_url_local_env_uses_local_martin(self):
+        vector = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            storage_type=StorageTypeChoices.DATABASE,
+            table="datastore.foo_bar",
+        )
+        self.assertEqual(
+            vector.get_map_url(),
+            "http://localhost:3000/dynamic/{z}/{x}/{y}?layer=" + str(vector.id),
+        )
+
+    @override_settings(ENV="dev")
     def test_map_url_present_in_serializers(self):
         vector = DataLayerFactory(
             type=DataLayerType.VECTOR,
@@ -353,6 +367,7 @@ class MapURLTests(TestCase):
         for Serializer in (DataLayerSerializer, BrowseDataLayerSerializer):
             self.assertIn("map_url", Serializer(vector).data)
 
+    @override_settings(ENV="dev")
     def test_map_url_none_when_no_table(self):
         layer = DataLayerFactory(type=DataLayerType.VECTOR, table=None)
         self.assertIsNone(layer.get_map_url())
