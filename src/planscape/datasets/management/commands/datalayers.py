@@ -1,5 +1,6 @@
 import csv
 import json
+import math
 import multiprocessing
 import re
 import subprocess
@@ -46,6 +47,18 @@ class PlanscapeCLIException(Exception):
 
 class DataLayerAlreadyExists(PlanscapeCLIException):
     pass
+
+
+def sanitize_json_value(value: Any) -> Any:
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {key: sanitize_json_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [sanitize_json_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [sanitize_json_value(item) for item in value]
+    return value
 
 
 def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
@@ -362,6 +375,7 @@ class Command(PlanscapeCommand):
             pprint(self._create_datalayer(**kwargs))
         except Exception as ex:
             self.stderr.write(f"ERROR: {kwargs =}\nEXCEPTION: {ex =}")
+            raise
 
     def _upload_file(self, input_files, datalayer, upload_to):
         upload_to_url = upload_to.get("url")
@@ -433,6 +447,7 @@ class Command(PlanscapeCommand):
             "map_service_type": map_service_type,
             "url": url,
         }
+        input_data = sanitize_json_value(input_data)
 
         response = requests.post(
             request_url,
