@@ -19,19 +19,12 @@
         [planning_area_name]="plan?.name || ''"></sg-details-card>
       <!-- Dashboard tools: We display the tools just if our status didn't fail -->
       <ng-container *ngIf="currentScenario$ | async as scenario">
-        <sg-details-card
+        <app-scenario-tools
+          *ngIf="!scenarioHasFailed(scenario)"
           cardTitle="Project Area Tools"
-          class="scenario-tools-card"
-          *ngIf="!scenarioHasFailed(scenario)">
-          <!--Subtitle-->
-          <p class="description">
-            Refine your project planning further by using our specialized
-            project area tools.
-          </p>
-          <!--Tools-->
-          <app-scenario-tools
-            (toolClicked)="onToolClick($event)"></app-scenario-tools>
-        </sg-details-card>
+          subtitle="Refine your project planning further by using our specialized
+            project area tools."
+          (toolClicked)="onToolClick($event)"></app-scenario-tools>
       </ng-container>
     </div>
     <div right-column class="right-column-card">
