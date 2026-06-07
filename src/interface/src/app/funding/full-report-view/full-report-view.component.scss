@@ -11,6 +11,7 @@
 
 .container {
   display: flex;
+  height: 100%;
   overflow: hidden;
 
   @include on-small() {
@@ -21,13 +22,13 @@
 }
 
 .full-report-sidebar {
-  display: flex;
-  width: $scenario-sidebar-width; // TODO: rename this to be more generic?
+  width: $scenario-sidebar-width;
   max-width: $scenario-sidebar-width;
-  flex-direction: column;
-  height: 100%;
+
   background-color: $color-soft-purple;
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
 
   @include on-small() {
     width: 100%;
@@ -58,22 +59,9 @@
   }
 }
 
-.report-view {
-  display: block;
-  width: 100%;
-}
-
-.scroll-section {
-  overflow-y: auto;
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
 .section-row {
   padding: 24px;
-  background-color: $color-white;
+  background-color: white;
   display: flex;
   flex-direction: column;
   border-bottom: 1px $color-soft-gray solid;
@@ -90,18 +78,21 @@
 }
 
 .toggle-row {
+  height: 52px;
   align-items: center;
-  position: sticky;
-  top: 0;
 }
 
 .outcomes-row {
   padding: 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: $color-white;
-  border-color: $color-white;
+
+  .view-outcomes-row {
+    position: sticky;
+    top: 0;
+    background: $color-white;
+    z-index: 10;
+    padding: 16px;
+    padding-bottom: 0;
+  }
 
   .view-outcomes-box {
     @include small-input-label();
@@ -115,20 +106,16 @@
     border: 1px $color-soft-gray solid;
     padding: 16px;
   }
+
   .outcome-areas-dropdown {
     flex: 1;
   }
-}
-
-.tabs-row {
-  padding: 0;
 }
 
 .report-details {
   background-color: $color-soft-purple;
   padding: 16px;
 
-  /* TODO: replace this with actual report components when available */
   .report-placeholder {
     height: 900px;
     border: 1px $color-light-purple solid;
@@ -137,46 +124,54 @@
   }
 }
 
+.download-options-down {
+  height: 40px;
+  line-height: 40px;
+  border-left: 1px solid white;
+  padding: 0 8px;
+  margin-left: 6px;
+  margin-right: -12px;
+}
+
+.report-view {
+  overflow-y: auto;
+}
+
+
+.report-view {
+  ::ng-deep {
+    .funding-report-tabs {
+      position: sticky;
+      top: 120px;
+      z-index: 10;
+    }
+
+    .report-sections {
+      background-color: $color-soft-purple;
+    }
+
+    .report-section {
+      scroll-margin-top: 184px;
+    }
+  }
+}
+
 .report-footer {
   background-color: $color-white;
   border-top: 1px solid $color-soft-gray;
   padding: 16px 8px;
   box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
   width: 100%;
   text-align: right;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   flex-grow: 0;
-  z-index: 500;
+  z-index: 10;
   gap: 8px;
 }
-
-.download-options-down {
-  height: 40px;
-  line-height: 40px;
-  border-left: 1px solid $color-white;
-  padding: 0 8px;
-  margin-left: 6px;
-  margin-right: -12px;
-}
-
-::ng-deep .report-tabs {
-  .mat-mdc-tab-header,
-  .mat-tab-header {
-    position: sticky;
-    top: 107px; // match the outcomes-row height
-    z-index: 100;
-    background-color: $color-white;
-    border-bottom: 1px solid $color-soft-gray;
-  }
-  .mat-mdc-tab-body-wrapper,
-  .mat-tab-body-wrapper {
-    position: relative;
-    z-index: 1;
-  }
-}
-
 
 
 .data-layers-view {

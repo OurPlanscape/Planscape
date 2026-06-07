@@ -26,7 +26,7 @@
 </ng-template>
 
 <div class="report-sections" #scrollContainer>
-  <section id="map" class="report-section">
+  <section id="map" class="report-section" *ngIf="reportType === 'preview'">
     <!-- TODO: map -->
     <div class="map-container"></div>
   </section>
@@ -189,7 +189,7 @@
   </sg-section>
 </div>
 
-<div class="report-footer">
+<div class="report-footer" *ngIf="reportType === 'preview'">
   <button sg-button icon="share">Share</button>
   <button sg-button icon="download">Download</button>
   <button sg-button icon="open_in_full" variant="primary">

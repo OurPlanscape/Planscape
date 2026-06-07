@@ -15,6 +15,7 @@ import {
 import { ButtonComponent, FilterDropdownComponent } from '@styleguide';
 import { NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
+import { FundingReportComponent } from '../funding-report/funding-report.component';
 
 @Component({
   selector: 'app-full-report-view',
@@ -22,6 +23,7 @@ import { MatMenuModule } from '@angular/material/menu';
   imports: [
     ButtonComponent,
     FilterDropdownComponent,
+    FundingReportComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,

@@ -1,4 +1,5 @@
 <app-nav-bar></app-nav-bar>
+<!--New scenario ui flow-->
 <ng-container>
   <section class="container">
     <div class="full-report-sidebar">
@@ -8,20 +9,20 @@
           defaultSelection="report"
           (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
       </div>
-      <div class="scroll-section" *ngIf="currentView === 'report'">
-        <div class="report-view">
-          <div class="section-row">
-            <div class="section-title">Introduction</div>
-            <div class="section-text">
-              Presented below are the results of our land management modeling,
-              which apply the maximum permissible treatments according to
-              protected area status and vegetation type. These values highlight
-              the difference between max allowable treatments and a
-              "no-treatment" baseline.
-              <a>Learn More</a>
-            </div>
+      <div class="report-view" *ngIf="currentView === 'report'">
+        <div class="section-row">
+          <div class="section-title">Introduction</div>
+          <div class="section-text">
+            Presented below are the results of our land management modeling,
+            which apply the maximum permissible treatments according to
+            protected area status and vegetation type. These values highlight
+            the difference between max allowable treatments and a "no-treatment"
+            baseline.
+            <a>Learn More</a>
           </div>
-          <div class="section-row outcomes-row">
+        </div>
+        <div class="section-row outcomes-row">
+          <div class="view-outcomes-row">
             <div class="view-outcomes-box">
               <div>Viewing outcomes for:</div>
               <sg-filter-dropdown
@@ -36,41 +37,7 @@
                 menuLabel="Project Areas"></sg-filter-dropdown>
             </div>
           </div>
-          <div class="section-row tabs-row">
-            <mat-tab-group
-              class="side-tabs report-tabs"
-              [(selectedIndex)]="tabIndex"
-              (selectedIndexChange)="onTabIndexChange($event)"
-              mat-stretch-tabs="true"
-              mat-align-tabs="start">
-              <mat-tab label="Carbon">
-                <div class="report-details">
-                  <div class="report-placeholder">
-                    Carbon Report Placeholder
-                  </div>
-                </div>
-              </mat-tab>
-              <mat-tab label="Wildfire Risk">
-                <div class="report-details">
-                  <div class="report-placeholder">
-                    Wildfire Risk Report Placeholder
-                  </div>
-                </div>
-              </mat-tab>
-              <mat-tab label="Water">
-                <div class="report-details">
-                  <div class="report-placeholder">Water Report Placeholder</div>
-                </div>
-              </mat-tab>
-              <mat-tab label="Biomass">
-                <div class="report-details">
-                  <div class="report-placeholder">
-                    Biomass Report Placeholder
-                  </div>
-                </div>
-              </mat-tab>
-            </mat-tab-group>
-          </div>
+          <app-funding-report [reportType]="'full'"></app-funding-report>
         </div>
       </div>
       <div class="report-footer" *ngIf="currentView === 'report'">
@@ -99,7 +66,6 @@
 
       <div class="data-layers-view" *ngIf="currentView !== 'report'"></div>
     </div>
-
     <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
     <!-- TODO: funding map -->
     <div>PLACEHOLDER: MAP GOES HERE</div>

@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Input,
   NgZone,
   OnDestroy,
   OnInit,
@@ -70,21 +71,17 @@ export class FundingReportComponent
   @ViewChild('scrollContainer', { static: true })
   scrollContainer!: ElementRef<HTMLElement>;
 
-  sections: ReportSection[] = [
-    { id: 'map', label: 'Map' },
-    { id: 'carbon', label: 'Carbon' },
-    { id: 'wildfire', label: 'Wildfire Risk' },
-    { id: 'water', label: 'Water' },
-    { id: 'biomass', label: 'Biomass' },
-  ];
+  sections: ReportSection[] = [];
 
-  activeId = this.sections[0].id;
-
+  activeId = '';
   /** Name of the section whose interactive tooltip was last opened. */
   tooltipName = '';
 
   private suppressUntil = 0;
   private pendingScrollFrame: number | null = null;
+  @Input() showMap = true;
+  @Input() showFooter = true;
+  @Input() reportType: 'preview' | 'full' = 'preview';
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -93,6 +90,22 @@ export class FundingReportComponent
 
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
+    this.assignSections();
+  }
+
+  assignSections() {
+    if (this.reportType === 'preview') {
+      this.sections.push({ id: 'map', label: 'Map' });
+    }
+    this.sections.push(
+      ...[
+        { id: 'carbon', label: 'Carbon' },
+        { id: 'wildfire', label: 'Wildfire Risk' },
+        { id: 'water', label: 'Water' },
+        { id: 'biomass', label: 'Biomass' },
+      ]
+    );
+    this.activeId = this.sections[0].id;
   }
 
   ngAfterViewInit(): void {
