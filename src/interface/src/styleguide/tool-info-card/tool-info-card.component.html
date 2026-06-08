@@ -31,6 +31,8 @@
 
   <section class="partners" *ngIf="partners.length > 0">
     <a
+      data-track="partner-link"
+      [attr.data-name]="partner.name"
       *ngFor="let partner of partners"
       [href]="partner.url"
       [title]="partner.name"
