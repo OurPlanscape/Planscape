@@ -67,9 +67,30 @@
         </div>
       </div>
 
-      <app-funding-report
-        *ngIf="hasOutput$ | async"
-        [reportType]="'preview'"></app-funding-report>
+      <!-- Report succeeded but produced no results -->
+      <div *ngIf="hasNoResults$ | async" class="generating-error">
+        <div class="generating-error-card">
+          <h4>Report</h4>
+          <sg-message-card
+            cardType="warning"
+            cardTitle="No treatable areas were identified">
+            Planscape could not identify any areas that meet the specified
+            treatment criteria. To resolve this, try:
+            <ul>
+              <li>Modifying your planning or project area boundaries.</li>
+              <li>
+                Adjusting scenario configurations to refine or broaden your
+                constraints.
+              </li>
+            </ul>
+          </sg-message-card>
+        </div>
+
+        <div class="generating-error-footer">
+          <a sg-button [href]="SUPPORT_URL" target="_blank">Submit Feedback</a>
+        </div>
+      </div>
+      <app-funding-report [reportType]="'preview'"></app-funding-report>
     </ng-template>
   </div>
 </sg-dashboard-layout>

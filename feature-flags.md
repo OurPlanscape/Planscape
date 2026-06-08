@@ -13,6 +13,4 @@ The name and value of the flag will be shared by frontend and backend.
 
 `SCENARIO_DASHBOARDS` : Enables new dashboards for scenarios, project areas and treatment effects
 
-`PRIORITY_OBJECTIVE_WEIGHTING`: Enables Priority objective weighting
-
 `FUNDING_REPORTS`: Enables funding reports
