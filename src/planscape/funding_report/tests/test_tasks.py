@@ -25,7 +25,7 @@ class RunFundingOpportunityReportTaskTest(TestCase):
         )
 
     @mock.patch("funding_report.tasks.chord")
-    @mock.patch("funding_report.services.get_funding_report_calculation_datalayers")
+    @mock.patch("funding_report.tasks.get_funding_report_calculation_datalayers")
     def test_task_builds_metric_graph(self, datalayers_mock, chord_mock):
         datalayers_mock.return_value = [mock.Mock(pk=1), mock.Mock(pk=2)]
 
@@ -35,7 +35,7 @@ class RunFundingOpportunityReportTaskTest(TestCase):
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.RUNNING)
         chord_mock.assert_called_once()
 
-    @mock.patch("funding_report.services.get_funding_report_calculation_datalayers")
+    @mock.patch("funding_report.tasks.get_funding_report_calculation_datalayers")
     def test_task_sets_failed_on_exception(self, datalayers_mock):
         datalayers_mock.side_effect = ValueError("bad data")
 

@@ -32,6 +32,7 @@ from requests.exceptions import JSONDecodeError
 
 from datasets.models import DataLayer, DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
+from funding_report.models import get_funding_report_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -483,8 +484,6 @@ class Command(PlanscapeCommand):
         layer_type = kwargs.pop("layer_type", None)
 
         if funding and not metadata:
-            from funding_report.models import get_funding_report_metadata
-
             if not input_file and not url:
                 raise ValueError("--funding requires --input-file or --url")
             metadata = get_funding_report_metadata(input_file or url)

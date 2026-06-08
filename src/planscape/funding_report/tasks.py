@@ -3,8 +3,18 @@ import logging
 from celery import chain, chord
 from datasets.models import DataLayer
 from django.conf import settings
+from django.db import transaction
+from funding_report.models import FundingOpportunityReport, FundingOpportunityReportStatus
+from funding_report.services import (
+    calculate_funding_opportunity_report,
+    get_funding_report_calculation_datalayers,
+)
 from planscape.celery import app
 from stands.models import Stand
+from stands.services import (
+    calculate_stand_zonal_stats_api,
+    get_missing_stand_ids_for_datalayer_from_stand_list,
+)
 
 log = logging.getLogger(__name__)
 
@@ -14,10 +24,6 @@ def async_set_status(
     funding_opportunity_report_id: int,
     status: str,
 ) -> None:
-    from funding_report.models import (
-        FundingOpportunityReport,
-    )
-
     FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
         status=status
     )
@@ -28,12 +34,6 @@ def async_ensure_funding_report_metrics(
     funding_opportunity_report_id: int,
     datalayer_id: int,
 ) -> None:
-    from funding_report.models import FundingOpportunityReport
-    from stands.services import (
-        calculate_stand_zonal_stats_api,
-        get_missing_stand_ids_for_datalayer_from_stand_list,
-    )
-
     try:
         report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
         datalayer = DataLayer.objects.get(pk=datalayer_id)
@@ -68,9 +68,6 @@ def async_ensure_funding_report_metrics(
 def async_calculate_funding_opportunity_report(
     funding_opportunity_report_id: int,
 ) -> None:
-    from funding_report.models import FundingOpportunityReport
-    from funding_report.services import calculate_funding_opportunity_report
-
     try:
         report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
         calculate_funding_opportunity_report(report)
@@ -84,18 +81,28 @@ def async_calculate_funding_opportunity_report(
 
 @app.task()
 def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
-    from funding_report.models import (
-        FundingOpportunityReport,
-        FundingOpportunityReportStatus,
-    )
-    from funding_report.services import get_funding_report_calculation_datalayers
+    with transaction.atomic():
+        try:
+            report = FundingOpportunityReport.objects.select_for_update().get(
+                pk=funding_opportunity_report_id
+            )
+        except FundingOpportunityReport.DoesNotExist:
+            log.warning(
+                "FundingOpportunityReport with pk %s does not exist. Cannot run report.",
+                funding_opportunity_report_id,
+            )
+            return
+        if report.status == FundingOpportunityReportStatus.RUNNING:
+            log.warning(
+                "FundingOpportunityReport with pk %s is already running, skipping duplicate dispatch.",
+                funding_opportunity_report_id,
+            )
+            return
+        FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
+            status=FundingOpportunityReportStatus.RUNNING
+        )
 
     try:
-        FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
-        FundingOpportunityReport.objects.filter(
-            pk=funding_opportunity_report_id
-        ).update(status=FundingOpportunityReportStatus.RUNNING)
-
         datalayers = get_funding_report_calculation_datalayers()
         tasks = [
             async_ensure_funding_report_metrics.si(
@@ -119,12 +126,6 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
             )
         )
         chord(tasks)(callback)
-    except FundingOpportunityReport.DoesNotExist:
-        log.warning(
-            "FundingOpportunityReport with pk %s does not exist. Cannot run report.",
-            funding_opportunity_report_id,
-        )
-        return
     except Exception:
         FundingOpportunityReport.objects.filter(
             pk=funding_opportunity_report_id

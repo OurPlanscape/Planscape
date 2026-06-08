@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional
+import logging
+from typing import Any, Dict, List, Optional, Tuple
 
 from datasets.models import DataLayer, DataLayerType
 from planning.models import ProjectArea
@@ -12,6 +13,8 @@ from funding_report.models import (
     FundingOpportunityReport,
     FundingReportMetric,
 )
+
+log = logging.getLogger(__name__)
 
 
 def get_funding_report_datalayer(
@@ -39,20 +42,24 @@ def get_funding_report_calculation_datalayers() -> List[DataLayer]:
     for metric in FundingReportMetric:
         for year in FUNDING_REPORT_YEARS:
             datalayers.append(
-                get_funding_report_datalayer(
-                    metric=metric,
-                    year=year,
-                    baseline=True,
-                )
+                get_funding_report_datalayer(metric=metric, year=year, baseline=True)
             )
             datalayers.append(
-                get_funding_report_datalayer(
-                    metric=metric,
-                    year=year,
-                    baseline=False,
-                )
+                get_funding_report_datalayer(metric=metric, year=year, baseline=False)
             )
     return datalayers
+
+
+def _build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
+    lookup = {}
+    for dl in DataLayer.objects.filter(
+        type=DataLayerType.RASTER,
+        metadata__contains={"modules": {"funding_report": {}}},
+    ):
+        fr_meta = dl.metadata["modules"]["funding_report"]
+        key = (fr_meta["variable"], fr_meta["year"], fr_meta["baseline"])
+        lookup[key] = dl
+    return lookup
 
 
 def get_metric_value(metric: Optional[StandMetric]) -> Optional[float]:
@@ -67,6 +74,12 @@ def calculate_stand_results(
     metric: FundingReportMetric,
     year: int,
 ) -> List[Dict[str, Any]]:
+    if not baseline_metrics:
+        log.warning(
+            "No baseline metrics found for metric=%s year=%s; no stands will be included in results.",
+            metric,
+            year,
+        )
     results = []
     for stand_id, baseline_metric in baseline_metrics.items():
         baseline_value = get_metric_value(baseline_metric)
@@ -93,20 +106,27 @@ def calculate_stand_results(
 def calculate_project_area_results(
     project_area: ProjectArea,
     stand_results_by_id: Dict[int, Dict[str, Any]],
-    stand_size: str,
+    stand_ids: List[int],
     metric: FundingReportMetric,
     year: int,
 ) -> Dict[str, Any]:
-    project_stand_ids = list(
-        project_area.get_stands(stand_size=stand_size).values_list("id", flat=True)
-    )
     stand_results = [
         stand_results_by_id[stand_id]
-        for stand_id in project_stand_ids
+        for stand_id in stand_ids
         if stand_id in stand_results_by_id
     ]
-    baseline_sum = sum(result.get("baseline") or 0 for result in stand_results)
-    changed_sum = sum(result.get("value") or 0 for result in stand_results)
+    all_baselines = [result.get("baseline") for result in stand_results]
+    all_changed = [result.get("value") for result in stand_results]
+    baseline_sum = (
+        None
+        if all(v is None for v in all_baselines)
+        else sum(v or 0 for v in all_baselines)
+    )
+    changed_sum = (
+        None
+        if all(v is None for v in all_changed)
+        else sum(v or 0 for v in all_changed)
+    )
     return {
         "project_area_id": project_area.pk,
         "variable": metric.value,
@@ -125,33 +145,37 @@ def calculate_metric_year_results(
     metric: FundingReportMetric,
     year: int,
     stands: List[Stand],
+    project_areas: List[ProjectArea],
+    project_area_stand_ids: Dict[int, List[int]],
+    datalayer_lookup: Dict[Tuple[str, int, bool], DataLayer],
 ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    baseline_layer = get_funding_report_datalayer(
-        metric=metric,
-        year=year,
-        baseline=True,
-    )
-    changed_layer = get_funding_report_datalayer(
-        metric=metric,
-        year=year,
-        baseline=False,
-    )
+    baseline_layer = datalayer_lookup[(metric.value, year, True)]
+    changed_layer = datalayer_lookup[(metric.value, year, False)]
 
     stand_ids = [stand.pk for stand in stands]
     baseline_metrics = {
-        metric.stand_id: metric
-        for metric in StandMetric.objects.filter(
+        sm.stand_id: sm
+        for sm in StandMetric.objects.filter(
             stand_id__in=stand_ids,
             datalayer=baseline_layer,
         )
     }
     changed_metrics = {
-        metric.stand_id: metric
-        for metric in StandMetric.objects.filter(
+        sm.stand_id: sm
+        for sm in StandMetric.objects.filter(
             stand_id__in=stand_ids,
             datalayer=changed_layer,
         )
     }
+
+    missing_count = len(stand_ids) - len(baseline_metrics)
+    if missing_count > 0:
+        log.warning(
+            "%d stands have no baseline metric for metric=%s year=%s and will be excluded from results.",
+            missing_count,
+            metric,
+            year,
+        )
 
     stand_results = calculate_stand_results(
         baseline_metrics=baseline_metrics,
@@ -160,16 +184,15 @@ def calculate_metric_year_results(
         year=year,
     )
     stand_results_by_id = {result["stand_id"]: result for result in stand_results}
-    stand_size = report.scenario.get_stand_size()
     project_area_results = [
         calculate_project_area_results(
             project_area=project_area,
             stand_results_by_id=stand_results_by_id,
-            stand_size=stand_size,
+            stand_ids=project_area_stand_ids[project_area.pk],
             metric=metric,
             year=year,
         )
-        for project_area in report.scenario.project_areas.all()
+        for project_area in project_areas
     ]
 
     return stand_results, project_area_results
@@ -183,6 +206,12 @@ def calculate_funding_opportunity_report(
     )
     stand_size = report.scenario.get_stand_size()
     stands = list(report.scenario.get_project_areas_stands(stand_size=stand_size))
+    project_areas = list(report.scenario.project_areas.all())
+    project_area_stand_ids = {
+        pa.pk: list(pa.get_stands(stand_size=stand_size).values_list("id", flat=True))
+        for pa in project_areas
+    }
+    datalayer_lookup = _build_datalayer_lookup()
 
     results: Dict[str, Any] = {
         "stand_size": stand_size,
@@ -196,6 +225,9 @@ def calculate_funding_opportunity_report(
                 metric=metric,
                 year=year,
                 stands=stands,
+                project_areas=project_areas,
+                project_area_stand_ids=project_area_stand_ids,
+                datalayer_lookup=datalayer_lookup,
             )
             results["stand_results"].extend(stand_results)
             results["project_area_results"].extend(project_area_results)
