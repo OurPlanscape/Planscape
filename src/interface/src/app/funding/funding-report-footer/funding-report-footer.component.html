@@ -1,0 +1,16 @@
+<button sg-button icon="share_outlined" (click)="shareReport()">Share</button>
+<button
+  sg-button
+  icon="download"
+  variant="primary"
+  [matMenuTriggerFor]="menu"
+  #trigger="matMenuTrigger">
+  Download Options
+  <mat-icon class="material-symbols-outlined download-options-down"
+    >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+  </mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="downloadGeopackage()">Geopackage</button>
+  <button mat-menu-item (click)="downloadPDF()">PDF</button>
+</mat-menu>

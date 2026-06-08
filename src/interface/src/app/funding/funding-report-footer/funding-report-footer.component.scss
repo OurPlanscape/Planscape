@@ -1,0 +1,27 @@
+@import 'colors';
+
+:host {
+  background-color: $color-white;
+  border-top: 1px solid $color-soft-gray;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-grow: 0;
+  z-index: 10;
+  gap: 8px;
+}
+
+.download-options-down {
+  height: 40px;
+  line-height: 40px;
+  border-left: 1px solid white;
+  padding: 0 8px;
+  margin-left: 6px;
+  margin-right: -12px;
+}

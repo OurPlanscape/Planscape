@@ -12,18 +12,19 @@ import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
-import { ButtonComponent, FilterDropdownComponent } from '@styleguide';
+import { FilterDropdownComponent } from '@styleguide';
 import { NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
+import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 
 @Component({
   selector: 'app-full-report-view',
   standalone: true,
   imports: [
-    ButtonComponent,
     FilterDropdownComponent,
     FundingReportComponent,
+    FundingReportFooterComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,
@@ -68,16 +69,4 @@ export class FullReportViewComponent {
   /* report tabs things */
   tabIndex = 1;
   onTabIndexChange(tabSelected: number) {}
-
-  downloadGeopackage() {
-    // TODO
-  }
-
-  downloadPDF() {
-    // TODO
-  }
-
-  shareReport() {
-    // TODO
-  }
 }

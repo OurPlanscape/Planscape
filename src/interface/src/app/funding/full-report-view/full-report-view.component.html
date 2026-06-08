@@ -40,31 +40,8 @@
           <app-funding-report [reportType]="'full'"></app-funding-report>
         </div>
       </div>
-      <div class="report-footer" *ngIf="currentView === 'report'">
-        <button sg-button icon="share_outlined" (click)="shareReport()">
-          Share
-        </button>
-        <button
-          sg-button
-          data-id="new-scenario"
-          icon="download"
-          variant="primary"
-          [matMenuTriggerFor]="menu"
-          #trigger="matMenuTrigger">
-          Download Options
-          <mat-icon class="material-symbols-outlined download-options-down"
-            >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
-          </mat-icon>
-        </button>
-        <mat-menu #menu="matMenu" class="scenario-options-menu">
-          <button mat-menu-item (click)="downloadGeopackage()">
-            Geopackage
-          </button>
-          <button mat-menu-item (click)="downloadPDF()">PDF</button>
-        </mat-menu>
-      </div>
-
-      <div class="data-layers-view" *ngIf="currentView !== 'report'"></div>
+      <app-funding-report-footer
+        *ngIf="currentView === 'report'"></app-funding-report-footer>
     </div>
     <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
     <!-- TODO: funding map -->
