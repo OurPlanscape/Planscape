@@ -23,11 +23,7 @@
   class="cobenefits-selection"
   tooltipSize="medium"
   [tooltipTemplate]="tooltipContent"
-  [headlineHint]="
-    weightingFlagOn
-      ? (selectionCount$ | async) + '/' + maxLayers + ' Selected'
-      : ''
-  ">
+  [headlineHint]="(selectionCount$ | async) + '/' + maxLayers + ' Selected'">
   <form [formGroup]="form">
     <div class="padding-section">
       <div>
@@ -35,12 +31,6 @@
         outcomes of your scenario.
       </div>
       <mat-spinner diameter="20" *ngIf="uiLoading"></mat-spinner>
-      <ng-container *ngIf="!weightingFlagOn">
-        <div *ngIf="!uiLoading">
-          {{ selectionCount$ | async }}/{{ maxLayers }} Selected
-        </div>
-      </ng-container>
-
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>

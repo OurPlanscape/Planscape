@@ -3,12 +3,11 @@ import { NgFor, NgIf } from '@angular/common';
 import { getGroupedAttainment } from '@app/chart-helper';
 import { ScenarioResult, UsageType } from '@types';
 import {
-  MatCheckboxModule,
   MatCheckboxChange,
+  MatCheckboxModule,
 } from '@angular/material/checkbox';
 import { ScenarioResultsChartsService } from '../scenario-results-charts.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -34,14 +33,7 @@ export class ScenarioMetricsLegendComponent implements OnInit {
   cobenefits: string[] = [];
   priorityWeights: { [name: string]: number } = {};
 
-  constructor(
-    private chartService: ScenarioResultsChartsService,
-    private featureService: FeatureService
-  ) {}
-
-  get weightingFlagOn() {
-    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
-  }
+  constructor(private chartService: ScenarioResultsChartsService) {}
 
   ngOnInit() {
     this.assignedColors = this.chartService.getAssignedColors();
