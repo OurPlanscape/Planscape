@@ -67,7 +67,9 @@
         </div>
       </div>
 
-      <app-funding-report *ngIf="hasOutput$ | async"></app-funding-report>
+      <app-funding-report
+        *ngIf="hasOutput$ | async"
+        [reportType]="'preview'"></app-funding-report>
     </ng-template>
   </div>
 </sg-dashboard-layout>

@@ -29,6 +29,7 @@ import {
   getPercentageChartOptions,
   PercentageBarColor,
 } from '@app/chart-helper';
+import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -52,6 +53,7 @@ interface ReportSection {
   standalone: true,
   imports: [
     CommonModule,
+    FundingReportFooterComponent,
     MatButtonModule,
     MatIconModule,
     MatTabsModule,

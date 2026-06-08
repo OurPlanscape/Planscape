@@ -188,11 +188,5 @@
     </div>
   </sg-section>
 </div>
-
-<div class="report-footer" *ngIf="reportType === 'preview'">
-  <button sg-button icon="share">Share</button>
-  <button sg-button icon="download">Download</button>
-  <button sg-button icon="open_in_full" variant="primary">
-    Open Full View
-  </button>
-</div>
+<app-funding-report-footer
+  [footerType]="reportType"></app-funding-report-footer>
