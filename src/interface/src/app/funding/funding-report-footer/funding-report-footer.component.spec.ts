@@ -1,20 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { FundingReportComponent } from './funding-report.component';
+import { FundingReportFooterComponent } from './funding-report-footer.component';
 import { ActivatedRoute } from '@angular/router';
 
-describe('FundingReportComponent', () => {
-  let component: FundingReportComponent;
-  let fixture: ComponentFixture<FundingReportComponent>;
+describe('FundingReportFooterComponent', () => {
+  let component: FundingReportFooterComponent;
+  let fixture: ComponentFixture<FundingReportFooterComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FundingReportComponent, NoopAnimationsModule],
+      imports: [FundingReportFooterComponent],
       providers: [{ provide: ActivatedRoute, useValue: { snapshot: {} } }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FundingReportComponent);
+    fixture = TestBed.createComponent(FundingReportFooterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

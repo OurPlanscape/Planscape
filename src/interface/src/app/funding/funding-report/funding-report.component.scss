@@ -17,6 +17,12 @@
   box-sizing: border-box;
   border-bottom: 1px solid $color-soft-gray;
   min-width: 0;
+
+  &.fullview {
+    position: sticky;
+    top: 120px;
+    z-index: 10;
+  }
 }
 
 .report-sections {
@@ -24,9 +30,18 @@
   flex-direction: column;
   gap: 16px;
   flex: 1 1 auto;
-  overflow-y: auto;
   min-height: 0;
   padding: 16px;
+  overflow-y: auto;
+
+  &.fullview {
+    background-color: $color-soft-purple;
+
+    .report-section {
+      scroll-margin-top: 184px;
+
+    }
+  }
 }
 
 .report-section {
@@ -98,7 +113,8 @@ h5 {
   font-size: 26px;
   font-style: normal;
   font-weight: 700;
-  line-height: 32px; /* 123.077% */
+  line-height: 32px;
+  /* 123.077% */
 }
 
 .stat-cards {
@@ -152,7 +168,8 @@ h5 {
     vertical-align: middle;
   }
 
-  thead th, tbody th {
+  thead th,
+  tbody th {
     background: $color-lighter-gray;
     font-weight: 600;
   }

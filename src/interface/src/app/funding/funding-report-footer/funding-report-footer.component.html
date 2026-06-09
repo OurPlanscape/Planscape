@@ -1,0 +1,29 @@
+<button sg-button icon="share_outlined" (click)="shareReport()">Share</button>
+<button
+  *ngIf="footerType === 'full'"
+  sg-button
+  icon="download"
+  [matMenuTriggerFor]="menu"
+  #trigger="matMenuTrigger"
+  variant="primary">
+  Download Options
+  <mat-icon class="material-symbols-outlined download-options-down"
+    >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+  </mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="downloadGeopackage()">Geopackage</button>
+  <button mat-menu-item (click)="downloadPDF()">PDF</button>
+</mat-menu>
+
+<button sg-button *ngIf="footerType === 'preview'" sg-button icon="download">
+  Download
+</button>
+<button
+  sg-button
+  *ngIf="footerType === 'preview'"
+  icon="open_in_full"
+  variant="primary"
+  (click)="openFullView()">
+  Open Full View
+</button>
