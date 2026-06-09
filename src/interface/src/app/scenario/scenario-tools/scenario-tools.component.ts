@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FeatureService } from '@features/feature.service';
-import { AsyncPipe, NgForOf } from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { TileButtonComponent } from '@styleguide';
 import { Capabilities } from '@types';
 import { map } from 'rxjs';
 import { ScenarioState } from '../scenario.state';
+import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 
 interface ScenarioTool {
   id: string;
@@ -17,12 +18,20 @@ interface ScenarioTool {
 @Component({
   selector: 'app-scenario-tools',
   standalone: true,
-  imports: [AsyncPipe, NgForOf, TileButtonComponent],
+  imports: [
+    AsyncPipe,
+    DetailsCardComponent,
+    NgForOf,
+    NgIf,
+    TileButtonComponent,
+  ],
   templateUrl: './scenario-tools.component.html',
   styleUrl: './scenario-tools.component.scss',
 })
 export class ScenarioToolsComponent {
   @Output() toolClicked = new EventEmitter<string>();
+  @Input() cardTitle = '';
+  @Input() subtitle = '';
 
   scenarioDashboardTools$ = this.scenarioState.scenarioCapabilities$.pipe(
     map((capabilities) => this.buildTools(capabilities))

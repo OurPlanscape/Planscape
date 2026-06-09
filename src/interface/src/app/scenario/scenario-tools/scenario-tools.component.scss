@@ -1,6 +1,26 @@
-:host {
+@import 'mixins';
+@import 'colors';
+
+.tools {
   display: flex;
   width: 100%;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.project-area-tools-card {
+  gap: 4px;
+}
+
+.tools {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.description {
+  @include small-paragraph();
+  color: $color-dark-gray;
+  margin: 0;
 }
