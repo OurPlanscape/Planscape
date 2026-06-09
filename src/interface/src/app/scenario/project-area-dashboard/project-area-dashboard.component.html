@@ -25,20 +25,11 @@
       </app-map-viewer-card>
 
       <!-- Dashboard tools -->
-      <sg-details-card
+      <app-scenario-tools
         cardTitle="Project Area Tools"
-        class="project-area-tools-card">
-        <!--Subtitle-->
-        <p class="description">
-          Refine your project planning further by using our specialized project
-          area tools.
-        </p>
-        <!--Tools-->
-        <div class="tools">
-          <app-scenario-tools
-            (toolClicked)="onToolClick($event)"></app-scenario-tools>
-        </div>
-      </sg-details-card>
+        subtitle="Refine your project planning further by using our specialized
+            project area tools."
+        (toolClicked)="onToolClick($event)"></app-scenario-tools>
     </div>
     <div right-column class="project-area-column">
       <app-project-area-coming-soon></app-project-area-coming-soon>

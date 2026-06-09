@@ -11,6 +11,6 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
-`SCENARIO_DASHBOARDS` : Enables new dashboards for scenarios, project areas and treatment effects
-
 `FUNDING_REPORTS`: Enables funding reports
+
+`ADD_INCLUDES`: Enables the user to add includes during scenario creation
