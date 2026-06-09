@@ -1,5 +1,6 @@
 import csv
 import json
+import math
 import multiprocessing
 import re
 import subprocess
@@ -31,6 +32,7 @@ from requests.exceptions import JSONDecodeError
 
 from datasets.models import DataLayer, DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
+from funding_report.models import get_funding_report_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -46,6 +48,18 @@ class PlanscapeCLIException(Exception):
 
 class DataLayerAlreadyExists(PlanscapeCLIException):
     pass
+
+
+def sanitize_json_value(value: Any) -> Any:
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {key: sanitize_json_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [sanitize_json_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [sanitize_json_value(item) for item in value]
+    return value
 
 
 def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
@@ -191,6 +205,13 @@ class Command(PlanscapeCommand):
             "--metadata",
             required=False,
             type=json.loads,
+        )
+        create_parser.add_argument(
+            "--funding",
+            required=False,
+            action="store_true",
+            default=False,
+            help="Derive funding report metadata from the input filename.",
         )
         create_parser.add_argument(
             "--skip-existing",
@@ -355,6 +376,7 @@ class Command(PlanscapeCommand):
             pprint(self._create_datalayer(**kwargs))
         except Exception as ex:
             self.stderr.write(f"ERROR: {kwargs =}\nEXCEPTION: {ex =}")
+            raise
 
     def _upload_file(self, input_files, datalayer, upload_to):
         upload_to_url = upload_to.get("url")
@@ -426,6 +448,7 @@ class Command(PlanscapeCommand):
             "map_service_type": map_service_type,
             "url": url,
         }
+        input_data = sanitize_json_value(input_data)
 
         response = requests.post(
             request_url,
@@ -457,7 +480,13 @@ class Command(PlanscapeCommand):
     ) -> Optional[Dict[str, Any]]:
         map_service_type = kwargs.pop("map_service_type", None)
         metadata = kwargs.pop("metadata", None)
+        funding = kwargs.pop("funding", False)
         layer_type = kwargs.pop("layer_type", None)
+
+        if funding and not metadata:
+            if not input_file and not url:
+                raise ValueError("--funding requires --input-file or --url")
+            metadata = get_funding_report_metadata(input_file or url)
 
         if url and not layer_type:
             raise ValueError("Missing required layer_type when using url.")

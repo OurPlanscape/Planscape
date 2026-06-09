@@ -14,6 +14,7 @@ from planning.tests.factories import (
     ScenarioFactory,
 )
 from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.calculator import calculate_delta
 from stands.tests.factories import StandFactory
 
 from impacts.models import (
@@ -27,7 +28,6 @@ from impacts.models import (
     TreatmentResult,
 )
 from impacts.services import (
-    calculate_delta,
     calculate_impacts,
     calculate_impacts_for_untreated_stands,
     classify_flame_length,

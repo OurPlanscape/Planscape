@@ -8,9 +8,7 @@
     <div class="legend-line">
       <div class="legend-name">
         {{ metric }}
-        <span
-          *ngIf="weightingFlagOn && priorities.length > 1"
-          class="priority-weight">
+        <span *ngIf="priorities.length > 1" class="priority-weight">
           ({{ priorityWeights[metric] }}x)
         </span>
       </div>

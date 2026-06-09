@@ -23,7 +23,6 @@ const routes: Routes = [
     component: DashboardSwitcherComponent,
     title: 'Scenario Dashboard',
     canDeactivate: [canDeactivateGuard],
-    canActivate: [createFeatureGuard({ featureName: 'SCENARIO_DASHBOARDS' })],
     resolve: {
       scenarioId: scenarioLoaderResolver,
       dataLayerInit: resetDatalayerResolver,
@@ -40,7 +39,7 @@ const routes: Routes = [
       dataLayerInit: resetDatalayerResolver,
     },
   },
-  // We need to keep this route when SCENARIO_DASHBOARDS be released since this is used for drafts creation
+  // This route is used for drafts creation
   {
     path: ':scenarioId',
     component: ScenarioRoutePlaceholderComponent,
