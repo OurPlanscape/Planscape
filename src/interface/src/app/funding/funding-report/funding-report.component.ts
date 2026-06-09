@@ -203,4 +203,8 @@ export class FundingReportComponent
       }))
     );
   }
+
+  get isPreview() {
+    return this.reportType === 'preview';
+  }
 }

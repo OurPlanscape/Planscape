@@ -33,30 +33,6 @@
   @include on-small() {
     width: 100%;
   }
-
-  &:not(.full-screen-steps) {
-    @include on-small() {
-      height: initial;
-      max-width: initial;
-    }
-  }
-
-  &.full-screen-steps {
-    width: 100%;
-    max-width: 100%;
-    box-shadow: none;
-  }
-
-  &.pre-step {
-    ::ng-deep .step {
-      padding: 0;
-      overflow: hidden;
-
-      @include on-small() {
-        overflow: initial;
-      }
-    }
-  }
 }
 
 .section-row {
@@ -112,39 +88,10 @@
   }
 }
 
-.report-details {
-  background-color: $color-soft-purple;
-  padding: 16px;
-
-  .report-placeholder {
-    height: 900px;
-    border: 1px $color-light-purple solid;
-    background-color: $color-white;
-    border-radius: 2px;
-  }
-}
-
 .report-view {
   overflow-y: auto;
 }
 
-.report-view {
-  ::ng-deep {
-    .funding-report-tabs {
-      position: sticky;
-      top: 120px;
-      z-index: 10;
-    }
-
-    .report-sections {
-      background-color: $color-soft-purple;
-    }
-
-    .report-section {
-      scroll-margin-top: 184px;
-    }
-  }
-}
 
 .data-layers-view {
   height: 100%;

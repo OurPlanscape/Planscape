@@ -41,7 +41,7 @@ const routes: Routes = [
     },
   },
   {
-    path: ':scenarioId/funding/fullview', // TODO: nested or no?
+    path: ':scenarioId/funding/report',
     component: FullReportViewComponent,
     title: 'Funding Report',
     canDeactivate: [canDeactivateGuard],

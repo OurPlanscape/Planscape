@@ -33,6 +33,6 @@ export class FundingReportFooterComponent {
   }
 
   openFullView() {
-    this.router.navigate(['fullview'], { relativeTo: this.route });
+    this.router.navigate(['report'], { relativeTo: this.route });
   }
 }
