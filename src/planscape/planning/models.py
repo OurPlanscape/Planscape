@@ -542,6 +542,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Result status of the Scenario.",
     )
 
+    treatable_area = models.MultiPolygonField(
+        srid=settings.DEFAULT_CRS,
+        null=True,
+        help_text="Geometry of Scenario's treatable area represented by polygons.",
+    )
+
     @cached_property
     def version(self):
         cfg = self.configuration or {}
