@@ -16,7 +16,7 @@ import { FilterDropdownComponent } from '@styleguide';
 import { NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
-import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
+import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 
 @Component({
   selector: 'app-full-report-view',
@@ -24,7 +24,6 @@ import { FundingReportFooterComponent } from '../funding-report-footer/funding-r
   imports: [
     FilterDropdownComponent,
     FundingReportComponent,
-    FundingReportFooterComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,
@@ -33,6 +32,7 @@ import { FundingReportFooterComponent } from '../funding-report-footer/funding-r
     MatTabsModule,
     NgIf,
     ToggleTabsComponent,
+    FundingReportMapComponent,
   ],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
