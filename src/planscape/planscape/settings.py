@@ -474,6 +474,7 @@ CELERY_TASK_ROUTES = {
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
 CATALOG_BACKUP_CRON = config("CATALOG_BACKUP_CRON", default=None)
 CATALOG_RESTORE_CRON = config("CATALOG_RESTORE_CRON", default=None)
+
 FORISK_MILLS_CRON = config("FORISK_MILLS_CRON", default=None)
 FORISK_MILLS_DATASET_NAME = config(
     "FORISK_MILLS_DATASET_NAME", default="Mills & Other Biomass Facilities"
@@ -490,6 +491,30 @@ FORISK_MILLS_API_URL = config("FORISK_MILLS_API_URL", default=None)
 FORISK_MILLS_TIMEOUT = config("FORISK_MILLS_TIMEOUT", default=120, cast=int)
 FORISK_MILLS_PLANSCAPE_ORG_ID = config(
     "FORISK_MILLS_PLANSCAPE_ORG_ID", default=1, cast=int
+)
+
+TWIG_TREATMENTS_CRON = config("TWIG_TREATMENTS_CRON", default=None)
+TWIG_TREATMENTS_DATASET_NAME = config(
+    "TWIG_TREATMENTS_DATASET_NAME",
+    default="Treatments",
+)
+TWIG_TREATMENTS_API_URL = config(
+    "TWIG_TREATMENTS_API_URL",
+    default=(
+        "https://gis.reshapewildfire.org/arcgis/rest/services/Hosted/"
+        "Treatment_Index_View/FeatureServer/0"
+    ),
+)
+TWIG_TREATMENTS_TIMEOUT = config("TWIG_TREATMENTS_TIMEOUT", default=120, cast=int)
+TWIG_TREATMENTS_PAGE_SIZE = config("TWIG_TREATMENTS_PAGE_SIZE", default=1000, cast=int)
+TWIG_TREATMENTS_PLANSCAPE_ORG_ID = config(
+    "TWIG_TREATMENTS_PLANSCAPE_ORG_ID",
+    default=1,
+    cast=int,
+)
+TWIG_TREATMENTS_STATUS_FILTER = config(
+    "TWIG_TREATMENTS_STATUS_FILTER",
+    default=None,
 )
 
 TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
