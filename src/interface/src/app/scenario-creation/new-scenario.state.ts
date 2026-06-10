@@ -47,6 +47,10 @@ export class NewScenarioState {
   private _excludedAreas$ = new BehaviorSubject<number[]>([]);
   public excludedAreas$ = this._excludedAreas$.asObservable();
 
+  // user selected included areas
+  private _includedAreas$ = new BehaviorSubject<number[]>([]);
+  public includedAreas$ = this._includedAreas$.asObservable();
+
   // max slope and/or distance to roads constraints
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
@@ -264,10 +268,17 @@ export class NewScenarioState {
     this._excludedAreas$.next(value);
   }
 
+  setIncludedAreas(value: number[]) {
+    this._includedAreas$.next(value);
+  }
+
   setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {
     this._scenarioConfig$.next(config);
     if (config.excluded_areas) {
       this.setExcludedAreas(config.excluded_areas);
+    }
+    if (config.included_areas) {
+      this.setIncludedAreas(config.included_areas);
     }
   }
 
