@@ -63,6 +63,7 @@ class RunReportTest(APITestCase):
         self.assertIn("status", data)
         self.assertIn("created_at", data)
         self.assertIn("updated_at", data)
+        self.assertIn("results", data)
         self.assertEqual(data["status"], FundingOpportunityReportStatus.PENDING)
 
 
@@ -81,6 +82,7 @@ class GetReportTest(APITestCase):
             scenario=self.scenario,
             created_by=self.user,
             status=report_status,
+            results={"summary": {}, "projects": {}},
         )
 
     def test_get_report_returns_report(self):
@@ -115,6 +117,8 @@ class GetReportTest(APITestCase):
         self.assertIn("created_at", data)
         self.assertIn("updated_at", data)
         self.assertIn("created_by", data)
+        self.assertIn("results", data)
+        self.assertEqual(data["results"], {"summary": {}, "projects": {}})
 
     def test_get_report_requires_authentication(self):
         self._create_report()
@@ -125,3 +129,70 @@ class GetReportTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class AETImprovementTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+        )
+        self.url = reverse(
+            "api:planning:scenarios-aet-improvement", args=[self.scenario.pk]
+        )
+
+    def test_aet_improvement_requires_successful_funding_report(self):
+        FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.RUNNING,
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"percentage": 15}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_aet_improvement_requires_existing_funding_report(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"percentage": 15}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    @mock.patch("planning.views_v2.calculate_aet_improvement")
+    def test_aet_improvement_returns_results_after_successful_report(
+        self, calculate_mock
+    ):
+        report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+        calculate_mock.return_value = {
+            "percentage": 15,
+            "improved_acres": 12.5,
+            "total_project_area_acres": 100,
+            "improved_area_percent": 12.5,
+        }
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"percentage": 15}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["improved_acres"], 12.5)
+        calculate_mock.assert_called_once_with(report=report, percentage=15.0)
+
+    def test_aet_improvement_validates_percentage(self):
+        FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"percentage": -1}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

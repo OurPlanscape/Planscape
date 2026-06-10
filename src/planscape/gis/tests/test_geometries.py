@@ -4,7 +4,11 @@ from django.contrib.gis.geos import LineString, Point, Polygon
 from django.test import SimpleTestCase
 
 # Adjust import to your module path
-from gis.geometry import get_bounding_box, get_bounding_polygon
+from gis.geometry import (
+    get_bounding_box,
+    get_bounding_polygon,
+    maybe_transform,
+)
 
 
 class GetBoundingBoxTests(SimpleTestCase):
@@ -93,3 +97,22 @@ class GetBoundingPolygonTests(SimpleTestCase):
         self.assertTrue(bbox_poly.empty)
         # Empty polygon has no SRID by default unless set explicitly
         self.assertIsNone(bbox_poly.srid)
+
+
+class MaybeTransformTests(SimpleTestCase):
+    def test_returns_clone_when_srid_matches(self):
+        geometry = Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0)), srid=4326)
+
+        result = maybe_transform(geometry, 4326)
+
+        self.assertEqual(result.srid, 4326)
+        self.assertTrue(result.equals_exact(geometry, tolerance=0.0))
+        self.assertIsNot(result, geometry)
+
+    def test_transforms_when_srid_differs(self):
+        geometry = Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0)), srid=4326)
+
+        result = maybe_transform(geometry, 3857)
+
+        self.assertEqual(result.srid, 3857)
+        self.assertNotEqual(result.extent, geometry.extent)

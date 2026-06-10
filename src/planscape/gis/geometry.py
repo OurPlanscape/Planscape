@@ -56,6 +56,16 @@ def shapely_reproject(geometry, src_crs, dst_crs):
     return geometry
 
 
+def maybe_transform(
+    geometry: GEOSGeometry,
+    srid: int,
+) -> GEOSGeometry:
+    if geometry.srid == srid:
+        return geometry.clone()
+
+    return geometry.transform(srid, clone=True)
+
+
 def geodjango_to_multi(geometry: GEOSGeometry) -> GEOSGeometry:
     klass = GeometryCollection
     match geometry.geom_type:
