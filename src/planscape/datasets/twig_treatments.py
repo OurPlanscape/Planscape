@@ -304,17 +304,33 @@ def replace_twig_treatment_datalayer(
         mimetype=TWIG_TREATMENTS_MIMETYPE,
     )
 
+    existing_layers = DataLayer.dead_or_alive.filter(dataset=dataset, name=name)
+    existing_datalayer = existing_layers.filter(deleted_at=None).first()
+    
     layer_type, layer_info = get_layer_info(input_file=input_file)
     mimetype = detect_mimetype(input_file=input_file) or TWIG_TREATMENTS_MIMETYPE
-    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
-
+    
+    try:
+        geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+    except KeyError:
+        if existing_datalayer and existing_datalayer.geometry_type:
+            logger.warning(
+                "Could not detect geometry type for TWIG layer %s; preserving existing geometry type %s.",
+                name,
+                existing_datalayer.geometry_type,
+            )
+            geometry_type = existing_datalayer.geometry_type
+        else:
+            logger.warning(
+                "Could not detect geometry type for TWIG layer %s; defaulting to MULTIPOLYGON.",
+                name,
+            )
+            geometry_type = "MULTIPOLYGON"
+    
     upload_geojson_file_to_storage(
         storage_url=storage_url,
         input_file=input_file,
     )
-
-    existing_layers = DataLayer.dead_or_alive.filter(dataset=dataset, name=name)
-    existing_datalayer = existing_layers.filter(deleted_at=None).first()
 
     if existing_datalayer is not None:
         metadata = deepcopy(existing_datalayer.metadata) or {}
