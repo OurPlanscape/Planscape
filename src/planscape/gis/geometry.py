@@ -1,5 +1,6 @@
 from typing import Collection, List, Optional
 
+from django.conf import settings
 from django.contrib.gis.geos import (
     GeometryCollection,
     GEOSGeometry,
@@ -60,6 +61,10 @@ def maybe_transform(
     geometry: GEOSGeometry,
     srid: int,
 ) -> GEOSGeometry:
+    if geometry.srid is None:
+        geometry = geometry.clone()
+        geometry.srid = settings.DEFAULT_CRS
+
     if geometry.srid == srid:
         return geometry.clone()
 

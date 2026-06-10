@@ -1,5 +1,6 @@
 # tests/test_bounding_utils.py
 
+from django.conf import settings
 from django.contrib.gis.geos import LineString, Point, Polygon
 from django.test import SimpleTestCase
 
@@ -116,3 +117,12 @@ class MaybeTransformTests(SimpleTestCase):
 
         self.assertEqual(result.srid, 3857)
         self.assertNotEqual(result.extent, geometry.extent)
+
+    def test_assumes_default_crs_when_srid_is_none(self):
+        geometry = Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0)))
+        self.assertIsNone(geometry.srid)
+
+        result = maybe_transform(geometry, settings.DEFAULT_CRS)
+
+        self.assertEqual(result.srid, settings.DEFAULT_CRS)
+        self.assertTrue(result.equals_exact(geometry, tolerance=0.0))

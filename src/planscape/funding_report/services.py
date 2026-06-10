@@ -14,11 +14,7 @@ from planning.services import get_acreage
 from pyproj import Geod
 from rasterio.mask import mask
 
-from funding_report.models import (
-    FUNDING_REPORT_YEARS,
-    FundingOpportunityReport,
-    FundingReportMetric,
-)
+from funding_report.models import FundingOpportunityReport
 
 log = logging.getLogger(__name__)
 
@@ -30,12 +26,11 @@ def build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
     lookup = {}
     for datalayer in DataLayer.objects.filter(
         type=DataLayerType.RASTER,
-        metadata__contains={"modules": {"funding_report": {"baseline": True}}},
-    ) | DataLayer.objects.filter(
-        type=DataLayerType.RASTER,
-        metadata__contains={"modules": {"funding_report": {"baseline": False}}},
+        metadata__has_key="modules",
     ):
-        fr_meta = datalayer.metadata["modules"]["funding_report"]
+        fr_meta = (datalayer.metadata or {}).get("modules", {}).get("funding_report")
+        if fr_meta is None:
+            continue
         variable = fr_meta.get("variable")
         year = fr_meta.get("year")
         baseline = fr_meta.get("baseline")
@@ -248,37 +243,34 @@ def calculate_project_area_delta(
 def calculate_project_area_aet_improvement(
     project_area: ProjectArea,
     percentage: float,
-    delta_layer: DataLayer | None = None,
+    delta_src: rasterio.DatasetReader,
+    raster_srid: int,
 ) -> float:
-    delta_layer = delta_layer or get_aet_delta_datalayer()
-
-    with rasterio.open(_datalayer_path(delta_layer)) as delta_src:
-        raster_srid = delta_src.crs.to_epsg() if delta_src.crs else None
-        if raster_srid is None:
-            raise ValueError(
-                f"Raster CRS {delta_src.crs} does not resolve to an EPSG SRID."
-            )
-        geometry = json.loads(
-            maybe_transform(
-                project_area.geometry,
-                raster_srid,
-            ).geojson
-        )
+    geometry = json.loads(
+        maybe_transform(
+            project_area.geometry,
+            raster_srid,
+        ).geojson
+    )
+    try:
         delta_data, delta_transform = mask(
             delta_src, [geometry], crop=True, filled=False
         )
+    except ValueError:
+        # project area does not overlap the AET delta raster
+        return 0.0
 
-        delta_pixels = np.ma.array(delta_data[0], dtype=float)
-        pixel_mask = np.ma.getmaskarray(delta_pixels)
-        delta_values = delta_pixels.filled(np.nan)
-        selected_pixels = (
-            ~pixel_mask & np.isfinite(delta_values) & (delta_values >= percentage)
-        )
-        return _selected_pixel_area_acres(
-            selected_pixels=selected_pixels,
-            src=delta_src,
-            transform=delta_transform,
-        )
+    delta_pixels = np.ma.array(delta_data[0], dtype=float)
+    pixel_mask = np.ma.getmaskarray(delta_pixels)
+    delta_values = delta_pixels.filled(np.nan)
+    selected_pixels = (
+        ~pixel_mask & np.isfinite(delta_values) & (delta_values >= percentage)
+    )
+    return _selected_pixel_area_acres(
+        selected_pixels=selected_pixels,
+        src=delta_src,
+        transform=delta_transform,
+    )
 
 
 def calculate_aet_improvement(
@@ -290,17 +282,38 @@ def calculate_aet_improvement(
     project_areas = list(report.scenario.project_areas.all())
     delta_layer = get_aet_delta_datalayer()
 
+    with rasterio.open(_datalayer_path(delta_layer)) as delta_src:
+        raster_srid = delta_src.crs.to_epsg() if delta_src.crs else None
+        if raster_srid is None:
+            raise ValueError(
+                f"Raster CRS {delta_src.crs} does not resolve to an EPSG SRID."
+            )
+
+        project_area_results = []
+        for project_area in project_areas:
+            total_acres = get_acreage(project_area.geometry)
+            improved_acres = calculate_project_area_aet_improvement(
+                project_area=project_area,
+                percentage=percentage,
+                delta_src=delta_src,
+                raster_srid=raster_srid,
+            )
+            improved_area_percent = (
+                improved_acres / total_acres * 100 if total_acres else 0.0
+            )
+            project_area_results.append(
+                {
+                    "project_id": project_area.pk,
+                    "improved_acres": improved_acres,
+                    "total_acres": total_acres,
+                    "improved_area_percent": improved_area_percent,
+                }
+            )
+
     total_project_area_acres = sum(
-        get_acreage(project_area.geometry) for project_area in project_areas
+        result["total_acres"] for result in project_area_results
     )
-    improved_acres = sum(
-        calculate_project_area_aet_improvement(
-            project_area=project_area,
-            percentage=percentage,
-            delta_layer=delta_layer,
-        )
-        for project_area in project_areas
-    )
+    improved_acres = sum(result["improved_acres"] for result in project_area_results)
     improved_area_percent = (
         improved_acres / total_project_area_acres * 100
         if total_project_area_acres
@@ -312,6 +325,7 @@ def calculate_aet_improvement(
         "improved_acres": improved_acres,
         "total_project_area_acres": total_project_area_acres,
         "improved_area_percent": improved_area_percent,
+        "project_areas": project_area_results,
     }
 
 
@@ -359,28 +373,3 @@ def build_funding_report_results(
             for metric, values in projects.items()
         },
     }
-
-
-def calculate_funding_opportunity_report(
-    report: FundingOpportunityReport,
-) -> Dict[str, Any]:
-    report = FundingOpportunityReport.objects.select_related("scenario").get(
-        pk=report.pk
-    )
-    project_areas = list(report.scenario.project_areas.all())
-    datalayer_lookup = build_datalayer_lookup()
-    project_results = [
-        calculate_project_area_delta(
-            project_area=project_area,
-            metric=metric.value,
-            year=year,
-            datalayer_lookup=datalayer_lookup,
-        )
-        for project_area in project_areas
-        for metric in FundingReportMetric
-        for year in FUNDING_REPORT_YEARS
-    ]
-    results = build_funding_report_results(project_results)
-    report.results = results
-    report.save(update_fields=["results", "updated_at"])
-    return results

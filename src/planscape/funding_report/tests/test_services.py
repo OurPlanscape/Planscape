@@ -19,7 +19,6 @@ from rasterio.transform import from_origin
 from rasterio.mask import mask
 
 from funding_report.models import (
-    FUNDING_REPORT_YEARS,
     FundingOpportunityReport,
     FundingReportMetric,
 )
@@ -28,7 +27,6 @@ from funding_report.services import (
     calculate_aet_improvement,
     build_datalayer_lookup,
     build_funding_report_results,
-    calculate_funding_opportunity_report,
     calculate_pixel_deltas,
     calculate_project_area_aet_improvement,
     calculate_project_area_delta,
@@ -165,12 +163,6 @@ class FundingReportRasterCalculationTest(TestCase):
             },
         )
 
-    def create_all_datalayers(self):
-        for metric in FundingReportMetric:
-            for year in FUNDING_REPORT_YEARS:
-                self.create_datalayer(metric, year, baseline=True)
-                self.create_datalayer(metric, year, baseline=False)
-
     def test_calculate_pixel_deltas_runs_before_aggregation(self):
         baseline = np.ma.array([[2.0, 4.0]])
         value = np.ma.array([[4.0, 2.0]])
@@ -235,11 +227,14 @@ class FundingReportRasterCalculationTest(TestCase):
     def test_calculate_project_area_aet_improvement_uses_threshold(self):
         delta_layer = self.create_aet_delta_datalayer()
 
-        improved_acres = calculate_project_area_aet_improvement(
-            project_area=self.project_area,
-            percentage=15,
-            delta_layer=delta_layer,
-        )
+        with rasterio.open(delta_layer.url) as delta_src:
+            raster_srid = delta_src.crs.to_epsg()
+            improved_acres = calculate_project_area_aet_improvement(
+                project_area=self.project_area,
+                percentage=15,
+                delta_src=delta_src,
+                raster_srid=raster_srid,
+            )
 
         self.assertAlmostEqual(
             improved_acres,
@@ -261,6 +256,21 @@ class FundingReportRasterCalculationTest(TestCase):
         )
         self.assertAlmostEqual(
             results["improved_area_percent"],
+            expected_acres / expected_total * 100,
+            places=6,
+        )
+
+        self.assertEqual(len(results["project_areas"]), 1)
+        project_area_result = results["project_areas"][0]
+        self.assertEqual(project_area_result["project_id"], self.project_area.pk)
+        self.assertAlmostEqual(
+            project_area_result["improved_acres"], expected_acres, places=6
+        )
+        self.assertAlmostEqual(
+            project_area_result["total_acres"], expected_total, places=6
+        )
+        self.assertAlmostEqual(
+            project_area_result["improved_area_percent"],
             expected_acres / expected_total * 100,
             places=6,
         )
@@ -346,15 +356,3 @@ class FundingReportRasterCalculationTest(TestCase):
                 },
             ],
         )
-
-    def test_calculate_report_persists_project_results(self):
-        self.create_all_datalayers()
-
-        results = calculate_funding_opportunity_report(self.report)
-
-        self.assertIn("projects", results)
-        self.assertIn("summary", results)
-        self.assertNotIn("stand_results", results)
-        self.assertNotIn("project_area_results", results)
-        self.report.refresh_from_db()
-        self.assertEqual(self.report.results, results)

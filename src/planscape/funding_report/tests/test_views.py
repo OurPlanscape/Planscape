@@ -176,6 +176,14 @@ class AETImprovementTest(APITestCase):
             "improved_acres": 12.5,
             "total_project_area_acres": 100,
             "improved_area_percent": 12.5,
+            "project_areas": [
+                {
+                    "project_id": 1,
+                    "improved_acres": 12.5,
+                    "total_acres": 100,
+                    "improved_area_percent": 12.5,
+                }
+            ],
         }
         self.client.force_authenticate(self.user)
 
@@ -183,6 +191,7 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["improved_acres"], 12.5)
+        self.assertEqual(len(response.json()["project_areas"]), 1)
         calculate_mock.assert_called_once_with(report=report, percentage=15.0)
 
     def test_aet_improvement_validates_percentage(self):
@@ -196,3 +205,20 @@ class AETImprovementTest(APITestCase):
         response = self.client.post(self.url, {"percentage": -1}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @mock.patch("planning.views_v2.calculate_aet_improvement")
+    def test_aet_improvement_returns_400_on_value_error(self, calculate_mock):
+        FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+        calculate_mock.side_effect = ValueError(
+            "Missing funding report AET delta datalayer."
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"percentage": 15}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("detail", response.json())

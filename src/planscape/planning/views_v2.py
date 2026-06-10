@@ -445,10 +445,13 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        results = calculate_aet_improvement(
-            report=report,
-            percentage=serializer.validated_data["percentage"],
-        )
+        try:
+            results = calculate_aet_improvement(
+                report=report,
+                percentage=serializer.validated_data["percentage"],
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(results)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
