@@ -14,7 +14,7 @@ from core.requests import RequestSessionWrap
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
+from gis.core import fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
 from google.cloud import storage
 from organizations.models import Organization
@@ -304,15 +304,14 @@ def replace_twig_treatment_datalayer(
         mimetype=TWIG_TREATMENTS_MIMETYPE,
     )
 
+    layer_type, layer_info = get_layer_info(input_file=input_file)
+    mimetype = detect_mimetype(input_file=input_file) or TWIG_TREATMENTS_MIMETYPE
+    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+
     upload_geojson_file_to_storage(
         storage_url=storage_url,
         input_file=input_file,
     )
-
-    vsi_input_file = with_vsi_prefix(storage_url)
-    layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
-    mimetype = detect_mimetype(input_file=vsi_input_file) or TWIG_TREATMENTS_MIMETYPE
-    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
 
     existing_layers = DataLayer.dead_or_alive.filter(dataset=dataset, name=name)
     existing_datalayer = existing_layers.filter(deleted_at=None).first()
