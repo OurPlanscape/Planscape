@@ -91,7 +91,8 @@
         </div>
       </div>
       <app-funding-report
-        *ngIf="hasOutput$ | async"
+        *ngIf="(hasOutput$ | async) && (report$ | async) as report"
+        [report]="report"
         [reportType]="'preview'"></app-funding-report>
     </ng-template>
   </div>

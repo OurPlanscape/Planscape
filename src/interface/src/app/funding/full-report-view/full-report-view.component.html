@@ -34,7 +34,15 @@
               menuLabel="Project Areas"></sg-filter-dropdown>
           </div>
         </div>
-        <app-funding-report [reportType]="'full'"></app-funding-report>
+        <ng-container *ngIf="report$ | async as report; else loadingReport">
+          <app-funding-report
+            *ngIf="report.status === 'SUCCESS'; else loadingReport"
+            [report]="report"
+            [reportType]="'full'"></app-funding-report>
+        </ng-container>
+        <ng-template #loadingReport>
+          <mat-spinner class="report-spinner" diameter="36"></mat-spinner>
+        </ng-template>
       </div>
     </div>
   </div>
