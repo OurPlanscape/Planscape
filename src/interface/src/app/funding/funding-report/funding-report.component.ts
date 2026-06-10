@@ -30,6 +30,7 @@ import {
   PercentageBarColor,
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
+import { FundingReport } from '@types';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -84,6 +85,7 @@ export class FundingReportComponent
   @Input() showMap = true;
   @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
+  @Input() report!: FundingReport;
 
   constructor(
     private cdr: ChangeDetectorRef,

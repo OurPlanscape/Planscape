@@ -5,8 +5,10 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MockProvider } from 'ng-mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BehaviorSubject } from 'rxjs';
+import { ScenarioState } from '@scenario/scenario.state';
 
 describe('FullReportViewComponent', () => {
   let component: FullReportViewComponent;
@@ -22,7 +24,14 @@ describe('FullReportViewComponent', () => {
       ],
       providers: [
         MockProvider(MapConfigState),
+        MockProvider(ScenarioState, {
+          currentScenarioId$: new BehaviorSubject<number | null>(null),
+        }),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },
+        {
+          provide: Router,
+          useValue: jasmine.createSpyObj('Router', ['navigate']),
+        },
       ],
     }).compileComponents();
 
