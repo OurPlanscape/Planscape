@@ -169,7 +169,13 @@ class TwigTreatmentsTest(SimpleTestCase):
             {
                 "type": "FeatureCollection",
                 "features": [
-                    {"type": "Feature", "properties": {"objectid": 1}},
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "objectid": 1,
+                            "treatment_date": 1751241600000,
+                        },
+                    },
                 ],
             },
             {
@@ -179,7 +185,6 @@ class TwigTreatmentsTest(SimpleTestCase):
                 ],
             },
         ]
-
         with tempfile.NamedTemporaryFile(mode="w+", encoding="utf-8") as temp_file:
             count = write_twig_feature_collection_to_file(
                 api_url="https://example.test/FeatureServer/0",
@@ -195,13 +200,14 @@ class TwigTreatmentsTest(SimpleTestCase):
         self.assertIn('"FeatureCollection"', output)
         self.assertIn('"objectid":1', output)
         self.assertIn('"objectid":2', output)
+        self.assertIn('"treatment_date":"2025-06-30"', output)
 
     @patch("datasets.tasks.datalayer_uploaded")
-    @patch("datasets.twig_treatments.upload_geojson_file_to_storage")
+    @patch("datasets.twig_treatments.upload_twig_file_to_storage")
+    @patch("datasets.twig_treatments.convert_geojson_to_zipped_shapefile")
     @patch("datasets.twig_treatments.geometry_from_info")
     @patch("datasets.twig_treatments.get_storage_url")
     @patch("datasets.twig_treatments.fetch_geometry_type")
-    @patch("datasets.twig_treatments.detect_mimetype")
     @patch("datasets.twig_treatments.get_layer_info")
     @patch("datasets.twig_treatments.get_user_model")
     @patch("datasets.twig_treatments.DataLayerHasStyle")
@@ -212,11 +218,11 @@ class TwigTreatmentsTest(SimpleTestCase):
         datalayer_has_style_mock,
         get_user_model_mock,
         get_layer_info_mock,
-        detect_mimetype_mock,
         fetch_geometry_type_mock,
         get_storage_url_mock,
         geometry_from_info_mock,
-        upload_geojson_mock,
+        convert_geojson_to_zipped_shapefile_mock,
+        upload_twig_file_mock,
         datalayer_uploaded_mock,
     ):
         dataset = Mock(workspace=Mock())
@@ -225,11 +231,14 @@ class TwigTreatmentsTest(SimpleTestCase):
         created_datalayer = Mock(pk=123)
 
         get_user_model_mock.return_value.objects.get.return_value = created_by
+        convert_geojson_to_zipped_shapefile_mock.return_value = (
+            "/tmp/twig_years_since_treatment_0_5.zip",
+            "/tmp/twig_years_since_treatment_0_5.shp",
+        )
         get_layer_info_mock.return_value = ("VECTOR", {"layer": {"count": 1}})
-        detect_mimetype_mock.return_value = "application/geo+json"
         fetch_geometry_type_mock.return_value = "MULTIPOLYGON"
         get_storage_url_mock.return_value = (
-            "gs://bucket/twig_years_since_treatment_0_5.geojson"
+            "gs://bucket/twig_years_since_treatment_0_5.zip"
         )
         geometry = Mock()
         geometry_from_info_mock.return_value = geometry
@@ -252,9 +261,23 @@ class TwigTreatmentsTest(SimpleTestCase):
         existing_layers.filter.assert_called_once_with(deleted_at=None)
         existing_layers.delete.assert_called_once()
 
-        upload_geojson_mock.assert_called_once_with(
-            storage_url="gs://bucket/twig_years_since_treatment_0_5.geojson",
-            input_file="/tmp/twig.geojson",
+        convert_geojson_to_zipped_shapefile_mock.assert_called_once()
+        self.assertEqual(
+            convert_geojson_to_zipped_shapefile_mock.call_args.kwargs["input_file"],
+            "/tmp/twig.geojson",
+        )
+        self.assertEqual(
+            convert_geojson_to_zipped_shapefile_mock.call_args.kwargs["layer_name"],
+            "TWIG - Years Since Treatment: 0-5",
+        )
+
+        get_layer_info_mock.assert_called_once_with(
+            input_file="/tmp/twig_years_since_treatment_0_5.shp",
+        )
+
+        upload_twig_file_mock.assert_called_once_with(
+            storage_url="gs://bucket/twig_years_since_treatment_0_5.zip",
+            input_file="/tmp/twig_years_since_treatment_0_5.zip",
         )
 
         datalayer_model_mock.objects.create.assert_called_once()
@@ -263,12 +286,13 @@ class TwigTreatmentsTest(SimpleTestCase):
         self.assertEqual(create_kwargs["name"], "TWIG - Years Since Treatment: 0-5")
         self.assertEqual(
             create_kwargs["original_name"],
-            "twig_years_since_treatment_0_5.geojson",
+            "twig_years_since_treatment_0_5.zip",
         )
         self.assertEqual(
             create_kwargs["url"],
-            "gs://bucket/twig_years_since_treatment_0_5.geojson",
+            "gs://bucket/twig_years_since_treatment_0_5.zip",
         )
+        self.assertEqual(create_kwargs["mimetype"], "application/zip")
         self.assertEqual(create_kwargs["map_service_type"], "VECTORTILES")
         self.assertEqual(create_kwargs["status"], "PENDING")
         self.assertIsNone(create_kwargs["category"])
@@ -278,11 +302,11 @@ class TwigTreatmentsTest(SimpleTestCase):
         self.assertEqual(result, created_datalayer)
 
     @patch("datasets.tasks.datalayer_uploaded")
-    @patch("datasets.twig_treatments.upload_geojson_file_to_storage")
+    @patch("datasets.twig_treatments.upload_twig_file_to_storage")
+    @patch("datasets.twig_treatments.convert_geojson_to_zipped_shapefile")
     @patch("datasets.twig_treatments.geometry_from_info")
     @patch("datasets.twig_treatments.get_storage_url")
     @patch("datasets.twig_treatments.fetch_geometry_type")
-    @patch("datasets.twig_treatments.detect_mimetype")
     @patch("datasets.twig_treatments.get_layer_info")
     @patch("datasets.twig_treatments.get_user_model")
     @patch("datasets.twig_treatments.DataLayerHasStyle")
@@ -293,11 +317,11 @@ class TwigTreatmentsTest(SimpleTestCase):
         datalayer_has_style_mock,
         get_user_model_mock,
         get_layer_info_mock,
-        detect_mimetype_mock,
         fetch_geometry_type_mock,
         get_storage_url_mock,
         geometry_from_info_mock,
-        upload_geojson_mock,
+        convert_geojson_to_zipped_shapefile_mock,
+        upload_twig_file_mock,
         datalayer_uploaded_mock,
     ):
         dataset = Mock(workspace=Mock())
@@ -318,11 +342,14 @@ class TwigTreatmentsTest(SimpleTestCase):
         ]
 
         get_user_model_mock.return_value.objects.get.return_value = created_by
+        convert_geojson_to_zipped_shapefile_mock.return_value = (
+            "/tmp/twig_years_since_treatment_0_5.zip",
+            "/tmp/twig_years_since_treatment_0_5.shp",
+        )
         get_layer_info_mock.return_value = ("VECTOR", {"layer": {"count": 1}})
-        detect_mimetype_mock.return_value = "application/geo+json"
         fetch_geometry_type_mock.return_value = "MULTIPOLYGON"
         get_storage_url_mock.return_value = (
-            "gs://bucket/twig_years_since_treatment_0_5.geojson"
+            "gs://bucket/twig_years_since_treatment_0_5.zip"
         )
         geometry_from_info_mock.return_value = Mock()
         datalayer_model_mock.objects.create.return_value = created_datalayer
@@ -338,9 +365,9 @@ class TwigTreatmentsTest(SimpleTestCase):
         )
 
         create_kwargs = datalayer_model_mock.objects.create.call_args.kwargs
+
         self.assertEqual(
-            create_kwargs["metadata"],
-            {"modules": {"twig": {"enabled": True}}},
+            create_kwargs["metadata"]["modules"]["twig"], {"enabled": True}
         )
         self.assertEqual(create_kwargs["category"], category)
 
@@ -357,4 +384,9 @@ class TwigTreatmentsTest(SimpleTestCase):
             datalayer=created_datalayer,
             style_id=22,
             default=False,
+        )
+
+        upload_twig_file_mock.assert_called_once_with(
+            storage_url="gs://bucket/twig_years_since_treatment_0_5.zip",
+            input_file="/tmp/twig_years_since_treatment_0_5.zip",
         )
