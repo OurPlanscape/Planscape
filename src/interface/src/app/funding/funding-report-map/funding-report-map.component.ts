@@ -1,4 +1,4 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
@@ -16,12 +16,14 @@ import {
 import { AuthService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject, map, of } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
 import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
 import { PlanState } from '@app/plan/plan.state';
+import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
+import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -33,10 +35,13 @@ import { PlanState } from '@app/plan/plan.state';
     MapBaseLayersComponent,
     MapDataLayerComponent,
     MapComponent,
-    MatProgressSpinnerModule,
+    MapProjectAreasComponent,
     MapZoomControlComponent,
     MapNavbarComponent,
+    MatProgressSpinnerModule,
+    NgIf,
     OpacitySliderComponent,
+    PlanningAreaLayerComponent,
   ],
   templateUrl: './funding-report-map.component.html',
   styleUrl: './funding-report-map.component.scss',
@@ -44,14 +49,16 @@ import { PlanState } from '@app/plan/plan.state';
 export class FundingReportMapComponent {
   mapLibreMap!: MapLibreMap;
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+  showProjectAreas$ = of(true); // TODO: replace w actual state
   /**
    * Maplibre defaults
    */
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
-
+  projectAreaCount$ = of(4); // TODO: replace w actual state
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
+      console.log('we have geometry?', geometry);
       return getBoundsFromGeometry(geometry);
     })
   );
@@ -68,8 +75,8 @@ export class FundingReportMapComponent {
 
   opacity$ = this.mapConfigState.opacity$;
 
-  mapLoaded(event: MapLibreMap) {
-    this.mapLibreMap = event;
+  mapLoaded(loadedMap: MapLibreMap) {
+    this.mapLibreMap = loadedMap;
   }
 
   handleOpacityChange(opacity: number) {

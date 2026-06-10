@@ -24,6 +24,7 @@ import { FundingReportMapComponent } from '../funding-report-map/funding-report-
   imports: [
     FilterDropdownComponent,
     FundingReportComponent,
+    FundingReportMapComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,
@@ -32,7 +33,6 @@ import { FundingReportMapComponent } from '../funding-report-map/funding-report-
     MatTabsModule,
     NgIf,
     ToggleTabsComponent,
-    FundingReportMapComponent,
   ],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
@@ -65,8 +65,4 @@ export class FullReportViewComponent {
   handleToggleSelection(selection: string) {
     this.currentView = selection;
   }
-
-  /* report tabs things */
-  tabIndex = 1;
-  onTabIndexChange(tabSelected: number) {}
 }

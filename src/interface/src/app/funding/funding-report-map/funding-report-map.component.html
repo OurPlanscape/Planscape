@@ -25,8 +25,7 @@
     controlsPosition="bottom-right"></app-map-zoom-control>
 
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
-  <!-- <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
--->
+  <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
   <app-map-data-layer
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-data-layer>
@@ -41,20 +40,15 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <!-- <ng-container *ngIf="showProjectAreas$ | async">
+  <ng-container *ngIf="showProjectAreas$ | async">
     <app-map-project-areas
       *ngIf="projectAreaCount$ | async as projectAreasCount"
       [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap"
-      [labelField]="'rank'"
-      >
+      [labelField]="'rank'">
     </app-map-project-areas>
-  </ng-container> -->
-  <!-- <mgl-control position="bottom-left">
-    <app-data-layer-name [showClearButton]="true"></app-data-layer-name>
-  </mgl-control> -->
-
+  </ng-container>
   <mgl-control position="top-right">
     <!-- TODO: add the funding legend -->
   </mgl-control>
