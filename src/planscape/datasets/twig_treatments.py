@@ -1,9 +1,12 @@
 import json
 import logging
 import re
+import subprocess
 import tempfile
+import zipfile
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime, timezone as datetime_timezone
+from pathlib import Path
 from typing import Any, Dict, Optional, TextIO
 from uuid import uuid4
 
@@ -15,7 +18,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from gis.core import fetch_geometry_type, get_layer_info
-from gis.io import detect_mimetype
 from google.cloud import storage
 from organizations.models import Organization
 from workspaces.models import Workspace
@@ -33,7 +35,9 @@ from datasets.services import geometry_from_info, get_storage_url
 
 logger = logging.getLogger(__name__)
 
-TWIG_TREATMENTS_MIMETYPE = "application/geo+json"
+TWIG_TREATMENTS_MIMETYPE = "application/zip"
+TWIG_TREATMENTS_OUTPUT_SRS = "EPSG:3857"
+TWIG_TREATMENTS_SOURCE_DATE_FIELD = "treatment_date"
 
 TWIG_TREATMENT_LAYER_NAMES = {
     "0-5": "Years Since Treatment: 0-5",
@@ -62,6 +66,36 @@ def years_before(value: date, years: int) -> date:
 
 def format_arcgis_timestamp(value: date) -> str:
     return value.strftime("%Y-%m-%d 00:00:00")
+
+
+def format_arcgis_epoch_millis_date(value: Any) -> Optional[str]:
+    if value in (None, ""):
+        return None
+
+    try:
+        timestamp_millis = int(value)
+    except (TypeError, ValueError):
+        return None
+
+    return datetime.fromtimestamp(
+        timestamp_millis / 1000,
+        tz=datetime_timezone.utc,
+    ).date().isoformat()
+
+
+def normalize_twig_feature_date(feature: Dict[str, Any]) -> Dict[str, Any]:
+    properties = feature.get("properties")
+    if not isinstance(properties, dict):
+        return feature
+
+    display_date = format_arcgis_epoch_millis_date(
+        properties.get(TWIG_TREATMENTS_SOURCE_DATE_FIELD)
+    )
+
+    if display_date:
+        properties[TWIG_TREATMENTS_SOURCE_DATE_FIELD] = display_date
+
+    return feature
 
 
 def build_twig_where_clauses(
@@ -219,6 +253,8 @@ def write_twig_feature_collection_to_file(
             break
 
         for feature in features:
+            feature = normalize_twig_feature_date(feature)
+        
             if not first_feature:
                 output_file.write(",")
             json.dump(feature, output_file, separators=(",", ":"))
@@ -264,7 +300,7 @@ def get_or_create_twig_dataset(
     return dataset
 
 
-def upload_geojson_file_to_storage(
+def upload_twig_file_to_storage(
     storage_url: str,
     input_file: str,
 ) -> None:
@@ -284,6 +320,62 @@ def slugify_layer_name(name: str) -> str:
     return slug.strip("_")
 
 
+def convert_geojson_to_zipped_shapefile(
+    input_file: str,
+    output_directory: str,
+    layer_name: str,
+) -> tuple[str, str]:
+    shapefile_layer_name = slugify_layer_name(layer_name)
+    output_directory_path = Path(output_directory)
+
+    shapefile_path = output_directory_path / f"{shapefile_layer_name}.shp"
+    zip_path = output_directory_path / f"{shapefile_layer_name}.zip"
+
+    command = [
+        "ogr2ogr",
+        "-f",
+        "ESRI Shapefile",
+        str(shapefile_path),
+        input_file,
+        "-nln",
+        shapefile_layer_name,
+        "-t_srs",
+        TWIG_TREATMENTS_OUTPUT_SRS,
+        "-nlt",
+        "PROMOTE_TO_MULTI",
+        "-lco",
+        "ENCODING=UTF-8",
+    ]
+
+    logger.info(
+        "Converting TWIG GeoJSON %s to zipped %s shapefile %s",
+        input_file,
+        TWIG_TREATMENTS_OUTPUT_SRS,
+        zip_path,
+    )
+
+    subprocess.run(command, check=True)
+
+    with zipfile.ZipFile(
+        zip_path,
+        mode="w",
+        compression=zipfile.ZIP_DEFLATED,
+        compresslevel=9,
+    ) as zip_file:
+        for shapefile_component in output_directory_path.glob(
+            f"{shapefile_layer_name}.*"
+        ):
+            if shapefile_component == zip_path:
+                continue
+
+            zip_file.write(
+                shapefile_component,
+                arcname=shapefile_component.name,
+            )
+
+    return str(zip_path), str(shapefile_path)
+
+
 def replace_twig_treatment_datalayer(
     dataset: Dataset,
     organization: Organization,
@@ -295,8 +387,9 @@ def replace_twig_treatment_datalayer(
     user_model = get_user_model()
     created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
 
-    original_name = f"{slugify_layer_name(name)}.geojson"
+    original_name = f"{slugify_layer_name(name)}.zip"
     uuid = str(uuid4())
+
     storage_url = get_storage_url(
         organization_id=organization.pk,
         uuid=uuid,
@@ -306,31 +399,6 @@ def replace_twig_treatment_datalayer(
 
     existing_layers = DataLayer.dead_or_alive.filter(dataset=dataset, name=name)
     existing_datalayer = existing_layers.filter(deleted_at=None).first()
-    
-    layer_type, layer_info = get_layer_info(input_file=input_file)
-    mimetype = detect_mimetype(input_file=input_file) or TWIG_TREATMENTS_MIMETYPE
-    
-    try:
-        geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
-    except KeyError:
-        if existing_datalayer and existing_datalayer.geometry_type:
-            logger.warning(
-                "Could not detect geometry type for TWIG layer %s; preserving existing geometry type %s.",
-                name,
-                existing_datalayer.geometry_type,
-            )
-            geometry_type = existing_datalayer.geometry_type
-        else:
-            logger.warning(
-                "Could not detect geometry type for TWIG layer %s; defaulting to MULTIPOLYGON.",
-                name,
-            )
-            geometry_type = "MULTIPOLYGON"
-    
-    upload_geojson_file_to_storage(
-        storage_url=storage_url,
-        input_file=input_file,
-    )
 
     if existing_datalayer is not None:
         metadata = deepcopy(existing_datalayer.metadata) or {}
@@ -343,6 +411,37 @@ def replace_twig_treatment_datalayer(
         metadata = {}
         category = None
         style_associations = []
+
+    with tempfile.TemporaryDirectory() as shapefile_directory:
+        zip_file, shapefile_file = convert_geojson_to_zipped_shapefile(
+            input_file=input_file,
+            output_directory=shapefile_directory,
+            layer_name=name,
+        )
+
+        layer_type, layer_info = get_layer_info(input_file=shapefile_file)
+
+        try:
+            geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+        except KeyError:
+            if existing_datalayer and existing_datalayer.geometry_type:
+                logger.warning(
+                    "Could not detect geometry type for TWIG layer %s; preserving existing geometry type %s.",
+                    name,
+                    existing_datalayer.geometry_type,
+                )
+                geometry_type = existing_datalayer.geometry_type
+            else:
+                logger.warning(
+                    "Could not detect geometry type for TWIG layer %s; defaulting to MULTIPOLYGON.",
+                    name,
+                )
+                geometry_type = "MULTIPOLYGON"
+
+        upload_twig_file_to_storage(
+            storage_url=storage_url,
+            input_file=zip_file,
+        )
 
     existing_layers.delete()
 
@@ -361,7 +460,7 @@ def replace_twig_treatment_datalayer(
         geometry_type=geometry_type,
         geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
         info=layer_info,
-        mimetype=mimetype,
+        mimetype=TWIG_TREATMENTS_MIMETYPE,
         metadata=metadata,
         map_service_type=MapServiceChoices.VECTORTILES,
         status=DataLayerStatus.PENDING,
