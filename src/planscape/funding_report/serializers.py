@@ -16,3 +16,7 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
             "results",
         ]
         read_only_fields = fields
+
+
+class FundingReportAETImprovementRequestSerializer(serializers.Serializer):
+    percentage = serializers.FloatField(min_value=0)
