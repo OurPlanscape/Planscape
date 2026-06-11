@@ -17,7 +17,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
-import { filter, map, shareReplay, switchMap, take, tap } from 'rxjs';
+import { filter, shareReplay, switchMap, take, tap } from 'rxjs';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
 import { FundingReportService } from '@services/funding-report.service';
@@ -56,14 +56,6 @@ export class FullReportViewComponent {
     { name: 'Project Area 2', shortName: '2' },
     { name: 'Project Area 3', shortName: '3' },
   ];
-
-  scenarioProjectAreas$ = this.scenarioState.currentScenario$
-    .pipe(
-      map((scenario) =>
-        scenario.scenario_result?.result.features.map((f) => f.properties)
-      )
-    )
-    .subscribe((s) => console.log(s));
 
   currentView: string = 'report';
 
@@ -112,8 +104,4 @@ export class FullReportViewComponent {
   /* report tabs things */
   tabIndex = 1;
   onTabIndexChange(tabSelected: number) {}
-
-  changeSelectedProjecAreas(things: { name: string; shortName: string }[]) {
-    console.log(things);
-  }
 }

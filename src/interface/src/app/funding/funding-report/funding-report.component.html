@@ -59,7 +59,7 @@
       <h5>Unhealthy Smoke Production</h5>
       <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
       <sg-chart
-        *ngIf="smokeChart$ | async as chart"
+        *ngIf="smokeChart as chart"
         class="no-margin"
         [data]="chart.data"
         [options]="chart.options"
@@ -69,7 +69,7 @@
       <h5>Standing Aboveground Live Tree Carbon</h5>
       <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
       <sg-chart
-        *ngIf="treeCarbonChart$ | async as chart"
+        *ngIf="treeCarbonChart as chart"
         class="no-margin"
         [data]="chart.data"
         [options]="chart.options"
@@ -170,7 +170,7 @@
         (%) Percentage Change After Treatment
       </p>
       <sg-chart
-        *ngIf="flameLengthChart$ | async as chart"
+        *ngIf="flameLengthChart as chart"
         class="no-margin"
         [data]="chart.data"
         [options]="chart.options"

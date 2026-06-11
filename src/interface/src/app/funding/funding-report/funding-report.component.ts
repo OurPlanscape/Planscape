@@ -7,16 +7,17 @@ import {
   EventEmitter,
   Input,
   NgZone,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
-  BannerComponent,
   ButtonComponent,
   ChartComponent,
   InputDirective,
@@ -27,7 +28,7 @@ import {
 } from '@styleguide';
 import { Chart, ChartData, ChartOptions } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { map, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
   buildPercentageBarData,
   getPercentageChartOptions,
@@ -35,6 +36,7 @@ import {
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 import { FundingReport, FundingReportMetric } from '@types';
+import { aggregateMetricSummary } from './funding-report.helper';
 import {
   AbstractControl,
   FormControl,
@@ -88,7 +90,6 @@ const flameLengthRangeValidator: ValidatorFn = (
     SectionComponent,
     ButtonComponent,
     ChartComponent,
-    BannerComponent,
     ModalComponent,
     PopoverComponent,
     FundingMapLayersComponent,
@@ -100,7 +101,7 @@ const flameLengthRangeValidator: ValidatorFn = (
   styleUrl: './funding-report.component.scss',
 })
 export class FundingReportComponent
-  implements OnInit, AfterViewInit, OnDestroy
+  implements OnInit, OnChanges, AfterViewInit, OnDestroy
 {
   @ViewChild('scrollContainer', { static: true })
   scrollContainer!: ElementRef<HTMLElement>;
@@ -136,6 +137,8 @@ export class FundingReportComponent
   @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
   @Input() report!: FundingReport;
+  /** Selected project area ids; empty means show the whole-scenario summary. */
+  @Input() projectAreas: number[] = [];
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
@@ -153,13 +156,14 @@ export class FundingReportComponent
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
     this.assignSections();
-    this.smokeChart$ = of(this.buildSummaryChart('POTENTIAL_SMOKE', 'blue'));
-    this.treeCarbonChart$ = of(
-      this.buildSummaryChart('ABOVEGROUND_TOTAL', 'purple')
-    );
-    this.flameLengthChart$ = of(
-      this.buildSummaryChart('TOTAL_FLAME_SEVERITY', 'orange')
-    );
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Fires before ngOnInit on first render, so this also does the initial build.
+    // Redraw whenever the report or the selected project areas change.
+    if (changes['report'] || changes['projectAreas']) {
+      this.buildCharts();
+    }
   }
 
   assignSections() {
@@ -251,32 +255,26 @@ export class FundingReportComponent
     burnProb: [70, 30, 25, 20, 16],
   });
 
-  /** Built from the report summary in `ngOnInit`. */
-  smokeChart$!: Observable<ChartConfig>;
-  treeCarbonChart$!: Observable<ChartConfig>;
-  flameLengthChart$!: Observable<ChartConfig>;
-  readonly burnProbChart$ = this.buildChart$('burnProb', 'yellow');
+  /** Rebuilt in `ngOnChanges` whenever the report or selected project areas change. */
+  smokeChart!: ChartConfig;
+  treeCarbonChart!: ChartConfig;
+  flameLengthChart!: ChartConfig;
 
-  private buildChart$(
-    key: keyof ChartValues,
-    color: PercentageBarColor
-  ): Observable<ChartConfig> {
-    return this.chartValues$.pipe(
-      map((values) => ({
-        data: buildPercentageBarData(this.labels, values[key], color),
-        options: getPercentageChartOptions(this.xAxisLabel, values[key])!,
-      }))
+  private buildCharts(): void {
+    this.smokeChart = this.buildSummaryChart('POTENTIAL_SMOKE', 'blue');
+    this.treeCarbonChart = this.buildSummaryChart('ABOVEGROUND_TOTAL', 'purple');
+    this.flameLengthChart = this.buildSummaryChart(
+      'TOTAL_FLAME_SEVERITY',
+      'orange'
     );
   }
 
-  /** Build a bar chart from a report summary metric: one bar per year, value = delta. */
+  /** Build a bar chart from a report metric: one bar per year, value = % delta. */
   private buildSummaryChart(
     metric: FundingReportMetric,
     color: PercentageBarColor
   ): ChartConfig {
-    const points = this.report?.results?.summary[metric] ?? [];
-    // delta can be null when a metric had no valid pixels; treat it as 0.
-    const deltas = points.map((point) => point.delta ?? 0);
+    const deltas = this.deltasForMetric(metric);
     return {
       data: buildPercentageBarData(this.labels, deltas, color),
       options: getPercentageChartOptions(
@@ -284,6 +282,18 @@ export class FundingReportComponent
         deltas.length ? deltas : undefined
       )!,
     };
+  }
+
+  /** Per-year % deltas for a metric over the currently selected project areas. */
+  private deltasForMetric(metric: FundingReportMetric): number[] {
+    const results = this.report?.results;
+    if (!results) {
+      return [];
+    }
+    // delta can be null when a metric had no valid pixels; treat it as 0.
+    return aggregateMetricSummary(results, metric, this.projectAreas).map(
+      (point) => point.delta ?? 0
+    );
   }
 
   onLayerSelected(layer: MapLayer): void {
