@@ -5,7 +5,8 @@ import subprocess
 import tempfile
 import zipfile
 from copy import deepcopy
-from datetime import date, datetime, timezone as datetime_timezone
+from datetime import date, datetime
+from datetime import timezone as datetime_timezone
 from pathlib import Path
 from typing import Any, Dict, Optional, TextIO
 from uuid import uuid4
@@ -38,6 +39,7 @@ logger = logging.getLogger(__name__)
 TWIG_TREATMENTS_MIMETYPE = "application/zip"
 TWIG_TREATMENTS_OUTPUT_SRS = "EPSG:3857"
 TWIG_TREATMENTS_SOURCE_DATE_FIELD = "treatment_date"
+TWIG_TREATMENTS_SIMPLIFY_METERS = "5"
 
 TWIG_TREATMENT_LAYER_NAMES = {
     "0-5": "Years Since Treatment: 0-5",
@@ -77,10 +79,14 @@ def format_arcgis_epoch_millis_date(value: Any) -> Optional[str]:
     except (TypeError, ValueError):
         return None
 
-    return datetime.fromtimestamp(
-        timestamp_millis / 1000,
-        tz=datetime_timezone.utc,
-    ).date().isoformat()
+    return (
+        datetime.fromtimestamp(
+            timestamp_millis / 1000,
+            tz=datetime_timezone.utc,
+        )
+        .date()
+        .isoformat()
+    )
 
 
 def normalize_twig_feature_date(feature: Dict[str, Any]) -> Dict[str, Any]:
@@ -254,7 +260,7 @@ def write_twig_feature_collection_to_file(
 
         for feature in features:
             feature = normalize_twig_feature_date(feature)
-        
+
             if not first_feature:
                 output_file.write(",")
             json.dump(feature, output_file, separators=(",", ":"))
@@ -343,6 +349,9 @@ def convert_geojson_to_zipped_shapefile(
         TWIG_TREATMENTS_OUTPUT_SRS,
         "-nlt",
         "PROMOTE_TO_MULTI",
+        "-makevalid",
+        "-simplify",
+        TWIG_TREATMENTS_SIMPLIFY_METERS,
         "-lco",
         "ENCODING=UTF-8",
     ]
@@ -449,7 +458,7 @@ def replace_twig_treatment_datalayer(
         existing_layer.name = f"{existing_layer.name} (replaced {existing_layer.pk})"
         existing_layer.deleted_at = replaced_at
         existing_layer.save(update_fields=["name", "deleted_at"])
-    
+
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
