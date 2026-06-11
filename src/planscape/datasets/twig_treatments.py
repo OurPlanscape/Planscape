@@ -443,9 +443,13 @@ def replace_twig_treatment_datalayer(
             input_file=zip_file,
         )
 
-    logger.info("Soft-deleting existing TWIG datalayers for %s", name)
-    existing_layers.update(deleted_at=timezone.now())
-
+    logger.info("Soft-deleting/renaming existing TWIG datalayers for %s", name)
+    replaced_at = timezone.now()
+    for existing_layer in existing_layers:
+        existing_layer.name = f"{existing_layer.name} (replaced {existing_layer.pk})"
+        existing_layer.deleted_at = replaced_at
+        existing_layer.save(update_fields=["name", "deleted_at"])
+    
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
