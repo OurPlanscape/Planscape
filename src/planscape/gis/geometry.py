@@ -1,5 +1,6 @@
 from typing import Collection, List, Optional
 
+from django.conf import settings
 from django.contrib.gis.geos import (
     GeometryCollection,
     GEOSGeometry,
@@ -54,6 +55,20 @@ def shapely_reproject(geometry, src_crs, dst_crs):
         )
     )
     return geometry
+
+
+def maybe_transform(
+    geometry: GEOSGeometry,
+    srid: int,
+) -> GEOSGeometry:
+    if geometry.srid is None:
+        geometry = geometry.clone()
+        geometry.srid = settings.DEFAULT_CRS
+
+    if geometry.srid == srid:
+        return geometry.clone()
+
+    return geometry.transform(srid, clone=True)
 
 
 def geodjango_to_multi(geometry: GEOSGeometry) -> GEOSGeometry:
