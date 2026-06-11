@@ -212,7 +212,7 @@ class TwigTreatmentsTest(SimpleTestCase):
     @patch("datasets.twig_treatments.get_user_model")
     @patch("datasets.twig_treatments.DataLayerHasStyle")
     @patch("datasets.twig_treatments.DataLayer")
-    def test_replace_twig_treatment_datalayer_deletes_and_recreates(
+    def test_replace_twig_treatment_datalayer_soft_deletes_and_recreates(
         self,
         datalayer_model_mock,
         datalayer_has_style_mock,
@@ -259,7 +259,11 @@ class TwigTreatmentsTest(SimpleTestCase):
             name="TWIG - Years Since Treatment: 0-5",
         )
         existing_layers.filter.assert_called_once_with(deleted_at=None)
-        existing_layers.delete.assert_called_once()
+        existing_layers.update.assert_called_once()
+        self.assertIn(
+            "deleted_at",
+            existing_layers.update.call_args.kwargs,
+        )
 
         convert_geojson_to_zipped_shapefile_mock.assert_called_once()
         self.assertEqual(
