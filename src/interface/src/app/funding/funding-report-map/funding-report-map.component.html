@@ -34,7 +34,6 @@
     <app-map-multi-project-areas
       *ngIf="projectAreaCount$ | async as projectAreasCount"
       [projectAreasCount]="projectAreasCount"
-      [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap"
       [labelField]="'rank'">
     </app-map-multi-project-areas>
@@ -43,12 +42,3 @@
     <!-- TODO: add the funding legend -->
   </mgl-control>
 </mgl-map>
-
-<!-- <div
-  class="loader"
-  [class.visible]="loading$ | async"
-  [attr.aria-hidden]="
-    (loading$ | async) === false || (loading$ | async) === null
-  ">
-  <mat-spinner diameter="32"></mat-spinner>
-</div> -->

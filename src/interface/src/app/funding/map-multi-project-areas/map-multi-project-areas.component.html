@@ -29,18 +29,16 @@
   </ng-component>
 
   <mgl-layer
-    *ngIf="showHoveredProjectAreas"
     [id]="layers.projectAreasHighlight.name"
-    type="line"
+    type="fill"
     source="scenarioProjectAreas"
     [sourceLayer]="layers.projectAreasHighlight.sourceLayer"
     [filter]="['==', ['get', 'id'], ['literal', hoveredProjectAreaId$ | async]]"
     [paint]="{
-      'line-color': visible
-        ? layers.projectAreasHighlight.color
-        : 'transparent',
-      'line-width': 4,
-    }"></mgl-layer>
+      'fill-color': visible ? '#FFCD664D' : 'transparent',
+      'fill-opacity': 1,
+    }">
+  </mgl-layer>
 
   <mgl-layer
     [id]="layers.projectAreaLabels.name"

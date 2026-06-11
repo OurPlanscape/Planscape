@@ -157,7 +157,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
     this.mapLibreMap.setPaintProperty(
       this.layers.projectAreasOutline.name,
       'line-width',
-      ['case', ['in', ['get', 'id'], ['literal', ids]], 5, 1]
+      ['case', ['in', ['get', 'id'], ['literal', ids]], 6, 2]
     );
   }
 
@@ -181,7 +181,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
       e.point
     );
-
     if (this.hoveredProjectAreaFromFeatures?.properties?.['id']) {
       const id = this.hoveredProjectAreaFromFeatures.properties['id'];
       this.hoveredProjectAreaId$.next(id);
