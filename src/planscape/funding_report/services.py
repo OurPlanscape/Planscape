@@ -237,6 +237,7 @@ def calculate_project_area_delta(
     return {
         "variable": metric,
         "project_id": project_area.pk,
+        "proj_id": (project_area.data or {}).get("proj_id"),
         "year": year,
         **aggregates,
     }
@@ -342,6 +343,7 @@ def build_funding_report_results(
         year = result["year"]
         project_result = {
             "project_id": result["project_id"],
+            "proj_id": result.get("proj_id"),
             "year": year,
             "value": result["value"],
             "baseline": result["baseline"],
