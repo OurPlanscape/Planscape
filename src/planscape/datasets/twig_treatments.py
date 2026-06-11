@@ -443,7 +443,8 @@ def replace_twig_treatment_datalayer(
             input_file=zip_file,
         )
 
-    existing_layers.delete()
+    logger.info("Soft-deleting existing TWIG datalayers for %s", name)
+    existing_layers.update(deleted_at=timezone.now())
 
     datalayer = DataLayer.objects.create(
         name=name,
