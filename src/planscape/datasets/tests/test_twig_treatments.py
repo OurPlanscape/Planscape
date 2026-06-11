@@ -245,7 +245,16 @@ class TwigTreatmentsTest(SimpleTestCase):
         datalayer_model_mock.objects.create.return_value = created_datalayer
 
         existing_layers = datalayer_model_mock.dead_or_alive.filter.return_value
-        existing_layers.filter.return_value.first.return_value = None
+
+        existing_layer = Mock()
+        existing_layer.pk = 456
+        existing_layer.name = "TWIG - Years Since Treatment: 0-5"
+        existing_layer.metadata = {}
+        existing_layer.category = None
+        existing_layer.rel_styles.all.return_value = []
+
+        existing_layers.filter.return_value.first.return_value = existing_layer
+        existing_layers.__iter__.return_value = iter([existing_layer])
 
         result = replace_twig_treatment_datalayer(
             dataset=dataset,
@@ -259,10 +268,13 @@ class TwigTreatmentsTest(SimpleTestCase):
             name="TWIG - Years Since Treatment: 0-5",
         )
         existing_layers.filter.assert_called_once_with(deleted_at=None)
-        existing_layers.update.assert_called_once()
-        self.assertIn(
-            "deleted_at",
-            existing_layers.update.call_args.kwargs,
+        self.assertEqual(
+            existing_layer.name,
+            "TWIG - Years Since Treatment: 0-5 (replaced 456)",
+        )
+        self.assertIsNotNone(existing_layer.deleted_at)
+        existing_layer.save.assert_called_once_with(
+            update_fields=["name", "deleted_at"]
         )
 
         convert_geojson_to_zipped_shapefile_mock.assert_called_once()
