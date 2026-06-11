@@ -87,30 +87,8 @@ class Command(BaseCommand):
             if item.get("model") == "datasets.datalayer" and "table" in fields:
                 fields.pop("table")
 
-            if item.get("model") == "planning.treatmentgoalusesdatalayer":
-                treatment_goal_id = fields.get("treatment_goal")
-                if treatment_goal_id not in treatment_goal_ids:
-                    skipped_usage_count += 1
-                    skipped_treatment_goal_ids.add(treatment_goal_id)
-                    continue
-
-            sanitized_data.append(item)
-
-        if skipped_usage_count:
-            sample_ids = ", ".join(
-                str(pk) for pk in sorted(skipped_treatment_goal_ids)[:10]
-            )
-            self.stdout.write(
-                self.style.WARNING(
-                    "Skipped "
-                    f"{skipped_usage_count} TreatmentGoalUsesDataLayer row(s) "
-                    "with missing TreatmentGoal fixture references"
-                    + (f" (sample treatment_goal ids: {sample_ids})." if sample_ids else ".")
-                )
-            )
-
         with open(file_path, "w", encoding="utf-8") as fh:
-            json.dump(sanitized_data, fh, indent=2)
+            json.dump(data, fh, indent=2)
 
     def handle(self, *args, **kwargs):
         if settings.ENV != "local":
