@@ -55,8 +55,15 @@ from planning.serializers import (
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
-from funding_report.models import FundingOpportunityReport
-from funding_report.serializers import FundingOpportunityReportSerializer
+from funding_report.models import (
+    FundingOpportunityReport,
+    FundingOpportunityReportStatus,
+)
+from funding_report.serializers import (
+    FundingOpportunityReportSerializer,
+    FundingReportAETImprovementRequestSerializer,
+)
+from funding_report.services import calculate_aet_improvement
 from funding_report.tasks import run_funding_opportunity_report
 from modules.base import compute_scenario_capabilities
 from planning.services import (
@@ -419,6 +426,33 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data)
+
+    @action(methods=["post"], detail=True, url_path="aet-improvement")
+    def aet_improvement(self, request, pk=None):
+        scenario = self.get_object()
+        serializer = FundingReportAETImprovementRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        report = FundingOpportunityReport.objects.filter(scenario=scenario).first()
+        if not report or report.status != FundingOpportunityReportStatus.SUCCESS:
+            return Response(
+                {
+                    "detail": (
+                        "AET improvement can only be calculated after the "
+                        "funding report completes successfully."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        try:
+            results = calculate_aet_improvement(
+                report=report,
+                percentage=serializer.validated_data["percentage"],
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(results)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
     @action(methods=["post"], detail=True, url_path="run")

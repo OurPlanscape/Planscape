@@ -17,8 +17,6 @@ class FundingOpportunityReportStatus(models.TextChoices):
 
 
 FUNDING_REPORT_YEARS = (2026, 2031, 2036, 2041, 2046)
-FUNDING_REPORT_ACTION = "LEGALMAX"
-FUNDING_REPORT_AGGREGATION = "MEAN"
 
 
 class FundingReportMetric(models.TextChoices):
