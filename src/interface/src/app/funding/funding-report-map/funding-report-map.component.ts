@@ -1,8 +1,6 @@
 import { AsyncPipe, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
-import { OpacitySliderComponent } from '@styleguide';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
   ControlComponent,
@@ -38,10 +36,8 @@ import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-mu
     MapComponent,
     MapMultiProjectAreasComponent,
     MapZoomControlComponent,
-    MapNavbarComponent,
     MatProgressSpinnerModule,
     NgIf,
-    OpacitySliderComponent,
     PlanningAreaLayerComponent,
   ],
   templateUrl: './funding-report-map.component.html',
@@ -57,6 +53,9 @@ export class FundingReportMapComponent {
   ) {
     this.mapConfigService.initialize();
   }
+
+  @Input() handleInteractions = true; // TODO: actually use this
+
   mapLibreMap!: MapLibreMap;
   /**
    * Maplibre defaults

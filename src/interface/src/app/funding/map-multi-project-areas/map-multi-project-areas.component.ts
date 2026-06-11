@@ -3,7 +3,7 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import type { ExpressionSpecification } from 'maplibre-gl';
+// import type { ExpressionSpecification } from 'maplibre-gl';
 import {
   LayerSpecification,
   LngLat,
@@ -23,6 +23,7 @@ import { ScenarioState } from '@scenario/scenario.state';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
 import { PLANNING_APPROACH } from '@types';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { AccountRoutingModule } from '@app/account/account-routing.module';
 
 type MapLayerData = {
   readonly name: string;
@@ -41,6 +42,7 @@ type MapLayerData = {
     MatIconModule,
     NgIf,
     AsyncPipe,
+    AccountRoutingModule,
   ],
   templateUrl: './map-multi-project-areas.component.html',
   styleUrl: './map-multi-project-areas.component.scss',
@@ -70,6 +72,8 @@ export class MapMultiProjectAreasComponent implements OnInit {
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
   opacity: number = 0.5;
+
+  selectedProjectAreas$ = this.mapConfigState.selectedProjectAreas$;
 
   paint: LayerSpecification['paint'] = {
     'fill-color': 'transparent',
@@ -127,19 +131,39 @@ export class MapMultiProjectAreasComponent implements OnInit {
     if (this.projectAreasCount) {
       this.paint = this.getFillColors();
     }
-
     this.mapConfigState.opacity$
       .pipe(untilDestroyed(this))
       .subscribe((opacity) => {
         this.opacity = opacity;
         this.paint = { ...this.paint, 'fill-opacity': this.opacity };
       });
+
+    this.selectedProjectAreas$
+      .pipe(untilDestroyed(this))
+      .subscribe((selectedIds) => {
+        this.updateMapSelectionThickness(selectedIds);
+      });
+  }
+
+  private updateMapSelectionThickness(selectedIds: number[] | null) {
+    if (
+      !this.mapLibreMap ||
+      !this.mapLibreMap.getLayer(this.layers.projectAreasOutline.name)
+    )
+      return;
+
+    const ids = selectedIds || [];
+
+    this.mapLibreMap.setPaintProperty(
+      this.layers.projectAreasOutline.name,
+      'line-width',
+      ['case', ['in', ['get', 'id'], ['literal', ids]], 5, 1]
+    );
   }
 
   handleLayerClick(event: MapMouseEvent) {
     const projectAreaId = this.getProjectAreaFromFeatures(event.point)
       .properties['id'];
-    console.log('this is the clicked project id:', projectAreaId);
     this.mapConfigState.toggleProjectArea(projectAreaId);
   }
 
@@ -202,7 +226,8 @@ export class MapMultiProjectAreasComponent implements OnInit {
     matchExpression.push(defaultColor);
 
     return {
-      'fill-color': matchExpression as ExpressionSpecification,
+      // 'fill-color': matchExpression as ExpressionSpecification,
+      'fill-color': defaultColor,
       'fill-opacity': this.opacity,
     };
   }

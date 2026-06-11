@@ -24,11 +24,13 @@
             <div>Viewing outcomes for:</div>
             <sg-filter-dropdown
               class="outcome-areas-dropdown"
+              (confirmedSelection)="handleFilterSelection($event)"
               [styleType]="'white'"
               [hasSearch]="false"
               displayField="name"
               shortLabel="shortName"
               noSelectionsLabel="All Project Areas"
+              [selectedItems]="selectedProjectAreas"
               [menuItems]="outcomeViewOptions"
               [showCountChip]="false"
               menuLabel="Project Areas"></sg-filter-dropdown>

@@ -30,6 +30,7 @@ import {
   PercentageBarColor,
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
+import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -54,6 +55,7 @@ interface ReportSection {
   imports: [
     CommonModule,
     FundingReportFooterComponent,
+    FundingReportMapComponent,
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
@@ -63,6 +65,7 @@ interface ReportSection {
     BannerComponent,
     ModalComponent,
     PopoverComponent,
+    FundingReportMapComponent,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',

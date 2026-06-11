@@ -30,7 +30,7 @@
 
     <ng-template #loadedView>
       <app-funding-empty-state
-        *ngIf="showEmptyState$ | async"
+        *ngIf="!just_testing && (showEmptyState$ | async)"
         (generateReport)="generateReport()">
       </app-funding-empty-state>
       <!-- Generating report-->
@@ -91,7 +91,7 @@
         </div>
       </div>
       <app-funding-report
-        *ngIf="hasOutput$ | async"
+        *ngIf="just_testing || (hasOutput$ | async)"
         [reportType]="'preview'"></app-funding-report>
     </ng-template>
   </div>

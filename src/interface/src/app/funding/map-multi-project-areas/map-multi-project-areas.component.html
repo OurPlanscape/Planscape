@@ -3,26 +3,30 @@
     id="scenarioProjectAreas"
     [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
-  <mgl-layer
-    [id]="layers.projectAreasFill.name"
-    type="fill"
-    source="scenarioProjectAreas"
-    (layerClick)="handleLayerClick($event)"
-    (layerMouseEnter)="setCursor()"
-    (layerMouseMove)="setProjectAreaTooltip($event)"
-    (layerMouseLeave)="resetCursorAndTooltip()"
-    [sourceLayer]="layers.projectAreasFill.sourceLayer"
-    [paint]="paint"></mgl-layer>
+  <ng-component *ngIf="selectedProjectAreas$ | async as selectedProjectAreas">
+    <mgl-layer
+      [id]="layers.projectAreasFill.name"
+      type="fill"
+      source="scenarioProjectAreas"
+      (layerClick)="handleLayerClick($event)"
+      (layerMouseEnter)="setCursor()"
+      (layerMouseMove)="setProjectAreaTooltip($event)"
+      (layerMouseLeave)="resetCursorAndTooltip()"
+      [sourceLayer]="layers.projectAreasFill.sourceLayer"
+      [paint]="paint"></mgl-layer>
 
-  <mgl-layer
-    [id]="layers.projectAreasOutline.name"
-    type="line"
-    source="scenarioProjectAreas"
-    [sourceLayer]="layers.projectAreasOutline.sourceLayer"
-    [paint]="{
-      'line-color': visible ? layers.projectAreasOutline.color : 'transparent',
-      'line-width': 4,
-    }"></mgl-layer>
+    <mgl-layer
+      [id]="layers.projectAreasOutline.name"
+      type="line"
+      source="scenarioProjectAreas"
+      [sourceLayer]="layers.projectAreasOutline.sourceLayer"
+      [paint]="{
+        'line-color': visible
+          ? layers.projectAreasOutline.color
+          : 'transparent',
+        'line-width': 2,
+      }"></mgl-layer>
+  </ng-component>
 
   <mgl-layer
     *ngIf="showHoveredProjectAreas"

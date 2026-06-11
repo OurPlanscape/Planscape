@@ -20,7 +20,9 @@ import { FundingReportMapComponent } from '../funding-report-map/funding-report-
 import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
 import { of } from 'rxjs';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-full-report-view',
   standalone: true,
@@ -51,12 +53,16 @@ export class FullReportViewComponent {
 
   // TODO: convert project area list to match this format
   outcomeViewOptions = [
-    { name: 'Project Area 1', shortName: '1' },
-    { name: 'Project Area 2', shortName: '2' },
-    { name: 'Project Area 3', shortName: '3' },
+    { id: 27014, name: 'Project Area 1', shortName: '1' },
+    { id: 27015, name: 'Project Area 2', shortName: '2' },
+    { id: 27016, name: 'Project Area 3', shortName: '3' },
+    { id: 27017, name: 'Project Area 4', shortName: '4' },
+    { id: 27018, name: 'Project Area 5', shortName: '5' },
+    { id: 27019, name: 'Project Area 6', shortName: '6' },
   ];
 
   currentView: string = 'report';
+  selectedProjectAreas: any[] = [];
 
   constructor(
     private breadcumbService: BreadcrumbService,
@@ -69,6 +75,27 @@ export class FullReportViewComponent {
       blackText: true,
     };
     this.breadcumbService.updateBreadCrumb(newBreadCrumb);
+
+    this.mapConfigState.selectedProjectAreas$
+      .pipe(untilDestroyed(this))
+      .subscribe((selectedIds) => {
+        this.setSelectedProjectAreas(selectedIds);
+      });
+  }
+
+  handleFilterSelection(selectedAreas: any[]) {
+    this.mapConfigState.updateSelectedProjectAreas(
+      selectedAreas.map((a) => a.id)
+    );
+  }
+
+  setSelectedProjectAreas(ids: number[]) {
+    if (ids.length === 0) {
+      this.selectedProjectAreas = [];
+    }
+    this.selectedProjectAreas = this.outcomeViewOptions.filter((o) => {
+      return ids.includes(o.id);
+    });
   }
 
   handleToggleSelection(selection: string) {
@@ -79,11 +106,6 @@ export class FullReportViewComponent {
   opacity$ = of(1);
 
   handleOpacityChange(opacity: number) {
-    console.log('opacity changed to:', opacity);
     this.mapConfigState.setOpacity(opacity);
   }
-
-  selectedProjectAreas$ = of([]);
-
-  selectProjectAreas(selectedAreas: number[]) {}
 }

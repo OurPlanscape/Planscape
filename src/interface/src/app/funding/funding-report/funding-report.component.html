@@ -34,8 +34,9 @@
   #scrollContainer
   [ngClass]="{ fullview: !isPreview }">
   <section id="map" class="report-section" *ngIf="isPreview">
-    <!-- TODO: map -->
-    <div class="map-container"></div>
+    <div class="map-container">
+      <app-funding-report-map></app-funding-report-map>
+    </div>
   </section>
 
   <sg-section
