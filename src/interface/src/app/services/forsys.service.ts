@@ -15,6 +15,8 @@ export class ForsysService {
   );
 
   public excludedAreas$ = this.forsysData$.pipe(map((data) => data.exclusions));
+  // TODO: Update to data.inclusions once the backend is ready and before releasing ADD_INCLUDES
+  public includedAreas$ = this.forsysData$.pipe(map((data) => data.exclusions));
 
   constructor(private moduleService: ModuleService) {}
 
