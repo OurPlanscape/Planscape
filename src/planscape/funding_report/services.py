@@ -169,10 +169,15 @@ def aggregate_delta_pixels(delta_pixels: np.ma.MaskedArray) -> float | None:
     return float(delta_pixels.sum())
 
 
+def calculate_percent_delta(value: float, baseline: float) -> float:
+    if baseline == 0:
+        return 0.0
+    return (value - baseline) / baseline * 100
+
+
 def aggregate_project_area_pixels(
     baseline_pixels: np.ma.MaskedArray,
     value_pixels: np.ma.MaskedArray,
-    delta_pixels: np.ma.MaskedArray,
 ) -> Dict[str, float | None]:
     valid_mask = _valid_pixel_mask(baseline_pixels, value_pixels)
     if not valid_mask.any():
@@ -180,10 +185,12 @@ def aggregate_project_area_pixels(
 
     baseline_values = np.ma.array(baseline_pixels, mask=~valid_mask, dtype=float)
     value_values = np.ma.array(value_pixels, mask=~valid_mask, dtype=float)
+    baseline_sum = float(baseline_values.sum())
+    value_sum = float(value_values.sum())
     return {
-        "value": float(value_values.sum()),
-        "baseline": float(baseline_values.sum()),
-        "delta": aggregate_delta_pixels(delta_pixels),
+        "value": value_sum,
+        "baseline": baseline_sum,
+        "delta": calculate_percent_delta(value_sum, baseline_sum),
     }
 
 
@@ -223,14 +230,9 @@ def calculate_project_area_delta(
 
     baseline_pixels = baseline_data[0]
     value_pixels = value_data[0]
-    delta_pixels = calculate_pixel_deltas(
-        baseline_pixels=baseline_pixels,
-        value_pixels=value_pixels,
-    )
     aggregates = aggregate_project_area_pixels(
         baseline_pixels=baseline_pixels,
         value_pixels=value_pixels,
-        delta_pixels=delta_pixels,
     )
     return {
         "variable": metric,
@@ -351,10 +353,17 @@ def build_funding_report_results(
             (metric, year),
             {"year": year, "value": None, "baseline": None, "delta": None},
         )
-        for field in ("value", "baseline", "delta"):
+        for field in ("value", "baseline"):
             if result[field] is None:
                 continue
             summary[field] = (summary[field] or 0) + result[field]
+
+    for summary in summary_values.values():
+        if summary["value"] is None or summary["baseline"] is None:
+            continue
+        summary["delta"] = calculate_percent_delta(
+            summary["value"], summary["baseline"]
+        )
 
     summary_by_metric: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for (metric, _year), summary in summary_values.items():
