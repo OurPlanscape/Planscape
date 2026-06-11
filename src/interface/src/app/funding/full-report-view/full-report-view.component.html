@@ -31,7 +31,10 @@
               noSelectionsLabel="All Project Areas"
               [menuItems]="outcomeViewOptions"
               [showCountChip]="false"
-              menuLabel="Project Areas"></sg-filter-dropdown>
+              menuLabel="Project Areas"
+              (confirmedSelection)="
+                changeSelectedProjecAreas($event)
+              "></sg-filter-dropdown>
           </div>
         </div>
         <ng-container *ngIf="report$ | async as report; else loadingReport">

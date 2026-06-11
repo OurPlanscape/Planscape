@@ -185,18 +185,7 @@
           [contentTemplate]="tooltipContent"
           (opened)="tooltipName = 'Burn Probability'"></sg-popover>
       </h5>
-      <sg-banner class="burn-probability-banner" customIcon="priority_high"
-        >Please note that burn probability data is calculated for the entire
-        planning boundary, encompassing both treated and untreated areas. Unlike
-        other sections of this report, these results are not filtered by your
-        project area selection.
-      </sg-banner>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
-      <sg-chart
-        *ngIf="burnProbChart$ | async as chart"
-        [data]="chart.data"
-        [options]="chart.options"
-        type="bar"></sg-chart>
+      <div>Coming soon ...</div>
     </div>
   </sg-section>
 

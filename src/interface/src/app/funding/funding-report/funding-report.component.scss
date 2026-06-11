@@ -101,7 +101,7 @@ h5 {
   }
 
   sg-input-field ::ng-deep .label {
-    color: var(--Neutral-Dark-gray, #4A4A4A);
+    color: $color-dark-gray;
     font-size: 14px;
     font-style: normal;
     font-weight: 500;

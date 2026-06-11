@@ -1,3 +1,27 @@
+export interface FundingReportDataPoint {
+  year: number;
+  delta: number;
+  value: number;
+  baseline: number;
+}
+
+export interface FundingReportProjectDataPoint extends FundingReportDataPoint {
+  project_id: number;
+}
+
+export type FundingReportMetric =
+  | 'POTENTIAL_SMOKE'
+  | 'ABOVEGROUND_TOTAL'
+  | 'TOTAL_FLAME_SEVERITY';
+
+/** Report results, keyed by metric (e.g. POTENTIAL_SMOKE, ABOVEGROUND_TOTAL). */
+export interface FundingReportResults {
+  /** Whole-scenario totals per metric. */
+  summary: Record<FundingReportMetric, FundingReportDataPoint[]>;
+  /** Same metrics, broken down per project area. */
+  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]>;
+}
+
 // TODO full interface
 export interface FundingReport {
   status: 'SUCCESS' | 'PENDING' | 'RUNNING' | 'FAILED';
@@ -6,5 +30,5 @@ export interface FundingReport {
   updated_at: string;
   id: number;
   scenario: number;
-  results: null | object;
+  results: FundingReportResults | null;
 }

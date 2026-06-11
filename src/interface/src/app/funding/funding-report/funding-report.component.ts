@@ -34,7 +34,7 @@ import {
   PercentageBarColor,
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
-import { FundingReport } from '@types';
+import { FundingReport, FundingReportMetric } from '@types';
 import {
   AbstractControl,
   FormControl,
@@ -55,9 +55,6 @@ interface ChartConfig {
 }
 
 interface ChartValues {
-  smoke: number[];
-  treeCarbon: number[];
-  flameLength: number[];
   burnProb: number[];
 }
 
@@ -156,6 +153,13 @@ export class FundingReportComponent
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
     this.assignSections();
+    this.smokeChart$ = of(this.buildSummaryChart('POTENTIAL_SMOKE', 'blue'));
+    this.treeCarbonChart$ = of(
+      this.buildSummaryChart('ABOVEGROUND_TOTAL', 'purple')
+    );
+    this.flameLengthChart$ = of(
+      this.buildSummaryChart('TOTAL_FLAME_SEVERITY', 'orange')
+    );
   }
 
   assignSections() {
@@ -244,15 +248,13 @@ export class FundingReportComponent
 
   // simulating an async source — swap for a real data service later
   readonly chartValues$: Observable<ChartValues> = of({
-    smoke: [-48, -23, -22, -18, -12],
-    treeCarbon: [-50, -45, -28, -25, -15],
-    flameLength: [71, 58, 32, 16, 14],
     burnProb: [70, 30, 25, 20, 16],
   });
 
-  readonly smokeChart$ = this.buildChart$('smoke', 'blue');
-  readonly treeCarbonChart$ = this.buildChart$('treeCarbon', 'purple');
-  readonly flameLengthChart$ = this.buildChart$('flameLength', 'orange');
+  /** Built from the report summary in `ngOnInit`. */
+  smokeChart$!: Observable<ChartConfig>;
+  treeCarbonChart$!: Observable<ChartConfig>;
+  flameLengthChart$!: Observable<ChartConfig>;
   readonly burnProbChart$ = this.buildChart$('burnProb', 'yellow');
 
   private buildChart$(
@@ -265,6 +267,23 @@ export class FundingReportComponent
         options: getPercentageChartOptions(this.xAxisLabel, values[key])!,
       }))
     );
+  }
+
+  /** Build a bar chart from a report summary metric: one bar per year, value = delta. */
+  private buildSummaryChart(
+    metric: FundingReportMetric,
+    color: PercentageBarColor
+  ): ChartConfig {
+    const points = this.report?.results?.summary[metric] ?? [];
+    // delta can be null when a metric had no valid pixels; treat it as 0.
+    const deltas = points.map((point) => point.delta ?? 0);
+    return {
+      data: buildPercentageBarData(this.labels, deltas, color),
+      options: getPercentageChartOptions(
+        this.xAxisLabel,
+        deltas.length ? deltas : undefined
+      )!,
+    };
   }
 
   onLayerSelected(layer: MapLayer): void {
