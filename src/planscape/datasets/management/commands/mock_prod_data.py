@@ -65,15 +65,6 @@ class Command(BaseCommand):
                 "Backup fixture format is invalid: expected a list of objects."
             )
 
-        treatment_goal_ids = {
-            item.get("pk")
-            for item in data
-            if item.get("model") == "planning.treatmentgoal"
-        }
-        sanitized_data = []
-        skipped_usage_count = 0
-        skipped_treatment_goal_ids = set()
-
         for item in data:
             fields = item.get("fields")
             if not isinstance(fields, dict):
