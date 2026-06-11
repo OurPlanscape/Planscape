@@ -1,0 +1,24 @@
+<sg-section
+  headline="Select Areas To Include"
+  class="include-areas"
+  [required]="true">
+  <div>
+    Select all the ownership types you want to include in your Potential
+    Treatable Area.
+  </div>
+  <section>
+    <form [formGroup]="form">
+      <sg-selectable-list
+        colorPath="styles[0].data.fill-color"
+        outlineColorPath="styles[0].data.fill-outline-color"
+        [items]="(includableAreas$ | async) ?? []"
+        groupBy="dataset.name"
+        (selectedItemsChanged)="handleSelectedItemsChange($event)"
+        (viewedItemsChanged)="handleViewedItemsChange($event)"
+        [selectedItems]="selectedAreas"
+        [viewedItems]="viewingAreas"
+        [loadingItems]="(loadingAreas$ | async) ?? []">
+      </sg-selectable-list>
+    </form>
+  </section>
+</sg-section>
