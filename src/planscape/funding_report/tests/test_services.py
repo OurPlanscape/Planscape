@@ -346,6 +346,7 @@ class FundingReportRasterCalculationTest(TestCase):
             [
                 {
                     "project_id": 1,
+                    "proj_id": None,
                     "year": 2026,
                     "value": 5,
                     "baseline": 2,
@@ -353,6 +354,7 @@ class FundingReportRasterCalculationTest(TestCase):
                 },
                 {
                     "project_id": 2,
+                    "proj_id": None,
                     "year": 2026,
                     "value": 20,
                     "baseline": 10,

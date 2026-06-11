@@ -73,6 +73,7 @@ def async_calculate_funding_report_delta(
         return {
             "error": str(exc),
             "project_id": project_area_id,
+            "proj_id": (project_area.data or {}).get("proj_id"),
             "variable": metric,
             "year": year,
         }
