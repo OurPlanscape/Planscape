@@ -15,6 +15,11 @@
         *ngIf="selectedItems.length === 0 && noSelectionsLabel">
         {{ noSelectionsLabel }}
       </div>
+      <div
+        class="label-box"
+        *ngIf="selectedItems.length === 0 && !noSelectionsLabel">
+        {{ menuLabel }}
+      </div>
       <div class="label-box" *ngIf="selectedItems.length">
         {{ menuLabel }}{{ selectionText }}
       </div>

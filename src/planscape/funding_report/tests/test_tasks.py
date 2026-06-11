@@ -148,7 +148,7 @@ class FundingOpportunityReportTaskTest(TestCase):
             {
                 "summary": {
                     FundingReportMetric.ABOVEGROUND_TOTAL: [
-                        {"year": 2026, "value": 10, "baseline": 8, "delta": 1.2}
+                        {"year": 2026, "value": 10, "baseline": 8, "delta": 25.0}
                     ]
                 },
                 "projects": {
