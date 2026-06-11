@@ -121,6 +121,7 @@ class FundingOpportunityReportTaskTest(TestCase):
             {
                 "error": "boom",
                 "project_id": self.project_area.pk,
+                "proj_id": None,
                 "variable": FundingReportMetric.ABOVEGROUND_TOTAL.value,
                 "year": 2026,
             },
@@ -155,6 +156,7 @@ class FundingOpportunityReportTaskTest(TestCase):
                     FundingReportMetric.ABOVEGROUND_TOTAL: [
                         {
                             "project_id": self.project_area.pk,
+                            "proj_id": None,
                             "year": 2026,
                             "value": 10,
                             "baseline": 8,
